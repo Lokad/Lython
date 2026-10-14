@@ -33,7 +33,6 @@ public sealed class MappingSliceKeyOwnershipTests
         var root = await Define(factory, "mapping[3:5:2]=payload");
         await Invoke(root, asynchronous);
         var first = await ReadKey(root, asynchronous);
-        Assert.True(root.Services.State.CallTemporaries.IsTracked(first));
         await Invoke(root, asynchronous);
         var second = await ReadKey(root, asynchronous);
         Assert.Same(first, second);
@@ -42,7 +41,7 @@ public sealed class MappingSliceKeyOwnershipTests
 
     [Theory]
     [MemberData(nameof(TemporaryKeys))]
-    public async Task TemporaryColonKeysAreReclaimedAtTheActualMappingBoundary(string factory, bool asynchronous, string operation)
+    public async Task TemporaryColonKeysStayBatchOwnedWhileMappingIdentityIsPreserved(string factory, bool asynchronous, string operation)
     {
         var body = operation switch
         {
@@ -53,14 +52,12 @@ public sealed class MappingSliceKeyOwnershipTests
         var root = await Define(factory, body, initialize: true);
         await Invoke(root, asynchronous);
         Reclaim(root);
-        // Tier capacity stays owned by the pool. Compare the actual payload and
-        // entry charges after both collections, rather than treating tier growth
-        // as either a leaked slice or free memory.
-        var before = root.MemoryGovernor.CurrentCommittedBytes - root.Services.State.CallTemporaries.CommittedBackingBytes;
+        // Each fresh slice shell remains owned by this finite execution.
+        var before = root.MemoryGovernor.CurrentCommittedBytes;
         for (var i = 0; i < 8; i++) await Invoke(root, asynchronous);
         Reclaim(root);
-        var after = root.MemoryGovernor.CurrentCommittedBytes - root.Services.State.CallTemporaries.CommittedBackingBytes;
-        Assert.Equal(before, after);
+        var after = root.MemoryGovernor.CurrentCommittedBytes;
+        Assert.Equal(before + 8 * 64, after);
         Assert.Same(root.Variables["stored_key"], await ReadKey(root, asynchronous));
         AssertUnwound(root);
         GC.KeepAlive(root);
@@ -68,19 +65,19 @@ public sealed class MappingSliceKeyOwnershipTests
 
     [Theory]
     [MemberData(nameof(Mappings))]
-    public async Task StoredSliceIsRetainedByMappingAndReclaimedAfterDeletion(string factory, bool asynchronous)
+    public async Task StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(string factory, bool asynchronous)
     {
         var root = await Define(factory, "mapping[3:5:2]=payload");
         var weak = StoreAndDropHostReference(root, asynchronous);
         Reclaim(root);
         Assert.True(IsAlive(weak));
-        var before = root.MemoryGovernor.CurrentCommittedBytes - root.Services.State.CallTemporaries.CommittedBackingBytes;
+        var before = root.MemoryGovernor.CurrentCommittedBytes;
         var erase = Assert.IsAssignableFrom<PyFunctionBase>(root.Variables["erase"]);
         if (asynchronous) await erase.InvokeAsync([], Span, root);
         else erase.Invoke([], Span, root);
         Reclaim(root);
         Assert.False(IsAlive(weak));
-        var after = root.MemoryGovernor.CurrentCommittedBytes - root.Services.State.CallTemporaries.CommittedBackingBytes;
+        var after = root.MemoryGovernor.CurrentCommittedBytes;
         Assert.True(after < before);
         AssertUnwound(root);
         GC.KeepAlive(root);
@@ -91,7 +88,6 @@ public sealed class MappingSliceKeyOwnershipTests
     {
         Invoke(root, asynchronous).GetAwaiter().GetResult();
         var key = ReadKey(root, asynchronous).GetAwaiter().GetResult();
-        Assert.True(root.Services.State.CallTemporaries.IsTracked(key));
         return new WeakReference<object>(key);
     }
 
@@ -100,7 +96,7 @@ public sealed class MappingSliceKeyOwnershipTests
 
     [Theory]
     [MemberData(nameof(Mappings))]
-    public async Task DeniedMappingStoreRefundsTheUnpublishedSliceShell(string factory, bool asynchronous)
+    public async Task DeniedMappingStoreKeepsMappingUnchangedAndKeyBatchOwned(string factory, bool asynchronous)
     {
         var root = await Define(factory, "mapping[3:5:limit()]=payload");
         IDisposable? pin = null;
@@ -109,7 +105,6 @@ public sealed class MappingSliceKeyOwnershipTests
         {
             Assert.Same(root.Services, frame.Services);
             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
-            root.Services.State.CallTemporaries.Sweep(full: true);
             committedBefore = root.MemoryGovernor.CurrentCommittedBytes;
             pin = root.MemoryGovernor.ReserveTemporary(root.MemoryGovernor.MaxAccountedBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes - 64, span);
             return root.Variables["step_value"];
@@ -118,7 +113,7 @@ public sealed class MappingSliceKeyOwnershipTests
         {
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => Invoke(root, asynchronous));
             Assert.Equal("MemoryError", error.ExceptionType);
-            Assert.Equal(committedBefore, root.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(committedBefore + 64, root.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, Assert.IsAssignableFrom<IPySizedValue>(root.Variables["mapping"]).Length);
         }
         finally { pin?.Dispose(); }
@@ -156,7 +151,6 @@ public sealed class MappingSliceKeyOwnershipTests
     private static void Reclaim(Context root)
     {
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
-        root.Services.State.CallTemporaries.Sweep(full: true);
     }
 
     private static void AssertUnwound(Context root)

@@ -10,27 +10,17 @@ public class NamedTupleLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted());
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted());
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
     [Fact]
     public async Task NamedTupleCtorDiscardCompletes()
         => await AssertCompletes(
-            "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\nfor i in range(" + Iterations(100000) + "):\n    p = P(1, 2)\nreturn 0\n", "0");
+            "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\nfor i in range(" + BatchIterations(100000) + "):\n    p = P(1, 2)\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task NamedTupleTypeDiscardCompletes()
         => await AssertCompletes(
-            "from collections import namedtuple\nfor i in range(" + Iterations(100000) + "):\n    t = namedtuple('P', ['x', 'y'])\nreturn 0\n", "0");
+            "from collections import namedtuple\nfor i in range(" + BatchIterations(100000) + "):\n    t = namedtuple('P', ['x', 'y'])\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task NamedTupleTypeBehaves()
@@ -57,17 +47,17 @@ public class NamedTupleLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task NamedTupleMakeDiscardCompletes()
         => await AssertCompletes(
-            "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\nfor i in range(" + Iterations(100000) + "):\n    p = P._make([1, 2])\nreturn 0\n", "0");
+            "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\nfor i in range(" + BatchIterations(100000) + "):\n    p = P._make([1, 2])\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task NamedTupleReplaceDiscardCompletes()
         => await AssertCompletes(
-            "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\np = P(1, 2)\nfor i in range(" + Iterations(100000) + "):\n    q = p._replace(x=3)\nreturn 0\n", "0");
+            "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\np = P(1, 2)\nfor i in range(" + BatchIterations(100000) + "):\n    q = p._replace(x=3)\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task NamedTupleAsDictDiscardCompletes()
         => await AssertCompletes(
-            "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\np = P(1, 2)\nfor i in range(" + Iterations(100000) + "):\n    d = p._asdict()\nreturn 0\n", "0");
+            "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\np = P(1, 2)\nfor i in range(" + BatchIterations(100000) + "):\n    d = p._asdict()\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task NamedTupleFreshBehaves()
@@ -99,12 +89,12 @@ public class NamedTupleLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task ClassNamedTupleModuleLoopDiscardCompletes()
         => await AssertCompletes(
-            "import typing\nfor i in range(" + Iterations(20000) + "):\n    class P(typing.NamedTuple):\n        x: int\n        y: str = 'd'\nreturn 0\n", "0");
+            "import typing\nfor i in range(" + BatchIterations(20000) + "):\n    class P(typing.NamedTuple):\n        x: int\n        y: str = 'd'\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
     public async Task ClassNamedTupleNestedDiscardCompletes()
         => await AssertCompletes(
-            "import typing\ndef make():\n    class Q(typing.NamedTuple):\n        a: int\n    return Q(1)\nfor i in range(" + Iterations(20000) + "):\n    x = make()\nreturn 0\n", "0");
+            "import typing\ndef make():\n    class Q(typing.NamedTuple):\n        a: int\n    return Q(1)\nfor i in range(" + BatchIterations(20000) + "):\n    x = make()\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
     public async Task RetainedClassNamedTupleDenied()

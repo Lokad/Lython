@@ -59,21 +59,19 @@ public sealed class SmallTupleAdoptionTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(2)]
-    public void PoolOwnedScalarsStayChargedToTheirOriginalOwner(int construction)
+    public void NumericAliasesKeepIndependentPayloadAndConservativeSlotFunding(int construction)
     {
         var governor = new MemoryGovernor(null);
-        var pool = new ChargeReclamationPool(governor);
         object large = BigInteger.One << 100;
-        LythonRuntime.OwnFreshInteger(large, governor, pool, null);
+        LythonRuntime.OwnFreshInteger(large, governor, null);
         var before = governor.CurrentCommittedBytes;
         var alias = Make([large, large], governor, construction);
-        Assert.Equal(PyTuple.EstimateApproximateBytes(2) + 2 * 64, alias.CommittedStorageBytes);
+        Assert.Equal(PyTuple.EstimateApproximateBytes(2) + 2 * RuntimeMemoryEstimates.EstimateScalarStorageBytes(large), alias.CommittedStorageBytes);
         Assert.Equal(alias.CommittedStorageBytes, governor.CurrentCommittedBytes - before);
         before = governor.CurrentCommittedBytes;
         var mixed = Make([large, new BigInteger(1)], governor, construction);
-        Assert.Equal(PyTuple.EstimateApproximateBytes(2) + 2 * 64, mixed.CommittedStorageBytes);
+        Assert.Equal(PyTuple.EstimateApproximateBytes(2) + RuntimeMemoryEstimates.EstimateScalarStorageBytes(large) + 64, mixed.CommittedStorageBytes);
         Assert.Equal(mixed.CommittedStorageBytes, governor.CurrentCommittedBytes - before);
-        Assert.True(pool.IsTracked(large));
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(alias);
         GC.KeepAlive(mixed);

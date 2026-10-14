@@ -49,6 +49,8 @@ public enum LythonFailureReason
     ProjectionRejected,
     /// <summary>Public projection reached its fixed nesting bound or failed managed stack admission.</summary>
     ProjectionDepthLimit,
+    /// <summary>The shared host allowance refused a conservative owned-storage estimate.</summary>
+    SharedMemoryAllowance,
 }
 
 /// <summary>Contains fixed-size attribution captured where an execution was rejected.</summary>

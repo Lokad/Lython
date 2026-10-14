@@ -24,7 +24,6 @@ internal sealed partial class LythonRuntime
         private readonly LinkedList<object> _recency = [];
         private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
         private readonly MemoryGovernor _memoryGovernor;
-        private readonly ChargeReclamationPool _pool;
         private long _committedEntryBytes;
         private long _committedKeyBytes;
         private long _committedMetadataBytes;
@@ -40,46 +39,21 @@ internal sealed partial class LythonRuntime
         // Wrapper attribute slots ride the instance-attribute rate.
         private const long MetadataSlotBytes = 64;
 
-        public PyLruCacheWrapper(ICallable callable, int? maxSize, CacheKeyMode keyMode, MemoryGovernor memoryGovernor, ChargeReclamationPool pool)
+        public PyLruCacheWrapper(ICallable callable,int? maxSize,CacheKeyMode keyMode,MemoryGovernor memoryGovernor)
         {
             _callable = callable;
             _maxSize = maxSize;
             _keyMode = keyMode;
             _memoryGovernor = memoryGovernor;
-            _pool = pool;
         }
 
-        // Wrapper coupon for drop reclamation: infrastructure plus retained key
-        // graphs plus metadata slots. Keys commit at construction and transfer
-        // here; eviction/clear release exactly, and abandoned wrappers sweep.
         internal long CommittedStorageBytes =>
             _committedEntryBytes + _committedKeyBytes + _committedMetadataBytes;
 
-        private void NoteGrowth(long beforeCharges)
-        {
-            var current = CommittedStorageBytes;
-            if (current != beforeCharges)
-            {
-                // N08: first growth registers the wrapper (creation coupons are
-                // zero, hence untracked); later moves re-snapshot like other pools.
-                if (current > 0 && !_pool.IsTracked(this))
-                {
-                    _pool.TrackFreshMutable(this, current, null);
-                }
-                else
-                {
-                    ChargeReclamationPool.NotifyStorageReplaced(this, current);
-                }
-            }
-        }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
-            // N08: explicit key ownership (no global-delta inference, which an
-            // exhaustion sweep can perturb through unrelated commitments). The
-            // tuple commits at construction; hits and disabled caches release
-            // it, misses transfer it into the wrapper coupon.
             var key = BuildCacheKey(arguments, _keyMode, context, span, out var keyCharge);
             if (_maxSize != 0 && _cache.TryGetValue(key, context, span, out var cached))
             {
@@ -209,15 +183,11 @@ internal sealed partial class LythonRuntime
 
         public bool TrySetMember(string name, object value)
         {
-            // Wrapper attribute slots ride the instance-attribute rate; the
-            // creation-time update_wrapper pass routes through here as well.
-            // Slots join the wrapper coupon so abandoned wrappers sweep them.
             if (!_metadata.ContainsKey(name))
             {
                 _memoryGovernor.Reserve(MetadataSlotBytes, null);
                 _memoryGovernor.Commit(MetadataSlotBytes);
                 _committedMetadataBytes += MetadataSlotBytes;
-                ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             }
 
             _metadata[name] = value;
@@ -246,8 +216,6 @@ internal sealed partial class LythonRuntime
                 _memoryGovernor.Release(keyCharge);
                 return;
             }
-
-            var beforeCharges = CommittedStorageBytes;
             // Preflight infrastructure before mutating, so denial leaves exact
             // charges; the fresh key releases on the way out.
             try
@@ -267,13 +235,13 @@ internal sealed partial class LythonRuntime
             if (_maxSize is null)
             {
                 _cache.Add(key, new CacheEntry(value, keyCharge, node: null), context, span);
-                NoteGrowth(beforeCharges);
+
                 return;
             }
 
             var node = _recency.AddLast(key);
             _cache.Add(key, new CacheEntry(value, keyCharge, node), context, span);
-            NoteGrowth(beforeCharges);
+
             if (_cache.Count > _maxSize.Value)
             {
                 var oldest = _recency.First.RequireNotNull();
@@ -291,7 +259,7 @@ internal sealed partial class LythonRuntime
                 _committedEntryBytes -= EntryInfrastructureBytes;
                 _memoryGovernor.Release(evictedKeyCharge);
                 _committedKeyBytes -= evictedKeyCharge;
-                NoteGrowth(beforeCharges);
+
             }
         }
         private void Touch(CacheEntry entry)
@@ -327,7 +295,6 @@ internal sealed partial class LythonRuntime
             // graph (guest aliases never outlive entries: equal-key stores reuse
             // them), then drop CLR dictionary capacity by rebuilding (it was
             // never separately charged). Hits/misses reset like CPython.
-            var beforeCharges = CommittedStorageBytes;
             foreach (var entry in _cache.EntriesInOrder)
             {
                 _memoryGovernor.Release(entry.Value.KeyCharge);
@@ -340,7 +307,7 @@ internal sealed partial class LythonRuntime
             _committedKeyBytes = 0;
             _hits = BigInteger.Zero;
             _misses = BigInteger.Zero;
-            NoteGrowth(beforeCharges);
+
         }
 
         private sealed class CacheEntry
@@ -608,11 +575,8 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        // N08: the wrapper joins the run pool so abandoned wrappers sweep the
-        // coupon below instead of stranding infrastructure, keys and metadata.
-        var wrapper = new PyLruCacheWrapper(callable, maxSize, keyMode, context.MemoryGovernor, context.Services.State.CallTemporaries);
+        var wrapper = new PyLruCacheWrapper(callable,maxSize,keyMode,context.MemoryGovernor);
         ApplyUpdateWrapper(wrapper, wrapper, callable, FunctoolsWrapperAssignmentNames, FunctoolsWrapperUpdateNames, context, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(wrapper, wrapper.CommittedStorageBytes, span);
         return wrapper;
     }
 

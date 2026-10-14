@@ -19,12 +19,9 @@ internal sealed partial class LythonRuntime
                 state.Seed(ParseSeed(bound[0], span));
             }
 
-            // Own the generator shell beside the tiny counter state, so dropped generators
-            // reclaim on sweep while retained ones stay charged.
             context.MemoryGovernor.Reserve(64L, span);
             context.MemoryGovernor.Commit(64L);
             var random = new PyRandom(state);
-            context.Services.State.CallTemporaries.TrackFreshMutable(random, 64L, span);
             return random;
         }
 
@@ -305,11 +302,11 @@ internal sealed partial class LythonRuntime
             // A k-bit draw retains k bits of fresh magnitude: deny on bit scale
             // before generating, then own the fresh result.
             var bits = (int)rawCount;
-            GuardIntegerResultBytes(
+            using var integerAdmission = GuardIntegerResultBytes(
                 RuntimeMemoryEstimates.SaturatingMultiply(2, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(bits)),
                 context.MemoryGovernor,
                 span);
-            return OwnFreshInteger(state.GetRandBits(bits), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnFreshInteger(state.GetRandBits(bits), context.MemoryGovernor, span);
         }
 
         private static object RandBytes(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)

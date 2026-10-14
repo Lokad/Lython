@@ -13,7 +13,7 @@ public sealed class CsvWriterOwnerLifetimeTests
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public async Task NativeOwnersReclaimDroppedStorageAndPreserveEscapedAliases(string kind, bool asynchronous)
+    public async Task WriterBatchesReleaseTheirOwnersAndPreserveEscapedAliases(string kind, bool asynchronous)
     {
         var body = kind switch
         {
@@ -31,34 +31,45 @@ public sealed class CsvWriterOwnerLifetimeTests
         var source = "with open('/prefix.txt') as f:\n f.read()\nimport csv\nkept = []\nfirst = None\nclass Sink:\n def write(self,text):\n" + callback +
             "s = Sink()\nfor i in range(5000):\n" + body +
             (kind == "escaped-history" ? "return i == 4999 and first == '1,2'\n" : "return i\n");
-        var script = new LythonEngine().Compile(source);
+        var retained = kind.StartsWith("retained-", StringComparison.Ordinal);
+        var count = retained ? 5000 : 16;
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source.Replace("5000", count.ToString()).Replace("4999", (count - 1).ToString()), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
-        LythonExecutionResult result;
-        if (asynchronous)
+        for (var batch = 0; batch < (retained ? 1 : 8); batch++)
         {
-            var host = new DelayedLythonHost();
-            host.SeedFile("/prefix.txt", "ready");
-            result = await script.RunAsync(host, options);
-            Assert.True(host.CompletedAsynchronously > 0);
+            LythonExecutionResult result;
+            if (asynchronous)
+            {
+                var host = new DelayedLythonHost();
+                host.SeedFile("/prefix.txt", "ready");
+                result = await script.RunAsync(host, options);
+                Assert.True(host.CompletedAsynchronously > 0);
+            }
+            else
+            {
+                var host = new MockLythonHost();
+                host.SeedFile("/prefix.txt", "ready");
+                result = script.Run(host, options);
+            }
+            Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
+            if (kind.StartsWith("retained-", StringComparison.Ordinal))
+            {
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(kind == "escaped-history" ? true : (object)new BigInteger(count - 1), result.ReturnValue);
+            }
+            result.Dispose();
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
-        else
-        {
-            var host = new MockLythonHost();
-            host.SeedFile("/prefix.txt", "ready");
-            result = script.Run(host, options);
-        }
-        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
-        if (kind.StartsWith("retained-", StringComparison.Ordinal))
-        {
-            Assert.False(result.Success);
-            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        }
-        else
-        {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(kind == "escaped-history" ? true : (object)new BigInteger(4999), result.ReturnValue);
-        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Theory]

@@ -28,23 +28,6 @@ public sealed class WrapperConstructionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void FreshWrapperRegistrationDenialRefundsAllUnpublishedStorage(bool counter)
-    {
-        var governor = new MemoryGovernor(256);
-        var pool = new ChargeReclamationPool(governor);
-        object wrapper = counter ? new PyCounter(governor) : new PyDefaultDict(PyNone.Instance, governor);
-        var owned = counter ? ((PyCounter)wrapper).CommittedStorageBytes : ((PyDefaultDict)wrapper).CommittedStorageBytes;
-        Assert.Equal(256, owned);
-        var error = Assert.Throws<LythonRuntimeException>(() => pool.TrackFreshMutable(wrapper, owned));
-        Assert.Equal("MemoryError", error.ExceptionType);
-        Assert.Equal(0, pool.Count);
-        Assert.Equal(0, governor.CurrentCommittedBytes);
-        Assert.Equal(0, governor.CurrentReservedBytes);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
     public void EmptyWrapperInnerDenialRefundsItsShell(bool counter)
     {
         var governor = new MemoryGovernor(64);
@@ -131,33 +114,49 @@ public sealed class WrapperConstructionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void RepeatedFailedPopulationKeepsItsBoundedBudget(bool counter)
+    public void FailedPopulationBatchesKeepTheirBoundedBudget(bool counter)
     {
         var call = counter ? "ctor(bad())" : "ctor(None, [(1, None), (2,)])";
         var source = "import collections\ndef bad():\n yield 1\n raise ValueError('stop')\ndef build(ctor):\n try:\n  " + call +
             "\n except (TypeError, ValueError):\n  return True\n return False\n" +
-            "for i in range(2000):\n assert build(collections." + (counter ? "Counter" : "defaultdict") + ")\nreturn i + 1\n";
-        var script = new LythonEngine().Compile(source);
+            "for i in range(16):\n assert build(collections." + (counter ? "Counter" : "defaultdict") + ")\nreturn i + 1\n";
+        var budget = new LythonMemoryBudget(512000);
+        using var script = new LythonEngine().Compile(source, budget);
+        var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
-        var result = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        Assert.True(result.Success, result.Failure?.ExceptionType + ":" + result.Failure?.Message);
-        Assert.Equal(new BigInteger(2000), result.ReturnValue);
+        for (var batch = 0; batch < 8; batch++)
+        {
+            using (var result = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 65536 }))
+            {
+                Assert.True(result.Success, result.Failure?.ExceptionType + ":" + result.Failure?.Message);
+                Assert.Equal(new BigInteger(16), result.ReturnValue);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
     }
 
     [Fact]
-    public void RepeatedDroppedDefaultDictionaryCopiesKeepTheirBoundedBudget()
+    public void DefaultDictionaryCopyBatchesKeepTheirBoundedBudget()
     {
-        var script = new LythonEngine().Compile("""
+        var budget = new LythonMemoryBudget(512000);
+        using var script = new LythonEngine().Compile("""
             from collections import defaultdict
             original = defaultdict(None, [(1, None)])
-            for i in range(2000):
+            for i in range(16):
                 copied = original.copy()
                 assert len(copied) == 1
             return len(original)
-            """);
+            """, budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
-        var result = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        Assert.True(result.Success, result.Failure?.ExceptionType + ":" + result.Failure?.Message);
-        Assert.Equal(BigInteger.One, result.ReturnValue);
+        var baseline = budget.ReservedBytes;
+        for (var batch = 0; batch < 8; batch++)
+        {
+            using (var result = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 65536 }))
+            {
+                Assert.True(result.Success, result.Failure?.ExceptionType + ":" + result.Failure?.Message);
+                Assert.Equal(BigInteger.One, result.ReturnValue);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
     }
 }

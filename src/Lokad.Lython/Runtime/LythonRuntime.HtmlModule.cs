@@ -73,7 +73,6 @@ internal sealed partial class LythonRuntime
                 ? await InvokeCallableTargetAsync(member, span, span, context,
                     () => ValueTask.FromResult(arguments)).ConfigureAwait(false)
                 : InvokeCallableTarget(member, span, span, context, () => arguments);
-            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             context.Services.CheckExecution(span);
             return result;
         }
@@ -141,7 +140,6 @@ internal sealed partial class LythonRuntime
         private static PyString FinishHtmlText(GovernedByteBuilder builder, LythonSourceSpan span, ExecutionServices services)
         {
             var result = builder.ToPyStringAndRelease();
-            services.State.CallTemporaries.TrackFreshString(result, span);
             return result;
         }
     }

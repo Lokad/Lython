@@ -29,7 +29,6 @@ public sealed class GzipCallbackScopeLifetimeTests
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
         Assert.False(frame.TryGetTarget(out _));
         Assert.Equal(retain, payload.TryGetTarget(out _));
-        parent.State.CallTemporaries.Sweep(full: true);
         Assert.True(((IPyOwnershipSnapshot)owner).TrySnapshotOwnership(out var owned));
         Assert.True(owned >= 512);
         Assert.True(parent.MemoryGovernor.CurrentCommittedBytes >= owned + (retain ? 16000 : 0));
@@ -51,11 +50,9 @@ public sealed class GzipCallbackScopeLifetimeTests
     {
         var frame = new LythonRuntime.ExecutionContext(parent);
         var payload = PyString.FromString(new string('x', 16000), parent.MemoryGovernor);
-        parent.State.CallTemporaries.TrackFreshString(payload);
         frame.Variables["unrelated"] = payload;
         if (retain) parent.Variables["kept"] = payload;
         var raw = new LythonRuntime.BytesIOObject(parent.Services, Span);
-        parent.State.CallTemporaries.TrackFreshMutable(raw, raw.OwnedBytes, Span);
         if (mode == "rb") { raw.Write(new PyBytes(Member), Span); raw.Seek(0, 0, Span); }
         Assert.True(LythonRuntime.GzipModule.Instance.TryGetMember("GzipFile", out var constructor));
         var owner = ((LythonRuntime.ICallable)constructor).Invoke(
@@ -95,7 +92,6 @@ public sealed class GzipCallbackScopeLifetimeTests
     {
         var caller = new LythonRuntime.ExecutionContext(parent);
         var payload = PyString.FromString(new string('y', 16000), parent.MemoryGovernor);
-        parent.State.CallTemporaries.TrackFreshString(payload);
         caller.Variables["unrelated"] = payload;
         if (fail) Assert.Equal("TypeError", Assert.Throws<LythonRuntimeException>(() =>
             Call(owner, "read", caller, PyString.FromString("invalid"))).ExceptionType);

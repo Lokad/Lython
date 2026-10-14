@@ -19,7 +19,6 @@ internal sealed class PyComplex(double real, double imaginary) : IPyRenderableVa
     {
         context.MemoryGovernor.Reserve(ValueBytes, span); context.MemoryGovernor.Commit(ValueBytes);
         var value = new PyComplex(real, imaginary) { OwnerMemoryGovernor = context.MemoryGovernor, AllocationSpan = span };
-        context.Services.State.CallTemporaries.TrackFreshMutable(value, ValueBytes, span);
         return value;
     }
     public bool IsTruthy() => Real != 0 || Imaginary != 0;
@@ -69,7 +68,6 @@ internal sealed class PyComplex(double real, double imaginary) : IPyRenderableVa
     {
         context.MemoryGovernor.Reserve(96, span); context.MemoryGovernor.Commit(96);
         var method = new Method(this, conjugate, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(method, 96, span);
         return method;
     }
     private sealed class Method(PyComplex receiver, bool conjugate, MemoryGovernor governor, LythonSourceSpan span) : LythonRuntime.ICallable,

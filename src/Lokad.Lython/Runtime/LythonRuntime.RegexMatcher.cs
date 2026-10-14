@@ -27,12 +27,12 @@ internal sealed partial class LythonRuntime
                 if (mode == RegexSubstitutionMode.TextOnly)
                 {
                     var replacedText = CreateUtf8String(pattern.Regex.Replace(range.Segment.Utf8Bytes.Span, replacementText.AsString(), count), context, span);
-                    return SpliceRangeResult(range, replacedText, span, context.Services.State.CallTemporaries);
+                    return SpliceRangeResult(range,replacedText,span);
                 }
 
                 var result = pattern.Regex.Subn(range.Segment.Utf8Bytes.Span, replacementText.AsString(), count);
                 var replacedTextWithCount = CreateUtf8String(result.ResultBytes, context, span);
-                return OwnSplitTupleResult(PyTuple.FromOwnedArray([SpliceRangeResult(range, replacedTextWithCount, span, context.Services.State.CallTemporaries), new BigInteger(result.ReplacementCount)], context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
+                return PyTuple.FromOwnedArray([SpliceRangeResult(range,replacedTextWithCount,span), new BigInteger(result.ReplacementCount)], context.MemoryGovernor, span);
             }
 
             if (replacement is not ICallable)
@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
 
             var resultWithCount = ExecuteCallableSubstitute(pattern, replacement, range, count, span, context);
             return mode == RegexSubstitutionMode.TextAndCount
-                ? OwnSplitTupleResult(PyTuple.FromOwnedArray([resultWithCount.Result, new BigInteger(resultWithCount.ReplacementCount)], context.MemoryGovernor, span), span, context.Services.State.CallTemporaries)
+                ? PyTuple.FromOwnedArray([resultWithCount.Result, new BigInteger(resultWithCount.ReplacementCount)], context.MemoryGovernor, span)
                 : resultWithCount.Result;
         }
 
@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveString(text, span);
                     return (object)text;
                 });
-            return OwnSplitListResult(new PyList(values, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
+            return new PyList(values, context.MemoryGovernor, span);
         }
 
         internal static IEnumerable<Utf8PythonDetailedMatchData> CreateDetailedFindMatches(
@@ -160,19 +160,11 @@ internal sealed partial class LythonRuntime
                 captures,
                 namedGroups ?? pattern.NamedGroups);
 
-            // Match values never pass a funnel: adopt the fresh whole value and
-            // capture strings here (subject, pattern, and indices stay with their
-            // own owners); drops reclaim on sweep while retained matches stay charged.
             if (context is not null)
             {
-                var pool = context.Services.State.CallTemporaries;
-                pool.TrackFreshString(wholeValue, span);
+                var pool = context.Services.State.MemoryGovernor;
                 foreach (var capture in captures)
                 {
-                    if (capture is not null)
-                    {
-                        pool.TrackFreshString(capture.Value, span);
-                    }
                 }
             }
 
@@ -192,12 +184,10 @@ internal sealed partial class LythonRuntime
                 items[i] = part.ValueText is null ? PyNone.Instance : CreateString(part.ValueText, context, span);
             }
 
-            // Split items never pass a funnel (see OwnSplitListResult): adopt the fresh
-            // strings and the fresh list here; drops reclaim on sweep.
-            return OwnSplitListResult(new PyList(items, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
+            return new PyList(items, context.MemoryGovernor, span);
         }
 
-        private static PyString SpliceRangeResult(RegexSubjectRange range, PyString segmentReplacement, LythonSourceSpan? span, ChargeReclamationPool? pool)
+        private static PyString SpliceRangeResult(RegexSubjectRange range,PyString segmentReplacement,LythonSourceSpan? span)
         {
             if (range.Pos == 0 && range.EndPos == range.Original.Length)
             {
@@ -206,17 +196,9 @@ internal sealed partial class LythonRuntime
 
             var startByte = range.Original.GetByteIndexForRuneBoundary(range.Pos);
             var endByte = range.Original.GetByteIndexForRuneBoundary(range.EndPos);
-            // Partial splices consume the segment replacement beside two slice
-            // copies plus one join transient, all beside the downstream-owned
-            // final string: own all four so dropped splices reclaim on sweep
-            // (the final string stays downstream-owned).
-            pool?.TrackFreshString(segmentReplacement, span);
             var prefix = range.Original.SliceByByteRange(0, startByte);
             var suffix = range.Original.SliceByByteRange(endByte, range.Original.Utf8Bytes.Length);
-            pool?.TrackFreshString(prefix, span);
-            pool?.TrackFreshString(suffix, span);
             var joined = prefix.Concat(segmentReplacement);
-            pool?.TrackFreshString(joined, span);
             return joined.Concat(suffix);
         }
 
@@ -324,9 +306,9 @@ internal sealed partial class LythonRuntime
             }
 
             builder.Append(sourceBytes[lastByte..]);
-            var result = SpliceRangeResult(range, builder.ToPyStringAndRelease(), span, context.Services.State.CallTemporaries);
+            var result = SpliceRangeResult(range,builder.ToPyStringAndRelease(),span);
             return mode == RegexSubstitutionMode.TextAndCount
-                ? OwnSplitTupleResult(PyTuple.FromOwnedArray([result, new BigInteger(replaced)], context.MemoryGovernor, span), span, context.Services.State.CallTemporaries)
+                ? PyTuple.FromOwnedArray([result, new BigInteger(replaced)], context.MemoryGovernor, span)
                 : result;
         }
 
@@ -345,7 +327,7 @@ internal sealed partial class LythonRuntime
                 static (replacementState, match) => EvaluateRegexReplacement(replacementState, match),
                 count);
             return new RegexSubstitutionResult(
-                SpliceRangeResult(range, CreateUtf8String(result.ResultBytes, context, span), span, context.Services.State.CallTemporaries),
+                SpliceRangeResult(range,CreateUtf8String(result.ResultBytes, context, span),span),
                 result.ReplacementCount);
         }
 

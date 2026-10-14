@@ -200,7 +200,6 @@ internal sealed partial class LythonRuntime
             return new ArgparseFileTypeObject(operation, encodingMode, errorsMode);
         }
 
-
         private sealed class ArgumentParserFactory : ICallable
         {
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

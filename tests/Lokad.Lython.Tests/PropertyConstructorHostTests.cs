@@ -49,16 +49,21 @@ public sealed class PropertyConstructorHostTests
     }
 
     [Fact]
-    public void DroppedDescriptorReclaimsShellFieldsAndRegistry()
+    public void CollectedDescriptorStaysBatchOwnedUntilCleanup()
     {
-        var root = new Context(new MockLythonHost(), new LythonRunOptions());
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         var weak = MakeDiscarded(root);
+        var funded = budget.ReservedBytes;
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         Assert.False(weak.TryGetTarget(out _));
-        root.Services.State.CallTemporaries.Sweep(full: true);
-        Assert.Equal(root.Services.State.CallTemporaries.CommittedBackingBytes, root.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(funded, budget.ReservedBytes);
+        Assert.True(funded >= 384);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -174,7 +179,6 @@ public sealed class PropertyConstructorHostTests
             MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token
         });
         var doc = new PyList([], root.MemoryGovernor, Span);
-        root.Services.State.CallTemporaries.TrackFreshMutable(doc, doc.CommittedStorageBytes, Span);
         var enabled = false;
         var started = new TaskCompletionSource<Context>(TaskCreationOptions.RunContinuationsAsynchronously);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

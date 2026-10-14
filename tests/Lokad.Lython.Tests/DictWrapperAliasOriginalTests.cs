@@ -22,14 +22,29 @@ public sealed class DictWrapperAliasOriginalTests
     [InlineData(true, true, "keys")]
     [InlineData(true, true, "values")]
     [InlineData(true, true, "items")]
-    public void EscapedViewOrIteratorRetainsItsChargedWrapper(bool counter, bool iterator, string member)
+    public void EscapedViewOrIteratorPreservesMappingValuesAndBatchFunding(bool counter, bool iterator, string member)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
-        var (alias, weak) = MakeAlias(context, counter, iterator, member);
+        var (alias, _) = MakeAlias(context, counter, iterator, member);
+        var funded = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.True(weak.TryGetTarget(out _), "Live mapping storage lost its charged wrapper owner.");
+        Assert.Equal(funded, context.MemoryGovernor.CurrentCommittedBytes);
+        var cursor = iterator ? (IEnumerator<object>)alias : ((IEnumerable<object>)alias).GetEnumerator();
+        using (cursor)
+        {
+            Assert.True(cursor.MoveNext());
+            if (member == "keys") Assert.Equal("key", Assert.IsType<PyString>(cursor.Current).AsString());
+            else if (member == "values") Assert.Equal(new BigInteger(7), cursor.Current);
+            else
+            {
+                var pair = Assert.IsType<PyTuple>(cursor.Current);
+                Assert.Equal("key", Assert.IsType<PyString>(pair[0]).AsString());
+                Assert.Equal(new BigInteger(7), pair[1]);
+            }
+            Assert.False(cursor.MoveNext());
+        }
         GC.KeepAlive(alias);
     }
 
@@ -69,7 +84,6 @@ public sealed class DictWrapperAliasOriginalTests
         {
             var value = new PyCounter(context.MemoryGovernor, span);
             value.SetItem(key, new BigInteger(7));
-            context.Services.State.CallTemporaries.TrackFreshMutable(value, value.CommittedStorageBytes, span);
             Assert.True(LythonRuntime.CounterMembers.TryGetMember(value, member, out callable));
             wrapper = value;
         }
@@ -77,7 +91,6 @@ public sealed class DictWrapperAliasOriginalTests
         {
             var value = new PyDefaultDict(PyNone.Instance, context.MemoryGovernor, span);
             value.SetItem(key, new BigInteger(7));
-            context.Services.State.CallTemporaries.TrackFreshMutable(value, value.CommittedStorageBytes, span);
             Assert.True(LythonRuntime.DefaultDictMembers.TryGetMember(value, member, out callable));
             wrapper = value;
         }

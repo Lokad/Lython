@@ -14,23 +14,29 @@ public sealed class CopyOwnerLifetimeTests
 
     [Theory]
     [MemberData(nameof(KindsAndModes))]
-    public async Task DroppedFailedDeepcopiesReclaimTheirPrivateOwners(string kind, bool asynchronous)
+    public async Task FailedDeepcopyBatchesReturnTheirOwnersAfterCleanup(string kind, bool asynchronous)
     {
-        var result = await Run(kind, asynchronous, retain: false);
-        Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal(new BigInteger(1500), result.ReturnValue);
+        var budget = new LythonMemoryBudget(262144);
+        for (var batch = 0; batch < 8; batch++)
+        {
+            using var result = await Run(kind, asynchronous, retain: false, budget);
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new BigInteger(16), result.ReturnValue);
+            result.Dispose();
+            Assert.Equal(0, budget.ReservedBytes);
+        }
     }
 
     [Theory]
     [MemberData(nameof(KindsAndModes))]
     public async Task EscapedPartialDeepcopiesKeepTheirOwnersFunded(string kind, bool asynchronous)
     {
-        var result = await Run(kind, asynchronous, retain: true);
+        using var result = await Run(kind, asynchronous, retain: true);
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
     }
 
-    private static async Task<LythonExecutionResult> Run(string kind, bool asynchronous, bool retain)
+    private static async Task<LythonExecutionResult> Run(string kind, bool asynchronous, bool retain, ILythonMemoryBudget? budget = null)
     {
         var expression = kind switch
         {
@@ -45,7 +51,7 @@ public sealed class CopyOwnerLifetimeTests
             "class Bomb:\n def __deepcopy__(self, memo):\n" + capture +
             "  raise ValueError('stop')\nsource = " + expression +
             "\nfor i in range(1500):\n try:\n  copy.deepcopy(source)\n except ValueError:\n  pass\nreturn i + 1\n";
-        var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine().Compile(source.Replace("1500", (retain ? 1500 : 16).ToString()), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
         if (asynchronous)

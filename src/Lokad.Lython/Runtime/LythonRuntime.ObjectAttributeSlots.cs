@@ -42,7 +42,5 @@ internal sealed partial class LythonRuntime
         instance.AttachMemoryGovernor(context.MemoryGovernor, span);
         var attributesBefore = instance.CommittedAttributeBytes;
         instance.SetAttribute(name, value);
-        if (instance.CommittedAttributeBytes != attributesBefore)
-            context.Services.State.CallTemporaries.TrackGrowth(instance, instance.CommittedStorageBytes, span);
     }
 }

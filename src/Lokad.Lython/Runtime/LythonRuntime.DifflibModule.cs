@@ -88,10 +88,8 @@ internal sealed partial class LythonRuntime
             var options = ParseDiffArguments(arguments, "difflib.unified_diff", span);
             var a = RequireStringSequence(arguments[0], "difflib.unified_diff(a, b)", span, context);
             var b = RequireStringSequence(arguments[1], "difflib.unified_diff(a, b)", span, context);
-            // Rendered lines own lifetime like split results: drops reclaim items and
-            // container on sweep while retained results stay charged.
             var unified = new PyList(BuildUnifiedDiff(a, b, options, context, span), context.MemoryGovernor, span);
-            return OwnSplitListResult(unified, span, context.Services.State.CallTemporaries);
+            return unified;
         }
 
         private static object ContextDiff(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -100,7 +98,7 @@ internal sealed partial class LythonRuntime
             var a = RequireStringSequence(arguments[0], "difflib.context_diff(a, b)", span, context);
             var b = RequireStringSequence(arguments[1], "difflib.context_diff(a, b)", span, context);
             var contextual = new PyList(BuildContextDiff(a, b, options, context, span), context.MemoryGovernor, span);
-            return OwnSplitListResult(contextual, span, context.Services.State.CallTemporaries);
+            return contextual;
         }
 
         private static object Ndiff(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -118,7 +116,7 @@ internal sealed partial class LythonRuntime
                 : DefaultCharacterJunkCallable();
             var differ = new DifflibDifferObject(linejunk, charjunk);
             var compared = new PyList(differ.CompareLines(a, b, span, context), context.MemoryGovernor, span);
-            return OwnSplitListResult(compared, span, context.Services.State.CallTemporaries);
+            return compared;
         }
 
         private static object Restore(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -270,13 +268,10 @@ internal sealed partial class LythonRuntime
             return TrackFreshDiffShell(new DifflibHtmlDiffObject(tabsize, wrapcolumn, linejunk, charjunk), span, context);
         }
 
-        // Fresh differ/html shells reclaim through the pool once dropped; neither factory
-        // charged its shell before, so retained shells were invisible to the budget.
         private static object TrackFreshDiffShell(object shell, LythonSourceSpan span, ExecutionContext context)
         {
             context.MemoryGovernor.Reserve(64L, span);
             context.MemoryGovernor.Commit(64L);
-            context.Services.State.CallTemporaries.TrackFreshMutable(shell, 64L, span);
             return shell;
         }
 
@@ -399,7 +394,6 @@ internal sealed partial class LythonRuntime
                 var charge = checked(32L + (16L * result.Length));
                 context.MemoryGovernor.Reserve(charge, span);
                 context.MemoryGovernor.Commit(charge);
-                context.Services.State.CallTemporaries.TrackFreshMutable(result, charge, span);
                 return result;
             }
             catch (PyNotIterableException)
@@ -458,7 +452,6 @@ internal sealed partial class LythonRuntime
                 var charge = checked(32L + (16L * result.Length) + payloadBytes);
                 context.MemoryGovernor.Reserve(charge, span);
                 context.MemoryGovernor.Commit(charge);
-                context.Services.State.CallTemporaries.TrackFreshMutable(result, charge, span);
                 return result;
             }
             catch (PyNotIterableException)

@@ -296,7 +296,6 @@ internal static partial class PyDateTimeOps
         };
     }
 
-
     private static object? ArgAt(object[] arguments, int index) => index < arguments.Length ? arguments[index] : null;
 
     private static (BigInteger Numerator, BigInteger Denominator) RatioParts(double value)

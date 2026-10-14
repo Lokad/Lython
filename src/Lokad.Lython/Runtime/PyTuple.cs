@@ -9,9 +9,6 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     private readonly LythonSourceSpan? _allocationSpan;
     private readonly long _committedBytes;
 
-    // Keep identity-based reclamation metadata with its immutable owner. The
-    // entry refers back weakly, so this does not keep a dropped tuple alive.
-    internal ChargeReclamationPool.ReclamationEntry? ReclamationEntry { get; set; }
 
     public static readonly PyTuple Empty = new([], takeOwnership: true);
 
@@ -65,11 +62,6 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     internal static long EstimateApproximateBytes(int count) => 32L + (16L * count);
 
-    // Current committed backing charges, for pooled owners that release them
-    // if this tuple is dropped. Tuples never grow, so the snapshot stays exact.
-    // Unowned tuples carry nothing: snapshots must mirror committed charges so a
-    // later sweep can never release what was never committed. Conservative
-    // numeric slot allowances belong to the same immutable storage owner.
     internal long CommittedStorageBytes => _committedBytes;
 
     internal static PyTuple FromOwnedArray(object[] items) => new(items, takeOwnership: true);

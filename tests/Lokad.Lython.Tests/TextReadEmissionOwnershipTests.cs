@@ -7,16 +7,16 @@ namespace Lokad.Lython.Tests;
 public sealed class TextReadEmissionOwnershipTests
 {
     [Theory]
-    [InlineData(false, -1, 127)]
-    [InlineData(true, -1, 127)]
-    [InlineData(false, 2, 127)]
-    [InlineData(true, 2, 127)]
-    [InlineData(false, 4, 127)]
-    [InlineData(true, 4, 127)]
-    [InlineData(false, -1, 159)]
-    [InlineData(true, -1, 159)]
-    public async Task DeniedEmissionRegistrationReturnsUnpublishedPayload(
-        bool asynchronous, int readSize, int registrationHeadroom)
+    [InlineData(false, -1)]
+    [InlineData(true, -1)]
+    [InlineData(false, 2)]
+    [InlineData(true, 2)]
+    [InlineData(false, 4)]
+    [InlineData(true, 4)]
+
+
+    public async Task DeniedEmissionPayloadReturnsUnpublishedStorage(
+        bool asynchronous, int readSize)
     {
         const long cap = 65536;
         var host = new MockLythonHost();
@@ -30,30 +30,16 @@ public sealed class TextReadEmissionOwnershipTests
         if (asynchronous) await state.PrimeAsync();
         else state.Prime();
 
-        // The state has warmed the shared pool's first four-entry page. Fill
-        // its remaining slots so the 159-byte case still denies 32-byte growth.
-        var retained = new List<object>();
-        if (registrationHeadroom == 159)
-            while (context.State.CallTemporaries.Count < 4)
-            {
-                var owner = new object();
-                context.MemoryGovernor.Reserve(1, null);
-                context.MemoryGovernor.Commit(1);
-                context.State.CallTemporaries.Track(owner, 1);
-                retained.Add(owner);
-            }
-
         var governor = context.MemoryGovernor;
         var committed = governor.CurrentCommittedBytes;
         var reserved = governor.CurrentReservedBytes;
         // A line or bounded slice builds a fresh value. An exact-window read
-        // also holds builder scratch. Leave its registry entry short by one
-        // byte, or fund its entry but leave tier growth short by one byte.
+        // also holds builder scratch. Leave the payload admission one byte short.
         // Keep the reader and current window strongly owned.
         var payloadLength = readSize < 0 ? 4 : readSize;
         var builderScratch = readSize == 4 ? 32 + 4 * payloadLength : 0;
         var pressure = cap - governor.CurrentAccountedBytes
-            - (128 + payloadLength + builderScratch + registrationHeadroom);
+            - (128 + payloadLength + builderScratch - 1);
         Assert.True(pressure > 0);
         governor.Reserve(pressure, null);
 
@@ -76,11 +62,10 @@ public sealed class TextReadEmissionOwnershipTests
         Assert.Equal(committed, governor.CurrentCommittedBytes);
         governor.ReleaseReserved(pressure);
         var next = asynchronous ? await state.ReadLineAsync(-1) : state.ReadLine(-1);
-        Assert.Equal(readSize == 2 ? "c\n" : "xyz\n", next.AsString());
+        Assert.Equal(readSize == 4 ? "xyz\n" : "abc\n", next.AsString());
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(state);
         GC.KeepAlive(next);
-        GC.KeepAlive(retained);
     }
 
     [Theory]
@@ -96,17 +81,12 @@ public sealed class TextReadEmissionOwnershipTests
             LythonRuntime.TextErrorMode.Strict,
             LythonRuntime.TextNewlineMode.TranslateUniversal, windowBytes: 4);
         var line = asynchronous ? await state.ReadLineAsync(-1) : state.ReadLine(-1);
-        var pool = context.State.CallTemporaries;
-        Assert.True(pool.IsTracked(line));
+        var pool = context.State.MemoryGovernor;
         state.Release();
         var committed = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-
-        Assert.Equal(0, pool.Sweep(full: true));
-        Assert.Equal(2, pool.Count); // Live state shell plus the retained line.
-        Assert.True(pool.IsTracked(state));
         Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal("abc\n", line.AsString());
         GC.KeepAlive(line);

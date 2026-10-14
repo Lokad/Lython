@@ -30,7 +30,6 @@ internal sealed partial class LythonRuntime
             PyGenerator generator;
             try { generator = new PyGenerator(code, frame, span, bytes, closureCells); }
             catch { frame.MemoryGovernor.Release(bytes); throw; }
-            frame.Services.State.CallTemporaries.TrackFreshMutable(generator, bytes, span);
             return generator;
         }
 

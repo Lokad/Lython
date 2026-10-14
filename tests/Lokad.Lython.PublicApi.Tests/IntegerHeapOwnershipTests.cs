@@ -3,13 +3,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// R11: heap magnitudes produced by ordinary arithmetic (and literals) share
-// the fresh-magnitude ownership rule: each box commits its payload and owns
-// a pool-tracked coupon released exactly once on collection, so dropped
-// values reclaim on sweep. Coupons stay conservative under shared limb
-// arrays (charged while shared, exact once fully collected); alias dedup
-// keeps a shared box from double-committing. Small magnitudes stay free.
-public sealed class IntegerHeapOwnershipTests
+public class IntegerHeapOwnershipTests : LifetimeScenario
 {
     private static void AssertError(LythonExecutionResult result, string type, string messagePart)
     {
@@ -20,34 +14,12 @@ public sealed class IntegerHeapOwnershipTests
     }
 
     [Fact]
-    public void DiscardedReassignSucceeds()
-    {
-        const string code = """
-            x = 0
-            for i in range(20000):
-                x = 1 << 10000
-            """;
-        var result = new LythonEngine().Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
-    }
+    public Task ReassignmentBatchesPreserveValues()
+        => AssertBatchCompletes("x = 0\nfor i in range(8):\n    x = 1 << 10000\nreturn x.bit_length() == 10001\n", true, 3145728, asynchronous: false);
 
     [Fact]
-    public async Task DiscardedReassignSucceedsAsync()
-    {
-        const string code = """
-            x = 0
-            for i in range(20000):
-                x = 1 << 10000
-            """;
-        var result = await new LythonEngine().RunAsync(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
-    }
+    public Task AsyncReassignmentBatchesPreserveValues()
+        => AssertBatchCompletes("x = 0\nfor i in range(8):\n    x = 1 << 10000\nreturn x.bit_length() == 10001\n", true, 3145728, asynchronous: true);
 
     [Fact]
     public void RetainedListDenies()
@@ -66,34 +38,12 @@ public sealed class IntegerHeapOwnershipTests
     }
 
     [Fact]
-    public void ArithmeticTemporariesSucceed()
-    {
-        const string code = """
-            for i in range(20000):
-                z = (1 << 10000) + (1 << 10000) - (1 << 10000)
-            """;
-        var result = new LythonEngine().Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
-    }
+    public Task ArithmeticBatchesPreserveValues()
+        => AssertBatchCompletes("for i in range(8):\n    z = (1 << 10000) + (1 << 10000) - (1 << 10000)\nreturn z.bit_length() == 10001\n", true, 3145728, asynchronous: false);
 
     [Fact]
-    public void AliasDropReclaims()
-    {
-        const string code = """
-            for i in range(20000):
-                x = 1 << 10000
-                y = x
-                x = 1
-            """;
-        var result = new LythonEngine().Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
-    }
+    public Task AliasBatchesKeepTheirValuesAfterWithdrawal()
+        => AssertBatchCompletes("for i in range(8):\n    x = 1 << 10000\n    y = x\n    x = 1\nreturn y.bit_length() == 10001 and x == 1\n", true, 3145728, asynchronous: false);
 
     [Fact]
     public void SmallIntsStayUntracked()

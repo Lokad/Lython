@@ -161,7 +161,6 @@ internal sealed partial class LythonRuntime
                 if (!removed) return start == 0 && end == source.Length ? text : OwnedText(source.Slice(start, end - start), context, span);
                 builder.Append(source.Span[part..end]);
                 var result = builder.ToPyStringAndRelease();
-                context.State.CallTemporaries.TrackFreshString(result, span);
                 return result;
             }
             finally { builder.Release(); GC.KeepAlive(text); }
@@ -179,7 +178,6 @@ internal sealed partial class LythonRuntime
         {
             if (bytes.IsEmpty) return PyString.Empty;
             var result = PyString.FromUtf8(bytes, context.MemoryGovernor, span);
-            context.State.CallTemporaries.TrackFreshString(result, span);
             CheckTextLength(result.Length, context, span);
             return result;
         }
@@ -305,8 +303,7 @@ internal sealed partial class LythonRuntime
             var prefix = OwnedText(host.Utf8Bytes[..end], context, span);
             using var ambient = PyStructuralGuard.PushAmbient(context, span);
             var lower = PyStringOps.Lower(prefix);
-            lower = (PyString)OwnMethodResult(lower, prefix, context.MemoryGovernor, span, context.State.CallTemporaries);
-            if (!ReferenceEquals(lower, prefix)) context.State.CallTemporaries.TrackFreshString(lower, span);
+            lower = (PyString)OwnMethodResult(lower,prefix,context.MemoryGovernor,span);
             CheckTextLength(lower.Length, context, span);
             if (percent < 0) return lower;
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
@@ -314,7 +311,6 @@ internal sealed partial class LythonRuntime
             {
                 builder.Append(lower); builder.Append(source[end..]);
                 var result = builder.ToPyStringAndRelease();
-                context.State.CallTemporaries.TrackFreshString(result, span);
                 return result;
             }
             finally { builder.Release(); GC.KeepAlive(host); GC.KeepAlive(prefix); GC.KeepAlive(lower); }
@@ -330,7 +326,6 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<PyList> UrlComponentsAsync(object input, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var list = new PyList([], context.MemoryGovernor, span);
-            context.State.CallTemporaries.TrackFreshMutable(list, list.CommittedStorageBytes);
             await foreach (var item in QuerySequenceAsync(input, span, context, asynchronous).ConfigureAwait(false))
             {
                 if (list.Count == int.MaxValue) throw RuntimeErrors.Runtime("URL component sequence exceeds the supported size", span);
@@ -348,7 +343,6 @@ internal sealed partial class LythonRuntime
                 if (await TruthAsync(values[i], span, context, asynchronous).ConfigureAwait(false) && (values[i] is PyString) != textInput)
                     throw RuntimeErrors.Type("Cannot mix str and non-str arguments", span);
             var decoded = new PyList([], context.MemoryGovernor, span);
-            context.State.CallTemporaries.TrackFreshMutable(decoded, decoded.CommittedStorageBytes);
             foreach (var value in values)
                 decoded.Add(textInput ? value : await UrlInputAsync(value, false, span, context, asynchronous).ConfigureAwait(false));
             if (decoded.Count != (parameters ? 6 : 5)) throw new LythonRuntimeException("ValueError", "wrong number of URL components", span);
@@ -384,7 +378,6 @@ internal sealed partial class LythonRuntime
                 if (query.Length != 0) { builder.Append((byte)'?'); Append(query); }
                 if (fragment.Length != 0) { builder.Append((byte)'#'); Append(fragment); }
                 var result = builder.ToPyStringAndRelease();
-                context.State.CallTemporaries.TrackFreshString(result, span);
                 return textInput ? result : AsciiBytes(result, context, span);
             }
             finally { builder.Release(); GC.KeepAlive(decoded); GC.KeepAlive(values); }

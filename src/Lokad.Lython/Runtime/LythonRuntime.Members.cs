@@ -264,7 +264,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var listIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(listIterResult, PyIteratorBase.IteratorValueBytes);
                     return listIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(list, "list.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -438,7 +437,6 @@ internal sealed partial class LythonRuntime
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var listReversedResult = new PyReversedIterator(list.Length, list.GetIndex);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(listReversedResult, PyIteratorBase.IteratorValueBytes);
                     return listReversedResult;
                 }, ListReversedSignature),
                 _ => MissingMemberValue.Instance,
@@ -663,7 +661,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var tupleIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(tupleIterResult, PyIteratorBase.IteratorValueBytes);
                     return tupleIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(source, "tuple.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -832,7 +829,6 @@ internal sealed partial class LythonRuntime
 
     private static bool TryAsFloatOperand(object value, out PyNumber number)
         => PyNumberOps.TryAsNumber(value, out number);
-
 
     internal static class NoneMembers
     {
@@ -1395,7 +1391,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "float.__int__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(FloatToInteger(number, span, Math.Truncate), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+                    return OwnHeapInteger(FloatToInteger(number, span, Math.Truncate), context.MemoryGovernor, span);
                 }, FloatIntSignature),
                 "__float__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -1413,7 +1409,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "float.__trunc__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(FloatToInteger(number, span, Math.Truncate), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+                    return OwnHeapInteger(FloatToInteger(number, span, Math.Truncate), context.MemoryGovernor, span);
                 }, FloatTruncSignature),
                 "__floor__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -1422,7 +1418,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "float.__floor__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(FloatToInteger(number, span, Math.Floor), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+                    return OwnHeapInteger(FloatToInteger(number, span, Math.Floor), context.MemoryGovernor, span);
                 }, FloatFloorSignature),
                 "__ceil__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -1431,7 +1427,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "float.__ceil__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(FloatToInteger(number, span, Math.Ceiling), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+                    return OwnHeapInteger(FloatToInteger(number, span, Math.Ceiling), context.MemoryGovernor, span);
                 }, FloatCeilSignature),
                 "__round__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -1804,7 +1800,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var rangeIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(rangeIterResult, PyIteratorBase.IteratorValueBytes);
                     return rangeIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(range, "range.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -1919,7 +1914,6 @@ internal sealed partial class LythonRuntime
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var memberRangeReversedResult = new PyEnumerableIterator(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
-                    context.Services.State.CallTemporaries.TrackFreshMutable(memberRangeReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberRangeReversedResult;
                 }, RangeReversedSignature),
                 _ => MissingMemberValue.Instance,
@@ -2059,7 +2053,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var dictIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(dictIterResult, PyIteratorBase.IteratorValueBytes);
                     return dictIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(dict, "dict.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -2242,7 +2235,6 @@ internal sealed partial class LythonRuntime
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var memberDictReversedResult = dict.CreateReversedKeysIterator(context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(memberDictReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberDictReversedResult;
                 }, DictReversedSignature),
                 _ => MissingMemberValue.Instance,
@@ -2296,7 +2288,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var dictKeysIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(dictKeysIterResult, PyIteratorBase.IteratorValueBytes);
                     return dictKeysIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "dict_keys.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -2475,7 +2466,6 @@ internal sealed partial class LythonRuntime
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var memberKeysReversedResult = view.Source.CreateReversedKeysIterator(context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(memberKeysReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberKeysReversedResult;
                 }, DictKeysReversedSignature),
                 _ => MissingMemberValue.Instance,
@@ -2492,7 +2482,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var dictValuesIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(dictValuesIterResult, PyIteratorBase.IteratorValueBytes);
                     return dictValuesIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "dict_values.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -2506,7 +2495,6 @@ internal sealed partial class LythonRuntime
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var memberValuesReversedResult = view.Source.CreateReversedValuesIterator(context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(memberValuesReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberValuesReversedResult;
                 }, DictValuesReversedSignature),
                 _ => MissingMemberValue.Instance,
@@ -2538,7 +2526,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var dictItemsIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(dictItemsIterResult, PyIteratorBase.IteratorValueBytes);
                     return dictItemsIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "dict_items.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -2717,7 +2704,6 @@ internal sealed partial class LythonRuntime
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var memberItemsReversedResult = view.Source.CreateReversedItemsIterator(context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(memberItemsReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberItemsReversedResult;
                 }, DictItemsReversedSignature),
                 _ => MissingMemberValue.Instance,
@@ -2746,7 +2732,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var chainMapKeysIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(chainMapKeysIterResult, PyIteratorBase.IteratorValueBytes);
                     return chainMapKeysIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "ChainMap.keys.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -2771,7 +2756,6 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-
                     return EvaluateBitwiseOr(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
                 }, ChainMapKeysOrSignature),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
@@ -2785,7 +2769,6 @@ internal sealed partial class LythonRuntime
                     {
                         return PyNotImplemented.Instance;
                     }
-
 
                     return EvaluateBitwiseOr(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
                 }, ChainMapKeysROrSignature),
@@ -2801,7 +2784,6 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-
                     return EvaluateBitwiseAnd(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
                 }, ChainMapKeysAndSignature),
                 "__rand__" => BoundCallable.Create((arguments, span, context) =>
@@ -2815,7 +2797,6 @@ internal sealed partial class LythonRuntime
                     {
                         return PyNotImplemented.Instance;
                     }
-
 
                     return EvaluateBitwiseAnd(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
                 }, ChainMapKeysRAndSignature),
@@ -2831,7 +2812,6 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-
                     return EvaluateSubtract(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
                 }, ChainMapKeysSubSignature),
                 "__rsub__" => BoundCallable.Create((arguments, span, context) =>
@@ -2845,7 +2825,6 @@ internal sealed partial class LythonRuntime
                     {
                         return PyNotImplemented.Instance;
                     }
-
 
                     return EvaluateSubtract(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
                 }, ChainMapKeysRSubSignature),
@@ -2861,7 +2840,6 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
                 }, ChainMapKeysXorSignature),
                 "__rxor__" => BoundCallable.Create((arguments, span, context) =>
@@ -2875,7 +2853,6 @@ internal sealed partial class LythonRuntime
                     {
                         return PyNotImplemented.Instance;
                     }
-
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
                 }, ChainMapKeysRXorSignature),
@@ -2993,7 +2970,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var chainMapItemsIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(chainMapItemsIterResult, PyIteratorBase.IteratorValueBytes);
                     return chainMapItemsIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "ChainMap.items.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -3018,7 +2994,6 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-
                     return EvaluateBitwiseOr(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
                 }, ChainMapItemsOrSignature),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
@@ -3032,7 +3007,6 @@ internal sealed partial class LythonRuntime
                     {
                         return PyNotImplemented.Instance;
                     }
-
 
                     return EvaluateBitwiseOr(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
                 }, ChainMapItemsROrSignature),
@@ -3048,7 +3022,6 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-
                     return EvaluateBitwiseAnd(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
                 }, ChainMapItemsAndSignature),
                 "__rand__" => BoundCallable.Create((arguments, span, context) =>
@@ -3062,7 +3035,6 @@ internal sealed partial class LythonRuntime
                     {
                         return PyNotImplemented.Instance;
                     }
-
 
                     return EvaluateBitwiseAnd(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
                 }, ChainMapItemsRAndSignature),
@@ -3078,7 +3050,6 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-
                     return EvaluateSubtract(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
                 }, ChainMapItemsSubSignature),
                 "__rsub__" => BoundCallable.Create((arguments, span, context) =>
@@ -3092,7 +3063,6 @@ internal sealed partial class LythonRuntime
                     {
                         return PyNotImplemented.Instance;
                     }
-
 
                     return EvaluateSubtract(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
                 }, ChainMapItemsRSubSignature),
@@ -3108,7 +3078,6 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
                 }, ChainMapItemsXorSignature),
                 "__rxor__" => BoundCallable.Create((arguments, span, context) =>
@@ -3122,7 +3091,6 @@ internal sealed partial class LythonRuntime
                     {
                         return PyNotImplemented.Instance;
                     }
-
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
                 }, ChainMapItemsRXorSignature),
@@ -3225,7 +3193,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var chainMapValuesIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(chainMapValuesIterResult, PyIteratorBase.IteratorValueBytes);
                     return chainMapValuesIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "ChainMap.values.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -3441,7 +3408,6 @@ internal sealed partial class LythonRuntime
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     var copyResult = new PyDefaultDict(receiver.DefaultFactory, receiver.InnerDict, context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(copyResult, copyResult.CommittedStorageBytes);
                     return copyResult;
                 }),
                 "clear" => BoundCallable.CreateNoArguments(dict, "defaultdict.clear", static (receiver, _, _) =>
@@ -3453,7 +3419,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var defaultDictIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(defaultDictIterResult, PyIteratorBase.IteratorValueBytes);
                     return defaultDictIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(dict, "defaultdict.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -3511,7 +3476,6 @@ internal sealed partial class LythonRuntime
 
                     var factory = dict.DefaultFactory;
                     var unionResult = new PyDefaultDict(factory, context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(unionResult, unionResult.CommittedStorageBytes, span);
                     var merged = unionResult.InnerDict;
                     foreach (var pair in dict.Items)
                     {
@@ -3540,7 +3504,6 @@ internal sealed partial class LythonRuntime
 
                     var factory = arguments[0] is PyDefaultDict leftDefault ? leftDefault.DefaultFactory : dict.DefaultFactory;
                     var unionResult = new PyDefaultDict(factory, context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(unionResult, unionResult.CommittedStorageBytes, span);
                     var merged = unionResult.InnerDict;
                     foreach (var pair in MergeUnionPairs(arguments[0]).RequireNotNull())
                     {
@@ -3643,7 +3606,6 @@ internal sealed partial class LythonRuntime
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var memberDefaultDictReversedResult = dict.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(memberDefaultDictReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberDefaultDictReversedResult;
                 }, DefaultDictReversedSignature),
                 _ => MissingMemberValue.Instance,
@@ -3710,12 +3672,9 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature CounterGtSignature = LythonCallableSignature.Create("Counter.__gt__", ["value"]);
         private static readonly LythonCallableSignature CounterGeSignature = LythonCallableSignature.Create("Counter.__ge__", ["value"]);
         private static readonly LythonCallableSignature CounterReversedSignature = LythonCallableSignature.Create("Counter.__reversed__");
-        // Fresh copies reclaim through the pool once dropped; the later funnel
-        // no-ops on the already-tracked value through reference-identity dedup.
         private static PyCounter TrackCounterCopy(PyCounter receiver, ExecutionContext context, LythonSourceSpan span)
         {
             var copy = new PyCounter(receiver, context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(copy, copy.CommittedStorageBytes);
             return copy;
         }
 
@@ -3744,7 +3703,7 @@ internal sealed partial class LythonRuntime
                     object total = BigInteger.Zero;
                     foreach (var pair in receiver.Items)
                     {
-                        total = AddCounterCounts(total, ExpectCounterCount(pair.Value, span), span, context.MemoryGovernor, context.Services.State.CallTemporaries);
+                        total = AddCounterCounts(total,ExpectCounterCount(pair.Value, span),span,context.MemoryGovernor);
                     }
 
                     return total;
@@ -3875,7 +3834,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var counterIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(counterIterResult, PyIteratorBase.IteratorValueBytes);
                     return counterIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(counter, "Counter.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -3959,7 +3917,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, counter.OwnerMemoryGovernor ?? right.OwnerMemoryGovernor, context.Services.State.CallTemporaries), keepPositiveOnly: true, span, context);
+                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => SubtractCounterCounts(lhs,rhs,span,counter.OwnerMemoryGovernor ?? right.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
                 }, CounterSubSignature),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -4156,7 +4114,6 @@ internal sealed partial class LythonRuntime
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var memberCounterReversedResult = counter.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(memberCounterReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberCounterReversedResult;
                 }, CounterReversedSignature),
                 _ => MissingMemberValue.Instance,

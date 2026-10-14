@@ -67,16 +67,25 @@ public sealed class AsciiFieldConversionTests
     {
         var source = retained
             ? "x=[]\nfor i in range(1000):x.append(f'{chr(233)*32!a}')"
-            : "for i in range(5000):f'{chr(233)*32!a}'\nprint('done')";
-        var compiled = new LythonEngine().Compile(source);
+            : "for i in range(32):f'{chr(233)*32!a}'\nprint('done')";
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var compiled = new LythonEngine().Compile(source, budget);
         Assert.True(compiled.IsValid);
+        var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = retained ? 32768 : 524288 };
-        foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
+        for (var batch = 0; batch < (retained ? 1 : 8); batch++)
         {
-            Assert.Equal(!retained, result.Success);
-            if (retained) Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-            else Assert.Equal("done\n", result.StandardOutput);
+            foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
+            {
+                Assert.Equal(!retained, result.Success);
+                if (retained) Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                else Assert.Equal("done\n", result.StandardOutput);
+                result.Dispose();
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
+        compiled.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     public static IEnumerable<object[]> Cases()

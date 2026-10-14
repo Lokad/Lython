@@ -414,7 +414,6 @@ internal sealed partial class LythonRuntime
             scope => result.Add(RuntimeValue(EvaluateExpression(comprehension.ItemExpression, scope))), outer);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -437,7 +436,6 @@ internal sealed partial class LythonRuntime
             }, outer);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -458,7 +456,6 @@ internal sealed partial class LythonRuntime
             }, outer);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -480,7 +477,6 @@ internal sealed partial class LythonRuntime
             generator.Span,
             outer, ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target), generator: true)
                 with { RequiresClassCell = generator.PreparedComprehensionScopeFacts?.RequiresClassCell == true });
-        context.Services.State.CallTemporaries.TrackFreshMutable(produced, PyIteratorBase.IteratorValueBytes);
         return produced;
     }
 
@@ -583,10 +579,7 @@ internal sealed partial class LythonRuntime
                 var starredCount = values.Count - required;
                 if (AssignmentTargetFacts.IsStarred(tuple.Items[starIndex]))
                 {
-                    // Abandoned remainders reclaim through the pool like display lists;
-                    // otherwise every dropped remainder strands its charges until denial.
                     var remainder = new PyList(values.Skip(starIndex).Take(starredCount), context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(remainder, remainder.CommittedStorageBytes);
                     if (tuple.Items[starIndex] is LoopStarredTargetSyntax starred) StoreName(starred.Name, remainder, context, span);
                     else await AssignLoopTargetCoreAsync(tuple.Items[starIndex], remainder, span, context, asynchronous).ConfigureAwait(false);
                 }
@@ -677,7 +670,6 @@ internal sealed partial class LythonRuntime
 
         var starredCount = layout.StarredValueCount(values.Count);
         var remainder = new PyList(values.Skip(layout.StarredTargetIndex).Take(starredCount), context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(remainder, remainder.CommittedStorageBytes);
         StoreUnpackingTarget(targets[layout.StarredTargetIndex], remainder, context, span);
 
         for (var i = layout.StarredTargetIndex + 1; i < targets.Count; i++)

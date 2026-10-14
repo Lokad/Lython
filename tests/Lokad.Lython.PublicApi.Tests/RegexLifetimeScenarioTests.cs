@@ -3,14 +3,10 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// M05: regex factories build fresh match strings beside their containers, but
-// neither ever reached a funnel, so dropped results stranded every string.
-// Findall adopts items (plus nested group tuples) through the shared split
-// helpers, match objects adopt their whole and capture values, and finditer
-// shells charge per live instance; drops reclaim on sweep while retained
-// results stay charged. Per-call pattern compilation is separate ownership.
 public class RegexLifetimeScenarioTests : LifetimeScenario
 {
+    protected override int BatchSize => 32;
+
     // Each distinct pattern has an existing conservative 64 KiB charge.
     // Leave room for pattern compilation and results; 2,048 leaked strings
     // still exceed this fixed cap.
@@ -21,37 +17,27 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted(long budget) => new() { MaxExecutionMemoryBytes = budget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
     [Fact]
-    public async Task FindAllDiscardCompletes()
+    public async Task FindAllBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\",\")\nfor i in range(" + Iterations(50000) + "):\n    x = p.findall(\"a,b\")\nreturn 0\n", "0");
+            "import re\np = re.compile(\",\")\nfor i in range(" + BatchIterations(50000) + "):\n    x = p.findall(\"a,b\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task FindAllGroupsDiscardCompletes()
+    public async Task FindAllGroupsBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"(a)(b)\")\nfor i in range(" + Iterations(50000) + "):\n    x = p.findall(\"ab\")\nreturn 0\n", "0");
+            "import re\np = re.compile(\"(a)(b)\")\nfor i in range(" + BatchIterations(50000) + "):\n    x = p.findall(\"ab\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task MatchDiscardCompletes()
+    public async Task MatchBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"ab?\")\nfor i in range(" + Iterations(50000) + "):\n    x = p.match(\"abc\")\nreturn 0\n", "0");
+            "import re\np = re.compile(\"ab?\")\nfor i in range(" + BatchIterations(50000) + "):\n    x = p.match(\"abc\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task FindIterDiscardCompletes()
+    public async Task FindIterBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\",\")\nfor i in range(" + Iterations(50000) + "):\n    x = list(p.finditer(\"a,b\"))\nreturn 0\n", "0");
+            "import re\np = re.compile(\",\")\nfor i in range(" + BatchIterations(50000) + "):\n    x = list(p.finditer(\"a,b\"))\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task RegexBehaves()
@@ -86,24 +72,24 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     }
 
     [Fact]
-    public async Task CompileDiscardCompletes()
+    public async Task CompileBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(" + Iterations(20000) + "):\n    p = re.compile(\",\")\nreturn 0\n", "0");
+            "import re\nfor i in range(" + BatchIterations(20000) + "):\n    p = re.compile(\",\")\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
-    public async Task ModuleFindAllDiscardCompletes()
+    public async Task ModuleFindAllBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(" + Iterations(20000) + "):\n    x = re.findall(\",\", \"a,b\")\nreturn 0\n", "0");
+            "import re\nfor i in range(" + BatchIterations(20000) + "):\n    x = re.findall(\",\", \"a,b\")\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
-    public async Task ModuleSubDiscardCompletes()
+    public async Task ModuleSubBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(" + Iterations(20000) + "):\n    x = re.sub(\",\", \";\", \"a,b\")\nreturn 0\n", "0");
+            "import re\nfor i in range(" + BatchIterations(20000) + "):\n    x = re.sub(\",\", \";\", \"a,b\")\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
-    public async Task ModuleMatchDiscardCompletes()
+    public async Task ModuleMatchBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(" + Iterations(20000) + "):\n    x = re.match(\"a\", \"abc\")\nreturn 0\n", "0");
+            "import re\nfor i in range(" + BatchIterations(20000) + "):\n    x = re.match(\"a\", \"abc\")\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
     public async Task ModuleSplitBehaves()
@@ -137,14 +123,14 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
     [Fact]
-    public async Task SubnDiscardCompletes()
+    public async Task SubnBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(" + Iterations(50000) + "):\n    x = re.subn(\"a\", \"b\", \"aaa\")\nreturn 0\n", "0");
+            "import re\nfor i in range(" + BatchIterations(50000) + "):\n    x = re.subn(\"a\", \"b\", \"aaa\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task SubnCallableDiscardCompletes()
+    public async Task SubnCallableBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(" + Iterations(50000) + "):\n    x = re.subn(\"a\", lambda m: \"b\", \"aaa\")\nreturn 0\n", "0");
+            "import re\nfor i in range(" + BatchIterations(50000) + "):\n    x = re.subn(\"a\", lambda m: \"b\", \"aaa\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task SubnBehaves()
@@ -178,9 +164,9 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
     [Fact]
-    public async Task GroupdictDiscardCompletes()
+    public async Task GroupdictBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(" + Iterations(50000) + "):\n    m = re.match(\"(?P<first>a)(?P<second>b)\", \"ab\")\n    x = m.groupdict()\nreturn 0\n", "0");
+            "import re\nfor i in range(" + BatchIterations(50000) + "):\n    m = re.match(\"(?P<first>a)(?P<second>b)\", \"ab\")\n    x = m.groupdict()\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task GroupdictBehaves()
@@ -219,19 +205,19 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
     [Fact]
-    public async Task PartialSubDiscardCompletes()
+    public async Task PartialSubBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(" + Iterations(50000) + "):\n    x = re.sub(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\nfor i in range(" + BatchIterations(50000) + "):\n    x = re.sub(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task PartialSubnDiscardCompletes()
+    public async Task PartialSubnBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(" + Iterations(50000) + "):\n    x = re.subn(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\nfor i in range(" + BatchIterations(50000) + "):\n    x = re.subn(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task PartialSubCallableDiscardCompletes()
+    public async Task PartialSubCallableBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(" + Iterations(20000) + "):\n    x = re.sub(\"a\", lambda m: \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\nfor i in range(" + BatchIterations(20000) + "):\n    x = re.sub(\"a\", lambda m: \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
     public async Task PartialSubBehaves()
@@ -264,37 +250,37 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
     [Fact]
-    public async Task SplitGovernedSubjectDiscardCompletes()
+    public async Task SplitGovernedSubjectBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = re.split(\"a\", t, 0, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\nfor i in range(" + BatchIterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = re.split(\"a\", t, 0, 0, 1, 3)\nreturn 0\n", "0", Iterations(50000));
     [Fact]
-    public async Task SearchGovernedSubjectDiscardCompletes()
+    public async Task SearchGovernedSubjectBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = re.search(\"a\", t, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\nfor i in range(" + BatchIterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = re.search(\"a\", t, 0, 1, 3)\nreturn 0\n", "0", Iterations(50000));
     [Fact]
-    public async Task CompiledSplitGovernedDiscardCompletes()
+    public async Task CompiledSplitGovernedBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"a\")\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.split(t, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\np = re.compile(\"a\")\nfor i in range(" + BatchIterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.split(t, 0, 1, 3)\nreturn 0\n", "0", Iterations(50000));
     [Fact]
-    public async Task CompiledSearchGovernedDiscardCompletes()
+    public async Task CompiledSearchGovernedBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"a\")\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.search(t, 1, 3)\nreturn 0\n", "0");
+            "import re\np = re.compile(\"a\")\nfor i in range(" + BatchIterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.search(t, 1, 3)\nreturn 0\n", "0", Iterations(50000));
     [Fact]
-    public async Task CompiledMatchGovernedDiscardCompletes()
+    public async Task CompiledMatchGovernedBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"a\")\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.match(t, 1, 3)\nreturn 0\n", "0");
+            "import re\np = re.compile(\"a\")\nfor i in range(" + BatchIterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.match(t, 1, 3)\nreturn 0\n", "0", Iterations(50000));
     [Fact]
-    public async Task CompiledFindallGovernedDiscardCompletes()
+    public async Task CompiledFindallGovernedBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"a\")\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.findall(t, 1, 3)\nreturn 0\n", "0");
+            "import re\np = re.compile(\"a\")\nfor i in range(" + BatchIterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.findall(t, 1, 3)\nreturn 0\n", "0", Iterations(50000));
     [Fact]
-    public async Task CompiledSubGovernedDiscardCompletes()
+    public async Task CompiledSubGovernedBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"a\")\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.sub(\"b\", t, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\np = re.compile(\"a\")\nfor i in range(" + BatchIterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.sub(\"b\", t, 0, 1, 3)\nreturn 0\n", "0", Iterations(50000));
     [Fact]
-    public async Task CompiledFinditerGovernedDiscardCompletes()
+    public async Task CompiledFinditerGovernedBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"a\")\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.finditer(t, 1, 3)\nreturn 0\n", "0");
+            "import re\np = re.compile(\"a\")\nfor i in range(" + BatchIterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.finditer(t, 1, 3)\nreturn 0\n", "0", Iterations(50000));
     [Fact]
     public async Task SplitGovernedBehaves()
     {

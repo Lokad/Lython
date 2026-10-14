@@ -6,7 +6,6 @@ namespace Lokad.Lython.Runtime;
 internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscriptableValue, IPyRenderableValue, IPyTruthyValue, IPyHashableValue
 {
     private readonly MemoryGovernor? _memoryGovernor;
-    private readonly ChargeReclamationPool? _pool;
     private readonly LythonSourceSpan? _allocationSpan;
 
     public PyRange(BigInteger start, BigInteger stop, BigInteger step)
@@ -16,17 +15,12 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
         Step = step;
     }
 
-    // Governed ranges own their heap-scale yields through these reservations:
-    // each yielded magnitude below commits its payload and pool-tracks the box
-    // that flows onward, so dropped iterations reclaim on sweep. Ungoverned
-    // ranges (annotation defaults) never yield heap magnitudes.
-    public PyRange(BigInteger start, BigInteger stop, BigInteger step, MemoryGovernor governor, ChargeReclamationPool pool, LythonSourceSpan? allocationSpan)
+    public PyRange(BigInteger start,BigInteger stop,BigInteger step,MemoryGovernor governor,LythonSourceSpan? allocationSpan)
     {
         Start = start;
         Stop = stop;
         Step = step;
         _memoryGovernor = governor;
-        _pool = pool;
         _allocationSpan = allocationSpan;
     }
 
@@ -43,15 +37,12 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
             ? RuntimeMemoryEstimates.EstimateBigIntegerBytes(bound)
             : 0;
 
-    // Boxes one produced magnitude: the single box that flows onward owns its
-    // payload through the shared fresh-magnitude rule, so sweeps release it
-    // once dropped. Small magnitudes and ungoverned ranges stay free.
     private object OwnYield(BigInteger value)
     {
         object box = value;
-        if (_memoryGovernor is not null && _pool is not null)
+        if (_memoryGovernor is not null)
         {
-            LythonRuntime.OwnFreshInteger(box, _memoryGovernor, _pool, _allocationSpan);
+            LythonRuntime.OwnFreshInteger(box, _memoryGovernor, _allocationSpan);
         }
 
         return box;
@@ -166,12 +157,9 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
         return SliceRange(newStart, newStop, Step * sliceStep);
     }
 
-    // Slice results own a fresh shell coupon over their recomputed bounds and
-    // pool-track it with refund, so a dropped slice reclaims instead of
-    // stranding. Ungoverned ranges keep the plain construction.
     private PyRange SliceRange(BigInteger newStart, BigInteger newStop, BigInteger newStep)
     {
-        if (_memoryGovernor is null || _pool is null)
+        if (_memoryGovernor is null)
         {
             return new PyRange(newStart, newStop, newStep);
         }
@@ -179,8 +167,7 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
         var bytes = 64L + BoundMagnitudeBytes(newStart) + BoundMagnitudeBytes(newStop) + BoundMagnitudeBytes(newStep);
         _memoryGovernor.Reserve(bytes, _allocationSpan);
         _memoryGovernor.Commit(bytes);
-        var child = new PyRange(newStart, newStop, newStep, _memoryGovernor, _pool, _allocationSpan);
-        _pool.TrackFreshMutable(child, bytes, _allocationSpan);
+        var child = new PyRange(newStart,newStop,newStep,_memoryGovernor,_allocationSpan);
         return child;
     }
 
@@ -256,7 +243,6 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
 internal sealed class PyEnumerateIterator : PyIteratorBase
 {
     private readonly MemoryGovernor _governor;
-    private readonly ChargeReclamationPool _pool;
     private readonly LythonSourceSpan _span;
     private readonly PyIteration.Cursor _cursor;
     private BigInteger _index;
@@ -265,7 +251,6 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
     {
         _cursor = PyIteration.Cursor.Create(iterable, span, context);
         _governor = context.MemoryGovernor;
-        _pool = context.Services.State.CallTemporaries;
         _span = span;
         _index = start;
         ChargeIteratorValue(context.MemoryGovernor, span);
@@ -279,17 +264,12 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
             return false;
         }
 
-        // Each yielded pair is a fresh governed tuple: track it at this factory
-        // so dropped items reclaim through the pool; later registrations dedup.
-        // The boxed index is one box from here on: heap-scale counters own their
-        // magnitude the same way instead of riding free beside the tuple.
         object indexBox = _index;
-        var produced = new PyTuple([indexBox, item], _governor, _span);
-        LythonRuntime.OwnFreshInteger(indexBox, _governor, _pool, _span);
-        // Consume the index with the item: a denied track below orphans the tuple
-        // after the cursor advanced, so the index must advance too to stay aligned.
+        // The item has been consumed. Advance before tuple admission so a
+        // refused result cannot reuse its index for the following item.
         _index++;
-        _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+        var produced = new PyTuple([indexBox, item], _governor, _span);
+        LythonRuntime.OwnFreshInteger(indexBox, _governor, _span);
         value = produced;
         return true;
     }
@@ -304,10 +284,9 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
 
         // Same fresh-tuple ownership as the sync path above.
         object indexBox = _index;
-        var produced = new PyTuple([indexBox, item], _governor, _span);
-        LythonRuntime.OwnFreshInteger(indexBox, _governor, _pool, _span);
         _index++;
-        _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+        var produced = new PyTuple([indexBox, item], _governor, _span);
+        LythonRuntime.OwnFreshInteger(indexBox, _governor, _span);
         return PyIterationResult.Yield(produced);
     }
 
@@ -318,7 +297,6 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot
 {
     private PyIteration.Cursor[] _cursors;
     private readonly MemoryGovernor _governor;
-    private readonly ChargeReclamationPool _pool;
     private readonly bool _strict;
     private readonly LythonSourceSpan _span;
     private bool _finished;
@@ -327,7 +305,6 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot
     internal long CommittedStorageBytes => _storageBytes;
     bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
         => OwnershipSnapshot.Owned(_governor, _storageBytes, out chargeBytes);
-
 
     public PyZipIterator(object[] iterables, bool strict, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         : this(iterables.Length, strict, span, context)
@@ -341,7 +318,6 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot
     internal PyZipIterator(int count, bool strict, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _governor = context.MemoryGovernor;
-        _pool = context.Services.State.CallTemporaries;
         _strict = strict;
         _span = span;
         var bytes = checked(IteratorValueBytes + 32L + 256L * count);
@@ -420,11 +396,7 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot
                 return false;
             }
 
-            // Each yielded item is a fresh governed tuple: track it at this factory
-            // so dropped items reclaim through the pool; later registrations dedup.
             var produced = PyTuple.FromOwnedArray(items, _governor, _span);
-
-            _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
             value = produced;
             return true;
         }
@@ -482,8 +454,6 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot
 
             // Same fresh-tuple ownership as the sync path above.
             var produced = PyTuple.FromOwnedArray(items, _governor, _span);
-
-            _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
             return PyIterationResult.Yield(produced);
         }
         finally

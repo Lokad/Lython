@@ -77,9 +77,7 @@ internal sealed partial class LythonRuntime
                 WhitespaceSplit = true,
                 Commenters = comments ? "#" : string.Empty,
             };
-            // Split items never pass a funnel (see OwnSplitListResult): adopt the fresh
-            // strings and the fresh list here; drops reclaim on sweep.
-            return OwnSplitListResult(new PyList(lexer.Iterate(), context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
+            return new PyList(lexer.Iterate(), context.MemoryGovernor, span);
         }
 
         private static object CreateLexer(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -192,7 +190,6 @@ internal sealed partial class LythonRuntime
 
             return ReadExplicitLexerSource(instream, infile, context, span);
         }
-
 
         private sealed record LexerOptions(object Instream, object Infile, bool Posix, string PunctuationChars);
 

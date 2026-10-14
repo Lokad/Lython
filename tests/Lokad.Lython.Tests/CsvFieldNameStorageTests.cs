@@ -15,8 +15,8 @@ public sealed class CsvFieldNameStorageTests
         .GetNestedType("CsvModule", BindingFlags.NonPublic)!
         .GetMethod("FinishCsvFieldNames", BindingFlags.NonPublic | BindingFlags.Static)!;
 
-    private static LythonRuntime.ExecutionContext Context() => new(new MockLythonHost(),
-        new LythonRunOptions { MaxExecutionMemoryBytes = Cap });
+    private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? budget = null) => new(new MockLythonHost(),
+        new LythonRunOptions { MaxExecutionMemoryBytes = Cap, MemoryBudget = budget });
 
     private static PyString[] Create(LythonRuntime.ExecutionContext context, int count)
         => (PyString[])Finish.Invoke(null, [Enumerable.Range(0, count).Select(_ => PyString.FromString("name")).ToList(), context, Span])!;
@@ -28,40 +28,41 @@ public sealed class CsvFieldNameStorageTests
         var first = Create(context, 0);
         var second = Create(context, 0);
         Assert.NotSame(first, second);
-        Assert.Equal(2, context.State.CallTemporaries.Count);
         GC.KeepAlive(first);
         GC.KeepAlive(second);
     }
 
     [Fact]
-    public void DroppedTableReclaimsWhileRetainedTableStaysFunded()
+    public void TablesRemainBatchOwnedUntilExplicitCleanup()
     {
-        var context = Context();
+        var budget = new LythonMemoryBudget(Cap);
+        using var owner = budget.CreateScope();
+        var context = Context(owner);
         var retained = Create(context, 2);
         CreateAndDrop(context);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
+        Assert.Equal(before, budget.ReservedBytes);
         GC.Collect();
-        Assert.Equal(64 + ChargeReclamationPool.EntryChargeBytes, context.State.CallTemporaries.Sweep(full: true));
-        Assert.Equal(before - 64 - ChargeReclamationPool.EntryChargeBytes, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(1, context.State.CallTemporaries.Count);
         Assert.Equal("name", retained[0].AsString());
         GC.KeepAlive(retained);
+        retained = null!;
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
-    public void DeniedRegistrationRefundsOnlyTheUnpublishedArray()
+    public void DeniedArrayAdmissionPreservesRetainedTables()
     {
         var context = Context();
         var governor = context.MemoryGovernor;
         var retained = Create(context, 2); // Warm backing; another slot needs no page growth.
         var committed = governor.CurrentCommittedBytes;
-        var pressure = Cap - governor.CurrentAccountedBytes - 64 - (ChargeReclamationPool.EntryChargeBytes - 1);
+        var pressure = Cap - governor.CurrentAccountedBytes - 64 - -1;
         using var reservation = governor.ReserveTemporary(pressure, Span);
         var error = Assert.Throws<TargetInvocationException>(() => Create(context, 2));
         Assert.Equal("MemoryError", Assert.IsType<LythonRuntimeException>(error.InnerException).ExceptionType);
         Assert.Equal(committed, governor.CurrentCommittedBytes);
         Assert.Equal(pressure, governor.CurrentReservedBytes);
-        Assert.Equal(1, context.State.CallTemporaries.Count);
         Assert.Equal("name", retained[0].AsString());
         GC.KeepAlive(retained);
     }

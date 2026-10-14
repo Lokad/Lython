@@ -16,6 +16,11 @@ public interface ILythonSubprocessRunner
     /// <remarks>
     /// Implementations must honor cancellation, enforce the request timeout and output bound,
     /// and must not use ambient Lython process state that is absent from <paramref name="request"/>.
+    /// Request payloads are borrowed through completion. Retained payloads need
+    /// owned copies under a surviving owner. Forward the borrowed MemoryBudget
+    /// to cooperating commands and await all users and cleanup before completing;
+    /// cancellation alone does not end a borrow. Returned buffers likewise need
+    /// ownership that survives the callback until Lython consumes them.
     /// </remarks>
     ValueTask<LythonSubprocessResult> RunAsync(LythonSubprocessRequest request, CancellationToken cancellationToken);
 }

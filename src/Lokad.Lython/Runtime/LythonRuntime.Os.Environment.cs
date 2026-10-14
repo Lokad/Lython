@@ -121,7 +121,6 @@ internal sealed partial class LythonRuntime
         return builder.ToString();
     }
 
-
     internal sealed class PyEnvironmentMapping :
         IMutablePySubscriptableValue,
         IDeletablePySubscriptableValue,

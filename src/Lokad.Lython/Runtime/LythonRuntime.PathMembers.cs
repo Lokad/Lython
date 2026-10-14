@@ -542,7 +542,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Decimal.__int__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+                    return OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span);
                 }, DecimalIntSignature),
                 "__float__" => BoundCallable.Create((arguments, span, _) =>
                 {
@@ -560,7 +560,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Decimal.__trunc__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+                    return OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span);
                 }, DecimalTruncSignature),
                 "__floor__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -569,7 +569,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Decimal.__floor__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(new BigInteger(decimal.Floor(decimalValue.Value)), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+                    return OwnHeapInteger(new BigInteger(decimal.Floor(decimalValue.Value)), context.MemoryGovernor, span);
                 }, DecimalFloorSignature),
                 "__ceil__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -578,7 +578,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Decimal.__ceil__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(new BigInteger(decimal.Ceiling(decimalValue.Value)), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+                    return OwnHeapInteger(new BigInteger(decimal.Ceiling(decimalValue.Value)), context.MemoryGovernor, span);
                 }, DecimalCeilSignature),
                 "__round__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -650,13 +650,13 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("pathlib"),
-                "name" => OwnMethodResult(PyString.FromString(PathOps.BaseName(path.Value.AsString())), path.Value, governor, span, context.Services.State.CallTemporaries),
-                "suffix" => OwnMethodResult(PyString.FromString(PathOps.Suffix(path.Value.AsString())), path.Value, governor, span, context.Services.State.CallTemporaries),
-                "stem" => OwnMethodResult(PyString.FromString(PathOps.Stem(path.Value.AsString())), path.Value, governor, span, context.Services.State.CallTemporaries),
-                "parent" => OwnPathResult(PathOps.Parent(path.Value), path.Value, governor, span, context.Services.State.CallTemporaries),
-                "suffixes" => GovernedSuffixes(path.Value, governor, span, context.Services.State.CallTemporaries),
-                "parents" => PathOps.Parents(path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries),
-                "parts" => PathOps.Parts(path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries),
+                "name" => OwnMethodResult(PyString.FromString(PathOps.BaseName(path.Value.AsString())),path.Value,governor,span),
+                "suffix" => OwnMethodResult(PyString.FromString(PathOps.Suffix(path.Value.AsString())),path.Value,governor,span),
+                "stem" => OwnMethodResult(PyString.FromString(PathOps.Stem(path.Value.AsString())),path.Value,governor,span),
+                "parent" => OwnPathResult(PathOps.Parent(path.Value),path.Value,governor,span),
+                "suffixes" => GovernedSuffixes(path.Value,governor,span),
+                "parents" => PathOps.Parents(path.Value,context.MemoryGovernor,span),
+                "parts" => PathOps.Parts(path.Value,context.MemoryGovernor,span),
                 "__new__" => PathlibModule.PathType.GetNewSlot(),
                 _ => MissingMemberValue.Instance
             };
@@ -664,7 +664,7 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static PyList GovernedSuffixes(PyString path, MemoryGovernor governor, LythonSourceSpan span, ChargeReclamationPool? pool)
+        private static PyList GovernedSuffixes(PyString path,MemoryGovernor governor,LythonSourceSpan span)
         {
             var name = PathOps.BaseName(path.AsString());
             var values = new List<object>();
@@ -673,13 +673,13 @@ internal sealed partial class LythonRuntime
             {
                 var next = name.IndexOf('.', dot + 1);
                 var suffix = next < 0 ? name[dot..] : name[dot..next];
-                values.Add(OwnMethodResult(PyString.FromString(suffix), path, governor, span, pool));
+                values.Add(OwnMethodResult(PyString.FromString(suffix),path,governor,span));
                 dot = next;
             }
 
             // Items adopt above; the container backing never reaches a funnel, so adopt
             // it here with refund like the split-result choke does.
-            return OwnSplitListResult(new PyList(values, governor, span), span, pool);
+            return new PyList(values, governor, span);
         }
     }
 }

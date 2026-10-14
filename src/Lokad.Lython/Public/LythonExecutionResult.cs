@@ -12,18 +12,24 @@ public enum LythonExecutionOutcome
 }
 
 /// <summary>Contains the complete, host-facing result of one script execution.</summary>
-public sealed class LythonExecutionResult
+public sealed class LythonExecutionResult : IDisposable
 {
+    private ExecutionState? _state;
+    private string? _standardOutput;
+    private string? _standardError;
+    private IReadOnlyList<LythonDiagnostic>? _diagnostics;
+    private ILythonMemoryScope? _memoryScope;
+
     private LythonExecutionResult(
         ExecutionState state,
         string standardOutput,
         string standardError,
         IReadOnlyList<LythonDiagnostic> diagnostics)
     {
-        State = state;
-        StandardOutput = standardOutput;
-        StandardError = standardError;
-        Diagnostics = diagnostics;
+        _state = state;
+        _standardOutput = standardOutput;
+        _standardError = standardError;
+        _diagnostics = diagnostics;
     }
 
     /// <summary>Creates a successful execution result.</summary>
@@ -68,7 +74,7 @@ public sealed class LythonExecutionResult
         => new(new RuntimeFailedState(exitCode, failure), standardOutput, standardError, diagnostics);
 
     /// <summary>Gets the outcome-specific state without nullable cross-outcome fields.</summary>
-    public ExecutionState State { get; }
+    public ExecutionState State => _state ?? throw new ObjectDisposedException(nameof(LythonExecutionResult));
 
     /// <summary>Gets the execution outcome.</summary>
     public LythonExecutionOutcome Outcome => State.Outcome;
@@ -80,10 +86,10 @@ public sealed class LythonExecutionResult
     public object? ReturnValue => (State as SucceededState)?.ReturnValue;
 
     /// <summary>Gets UTF-8 standard output decoded as text.</summary>
-    public string StandardOutput { get; }
+    public string StandardOutput => _standardOutput ?? throw new ObjectDisposedException(nameof(LythonExecutionResult));
 
     /// <summary>Gets UTF-8 standard error decoded as text.</summary>
-    public string StandardError { get; }
+    public string StandardError => _standardError ?? throw new ObjectDisposedException(nameof(LythonExecutionResult));
 
     /// <summary>Gets the process-style exit code for a failed execution.</summary>
     public int? ExitCode => State switch
@@ -94,7 +100,29 @@ public sealed class LythonExecutionResult
     };
 
     /// <summary>Gets diagnostics produced before execution.</summary>
-    public IReadOnlyList<LythonDiagnostic> Diagnostics { get; }
+    public IReadOnlyList<LythonDiagnostic> Diagnostics => _diagnostics ?? throw new ObjectDisposedException(nameof(LythonExecutionResult));
+
+    internal LythonExecutionResult OwnMemoryScope(ILythonMemoryScope scope)
+    {
+        _memoryScope = scope;
+        return this;
+    }
+
+    /// <summary>Relinquishes this result and disposes its owned memory scope.</summary>
+    /// <remarks>
+    /// Call only after all extracted return values, output strings, outcome states
+    /// and other aliases are no longer in use. Do not dispose concurrently with a
+    /// result reader. Payload access after disposal throws. Forgotten disposal
+    /// conservatively retains the allowance; CLR collection does not release it.
+    /// </remarks>
+    public void Dispose()
+    {
+        _state = null;
+        _standardOutput = null;
+        _standardError = null;
+        _diagnostics = null;
+        Interlocked.Exchange(ref _memoryScope, null)?.Dispose();
+    }
 
     /// <summary>
     /// Gets the peak accounted execution memory in bytes observed during the run.

@@ -45,10 +45,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         _activeGroupId++;
         var group = new PyGroupIterator(this, _activeGroupId, key, item);
         _activeGroup = group;
-        // Each group owns the 128 B shell charge committed in its constructor.
-        _context.Services.State.CallTemporaries.TrackFreshMutable(group, 128L, _span);
         var produced = PyTuple.FromOwnedArray([key, _activeGroup], _memoryGovernor, _span);
-        _context.Services.State.CallTemporaries.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
         value = produced;
         return true;
     }
@@ -72,10 +69,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         _activeGroupId++;
         var group = new PyGroupIterator(this, _activeGroupId, key, item);
         _activeGroup = group;
-        // Each group owns the 128 B shell charge committed in its constructor.
-        _context.Services.State.CallTemporaries.TrackFreshMutable(group, 128L, _span);
         var produced = PyTuple.FromOwnedArray([key, _activeGroup], _memoryGovernor, _span);
-        _context.Services.State.CallTemporaries.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
         return PyIterationResult.Yield(produced);
     }
 
@@ -279,9 +273,6 @@ internal sealed class PyTeeSharedState
     private readonly LythonSourceSpan _span;
     private bool _sourceExhausted;
 
-    // Construction-time owned charges for the pool coupon. The coupon mirrors
-    // live queue and backing growth below (M04 lifetime rule), so drops release
-    // the full outstanding backlog while retained queues stay charged.
     internal long ConstructionCharge { get; private set; }
 
     private long _queuedItemCount;
@@ -329,9 +320,6 @@ internal sealed class PyTeeSharedState
     // and resnapshots after, keeping drops exact in both directions.
     private void ResnapshotQueueCoupon()
     {
-        ChargeReclamationPool.NotifyStorageReplaced(
-            this,
-            checked(ConstructionCharge + (QueuedItemBytes * _queuedItemCount) + _backingChargeTotal));
     }
 
     public bool TryGetNext(int index, [MaybeNullWhen(false)] out object value)

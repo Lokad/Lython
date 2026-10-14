@@ -36,7 +36,6 @@ internal sealed partial class LythonRuntime
                     tuple = new PyTuple(name == "__bases__"
                         ? [TryGetBuiltinOrNull(context, "type")!]
                         : [this, TryGetBuiltinOrNull(context, "type")!, TryGetBuiltinOrNull(context, "object")!], context.MemoryGovernor, span);
-                    context.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, span);
                     if (name == "__bases__") context.State.GzipFileMetaBases = tuple;
                     else context.State.GzipFileMetaMro = tuple;
                 }

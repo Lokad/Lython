@@ -43,7 +43,6 @@ internal sealed partial class LythonRuntime
                             if (i == layout.StarredTargetIndex)
                             {
                                 var rest = new PyList(values.Skip(i).Take(layout.StarredValueCount(values.Count)), _context.MemoryGovernor, span);
-                                _context.Services.State.CallTemporaries.TrackFreshMutable(rest, rest.CommittedStorageBytes, span);
                                 _stack.Push(rest);
                             }
                             else _stack.Push(values[layout.HasStarredTarget && i > layout.StarredTargetIndex

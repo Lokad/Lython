@@ -3,24 +3,22 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// MG22: imported definitions retain their code graphs even when bodies never
-// execute, so each module owns its deferred code once at import preparation
-// (full retained-node counts over function, nested and lambda bodies).
-// Re-imports and aliases share that ownership; host-owned entry scripts stay
-// outside the charge by construction, not by name.
+// Imported code reserves a coarse compilation estimate before preparation and
+// retains it for the execution. Imports/aliases preserve Python cache semantics;
+// no retained-node inventory or exact code-graph fee is part of the contract.
 public class ImportedCodeRetentionScenarioTests
 {
-    protected virtual int LargeStatements => 512;
+    protected virtual int LargeStatements => 128;
     protected virtual int NestedStatements => 512;
-    protected virtual int SmallStatements => 64;
-    protected virtual int SharedStatements => 128;
+    protected virtual int SmallStatements => 8;
+    protected virtual int SharedStatements => 16;
     protected virtual int LoopDefinitions => 64;
     protected virtual long RetentionBudget => 65536;
     protected virtual long FundedBudget => 524288;
-    // Loop-redefined function shells own 128B plus a 128B pool entry each (measured
-    // peak 1268927 for 3000 retained definitions sharing one body); the shared body
-    // still pays once, which a per-definition miscount would push far past this.
-    protected virtual long LoopRetainBudget => 65536;
+    protected virtual long SharedImportBudget => RetentionBudget;
+    // Headroom includes compilation plus the retained function shells. Registry
+    // entry fees and precise tiny-budget thresholds are intentionally obsolete.
+    protected virtual long LoopRetainBudget => 131072;
 
     private static string BigFunction(string name, int statements)
         => "def " + name + "():\n" + string.Concat(Enumerable.Repeat("    x = 1\n", statements)) + "    return x\n";
@@ -59,9 +57,6 @@ public class ImportedCodeRetentionScenarioTests
         var host2 = SeededHost(3, LargeStatements, out var allowed2, out _);
         AssertMemoryError(await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget, AllowedLocalModules = allowed2 }));
     }
-    // Honest budget: 3 modules x 20k `x = 1` statements retain two nodes plus one
-    // int payload each (2x64 + 97 B), about 13.5 MiB before execution overhead.
-
     [Fact]
     public async Task FundedImportedBodiesSucceedAndRun()
     {
@@ -100,26 +95,28 @@ public class ImportedCodeRetentionScenarioTests
     public async Task SharedImportsPayOnce()
     {
         var host = new MockLythonHost();
-        host.SeedFile("/m0.py", BigFunction("f0", SharedStatements));
+        host.SeedFile("/m0.py", "print('loaded')\n" + BigFunction("f0", SharedStatements));
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "m0" };
         var script = new LythonEngine().Compile(
-            "import m0\nimport m0\nfrom m0 import f0\nimport m0 as mm\nreturn f0() + mm.f0()\n");
+            "import m0\nimport m0\nfrom m0 import f0\nimport m0 as mm\nassert mm is m0 and f0 is m0.f0\nreturn f0() + mm.f0()\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(2);
-        var sync = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget, AllowedLocalModules = allowed });
+        var sync = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = SharedImportBudget, AllowedLocalModules = allowed });
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
+        Assert.Equal("loaded\n", sync.StandardOutput);
 
         var host2 = new MockLythonHost();
-        host2.SeedFile("/m0.py", BigFunction("f0", SharedStatements));
+        host2.SeedFile("/m0.py", "print('loaded')\n" + BigFunction("f0", SharedStatements));
         var allowed2 = new HashSet<string>(StringComparer.Ordinal) { "m0" };
-        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget, AllowedLocalModules = allowed2 });
+        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = SharedImportBudget, AllowedLocalModules = allowed2 });
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
+        Assert.Equal("loaded\n", asyncResult.StandardOutput);
     }
 
     [Fact]
-    public async Task FunctionlessModulesStayLight()
+    public async Task FunctionlessModulesAlsoRequireCompilationAdmission()
     {
         var host = new MockLythonHost();
         var allowed = new HashSet<string>(StringComparer.Ordinal);
@@ -134,7 +131,8 @@ public class ImportedCodeRetentionScenarioTests
         var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget, AllowedLocalModules = allowed });
-        Assert.True(sync.Success, sync.Failure?.Message);
+        AssertMemoryError(sync);
+        Assert.Empty(sync.StandardOutput);
 
         var host2 = new MockLythonHost();
         var allowed2 = new HashSet<string>(StringComparer.Ordinal);
@@ -145,7 +143,8 @@ public class ImportedCodeRetentionScenarioTests
         }
 
         var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget, AllowedLocalModules = allowed2 });
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        AssertMemoryError(asyncResult);
+        Assert.Empty(asyncResult.StandardOutput);
     }
 
     [Fact]
@@ -184,10 +183,8 @@ public class ImportedCodeRetentionScenarioTests
         AssertMemoryError(await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget, AllowedLocalModules = allowed2 }));
     }
 
-    // A loop-re-executed definition site is counted once in its module walk,
-    // so only the per-construction shells accumulate while the shared body pays once.
     [Fact]
-    public async Task LoopRedefinitionsShareCodeCharge()
+    public async Task FundedLoopDefinitionsPreserveCallableCode()
     {
         var loopModule = "fs = []\ni = 0\nwhile i < " + LoopDefinitions + ":\n    def f():\n"
             + string.Concat(Enumerable.Repeat("        t = 1\n", 20))
@@ -195,7 +192,7 @@ public class ImportedCodeRetentionScenarioTests
         var host = new MockLythonHost();
         host.SeedFile("/loop.py", loopModule);
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "loop" };
-        var script = new LythonEngine().Compile("import loop\nreturn len(loop.fs)\n");
+        var script = new LythonEngine().Compile("import loop\nassert loop.fs[0]() == 1\nassert loop.fs[-1]() == 1\nreturn len(loop.fs)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(LoopDefinitions);
         var sync = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = LoopRetainBudget, AllowedLocalModules = allowed });

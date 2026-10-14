@@ -24,7 +24,6 @@ internal sealed partial class LythonRuntime
         {
         }
 
-
         internal GlobalNamespaceStorage(ExecutionContext root, LythonSourceSpan span)
         {
             root.MemoryGovernor.Reserve(BridgeBytes, span);
@@ -44,7 +43,6 @@ internal sealed partial class LythonRuntime
         {
             if (_names.TryGetValue(name, out var named)) return named.Key;
             var key = PyString.FromString(name, _root.MemoryGovernor, _span);
-            _root.Services.State.CallTemporaries.TrackFreshString(key, _span);
             return key;
         }
 
@@ -211,12 +209,9 @@ internal sealed partial class LythonRuntime
     private static PyDict CreateGlobalNamespace(ExecutionContext root, LythonSourceSpan span)
     {
         RetainLocalsForLambda(root);
-        _ = ChargeClosureRetention(root, root.MemoryGovernor, span);
+        ChargeClosureRetention(root, root.MemoryGovernor, span);
         var storage = new GlobalNamespaceStorage(root, span);
         var scope = new PyDict(storage, root.MemoryGovernor, span);
-        // Register the fresh bridge before seeding. A failed seed stays owned
-        // by the reclamation pool and is never published as the module view.
-        root.Services.State.CallTemporaries.TrackFreshMutable(scope, scope.CommittedStorageBytes, span);
         foreach (var pair in root.Variables)
         {
             if (!root.Services.State.BuiltinVariables.TryGetValue(pair.Key, out var builtin) || !ReferenceEquals(pair.Value, builtin) ||

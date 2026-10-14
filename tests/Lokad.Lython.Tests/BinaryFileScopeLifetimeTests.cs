@@ -19,22 +19,27 @@ public sealed class BinaryFileScopeLifetimeTests
     {
         var host = new MockLythonHost();
         host.SeedBytes("/blob", [(byte)'g']);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 28000 });
+        var budget = new LythonMemoryBudget(28000);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 28000, MemoryBudget = owner });
         var (handle, frame, payload) = CreateHandle(context, Enum.Parse<LythonRuntime.TextFileOperation>(mode), close);
+        var funded = budget.ReservedBytes;
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         Assert.False(frame.TryGetTarget(out _));
         Assert.False(payload.TryGetTarget(out _));
-        context.State.CallTemporaries.Sweep(full: true);
-        Assert.Equal(1, context.State.CallTemporaries.Count);
-        Assert.Equal(handle.OwnedBytes + ChargeReclamationPool.EntryChargeBytes +
-            context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
-        context.MemoryGovernor.Reserve(16000, null);
-        context.MemoryGovernor.ReleaseReserved(16000);
+        Assert.Equal(funded, budget.ReservedBytes);
+        Assert.True(funded >= handle.OwnedBytes);
+        Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(16000, null));
         if (!close) handle.Exit();
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         GC.KeepAlive(handle);
+        handle = null!;
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+        Assert.True(budget.TryReserve(16000, out var next));
+        next.Dispose();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -43,7 +48,6 @@ public sealed class BinaryFileScopeLifetimeTests
     {
         var frame = new LythonRuntime.ExecutionContext(parent);
         var payload = PyString.FromString(new string('x', 16000), parent.MemoryGovernor);
-        parent.State.CallTemporaries.TrackFreshString(payload);
         frame.Variables["unrelated"] = payload;
         var handle = LythonRuntime.ExecutionContext.BinaryFileHandle.OpenAsync("/blob", mode, frame, new(0, 0, 0, 0), false)
             .GetAwaiter().GetResult();

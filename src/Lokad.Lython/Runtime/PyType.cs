@@ -65,10 +65,6 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public PyString NameValue { get; }
 
-    // Governed construction shares owned by this type beside the ClassTypeBaseBytes
-    // unit below (name copy plus bases/mro backing; member values stay aliased), so
-    // the defining site can fold them into the type pool coupon instead of stranding
-    // one set per dropped definition.
     internal long ConstructionChargeBytes =>
         (ReferenceEquals(NameValue, PyString.Empty) ? 0 : PyString.EstimateApproximateBytes(NameValue.Utf8Bytes.Length))
         + BasesTuple.CommittedStorageBytes
@@ -259,7 +255,6 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         else
         {
             var fresh = new PyInstance(this, context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(fresh, fresh.CommittedStorageBytes, span);
             instance = fresh;
         }
 
@@ -267,8 +262,6 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         {
             return instance;
         }
-
-        context.Services.State.CallTemporaries.TrackCallResult(pyInstance, span);
 
         if (JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(this, context))
         {
@@ -320,7 +313,6 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         else
         {
             var fresh = new PyInstance(this, context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(fresh, fresh.CommittedStorageBytes, span);
             instance = fresh;
         }
 
@@ -328,8 +320,6 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         {
             return instance;
         }
-
-        context.Services.State.CallTemporaries.TrackCallResult(pyInstance, span);
 
         if (JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(this, context))
         {

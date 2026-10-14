@@ -183,29 +183,8 @@ internal static class PyHashProtocols
         => ReferenceEquals(left, right) || LythonRuntime.ElementEquals(left, right, context, span);
 }
 
-// N12 inventory: module-local object-key tables by purpose.
-//
-// Python-equality tables (guest __hash__/__eq__ via the policy below):
-// - statistics mode/multimode frequency counts (first-seen order decides ties);
-// - difflib b2j/bjunk/bpopular/fullBCount/available (element identity decides matches);
-// - functools cache keys (tuple graphs; ownership transaction stays N08);
-// - core dict/set protocol side lists (lookup/unhashability; N10 owns the redesign).
-//
-// Identity tables (must never acquire Python equality semantics):
-// - id() registry (ConditionalWeakTable keyed by live reference);
-// - runtime member caches (ReferenceEquals on the cached target);
-// - reclamation pool registrations (WeakReference owner handles);
-// - PyValueComparer structural paths (comparer callbacks, hashing, sorts run
-//   with guest dispatch suppressed);
-// - memoization keyed by object identity (must stay reference-based).
-//
-// Shared contextual key policy for the equality tables above: hash-bucketed
-// side storage with guest __hash__ precomputed once per operation plus
-// element == scans (never through CLR comparer callbacks, mirroring the core
-// dict/set side lists). First-seen insertion order is preserved for tie
-// breaks. Callers own growth accounting (temporaries for scratch, durable
-// coupons for retained graphs) exactly like the Dictionary/HashSet versions
-// these replace; buckets add no new rates.
+// Guest equality/hash dispatch is explicit. Python id(), copy memoization and
+// internal reference caches retain reference-identity semantics instead.
 internal sealed class ContextualKeyTable<TValue>
 {
     internal sealed class Entry

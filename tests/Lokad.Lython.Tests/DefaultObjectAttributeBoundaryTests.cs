@@ -20,14 +20,13 @@ public sealed class DefaultObjectAttributeBoundaryTests
         var active = new PyException("ValueError", "active", PyNone.Instance);
         context.Services.SetCurrentException(active);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
-        var backingBefore = context.State.CallTemporaries.CommittedBackingBytes;
+        var backingBefore = 0;
         Assert.True(asynchronous
             ? await PyMemberAccess.TryAssignAsync(instance, "value", first, context, Span)
             : PyMemberAccess.TryAssign(instance, "value", first, context, Span));
         Assert.Same(context.MemoryGovernor, instance.OwnerMemoryGovernor);
         Assert.Equal(64, instance.CommittedAttributeBytes);
-        Assert.Equal(before + 64 + ChargeReclamationPool.EntryChargeBytes +
-            context.State.CallTemporaries.CommittedBackingBytes - backingBefore,
+        Assert.Equal(before + 64 - backingBefore,
             context.MemoryGovernor.CurrentCommittedBytes);
         var charged = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.Same(first, await Read(instance, "value", context, asynchronous));

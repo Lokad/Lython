@@ -124,7 +124,6 @@ internal sealed partial class LythonRuntime
             _buffer = replacement;
             governor.Commit(bytes);
             governor.Release(oldBytes);
-            ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
         }
 
         internal PyString Read(long size, bool line, LythonSourceSpan span)
@@ -177,7 +176,6 @@ internal sealed partial class LythonRuntime
                     builder.Append(encoded[..count]);
                 }
                 var result = builder.ToPyStringAndRelease();
-                _services.State.CallTemporaries.TrackFreshString(result, span);
                 return result;
             }
             finally { builder.Release(); }
@@ -214,7 +212,6 @@ internal sealed partial class LythonRuntime
                 _length = 0;
                 _closed = true;
                 _services.MemoryGovernor.Release(bytes);
-                ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
             }
             return PyNone.Instance;
         }

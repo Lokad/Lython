@@ -467,7 +467,6 @@ internal static class CallExpansion
             }
             else _reservation = _governor.ReserveTemporary(EstimateArgumentBytes(capacity), null);
             _values = new CallArgumentValue[capacity];
-            if (retained) context.Services.State.CallTemporaries.TrackFreshMutable(this, _retainedBytes);
         }
 
         private void Grow(long bytes, LythonSourceSpan? span)
@@ -476,7 +475,6 @@ internal static class CallExpansion
             _governor.Reserve(bytes, span);
             _governor.Commit(bytes);
             _retainedBytes = checked(_retainedBytes + bytes);
-            ChargeReclamationPool.NotifyStorageReplaced(this, _retainedBytes);
         }
 
         public void Add(CallArgumentValue value, LythonSourceSpan? span)
@@ -598,7 +596,6 @@ internal static class CallExpansion
             if (_retainedBytes == 0) return;
             _governor.Release(_retainedBytes);
             _retainedBytes = 0;
-            ChargeReclamationPool.NotifyStorageReplaced(this, 0);
         }
 
         // Empty construction allocates 264 bytes on managed x64 (shell, lease,

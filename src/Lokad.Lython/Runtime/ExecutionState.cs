@@ -14,7 +14,6 @@ internal sealed class ExecutionState
     internal PyTuple? GzipFileMetaBases { get; set; }
     internal PyTuple? GzipFileMetaMro { get; set; }
     internal LythonRuntime.UrllibParseModule.UrlSplitCache? UrlSplitCache { get; set; }
-    private long _boundCalls;
     private readonly ConditionalWeakTable<object, StrongBox<long>> _objectIds = new();
     private long _nextObjectId;
 
@@ -77,9 +76,8 @@ internal sealed class ExecutionState
         AllowedBuiltinModules = LythonRuntime.SnapshotBuiltinModuleGrants(options?.AllowedBuiltinModules);
         Limits = LythonRuntime.ExecutionLimits.FromOptions(options);
         Guards = new ExecutionGuards(this);
-        MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes);
-        CallTemporaries = new ChargeReclamationPool(MemoryGovernor);
-        MemoryGovernor.ReclamationPool = CallTemporaries;
+        MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes, options?.ExecutionMemoryOwner ?? options?.MemoryBudget);
+
         RandomState = new PyRandomState();
         DecimalContext = PyDecimalContext.Default();
         DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false;
@@ -144,11 +142,6 @@ internal sealed class ExecutionState
 
     public MemoryGovernor MemoryGovernor { get; }
 
-    // Per-call variadic materializations (overflow lists and tuples, keyword
-    // dicts and key strings) register here instead of leaking durable commits
-    // when dropped; sweeps release whatever the collector reclaimed while
-    // retained aliases stay charged.
-    internal ChargeReclamationPool CallTemporaries { get; }
 
     // N19: bounded per-execution regex compilation cache. Lazy so regex-free runs
     // pay nothing; shared by every context of the run, never across runs.
@@ -221,18 +214,10 @@ internal sealed class ExecutionState
             throw;
         }
     }
-    // id() exposes stable per-run object identity: the same live object
-    // keeps its number while distinct live objects get distinct numbers.
-    // Numbers are opaque like CPython, but only shared boxes (such as
-    // repeated literals) share numbers; separately computed integers box
-    // fresh, so id(a) == id(b) may be False for equal ints.
-    // MG11: each distinct live identity owns one registry entry (table node,
-    // weak handle and identity box): reserve before publishing so a denied
-    // insertion strands nothing, share the entry across repeated lookups,
-    // and track the box in the reclamation pool so dropped identities
-    // release. The runtime is single-threaded, so one lookup-then-add sequence
-    // cannot race; governor accounting is per-run and never shared across threads.
     private const long IdentityEntryBytes = 64;
+
+    // id() needs stable reference identity. Its entry estimates remain charged
+    // for the batch even when the semantic weak table drops an unreachable key.
 
     public BigInteger GetObjectId(object? value)
     {
@@ -242,41 +227,12 @@ internal sealed class ExecutionState
             return new BigInteger(existing.Value);
         }
 
-        // Commit first, publish last: a denied pool entry rolls the identity commit
-        // back exactly (no reservation holder can outlive the commit it guards
-        // without double-releasing shared reserved bytes), so a second-boundary
-        // denial strands neither the commit nor an untracked box.
         MemoryGovernor.Reserve(IdentityEntryBytes, null);
         MemoryGovernor.Commit(IdentityEntryBytes);
         var box = new StrongBox<long>(Interlocked.Increment(ref _nextObjectId));
-        try
-        {
-            CallTemporaries.Track(box, IdentityEntryBytes);
-        }
-        catch (Exception)
-        {
-            MemoryGovernor.Release(IdentityEntryBytes);
-            throw;
-        }
 
         _objectIds.Add(key, box);
         return new BigInteger(box.Value);
-    }
-
-    // Bound calls sweep the same pool as execution steps, and deliberately so:
-    // user calls tick both cadences, so either alone keeps peaks flat on the
-    // current tree (removing this sweep leaves the kwargs peak byte-identical).
-    // An earlier tree doubled kwargs peaks without it, before entry calibration
-    // and refund-on-deny changed peak dynamics; keep both cadences since steps
-    // also cover call-free loops while bound calls re-sweep right after calls
-    // drop their temporaries. Consolidation would save ~microseconds per 256
-    // calls while risking call-heavy shapes, so it stays rejected.
-    internal void NoteBoundCall()
-    {
-        if ((++_boundCalls & 255) == 0)
-        {
-            CallTemporaries.Sweep();
-        }
     }
 
     // Outstanding file writers opened for writing or appending and not yet
@@ -321,13 +277,6 @@ internal sealed class ExecutionState
         }
     }
 
-    // Best-effort variants for the failure path: publication is attempted
-    // (CPython publishes buffered writes even when execution fails) but any
-    // publication error is swallowed so the original failure is preserved.
-    // Handles dequeue before closing so a persistently failing handle cannot
-    // stall the sweep. Cancellation skips publication entirely (checked by
-    // the run entries): a cancelled run leaves no file behind, and host calls
-    // against a canceled token would fail anyway.
     internal void TryCloseOpenFileWriters(LythonRuntime.ExecutionContext context)
     {
         while (_openFileWriters.Count > 0)

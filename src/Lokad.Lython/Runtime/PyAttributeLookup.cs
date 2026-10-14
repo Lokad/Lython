@@ -582,7 +582,6 @@ internal static class PyAttributeLookup
             : rawValue;
     }
 
-
     private static bool TryBindDynamicDescriptor(object rawValue, object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span, [MaybeNullWhen(false)] out object value)
     {
         if (rawValue is IPyDescriptor descriptor)

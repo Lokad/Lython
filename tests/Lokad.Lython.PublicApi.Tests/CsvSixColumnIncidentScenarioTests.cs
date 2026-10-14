@@ -41,33 +41,43 @@ public sealed class CsvSixColumnIncidentScenarioTests
     }
 
     [Fact]
-    public async Task FlatDictScanReleasesDroppedBacking()
+    public async Task FlatDictBatchesPreserveTheCompleteIncidentTotal()
     {
-        // 30k six-column dicts commit ~11.5MB of row plus dictionary backing
-        // cumulatively (the first row is the header, so 29999 data rows); the
-        // scan fits 14MB only because dropped backing is reclaimed while the
-        // scalar aggregation retains nothing. The budget covers GC-paced
-        // slack: reclamation observes death only after collection, so a few
-        // thousand uncollected rows may stay committed between sweeps.
-        var script = new LythonEngine().Compile("""
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile("""
             import csv
-            rows = ["a,b,c,d,e,f"] * 30000
-            r = csv.DictReader(rows)
+            rows = ["a,b,c,d,e,f"] * (count + 1)
             n = 0
-            for row in r:
-                n = n + len(row)
+            for row in csv.DictReader(rows):
+                n += len(row)
             return n
-            """);
+            """, budget);
         Assert.True(script.IsValid);
-        var expected = new BigInteger(179994);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 14680064 };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+        var baseline = budget.ReservedBytes;
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var total = 0;
+            for (var offset = 0; offset < 29999; offset += 32)
+            {
+                var count = Math.Min(32, 29999 - offset);
+                var options = new LythonRunOptions
+                {
+                    MaxExecutionMemoryBytes = 131072,
+                    Globals = new Dictionary<string, object?> { ["count"] = count }
+                };
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(new BigInteger(count * 6), result.ReturnValue);
+                    Assert.InRange(result.PeakExecutionMemoryBytes, 1, 131072);
+                    total += count * 6;
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+            Assert.Equal(179994, total);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

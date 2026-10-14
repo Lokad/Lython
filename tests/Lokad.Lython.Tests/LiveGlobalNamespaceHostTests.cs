@@ -39,7 +39,6 @@ public sealed class LiveGlobalNamespaceHostTests
         var scope = Assert.IsType<PyDict>(root.Variables["scope"]);
         var prior = root.Variables["len"];
         var replacement = new PyList([], root.MemoryGovernor, Span);
-        root.Services.State.CallTemporaries.TrackFreshMutable(replacement, replacement.CommittedStorageBytes, Span);
         using (PinRemaining(root))
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
@@ -61,7 +60,6 @@ public sealed class LiveGlobalNamespaceHostTests
         var root = await Setup("value=3\nscope=globals()\n");
         var scope = Assert.IsType<PyDict>(root.Variables["scope"]);
         var key = PyString.FromString("new_name", root.MemoryGovernor, Span);
-        root.Services.State.CallTemporaries.TrackFreshString(key, Span);
         var keys = scope.Keys.ToArray();
         using (PinRemaining(root))
         {
@@ -102,7 +100,6 @@ public sealed class LiveGlobalNamespaceHostTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
         Assert.False(value.TryGetTarget(out _));
-        root.Services.State.CallTemporaries.Sweep(full: true);
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
         Assert.True(root.MemoryGovernor.CurrentCommittedBytes >= scope.CommittedStorageBytes);
         GC.KeepAlive(scope);

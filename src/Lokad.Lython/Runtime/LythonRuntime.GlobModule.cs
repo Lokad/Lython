@@ -587,7 +587,6 @@ internal sealed partial class LythonRuntime
         }
     }
 
-
     private static void AppendGlobSegmentRegex(StringBuilder builder, string segment, bool includeHidden, string separators)
     {
         if (!includeHidden && segment.Length != 0 && !segment.StartsWith(".", StringComparison.Ordinal))

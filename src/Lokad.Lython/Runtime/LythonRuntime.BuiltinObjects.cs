@@ -228,7 +228,6 @@ internal sealed partial class LythonRuntime
         if (arguments.Length == 0)
         {
             var empty = new PySet(context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(empty, empty.CommittedStorageBytes);
             return empty;
         }
 
@@ -246,7 +245,6 @@ internal sealed partial class LythonRuntime
         if (arguments.Length == 0)
         {
             var empty = new PySet(context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(empty, empty.CommittedStorageBytes);
             return empty;
         }
 
@@ -436,15 +434,12 @@ internal sealed partial class LythonRuntime
         {
             if (argument.IsKeyword)
             {
-                // Fresh names reclaim through the pool once the dict drops.
                 var keyword = PyString.FromString(argument.KeywordName, context.MemoryGovernor, span);
-                context.Services.State.CallTemporaries.TrackFreshString(keyword);
                 result.SetItem(keyword, argument.Value);
             }
         }
 
         context.ObserveCollectionCount(result.Count, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -468,15 +463,12 @@ internal sealed partial class LythonRuntime
         {
             if (argument.IsKeyword)
             {
-                // Fresh names reclaim through the pool once the dict drops.
                 var keyword = PyString.FromString(argument.KeywordName, context.MemoryGovernor, span);
-                context.Services.State.CallTemporaries.TrackFreshString(keyword);
                 result.SetItem(keyword, argument.Value);
             }
         }
 
         context.ObserveCollectionCount(result.Count, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -684,8 +676,6 @@ internal sealed partial class LythonRuntime
         return PyNone.Instance;
     }
 
-    // Keyword application shared by both update paths: fresh names reclaim through
-    // the pool once the dict drops (dict-ctor kwargs-key pattern).
     private static void ApplyUpdateKeywords(
         PyDict target,
         CallArgumentValue[] arguments,
@@ -697,7 +687,6 @@ internal sealed partial class LythonRuntime
             if (argument.IsKeyword)
             {
                 var keyword = PyString.FromString(argument.KeywordName, context.MemoryGovernor, span);
-                context.Services.State.CallTemporaries.TrackFreshString(keyword);
                 target.SetItem(keyword, argument.Value);
             }
         }

@@ -64,9 +64,6 @@ internal sealed partial class LythonRuntime
     {
         context.MemoryGovernor.Reserve(DecimalValueBytes, span);
         context.MemoryGovernor.Commit(DecimalValueBytes);
-        // Fresh shells reclaim through the pool once dropped; adopt with refund so a
-        // denied registry charge releases the construction charge instead of stranding it.
-        context.Services.State.CallTemporaries.TrackFreshMutable(value, DecimalValueBytes, span);
         return value;
     }
 
@@ -81,22 +78,6 @@ internal sealed partial class LythonRuntime
 
         governor.Reserve(DecimalValueBytes, span);
         governor.Commit(DecimalValueBytes);
-        return value;
-    }
-
-    // Counter-arithmetic decimal counts are fresh values like above, but their sites
-    // only carry the owning counter governor; adopt with refund where the caller pool
-    // is available, else keep the durable charge. Ungoverned counters stay free.
-    internal static object OwnDecimalValue(object value, MemoryGovernor? governor, LythonSourceSpan span, ChargeReclamationPool? pool)
-    {
-        if (governor is null)
-        {
-            return value;
-        }
-
-        governor.Reserve(DecimalValueBytes, span);
-        governor.Commit(DecimalValueBytes);
-        pool?.TrackFreshMutable(value, DecimalValueBytes, span);
         return value;
     }
 

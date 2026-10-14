@@ -2,7 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class SequenceFallbackHostTests
+public sealed class SequenceFallbackHostTests : LifetimeScenario
 {
     public static IEnumerable<object[]> Sources()
     {
@@ -99,7 +99,7 @@ public sealed class SequenceFallbackHostTests
     [InlineData(true)]
     public async Task DroppedIteratorsReclaimAndRetainedIteratorsStayCharged(bool retain)
     {
-        var script = Compile("""
+        var source = """
             class Sequence:
                 def __getitem__(self,index):
                     if index>=1:
@@ -108,7 +108,13 @@ public sealed class SequenceFallbackHostTests
             source=Sequence()
             held=[]
             for index in range(2000):
-            """ + "\n    " + (retain ? "held.append(iter(source))" : "next(iter(source))") + "\nprint(1)");
+            """ + "\n    " + (retain ? "held.append(iter(source))" : "next(iter(source))") + "\nprint(1)";
+        if (!retain)
+        {
+            await AssertBatchCompletes(source.Replace("range(2000)", "range(8)"), null, 65536, standardOutput: "1\n");
+            return;
+        }
+        using var script = Compile(source);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {

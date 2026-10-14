@@ -18,7 +18,6 @@ internal sealed partial class LythonRuntime
                     try { _window = new byte[_windowBytes]; }
                     catch { _services.MemoryGovernor.ReleaseReserved(_windowBytes); throw; }
                     _services.MemoryGovernor.Commit(_windowBytes);
-                    ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
                 }
                 using var acquisition = _services.MemoryGovernor.ReserveTemporary(32L + _windowBytes, span);
                 _services.RegisterHostCall(span);

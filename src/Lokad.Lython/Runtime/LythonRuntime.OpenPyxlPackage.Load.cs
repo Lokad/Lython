@@ -297,7 +297,6 @@ internal sealed partial class LythonRuntime
                     ReadStyleBooleanAttribute(protection, "locked"),
                     ReadStyleBooleanAttribute(protection, "hidden")));
 
-
         private static object ReadStyleAttribute(XElement? element, string attributeName)
             => (string?)element?.Attribute(attributeName) is { } text ? PyString.FromString(text) : PyNone.Instance;
 

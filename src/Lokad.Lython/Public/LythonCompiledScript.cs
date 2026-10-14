@@ -5,10 +5,14 @@ using Lokad.Lython.Runtime;
 namespace Lokad.Lython;
 
 /// <summary>Represents compiled Lython source that can be run repeatedly with different hosts or options.</summary>
-public sealed class LythonCompiledScript
+public sealed class LythonCompiledScript : IDisposable
 {
-    private readonly Func<ILythonHost, LythonRunOptions?, LythonExecutionResult> _runner;
-    private readonly Func<ILythonHost, LythonRunOptions?, Task<LythonExecutionResult>> _asyncRunner;
+    private Func<ILythonHost, LythonRunOptions?, LythonExecutionResult>? _runner;
+    private Func<ILythonHost, LythonRunOptions?, Task<LythonExecutionResult>>? _asyncRunner;
+    private ILythonMemoryScope? _memoryScope;
+    private ILythonMemoryBudget? _defaultMemoryBudget;
+    private string? _source;
+    private IReadOnlyList<LythonDiagnostic>? _diagnostics;
 
     internal LythonCompiledScript(
         string source,
@@ -17,18 +21,39 @@ public sealed class LythonCompiledScript
         Func<ILythonHost, LythonRunOptions?, LythonExecutionResult> runner,
         Func<ILythonHost, LythonRunOptions?, Task<LythonExecutionResult>> asyncRunner)
     {
-        Source = source;
-        Diagnostics = diagnostics;
+        _source = source;
+        _diagnostics = diagnostics;
         IsValid = isValid;
         _runner = runner;
         _asyncRunner = asyncRunner;
     }
 
     /// <summary>Gets the original Python source.</summary>
-    public string Source { get; }
+    public string Source => _source ?? throw new ObjectDisposedException(nameof(LythonCompiledScript));
 
     /// <summary>Gets diagnostics produced while compiling the source.</summary>
-    public IReadOnlyList<LythonDiagnostic> Diagnostics { get; }
+    public IReadOnlyList<LythonDiagnostic> Diagnostics => _diagnostics ?? throw new ObjectDisposedException(nameof(LythonCompiledScript));
+
+    internal LythonCompiledScript OwnMemoryScope(ILythonMemoryScope owner, ILythonMemoryBudget? defaultBudget)
+    {
+        _memoryScope = owner;
+        _defaultMemoryBudget = defaultBudget;
+        return this;
+    }
+
+    /// <summary>
+    /// Releases compiled storage and its estimate. Await all runs and relinquish
+    /// extracted diagnostic aliases first; disposal does not cancel active runs.
+    /// </summary>
+    public void Dispose()
+    {
+        _runner = null;
+        _asyncRunner = null;
+        _source = null;
+        _diagnostics = null;
+        _defaultMemoryBudget = null;
+        Interlocked.Exchange(ref _memoryScope, null)?.Dispose();
+    }
 
     /// <summary>Gets whether the script has no error diagnostics and is eligible to run.</summary>
     public bool IsValid { get; }
@@ -115,7 +140,16 @@ public sealed class LythonCompiledScript
 
     private LythonExecutionResult RunCore(ILythonHost host, LythonRunOptions? options)
     {
-        return _runner(host, options);
+        var runner = _runner ?? throw new ObjectDisposedException(nameof(LythonCompiledScript));
+        options ??= new LythonRunOptions();
+        var budget = options.MemoryBudget ?? _defaultMemoryBudget ?? new LythonMemoryBudget();
+        using var execution = budget.CreateScope();
+        var resultOwner = (options.ResultMemoryBudget ?? budget).CreateScope();
+        try
+        {
+            return runner(host, options.WithMemoryOwners(execution, resultOwner)).OwnMemoryScope(resultOwner);
+        }
+        catch { resultOwner.Dispose(); throw; }
     }
 
     private Task<LythonExecutionResult> RunAsyncCore(
@@ -123,6 +157,7 @@ public sealed class LythonCompiledScript
         LythonRunOptions? options,
         CancellationToken cancellationToken)
     {
+        ObjectDisposedException.ThrowIf(_asyncRunner is null, this);
         var mergedOptions = MergeCancellation(options, cancellationToken, out var linkedCancellation);
         return RunAndDisposeAsync(host, mergedOptions, linkedCancellation);
 
@@ -154,17 +189,30 @@ public sealed class LythonCompiledScript
             LythonRunOptions? runOptions,
             CancellationTokenSource? linkedCancellationSource)
         {
+            ILythonMemoryScope? execution = null;
+            ILythonMemoryScope? resultOwner = null;
+            var returned = false;
             try
             {
+                runOptions ??= new LythonRunOptions();
+                var budget = runOptions.MemoryBudget ?? _defaultMemoryBudget ?? new LythonMemoryBudget();
+                execution = budget.CreateScope();
+                resultOwner = (runOptions.ResultMemoryBudget ?? budget).CreateScope();
                 // MG25: the synchronous prefix of an async run (including deep
                 // recursion that never genuinely yields) executes on the same
                 // dedicated large stack as synchronous runs; continuations
                 // after genuine yields resume on pool threads with fresh
                 // stacks while the persisted counters keep bounding them.
-                return await LythonRuntime.RunAsyncOnDedicatedStack(() => _asyncRunner(runHost, runOptions)).ConfigureAwait(false);
+                var effective = runOptions.WithMemoryOwners(execution, resultOwner);
+                var runner = _asyncRunner ?? throw new ObjectDisposedException(nameof(LythonCompiledScript));
+                var result = await LythonRuntime.RunAsyncOnDedicatedStack(() => runner(runHost, effective)).ConfigureAwait(false);
+                returned = true;
+                return result.OwnMemoryScope(resultOwner);
             }
             finally
             {
+                if (!returned) resultOwner?.Dispose();
+                execution?.Dispose();
                 linkedCancellationSource?.Dispose();
             }
         }

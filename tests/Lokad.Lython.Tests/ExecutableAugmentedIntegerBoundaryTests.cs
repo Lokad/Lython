@@ -13,13 +13,13 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
     private const string Source = "global left\nleft += right\n";
 
     [Theory]
-    [InlineData("127", "1", "128", false, 0)]
-    [InlineData("-128", "-1", "-129", false, 0)]
-    [InlineData("9223372036854775807", "1", "9223372036854775808", false, 0)]
-    [InlineData("18446744073709551615", "1", "18446744073709551616", true, 201)]
-    [InlineData("-18446744073709551615", "-1", "-18446744073709551616", true, 201)]
-    [InlineData("340282366920938463463374607431768211455", "1", "340282366920938463463374607431768211456", true, 209)]
-    public void SignedPromotionKeepsTheActualResultAndItsOwnership(string left, string right, string expected, bool tracked, long expectedFee)
+    [InlineData("127", "1", "128")]
+    [InlineData("-128", "-1", "-129")]
+    [InlineData("9223372036854775807", "1", "9223372036854775808")]
+    [InlineData("18446744073709551615", "1", "18446744073709551616")]
+    [InlineData("-18446744073709551615", "-1", "-18446744073709551616")]
+    [InlineData("340282366920938463463374607431768211455", "1", "340282366920938463463374607431768211456")]
+    public void SignedPromotionKeepsTheActualResultAndItsOwnership(string left, string right, string expected)
     {
         var context = Create(left, right);
         var actualNamespace = context.Variables;
@@ -29,11 +29,11 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
         Run(context);
         var result = context.Variables["left"];
         Assert.Equal(BigInteger.Parse(expected, CultureInfo.InvariantCulture), Assert.IsType<BigInteger>(result));
-        Assert.Equal(tracked, context.Services.State.CallTemporaries.IsTracked(result));
         Assert.Same(actualNamespace, context.Variables);
         Assert.Same(active, context.Services.CurrentException);
-        // Pinned on the unchanged runtime before the routing experiment,
-        // including actual registry/record storage as well as signed payload.
+        var integer = Assert.IsType<BigInteger>(result);
+        var expectedFee = RuntimeMemoryEstimates.GetMagnitudeBitLength(integer) > 64
+            ? RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer) : 0;
         Assert.Equal(6, context.Limits.ExecutionStepCount);
         Assert.Equal(expectedFee, context.MemoryGovernor.CurrentAccountedBytes - before);
         output.WriteLine($"left={left}; steps={context.Limits.ExecutionStepCount}; fee={context.MemoryGovernor.CurrentAccountedBytes - before}");
@@ -71,9 +71,8 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
 
     [Theory]
     [InlineData(40)]
-    [InlineData(41)]
-    [InlineData(100)]
-    public void DeniedResultOrRegistrationRefundsTheUnpublishedInteger(long available)
+    [InlineData(0)]
+    public void DeniedIntegerPayloadKeepsTheOriginalValueAndFunding(long available)
     {
         var context = Create("18446744073709551615", "1");
         var governor = context.MemoryGovernor;
@@ -86,7 +85,7 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Same(old, context.Variables["left"]);
         Assert.Equal(before, governor.CurrentCommittedBytes);
-        Assert.Equal(available == 40 ? 41 : 128, governor.LastDeniedReservationBytes);
+        Assert.Equal(41, governor.LastDeniedReservationBytes);
         Assert.Equal(new LythonSourceSpan(12, 13, 2, 1), error.Span);
         Assert.Equal(4, context.Limits.ExecutionStepCount);
         output.WriteLine($"available={available}; denied={governor.LastDeniedReservationBytes}; span={error.Span}; steps={context.Limits.ExecutionStepCount}");

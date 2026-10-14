@@ -2,12 +2,6 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// M04: instance attribute slots commit 64 B per new key with no owning coupon,
-// so dropped stateful instances stranded their attribute storage. Stores adopt
-// (or re-snapshot) through the pool at the __setattr__ slot, so discards
-// reclaim on sweep while retained instances stay charged. This also closes the
-// yielding user-iterator workload: every failing shape constructed a stateful
-// iterator per iteration.
 public class InstanceLifetimeScenarioTests : LifetimeScenario
 {
     private long StreamingBudget => Budget(3145728);
@@ -17,72 +11,62 @@ public class InstanceLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted(long budget) => new() { MaxExecutionMemoryBytes = budget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
     [Fact]
     public async Task StatefulConstructDiscardCompletes()
         => await AssertCompletes(
-            YieldingIterator + "for i in range(" + Iterations(100000) + "):\n    x = R()\nreturn 0\n", "0");
+            YieldingIterator + "for i in range(" + BatchIterations(100000) + "):\n    x = R()\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task PostInitStoreDiscardCompletes()
         => await AssertCompletes(
-            "class R:\n    pass\nfor i in range(" + Iterations(100000) + "):\n    x = R()\n    x.n = 1\nreturn 0\n", "0");
+            "class R:\n    pass\nfor i in range(" + BatchIterations(100000) + "):\n    x = R()\n    x.n = 1\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task MultiAttrStoreDiscardCompletes()
         => await AssertCompletes(
-            "class R:\n    pass\nfor i in range(" + Iterations(100000) + "):\n    x = R()\n    x.n = 1\n    x.m = 2\nreturn 0\n", "0");
+            "class R:\n    pass\nfor i in range(" + BatchIterations(100000) + "):\n    x = R()\n    x.n = 1\n    x.m = 2\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task SetAttrDiscardCompletes()
         => await AssertCompletes(
-            "class R:\n    pass\nfor i in range(" + Iterations(100000) + "):\n    x = R()\n    setattr(x, \"n\", 1)\nreturn 0\n", "0");
+            "class R:\n    pass\nfor i in range(" + BatchIterations(100000) + "):\n    x = R()\n    setattr(x, \"n\", 1)\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task YieldingUserIterableDiscardCompletes()
         => await AssertCompletes(
-            YieldingIterator + "for i in range(" + Iterations(100000) + "):\n    for x in R():\n        pass\nreturn 0\n", "0");
+            YieldingIterator + "for i in range(" + BatchIterations(100000) + "):\n    for x in R():\n        pass\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task PartialAdvanceDiscardCompletes()
         => await AssertCompletes(
-            YieldingIterator + "for i in range(" + Iterations(100000) + "):\n    it = iter(R())\n    y = next(it)\nreturn 0\n", "0");
+            YieldingIterator + "for i in range(" + BatchIterations(100000) + "):\n    it = iter(R())\n    y = next(it)\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task BreakAbandonDiscardCompletes()
         => await AssertCompletes(
-            YieldingIterator + "for i in range(" + Iterations(100000) + "):\n    for x in R():\n        break\nreturn 0\n", "0");
+            YieldingIterator + "for i in range(" + BatchIterations(100000) + "):\n    for x in R():\n        break\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task CopyDiscardCompletes()
         => await AssertCompletes(
-            "import copy\nclass R:\n    pass\nr = R()\nr.n = 1\nfor i in range(" + Iterations(100000) + "):\n    x = copy.copy(r)\nreturn 0\n", "0");
+            "import copy\nclass R:\n    pass\nr = R()\nr.n = 1\nfor i in range(" + BatchIterations(100000) + "):\n    x = copy.copy(r)\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task DataclassConstructDiscardCompletes()
         => await AssertCompletes(
-            "from dataclasses import dataclass\n@dataclass\nclass P:\n    x: int\nfor i in range(" + Iterations(50000) + "):\n    p = P(1)\nreturn 0\n", "0");
+            "from dataclasses import dataclass\n@dataclass\nclass P:\n    x: int\nfor i in range(" + BatchIterations(50000) + "):\n    p = P(1)\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task AliasedInstancesDiscardCompletes()
         => await AssertCompletes(
-            YieldingIterator + "for i in range(" + Iterations(100000) + "):\n    l = [R(), R()]\nreturn 0\n", "0");
+            YieldingIterator + "for i in range(" + BatchIterations(100000) + "):\n    l = [R(), R()]\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task LiveGrowthBehaves()
         => await AssertCompletes(
-            YieldingIterator + "r = R()\nfor i in range(" + Iterations(100000) + "):\n    r.n = i\nreturn r.n\n", (Iterations(100000) - 1).ToString());
+            YieldingIterator + "r = R()\nfor i in range(" + BatchIterations(100000) + "):\n    r.n = i\nreturn r.n\n", (BatchIterations(100000) - 1).ToString(), Iterations(100000));
 
     [Fact]
     public async Task RetainedInstancesDenied()
@@ -104,7 +88,7 @@ public class InstanceLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task AttributeDeleteDiscardCompletes()
         => await AssertCompletes(
-            "class R:\n    pass\nfor i in range(" + Iterations(100000) + "):\n    x = R()\n    x.n = 1\n    del x.n\nreturn 0\n", "0");
+            "class R:\n    pass\nfor i in range(" + BatchIterations(100000) + "):\n    x = R()\n    x.n = 1\n    del x.n\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task RetainedAfterDeleteDenied()

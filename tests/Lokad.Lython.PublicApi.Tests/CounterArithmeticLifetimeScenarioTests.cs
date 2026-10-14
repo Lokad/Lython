@@ -10,57 +10,47 @@ public class CounterArithmeticLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted());
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted());
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
     [Fact]
     public async Task CounterAddDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(" + Iterations(50000) + "):\n    x = a + b\nreturn 0\n", "0");
+            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(" + BatchIterations(50000) + "):\n    x = a + b\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task CounterSubDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(" + Iterations(50000) + "):\n    x = a - b\nreturn 0\n", "0");
+            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(" + BatchIterations(50000) + "):\n    x = a - b\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task CounterOrDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(" + Iterations(50000) + "):\n    x = a | b\nreturn 0\n", "0");
+            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(" + BatchIterations(50000) + "):\n    x = a | b\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task CounterAndDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(" + Iterations(50000) + "):\n    x = a & b\nreturn 0\n", "0");
+            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(" + BatchIterations(50000) + "):\n    x = a & b\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task CounterUnaryDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\na = Counter(a=2, b=-1)\nfor i in range(" + Iterations(50000) + "):\n    x = +a\n    y = -a\nreturn 0\n", "0");
+            "from collections import Counter\na = Counter(a=2, b=-1)\nfor i in range(" + BatchIterations(50000) + "):\n    x = +a\n    y = -a\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task CounterMixedOrDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\nc = Counter(a=1)\nfor i in range(" + Iterations(50000) + "):\n    x = c | {'b': 2}\n    y = {'b': 2} | c\nreturn 0\n", "0");
+            "from collections import Counter\nc = Counter(a=1)\nfor i in range(" + BatchIterations(50000) + "):\n    x = c | {'b': 2}\n    y = {'b': 2} | c\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task CounterDecimalAddDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\nimport decimal\na = Counter({'x': decimal.Decimal('1')})\nb = Counter({'y': decimal.Decimal('2')})\nfor i in range(" + Iterations(50000) + "):\n    x = a + b\nreturn 0\n", "0");
+            "from collections import Counter\nimport decimal\na = Counter({'x': decimal.Decimal('1')})\nb = Counter({'y': decimal.Decimal('2')})\nfor i in range(" + BatchIterations(50000) + "):\n    x = a + b\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task CounterDecimalUpdateDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\nimport decimal\nc = Counter()\nd = {'x': decimal.Decimal('1')}\nfor i in range(" + Iterations(50000) + "):\n    c.update(d)\nreturn 0\n", "0");
+            "from collections import Counter\nimport decimal\nc = Counter()\nd = {'x': decimal.Decimal('1')}\nfor i in range(" + BatchIterations(50000) + "):\n    c.update(d)\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task CounterDecimalBehaves()

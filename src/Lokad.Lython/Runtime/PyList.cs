@@ -9,9 +9,6 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     private LythonSourceSpan? _allocationSpan;
     private long _numericStorageBytes;
 
-    // Keep the weak registration beside its owner, avoiding a second
-    // ephemeron handle for each list. The entry never roots this list.
-    internal ChargeReclamationPool.ReclamationEntry? ReclamationEntry { get; set; }
 
     public PyList()
     {
@@ -40,8 +37,6 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     // Drop its actual backing before refunding; guest values keep their owners.
     internal void DiscardUnpublishedStorage()
     {
-        if (ReclamationEntry is not null)
-            throw new InvalidOperationException("A registered list cannot discard unpublished storage.");
         var charge = _items.ReleaseCommittedBytes() + _numericStorageBytes;
         _items = null!;
         _numericStorageBytes = 0;
@@ -71,9 +66,8 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     public int Count => _items.Count;
 
-    // Current committed backing charges, for pooled owners that release them
-    // if this list is dropped without wholesale storage replacement. Numeric
-    // slot allowances fold into the same snapshot and drop lifetime.
+    // Current backing funding for unpublished rollback and explicit replacement.
+    // Numeric slot estimates share the batch owner; reference withdrawal does not refund them.
     internal long CommittedStorageBytes => _items.CommittedBytes + _numericStorageBytes;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
@@ -109,16 +103,6 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         CompleteNumericChange(target, committedBefore);
     }
 
-    // Backing and numeric slot changes share the existing list ownership snapshot.
-    // Failed funding leaves that snapshot and the published contents unchanged.
-    private void NoteGrowth(long committedBefore)
-    {
-        if (CommittedStorageBytes != committedBefore)
-        {
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
-        }
-    }
-
     // Numeric slots conservatively cover small boxes without consulting identity
     // or payload tracking. Large magnitudes keep their independent actual owner.
     private long NumericBytes(object value) =>
@@ -150,7 +134,6 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         var released = _numericStorageBytes - target;
         _numericStorageBytes = target;
         if (released > 0) _memoryGovernor!.Release(released);
-        NoteGrowth(committedBefore);
     }
 
     private void ChargeInitialNumericStorage()
@@ -468,16 +451,18 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     {
         if (_memoryGovernor is not null)
         {
+            // Admit replacement while the old backing remains retained. A
+            // refusal must leave both contents and their funding unchanged.
+            var replacement = PyListStorage.Create(System.Array.Empty<object>(), _memoryGovernor, _allocationSpan);
             var released = _items.ReleaseCommittedBytes();
+            _items = replacement;
             if (released > 0)
             {
                 _memoryGovernor.Release(released);
             }
 
-            _items = PyListStorage.Create(System.Array.Empty<object>(), _memoryGovernor, _allocationSpan);
             _memoryGovernor.Release(_numericStorageBytes);
             _numericStorageBytes = 0;
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             return;
         }
 

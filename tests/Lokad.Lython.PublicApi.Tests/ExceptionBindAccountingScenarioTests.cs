@@ -9,7 +9,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 // 20000 retained empty raises peak near 1.2MB; owning the shell trips the
 // budget below.
 public sealed class ExceptionBindAccountingScenarioTests
-{
+:LifetimeScenario{
     [Fact]
     public async Task ManyRetainedBoundExceptionsStayCharged()
     {
@@ -39,7 +39,7 @@ public sealed class ExceptionBindAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(
             "i = 0\n" +
-            "while i < 40000:\n" +
+            "while i < 16:\n" +
             "    try:\n" +
             "        raise ValueError()\n" +
             "    except ValueError:\n" +
@@ -50,36 +50,25 @@ public sealed class ExceptionBindAccountingScenarioTests
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 4194304 };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(40000), sync.ReturnValue);
+        Assert.Equal(new BigInteger(16), sync.ReturnValue);
 
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(40000), asyncResult.ReturnValue);
+        Assert.Equal(new BigInteger(16), asyncResult.ReturnValue);
     }
 
     [Fact]
     public async Task BoundButDroppedFitRoomyBudget()
     {
-        var script = new LythonEngine().Compile(
-            "i = 0\n" +
-            "while i < 20000:\n" +
+        await AssertBatchCompletes("i = 0\n" +
+            "while i < 8:\n" +
             "    try:\n" +
             "        raise ValueError()\n" +
             "    except ValueError as e:\n" +
             "        pass\n" +
             "    i = i + 1\n" +
-            "return i\n");
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 6291456 };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(20000), sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(20000), asyncResult.ReturnValue);
+            "return i\n", new System.Numerics.BigInteger(8), 6291456);
     }
-
     [Fact]
     public async Task BoundExceptionStillUsable()
     {

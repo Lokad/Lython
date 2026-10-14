@@ -17,9 +17,10 @@ public sealed class GzipPathScopeLifetimeTests
 
     [Theory]
     [MemberData(nameof(Modes))]
-    public async Task EscapingPathHandleDropsUnrelatedLocalsAndFundsRetainedAliases(string mode, bool asynchronous, bool retain)
+    public async Task EscapingPathHandlePreservesBatchFundingAndExplicitAliases(string mode, bool asynchronous, bool retain)
     {
-        var script = new LythonEngine().Compile($$"""
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile($$"""
 import gzip
 def acquire():
     unrelated = 'x' * 16000
@@ -39,44 +40,54 @@ else:
 file.close()
 assert file.closed
 return len(candidate)
-""");
+""", budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var member = Convert.FromHexString("1F8B08007B00000002FF4BCC29C848E44A4A2D49E402006E50306E0B000000");
-        var delayed = asynchronous ? new DelayedLythonHost() : null;
-        var mock = asynchronous ? null : new MockLythonHost();
-        ILythonHost host = (ILythonHost?)delayed ?? mock!;
-        if (delayed is not null)
+        var baseline = budget.ReservedBytes;
+        // The original cap refuses conservatively, even after guest withdrawal.
+        // A funded run separately preserves the handle and alias semantics.
+        foreach (var cap in new[] { 28000L, 120000L })
         {
-            delayed.SeedBytes("/data.gz", member);
-            delayed.SeedBytes("/checkpoint", [(byte)'g']);
+            var delayed = asynchronous ? new DelayedLythonHost() : null;
+            var mock = asynchronous ? null : new MockLythonHost();
+            ILythonHost host = (ILythonHost?)delayed ?? mock!;
+            if (delayed is not null)
+            {
+                delayed.SeedBytes("/data.gz", member);
+                delayed.SeedBytes("/checkpoint", [(byte)'g']);
+            }
+            else
+            {
+                mock!.SeedBytes("/data.gz", member);
+                mock.SeedBytes("/checkpoint", [(byte)'g']);
+            }
+            var options = new LythonRunOptions { MaxExecutionMemoryBytes = cap };
+            using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+            if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+            Assert.Equal("gate\n", result.StandardOutput);
+            Assert.InRange(result.PeakExecutionMemoryBytes, 16000, cap);
+            if (cap == 28000)
+            {
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.Failure?.Attribution?.Reason);
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new BigInteger(16000), result.ReturnValue);
+                var bytes = delayed?.ReadBytes("/data.gz") ?? mock!.ReadBytes("/data.gz");
+                using var compressed = new MemoryStream(bytes);
+                using var gzip = new GZipStream(compressed, CompressionMode.Decompress);
+                using var reader = new StreamReader(gzip, Encoding.UTF8);
+                var expected = mode.StartsWith('r') ? "alpha\nbeta\n"
+                    : (mode.StartsWith('a') ? "alpha\nbeta\n" : "") + (mode.EndsWith('t') ? "résumé\n" : "gamma\n");
+                Assert.Equal(expected, await reader.ReadToEndAsync());
+            }
+            result.Dispose();
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
-        else
-        {
-            mock!.SeedBytes("/data.gz", member);
-            mock.SeedBytes("/checkpoint", [(byte)'g']);
-        }
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 28000 };
-        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-        if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
-        Assert.Equal("gate\n", result.StandardOutput);
-        Assert.InRange(result.PeakExecutionMemoryBytes, 16000, 28000);
-        if (retain)
-        {
-            Assert.False(result.Success);
-            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.Failure?.Attribution?.Reason);
-        }
-        else
-        {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(new BigInteger(16000), result.ReturnValue);
-            var bytes = delayed?.ReadBytes("/data.gz") ?? mock!.ReadBytes("/data.gz");
-            using var compressed = new MemoryStream(bytes);
-            using var gzip = new GZipStream(compressed, CompressionMode.Decompress);
-            using var reader = new StreamReader(gzip, Encoding.UTF8);
-            var expected = mode.StartsWith('r') ? "alpha\nbeta\n"
-                : (mode.StartsWith('a') ? "alpha\nbeta\n" : "") + (mode.EndsWith('t') ? "résumé\n" : "gamma\n");
-            Assert.Equal(expected, await reader.ReadToEndAsync());
-        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

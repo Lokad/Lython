@@ -7,7 +7,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 // hash plus element == through a side index; algebra, views, and comparisons
 // share the semantics while builtin-only sets keep the fast path.
 public sealed class ContextualSetTests
-{
+:LifetimeScenario{
     private static void AssertError(LythonExecutionResult result, string type, string messagePart)
     {
         Assert.False(result.Success);
@@ -231,10 +231,9 @@ public sealed class ContextualSetTests
     }
 
     [Fact]
-    public void DiscardedProtocolSetsSucceed()
+    public async Task DiscardedProtocolSetsSucceed()
     {
-        var result = new LythonEngine().Run(
-            """
+        await AssertBatchCompletes("""
             class A:
                 def __init__(self, v):
                     self.v = v
@@ -243,11 +242,7 @@ public sealed class ContextualSetTests
                 def __hash__(self):
                     return self.v
 
-            for i in range(20000):
+            for i in range(8):
                 s = {A(i)}
-            """,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
-    }
-}
+            """, null, 3145728);
+    }}

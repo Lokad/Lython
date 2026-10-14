@@ -1,4 +1,3 @@
-using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -11,43 +10,59 @@ public sealed class CsvRetainedRowLifetimeTests
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public async Task RowsOutliveCollectedReaderAndReclaimAfterDropping(bool dictionary, bool asynchronous)
+    public async Task RetainedRowsSurviveReaderCleanupAndReturnFundingWithTheirOwner(bool dictionary, bool asynchronous)
     {
+        var budget = new LythonMemoryBudget(512 * 1024);
         var reader = dictionary ? "DictReader" : "reader";
-        var script = new LythonEngine().Compile($$"""
+        using var script = new LythonEngine().Compile($$"""
             import csv
-            completed=0
-            for index in range(8):
-                with open('/csv') as file:
-                    rows=list(csv.{{reader}}(file))
-                assert len(rows)=={{(dictionary ? 1000 : 1001)}}
-                print('retained')
-                rows=None
-                file=None
-                completed+=1
-            return completed
-            """);
-        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
-        var host = new MockLythonHost();
-        host.SeedFile("/csv", "a,b,c,d,e,f\n" + string.Concat(Enumerable.Repeat("1,2,3,4,5,6\n", 1000)));
-        host.OnStandardOutputWrite = () =>
+            with open('/csv') as file:
+                rows = list(csv.{{reader}}(file))
+            assert file.closed
+            return rows
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var content = "a,b,c,d,e,f\n" + string.Concat(Enumerable.Repeat("1,2,3,4,5,6\n", 16));
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        for (var batch = 0; batch < 8; batch++)
         {
-            if (!host.CapturedStandardOutput().EndsWith("retained\n", StringComparison.Ordinal)) return;
-            // Collect the reader while its returned rows remain guest-retained.
-            // Subsequent CSV pulls reconcile the source registry on its normal cadence.
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-        };
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3L * 1024 * 1024 };
-        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-        Assert.True(result.Success,
-            $"{result.Failure?.ExceptionType}: {result.Failure?.Message}; span={result.Failure?.Span}; " +
-            $"completed={result.StandardOutput.Count(character => character == '\n')}; " +
-            $"peak={result.PeakExecutionMemoryBytes}; denied={result.DeniedReservationBytes}");
-        Assert.Equal(new BigInteger(8), result.ReturnValue);
-        Assert.Equal(string.Concat(Enumerable.Repeat("retained\n", 8)), result.StandardOutput);
-        Assert.True(result.PeakExecutionMemoryBytes <= options.MaxExecutionMemoryBytes!.Value.Bytes);
-        Assert.True(host.MaxRangeBytesServed <= 16384);
+            var delayed = asynchronous ? new DelayedLythonHost() : null;
+            var mock = asynchronous ? null : new MockLythonHost();
+            ILythonHost host = (ILythonHost?)delayed ?? mock!;
+            if (delayed is not null) delayed.SeedFile("/csv", content); else mock!.SeedFile("/csv", content);
+            using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+            Assert.True(result.Success, result.Failure?.Message);
+            if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+            var retained = budget.ReservedBytes;
+            Assert.True(retained > baseline);
+            // Physical collection cannot refund an escaping row's live owner.
+            if (batch == 0)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
+            Assert.Equal(retained, budget.ReservedBytes);
+            var rows = Assert.IsType<List<object?>>(result.ReturnValue);
+            Assert.Equal(dictionary ? 16 : 17, rows.Count);
+            foreach (var row in rows.Skip(dictionary ? 0 : 1))
+            {
+                if (dictionary)
+                {
+                    var values = Assert.IsType<Dictionary<object, object?>>(row);
+                    Assert.Equal(6, values.Count);
+                    Assert.Equal("1", values["a"]);
+                    Assert.Equal("6", values["f"]);
+                }
+                else Assert.Equal(new List<object?> { "1", "2", "3", "4", "5", "6" }, row);
+            }
+            // All aliases are relinquished before the result owner is disposed.
+            rows = null!;
+            result.Dispose();
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

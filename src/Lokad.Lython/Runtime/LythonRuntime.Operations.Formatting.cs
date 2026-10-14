@@ -51,10 +51,6 @@ internal sealed partial class LythonRuntime
 
         var value = builder.ToPyStringAndRelease();
         context.ObserveString(value, span);
-        // M05: the built string commits at construction with no owning display
-        // coupon, so dropped f-strings stranded 128+len B. Fresh results adopt
-        // here and reclaim on sweep; retained results stay charged.
-        context.Services.State.CallTemporaries.TrackFreshString(value, span);
         return value;
     }
 
@@ -128,7 +124,6 @@ internal sealed partial class LythonRuntime
                     builder.Append((byte)hex[(rune.Value >> shift) & 15]);
             }
             var result = builder.ToPyStringAndRelease();
-            context.Services.State.CallTemporaries.TrackFreshString(result, span);
             return result;
         }
         finally

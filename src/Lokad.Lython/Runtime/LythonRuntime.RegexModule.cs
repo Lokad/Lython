@@ -126,7 +126,6 @@ internal sealed partial class LythonRuntime
             // Finditer shells charge per live instance like other iterator factories.
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             var findIter = RegexMatcher.CreateFindIterMatches(inputs.Pattern, inputs.Range, context, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(findIter, PyIteratorBase.IteratorValueBytes);
             return findIter;
         }
 

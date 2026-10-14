@@ -75,7 +75,6 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
         _constantBound = constantBound; _constantDefault = constantDefault;
         _module = PyFunctionBase.TryGetModuleName(context, out var module) ? module : PyNone.Instance;
         OwnerMemoryGovernor = context.MemoryGovernor; AllocationSpan = span;
-        context.Services.State.CallTemporaries.TrackFreshMutable(this, _bytes, span);
     }
 
     public bool TryGetMember(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
@@ -106,7 +105,6 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
             case "has_default":
                 context.MemoryGovernor.Reserve(96, span); context.MemoryGovernor.Commit(96);
                 var method = new HasDefaultMethod(this, context.MemoryGovernor, span);
-                context.Services.State.CallTemporaries.TrackFreshMutable(method, 96, span);
                 return (true, method);
             case "args" when Kind == TypeParameterKind.ParamSpec: return (true, PyParamSpecPart.Create(this, true, context, span));
             case "kwargs" when Kind == TypeParameterKind.ParamSpec: return (true, PyParamSpecPart.Create(this, false, context, span));
@@ -169,7 +167,7 @@ internal sealed record PyParamSpecPart(PyTypeParameter Parameter, bool Positiona
     {
         context.MemoryGovernor.Reserve(96, span); context.MemoryGovernor.Commit(96);
         var value = new PyParamSpecPart(parameter, positional) { OwnerMemoryGovernor = context.MemoryGovernor, AllocationSpan = span };
-        context.Services.State.CallTemporaries.TrackFreshMutable(value, 96, span); return value;
+return value;
     }
     public PyString RenderPython(PyRenderingContext context) => PyString.FromString(Parameter.Name + (Positional ? ".args" : ".kwargs"), context.Context.MemoryGovernor, AllocationSpan);
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
@@ -186,7 +184,6 @@ internal sealed class PyTypeAlias : IPyContextualDynamicAttributes, IPyAsyncDyna
     private readonly PyString _name;
     private readonly object _module;
     private readonly PyLazyTypeValue _value;
-    private readonly ChargeReclamationPool _pool;
     private readonly long _bytes;
     public string Name => _name.AsString();
     public PyTuple TypeParameters { get; }
@@ -201,10 +198,8 @@ internal sealed class PyTypeAlias : IPyContextualDynamicAttributes, IPyAsyncDyna
         try { _name = PyString.FromString(name, scope.MemoryGovernor, span); }
         catch { scope.MemoryGovernor.Release(512); throw; }
         _bytes = 512 + PyString.EstimateApproximateBytes(_name.Utf8Bytes.Length);
-        TypeParameters = parameters; _value = new(value, scope); _pool = scope.Services.State.CallTemporaries;
-        _module = PyFunctionBase.TryGetModuleName(scope, out var module) ? module : PyNone.Instance;
+        TypeParameters = parameters; _value = new(value, scope);         _module = PyFunctionBase.TryGetModuleName(scope, out var module) ? module : PyNone.Instance;
         OwnerMemoryGovernor = scope.MemoryGovernor; AllocationSpan = span;
-        scope.Services.State.CallTemporaries.TrackFreshMutable(this, _bytes, span);
     }
     public bool TryGetMember(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
@@ -223,7 +218,7 @@ internal sealed class PyTypeAlias : IPyContextualDynamicAttributes, IPyAsyncDyna
     public object GetSubscript(object index, LythonSourceSpan span)
     {
         if (TypeParameters.Count == 0) throw new LythonRuntimeException("TypeError", $"{Name} is not a generic type alias", span);
-        return PyGenericAlias.Create(this, index, OwnerMemoryGovernor!, span, _pool);
+        return PyGenericAlias.Create(this,index,OwnerMemoryGovernor!,span);
     }
     public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
     public PyString RenderPython(PyRenderingContext context) => _name;
@@ -239,7 +234,6 @@ internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableVal
     internal static readonly PyBuiltinRuntimeType UnionType = new("types.UnionType",
         static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Cannot construct UnionType directly", span));
     private readonly long _bytes;
-    private readonly ChargeReclamationPool? _pool;
     private object? _unpacked;
     internal static readonly PyBuiltinRuntimeType TypingRuntimeType = new("typing._GenericAlias",
         static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Cannot construct _GenericAlias directly", span));
@@ -250,24 +244,21 @@ internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableVal
     public LythonSourceSpan? AllocationSpan { get; }
     bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) => OwnershipSnapshot.Owned(OwnerMemoryGovernor, _bytes, out bytes);
 
-    public static PyGenericAlias Create(object origin, object index, MemoryGovernor governor, LythonSourceSpan span, ChargeReclamationPool? pool = null)
+    public static PyGenericAlias Create(object origin,object index,MemoryGovernor governor,LythonSourceSpan span)
     {
         var arguments = index is PyTuple tuple ? tuple : new PyTuple([index], governor, span);
-        if (index is not PyTuple) pool?.TrackFreshMutable(arguments, arguments.CommittedStorageBytes, span);
         var possibleParameters = arguments.Sum(value => value is PyTypeParameter ? 1 : value is PyGenericAlias alias ? alias.Parameters.Count :
             value is PyUnpackedType { Value: PyTypeParameter } ? 1 : 0);
         var bytes = checked(128L + 64L * (arguments.Count + possibleParameters));
         governor.Reserve(bytes, span); governor.Commit(bytes);
         PyGenericAlias created;
-        try { created = new PyGenericAlias(origin, arguments, governor, span, bytes, pool); }
+        try { created = new PyGenericAlias(origin,arguments,governor,span,bytes); }
         catch { governor.Release(bytes); throw; }
-        pool?.TrackFreshMutable(created, created._bytes, span);
         return created;
     }
-    private PyGenericAlias(object origin, PyTuple arguments, MemoryGovernor governor, LythonSourceSpan span, long bytes, ChargeReclamationPool? pool)
+    private PyGenericAlias(object origin,PyTuple arguments,MemoryGovernor governor,LythonSourceSpan span,long bytes)
     {
-        Origin = origin; Arguments = arguments; OwnerMemoryGovernor = governor; AllocationSpan = span; _pool = pool;
-        var parameters = new List<object>();
+        Origin = origin; Arguments = arguments; OwnerMemoryGovernor = governor; AllocationSpan = span;         var parameters = new List<object>();
         var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
         foreach (var argument in arguments)
         {
@@ -288,8 +279,7 @@ internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableVal
         var values = new Dictionary<object, object>(ReferenceEqualityComparer.Instance);
         for (var i = 0; i < Parameters.Count; i++) values[Parameters[i]] = replacements[i];
         var substituted = new PyTuple(Arguments.Select(Substitute), OwnerMemoryGovernor!, span);
-        _pool?.TrackFreshMutable(substituted, substituted.CommittedStorageBytes, span);
-        return Create(Origin, substituted, OwnerMemoryGovernor!, span, _pool);
+        return Create(Origin,substituted,OwnerMemoryGovernor!,span);
 
         object Substitute(object argument)
         {
@@ -297,8 +287,7 @@ internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableVal
             if (argument is PyGenericAlias nested)
             {
                 var nestedArguments = new PyTuple(nested.Arguments.Select(Substitute), OwnerMemoryGovernor!, span);
-                _pool?.TrackFreshMutable(nestedArguments, nestedArguments.CommittedStorageBytes, span);
-                return Create(nested.Origin, nestedArguments, OwnerMemoryGovernor!, span, _pool);
+                return Create(nested.Origin,nestedArguments,OwnerMemoryGovernor!,span);
             }
             return argument;
         }
@@ -316,7 +305,7 @@ internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableVal
     {
         if (Origin is not LythonRuntime.ICallable callable) throw new LythonRuntimeException("TypeError", "Generic alias origin is not callable", span);
         var value = asynchronous ? await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false) : callable.Invoke(arguments, span, context);
-        if (value is PyInstance instance) { instance.SetAttribute("__orig_class__", this); context.Services.State.CallTemporaries.TrackGrowth(instance, instance.CommittedStorageBytes, span); }
+        if (value is PyInstance instance) { instance.SetAttribute("__orig_class__", this); }
         return value;
     }
     public IEnumerable<object> Iterate() { yield return _unpacked ??= new PyUnpackedType(this); }

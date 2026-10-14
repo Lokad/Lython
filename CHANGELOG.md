@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add Lython-owned shared memory budgets, empty ownership scopes and resizable reservations with immediate cooperative admission and deterministic refunds.
+- Give compiled programs and execution results explicit disposal lifetimes; forward the borrowed budget through nested execution and host command requests. Retained aliases require their owners to remain alive.
+- Replace weak reclamation registrations, identity tables, paging/sweeps, forced collections and dormant guest-heap traversal with conservative batch ownership. Long streams use bounded host-driven executions; arbitrary reference withdrawal no longer promises an immediate refund.
+- Preserve allocation preflights, rollback, cancellation cleanup and Python identity. Correct enumerate alignment after a consumed item encounters result admission failure, and keep refused compilation associated with its supplied budget.
+- Migrate collector-only fixtures to shared-budget batches and independent retained-data/admission controls; keep longer stress totals separately. Document approximation and host headroom in MEMORY.md, included in the Release package.
+
 ## 0.10.0 - release candidate
 
 - Add immutable per-invocation built-in module selection, enforced across imports, attributes, registries and discovery without granting missing host capabilities.

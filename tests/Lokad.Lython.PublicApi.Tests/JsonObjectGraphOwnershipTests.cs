@@ -3,11 +3,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// R10: every fresh JSON object-graph node (containers, decoded strings, pair
-// tuples, hook argument strings) owns a refundable pool snapshot so dropped
-// parses reclaim on sweep. Hook results adopt via plain TrackCallResult,
-// never refunding an arbitrary callback value that may alias live state.
-public sealed class JsonObjectGraphOwnershipTests
+public sealed class JsonObjectGraphOwnershipTests : LifetimeScenario
 {
     private static void AssertError(LythonExecutionResult result, string type, string messagePart)
     {
@@ -18,18 +14,14 @@ public sealed class JsonObjectGraphOwnershipTests
     }
 
     [Fact]
-    public void DiscardedNestedLoadsSucceed()
+    public async Task DiscardedNestedLoadsSucceed()
     {
         const string code = """
             import json
-            for i in range(20000):
+            for i in range(8):
                 json.loads('{"a":["hello","world"]}')
             """;
-        var result = new LythonEngine().Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
+        await AssertBatchCompletes(code, null, 3145728, asynchronous: false);
     }
 
     [Fact]
@@ -37,14 +29,10 @@ public sealed class JsonObjectGraphOwnershipTests
     {
         const string code = """
             import json
-            for i in range(20000):
+            for i in range(8):
                 json.loads('{"a":["hello","world"]}')
             """;
-        var result = await new LythonEngine().RunAsync(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
+        await AssertBatchCompletes(code, null, 3145728, asynchronous: true);
     }
 
     [Fact]
@@ -82,18 +70,14 @@ public sealed class JsonObjectGraphOwnershipTests
     }
 
     [Fact]
-    public void DiscardedScalarLoadsSucceed()
+    public async Task DiscardedScalarLoadsSucceed()
     {
         const string code = """
             import json
-            for i in range(20000):
+            for i in range(8):
                 json.loads('"hello"')
             """;
-        var result = new LythonEngine().Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
+        await AssertBatchCompletes(code, null, 3145728, asynchronous: false);
     }
 
     [Fact]
@@ -101,14 +85,10 @@ public sealed class JsonObjectGraphOwnershipTests
     {
         const string code = """
             import json
-            for i in range(20000):
+            for i in range(8):
                 json.loads('"hello"')
             """;
-        var result = await new LythonEngine().RunAsync(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
+        await AssertBatchCompletes(code, null, 3145728, asynchronous: true);
     }
 
     [Fact]
@@ -159,18 +139,14 @@ public sealed class JsonObjectGraphOwnershipTests
     }
 
     [Fact]
-    public void ObjectHookDropReclaims()
+    public async Task ObjectHookDropReclaims()
     {
         const string code = """
             import json
-            for i in range(20000):
+            for i in range(8):
                 json.loads('{"a":1}', object_hook=lambda d: 42)
             """;
-        var result = new LythonEngine().Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
+        await AssertBatchCompletes(code, null, 3145728, asynchronous: false);
     }
 
     [Fact]
@@ -189,18 +165,14 @@ public sealed class JsonObjectGraphOwnershipTests
     }
 
     [Fact]
-    public void ObjectPairsHookDropReclaims()
+    public async Task ObjectPairsHookDropReclaims()
     {
         const string code = """
             import json
-            for i in range(20000):
+            for i in range(8):
                 json.loads('{"a":1}', object_pairs_hook=lambda p: 0)
             """;
-        var result = new LythonEngine().Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
+        await AssertBatchCompletes(code, null, 3145728, asynchronous: false);
     }
 
     [Fact]
@@ -221,22 +193,17 @@ public sealed class JsonObjectGraphOwnershipTests
     }
 
     [Fact]
-    public void FailedParsesThenSuccess()
+    public async Task FailedParseBatchesPreserveSubsequentSuccess()
     {
         const string code = """
             import json
-            for i in range(20000):
+            for i in range(8):
                 try:
                     json.loads('{"a":')
                 except Exception:
                     pass
             return json.loads('{"a":1}')["a"]
             """;
-        var result = new LythonEngine().Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal(new BigInteger(1), result.ReturnValue);
+        await AssertBatchCompletes(code, new BigInteger(1), 3145728);
     }
 }

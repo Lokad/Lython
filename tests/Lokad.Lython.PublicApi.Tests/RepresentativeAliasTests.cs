@@ -39,7 +39,9 @@ return [row['kind'], int(row['amount']), next(reader, None)]
     [MemberData(nameof(Cases))]
     public async Task EscapedAliasSurvivesClosureWhileRetainingAllValuesRejects(string name, bool retainAll, bool asynchronous)
     {
-        const int repetitions = 1024;
+        // Finite batches test escaping aliases; the retained-data witness
+        // remains large enough to refuse at the original fixed cap.
+        var repetitions = retainAll ? 1024 : 16;
         string Repeat(string value) => string.Concat(Enumerable.Repeat(value, repetitions));
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
         string input, inputPath, reportPath, report, stdout, alias, needle, capture;
@@ -47,7 +49,7 @@ return [row['kind'], int(row['amount']), next(reader, None)]
         {
             input = "kind,amount,note\n" + Repeat("red,3,\"café,\nquoted\"\nblue,2,😀\nred,-1,skip\nblue,5,ok\n");
             inputPath = "/input.csv"; reportPath = "/report.csv";
-            report = "kind,total\nblue,7168\nred,3072\n"; stdout = "3072\n";
+            report = $"kind,total\nblue,{7 * repetitions}\nred,{3 * repetitions}\n"; stdout = $"{3 * repetitions}\n";
             alias = "café,\nquoted";
             needle = "        amount = int(row['amount'])";
             capture = "row['note']";
@@ -56,7 +58,7 @@ return [row['kind'], int(row['amount']), next(reader, None)]
         {
             input = Repeat("{\"kind\":\"red\",\"amount\":3}\n{\"kind\":\"blue\",\"amount\":2}\n{\"kind\":\"red\",\"amount\":-1}\n{\"kind\":\"blue\",\"amount\":5}\n\n");
             inputPath = "/input.jsonl"; reportPath = "/report.json";
-            report = "{\"blue\":7168,\"red\":3072}\n"; stdout = "3072\n";
+            report = $"{{\"blue\":{7 * repetitions},\"red\":{3 * repetitions}}}\n"; stdout = $"{3 * repetitions}\n";
             alias = "red";
             needle = "            amount = record['amount']";
             capture = "record['kind']";
@@ -65,7 +67,7 @@ return [row['kind'], int(row['amount']), next(reader, None)]
         {
             input = Repeat("Alpha café 😀\nalpha BETA café\n\n");
             inputPath = "/input.txt"; reportPath = "/report.txt";
-            report = "alpha=2048\nbeta=1024\ncafé=2048\n😀=1024\n"; stdout = "6144\n";
+            report = $"alpha={2 * repetitions}\nbeta={repetitions}\ncafé={2 * repetitions}\n😀={repetitions}\n"; stdout = $"{6 * repetitions}\n";
             alias = "Alpha café 😀\n";
             needle = "        for word in line.lower().split():";
             capture = "line";
@@ -75,8 +77,10 @@ return [row['kind'], int(row['amount']), next(reader, None)]
         var insertion = retainAll ? indent + "held.append(" + capture + ")\n"
             : indent + "if not held:\n" + indent + "    held.append(" + capture + ")\n";
         source = "held = []\n" + source.Replace(needle, insertion + needle) + "\nassert source.closed\nreturn held[0]\n";
-        var script = new LythonEngine().Compile(source);
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         var mock = asynchronous ? null : new MockLythonHost();
         ILythonHost host = (ILythonHost?)delayed ?? mock!;
@@ -93,7 +97,7 @@ return [row['kind'], int(row['amount']), next(reader, None)]
         }
         if (delayed is not null) delayed.SeedFile(inputPath, input); else mock!.SeedFile(inputPath, input);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
-        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+        using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
         if (retainAll)
@@ -111,6 +115,11 @@ return [row['kind'], int(row['amount']), next(reader, None)]
             Assert.Equal(stdout, result.StandardOutput);
             var actual = delayed is not null ? delayed.ReadText(reportPath) : mock!.ReadText(reportPath);
             Assert.Equal(Encoding.UTF8.GetBytes(report), Encoding.UTF8.GetBytes(actual));
+            Assert.True(budget.ReservedBytes > baseline);
         }
+        result.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

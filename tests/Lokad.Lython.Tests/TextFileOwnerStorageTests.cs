@@ -15,7 +15,7 @@ public sealed class TextFileOwnerStorageTests
     [InlineData("r")]
     [InlineData("w")]
     [InlineData("a")]
-    public void DroppedClosedShellReclaimsButRetainedClosedShellStaysFunded(string mode)
+    public void ClosedShellsRemainBatchOwnedWhileRetainedHandlesStayUsable(string mode)
     {
         var host = new MockLythonHost(); host.SeedFile("/file", "");
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = Cap });
@@ -24,11 +24,10 @@ public sealed class TextFileOwnerStorageTests
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
         Assert.False(dropped.TryGetTarget(out _));
-        var expected = 64 + ChargeReclamationPool.EntryChargeBytes + (mode == "r"
-            ? LythonRuntime.ExecutionContext.ChunkedTextFileReadState.ShellBytes + ChargeReclamationPool.EntryChargeBytes : 0);
-        Assert.Equal(expected, context.State.CallTemporaries.Sweep(full: true));
-        Assert.Equal(before - expected, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.True(context.State.CallTemporaries.IsTracked(kept));
+        var expected = 64 + (mode == "r"
+            ? LythonRuntime.ExecutionContext.ChunkedTextFileReadState.ShellBytes : 0);
+        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(before >= expected);
         Assert.True(kept.IsClosed);
         Assert.True(((IPyOwnershipSnapshot)kept).TrySnapshotOwnership(out var shell));
         Assert.Equal(64, shell);
@@ -38,14 +37,14 @@ public sealed class TextFileOwnerStorageTests
     [Theory]
     [InlineData("w")]
     [InlineData("a")]
-    public async Task DeniedRegistrationRefundsUnpublishedShellWithoutRegisteringAWriter(string mode)
+    public async Task DeniedShellAdmissionPublishesNoWriterOrFile(string mode)
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = Cap });
         var retained = Handle.ForWrite("/retained", context); retained.Exit();
         var governor = context.MemoryGovernor;
         var committed = governor.CurrentCommittedBytes;
-        var pressure = Cap - governor.CurrentAccountedBytes - 64 - (ChargeReclamationPool.EntryChargeBytes - 1);
+        var pressure = Cap - governor.CurrentAccountedBytes - 64 - -1;
         using var reservation = governor.ReserveTemporary(pressure, null);
         var error = Assert.Throws<LythonRuntimeException>(() => mode == "w" ? Handle.ForWrite("/denied", context)
             : Handle.ForAppend("/denied", context, LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict,
@@ -53,7 +52,6 @@ public sealed class TextFileOwnerStorageTests
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Equal(committed, governor.CurrentCommittedBytes);
         Assert.Equal(pressure, governor.CurrentReservedBytes);
-        Assert.Equal(1, context.State.CallTemporaries.Count);
         context.State.CloseOpenFileWriters(context);
         Assert.False(await host.ExistsAsync("/denied", CancellationToken.None));
         Assert.True(governor.PeakAccountedBytes <= Cap);
@@ -80,7 +78,6 @@ public sealed class TextFileOwnerStorageTests
         var closed = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.True(closed < before);
         Assert.True(handle.IsClosed);
-        Assert.True(context.State.CallTemporaries.IsTracked(line));
         Assert.True(line.CommittedOwnedBytes > 0);
         if (asynchronous) { await handle.ExitAsync(); Assert.True(delayed!.CompletedAsynchronously > 0); }
         else handle.Exit();
@@ -99,7 +96,6 @@ public sealed class TextFileOwnerStorageTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = Cap });
         var handle = await Handle.ForAppendAsync("/file", context, LythonRuntime.TextEncodingMode.Utf8,
             LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal);
-        Assert.True(context.State.CallTemporaries.IsTracked(handle));
         handle.Write(PyString.FromString("after"));
         await handle.ExitAsync();
         var closed = context.MemoryGovernor.CurrentCommittedBytes;

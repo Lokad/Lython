@@ -315,13 +315,11 @@ internal sealed partial class LythonRuntime
             {
                 try
                 {
-                    context.State.CallTemporaries.TrackCallResult(aggregate.Result, span);
                     aggregate.ResultRegistered();
                     return aggregate.Result;
                 }
                 finally { aggregate.Dispose(); }
             }
-            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -335,13 +333,11 @@ internal sealed partial class LythonRuntime
             {
                 try
                 {
-                    context.State.CallTemporaries.TrackCallResult(aggregate.Result, span);
                     aggregate.ResultRegistered();
                     return aggregate.Result;
                 }
                 finally { await aggregate.DisposeAsync().ConfigureAwait(false); }
             }
-            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -1520,9 +1516,6 @@ internal sealed partial class LythonRuntime
         }
 
         context.ObserveCollectionCount(result.Count, span);
-        // Dropped results reclaim through the pool (dict-ctor pattern: keys stay
-        // aliased, only the container adopts).
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -1549,7 +1542,6 @@ internal sealed partial class LythonRuntime
         }
 
         context.ObserveCollectionCount(result.Count, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -1947,9 +1939,9 @@ internal sealed partial class LythonRuntime
 
         // The extra byte covers an unsigned magnitude's positive sign byte.
         // Borrow immutable bytes; convert once, then own the actual returned box.
-        GuardIntegerResultBytes(33L + raw.Length, context.MemoryGovernor, span);
+        using var integerAdmission = GuardIntegerResultBytes(33L + raw.Length, context.MemoryGovernor, span);
         var result = OwnFreshInteger(new BigInteger(raw, isUnsigned: !signed, isBigEndian: !littleEndian),
-            context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            context.MemoryGovernor, span);
         GC.KeepAlive(source); // Keep borrowed storage's owner through admission.
         return result;
     }
@@ -2963,7 +2955,6 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             RejectArguments(arguments, span);
             var result = _implementation(_receiver, span, context);
-            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -2974,7 +2965,6 @@ internal sealed partial class LythonRuntime
             if (_asyncImplementation is null)
             {
                 var immediate = _implementation(_receiver, span, context);
-                context.Services.State.CallTemporaries.TrackCallResult(immediate, span);
                 return ValueTask.FromResult(immediate);
             }
 
@@ -2983,7 +2973,6 @@ internal sealed partial class LythonRuntime
             async ValueTask<object> InvokeAsyncCore()
             {
                 var result = await _asyncImplementation!(_receiver, span, context).ConfigureAwait(false);
-                context.Services.State.CallTemporaries.TrackCallResult(result, span);
                 return result;
             }
         }
@@ -3175,7 +3164,6 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             var result = (PyDict)Dict(arguments, span, context);
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 
@@ -3183,7 +3171,6 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             var result = (PyDict)await DictAsync(arguments, span, context).ConfigureAwait(false);
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 

@@ -224,14 +224,46 @@ rejection, failed runtime admission and manually constructed public-factory
 results have no snapshot. This adds no always-on instruction counting, resource
 ledger or deadline watchdog; cooperative cancellation and separate execution/
 projection memory accounting keep their existing contracts.
-Guest-visible Python exception shells charge160 bytes, including origin fields
-and their owner link. Constructor results and exposed handler/control values share
-one owner in the existing pool; rebinding or rethrowing an alias pays no second
-shell fee. Dropped records reclaim their shell while args, attributes, payloads
-and exception chains retain their independent ownership. Transient interpreter
-control values remain available for native cleanup under exhaustion; binding,
-`sys.exc_info`, guest callbacks and retained chains adopt them before exposure.
-Very small execution budgets may reject shell or registry admission sooner.
+Guest-visible Python exception shells have a conservative160-byte estimate.
+Rebinding or rethrowing an alias does not allocate another shell. Execution owners
+retain admitted guest storage conservatively until their finite batch ends;
+reference withdrawal does not promise immediate recovery. Transient interpreter
+control values remain available for native cleanup under exhaustion. Retained
+public results are projected under an independent result owner.
+
+### 5.4 Governed Memory
+
+Lython exposes `ILythonMemoryBudget`, `ILythonMemoryScope` and
+`ILythonMemoryReservation`, with a standalone `LythonMemoryBudget`. Empty scopes
+share one borrowed root and have no independent cap. Thread-safe admission is
+immediate; refused reserve/resize leaves accounting unchanged. Zero is valid,
+negative estimates throw, and disposed owners reject admission and resize.
+Reservation disposal refunds its estimate; scope disposal refunds and invalidates
+its subtree. Disposal is idempotent and nonthrowing.
+
+Use coarse owners for executions, scratch, finite host-driven batches, compiled
+programs/caches and retained results. Reserve rough major backing-capacity and
+replacement-overlap estimates before allocation. Roughly 20% minor/control/short
+storage may remain uninstrumented; this is an intentional allowance, not measured
+per-workload coverage. Host headroom must also cover CLR/runtime/native memory
+and delayed physical collection. Estimates are not RSS or exact heap sizes.
+
+Lython borrows supplied budgets and disposes only its own scopes. Establish
+surviving result ownership before execution/projection, using a sibling owner or
+`ResultMemoryBudget`. Keep results alive while any extracted aliases remain,
+and await all invocations before disposing compiled programs or ancestors.
+Cancellation does not end a storage borrow. Host command requests forward the
+active budget; the dispatcher awaits and owns its child command cleanup.
+
+Finite host-driven CSV/text/JSON/file batches return temporary accounting after
+cleanup while retained results/caches stay charged. Arbitrary guest reference
+withdrawal and a row-count-independent uninterrupted execution are not promised.
+There is no guest-heap tracing, weak identity reclamation, forced collection,
+collection-progress retry or automatic transfer to GC. Admission failure retains
+earlier output and side effects and grants no transaction rollback or replay.
+Small refusal wrappers and fixed diagnostics can use host/control headroom when
+payload admission is unavailable; refused compilation keeps its borrowed budget.
+See [MEMORY.md](MEMORY.md) for API usage, disposal and borrowing details.
 
 ---
 
@@ -796,19 +828,16 @@ Negative indices for strings, lists, and tuples must behave as in Python.
 The supported subset must support Python-style slicing for strings, lists, and tuples. Mutable list slices must also support assignment and deletion as described in section 11.6.
 
 Colon slices delivered to a user object's item methods retain the original
-start, stop and step objects without `__index__` coercion. Each fresh guest-visible
-key owns its 64-byte shell and the ordinary weak-registry fees before a user
-getter, setter or deleter runs, including loop and unpacking targets. `RunAsync`
-awaits the actual user mutation and host suspension with the same receiver, key
-and value. Cancellation unwinds that call normally. Escaped keys remain owned
-while their actual references survive.
+start, stop and step objects without `__index__` coercion. A fresh guest-visible
+key admits a conservative64-byte shell before a user getter, setter or deleter
+runs, including loop and unpacking targets. `RunAsync` awaits the actual mutation
+and host suspension with the same receiver, key and value. Cancellation unwinds
+that call normally; admitted keys remain conservatively owned by their batch.
 
-Colon keys on `dict`, `Counter`, `defaultdict` and `ChainMap` use the same ownership
-route. Lookup, equal-key replacement and deletion keys are reclaimed when their
-actual references disappear; inserting an equal key preserves the mapping's
-original key object. A denied fresh-key registration refunds its unpublished
-shell and reaches no user mutation or mapping store. Mapping backing storage
-and registry tier capacity retain their own accounted fees.
+Colon keys on `dict`, `Counter`, `defaultdict` and `ChainMap` use the same admission
+route. Inserting an equal key preserves the mapping's original key object.
+Denied fresh-key admission reaches no user mutation or mapping store. Mapping
+backing capacity and replacement overlap have separate storage estimates.
 
 ### 9.3.1 Assignment Semantics
 
@@ -1009,6 +1038,10 @@ Dictionary iteration must follow Python semantics for the supported subset.
 - `enumerate(iterable)`
 - `enumerate(iterable, start)`
 
+If an `enumerate` result is refused after its source item was consumed, its
+index advances with that item. A later successful pull keeps the source/index
+alignment. Resource refusal does not roll back completed iterator effects.
+
 The `itertools` module supports common lazy iterator helpers:
 
 - `chain`, including `chain.from_iterable`
@@ -1098,8 +1131,8 @@ names and attribute/item annotations remain unevaluated and store no entry.
 Class dictionaries are initialized before the body, including conditional
 declarations, and updates respect a replacement mapping's item protocol.
 Deleting a class's annotation mapping follows class-name lookup into its module.
-String, collection and memory limits govern exposed annotation metadata, and
-dropped functions reclaim their annotation dictionaries, strings and table slots.
+String, collection and memory limits govern exposed annotation metadata.
+Admitted metadata remains conservatively owned by its execution or compiled owner.
 
 The runtime must support:
 
@@ -1366,24 +1399,16 @@ and ValueError. Sequential handles report seekable=False; seek and other random
 access operations fail explicitly. Binary read1/readinto/truncate/raw/descriptor
 APIs are outside this inventory.
 
-Text handles fund a 64-byte shell and its ordinary ownership-registration fees
-before publication. Successful close releases owned read/write buffers once;
-closed handles and captured methods keep the shell funded while reachable.
-Dropped closed handles reclaim through the existing owner pool, rather than
-accumulating one permanent charge per open. Read values retain their independent
-payload ownership after the file closes. A denied registration refunds the
-unpublished shell; read-construction failure also releases its private buffers.
-Registration metadata may reject very small execution budgets earlier.
+Text handles admit a conservative64-byte shell before publication. Successful
+close releases owned read/write buffers once; shells and returned payloads remain
+conservatively owned by their batch. Failed unpublished construction refunds the
+shell and private buffers without depending on collection.
 
-Text-reader state funds a conservative 192-byte storage shell, its raw carry
-and current decoded window through one mutable snapshot in the shared owner
-pool. Dropping an unclosed reader reclaims these private buffers when collected;
-retained readers, iterators and methods keep them funded. Close releases buffers
-and refreshes that snapshot once, leaving live shells charged. Returned values
-use the shared pool with independent payload ownership. No separate per-reader
-reclamation pool or abandonment registration is needed. Failed unpublished
-construction refunds the state and entry immediately; shared pool capacity
-remains funded for the run. CLR reclamation and exhaustion relief still apply.
+Text-reader state admits a conservative192-byte shell, raw carry and decoded
+window capacity. Close releases discarded buffers once. Returned values remain
+funded after a handle closes and through retained aliases. Execution/batch cleanup
+ends temporary ownership; dropping a guest reference does not trigger a sweep or
+forced GC. Use finite host-driven batches for sustained bounded streams.
 
 Readers acquire governed windows through optional ranged host methods. A short
 nonempty window is not EOF; empty windows end the stream. Stat and cumulative
@@ -1852,44 +1877,25 @@ The default dialect is:
 - quote character `"`
 - line terminator `\n`
 
-Returned rows and field values may outlive their CSV reader. Source/parser shell
-and actual scratch capacities have one storage owner; emitted fields, rows and
-dictionaries register independently with the shared reclamation pool. EOF releases
-scratch without refunding surviving values. A body error preserves a resumable
-reader and its funded storage; abandonment reclaims its snapshot after collection.
-Field/list buffer growth preflights old/new overlap before allocation. Small
-retained scratch arrays remain charged until release, rather than being recharged
-only when reused. These ordinary storage charges can deny tiny budgets earlier.
-Dropping a reader must not strand charges for values that are dropped later.
+Returned rows and fields may outlive their CSV reader. Source/parser shell,
+scratch, field-name arrays, emitted rows and payloads have conservative storage
+charges. EOF and close release discarded scratch without refunding aliases.
+A body error preserves a resumable reader and its funding. Remaining guest values
+stay batch-owned; sustained streams use bounded host-driven executions.
 
-CSV field-name tables are preflighted and funded as actual array storage, with
-the normal reclamation registration fee. Their charges release when those arrays
-become unreachable, including after an abandoned reader or failed writer
-construction; retained tables remain funded. Empty tables have distinct owners.
-The tables and escaped `fieldnames` lists keep their string values aliased to
-their existing payload owners. Registration can reject a construction earlier
-under a tiny memory budget; dropped tables do not accumulate historical charges.
+Field/list/cell buffer growth admits replacement overlap before allocation.
+Private construction failure refunds unpublished storage. Field-name tables and
+escaped fieldnames lists preserve their string aliases. Retaining row history,
+getvalue results or callback-visible strings keeps their estimates charged.
+File-backed writers avoid row history and publish buffered output on flush/close.
+Prior successful rows and callback side effects survive later failures; failed
+private conversion drops only its unpublished state. Field/record/string limits
+and allocation admission remain enforced before unbounded growth.
 
-Failed rows retain nothing uncharged and leave writers usable: a row that
-raises during conversion or reservation is dropped without keeping partial
-state, prior successful rows (including earlier `writerows` rows) stay valid,
-and later rows still write. In-memory history and every escaping `getvalue()`
-result stay governed, so retaining them accumulates charges and excessive
-retention raises `MemoryError`. Callback-visible row strings have durable
-governed ownership, including aliases retained by guest code; abandoned
-strings release through the shared reclamation pool. Cell-array growth and
-rendering scratch are preflighted. File-backed writers stream output without
-retaining row history; buffered output publishes on flush or close, so a
-failed host write leaves no partial row and a run cancelled mid-stream leaves
-no file behind. Oversized fields, records and conversions trip the execution
-budget before unbounded growth rather than materializing first.
-
-Each native CSV writer funds its shell and any retained in-memory history through
-one ownership snapshot. Dictionary writers fund their wrapper separately from
-their child writer and field-name table. Dropped owners reclaim their charges;
-retained bound methods keep their writers funded. Construction registration
-precedes publication, and denied registration refunds only unpublished storage.
-The normal registration fee can reject a construction earlier at tiny budgets.
+Native CSV writers fund their shells and retained history. Dictionary writers
+also fund their wrapper and field-name table. Bound methods and escaping values
+remain owned by the batch or surviving public result. Conservative estimates and
+replacement overlap can reject previously accepted tiny budgets sooner.
 
 If a script requests structured-text behavior outside the supported subset, the runtime must fail explicitly.
 
@@ -2144,7 +2150,7 @@ write fills gaps with NULs, while empty writes preserve the cursor and value.
 Absolute seeks require nonnegative positions; current/end seeks allow offset
 zero only. Truncate never moves the cursor or extends text. Reads/getvalue
 produce independently governed immutable snapshots. Growth funds old and new
-storage overlap; aliases retain ownership and abandoned values reclaim.
+storage overlap; aliases remain owned by their finite execution or result.
 
 Close is idempotent and discards storage. Closed reads/writes/value/position,
 queries, iteration, newlines and line_buffering raise ValueError; encoding,
@@ -2217,7 +2223,7 @@ and predicates retain Python's lazy behavior.
 Both helpers use governed UTF-8 output and scalar-string limits. Private line
 processing does not consume guest collection item limits. Resource denial,
 guest failure and cancellation stop before later callbacks or line pulls and
-release scratch; abandoned output strings are reclaimed. RunAsync awaits
+release scratch; output strings remain batch-owned. RunAsync awaits
 guest member lookup, line sources, predicates, whitespace hooks and truth hooks.
 
 ### 11.19 HTML Text Helpers
@@ -2231,7 +2237,7 @@ scalar-string limits without guest collection storage.
 Guest objects follow ordinary chained replace calls in Python order, with
 quote truth testing after the first three replacements. RunAsync awaits member
 lookup, replacement and truth effects. Errors, resource denial and cancellation
-stop later effects; temporary buffers and abandoned results are reclaimed.
+stop later effects; private temporary buffers refund while results remain batch-owned.
 
 `unescape` makes one decoding pass, using the complete finite HTML5 name table
 from CPython 3.13.16 (2,231 entries). It honors case-sensitive names, optional
@@ -2397,8 +2403,8 @@ this inventory.
 Input/parser/stack/selector scratch, node shells, attribute maps, child storage,
 text builders and output lists are governed before growth. Node counts,
 attributes, strings and work obey execution limits. Unpublished graph values
-refund on malformed input, denial or cancellation; pool capacity remains owned
-by the execution. Child, map and text aliases retain their own charges without
+refund on malformed input, denial or cancellation; published storage stays
+conservatively owned by its execution batch. Child, map and text aliases retain their own charges without
 keeping hidden parent links. Integer and slice-bound conversions resolve type
 slots and await mediated effects under RunAsync.
 File parse, iterparse, parser customization, tree constructors/mutation,
@@ -2440,7 +2446,7 @@ exact publication copy fund separately before growth. Native calls operate
 on bounded chunks, and compressed-input cursor pulls also check work and
 cancellation even when blocks emit no output. Failed validation, denial or
 cancellation releases private output and scratch; returned bytes retain only
-their ordinary payload/registry ownership and reclaim when dropped.
+their payload ownership through the execution or surviving public result.
 
 Other wbits values, raw/gzip/automatic mixed framing, preset dictionaries,
 incremental compressobj/decompressobj, public checksum helpers and backend
@@ -2473,8 +2479,8 @@ while the operation is active, including suspension, and is released on success
 or failure. Explicit stream/data aliases remain charged. Reentrant operations,
 including context-manager exit during a callback, fail with RuntimeError.
 `iter(wrapper)` preserves identity while open and raises ValueError after close.
-This lifetime rule preserves allocation preflights and current CLR-dependent
-reclamation; it does not establish GC-independent accounting.
+This lifetime rule preserves allocation preflights and cooperative ownership.
+Finalizers release only physical local resources; accounting ends explicitly.
 
 Modes `r`/`rb`, `w`/`wb` and `a`/`ab` expose canonical `rb` or `wb` metadata.
 Supplied objects also accept `x`/`xb` as writing; exclusive filename acquisition
@@ -2749,7 +2755,7 @@ Managed stack admission, the synchronous startup stack and host mediation retain
 their existing policies. Compiled local-slot stores consume the popped operand
 in a completed transfer helper, rather than in the long-running dispatch loop.
 
-Shared execution checkpoints perform cancellation and necessary housekeeping. Temporary reclamation must keep a lightweight cadence even in call-free loops without fuel, so dropped values do not leave stale commitments. Recursion/interpreter-depth and CLR stack-headroom guards, memory preflights, collection/string/read/output bounds, CLR projection funding, and the separate host-call quota remain effective.
+Shared execution checkpoints perform cancellation independently of optional fuel. Memory admission and explicit owner cleanup do not use a reclamation cadence. Recursion/interpreter-depth and CLR stack-headroom guards, memory preflights, collection/string/read/output bounds, CLR projection funding, and the separate host-call quota remain effective.
 
 Long builtin traversals must observe cancellation at meaningful intervals. Operations that cannot interrupt promptly retain operation-local size, depth, allocation or work safeguards; an outer token does not make an indivisible dependency call interruptible. Bounded CLR/native conversion and parsing calls finish before the next checkpoint; host implementations must honor the token during their own operations. The PythonRe implementation limitation in section 11.7 remains separate dependency work. Guest exception handling must not suppress host cancellation indefinitely, and canceled writers retain their cleanup/publication contract.
 
@@ -2779,59 +2785,21 @@ are charged per occurrence without changing Python object identity. Large
 integer magnitudes keep their independent payload owner; unowned magnitudes
 include a payload-size estimate in the slot charge. These estimates may reject alias-heavy scripts under
 tight budgets and may change reported accounted peaks. They track retained
-storage rather than cumulative allocation: dropped records remain reclaimable,
-while retained records and escaped payloads continue to consume the budget.
+storage across explicit lifetimes: records stay conservatively owned within a
+batch, while retained public records and payloads have a surviving result owner.
 Construction preflights storage, refunds failed materialization, and transfers
 only its own temporary funding to the completed storage owner.
 
-Reclamation metadata uses one funded entry collection per pool, with backing
-pages of at most 8,192 entries to avoid large transient reference arrays. Sweeps do not
-allocate or require additional budget to keep live entries tracked; they release
-collected owners in place. Recent registrations are scanned promptly, while
-retained populations are visited in bounded quanta outside exhaustion relief.
-Runtime storage owners share the execution's pool; source abandonment releases
-that source's storage snapshot without retiring a separate pool or its aliases.
-An exhausted CSV reader releases its original input and cursor references,
-including after a terminal parse error. Already parsed or pushed-back records
-and escaped fields keep their independent charges. Retained input aliases remain
-funded, and recoverable errors while reading a body keep the source resumable.
-Shared pool capacity remains accounted for its execution lifetime, avoiding
-repeated trim/regrow allocation. These metadata estimates can change accounted peaks.
-Escaping binary and text file handles retain their file storage and shared
-execution services, including text reader and writer state. Unrelated local
-variables from a completed creating function remain
-reclaimable after its active calls and async continuations have unwound.
-Catching `MemoryError` does not release retained values or guarantee room for a
-new result container. Scripts that recover under a saturated budget must reuse
-funded storage or release storage before allocating again.
-
-Before denying a reservation, exhaustion relief first sweeps already-collected
-owners. If that does not cover the shortfall, it collects CLR generations from
-youngest to oldest, sweeping after each and stopping once enough committed
-storage has been reclaimed. Old unreachable storage can still require a full
-collection; live retained aliases and resources awaiting finalization stay
-funded. A pinned denial can therefore make several collection attempts. Repeated
-denials without allocation progress do not repeat forced collection. If the CLR
-has collected since the last complete owner sweep, a subsequent denied admission
-can reconcile already-collected storage without another collection. A partial
-sweep cannot claim full coverage, and a collection during traversal still permits
-a later complete sweep. Unchanged pinned denials do not repeatedly scan the full
-inventory. This does not authorize collection merely because a reference changed.
-This automatic policy
-has no owner-age tracking or configuration switch. Accounting still depends on
-CLR collection and these collections affect the embedding process; it does not
-guarantee pause isolation or replace live-memory bounds with allocation totals.
-
-String repetition can reject before relief when one funded immutable UTF-8
-payload retained by existing execution state proves that the request cannot fit
-beside it. A bounded search reads existing bindings and direct list elements;
-it uses the largest single payload, preserving aliases without summing them.
-Missing evidence leaves normal relief in place. This proof refunds no storage,
-adds no ownership ledger and does not consume a reclamation opportunity when
-no reclamation was attempted. Accounted peaks and failure observations may then
-include dead storage that has not yet been swept. This does not guarantee recovery
-after every reference withdrawal: transient CLR references can remain until calls
-or asynchronous continuations unwind.
+Executions and compilation/projection owners share the supplied root allowance;
+no weak registration inventory or collection-dependent relief is maintained.
+Retained guest storage stays conservatively charged until the finite execution
+ends. Explicit storage replacement/close and failed private construction return
+only their own released funding. An exhausted CSV reader drops input/cursor
+references while preserving queued records and escaped fields. Escaping handles
+retain their file services/storage without retaining unrelated creation locals.
+Catching MemoryError does not release retained storage or guarantee room for new
+results. Sustained streams use bounded host-driven executions whose cleanup
+returns temporary allowance immediately, independently of CLR collection.
 
 Set construction refunds its private shell, backing storage and scalar charges
 if population fails before publication. Internal intersection and subset scratch
@@ -2853,8 +2821,8 @@ for each removed numeric slot. Numeric-to-numeric replacement transfers the
 existing allowance. Attaching a governor to an ungoverned list preflights its
 existing numeric slots before publishing the owner. Alias-heavy scripts may now
 deny under budgets that previously accepted them; for example, `[0] * 100000`
-requires 6.4 MB of numeric allowance before backing. Long dropped/refill streams
-release live charges rather than accumulating total allocation forever.
+requires 6.4 MB of numeric allowance before backing. Explicit clear/refill releases discarded list backing/slot allowances; other
+guest payload estimates remain conservatively charged for the finite batch.
 
 Governed sets likewise charge 64 bytes per retained numeric member through one
 storage subtotal. Equal duplicates add no charge, including Boolean/integer
@@ -2865,7 +2833,7 @@ separate payload charges and pay the member allowance. First attachment admits
 the existing shell, table, numeric members and protocol storage before publishing
 the governor. Existing protocol index capacity stays conservatively funded until
 clear or drop. These stricter admissions can deny scripts accepted by the older
-policy. Clear/refill and dropped-set streams release live charges.
+policy. Clear releases discarded storage; remaining estimates end with the batch owner.
 
 Random population, weight and state drains likewise fund temporary backing
 before allocation and release it when the operation exits, including validation
@@ -2881,7 +2849,7 @@ under tight budgets. First attachment funds the shell and all existing nodes
 before publishing the governor. Growth preflights each new node; failed private
 construction refunds its storage. Full bounded eviction, indexed replacement
 and rotation reuse funded nodes without additional storage admission. Pop,
-removal and clear release live-node charges; dropped deques remain reclaimable.
+removal and clear release live-node charges; the shell remains batch-owned.
 Streaming extension keeps its successfully inserted prefix if later input fails.
 
 Governed dictionaries add a fixed 128-byte allowance per retained key/value
@@ -2893,8 +2861,8 @@ peaks and reject scripts accepted under the former identity-based policy.
 New insertion preflights entry storage, replacement transfers the existing
 allowance, and deletion releases it even when the lookup key is an equal but
 distinct object. First attachment admits existing storage before publishing its
-governor; copying funds a fresh entry subtotal. Clear and dropped-container
-reclamation release live charges rather than total historical allocation.
+governor; copying funds a fresh entry subtotal. Clear releases discarded storage; conservatively retained payload estimates
+end with the finite batch owner.
 Counter/defaultdict storage remains funded through escaped mapping views and
 iterators. Storage changes refresh the same charged owner, including after
 callback-visible partial mutation; unreachable wrapper/storage cycles remain
@@ -2904,29 +2872,27 @@ Counter and defaultdict construction funds one 64-byte wrapper shell and its
 inner dictionary together; failed inner admission refunds the shell reservation.
 Default factories are validated before storage admission. Copies clone the inner
 storage once and fund the resulting wrapper shell, including inherited ownership.
-Fresh wrapper owners are registered before input population or deep-copy
-callbacks, so failed population remains reclaimable and an escaped partial clone
-keeps its live charges. Registration can therefore deny earlier before input
-callbacks under tight budgets. Counter input uses the same key-hashability
+Storage is admitted before input population or deep-copy callbacks, so escaped
+partial clones remain charged. Failed private construction refunds storage only
+when it has not escaped; otherwise retention is conservative through batch end. Counter input uses the same key-hashability
 validation as dictionaries, rejecting unhashable collections and tuple contents.
 
 The same early ownership rule applies to mutable list, dictionary, set and deque
-deep-copy results: registration precedes memo publication and copying members.
-Failed hooks leave dropped partial results reclaimable; memo aliases retained by
-callbacks keep their actual storage funded. Registration denial refunds the
-unpublished result, and cyclic/shared memo identity remains unchanged.
+deep-copy results: admission precedes memo publication and copying members.
+Memo aliases retained by callbacks stay charged through batch end. Failed private
+construction refunds only unpublished storage; cyclic/shared memo identity remains
+unchanged.
 
 Ordinary governed instances own a conservative 160-byte shell and attribute table,
 plus 64 bytes per own attribute slot. Empty instances therefore have an owner
-that can register before initialization or deep-copy callbacks. Attaching an
+admitted before initialization or deep-copy callbacks. Attaching an
 ungoverned instance funds its shell and existing slots before publishing the
 governor; refusal leaves it unowned and retryable. Deleting every attribute keeps
 the shell funded. Class allocation creates a default instance only when there is
-no `__new__`; allocator-returned aliases use non-refunding registration before
-initialization. Instance deep-copy owners register before memo publication, and
-OrderedDict owners before constructor population. Metadata admission may therefore
-deny before callbacks at tight budgets. Kept partial results retain their charges;
-dropped failed construction/copy results remain reclaimable.
+no `__new__`; allocator-returned aliases retain their existing storage funding.
+Instance deep-copy admission precedes memo publication and OrderedDict admission
+precedes population. Kept or potentially escaped partial results remain charged
+through batch end; private constructor failures refund unused storage.
 Deep instance-copy callbacks see the empty memoized destination until every
 attribute value has been copied, following Python's state-publication order.
 The reference-pair staging array reserves 24 bytes plus 16 per attribute before
@@ -2942,15 +2908,14 @@ None fields keep their existing payload ownership without this allowance.
 Large integers retain their separate payload owner; an unowned large integer
 also contributes its byte-count estimate. Construction admits all field storage
 together. Documentation replacement funds only positive growth, reuses existing
-allowances and releases outgoing storage on shrink or deletion. Dropped properties
-reclaim their live storage through the existing ownership snapshot. This removes
+allowances and releases discarded field storage on shrink or deletion. Properties
+remain conservatively owned by their execution batch. This removes
 scalar identity/refcount accounting and can change tight-budget acceptance and
 peaks; it does not count cumulative allocations.
 
 `int.from_bytes` preflights conversion storage before creating its result. Heap
-magnitudes own their payload through the same reclamation path as parsed and
-arithmetic integers: retained conversions count toward the execution budget,
-while dropped conversions can reclaim their charge. The byte-length estimate is
+magnitudes stay conservatively owned by their execution like parsed and
+arithmetic integers. Public projected magnitudes acquire surviving result funding. The byte-length estimate is
 conservative, so heavily sign-padded input can require more admission headroom
 than the final integer's payload. This does not charge total allocation forever.
 
@@ -2959,7 +2924,7 @@ owner, including numeric views, conversion/index hooks and nonrounding integer
 results. Positive integer `abs` likewise preserves its input. Changed magnitudes
 keep their own preflight and payload charges. Retaining integer aliases therefore
 retains their original funding even after the source reference disappears;
-repeated aliases do not create new payload owners.
+conservative estimates may overcount aliases without an identity ledger.
 
 Expanded calls preflight their argument-buffer shell, reservation and backing
 array together. Exact outgoing-array copies fund their own header and slots;
@@ -2973,12 +2938,11 @@ live-memory accounting and do not charge cumulative allocation traffic.
 Native `sum` and nonempty-argument `list` conversion preflight a conservative
 128-byte execution-state shell. The aggregate's
 accumulator, current item and iterator remain stored through callbacks,
-asynchronous suspension, iterator cleanup and result registration. The shell
-charge is released after cleanup and registration; returned values retain their
+asynchronous suspension and iterator cleanup. The shell
+charge is released after cleanup; returned values retain their
 own ownership. This fixed charge can reject previously accepted tiny budgets.
-List conversion stores its populated result throughout iteration and registers
-it before withdrawing the operation. Numeric slots are charged as they are
-appended; failed construction, cleanup or registration drops and refunds only
+List conversion stores its populated result throughout iteration. Numeric slots are charged as they are
+appended; failed private construction or cleanup drops and refunds only
 the unpublished list's backing and slot allowances. Existing element aliases
 retain their own funding. Async conversion fills the actual governed list
 directly. Collection and memory limits can therefore reject an input earlier
@@ -2995,103 +2959,41 @@ previously returned tuple aliases keep their own funding.
 
 Lython does not need to promise a perfect hard memory ceiling from inside the same managed process, but it must provide conservative in-process resource controls that make runaway allocation materially harder.
 
-#### 14.6.1 Combined Peak Envelope
+#### 14.6.1 Shared Allowance and Policy Peaks
 
-The execution budget and the projection budget are independent governors: the
-execution budget owns guest-retained runtime state, while the projection budget
-owns the returned value, the failure details, and the standard-output
-and standard-error captures built after execution. Oversized failure messages
-truncate with an explicit marker and keep their exception type; when even the
-truncated minimum overruns, the type survives with empty details. Every completed or failed result therefore reports both
-high-water marks (`PeakExecutionMemoryBytes` and `PeakProjectionMemoryBytes`),
-so an embedding host can reconcile enforcement decisions with sampled heap or
-process peaks instead of inferring them from failures alone.
+Execution and projection keep separate policy limits and high-water marks
+(`PeakExecutionMemoryBytes` and `PeakProjectionMemoryBytes`). They reserve against
+one supplied root, which also sees compiled programs, caches, retained results
+and overlapping/nested cooperating invocations. No whole-limit escrow or copied
+remaining balance is used. Failure projection can truncate details or return a
+constant-size emergency result while preserving the original attribution.
 
-The combined peak envelope is approximately the sum of both budgets plus
-transient host-side allocations: host file reads, subprocess payloads, and
-dependency working state live outside either governor, as do ordinary CLR,
-host, and dependency internals. Approximations must lean toward over-counting,
-so runs fail earlier rather than later, but the runtime must not promise a
-process-RSS ceiling from inside the same managed process.
+Accounted peaks are estimates, sampled live heap measures CLR retention after
+collection, process peaks include all runtime/host/dependency state, and cumulative
+allocation totals traffic rather than simultaneous ownership. These quantities
+must not be substituted for one another. Keep headroom above estimates for minor
+uninstrumented storage, dependency/native state and delayed physical collection.
 
-Measured 2026-09-14 (accounted peaks, Release, local): an expression-only run
-accounts zero bytes; one top-level `def` accounts about 0.8KB (function shell
-plus module frame); importing `sys` accounts about 19KB (registry slot plus
-exported entries). These floors sit inside the execution budget: they tell a
-host what fixed cost to leave room for, not what lives outside it. Genuinely
-outside either governor are host file reads (bounded separately by
-`MaxHostReadBytes`), subprocess payloads, dependency working state, and
-ordinary CLR, host, and dependency internals — none of which the accounted
-floors measure, so keep an explicit margin above them rather than budgeting
-to zero.
+#### 14.6.2 Compilation and Imports
 
-The four lenses measure different things and do not substitute for one
-another: accounted peaks are the governors' high-water marks, reported on
-every result; sampled live heap (for example deltas taken at a host callback
-while guest roots are still live) shows managed retention after collection;
-process peaks are whole-process OS counters that include the runtime, the
-host, and all dependencies; and cumulative allocation (for example
-thread-allocated bytes around one operation) totals everything allocated,
-not maximum simultaneous storage. A 20,000-empty-set run, for instance,
-accounts about 3.15MB (128B shell per set plus list slots) while sampling
-about 2.7MB live after collection — the peak covers the sample, with the
-exact gap varying by collection timing.
+Compilation admits a coarse source/AST/lowered-code and cache estimate before
+allocation. A public compiled script keeps its owner until disposed; a one-shot
+run releases its temporary compilation after execution/cleanup. Local imports
+admit the same kind of estimate against the active execution owner before
+parsing/lowering. Preparation failure refunds unused admission. Prepared code
+can escape through guest callbacks even if import execution later fails, so its
+estimate stays conservatively charged until batch end. Re-importing a successfully
+registered module reuses it without another compilation admission.
 
-#### 14.6.2 Compilation and Import Envelope
-
-The execution and projection governors begin at execution. Compilation
-(parse, binding, lowering, and executable construction) runs outside either
-governor, so a host must understand what bounds compilation instead.
-
-Compilation inputs are bounded and host-mediated. A source unit longer than
-`MaxSourceLength` (1,000,000 characters) fails with an explicit diagnostic,
-as do delimiter nesting beyond `MaxSyntaxNesting` (512) and unary-operator
-nesting beyond `MaxUnaryOperatorNesting` (256); string and comment text does
-not count toward nesting. Distinct expanded private names share cached spellings
-within each lexical class and are bounded collectively by
-`MaxPrivateNameExpansionLength` (8,000,000 characters), including f-string fields;
-excess expansion fails with LA0004 before guest effects. Canonical postponed
-annotation text has a separate cumulative limit of 8,000,000 characters per
-source unit; excess expansion fails with LA0005 before guest effects. Sources reach the
-frontend only through host files,
-host options, and allowlisted local imports, never from guest execution, so
-compilation load is host-driven by construction.
-
-Measured 2026-09-14 (cumulative thread-allocated bytes around `Compile`,
-isolated processes): compiling 20,000 `pass` statements (about 120KB of
-source) allocates about 41MB in total — roughly 2KB per simple statement.
-That total is cumulative allocation, not maximum simultaneous transient
-storage, and cannot be read as a peak. There is no separate compilation
-budget: hosts compiling large or numerous sources should stay well below the
-input maximums and reuse compiled scripts (`compile once, run many times`).
-
-Per-import retained state during execution is governed: each registered
-module commits its registry slot, exported entries commit per entry at
-construction, member values stay owned by their own construction, and scopes
-retained through imported functions are owned by the closure-retention walk
-(builtin aliases stay owned by the run). Each module owns its deferred code
-once at import preparation: function bodies own their full retained syntax-
-node count (statements, expressions, lambdas, generators, patterns and target
-references) at a fixed per-node rate, while executed top-level statements stay
-owned through their values. The outermost lambda or generator expression in an
-evaluated position owns its full subtree the same way; eager comprehension
-scaffolding stays transient. Literal occurrences beside the node rate own their
-retained payloads (string and bytes construction estimates, boxed integer
-magnitudes, formatted-string text chunks) plus one shared-cache entry each;
-floats and singletons retain nothing per occurrence. A failed import releases
-its deferred charge because the module never reaches the registry, so caught
-failures and retries pay once rather than once per attempt. Nested definitions count inside their outer walk, never
-again at execution; re-imports hit the registry. Entry scripts never flow
-through import preparation, so guest-visible module names cannot divert the
-charge. The aggregate registered-module total
-honors `MaxCollectionSize`, and local-module sources compile under the same
-input limits above. Local imports always execute lowered statements directly,
-so no per-import executable image is retained: only truly unreferenced scopes and
-statements become collectible once the import completes, while bodies kept alive
-through defined functions stay owned as stated above. What remains outside
-either governor is the transient compile load per source unit (bounded by the
-input limits above, not by a separate compilation budget, which stays
-an explicit host policy decision).
+Source units remain limited to1,000,000 characters, delimiter nesting512, unary
+nesting256, distinct expanded private names8,000,000 characters and canonical
+postponed annotation text8,000,000 characters. These limits retain their explicit
+frontend diagnostics. Inputs stay host-mediated and local imports allowlisted;
+no arbitrary guest evaluation or ambient module loading is introduced.
+Module registries, exports, runtime values and closure state retain their existing
+admission controls. There is no per-node/literal code inventory or closure graph
+walk. Conservative batch retention and coarse compilation estimates can reject
+previously accepted tiny budgets sooner. See [MEMORY.md](MEMORY.md).
 
 ---
 

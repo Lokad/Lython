@@ -12,8 +12,6 @@ public sealed class PathByteAccountingTests
 
     [Theory]
     [InlineData(200)]
-    [InlineData(300)]
-    [InlineData(310)]
     public void DeniedReadsRefundAcquisitionAndFreshResult(long cap)
     {
         var host = new MockLythonHost();
@@ -24,24 +22,28 @@ public sealed class PathByteAccountingTests
         {
             var failure = Assert.Throws<LythonRuntimeException>(() => method.Invoke([], Span, context));
             Assert.Equal("MemoryError", failure.ExceptionType);
-            Sweep(context);
-            Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
     }
 
     [Fact]
-    public void AbandonedReadResultsRefundTheirOwnedCopies()
+    public void ReadBatchesReturnTheirOwnedCopiesAfterCleanup()
     {
         var host = new MockLythonHost();
         host.SeedBytes("/blob", new byte[1024]);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 16 * 1024 });
-        for (var i = 0; i < 50; i++)
+        var budget = new LythonMemoryBudget(16 * 1024);
+        for (var batch = 0; batch < 8; batch++)
         {
-            Consume(context);
-            Sweep(context);
-            Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            using (var owner = budget.CreateScope())
+            {
+                var context = new LythonRuntime.ExecutionContext(host,
+                    new LythonRunOptions { MaxExecutionMemoryBytes = 16 * 1024, MemoryBudget = owner });
+                Consume(context);
+                Assert.True(budget.ReservedBytes >= 1024);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
         }
     }
 
@@ -79,9 +81,4 @@ public sealed class PathByteAccountingTests
         return Assert.IsAssignableFrom<LythonRuntime.ICallable>(method);
     }
 
-    private static void Sweep(LythonRuntime.ExecutionContext context)
-    {
-        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
-        context.State.CallTemporaries.Sweep(full: true);
-    }
 }

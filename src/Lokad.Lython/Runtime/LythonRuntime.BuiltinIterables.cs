@@ -229,17 +229,11 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", "range() arg 3 must not be zero", span);
         }
 
-        // Bounds are inline values, but huge bounds retain heap limb arrays with
-        // the range: fold those payloads into the shell coupon so the object owns
-        // its full retained scale and drops reclaim it through the pool below.
         var boundPayloadBytes = BoundMagnitudeBytes(start) + BoundMagnitudeBytes(stop) + BoundMagnitudeBytes(step);
         var rangeBytes = checked(RangeValueBytes + boundPayloadBytes);
         context.MemoryGovernor.Reserve(rangeBytes, span);
         context.MemoryGovernor.Commit(rangeBytes);
-        // Fresh shells reclaim through the pool once dropped. The range keeps
-        // the reservations below so heap-scale yields own their magnitudes.
-        var range = new PyRange(start, stop, step, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(range, rangeBytes);
+        var range = new PyRange(start,stop,step,context.MemoryGovernor,span);
         return range;
     }
 
@@ -265,7 +259,6 @@ internal sealed partial class LythonRuntime
         }
 
         var enumerateResult = new PyEnumerateIterator(arguments[0], index, span, context);
-        context.Services.State.CallTemporaries.TrackFreshMutable(enumerateResult, PyIteratorBase.IteratorValueBytes);
         return enumerateResult;
     }
 
@@ -295,7 +288,6 @@ internal sealed partial class LythonRuntime
         try
         {
             zipResult.InitializeCursors(arguments, context);
-            context.State.CallTemporaries.TrackMutable(zipResult, zipResult.CommittedStorageBytes, span);
             return zipResult;
         }
         catch { zipResult.DiscardUnpublishedStorage(); throw; }
@@ -368,7 +360,6 @@ internal sealed partial class LythonRuntime
 
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             var iterEnumerableResult = new PyEnumerableIterator(arguments[0], span, context);
-            context.Services.State.CallTemporaries.TrackFreshMutable(iterEnumerableResult, PyIteratorBase.IteratorValueBytes);
             return iterEnumerableResult;
         }
 
@@ -380,7 +371,6 @@ internal sealed partial class LythonRuntime
             }
 
             var iterSentinelResult = new PyCallableSentinelIterator(callable, arguments[1], context, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(iterSentinelResult, PyIteratorBase.IteratorValueBytes);
             return iterSentinelResult;
         }
 
@@ -424,7 +414,6 @@ internal sealed partial class LythonRuntime
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             var indexableReversedResult = new PyReversedIterator(indexable.Length, indexable.GetIndex);
-            context.Services.State.CallTemporaries.TrackFreshMutable(indexableReversedResult, PyIteratorBase.IteratorValueBytes);
             return indexableReversedResult;
         }
 
@@ -432,7 +421,6 @@ internal sealed partial class LythonRuntime
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             var rangeReversedResult = new PyEnumerableIterator(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
-            context.Services.State.CallTemporaries.TrackFreshMutable(rangeReversedResult, PyIteratorBase.IteratorValueBytes);
             return rangeReversedResult;
         }
 
@@ -440,7 +428,6 @@ internal sealed partial class LythonRuntime
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             var stringReversedResult = new PyReversedIterator(text.Length, text.Index);
-            context.Services.State.CallTemporaries.TrackFreshMutable(stringReversedResult, PyIteratorBase.IteratorValueBytes);
             return stringReversedResult;
         }
 
@@ -450,7 +437,6 @@ internal sealed partial class LythonRuntime
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             var dictReversedResult = dict.CreateReversedKeysIterator(context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(dictReversedResult, PyIteratorBase.IteratorValueBytes);
             return dictReversedResult;
         }
 
@@ -458,7 +444,6 @@ internal sealed partial class LythonRuntime
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             var defaultDictReversedResult = defaultDict.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(defaultDictReversedResult, PyIteratorBase.IteratorValueBytes);
             return defaultDictReversedResult;
         }
 
@@ -466,7 +451,6 @@ internal sealed partial class LythonRuntime
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             var counterReversedResult = counter.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(counterReversedResult, PyIteratorBase.IteratorValueBytes);
             return counterReversedResult;
         }
 
@@ -493,7 +477,6 @@ internal sealed partial class LythonRuntime
         }
 
         var mapResult = new PyMapIterator(callable, iterables, context, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(mapResult, PyIteratorBase.IteratorValueBytes);
         return mapResult;
     }
 
@@ -512,7 +495,6 @@ internal sealed partial class LythonRuntime
         };
 
         var filterResult = new PyFilterIterator(function, arguments[1], context, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(filterResult, PyIteratorBase.IteratorValueBytes);
         return filterResult;
     }
 

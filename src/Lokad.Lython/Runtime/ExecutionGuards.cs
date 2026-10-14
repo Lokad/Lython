@@ -5,7 +5,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class ExecutionGuards
 {
-    private int _checkpointsUntilSweep = 256;
 
     public ExecutionGuards(ExecutionState state)
     {
@@ -19,10 +18,6 @@ internal sealed class ExecutionGuards
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CheckExecution(LythonSourceSpan? span)
     {
-        if (--_checkpointsUntilSweep == 0)
-        {
-            SweepCheckpointTemporaries();
-        }
         var limits = Limits;
         if (limits.MaxExecutionSteps is { } maxExecutionSteps &&
             ++limits.ExecutionStepCount > maxExecutionSteps)
@@ -34,15 +29,6 @@ internal sealed class ExecutionGuards
         {
             ThrowExecutionCanceled(span);
         }
-    }
-
-    // Keep sweep and exception construction out of the frequently executed
-    // checkpoint body while retaining their original order and cadence.
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void SweepCheckpointTemporaries()
-    {
-        _checkpointsUntilSweep = 256;
-        State.CallTemporaries.Sweep();
     }
 
     [DoesNotReturn, MethodImpl(MethodImplOptions.NoInlining)]

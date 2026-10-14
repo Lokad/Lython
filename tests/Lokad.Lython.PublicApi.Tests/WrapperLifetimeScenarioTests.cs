@@ -8,46 +8,36 @@ public class WrapperLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted());
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted());
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
     [Fact]
     public async Task CounterDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\nfor i in range(" + Iterations(100000) + "):\n    x = Counter(a=1)\nreturn 0\n", "0");
+            "from collections import Counter\nfor i in range(" + BatchIterations(100000) + "):\n    x = Counter(a=1)\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task DefaultdictKwargsDiscardCompletes()
         => await AssertCompletes(
-            "from collections import defaultdict\nfor i in range(" + Iterations(100000) + "):\n    x = defaultdict(int, a=1)\nreturn 0\n", "0");
+            "from collections import defaultdict\nfor i in range(" + BatchIterations(100000) + "):\n    x = defaultdict(int, a=1)\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task DictKwargsDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(100000) + "):\n    x = dict(a=1)\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(100000) + "):\n    x = dict(a=1)\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task DefaultdictDiscardCompletes()
         => await AssertCompletes(
-            "from collections import defaultdict\nfor i in range(" + Iterations(100000) + "):\n    x = defaultdict(list)\nreturn 0\n", "0");
+            "from collections import defaultdict\nfor i in range(" + BatchIterations(100000) + "):\n    x = defaultdict(list)\nreturn 0\n", "0", Iterations(100000));
     [Fact]
     public async Task FromKeysDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(100000) + "):\n    x = dict.fromkeys(['a', 'b'], 0)\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(100000) + "):\n    x = dict.fromkeys(['a', 'b'], 0)\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task FromKeysNoDefaultDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(100000) + "):\n    x = {}.fromkeys(['a'])\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(100000) + "):\n    x = {}.fromkeys(['a'])\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task FromKeysBehaves()
@@ -74,7 +64,7 @@ public class WrapperLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task DefaultdictUpdateKwargsDiscardCompletes()
         => await AssertCompletes(
-            "from collections import defaultdict\nfor i in range(" + Iterations(50000) + "):\n    d = defaultdict(int)\n    d.update(a=1)\nreturn 0\n", "0");
+            "from collections import defaultdict\nfor i in range(" + BatchIterations(50000) + "):\n    d = defaultdict(int)\n    d.update(a=1)\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task DefaultdictUpdateKwargsBehaves()
@@ -101,7 +91,7 @@ public class WrapperLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task FromKeysAliasedDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(100000) + "):\n    d = dict.fromkeys(['a', 'b'], 0)\n    e = d\n    x = (d, e)\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(100000) + "):\n    d = dict.fromkeys(['a', 'b'], 0)\n    e = d\n    x = (d, e)\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task FromKeysDeniedRecoversWhenFunded()

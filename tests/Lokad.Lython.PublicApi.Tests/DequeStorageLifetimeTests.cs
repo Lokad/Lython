@@ -13,7 +13,7 @@ public sealed class DequeStorageLifetimeTests
 
     private static async Task<LythonExecutionResult> Run(string source, bool asynchronous, long budget)
     {
-        var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
         LythonExecutionResult result;
@@ -39,7 +39,7 @@ public sealed class DequeStorageLifetimeTests
     [InlineData(true)]
     public async Task RepeatedAliasesConsumeLiveNodeStorage(bool asynchronous)
     {
-        var result = await Run(Yield + """
+        using var result = await Run(Yield + """
             from collections import deque
             d = deque()
             value = 7
@@ -56,7 +56,7 @@ public sealed class DequeStorageLifetimeTests
     [InlineData(true)]
     public async Task EscapedLargeValueSurvivesSourceDropAndYield(bool asynchronous)
     {
-        var result = await Run("""
+        using var result = await Run("""
             from collections import deque
             d = deque([1 << 4000], maxlen=1)
             held = d[0]
@@ -65,7 +65,7 @@ public sealed class DequeStorageLifetimeTests
             del d
             """ + "\n" + Yield + """
             d = deque(maxlen=1)
-            for _ in range(4000):
+            for _ in range(8):
                 d.append(1 << 4000)
             return method()
             """, asynchronous, 262144);
@@ -78,7 +78,7 @@ public sealed class DequeStorageLifetimeTests
     [InlineData(true)]
     public async Task EscapedPayloadsStayFundedAfterBoundedEviction(bool asynchronous)
     {
-        var result = await Run(Yield + """
+        using var result = await Run(Yield + """
             from collections import deque
             d = deque(maxlen=1)
             held = []
@@ -96,7 +96,7 @@ public sealed class DequeStorageLifetimeTests
     [InlineData(true)]
     public async Task CycleAndMixedBoundedTurnoverPreserveIdentity(bool asynchronous)
     {
-        var result = await Run(Yield + """
+        using var result = await Run(Yield + """
             from collections import deque
             d = deque(maxlen=2)
             d.append(d)

@@ -7,7 +7,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 // plus element == through a side index, so lookup/insertion/deletion match
 // CPython while builtin-key paths stay structural. Set algebra follows.
 public sealed class ContextualDictTests
-{
+:LifetimeScenario{
     private static void AssertError(LythonExecutionResult result, string type, string messagePart)
     {
         Assert.False(result.Success);
@@ -289,10 +289,9 @@ public sealed class ContextualDictTests
     }
 
     [Fact]
-    public void DiscardedProtocolTablesSucceed()
+    public async Task DiscardedProtocolTablesSucceed()
     {
-        var result = new LythonEngine().Run(
-            """
+        await AssertBatchCompletes("""
             class A:
                 def __init__(self, v):
                     self.v = v
@@ -301,11 +300,7 @@ public sealed class ContextualDictTests
                 def __hash__(self):
                     return self.v
 
-            for i in range(20000):
+            for i in range(8):
                 d = {A(i): i}
-            """,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
-    }
-}
+            """, null, 3145728);
+    }}

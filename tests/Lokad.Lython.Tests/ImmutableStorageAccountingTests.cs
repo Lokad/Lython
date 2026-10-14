@@ -69,31 +69,33 @@ public sealed class ImmutableStorageAccountingTests
     }
 
     [Fact]
-    public void DroppedTupleRefundsItsStorageWhileEscapedMagnitudeKeepsItsOwner()
+    public void CollectedTupleAndEscapedMagnitudeRemainFundedThroughBatchEnd()
     {
-        var governor = new MemoryGovernor(4096);
-        var pool = new ChargeReclamationPool(governor);
-        var (dropped, escaped, originalCharge) = MakeEscapedMagnitude(governor, pool);
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var governor = new MemoryGovernor(4096, owner);
+        var (dropped, escaped, originalCharge) = MakeEscapedMagnitude(governor);
+        var funded = budget.ReservedBytes;
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         Assert.False(dropped.TryGetTarget(out _));
-        pool.Sweep(full: true);
-        Assert.Equal(1, pool.Count);
-        Assert.True(pool.IsTracked(escaped));
-        Assert.Equal(originalCharge, governor.CurrentCommittedBytes - pool.CommittedBackingBytes);
+        Assert.Equal(funded, budget.ReservedBytes);
+        Assert.True(funded > originalCharge);
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(escaped);
+        escaped = null!;
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (WeakReference<PyTuple>, object, long) MakeEscapedMagnitude(MemoryGovernor governor, ChargeReclamationPool pool)
+    private static (WeakReference<PyTuple>, object, long) MakeEscapedMagnitude(MemoryGovernor governor)
     {
         object value = BigInteger.One << 100;
-        LythonRuntime.OwnFreshInteger(value, governor, pool, null);
-        var before = governor.CurrentCommittedBytes - pool.CommittedBackingBytes;
+        LythonRuntime.OwnFreshInteger(value, governor, null);
+        var before = governor.CurrentCommittedBytes;
         var tuple = new PyTuple(new[] { value, value }, governor);
-        pool.TrackMutable(tuple, tuple.CommittedStorageBytes);
         return (new WeakReference<PyTuple>(tuple), tuple[0], before);
     }
 }

@@ -10,37 +10,27 @@ public class DiffRenderLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted());
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted());
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
     [Fact]
     public async Task DifferCompareDiscardCompletes()
         => await AssertCompletes(
-            "import difflib\nd = difflib.Differ()\nfor i in range(" + Iterations(50000) + "):\n    x = list(d.compare(['a'], ['b']))\nreturn 0\n", "0");
+            "import difflib\nd = difflib.Differ()\nfor i in range(" + BatchIterations(50000) + "):\n    x = list(d.compare(['a'], ['b']))\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task NdiffDiscardCompletes()
         => await AssertCompletes(
-            "import difflib\nfor i in range(" + Iterations(50000) + "):\n    x = list(difflib.ndiff(['a'], ['b']))\nreturn 0\n", "0");
+            "import difflib\nfor i in range(" + BatchIterations(50000) + "):\n    x = list(difflib.ndiff(['a'], ['b']))\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task UnifiedDiffDiscardCompletes()
         => await AssertCompletes(
-            "import difflib\nfor i in range(" + Iterations(20000) + "):\n    x = list(difflib.unified_diff(['a'], ['b']))\nreturn 0\n", "0");
+            "import difflib\nfor i in range(" + BatchIterations(20000) + "):\n    x = list(difflib.unified_diff(['a'], ['b']))\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
     public async Task ContextDiffDiscardCompletes()
         => await AssertCompletes(
-            "import difflib\nfor i in range(" + Iterations(20000) + "):\n    x = list(difflib.context_diff(['a'], ['b']))\nreturn 0\n", "0");
+            "import difflib\nfor i in range(" + BatchIterations(20000) + "):\n    x = list(difflib.context_diff(['a'], ['b']))\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
     public async Task DiffRenderBehaves()

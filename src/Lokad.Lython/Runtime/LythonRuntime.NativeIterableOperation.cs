@@ -43,7 +43,6 @@ internal sealed partial class LythonRuntime
 
         internal void ResultRegistered() => _unpublishedList = false;
 
-
         internal void FinishIteration()
         {
             try { Iterator?.Dispose(); }

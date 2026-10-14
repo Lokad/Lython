@@ -3,7 +3,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class JsonTextStreamTests
+public sealed class JsonTextStreamTests : LifetimeScenario
 {
     [Theory]
     [InlineData(false)]
@@ -312,29 +312,21 @@ public sealed class JsonTextStreamTests
     }
 
     [Fact]
-    public async Task FailedDumpsReclaimAbandonedEncoderOwnership()
+    public async Task FailedDumpBatchesReleaseTheirExecutionOwner()
     {
-        var script = Compile("""
+        await AssertBatchCompletes("""
             import json
             class Writer:
                 def write(self, text):
                     raise ValueError('stop')
             writer = Writer()
-            for i in range(3000):
+            for i in range(8):
                 try:
                     json.dump({'a': list(range(50))}, writer, sort_keys=True)
                 except ValueError:
                     pass
             print('done')
-            """);
-        // Match the existing abandoned-iterencode gate's 1 MiB cap: pool
-        // bookkeeping remains accounted even after dropped values reclaim.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
-        foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
-        {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("done\n", result.StandardOutput);
-        }
+            """, null, 1048576, standardOutput: "done\n");
     }
 
     [Theory]

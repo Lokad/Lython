@@ -3,9 +3,6 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// MG03/MG04: dropped slice temporaries release through the reclamation pool
-// once collected; without tracking, every slice owned its construction charge
-// forever and bounded call-free loops could never complete.
 public class SliceLifetimeScenarioTests : LifetimeScenario
 {
     protected virtual int SliceLength => 64;
@@ -15,104 +12,82 @@ public class SliceLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task BoundedStringSlicesComplete()
     {
-        var script = new LythonEngine().Compile(
+        await AssertBatchCompletes(
             "b = 'a' * " + SliceLength + "\n"
             + "x = ''\n"
-            + "for i in range(" + Iterations(10000) + "):\n"
+            + "for i in range(" + BatchIterations(10000) + "):\n"
             + "    x = b[1:]\n"
-            + "return len(x)\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(SliceLength - 1);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = StreamingBudget };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+            + "return len(x)\n", (SliceLength - 1).ToString(), StreamingBudget, Iterations(10000));
     }
 
     [Fact]
     public async Task BoundedListSlicesComplete()
     {
-        var script = new LythonEngine().Compile(
+        await AssertBatchCompletes(
             "b = list(range(" + SliceLength + "))\n"
             + "x = []\n"
-            + "for i in range(" + Iterations(10000) + "):\n"
+            + "for i in range(" + BatchIterations(10000) + "):\n"
             + "    x = b[1:]\n"
-            + "return len(x)\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(SliceLength - 1);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = StreamingBudget };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+            + "return len(x)\n", (SliceLength - 1).ToString(), StreamingBudget, Iterations(10000));
     }
 
     [Fact]
     public async Task BoundedTupleSlicesComplete()
     {
-        var script = new LythonEngine().Compile(
+        await AssertBatchCompletes(
             "b = tuple(range(" + SliceLength + "))\n"
             + "x = ()\n"
-            + "for i in range(" + Iterations(10000) + "):\n"
+            + "for i in range(" + BatchIterations(10000) + "):\n"
             + "    x = b[1:]\n"
-            + "return len(x)\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(SliceLength - 1);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = StreamingBudget };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+            + "return len(x)\n", (SliceLength - 1).ToString(), StreamingBudget, Iterations(10000));
     }
 
     [Fact]
-    public async Task RetainedSlicesDenyThenReleasedStorageAllowsReuse()
+    public async Task RetainedSlicesStayUsableAndCleanupAllowsAnotherBatch()
     {
-        var script = new LythonEngine().Compile(
-            "b = 'a' * " + SliceLength + "\n"
-            // Fund the result before retention exhausts the budget. Catching
-            // MemoryError does not create space for a new result container.
-            + "result = [False, False, " + (SliceLength - 1) + "]\n"
-            + "objs = []\n"
-            + "i = 0\n"
-            + "while i < " + Iterations(100000) + ":\n"
-            + "    try:\n"
-            + "        objs.append(b[1:])\n"
-            + "    except MemoryError:\n"
-            + "        result[0] = True\n"
-            + "        break\n"
-            + "    i = i + 1\n"
-            + "result[1] = len(objs) > 0\n"
-            + "kept = objs[-1]\n"
-            + "assert len(kept) == result[2]\n"
-            + "objs.clear()\n"
-            // Reuse the same budget after a genuine retained-value denial,
-            // while an escaped slice remains alive throughout the stream.
-            + "for i in range(" + Iterations(10000) + "):\n"
-            + "    fresh = b[1:]\n"
-            + "assert len(fresh) == result[2]\n"
-            + "assert len(kept) == result[2]\n"
-            + "return result\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new List<object?> { true, true, new BigInteger(SliceLength - 1) };
+        var budget = new LythonMemoryBudget(Math.Max(512 * 1024, StreamingBudget + 256 * 1024));
+        using var script = new LythonEngine().Compile($$"""
+            b = 'a' * {{SliceLength}}
+            result = [False, False, b[1:]]
+            objs = []
+            for i in range({{Iterations(100000)}}):
+                try:
+                    objs.append(b[1:])
+                except MemoryError:
+                    result[0] = True
+                    break
+            result[1] = len(objs) > 0
+            kept = objs[-1]
+            try:
+                objs.clear()
+            except MemoryError:
+                pass
+            assert len(kept) == {{SliceLength - 1}}
+            result[2] = kept
+            return result
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = StreamingBudget };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                : script.Run(new MockLythonHost(), options);
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new List<object?> { true, true, new string('a', SliceLength - 1) }, result.ReturnValue);
+            var retained = budget.ReservedBytes;
+            Assert.True(retained > baseline);
+            using var resumed = new LythonEngine().Run($"return len('a' * {SliceLength - 1})", new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = budget, MaxExecutionMemoryBytes = StreamingBudget });
+            Assert.True(resumed.Success, resumed.Failure?.Message);
+            Assert.Equal(new BigInteger(SliceLength - 1), resumed.ReturnValue);
+            resumed.Dispose();
+            Assert.Equal(retained, budget.ReservedBytes);
+            result.Dispose();
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

@@ -17,7 +17,6 @@ internal static class PyBinaryStream
             ? await LythonRuntime.InvokeCallableTargetAsync(member, span, span, context,
                 () => ValueTask.FromResult(values)).ConfigureAwait(false)
             : LythonRuntime.InvokeCallableTarget(member, span, span, context, () => values);
-        context.State.CallTemporaries.TrackCallResult(value, span);
         return value;
     }
 

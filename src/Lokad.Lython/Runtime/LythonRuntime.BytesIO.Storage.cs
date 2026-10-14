@@ -69,7 +69,6 @@ internal sealed partial class LythonRuntime
             _buffer = replacement;
             governor.Commit(capacity);
             governor.Release(oldCapacity);
-            ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
         }
 
         internal PyBytes Read(long size, bool line, LythonSourceSpan span)
@@ -147,7 +146,6 @@ internal sealed partial class LythonRuntime
                 _length = 0;
                 _closed = true;
                 _services.MemoryGovernor.Release(capacity);
-                ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
             }
             return PyNone.Instance;
         }

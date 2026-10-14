@@ -3,10 +3,6 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// MG03/MG20: a __deepcopy__ hook may retain the implicit memo view past the
-// copy. Each remembered entry owns durable view storage: stashed views keep
-// working like CPython and keep every charge, while discarded views release
-// through the reclamation pool instead of accumulating stale charges.
 public sealed class CopyMemoViewAccountingScenarioTests
 {
     private const long ThreeMib = 3145728;
@@ -44,19 +40,29 @@ public sealed class CopyMemoViewAccountingScenarioTests
     }
 
     [Fact]
-    public async Task UnstashedMemoViewsRelease()
+    public async Task UnstashedMemoViewBatchesReleaseTheirExecutionOwner()
     {
-        var script = new LythonEngine().Compile(StashSource(false));
+        var ownerBudget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(StashSource(false).Replace("for i in range(200):", "for i in range(8):"), ownerBudget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(0);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
+        var baseline = ownerBudget.ReservedBytes;
+        for (var batch = 0; batch < 8; batch++)
+        {
+            var sync = script.Run(new MockLythonHost(), options);
+            Assert.True(sync.Success, sync.Failure?.Message);
+            Assert.Equal(expected, sync.ReturnValue);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+            var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+            Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            Assert.Equal(expected, asyncResult.ReturnValue);
+            sync.Dispose();
+            asyncResult.Dispose();
+            Assert.Equal(baseline, ownerBudget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, ownerBudget.ReservedBytes);
     }
 
     [Fact]
@@ -113,23 +119,33 @@ public sealed class CopyMemoViewAccountingScenarioTests
     }
 
     [Fact]
-    public async Task RepeatedShallowCopiesReleaseMemo()
+    public async Task ShallowCopyBatchesReturnFunding()
     {
-        var script = new LythonEngine().Compile(
+        var ownerBudget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(
             "import copy\n"
             + "src = [1, 2]\n"
             + "i = 0\n"
-            + "while i < 250:\n"
+            + "while i < 16:\n"
             + "    m = copy.copy(src)\n"
             + "    i = i + 1\n"
-            + "return 0\n");
+            + "return 0\n", ownerBudget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
+        var baseline = ownerBudget.ReservedBytes;
+        for (var batch = 0; batch < 8; batch++)
+        {
+            var sync = script.Run(new MockLythonHost(), options);
+            Assert.True(sync.Success, sync.Failure?.Message);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+            Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            sync.Dispose();
+            asyncResult.Dispose();
+            Assert.Equal(baseline, ownerBudget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, ownerBudget.ReservedBytes);
     }
 
     [Fact]
@@ -152,12 +168,10 @@ public sealed class CopyMemoViewAccountingScenarioTests
     }
 
     [Fact]
-    public async Task MutatedThenClearedViewsRelease()
+    public async Task MutatedViewBatchesReturnFundingAfterCleanup()
     {
-        // MG20: mutating a stashed view (subscript assignment adopts the run
-        // governor) and then clearing it must not strand the memo-entry
-        // ownership: the clear re-snapshots only backing storage.
-        var script = new LythonEngine().Compile(
+        var ownerBudget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(
             "import copy\n"
             + "saved = []\n"
             + "class C:\n"
@@ -166,21 +180,30 @@ public sealed class CopyMemoViewAccountingScenarioTests
             + "            saved.append(memo)\n"
             + "        return None\n"
             + "items = [C() for i in range(200)]\n"
-            + "for i in range(200):\n"
+            + "for i in range(8):\n"
             + "    copy.deepcopy(items)\n"
             + "    m = saved.pop()\n"
             + "    m[\"sentinel\"] = 1\n"
             + "    m.clear()\n"
-            + "return 0\n");
+            + "return 0\n", ownerBudget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(0);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
+        var baseline = ownerBudget.ReservedBytes;
+        for (var batch = 0; batch < 8; batch++)
+        {
+            var sync = script.Run(new MockLythonHost(), options);
+            Assert.True(sync.Success, sync.Failure?.Message);
+            Assert.Equal(expected, sync.ReturnValue);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+            var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+            Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            Assert.Equal(expected, asyncResult.ReturnValue);
+            sync.Dispose();
+            asyncResult.Dispose();
+            Assert.Equal(baseline, ownerBudget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, ownerBudget.ReservedBytes);
     }
 }

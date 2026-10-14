@@ -7,8 +7,10 @@ namespace Lokad.Lython.PublicApi.Tests;
 // on every exit path, including validation failure; sized counted
 // populations serve picks by index with no drain. Before the fix, each
 // discard loop below stranded scratch per call and denied its budget.
-public sealed class RandomScratchLifetimeTests
+public sealed class RandomScratchLifetimeTests : LifetimeScenario
 {
+    protected override int BatchRepetitions(int iterations) => Math.Max(8, iterations);
+
     private static LythonCompiledScript Compile(string source)
     {
         var script = new LythonEngine().Compile(source);
@@ -38,14 +40,14 @@ public sealed class RandomScratchLifetimeTests
         => await AssertCountedSample(1000, 1000, 50, 4194304);
 
     private static async Task AssertCountedSample(int iterations, int population, int picks, long budget)
-        => await AssertCompletes(
+        => await new RandomScratchLifetimeTests().AssertBatchCompletes(
             $"""
             import random
-            for i in range({iterations}):
+            for i in range(1):
                 random.sample(range({population}), {picks}, counts=[50]*{population})
             return "ok"
             """,
-            "ok", budget);
+            "ok", budget, iterations);
 
     [Fact]
     public async Task FloydSampleDiscards_SucceedUnderBudget()

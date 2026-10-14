@@ -107,7 +107,6 @@ internal static class PyIndexing
             target is PyType type && (type.Name == "Generic" || type.TryGetMember("__type_params__", out _))))
         {
             var alias = LythonRuntime.CreateGenericSubscriptAsync(target, index, context, span, false).GetAwaiter().GetResult();
-            context.Services.State.CallTemporaries.TrackCallResult(alias, span);
             return alias;
         }
         return target switch
@@ -127,7 +126,6 @@ internal static class PyIndexing
         context?.MemoryGovernor.Reserve(64L, span);
         context?.MemoryGovernor.Commit(64L);
         var value = new PySlice(start ?? PyNone.Instance, end ?? PyNone.Instance, step ?? PyNone.Instance);
-        context?.Services.State.CallTemporaries.TrackFreshMutable(value, 64L, span);
         return value;
     }
 
@@ -196,7 +194,7 @@ internal static class PyIndexing
         // String slices built from unowned receivers would escape accounting.
         if (context is not null && result is PyString textResult && target is PyString receiver)
         {
-            result = LythonRuntime.OwnMethodResult(textResult, receiver, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+            result = LythonRuntime.OwnMethodResult(textResult,receiver,context.MemoryGovernor,span);
         }
 
         if (context is not null)
@@ -207,29 +205,18 @@ internal static class PyIndexing
         return result;
     }
 
-    // Dropped slices release through the reclamation pool once collected;
-    // without tracking, every temporary owned its construction charge forever
-    // and bounded call-free loops could never complete. Only freshly built
-    // results are tracked: mapping lookups return early above, and unowned
-    // results carry no charges to release. Fresh variants refund the snapshot
-    // when the registry charge is denied, keeping denial headroom identical
-    // to a construction-time denial so caught failures recover as before.
     private static void TrackSliceResult(object result, LythonRuntime.ExecutionContext context)
     {
-        var pool = context.Services.State.CallTemporaries;
+        var pool = context.Services.State.MemoryGovernor;
         switch (result)
         {
             case PyString text:
-                pool.TrackFreshString(text);
                 break;
             case PyList list when list.OwnerMemoryGovernor is not null:
-                pool.TrackFreshMutable(list, list.CommittedStorageBytes);
                 break;
             case PyTuple tuple when tuple.OwnerMemoryGovernor is not null:
-                pool.TrackFreshMutable(tuple, tuple.CommittedStorageBytes);
                 break;
             case PyDeque deque when deque.OwnerMemoryGovernor is not null:
-                pool.TrackFreshMutable(deque, deque.CommittedStorageBytes);
                 break;
         }
     }

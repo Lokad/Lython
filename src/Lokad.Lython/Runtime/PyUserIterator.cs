@@ -6,7 +6,6 @@ internal sealed class PyUserIterator : IPyIteratorValue
     private readonly LythonRuntime.ExecutionContext _context;
     private readonly LythonSourceSpan _span;
 
-
     public static PyUserIterator Create(object iterable, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         => new(ResolveIterator(InvokeIter(iterable, context, span), context, span), context, span);
 

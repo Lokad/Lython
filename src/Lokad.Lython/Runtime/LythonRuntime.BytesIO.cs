@@ -24,7 +24,6 @@ internal sealed partial class LythonRuntime
                 result.RewindInitialValue();
             }
             catch { result.ReleaseFailedConstruction(); throw; }
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.OwnedBytes, span);
             return result;
         }
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -105,7 +104,6 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "integer argument expected", span);
                     var hint = args.Length == 0 || args[0] is PyNone ? -1 : await CoerceIoIntegerAsync(args[0], span, context, asynchronous).ConfigureAwait(false);
                     var result = new PyList([], context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
                     long consumed = 0;
                     while (_position < _length)
                     {

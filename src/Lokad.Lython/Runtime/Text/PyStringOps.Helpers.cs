@@ -299,7 +299,6 @@ internal static partial class PyStringOps
         return SliceUtf8(value, startByte, endByte, value.OwnerMemoryGovernor, value.AllocationSpan);
     }
 
-
     private static GovernedByteBuilder CreateBuilder(PyString value)
         => CreateBuilder(value, 0);
 

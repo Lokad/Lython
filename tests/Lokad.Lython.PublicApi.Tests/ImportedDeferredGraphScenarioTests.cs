@@ -3,10 +3,6 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// M01: retained import graphs must cover every deferred root (generator item
-// expressions included) and the actual literal/lowered payloads, not just a
-// per-node estimate. These shapes retain megabytes through uncalled values
-// while accounting only kilobytes.
 public sealed class ImportedDeferredGraphScenarioTests
 {
     private static MockLythonHost SeededHost(string[] names, string[] bodies, out HashSet<string> allowed, out string imports)
@@ -74,48 +70,56 @@ public sealed class ImportedDeferredGraphScenarioTests
     }
 
     [Fact]
-    public async Task FailedImportReleasesChargeOnRetry()
+    public async Task PreparedFailedImportsRemainFundedUntilExecutionCleanup()
     {
-        // A failing module never reaches the registry: its deferred charge
-        // releases, so a caught failure retried pays the same high-water mark
-        // instead of one charge per attempt (here ~1.6 MB per leak).
         var body = "def f():\n    return [" + string.Concat(Enumerable.Repeat("1,", 10000)) + "1]\nraise ValueError('boom')\n";
         var once = "ok = 0\ntry:\n    import m0\nexcept ValueError:\n    ok = 1\nreturn ok\n";
         var twice = "ok = 0\ntry:\n    import m0\nexcept ValueError:\n    ok = 1\ntry:\n    import m0\nexcept ValueError:\n    ok += 1\nreturn ok\n";
         var budget = 8388608L;
-        var peakOnceSync = RunImportRetry(once, body, budget, 1);
-        var peakTwiceSync = RunImportRetry(twice, body, budget, 2);
-        Assert.True(peakTwiceSync <= peakOnceSync + 65536, "once=" + peakOnceSync + " twice=" + peakTwiceSync);
+        var allowance = new LythonMemoryBudget(16 * 1024 * 1024);
+        var peakOnceSync = RunImportRetry(once, body, budget, 1, allowance);
+        var peakTwiceSync = RunImportRetry(twice, body, budget, 2, allowance);
+        Assert.True(peakTwiceSync > peakOnceSync, "once=" + peakOnceSync + " twice=" + peakTwiceSync);
 
-        var peakOnceAsync = await RunImportRetryAsync(once, body, budget, 1);
-        var peakTwiceAsync = await RunImportRetryAsync(twice, body, budget, 2);
-        Assert.True(peakTwiceAsync <= peakOnceAsync + 65536, "once=" + peakOnceAsync + " twice=" + peakTwiceAsync);
+        var peakOnceAsync = await RunImportRetryAsync(once, body, budget, 1, allowance);
+        var peakTwiceAsync = await RunImportRetryAsync(twice, body, budget, 2, allowance);
+        Assert.True(peakTwiceAsync > peakOnceAsync, "once=" + peakOnceAsync + " twice=" + peakTwiceAsync);
     }
 
-    private static long RunImportRetry(string entry, string moduleBody, long budget, int expected)
+    private static long RunImportRetry(string entry, string moduleBody, long budget, int expected, LythonMemoryBudget allowance)
     {
         var host = new MockLythonHost();
         host.SeedFile("/m0.py", moduleBody);
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "m0" };
-        var script = new LythonEngine().Compile(entry);
+        var baseline = allowance.ReservedBytes;
+        using var script = new LythonEngine().Compile(entry, allowance);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var result = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = budget, AllowedLocalModules = allowed });
+        using var result = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = budget, AllowedLocalModules = allowed });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(expected), result.ReturnValue);
-        return result.PeakExecutionMemoryBytes;
+        var peak = result.PeakExecutionMemoryBytes;
+        result.Dispose();
+        script.Dispose();
+        Assert.Equal(baseline, allowance.ReservedBytes);
+        return peak;
     }
 
-    private static async Task<long> RunImportRetryAsync(string entry, string moduleBody, long budget, int expected)
+    private static async Task<long> RunImportRetryAsync(string entry, string moduleBody, long budget, int expected, LythonMemoryBudget allowance)
     {
         var host = new MockLythonHost();
         host.SeedFile("/m0.py", moduleBody);
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "m0" };
-        var script = new LythonEngine().Compile(entry);
+        var baseline = allowance.ReservedBytes;
+        using var script = new LythonEngine().Compile(entry, allowance);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var result = await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = budget, AllowedLocalModules = allowed });
+        using var result = await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = budget, AllowedLocalModules = allowed });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(expected), result.ReturnValue);
-        return result.PeakExecutionMemoryBytes;
+        var peak = result.PeakExecutionMemoryBytes;
+        result.Dispose();
+        script.Dispose();
+        Assert.Equal(baseline, allowance.ReservedBytes);
+        return peak;
     }
     [Fact]
     public async Task UncalledLambdaPayloadsStayCharged()
@@ -175,12 +179,12 @@ public sealed class ImportedDeferredGraphScenarioTests
     [Fact]
     public async Task SmallLiteralAndWideCallsFit()
     {
-        var lit = "def f():\n    return '" + new string('x', 25000) + "'\n";
-        var wide = "def f():\n    return [" + string.Concat(Enumerable.Repeat("1,", 1000)) + "1]\n";
+        var lit = "def f():\n    return '" + new string('x', 2500) + "'\n";
+        var wide = "def f():\n    return [" + string.Concat(Enumerable.Repeat("1,", 100)) + "1]\n";
         var host = SeededHost(["m0", "m1"], [lit, wide], out var allowed, out var imports);
         var script = new LythonEngine().Compile(imports + "return len(m0.f()) + len(m1.f())\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(26001);
+        var expected = new BigInteger(2601);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576, AllowedLocalModules = allowed };
         var sync = script.Run(host, options);
         Assert.True(sync.Success, sync.Failure?.Message);

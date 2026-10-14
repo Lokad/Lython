@@ -2,11 +2,6 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// M05: join builders byte-copy each rendered item, so nested item transients
-// are pool-owned at the join and dropped renders reclaim on sweep instead of
-// stranding 128+len B per item. Covers repr joins, multi-arg exception
-// messages (which render through the tuple repr join), and f-string displays
-// (part transients plus the unowned built result, executable and lowered).
 public class RenderJoinLifetimeScenarioTests : LifetimeScenario
 {
     private long StreamingBudget => Budget(3145728);
@@ -14,47 +9,37 @@ public class RenderJoinLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted(long budget) => new() { MaxExecutionMemoryBytes = budget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
     [Fact]
     public async Task ReprListDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = repr([1, 2])\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = repr([1, 2])\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task ReprTupleDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = repr((1, 2))\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = repr((1, 2))\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task ReprSingletonDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = repr((1,))\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = repr((1,))\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task ReprDictDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = repr({\"a\": 1})\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = repr({\"a\": 1})\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task ReprSetDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = repr({1, 2})\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = repr({1, 2})\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task MultiArgExceptionDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = ValueError(1, 2)\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = ValueError(1, 2)\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task MultiArgExceptionRendersBehave()
@@ -91,17 +76,17 @@ public class RenderJoinLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task FStringTupleDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = f\"{(1, 2)}\"\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = f\"{(1, 2)}\"\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task FStringIntDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = f\"{1}\"\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = f\"{1}\"\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task FStringMixedDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = f\"abc{i}\"\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = f\"abc{i}\"\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task FStringInterpolationBehaves()

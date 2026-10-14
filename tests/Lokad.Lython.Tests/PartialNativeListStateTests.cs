@@ -26,7 +26,6 @@ public sealed class PartialNativeListStateTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         var alias = PyString.FromString("held");
         var held = new PyList([alias], context.MemoryGovernor);
-        context.State.CallTemporaries.TrackCallResult(held, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var source = new FailingSource(alias, count, cleanupFailure);
         var list = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["list"]);
@@ -45,11 +44,11 @@ public sealed class PartialNativeListStateTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeniedResultRegistrationRefundsTheUnpublishedList(bool asynchronous)
+    public async Task DeniedPrefixGrowthRefundsOnlyUnpublishedListStorage(bool asynchronous)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         var before = context.MemoryGovernor.CurrentCommittedBytes;
-        var source = new RegistrationDeniedSource(context);
+        var source = new AdmissionDeniedSource(context);
         var list = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["list"]);
         CallArgumentValue[] arguments = [CallArgumentValue.Positional(source)];
         try
@@ -133,7 +132,7 @@ public sealed class PartialNativeListStateTests
         }
     }
 
-    private sealed class RegistrationDeniedSource(LythonRuntime.ExecutionContext context) : IPyAsyncIterableValue
+    private sealed class AdmissionDeniedSource(LythonRuntime.ExecutionContext context) : IPyAsyncIterableValue
     {
         internal long Funding;
         internal bool Completed;
@@ -143,6 +142,7 @@ public sealed class PartialNativeListStateTests
             Completed = true;
             Funding = context.MemoryGovernor.MaxAccountedBytes!.Value - context.MemoryGovernor.CurrentAccountedBytes;
             context.MemoryGovernor.Reserve(Funding, Span);
+            yield return new BigInteger(2);
         }
         public async IAsyncEnumerable<object> IterateAsync()
         {

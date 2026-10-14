@@ -21,9 +21,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // _metadata before this cache is ever consulted, and binding an owner below
     // clears a premature ownerless computation.
     private PyString? _qualNameValue;
-    // The constructor governs the name copy; the defining site folds it into the
-    // function pool coupon instead of stranding one string per dropped definition.
-    internal long NameCommittedBytes { get; }
     private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
     private long _additionalMetadataBytes;
     private readonly ScopeDirectiveFacts _scopeFacts;
@@ -39,7 +36,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         _closure = closure;
         _memoryGovernor = closure.MemoryGovernor;
         _nameValue = PyString.FromString(name, closure.MemoryGovernor, null);
-        NameCommittedBytes = ReferenceEquals(_nameValue, PyString.Empty) ? 0 : PyString.EstimateApproximateBytes(_nameValue.Utf8Bytes.Length);
         _bindingPlan = new FunctionBindingPlan(name, PythonCallableKind.Function, parameters, defaultValues);
         _scopeFacts = scopeFacts;
     }
@@ -150,7 +146,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         if (name == "__annotations__")
         {
             var annotations = new PyDict(_closure.MemoryGovernor);
-            _closure.Services.State.CallTemporaries.TrackFreshMutable(annotations, annotations.CommittedStorageBytes);
             TrySetMember(name, annotations);
             value = annotations;
             return true;
@@ -242,11 +237,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         return doc.Literal.Value;
     }
 
-    // Returns the governed bytes the capture commits (string copy plus the fresh
-    // metadata slot), so the defining site can fold them into the function pool
-    // coupon like the name share. Fresh functions never carry __doc__ yet, so the
-    // slot always charges here.
-    internal static long CaptureFunctionDocstring(
+    // Capture metadata under the execution owner before the function escapes.
+    internal static void CaptureFunctionDocstring(
         PyFunctionBase function,
         IReadOnlyList<LoweredStatement> body,
         LythonRuntime.ExecutionContext context,
@@ -254,13 +246,11 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     {
         if (LeadingDocstring(body) is not { } text)
         {
-            return 0;
+            return;
         }
 
         var doc = PyString.FromString(text, context.MemoryGovernor, span);
         function.TrySetMember("__doc__", doc);
-        return (ReferenceEquals(doc, PyString.Empty) ? 0 : PyString.EstimateApproximateBytes(doc.Utf8Bytes.Length))
-            + AttributeSlotBytes;
     }
 
     public bool TrySetMember(string name, object value)
@@ -269,14 +259,10 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         {
             _memoryGovernor.Reserve(AttributeSlotBytes, null);
             _memoryGovernor.Commit(AttributeSlotBytes);
-            // The docstring slot belongs to the function's construction coupon.
-            // Later metadata slots share a separate dictionary coupon so dropped
-            // functions also reclaim lazily created or generic annotation state.
             if (name != "__doc__")
             {
                 try
                 {
-                    _closure.Services.State.CallTemporaries.TrackGrowth(_metadata, checked(_additionalMetadataBytes + AttributeSlotBytes));
                     _additionalMetadataBytes += AttributeSlotBytes;
                 }
                 catch

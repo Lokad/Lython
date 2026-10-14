@@ -146,39 +146,23 @@ internal sealed partial class LythonRuntime
     private sealed class CopyMemo : IDisposable
     {
         private readonly Dictionary<object, object> _references = new(ReferenceEqualityComparer.Instance);
-        // Severed on dispose so an unstashed view releases promptly at the
-        // post-dispose sweep; a hook-stashed view stays alive through the
-        // guest alias and keeps its charges.
+        // Clear the local reference on disposal. An exposed view's storage
+        // remains conservatively charged to the execution owner.
         private PyDict? _external;
         private readonly MemoryGovernor.TemporaryMemoryReservation? _scratch;
         private readonly LythonSourceSpan? _span;
         private readonly bool _trustExternalView;
         private readonly MemoryGovernor _governor;
         private readonly ExecutionState _state;
-        private readonly ChargeReclamationPool _pool;
         private long _ownedEntryBytes;
         private bool _viewExposed;
         private bool _disposed;
-        // Memo-entry ownership rides a dedicated record that dies with the
-        // view (ephemeron) instead of the view's own pool entry: later view
-        // mutations re-snapshot backing storage through the value and must
-        // not clobber these charges. The record's pool entry releases them
-        // once the view is unreachable, while a stashed view keeps working
-        // like CPython and keeps every charge.
-        private static readonly ConditionalWeakTable<PyDict, MemoViewOwnership> ViewOwnership = new();
-
         // One memo entry retains a CLR map slot, a view-dict entry and an
         // identity key. Both internal and user-supplied memos cover the CLR
         // mirror with transient scratch that releases when the copy completes;
         // user-supplied dicts additionally keep durable ownership of their own
         // entries.
         private const long MemoEntryBytes = 128;
-
-        // Identity token anchoring memo-entry ownership to a view's lifetime.
-        // Carries no data: the charge lives in this record's pool entry.
-        private sealed class MemoViewOwnership
-        {
-        }
 
         public CopyMemo(ExecutionContext context, LythonSourceSpan span)
         {
@@ -188,7 +172,6 @@ internal sealed partial class LythonRuntime
             _trustExternalView = false;
             _governor = context.MemoryGovernor;
             _state = context.State;
-            _pool = context.Services.State.CallTemporaries;
         }
 
         private CopyMemo(PyDict external, ExecutionContext context, LythonSourceSpan span)
@@ -199,7 +182,6 @@ internal sealed partial class LythonRuntime
             _trustExternalView = true;
             _governor = context.MemoryGovernor;
             _state = context.State;
-            _pool = context.Services.State.CallTemporaries;
         }
 
         public void Dispose()
@@ -209,9 +191,10 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
-            var view = _external ?? throw new ObjectDisposedException(nameof(CopyMemo));
             _disposed = true;
             _scratch?.Dispose();
+            _references.Clear();
+            _external = null;
             if (_trustExternalView || _ownedEntryBytes == 0)
             {
                 return;
@@ -219,35 +202,18 @@ internal sealed partial class LythonRuntime
 
             if (!_viewExposed)
             {
-                // No hook ever received this view, so nothing could have
-                // retained it: refund deterministically instead of waiting
-                // for a collection that a quiet loop may never trigger.
+                // No hook received the private view: its entries cannot escape.
                 _governor.Release(_ownedEntryBytes);
                 _ownedEntryBytes = 0;
-                _external = null;
                 return;
             }
 
-            // A hook received the view, so it may have escaped: anchor the
-            // memo-entry ownership to the view's lifetime through a dedicated
-            // record and sweep. A stashed view keeps working like CPython and
-            // keeps every charge; a dropped one releases on collection. The
-            // view itself stays untracked for storage: later clears
-            // re-snapshot backing through the value without touching these
-            // charges.
-            var ownership = new MemoViewOwnership();
-            _pool.Track(ownership, _ownedEntryBytes);
-            ViewOwnership.Add(view, ownership);
-            _external = null;
-            _pool.Sweep();
+            // A hook may retain the view. Keep its entries charged until the
+            // execution ends, independently of later CLR reachability.
         }
 
-        // MG03/MG20: a hook may retain this internal view past the copy. Each
-        // remembered entry owns durable view storage beside the transient
-        // scratch: the ownership record releases it once the view is
-        // unreachable, while a stashed view keeps working like CPython and
-        // keeps every charge. User-supplied dicts instead own their entries
-        // through their own governed storage.
+        // Hooks may retain this view; exposing it makes its entries durable
+        // for the batch. User-supplied dicts own their own storage.
         public PyDict ExternalView
         {
             get
@@ -317,8 +283,7 @@ internal sealed partial class LythonRuntime
             {
                 // Reserve before the view retains anything: a denied entry
                 // fails the copy instead of growing uncharged storage.
-                // Pool registration waits for dispose, which knows whether
-                // a hook ever received the view.
+                // Disposal refunds entries only if no hook received the view.
                 _governor.Reserve(MemoEntryBytes, _span);
                 _governor.Commit(MemoEntryBytes);
                 _ownedEntryBytes += MemoEntryBytes;
@@ -382,7 +347,6 @@ internal sealed partial class LythonRuntime
             RejectUnsupportedCopyProtocols(instance, context, span);
 
             var clone = new PyInstance(instance.Type, context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
             memo.Remember(value, clone);
             if (depth == CopyDepth.Shallow)
             {
@@ -451,7 +415,6 @@ internal sealed partial class LythonRuntime
     private static object CopyList(PyList list, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
     {
         var clone = new PyList([], context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
         memo.Remember(list, clone);
         foreach (var item in list)
         {
@@ -465,7 +428,6 @@ internal sealed partial class LythonRuntime
     private static object CopyDict(PyDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
     {
         var clone = new PyDict(context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
         memo.Remember(dict, clone);
         foreach (var pair in dict)
         {
@@ -481,7 +443,6 @@ internal sealed partial class LythonRuntime
     private static object CopySet(PySet set, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
     {
         var clone = new PySet(context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
         memo.Remember(set, clone);
         foreach (var item in set)
         {
@@ -497,7 +458,6 @@ internal sealed partial class LythonRuntime
     private static object CopyDefaultDict(PyDefaultDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
     {
         var clone = new PyDefaultDict(dict.DefaultFactory, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
         memo.Remember(dict, clone);
         foreach (var pair in dict.Items)
         {
@@ -513,7 +473,6 @@ internal sealed partial class LythonRuntime
     private static object CopyCounter(PyCounter counter, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
     {
         var clone = new PyCounter(context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
         memo.Remember(counter, clone);
         foreach (var pair in counter.Items)
         {
@@ -529,7 +488,6 @@ internal sealed partial class LythonRuntime
     private static object CopyDeque(PyDeque deque, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
     {
         var clone = new PyDeque(deque.MaxLength, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
         memo.Remember(deque, clone);
         foreach (var item in deque)
         {

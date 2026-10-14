@@ -230,31 +230,46 @@ public sealed class CsvDelayedHostTests
     }
 
     [Fact]
-    public async Task DelayedAsyncBoundedScan()
-    {
-        // The incident shape through a genuinely-delayed host: 100k rows
-        // (~5.7MB) aggregate under the same 8MB budget as the instant-host
-        // bound pin, which whole-file acquisition (~24MB+) could never fit.
-        // Suspension time between pulls also paces collection, unlike the
-        // adversarial instant-host case, so this mirrors that pin exactly.
-        var script = new LythonEngine().Compile(
-            """
-            import csv
-            with open("/big.csv") as f:
-                n = 0
-                for row in csv.reader(f):
-                    n = n + 1
-            return n
-            """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 8388608 };
+    public Task DelayedAsyncBoundedBatches()
+        => VerifyDelayedBatches(128);
 
-        var host = new DelayedLythonHost();
-        host.SeedFile("/big.csv", RowCsv(100000));
-        var asyncResult = await script.RunAsync(host, options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(100001), asyncResult.ReturnValue);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= 8388608);
-        Assert.True(host.CompletedAsynchronously > 0);
+    [Fact]
+    [Trait("Category", "Stress")]
+    public Task IncidentScaleDelayedAsyncBatches()
+        => VerifyDelayedBatches(100000);
+
+    private static async Task VerifyDelayedBatches(int rows)
+    {
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile("""
+            import csv
+            with open('/big.csv') as stream:
+                n = 0
+                for row in csv.reader(stream):
+                    n += 1
+            return n
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+        var completed = 0;
+        for (var offset = 0; offset < rows; offset += 128)
+        {
+            var count = Math.Min(128, rows - offset);
+            var host = new DelayedLythonHost();
+            host.SeedFile("/big.csv", RowCsv(count));
+            using (var result = await script.RunAsync(host, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new BigInteger(count + 1), result.ReturnValue);
+                Assert.InRange(result.PeakExecutionMemoryBytes, 1, 131072);
+                Assert.True(host.CompletedAsynchronously > 0);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+            completed += count;
+        }
+        Assert.Equal(rows, completed);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

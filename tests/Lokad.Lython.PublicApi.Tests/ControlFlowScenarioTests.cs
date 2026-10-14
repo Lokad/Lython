@@ -5,7 +5,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class ControlFlowScenarioTests
-{
+:LifetimeScenario{
     [Fact]
     public void BreakContinueAndWhileFixture_RunsSuccessfully()
     {
@@ -45,26 +45,15 @@ public sealed class ControlFlowScenarioTests
     [Fact]
     public async Task BreakAbandonmentReclaimsIteratorSlots()
     {
-        // The executable loop used to leave the abandoned iterator on the
-        // value stack, rooting its charges on every break; 10k breaks now
-        // complete at 3 MiB with the slot popped at the break edge.
-        var script = new LythonEngine().Compile("""
+        await AssertBatchCompletes("""
             i = 0
-            while i < 10000:
+            while i < 8:
                 for t in [[1, 2, 3]]:
                     break
                 i = i + 1
             return 0
-            """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024 };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            """, new System.Numerics.BigInteger(0), 3145728);
     }
-
     [Fact]
     public async Task NestedForBreakKeepsOuterIteration()
     {

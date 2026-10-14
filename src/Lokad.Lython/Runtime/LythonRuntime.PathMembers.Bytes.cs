@@ -39,7 +39,6 @@ internal sealed partial class LythonRuntime
                 source.Span.Slice(offset, length).CopyTo(copy.AsSpan(offset, length));
             }
             var result = new PyBytes(copy, context.MemoryGovernor, span);
-            context.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
             return result;
         }
 

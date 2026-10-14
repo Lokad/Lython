@@ -5,11 +5,11 @@ regressions. For example, from the repository root:
 
 ```powershell
 dotnet build tests/Lokad.Lython.PublicApi.Tests -c Release
-dotnet test tests/Lokad.Lython.PublicApi.Tests -c Release --no-build --filter 'Category!=Stress&FullyQualifiedName~InstanceLifetimeScenarioTests'
+dotnet test tests/Lokad.Lython.PublicApi.Tests -c Release --no-build --filter 'Category!=Stress&FullyQualifiedName~Lokad.Lython.PublicApi.Tests.Governed'
 ```
 
 Use the white-box project for internal storage, binding and governor changes.
-Keep allocation preflights, exact retained-data rejection, escaped aliases,
+Keep allocation preflights, retained-data rejection, escaped aliases,
 cancellation and successful bounded streaming in the selected regression group.
 Build `tools/LythonProbe/LythonProbe.csproj` in the matching configuration before
 running tests that invoke the probe; a test-project build does not build it.
@@ -17,10 +17,19 @@ running tests that invoke the probe; a test-project build does not build it.
 Ordinary `dotnet test Lokad.Lython.slnx -c Release` runs all regressions except
 `Category=Stress`. `Directory.Build.targets` supplies that default only when no
 filter is provided. An explicit `--filter` replaces the default: include
-`Category!=Stress` when selecting broadly by name. The small lifetime fixtures
-use fixed caps and enough iterations to exhaust those caps if charges strand;
-they do not depend on loose elapsed-time or peak-ratio assertions. Retention
-fixtures also check that a single integer result fits the same budget.
+`Category!=Stress` when selecting broadly by name. Use a class-qualified filter;
+`FullyQualifiedName~Governed` also selects unrelated legacy methods containing
+that word.
+
+Governed lifetime controls use finite host batches under one shared root, verify
+accounting returns to the compiled baseline after each result is relinquished,
+and return to zero after compilation cleanup. Keep fixed-cap retained-data and
+before-allocation refusal witnesses beside those success controls. A guest
+deletion, cleared container or CLR collection does not promise an immediate
+refund; see [MEMORY.md](MEMORY.md). Remove tests enforcing the discarded collector
+architecture while preserving Python results, aliases, cursor state, rollback,
+physical reachability and cancellation. Do not replace these with loose timing
+or peak-ratio assertions.
 
 At a coherent containment or dependency checkpoint, batch the complete checks:
 
@@ -31,10 +40,13 @@ dotnet test Lokad.Lython.slnx -c Release --no-build --filter 'Category=Stress'
 ./tools/PackageSmokeTest/verify-package.ps1
 ```
 
-The stress selection preserves the original long lifetime/counting workloads,
-large parsed integers and factorials, CSV scales and unpacking peak comparisons.
-Most share their bodies and assertions with the small tests through derived
-fixtures; the derived classes restore the original counts and caps. Full
+The stress selection preserves longer lifetime/counting workloads, large parsed
+integers and factorials, CSV totals and sustained unpacking batches. Sustained CSV
+totals use explicit finite executions. Imported-code headroom covers the coarse
+compilation estimate rather than the discarded deferred-node inventory. Many
+fixtures share their semantic assertions with the small tests through derived
+classes; collector recovery and identical tiny thresholds are not requirements.
+Full
 qualification can also be selected in one invocation with
 `--filter 'FullyQualifiedName~Lokad.Lython'`. Stress cases are evidence of
 sustained correctness, not performance measurements or embedding-latency proofs.

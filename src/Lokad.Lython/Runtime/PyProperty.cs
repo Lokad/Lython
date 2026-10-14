@@ -97,7 +97,6 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
             throw;
         }
         context.MemoryGovernor.Commit(bytes);
-        context.Services.State.CallTemporaries.TrackFreshMutable(property, property.CommittedBytes, span);
         return property;
     }
 
@@ -124,7 +123,6 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
         _docStorageBytes = bytes;
         if (delta > 0) _governor.Commit(delta);
         else if (delta < 0) _governor.Release(-delta);
-        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedBytes);
         return true;
     }
 

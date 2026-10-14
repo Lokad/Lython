@@ -37,7 +37,6 @@ internal sealed record PyException(
             governor.ReleaseReserved(ShellBytes);
             throw;
         }
-        context.State.CallTemporaries.TrackFreshMutable(result, ShellBytes, span);
         return result;
     }
 
@@ -46,17 +45,14 @@ internal sealed record PyException(
     // Fund the root before descending; a partial retry reuses that owner entry.
     internal void Adopt(LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
     {
-        var pool = context.State.CallTemporaries;
+        var pool = context.State.MemoryGovernor;
         if (_chainOwned) return;
-        if (!pool.IsTracked(this) && OwnerMemoryGovernor is null)
+        if (OwnerMemoryGovernor is null)
         {
             context.MemoryGovernor.Reserve(ShellBytes, span);
             context.MemoryGovernor.Commit(ShellBytes);
             OwnerMemoryGovernor = context.MemoryGovernor;
-            try { pool.TrackFreshMutable(this, ShellBytes, span); }
-            catch { OwnerMemoryGovernor = null; throw; }
         }
-        else pool.TrackCallResult(this, span);
         if (Cause is not null || Context is not null)
         {
             ExecutionGuards.EnsureInterpreterStack(span);

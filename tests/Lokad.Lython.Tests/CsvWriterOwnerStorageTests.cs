@@ -12,7 +12,7 @@ public sealed class CsvWriterOwnerStorageTests
     private const long Cap = 262144;
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
     private static readonly Type Module = typeof(LythonRuntime).GetNestedType("CsvModule", BindingFlags.NonPublic)!;
-    private static LythonRuntime.ExecutionContext Context() => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = Cap });
+    private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? budget = null) => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = Cap, MemoryBudget = budget });
     private static LythonRuntime.CsvOptions Options() => new(PyStringOps.CommaLiteral, null,
         LythonRuntime.CsvQuotingMode.Minimal, true, null, false, PyString.FromString("\n"), false);
     private static LythonRuntime.CsvWriterObject Create(LythonRuntime.ExecutionContext context)
@@ -20,36 +20,39 @@ public sealed class CsvWriterOwnerStorageTests
             .Invoke(null, [Options(), null, Span, context])!;
 
     [Fact]
-    public void DroppedHistoryReclaimsItsSnapshotWithoutRefundingRetainedHistory()
+    public void WriterHistoryRemainsFundedUntilItsBatchEnds()
     {
-        var context = Context();
+        var budget = new LythonMemoryBudget(Cap);
+        using var owner = budget.CreateScope();
+        var context = Context(owner);
         var retained = Create(context);
         LythonRuntime.CsvWriterMembers.WriteRow(retained, [new(PyString.Empty, LythonRuntime.CsvCellKind.Text)], Span, context, 0);
         Assert.Equal(208, retained.OwnedBytes);
         CreateAndDrop(context);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
+        Assert.Equal(before, budget.ReservedBytes);
         GC.Collect();
-        Assert.Equal(208 + ChargeReclamationPool.EntryChargeBytes, context.State.CallTemporaries.Sweep(full: true));
-        Assert.Equal(before - 208 - ChargeReclamationPool.EntryChargeBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Single(retained.Rows);
         Assert.Equal(208, retained.OwnedBytes);
         GC.KeepAlive(retained);
+        retained = null!;
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
-    public void DeniedWriterRegistrationRefundsOnlyItsNewShell()
+    public void DeniedShellAdmissionPreservesTheRetainedWriter()
     {
         var context = Context();
         var retained = Create(context);
         var governor = context.MemoryGovernor;
         var committed = governor.CurrentCommittedBytes;
-        var pressure = Cap - governor.CurrentAccountedBytes - 128 - (ChargeReclamationPool.EntryChargeBytes - 1);
+        var pressure = Cap - governor.CurrentAccountedBytes - 128 - -1;
         using var reservation = governor.ReserveTemporary(pressure, Span);
         var error = Assert.Throws<TargetInvocationException>(() => Create(context));
         Assert.Equal("MemoryError", Assert.IsType<LythonRuntimeException>(error.InnerException).ExceptionType);
         Assert.Equal(committed, governor.CurrentCommittedBytes);
         Assert.Equal(pressure, governor.CurrentReservedBytes);
-        Assert.Equal(1, context.State.CallTemporaries.Count);
         GC.KeepAlive(retained);
     }
 
@@ -66,18 +69,17 @@ public sealed class CsvWriterOwnerStorageTests
         Assert.Equal("MemoryError", Assert.IsType<LythonRuntimeException>(error.InnerException).ExceptionType);
         Assert.Equal(before, governor.CurrentCommittedBytes);
         Assert.Equal(Cap - 127, governor.CurrentReservedBytes);
-        Assert.Equal(0, context.State.CallTemporaries.Count);
     }
 
     [Fact]
-    public void WrapperRegistrationDenialRefundsWrapperWithoutRefundingItsFundedChild()
+    public void DeniedWrapperAdmissionPreservesItsFundedChild()
     {
         var context = Context();
         var retained = Create(context);
         var governor = context.MemoryGovernor;
         var committed = governor.CurrentCommittedBytes;
-        var child = 128 + ChargeReclamationPool.EntryChargeBytes;
-        var pressure = Cap - governor.CurrentAccountedBytes - child - 64 - (ChargeReclamationPool.EntryChargeBytes - 1);
+        var child = 128;
+        var pressure = Cap - governor.CurrentAccountedBytes - child - 64 - -1;
         using var reservation = governor.ReserveTemporary(pressure, Span);
         var method = Module.GetMethod("CreateDictWriter", BindingFlags.NonPublic | BindingFlags.Static)!;
         var error = Assert.Throws<TargetInvocationException>(() => method.Invoke(null,
@@ -85,7 +87,6 @@ public sealed class CsvWriterOwnerStorageTests
         Assert.Equal("MemoryError", Assert.IsType<LythonRuntimeException>(error.InnerException).ExceptionType);
         Assert.Equal(committed + child, governor.CurrentCommittedBytes);
         Assert.Equal(pressure, governor.CurrentReservedBytes);
-        Assert.Equal(2, context.State.CallTemporaries.Count);
         GC.KeepAlive(retained);
     }
 

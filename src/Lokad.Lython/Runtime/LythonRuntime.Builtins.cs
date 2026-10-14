@@ -309,7 +309,7 @@ internal sealed partial class LythonRuntime
         {
             // Guest-produced boxes adopt first ownership here when untracked;
             // already-owned aliases dedup instead of double-charging.
-            return OwnFreshInteger(ConvertInstanceToInteger(intInstance, context, span), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnFreshInteger(ConvertInstanceToInteger(intInstance, context, span), context.MemoryGovernor, span);
         }
 
         var numberBase = 10;
@@ -339,11 +339,11 @@ internal sealed partial class LythonRuntime
             return arguments[0] switch
             {
                 BigInteger => arguments[0],
-                _ when PyNumberOps.TryAsInteger(arguments[0], out var integer) => OwnFreshInteger(integer, context.MemoryGovernor, context.Services.State.CallTemporaries, span),
-                double floating => OwnFreshInteger(FloatToInteger(floating, span, Math.Truncate), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
-                PyDecimal decimalValue => OwnFreshInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
-                PyString text => OwnFreshInteger(ParsePythonIntegerText(text.AsString(), numberBase, span, text, context), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
-                PyBytes bytes => OwnFreshInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span, bytes, context), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
+                _ when PyNumberOps.TryAsInteger(arguments[0], out var integer) => OwnFreshInteger(integer, context.MemoryGovernor, span),
+                double floating => OwnFreshInteger(FloatToInteger(floating, span, Math.Truncate), context.MemoryGovernor, span),
+                PyDecimal decimalValue => OwnFreshInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span),
+                PyString text => OwnFreshInteger(ParsePythonIntegerText(text.AsString(), numberBase, span, text, context), context.MemoryGovernor, span),
+                PyBytes bytes => OwnFreshInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span, bytes, context), context.MemoryGovernor, span),
                 _ => throw new LythonRuntimeException("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
             };
         }
@@ -392,7 +392,7 @@ internal sealed partial class LythonRuntime
         }
 
         if (value is BigInteger integer && integer.Sign >= 0) return value;
-        return number.IsFloat ? Math.Abs(number.Floating) : OwnHeapInteger(BigInteger.Abs(number.Integer), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+        return number.IsFloat ? Math.Abs(number.Floating) : OwnHeapInteger(BigInteger.Abs(number.Integer), context.MemoryGovernor, span);
     }
 
     private static object Pow(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -450,7 +450,7 @@ internal sealed partial class LythonRuntime
             }
 
             var result = BigInteger.ModPow(normalizedBase, exponent, absModulus);
-            return OwnHeapInteger(modulus < BigInteger.Zero && result != BigInteger.Zero ? result - absModulus : result, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(modulus < BigInteger.Zero && result != BigInteger.Zero ? result - absModulus : result, context.MemoryGovernor, span);
         }
 
         return EvaluatePower(arguments[0], arguments[1], context, span);
@@ -707,7 +707,7 @@ internal sealed partial class LythonRuntime
     {
         var value = text.Trim();
         // Deny on digit scale before the conversion allocates the limbs.
-        GuardIntegerParseBytes(value, numberBase == 0 ? 4 : IntegerParseBitsPerDigit(numberBase), context.MemoryGovernor, span);
+        using var integerAdmission = GuardIntegerParseBytes(value, numberBase == 0 ? 4 : IntegerParseBitsPerDigit(numberBase), context.MemoryGovernor, span);
         var negative = false;
         if (value.StartsWith('+') || value.StartsWith('-'))
         {

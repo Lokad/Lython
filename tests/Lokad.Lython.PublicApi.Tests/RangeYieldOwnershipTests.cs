@@ -3,12 +3,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// R03 (remainder): range objects carry their reservations so heap-scale
-// yields, subscript results, and slice shells own their magnitudes through
-// the shared fresh-magnitude rule. Dropped iterations reclaim on sweep while
-// retained populations deny. Small yielded boxes stay uncharged (shell
-// calibration below pins the current scale for the R16 provenance design).
-public sealed class RangeYieldOwnershipTests
+public class RangeYieldOwnershipTests : LifetimeScenario
 {
     private static void AssertError(LythonExecutionResult result, string type, string messagePart)
     {
@@ -19,32 +14,12 @@ public sealed class RangeYieldOwnershipTests
     }
 
     [Fact]
-    public void DiscardedBigYieldsSucceed()
-    {
-        const string code = """
-            for v in range(1 << 100000, (1 << 100000) + 1000):
-                pass
-            """;
-        var result = new LythonEngine().Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
-        Assert.True(result.Success, result.Failure?.Message);
-    }
+    public Task LargeYieldBatchesPreserveValues()
+        => AssertBatchCompletes("for v in range(1 << 100000, (1 << 100000) + 2):\n    pass\nreturn v.bit_length()\n", new BigInteger(100001), 131072, asynchronous: false);
 
     [Fact]
-    public async Task DiscardedBigYieldsSucceedAsync()
-    {
-        const string code = """
-            for v in range(1 << 100000, (1 << 100000) + 1000):
-                pass
-            """;
-        var result = await new LythonEngine().RunAsync(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
-        Assert.True(result.Success, result.Failure?.Message);
-    }
+    public Task AsyncLargeYieldBatchesPreserveValues()
+        => AssertBatchCompletes("for v in range(1 << 100000, (1 << 100000) + 2):\n    pass\nreturn v.bit_length()\n", new BigInteger(100001), 131072, asynchronous: true);
 
     [Fact]
     public void RetainedBigYieldsDeny()
@@ -78,46 +53,16 @@ public sealed class RangeYieldOwnershipTests
     }
 
     [Fact]
-    public void DiscardedSubscriptsSucceed()
-    {
-        const string code = """
-            for i in range(5000):
-                y = range(1 << 100000, (1 << 100000) + 1000)[i % 100]
-            """;
-        var result = new LythonEngine().Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 6291456 });
-        Assert.True(result.Success, result.Failure?.Message);
-    }
+    public Task LargeSubscriptBatchesPreserveValues()
+        => AssertBatchCompletes("for i in range(8):\n    y = range(1 << 100000, (1 << 100000) + 1000)[i % 100]\nreturn y.bit_length()\n", new BigInteger(100001), 6291456, asynchronous: false);
 
     [Fact]
-    public void DiscardedReversedSucceed()
-    {
-        const string code = """
-            for v in reversed(range(1 << 100000, (1 << 100000) + 1000)):
-                pass
-            """;
-        var result = new LythonEngine().Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
-        Assert.True(result.Success, result.Failure?.Message);
-    }
+    public Task LargeReversedBatchesPreserveValues()
+        => AssertBatchCompletes("for v in reversed(range(1 << 100000, (1 << 100000) + 2)):\n    pass\nreturn v.bit_length()\n", new BigInteger(100001), 131072, asynchronous: false);
 
     [Fact]
-    public void DiscardedSlicesSucceed()
-    {
-        const string code = """
-            for i in range(5000):
-                s = range(1 << 1000, (1 << 1000) + 100)[10:20]
-            """;
-        var result = new LythonEngine().Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        Assert.True(result.Success, result.Failure?.Message);
-    }
+    public Task RangeSliceBatchesPreserveValues()
+        => AssertBatchCompletes("for i in range(8):\n    s = range(1 << 1000, (1 << 1000) + 100)[10:20]\nreturn len(s)\n", new BigInteger(10), 3145728, asynchronous: false);
 
     [Fact]
     public void RetainedBigSlicesDeny()

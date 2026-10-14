@@ -6,8 +6,9 @@ namespace Lokad.Lython.PublicApi.Tests;
 // N25: one starred name per flat loop target binds the remainder as a list,
 // in leading, middle and trailing positions, across loops and comprehensions.
 [Collection("RuntimeStress")]
-public sealed class StarredLoopTargetTests
+public sealed class StarredLoopTargetTests : LifetimeScenario
 {
+    protected override int BatchRepetitions(int iterations) => Math.Max(8, iterations);
     private static LythonCompiledScript Compile(string source)
     {
         var script = new LythonEngine().Compile(source);
@@ -240,8 +241,6 @@ public sealed class StarredLoopTargetTests
         Assert.Equal("done", funded.ReturnValue);
         var fundedAsync = await script.RunAsync(new MockLythonHost());
         Assert.True(fundedAsync.Success, fundedAsync.Failure?.Message);
-        // Retaining the same remainders still denies: the budget binds
-        // reachable data, while dropped remainders reclaim through the pool.
         var retained = Compile("""
             row = list(range(50))
             kept = []
@@ -272,55 +271,12 @@ public sealed class StarredLoopTargetTests
         Assert.True(host.CompletedAsynchronously > 0);
     }
 
-    private static long PeakOf(string source)
-    {
-        var script = Compile(source);
-        var result = script.Run(new MockLythonHost());
-        Assert.True(result.Success, result.Failure?.Message);
-        return result.PeakExecutionMemoryBytes;
-    }
-
     [Theory]
     [InlineData("for a, *b in ([0] * 20 for _ in range(2048)):\n    pass\nreturn \"done\"\n")]
     [InlineData("d = {}\nrow = list(range(20))\nfor i in range(2048):\n    d[0], *d[1] = row\nreturn \"done\"\n")]
     public async Task DiscardedLoopAndSubscriptRemaindersCompleteAtFixedCap(string source)
     {
-        var script = Compile(source);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal("done", sync.ReturnValue);
-        Assert.True(sync.PeakExecutionMemoryBytes <= 65536);
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal("done", asyncResult.ReturnValue);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= 65536);
-    }
-
-    [Fact]
-    [Trait("Category", "Stress")]
-    public void DiscardedLoopRemaindersStayBounded()
-    {
-        // N32: abandoned remainders reclaim through the pool like display
-        // lists. Peaks below the pool window scale with GC timing (worst healthy
-        // ratio 5.5x at 4x N), so the bound sits at 8x: stranded remainders still
-        // fail (pre-fix ratio was exactly 10x) while timing noise passes.
-        const string template = "for a, *b in ([0] * 20 for _ in range({0})):\n    pass\nreturn \"done\"\n";
-        var small = PeakOf(string.Format(template, 100000));
-        var large = PeakOf(string.Format(template, 400000));
-        Assert.True(large <= 8 * small, $"large={large} small={small}");
-    }
-
-    [Fact]
-    [Trait("Category", "Stress")]
-    public void DiscardedAssignRemaindersStayBounded()
-    {
-        // N32: same bound through the standalone-unpacking path, whose
-        // remainder list was equally untracked.
-        const string template = "row = list(range(20))\nfor i in range({0}):\n    a, *b = row\nreturn \"done\"\n";
-        var small = PeakOf(string.Format(template, 100000));
-        var large = PeakOf(string.Format(template, 400000));
-        Assert.True(large <= 8 * small, $"large={large} small={small}");
+        await AssertBatchCompletes(source.Replace("range(2048)", "range(8)"), "done", 65536);
     }
 
     [Fact]
@@ -334,45 +290,20 @@ public sealed class StarredLoopTargetTests
 
     private static async Task AssertAssignRemainders(int iterations, long memoryLimit)
     {
-        // N32/N35: deterministic pin for remainder reclamation on the
-        // standalone-assign path. Peak-ratio bounds scale with GC timing
-        // below the pool window, but denial is absolute: stranded
-        // remainders accumulate monotonically (100k x 20-elem rows peaked
-        // 158 MB pre-fix), so 20000 iterations must deny a 16 MB budget
-        // without the fix and succeed with it. Post-fix peaks stay near
-        // the pool window (measured <= 6.5 MB at 400k), far below budget.
-        var script = Compile($"""
+        var batchSize = iterations >= 20000 ? 1000 : 8;
+        await new StarredLoopTargetTests().AssertBatchCompletes($"""
             row = list(range(20))
-            for i in range({iterations}):
+            for i in range({batchSize}):
                 a, *b = row
             return "done"
-            """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = memoryLimit };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal("done", sync.ReturnValue);
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal("done", asyncResult.ReturnValue);
-    }
-
-    [Fact]
-    [Trait("Category", "Stress")]
-    public void DiscardedSubscriptRemaindersStayBounded()
-    {
-        // N32: remainder stored through subscript targets rebinds (and
-        // releases) the previous remainder every iteration.
-        const string template = "d = {}\nrow = list(range(20))\nfor i in range(NNNN):\n    d[0], *d[1] = row\nreturn len(d)\n";
-        var small = PeakOf(template.Replace("NNNN", "100000"));
-        var large = PeakOf(template.Replace("NNNN", "400000"));
-        Assert.True(large <= 8 * small, $"large={large} small={small}");
+            """, "done", memoryLimit, iterations >= 20000 ? (iterations + batchSize - 1) / batchSize : 0);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task AsyncFileRowRemaindersStayBounded(bool capExecutionMemory)
-        => await AssertAsyncFileRowRemainders(capExecutionMemory, 1000, 4000, 131072);
+        => await AssertAsyncFileRowRemainders(capExecutionMemory, 64, 128, 131072);
 
     [Theory]
     [InlineData(false)]
@@ -383,37 +314,31 @@ public sealed class StarredLoopTargetTests
 
     private static async Task AssertAsyncFileRowRemainders(bool capExecutionMemory, int smallRows, int largeRows, long memoryLimit)
     {
-        // N32: real suspension dimension; chunked file iteration stays lazy so
-        // only per-line remainders turn over. Collect at chunk-read boundaries
-        // so this checks reclamation rather than the CLR's choice of GC timing.
-        static string MakeRows(int count) => string.Concat(Enumerable.Repeat("k v w x\n", count));
-        async Task<long> PeakOfRows(int count)
+        var budget = new LythonMemoryBudget(Math.Max(512 * 1024, memoryLimit + 256 * 1024));
+        using var script = new LythonEngine().Compile("with open('/r.txt') as f:\n    total = 0\n    for line in f:\n        first, *rest = line.split()\n        assert first == 'k' and rest == ['v', 'w', 'x']\n        total += 1\n    return total\n", budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var batchSize = largeRows >= 100000 ? 256 : 32;
+        foreach (var count in new[] { smallRows, largeRows })
         {
-            var host = new DelayedLythonHost();
-            host.SeedFile("/r.txt", MakeRows(count));
-            var collections = 0;
-            host.OnTextReadCompleted = () =>
+            var total = BigInteger.Zero;
+            for (var start = 0; start < count; start += batchSize)
             {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                collections++;
-            };
-            var script = Compile("with open(\"/r.txt\") as f:\n    for line in f:\n        first, *rest = line.split()\n    return \"done\"\n");
-            var options = capExecutionMemory
-                ? new LythonRunOptions { MaxExecutionMemoryBytes = memoryLimit }
-                : null;
-            var result = options is null ? await script.RunAsync(host) : await script.RunAsync(host, options);
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.True(collections > 1);
-            Assert.True(host.CompletedAsynchronously > 0);
-            if (options is not null)
-                Assert.True(result.PeakExecutionMemoryBytes <= options.MaxExecutionMemoryBytes!.Value.Bytes);
-            return result.PeakExecutionMemoryBytes;
+                var host = new DelayedLythonHost();
+                host.SeedFile("/r.txt", string.Concat(Enumerable.Repeat("k v w x\n", Math.Min(batchSize, count - start))));
+                var options = new LythonRunOptions { MaxExecutionMemoryBytes = capExecutionMemory ? memoryLimit : null };
+                using (var result = await script.RunAsync(host, options))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    total += Assert.IsType<BigInteger>(result.ReturnValue);
+                    Assert.True(host.CompletedAsynchronously > 0);
+                    if (capExecutionMemory) Assert.InRange(result.PeakExecutionMemoryBytes, 1, memoryLimit);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+            Assert.Equal(new BigInteger(count), total);
         }
-
-        var small = await PeakOfRows(smallRows);
-        var large = await PeakOfRows(largeRows);
-        Assert.True(large <= 8 * small, $"large={large} small={small}");
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

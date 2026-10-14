@@ -59,8 +59,7 @@ public sealed class CheckedRangeIterationTests
         cancellation.Cancel();
         var start = BigInteger.One << 10000;
         var allocationSpan = new LythonSourceSpan(20, 5, 3, 4);
-        var range = new PyRange(start, start + length, BigInteger.One,
-            context.MemoryGovernor, context.State.CallTemporaries, allocationSpan);
+        var range = new PyRange(start,start + length,BigInteger.One,            context.MemoryGovernor,allocationSpan);
         using var iterator = PyIteration.ToSequence(range, Span, context).GetEnumerator();
         Assert.Equal(1, context.Limits.ExecutionStepCount);
 
@@ -126,8 +125,7 @@ public sealed class CheckedRangeIterationTests
         });
         var start = BigInteger.One << 10000;
         var allocationSpan = new LythonSourceSpan(20, 5, 3, 4);
-        var range = new PyRange(start, start + 1, BigInteger.One,
-            context.MemoryGovernor, context.State.CallTemporaries, allocationSpan);
+        var range = new PyRange(start,start + 1,BigInteger.One,            context.MemoryGovernor,allocationSpan);
         using var iterator = PyIteration.ToSequence(range, Span, context).GetEnumerator();
 
         var error = Assert.Throws<LythonRuntimeException>(() => iterator.MoveNext());

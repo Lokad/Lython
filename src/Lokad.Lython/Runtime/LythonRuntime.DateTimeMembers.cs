@@ -518,7 +518,6 @@ internal sealed partial class LythonRuntime
         };
     }
 
-
     private static string GetTimespec(object? value, int position, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool assigned)
     {
         // Omitted values keep the default; every explicit value (including

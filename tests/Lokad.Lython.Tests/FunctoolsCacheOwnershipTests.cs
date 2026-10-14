@@ -17,7 +17,7 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
         var keyModeType = typeof(LythonRuntime).GetNestedType("CacheKeyMode", BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("CacheKeyMode not found.");
         var ctor = wrapperType.GetConstructors().Single();
-        return ctor.Invoke([null, maxSize, Enum.ToObject(keyModeType, 0), context.MemoryGovernor, context.Services.State.CallTemporaries]);
+        return ctor.Invoke([null, maxSize, Enum.ToObject(keyModeType, 0), context.MemoryGovernor]);
     }
 
     private static LythonRuntime.ExecutionContext NewContext()
@@ -48,11 +48,11 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
         var k1 = NewKey(context, span, 1);
         var c1 = k1.CommittedStorageBytes;
         InvokeStore(wrapper, k1, c1, new BigInteger(1), span, context);
-        Assert.Equal(128L + c1 + 128L + 32L, context.MemoryGovernor.CurrentCommittedBytes - baseline); // infra+key+registry+backing
+        Assert.Equal(128L + c1, context.MemoryGovernor.CurrentCommittedBytes - baseline); // retained infrastructure and key
         var k2 = NewKey(context, span, 2);
         var c2 = k2.CommittedStorageBytes;
         InvokeStore(wrapper, k2, c2, new BigInteger(2), span, context);
-        Assert.Equal(128L + c2 + 128L + 32L, context.MemoryGovernor.CurrentCommittedBytes - baseline); // evicted key released
+        Assert.Equal(128L + c2, context.MemoryGovernor.CurrentCommittedBytes - baseline); // evicted key released
     }
 
     [Fact]
@@ -75,27 +75,31 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
     }
 
     [Fact]
-    public void DroppedWrapperSweepsCoupon()
+    public void DroppedWrapperRemainsBatchFundedUntilExplicitOwnerCleanup()
     {
-        var context = NewContext();
-        var pool = context.Services.State.CallTemporaries;
-        var baseline = context.MemoryGovernor.CurrentCommittedBytes;
-        AbandonPopulatedWrapper(context);
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var weak = AbandonPopulatedWrapper(context);
+        var retained = budget.ReservedBytes;
+        Assert.True(retained > 0);
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        // Coupon (infra + key) plus the pool entry charge release; tier backing persists.
-        // N06 adds the key tuple's adopted int coupon to both sides of the sweep.
-        Assert.Equal(128L + 48L + 128L + 64L, pool.Sweep(full: true));
-        Assert.Equal(baseline + 32L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.False(weak.IsAlive);
+        Assert.Equal(retained, budget.ReservedBytes);
+        context = null!;
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    private static void AbandonPopulatedWrapper(LythonRuntime.ExecutionContext context)
+    private static WeakReference AbandonPopulatedWrapper(LythonRuntime.ExecutionContext context)
     {
         var span = Span();
         var wrapper = NewWrapper(context, null);
         var key = NewKey(context, span, 1);
         InvokeStore(wrapper, key, key.CommittedStorageBytes, new BigInteger(1), span, context);
+        return new WeakReference(wrapper);
     }
 }

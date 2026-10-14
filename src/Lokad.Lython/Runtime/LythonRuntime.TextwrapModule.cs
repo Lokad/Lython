@@ -131,7 +131,6 @@ internal sealed partial class LythonRuntime
                     if (predicate is not PyNone)
                     {
                         lineText = PyString.FromUtf8(text.Utf8Bytes.Slice(start, line.EndByte - start), services.MemoryGovernor, span);
-                        services.State.CallTemporaries.TrackFreshString(lineText, span);
                         selected = await SelectLineAsync(lineText, predicate, span, context, asynchronous).ConfigureAwait(false);
                     }
                     services.CheckExecution(span);
@@ -219,7 +218,6 @@ internal sealed partial class LythonRuntime
                 result = asynchronous
                     ? await CallableInvocation.InvokeUnaryAsync(callable, line, span, context).ConfigureAwait(false)
                     : CallableInvocation.InvokeUnary(callable, line, span, context);
-                context.Services.State.CallTemporaries.TrackCallResult(result, span);
             }
             var truth = asynchronous
                 ? await IsTruthyAsync(result, context, span).ConfigureAwait(false)
@@ -237,7 +235,6 @@ internal sealed partial class LythonRuntime
                 ? await InvokeCallableTargetAsync(member, span, span, context,
                     () => ValueTask.FromResult(arguments)).ConfigureAwait(false)
                 : InvokeCallableTarget(member, span, span, context, () => arguments);
-            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -288,7 +285,6 @@ internal sealed partial class LythonRuntime
         private static PyString Finish(GovernedByteBuilder builder, LythonSourceSpan span, ExecutionServices services)
         {
             var result = builder.ToPyStringAndRelease();
-            services.State.CallTemporaries.TrackFreshString(result, span);
             return result;
         }
     }

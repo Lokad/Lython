@@ -127,7 +127,6 @@ internal sealed partial class LythonRuntime
         }
     }
 
-
     // Shared float() conversion failure: quotes the offending source like
     // CPython (str form for strings, bytes form for bytes) with repr quote choice.
     private static LythonRuntimeException FloatConversionError(object source, ExecutionContext context, LythonSourceSpan span)
@@ -383,7 +382,6 @@ internal sealed partial class LythonRuntime
             }
 
             var instance = new PyInstance(type, context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(instance, instance.CommittedStorageBytes, span);
             return instance;
         }
     }

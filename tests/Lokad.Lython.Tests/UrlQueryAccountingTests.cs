@@ -21,23 +21,24 @@ public sealed class UrlQueryAccountingTests
     [InlineData("parse_qs", 127)]
     [InlineData("parse_qs", 300)]
     [InlineData("parse_qs", 600)]
-    public void AbandonedQueryConstructionReclaimsEveryCharge(string name, long cap)
+    public void DeniedQueryBatchesReturnTheirAllowanceAfterCleanup(string name, long cap)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+        var budget = new LythonMemoryBudget(cap);
         Assert.True(LythonRuntime.UrllibParseModule.Instance.TryGetMember(name, out var member));
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(member);
         object input = name == "urlencode"
             ? new PyList([new PyTuple([PyString.FromString("x"), PyString.FromString(new string('é', 30))])])
             : PyString.FromString("a=1&b=2&c=3&d=4");
-        for (var attempt = 0; attempt < 50; attempt++)
+        for (var attempt = 0; attempt < 8; attempt++)
         {
-            Deny(callable, input, context);
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-            context.State.CallTemporaries.Sweep(full: true);
-            Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            using (var owner = budget.CreateScope())
+            {
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                    new LythonRunOptions { MaxExecutionMemoryBytes = cap, MemoryBudget = owner });
+                Deny(callable, input, context);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
         }
         GC.KeepAlive(input);
     }

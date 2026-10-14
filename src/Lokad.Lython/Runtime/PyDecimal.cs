@@ -221,7 +221,6 @@ internal static partial class PyDecimalOps
     }
 
 
-
     private static int ExpectInt(object value, string message, LythonSourceSpan span)
     {
         if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer) ||

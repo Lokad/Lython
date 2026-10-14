@@ -60,8 +60,7 @@ public sealed class Utf16CodecAccountingTests
 
     [Theory]
     [InlineData(130)]
-    [InlineData(200)]
-    public void DeniedNativeDecodingRefundsOutputAndRegistration(long cap)
+    public void DeniedNativeDecodingRefundsUnusedAdmission(long cap)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -109,9 +108,9 @@ public sealed class Utf16CodecAccountingTests
             LythonRuntime.TextEncodingMode.Utf16LittleEndian, LythonRuntime.TextErrorMode.Strict,
             LythonRuntime.TextNewlineMode.PreserveUniversal, 1);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
-        // Preserve the original post-construction decoder headroom.
+        // Admit raw/UTF-8 storage but leave the UTF-16 cache one byte short.
         using var pressure = context.MemoryGovernor.ReserveTemporary(65536 - context.MemoryGovernor.CurrentAccountedBytes
-            - (285 - ChargeReclamationPool.EntryChargeBytes), null);
+            - 176, null);
         try { Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(state.Prime).ExceptionType); }
         finally { state.Release(); }
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);

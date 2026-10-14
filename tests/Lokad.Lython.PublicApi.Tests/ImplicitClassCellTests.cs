@@ -447,22 +447,31 @@ public sealed class ImplicitClassCellTests
     }
 
     [Fact]
-    public async Task DroppedClassCellCyclesReclaimTheirCharges()
+    public async Task ClassCellBatchesReturnFundingAfterCleanup()
     {
-        var compiled = new LythonEngine().Compile("""
-            for i in range(5000):
+        var ownerBudget = new LythonMemoryBudget(1048576);
+        using var compiled = new LythonEngine().Compile("""
+            for i in range(16):
              class C:
               def owner(self): return __class__
             print(C().owner() is C)
-            """);
+            """, ownerBudget);
         Assert.True(compiled.IsValid);
         const long budget = 524288;
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
-        foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
+        var baseline = ownerBudget.ReservedBytes;
+        for (var batch = 0; batch < 8; batch++)
         {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("True\n", result.StandardOutput);
-            Assert.True(result.PeakExecutionMemoryBytes <= budget);
+            foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("True\n", result.StandardOutput);
+                Assert.True(result.PeakExecutionMemoryBytes <= budget);
+                result.Dispose();
+            }
+            Assert.Equal(baseline, ownerBudget.ReservedBytes);
         }
+        compiled.Dispose();
+        Assert.Equal(0, ownerBudget.ReservedBytes);
     }
 }

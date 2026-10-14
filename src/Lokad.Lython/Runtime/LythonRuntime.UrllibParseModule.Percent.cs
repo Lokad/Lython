@@ -37,7 +37,6 @@ internal sealed partial class LythonRuntime
                 }
             }
             var result = PyString.FromOwnedUtf8(output, context.MemoryGovernor, span);
-            context.State.CallTemporaries.TrackFreshString(result, span);
             return result;
         }
 
@@ -45,7 +44,6 @@ internal sealed partial class LythonRuntime
         {
             if (value.Length == 0) return EmptyBytes;
             var result = new PyBytes(value, context.MemoryGovernor, span);
-            context.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
             return result;
         }
 
@@ -85,7 +83,6 @@ internal sealed partial class LythonRuntime
             TextErrorMode errors, ExecutionContext context, LythonSourceSpan span)
         {
             var result = DecodeText(source, encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
-            context.State.CallTemporaries.TrackFreshString(result, span);
             context.ObserveString(result, span);
             return result;
         }
@@ -134,7 +131,6 @@ internal sealed partial class LythonRuntime
                     }
                 }
                 var result = builder.ToPyStringAndRelease();
-                context.State.CallTemporaries.TrackFreshString(result, span);
                 return result;
             }
             finally { builder.Release(); GC.KeepAlive(source); }

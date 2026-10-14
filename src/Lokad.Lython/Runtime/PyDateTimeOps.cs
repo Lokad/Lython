@@ -42,9 +42,6 @@ internal static partial class PyDateTimeOps
     {
         context.MemoryGovernor.Reserve(DateTimeValueBytes, span);
         context.MemoryGovernor.Commit(DateTimeValueBytes);
-        // Fresh shells reclaim through the pool once dropped; adopt with refund so a
-        // denied registry charge releases the construction charge instead of stranding it.
-        context.Services.State.CallTemporaries.TrackFreshMutable(value, DateTimeValueBytes, span);
         return value;
     }
 

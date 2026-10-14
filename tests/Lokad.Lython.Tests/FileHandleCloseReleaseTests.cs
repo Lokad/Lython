@@ -20,7 +20,7 @@ public sealed class FileHandleCloseReleaseTests
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes > 64);
         handle.Exit();
         GC.KeepAlive(handle);
-        Assert.Equal(64L + ChargeReclamationPool.EntryChargeBytes + context.State.CallTemporaries.CommittedBackingBytes,
+        Assert.Equal(64L,
             context.MemoryGovernor.CurrentCommittedBytes);
     }
 
@@ -34,7 +34,7 @@ public sealed class FileHandleCloseReleaseTests
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes > 64);
         await handle.ExitAsync();
         GC.KeepAlive(handle);
-        Assert.Equal(64L + ChargeReclamationPool.EntryChargeBytes + context.State.CallTemporaries.CommittedBackingBytes,
+        Assert.Equal(64L,
             context.MemoryGovernor.CurrentCommittedBytes);
     }
 }

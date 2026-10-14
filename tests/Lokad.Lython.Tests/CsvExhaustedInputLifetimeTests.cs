@@ -19,16 +19,15 @@ public sealed class CsvExhaustedInputLifetimeTests
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public async Task EofReleasesOnlyUnreachableInput(bool indexed, bool asynchronous, string retention)
+    public async Task EofDropsInputReferencesWhilePreservingBatchFunding(bool indexed, bool asynchronous, string retention)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
         var (source, input, keptInput, field) = ReadToEnd(context, indexed, asynchronous, retention);
+        var funded = context.MemoryGovernor.CurrentCommittedBytes;
         Collect();
         Assert.Equal(retention == "input", input.TryGetTarget(out _));
-        context.State.CallTemporaries.Sweep(full: true);
-        var expected = source.OwnedBytes + ChargeReclamationPool.EntryChargeBytes +
-            context.State.CallTemporaries.CommittedBackingBytes;
+        var expected = source.OwnedBytes;
         var count = 1;
         if (field is not null)
         {
@@ -44,20 +43,14 @@ public sealed class CsvExhaustedInputLifetimeTests
             count++;
         }
         Assert.Equal(LythonRuntime.CsvRecordSource.ShellBytes, source.OwnedBytes);
-        Assert.Equal(count, context.State.CallTemporaries.Count);
-        Assert.Equal(expected, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(funded, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(funded >= expected);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        if (keptInput is not null)
-        {
-            var error = Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(50000, null));
-            Assert.Equal("MemoryError", error.ExceptionType);
-            Assert.Equal(expected, context.MemoryGovernor.CurrentCommittedBytes);
-        }
-        else
-        {
-            context.MemoryGovernor.Reserve(50000, null);
-            context.MemoryGovernor.ReleaseReserved(50000);
-        }
+        // Withdrawal does not retire the execution owner. Both retained and
+        // dropped variants remain conservatively funded for this finite batch.
+        var error = Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(50000, null));
+        Assert.Equal("MemoryError", error.ExceptionType);
+        Assert.Equal(funded, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.False(source.TryMoveNext(out _));
         Assert.Null(await source.TryMoveNextAsync());
         GC.KeepAlive(source);
@@ -68,7 +61,7 @@ public sealed class CsvExhaustedInputLifetimeTests
     private static long Charge(object value)
     {
         Assert.True(((IPyOwnershipSnapshot)value).TrySnapshotOwnership(out var owned));
-        return owned + ChargeReclamationPool.EntryChargeBytes;
+        return owned;
     }
 
     [Theory]
@@ -86,8 +79,6 @@ public sealed class CsvExhaustedInputLifetimeTests
         Assert.Equal("Error", error.ExceptionType);
         Collect();
         Assert.False(input.TryGetTarget(out _));
-        context.State.CallTemporaries.Sweep(full: true);
-        Assert.Equal(1, context.State.CallTemporaries.Count);
         Assert.Equal(LythonRuntime.CsvRecordSource.ShellBytes, source.OwnedBytes);
         Assert.False(source.TryMoveNext(out _));
         Assert.Null(await source.TryMoveNextAsync());
@@ -110,7 +101,6 @@ public sealed class CsvExhaustedInputLifetimeTests
         Assert.Same(row, replay);
         Assert.Equal("kept", ((PyString)replay![0]).AsString());
         Assert.Equal("😀", ((PyString)replay[1]).AsString());
-        Assert.True(context.State.CallTemporaries.IsTracked(replay));
         Assert.False(source.TryMoveNext(out _));
         Assert.Null(await source.TryMoveNextAsync());
     }
@@ -124,7 +114,6 @@ public sealed class CsvExhaustedInputLifetimeTests
         var (source, input, firstField) = CompleteWithQueuedRecord(context, asynchronous);
         Collect();
         Assert.False(input.TryGetTarget(out _));
-        context.State.CallTemporaries.Sweep(full: true);
         Assert.True(source.OwnedBytes > LythonRuntime.CsvRecordSource.ShellBytes);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var slots = source.OwnedBytes - LythonRuntime.CsvRecordSource.ShellBytes;
@@ -134,8 +123,6 @@ public sealed class CsvExhaustedInputLifetimeTests
         Assert.Equal("😀", ((PyString)row[1]).AsString());
         Assert.Equal(LythonRuntime.CsvRecordSource.ShellBytes, source.OwnedBytes);
         Assert.Equal(before - slots, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.True(context.State.CallTemporaries.IsTracked(firstField));
-        Assert.True(context.State.CallTemporaries.IsTracked(row));
         Assert.False(source.TryMoveNext(out _));
         Assert.Null(await source.TryMoveNextAsync());
         GC.KeepAlive(firstField);
@@ -193,10 +180,8 @@ public sealed class CsvExhaustedInputLifetimeTests
     private static (LythonRuntime.CsvRecordSource Source, WeakReference<object> Input) MalformedSource(LythonRuntime.ExecutionContext context, bool indexed)
     {
         var text = PyString.FromString("\"" + new string('x', 8000), context.MemoryGovernor);
-        context.State.CallTemporaries.TrackFreshString(text);
         object input = indexed ? new PyList([text], context.MemoryGovernor, null) : new PyTuple([text], context.MemoryGovernor, null);
         Assert.True(((IPyOwnershipSnapshot)input).TrySnapshotOwnership(out var owned));
-        context.State.CallTemporaries.TrackFreshMutable(input, owned);
         return (new(input, Options(), new(0, 0, 0, 0), context), new(input));
     }
 
@@ -269,10 +254,8 @@ public sealed class CsvExhaustedInputLifetimeTests
             PyString.FromString(new string('x', 8000), context.MemoryGovernor),
             PyString.FromString(new string('y', 8000), context.MemoryGovernor),
         };
-        foreach (var value in values) context.State.CallTemporaries.TrackFreshString((PyString)value);
         object input = indexed ? new PyList(values, context.MemoryGovernor, null) : new PyTuple(values, context.MemoryGovernor, null);
         Assert.True(((IPyOwnershipSnapshot)input).TrySnapshotOwnership(out var owned));
-        context.State.CallTemporaries.TrackFreshMutable(input, owned);
         var source = new LythonRuntime.CsvRecordSource(input, Options(), new(0, 0, 0, 0), context);
         var weak = new WeakReference<object>(input);
         PyString? field = null;

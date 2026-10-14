@@ -366,7 +366,7 @@ internal sealed partial class LythonRuntime
                 // Deny before growth for large magnitudes: an integer product needs
                 // at most bits(total) + bits(item), with scratch coexisting.
                 GuardProdGrowth(total, item, span, context);
-                total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+                total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, span);
                 pairs++;
                 context.ObserveCollectionCount(pairs, span);
                 if ((pairs & 63) == 0)
@@ -392,7 +392,7 @@ internal sealed partial class LythonRuntime
             await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
             {
                 GuardProdGrowth(total, item, span, context);
-                total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+                total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, span);
                 pairs++;
                 context.ObserveCollectionCount(pairs, span);
                 if ((pairs & 63) == 0)
@@ -408,7 +408,7 @@ internal sealed partial class LythonRuntime
         {
             if (total is BigInteger totalInteger && PyNumberOps.TryAsInteger(item, out var itemInteger))
             {
-                GuardIntegerResultBytes(
+                using var integerAdmission = GuardIntegerResultBytes(
                     RuntimeMemoryEstimates.SaturatingMultiply(3, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
                         RuntimeMemoryEstimates.SaturatingAdd(
                             RuntimeMemoryEstimates.GetMagnitudeBitLength(totalInteger),
@@ -755,7 +755,7 @@ internal sealed partial class LythonRuntime
                     "__ceil__" => decimal.Ceiling(decimalValue.Value),
                     _ => decimal.Truncate(decimalValue.Value),
                 };
-                return OwnHeapInteger(new BigInteger(decimalResult), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+                return OwnHeapInteger(new BigInteger(decimalResult), context.MemoryGovernor, span);
             }
 
             if (!PyNumberOps.TryAsNumber(value, out var number))
@@ -768,7 +768,7 @@ internal sealed partial class LythonRuntime
                 return value is BigInteger ? value : number.Integer;
             }
 
-            return OwnHeapInteger(FloatToInteger(number.Floating, span, func), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(FloatToInteger(number.Floating, span, func), context.MemoryGovernor, span);
         }
     }
 

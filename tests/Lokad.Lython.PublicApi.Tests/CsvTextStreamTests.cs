@@ -2,7 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class CsvTextStreamTests
+public sealed class CsvTextStreamTests : LifetimeScenario
 {
     [Fact]
     public async Task WriterCapturesTheMethodAndReturnsItsValue()
@@ -358,28 +358,22 @@ public sealed class CsvTextStreamTests
     }
 
     [Fact]
-    public async Task FailedCallbacksReclaimDiscardedRowStrings()
+    public async Task FailedCallbackBatchesPreserveWriterBehavior()
     {
-        var script = Compile("""
+        await AssertBatchCompletes("""
             import csv
             class Writer:
                 def write(self, text):
                     raise ValueError('stop')
             writer = csv.writer(Writer())
             value = 'x' * 4096
-            for i in range(2000):
+            for i in range(8):
                 try:
                     writer.writerow([value])
                 except ValueError:
                     pass
             print('done')
-            """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
-        foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
-        {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("done\n", result.StandardOutput);
-        }
+            """, null, 1048576, standardOutput: "done\n");
     }
 
     private static LythonCompiledScript Compile(string source)

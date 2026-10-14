@@ -11,7 +11,7 @@ public sealed class ExceptionShellStorageTests
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
     [Fact]
-    public void DroppedShellReclaimsOnceWhileRetainedAliasStaysFunded()
+    public void CollectedShellsRemainBatchOwnedWhileRetainedAliasesStayUsable()
     {
         var context = Root();
         var retained = PyException.CreateOwned(PythonExceptionIdentity.FromRuntimeTypeName("ValueError"), "", PyNone.Instance, context, Span);
@@ -19,29 +19,25 @@ public sealed class ExceptionShellStorageTests
         var committed = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
         Assert.False(weak.TryGetTarget(out _));
-        var expected = PyException.ShellBytes + ChargeReclamationPool.EntryChargeBytes;
-        Assert.Equal(expected, context.State.CallTemporaries.Sweep(full: true));
-        Assert.Equal(committed - expected, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         retained.Adopt(context, Span);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.State.CallTemporaries.Sweep(full: true));
         Assert.True(retained.TrySnapshotOwnership(out var bytes));
         Assert.Equal(PyException.ShellBytes, bytes);
         GC.KeepAlive(retained);
     }
 
     [Fact]
-    public void DeniedFreshRegistrationRefundsShellWithoutPublishingIt()
+    public void DeniedShellAdmissionKeepsExistingFunding()
     {
         var context = Root();
         var baseline = context.MemoryGovernor.CurrentAccountedBytes;
-        using var pressure = context.MemoryGovernor.ReserveTemporary(4096 - baseline - PyException.ShellBytes, Span);
+        using var pressure = context.MemoryGovernor.ReserveTemporary(4096 - baseline - PyException.ShellBytes + 1, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.Throws<LythonRuntimeException>(() => PyException.CreateOwned(
             PythonExceptionIdentity.FromRuntimeTypeName("ValueError"), "", PyNone.Instance, context, Span));
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.State.CallTemporaries.Count);
     }
 
     [Fact]
@@ -53,20 +49,17 @@ public sealed class ExceptionShellStorageTests
         var value = new PyException("ValueError", "", PyNone.Instance) { Cause = child };
         var baseline = context.MemoryGovernor.CurrentAccountedBytes;
         using (var pressure = context.MemoryGovernor.ReserveTemporary(4096 - baseline -
-            PyException.ShellBytes - ChargeReclamationPool.EntryChargeBytes - 1, Span))
+            PyException.ShellBytes - 1, Span))
         {
             Assert.Throws<LythonRuntimeException>(() => value.Adopt(context, Span));
-            Assert.True(context.State.CallTemporaries.IsTracked(value));
             Assert.Null(child.OwnerMemoryGovernor);
         }
         var rootFunding = context.MemoryGovernor.CurrentCommittedBytes;
         value.Adopt(context, Span);
-        Assert.True(context.State.CallTemporaries.IsTracked(child));
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= rootFunding + PyException.ShellBytes);
         var complete = context.MemoryGovernor.CurrentCommittedBytes;
         value.Adopt(context, Span);
         Assert.Equal(complete, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(3, context.State.CallTemporaries.Count);
         GC.KeepAlive(warm);
     }
 

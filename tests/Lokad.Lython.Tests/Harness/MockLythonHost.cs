@@ -596,6 +596,12 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
     public void EnableSubprocess() => _subprocess.Enabled = true;
 
+    public void UseSubprocessHandler(Func<LythonSubprocessRequest, CancellationToken, ValueTask<LythonSubprocessResult>> handler)
+    {
+        EnableSubprocess();
+        _subprocess.Handler = handler;
+    }
+
     public void EnableSubprocessShell()
     {
         EnableSubprocess();
@@ -815,7 +821,9 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
         public bool AllowsShellInvocation { get; set; }
 
-        public bool CompletesSynchronously => !CompleteAsynchronously;
+        public bool CompletesSynchronously => !CompleteAsynchronously && Handler is null;
+
+        public Func<LythonSubprocessRequest, CancellationToken, ValueTask<LythonSubprocessResult>>? Handler { get; set; }
 
         public bool CompleteAsynchronously { get; set; }
 
@@ -842,6 +850,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         public ValueTask<LythonSubprocessResult> RunAsync(LythonSubprocessRequest request, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (Handler is not null) return Handler(request, cancellationToken);
             if (CompleteAsynchronously)
             {
                 return RunDelayedAsync(request, cancellationToken);

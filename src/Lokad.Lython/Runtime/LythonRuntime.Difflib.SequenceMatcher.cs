@@ -45,9 +45,6 @@ internal sealed partial class LythonRuntime
         private PyDict? _b2jView;
         private PySet? _bjunkView;
         private PySet? _bpopularView;
-        // N05: escaped views own their lifetime via the run pool (view as owner),
-        // never tied to the matcher coupon. The matcher caches references without owning charges.
-        private readonly ChargeReclamationPool _pool;
         private readonly LythonRuntime.ExecutionContext _creationContext;
         private long _fullBCountCharge;
         private long _matchingBlocksCharge;
@@ -58,7 +55,6 @@ internal sealed partial class LythonRuntime
             _isjunk = isjunk;
             _autojunk = autojunk;
             _governor = context.MemoryGovernor;
-            _pool = context.Services.State.CallTemporaries;
             _creationContext = context;
             _aOriginal = aOriginal;
             _bOriginal = bOriginal;
@@ -76,28 +72,13 @@ internal sealed partial class LythonRuntime
                 _governor.Release(_aCharge);
                 throw;
             }
-            // Fresh matchers reclaim through the pool once dropped; later caches re-snapshot
-            // below while the member-call funnel has no matcher branch.
-            context.Services.State.CallTemporaries.TrackFreshMutable(this, CommittedStorageBytes, span);
         }
 
-        // Current committed backing charges across chains and caches (escaped views own themselves), for pooled
-        // owners that release them if this matcher is dropped. Mutations re-snapshot
-        // through NoteGrowth below; untracked matchers no-op inside the notification.
+        // Current chain/cache funding for unpublished rollback. Published matcher
+        // storage stays batch-owned; explicit replacement refunds private backing.
         internal long CommittedStorageBytes =>
             _aCharge + _bCharge + _chainCharge +
             _fullBCountCharge + _matchingBlocksCharge + _opcodesCharge;
-
-        // Refreshes the pool coupon after charge mutations; change-detected over field
-        // reads so steady use costs nothing when charges are unchanged.
-        private void NoteGrowth(long beforeCharges)
-        {
-            var current = CommittedStorageBytes;
-            if (current != beforeCharges)
-            {
-                ChargeReclamationPool.NotifyStorageReplaced(this, current);
-            }
-        }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -221,7 +202,6 @@ internal sealed partial class LythonRuntime
 
         public void SetSeq1(object aOriginal, LythonSourceSpan span, ExecutionContext context)
         {
-            var beforeCharges = CommittedStorageBytes;
             var array = DifflibModule.MaterializeGovernedSequence(aOriginal, span, context, out var charge);
             _aOriginal = aOriginal;
             _governor.Release(_aCharge);
@@ -229,14 +209,12 @@ internal sealed partial class LythonRuntime
             _aCharge = charge;
             ReleaseMatchingBlocks();
             ReleaseOpcodes();
-            NoteGrowth(beforeCharges);
         }
 
         public void SetSeq2(object bOriginal, LythonSourceSpan span, ExecutionContext context)
         {
             // N05: strong guarantee - swap sequence only after the new index builds;
             // failure restores the previous array with exact charges.
-            var beforeCharges = CommittedStorageBytes;
             var newArray = DifflibModule.MaterializeGovernedSequence(bOriginal, span, context, out var newCharge);
             var oldB = _b;
             var oldBCharge = _bCharge;
@@ -252,7 +230,6 @@ internal sealed partial class LythonRuntime
                 ReleaseOpcodes();
                 ReleaseFullBCount();
                 ReleaseViews();
-                NoteGrowth(beforeCharges);
             }
             catch
             {
@@ -342,7 +319,6 @@ internal sealed partial class LythonRuntime
 
         internal List<DiffOpcode> BuildOpcodes(LythonSourceSpan span, ExecutionContext context)
         {
-            var beforeCharges = CommittedStorageBytes;
             if (_opcodes is not null)
             {
                 return _opcodes;
@@ -400,7 +376,6 @@ internal sealed partial class LythonRuntime
             _governor.Release(_opcodesCharge);
             _opcodesCharge = opcodesCharge;
             _opcodes = opcodes;
-            NoteGrowth(beforeCharges);
             return opcodes;
         }
 
@@ -570,7 +545,6 @@ internal sealed partial class LythonRuntime
 
         private ContextualKeyTable<int> BuildFullBCount(LythonSourceSpan span, ExecutionContext context)
         {
-            var beforeCharges = CommittedStorageBytes;
             using var reservation = _governor.ReserveTemporary(0, span);
             // N12: contextual counts (guest __hash__/__eq__).
             var counts = new ContextualKeyTable<int>();
@@ -594,7 +568,6 @@ internal sealed partial class LythonRuntime
             _governor.Commit(charge);
             _governor.Release(_fullBCountCharge);
             _fullBCountCharge = charge;
-            NoteGrowth(beforeCharges);
             return counts;
         }
 
@@ -643,7 +616,6 @@ internal sealed partial class LythonRuntime
             {
                 _governor.Reserve(charge, null);
                 _governor.Commit(charge);
-                _pool.TrackFreshMutable(dict, charge, null);
             }
             catch
             {
@@ -668,7 +640,6 @@ internal sealed partial class LythonRuntime
             {
                 _governor.Reserve(charge, null);
                 _governor.Commit(charge);
-                _pool.TrackFreshMutable(view, charge, null);
             }
             catch
             {
@@ -693,7 +664,6 @@ internal sealed partial class LythonRuntime
             {
                 _governor.Reserve(charge, null);
                 _governor.Commit(charge);
-                _pool.TrackFreshMutable(view, charge, null);
             }
             catch
             {
@@ -706,7 +676,6 @@ internal sealed partial class LythonRuntime
         }
         private List<MatchingBlock> GetMatchingBlocks(LythonSourceSpan span, ExecutionContext context)
         {
-            var beforeCharges = CommittedStorageBytes;
             if (_matchingBlocks is not null)
             {
                 return _matchingBlocks;
@@ -795,7 +764,6 @@ internal sealed partial class LythonRuntime
             _governor.Release(_matchingBlocksCharge);
             _matchingBlocksCharge = blocksCharge;
             _matchingBlocks = collapsed;
-            NoteGrowth(beforeCharges);
             return collapsed;
         }
 
@@ -942,7 +910,6 @@ internal sealed partial class LythonRuntime
                 new BigInteger(opcode.I2),
                 new BigInteger(opcode.J1),
                 new BigInteger(opcode.J2)]);
-
 
         private readonly record struct MatchRange(int ALo, int AHi, int BLo, int BHi);
 

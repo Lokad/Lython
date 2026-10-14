@@ -59,16 +59,17 @@ public sealed class ZipStatePreflightTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeniedTupleRegistrationRefundsOnlyTheFreshRow(bool asynchronous)
+    public async Task DeniedTupleStorageReturnsFreshRowAdmissionAndPreservesHeldRows(bool asynchronous)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         var source = new CountingSource();
         var zip = new PyZipIterator([source], false, Span, context);
         var held = Assert.IsType<PyTuple>(asynchronous ? (await zip.TryMoveNextAsync()).Value : Pull(zip));
         var rowBytes = PyTuple.EstimateStorageBytes([BigInteger.One]);
-        // Admit the row buffer and tuple; deny its new registry entry.
+        // Admit the working row buffer, leaving one byte too little for the
+        // tuple's actual storage. The held row must remain funded and usable.
         var funding = context.MemoryGovernor.MaxAccountedBytes!.Value
-            - context.MemoryGovernor.CurrentCommittedBytes - (32 + 80) - rowBytes;
+            - context.MemoryGovernor.CurrentCommittedBytes - (32 + 80) - rowBytes + 1;
         context.MemoryGovernor.Reserve(funding, Span);
         var reserved = context.MemoryGovernor.CurrentReservedBytes;
         var committed = context.MemoryGovernor.CurrentCommittedBytes;

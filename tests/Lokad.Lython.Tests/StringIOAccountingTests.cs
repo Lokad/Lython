@@ -51,11 +51,10 @@ public sealed class StringIOAccountingTests
     }
 
     [Fact]
-    public void CloseResnapshotsItsCouponWhileSnapshotsRemainOwned()
+    public void CloseReleasesOnlyItsBackingWhileSnapshotsRemainOwned()
     {
         var context = Context(100000);
         var stream = new LythonRuntime.StringIOObject(context.Services, Span, "\n");
-        context.Services.State.CallTemporaries.TrackFreshMutable(stream, stream.OwnedBytes, Span);
         stream.Write(PyString.FromString("é😀abc"), Span);
         var value = stream.GetValue(Span);
         Assert.Same(context.MemoryGovernor, value.OwnerMemoryGovernor);
@@ -76,17 +75,21 @@ public sealed class StringIOAccountingTests
     }
 
     [Fact]
-    public void AbandonedStreamReclaimsCurrentBackingAfterGrowthAndClose()
+    public void CollectedStreamStaysBatchOwnedUntilCleanup()
     {
         foreach (var close in new[] { false, true })
         {
-            var context = Context(100000);
+            var budget = new LythonMemoryBudget(100000);
+            using var owner = budget.CreateScope();
+            var context = Context(100000, owner);
             var weak = Abandon(context, close, out var charge);
             var before = context.MemoryGovernor.CurrentCommittedBytes;
             GC.Collect();
             Assert.False(weak.TryGetTarget(out _));
-            context.Services.State.CallTemporaries.Sweep(full: true);
-            Assert.Equal(before - charge - ChargeReclamationPool.EntryChargeBytes, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(before, budget.ReservedBytes);
+            Assert.True(before >= charge);
+            owner.Dispose();
+            Assert.Equal(0, budget.ReservedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
     }
@@ -95,7 +98,6 @@ public sealed class StringIOAccountingTests
     private static WeakReference<LythonRuntime.StringIOObject> Abandon(LythonRuntime.ExecutionContext context, bool close, out long charge)
     {
         var stream = new LythonRuntime.StringIOObject(context.Services, Span, "\n");
-        context.Services.State.CallTemporaries.TrackFreshMutable(stream, stream.OwnedBytes, Span);
         stream.Write(PyString.FromString(new string('x', 200)), Span);
         stream.Write(PyString.FromString(new string('y', 1000)), Span);
         if (close) stream.Close();
@@ -103,6 +105,6 @@ public sealed class StringIOAccountingTests
         return new WeakReference<LythonRuntime.StringIOObject>(stream);
     }
 
-    private static LythonRuntime.ExecutionContext Context(long cap)
-        => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+    private static LythonRuntime.ExecutionContext Context(long cap, ILythonMemoryBudget? budget = null)
+        => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap, MemoryBudget = budget });
 }

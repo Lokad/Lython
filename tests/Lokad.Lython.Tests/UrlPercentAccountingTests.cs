@@ -9,7 +9,6 @@ public sealed class UrlPercentAccountingTests
 
     [Theory]
     [InlineData(130)]
-    [InlineData(200)]
     public void DeniedQuotedOutputRefundsConstructionAndRegistration(long cap)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
@@ -26,8 +25,7 @@ public sealed class UrlPercentAccountingTests
 
     [Theory]
     [InlineData(32)]
-    [InlineData(100)]
-    public void DeniedPercentBytesRefundConstructionAndRegistration(long cap)
+    public void DeniedPercentBytesLeavesPayloadAdmissionUnchanged(long cap)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
         var before = context.MemoryGovernor.CurrentCommittedBytes;

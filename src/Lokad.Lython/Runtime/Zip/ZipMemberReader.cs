@@ -146,7 +146,6 @@ internal static class ZipMemberReader
             span);
     }
 
-
     private static LythonRuntimeException BadZipFile(string message, LythonSourceSpan? span)
         => new(LythonRuntime.ModuleException("zipfile", "BadZipFile"), message, span);
 

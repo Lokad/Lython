@@ -296,7 +296,6 @@ internal static class PyEquality
         _ => [],
     };
 
-
     private static bool BoundMethodsEqual(object left, object right)
     {
         if (left is not IPyDynamicAttributes leftAttributes ||
@@ -519,7 +518,6 @@ internal static class PyEquality
 
         return true;
     }
-
 
     // A Counter facing a plain or default dict compares exactly like dicts;
     // only Counter-facing-Counter fills absent keys with zero counts.

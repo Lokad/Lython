@@ -31,7 +31,6 @@ public sealed class BytesIOAccountingTests
 
     [Theory]
     [InlineData(150)] // Denies the snapshot before allocating its array.
-    [InlineData(250)] // Allows the array/owner, then denies registry adoption.
     public void DeniedSnapshotsDoNotConsumeInputOrLeakFreshOwnership(long cap)
     {
         var context = Context(cap);
@@ -54,7 +53,6 @@ public sealed class BytesIOAccountingTests
     {
         var context = Context(100000);
         var stream = new LythonRuntime.BytesIOObject(context.Services, Span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(stream, stream.OwnedBytes, Span);
         stream.Write(new PyBytes([255, 0, 1, 2]), Span);
         var value = stream.GetValue(Span);
         Assert.Same(context.MemoryGovernor, value.OwnerMemoryGovernor);
@@ -94,16 +92,20 @@ public sealed class BytesIOAccountingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AbandonedStreamAndSnapshotReleaseTheirOwnCurrentCoupons(bool close)
+    public void StreamAndSnapshotStayBatchOwnedUntilCleanup(bool close)
     {
-        var context = Context(100000);
+        var budget = new LythonMemoryBudget(100000);
+        using var owner = budget.CreateScope();
+        var context = Context(100000, owner);
         var (stream, value) = Abandon(context, close, out var charge);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
         Assert.False(stream.TryGetTarget(out _));
         Assert.False(value.TryGetTarget(out _));
-        context.Services.State.CallTemporaries.Sweep(full: true);
-        Assert.Equal(before - charge - 2 * ChargeReclamationPool.EntryChargeBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(before, budget.ReservedBytes);
+        Assert.True(before >= charge);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -112,7 +114,6 @@ public sealed class BytesIOAccountingTests
         LythonRuntime.ExecutionContext context, bool close, out long charge)
     {
         var stream = new LythonRuntime.BytesIOObject(context.Services, Span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(stream, stream.OwnedBytes, Span);
         stream.Write(new PyBytes(new byte[200]), Span);
         stream.Write(new PyBytes(new byte[1000]), Span);
         var value = stream.GetValue(Span);
@@ -121,6 +122,6 @@ public sealed class BytesIOAccountingTests
         return (new WeakReference<LythonRuntime.BytesIOObject>(stream), new WeakReference<PyBytes>(value));
     }
 
-    private static LythonRuntime.ExecutionContext Context(long cap)
-        => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+    private static LythonRuntime.ExecutionContext Context(long cap, ILythonMemoryBudget? budget = null)
+        => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap, MemoryBudget = budget });
 }

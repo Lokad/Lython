@@ -21,18 +21,24 @@ public sealed class InstanceOwnerLifetimeTests
 
     [Theory]
     [MemberData(nameof(DroppedCases))]
-    public async Task DroppedWorkloadsKeepTheirBoundedLiveBudget(string kind, bool asynchronous)
+    public async Task WorkloadBatchesReturnSharedAccounting(string kind, bool asynchronous)
     {
-        var result = await Run(Workload(kind, false), asynchronous);
-        Assert.True(result.Success, result.Failure?.ExceptionType + ":" + result.Failure?.Message);
-        Assert.Equal(new BigInteger(1500), result.ReturnValue);
+        var budget = new LythonMemoryBudget(512 * 1024);
+        for (var batch = 0; batch < 8; batch++)
+        {
+            using var result = await Run(Workload(kind, false).Replace("1500", "16"), asynchronous, budget);
+            Assert.True(result.Success, result.Failure?.ExceptionType + ":" + result.Failure?.Message);
+            Assert.Equal(new BigInteger(16), result.ReturnValue);
+            result.Dispose();
+            Assert.Equal(0, budget.ReservedBytes);
+        }
     }
 
     [Theory]
     [MemberData(nameof(RetainedCases))]
     public async Task RetainedResultsStillExhaustRealLiveStorage(string kind, bool asynchronous)
     {
-        var result = await Run(Workload(kind, true), asynchronous);
+        using var result = await Run(Workload(kind, true), asynchronous);
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
     }
@@ -55,7 +61,7 @@ public sealed class InstanceOwnerLifetimeTests
     [MemberData(nameof(CopyAndConstructorGoldens))]
     public async Task CallbackPartialStateCyclesAndAllocatorAliasesStayCompatible(string source, object expected, bool asynchronous)
     {
-        var result = await Run(source, asynchronous);
+        using var result = await Run(source, asynchronous);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, result.ReturnValue);
     }
@@ -98,9 +104,9 @@ public sealed class InstanceOwnerLifetimeTests
             "\n except (TypeError, ValueError):\n  pass\nreturn i + 1\n";
     }
 
-    private static async Task<LythonExecutionResult> Run(string source, bool asynchronous)
+    private static async Task<LythonExecutionResult> Run(string source, bool asynchronous, ILythonMemoryBudget? budget = null)
     {
-        var script = new LythonEngine().Compile("with open('/ready', 'r') as stream:\n stream.read()\n" + source);
+        using var script = new LythonEngine().Compile("with open('/ready', 'r') as stream:\n stream.read()\n" + source, budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
         if (asynchronous)

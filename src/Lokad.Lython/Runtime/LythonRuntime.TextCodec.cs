@@ -320,7 +320,6 @@ internal sealed partial class LythonRuntime
         if (IsUtf16Encoding(encoding))
         {
             var result = DecodeUtf16Text(payload.Span, encoding, context, span, errors, newline, stream);
-            if (result.Length != 0) context.Services.State.CallTemporaries.TrackFreshString(result, span);
             return result;
         }
         if (encoding is TextEncodingMode.Ascii or TextEncodingMode.Windows1252)
@@ -328,7 +327,6 @@ internal sealed partial class LythonRuntime
             var result = encoding == TextEncodingMode.Ascii
                 ? DecodeAsciiText(payload.Span, context, span, errors, newline)
                 : DecodeWindows1252Text(payload.Span, context, span, errors, newline);
-            if (result.Length != 0) context.Services.State.CallTemporaries.TrackFreshString(result, span);
             return result;
         }
         if (encoding != TextEncodingMode.Latin1)

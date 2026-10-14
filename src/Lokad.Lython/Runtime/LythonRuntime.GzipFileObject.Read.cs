@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
             _services.MemoryGovernor.Commit(ZlibModule.InflationScratchBytes);
             _nativeCharge = ZlibModule.InflationScratchBytes;
             _crc = uint.MaxValue; _memberSize = 0; _memberEnded = false;
-            Changed();
+
             return true;
         }
 
@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
                 _services.MemoryGovernor.Reserve(ReadBufferBytes, span);
                 try { _window = new byte[ReadBufferBytes]; }
                 catch { _services.MemoryGovernor.ReleaseReserved(ReadBufferBytes); throw; }
-                _services.MemoryGovernor.Commit(ReadBufferBytes); Changed();
+                _services.MemoryGovernor.Commit(ReadBufferBytes);
             }
             _windowPosition = _windowLength = 0;
             while (!_eof)

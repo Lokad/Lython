@@ -139,7 +139,6 @@ internal sealed partial class LythonRuntime
                     }
                 }
                 var result = builder.ToPyStringAndRelease();
-                context.State.CallTemporaries.TrackFreshString(result, span);
                 return result;
             }
             finally { builder.Release(); GC.KeepAlive(query); GC.KeepAlive(args); }
@@ -157,7 +156,6 @@ internal sealed partial class LythonRuntime
             else
             {
                 var text = await FormatSuspendedFieldAsync(value, 's', null, context, span, asynchronous).ConfigureAwait(false);
-                context.State.CallTemporaries.TrackCallResult(text, span);
                 context.ObserveString(text, span);
                 parameters = [CallArgumentValue.Positional(text), CallArgumentValue.Positional(args[2]),
                     CallArgumentValue.Positional(args[3]), CallArgumentValue.Positional(args[4])];
@@ -168,7 +166,6 @@ internal sealed partial class LythonRuntime
         private static PyList QueryList(ExecutionContext context, LythonSourceSpan span)
         {
             var result = new PyList(Array.Empty<object>(), context.MemoryGovernor, span);
-            context.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
             return result;
         }
 
@@ -234,7 +231,6 @@ internal sealed partial class LythonRuntime
                             context.ObserveCollectionCount(pairs.Count + 1, span);
                             context.ObserveCollectionCount(2, span);
                             var pair = PyTuple.FromOwnedArray([name, value], context.MemoryGovernor, span);
-                            context.State.CallTemporaries.TrackFreshMutable(pair, pair.CommittedStorageBytes, span);
                             pairs.Add(pair);
                         }
                     }
@@ -249,7 +245,6 @@ internal sealed partial class LythonRuntime
             {
                 if (!textQuery) return PercentDecodeBytes(field.Span, context, span, true);
                 var text = PyString.FromUtf8(field, context.MemoryGovernor, span);
-                context.State.CallTemporaries.TrackFreshString(text, span);
                 return await UnquoteAsync([text, args[3], args[4]], span, context, asynchronous, true).ConfigureAwait(false);
             }
 
@@ -257,7 +252,6 @@ internal sealed partial class LythonRuntime
             {
                 if (!dictionary) return list;
                 var result = new PyDict(context.MemoryGovernor, span);
-                context.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
                 foreach (PyTuple pair in list.Iterate())
                 {
                     context.CheckExecution(span);

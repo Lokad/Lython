@@ -69,10 +69,7 @@ public sealed class IntegerObservationBudgetTests
         var governor = state.MemoryGovernor;
         var span = new LythonSourceSpan(20, 5, 3, 4);
         object value = BigInteger.One << 64;
-        Assert.Same(value, LythonRuntime.OwnFreshInteger(value, governor, state.CallTemporaries, span));
-        // Fund survivor promotion before pinning the remaining budget. Denial
-        // relief may sweep the pool, whose bookkeeping has its own charges.
-        Assert.Equal(0, state.CallTemporaries.Sweep(full: true));
+        Assert.Same(value, LythonRuntime.OwnFreshInteger(value, governor, span));
 
         var padding = budget - governor.CurrentAccountedBytes - expectedBytes;
         governor.Reserve(padding, null);

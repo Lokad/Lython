@@ -6,7 +6,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class GzipFileObject : IPyProtocolIterator, IPyRenderableValue, IPyFinalizableOwnership, IExecutionFileWriter
+    private sealed partial class GzipFileObject : IPyProtocolIterator, IPyRenderableValue, IPyOwnershipSnapshot, IExecutionFileWriter
     {
         internal const long ShellBytes = 512;
         private const int WriteBufferBytes = 32768;
@@ -49,10 +49,8 @@ internal sealed partial class LythonRuntime
 
         ~GzipFileObject()
         {
-            // Finalization frees native state only. The long weak entry retains
-            // the complete coupon until the finalized object is collected, and
-            // execution-thread sweeps perform all accounting. A compressor's
-            // final block is discarded without allocation or guest/host calls.
+            // Last-resort physical cleanup: discard a final block without
+            // allocation or guest/host calls. Accounting ends with its owner.
             try { DiscardNative(); }
             catch (Exception) { /* A finalizer cannot report a guest failure. */ }
         }
@@ -61,7 +59,6 @@ internal sealed partial class LythonRuntime
             + _pending.CommittedCapacity + _output.CommittedCapacity;
         public bool TrySnapshotOwnership(out long chargeBytes)
             => OwnershipSnapshot.Owned(_services.MemoryGovernor, OwnedBytes, out chargeBytes);
-        private void Changed() => ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
 
         internal static GzipFileObject Create(object stream, bool ownsStream, PyString name, bool reading,
             ExecutionContext context, LythonSourceSpan span)
@@ -69,7 +66,6 @@ internal sealed partial class LythonRuntime
             context.MemoryGovernor.Reserve(ShellBytes, span);
             var result = new GzipFileObject(stream, ownsStream, name, reading, context, span);
             context.MemoryGovernor.Commit(ShellBytes);
-            context.State.CallTemporaries.TrackFreshMutable(result, result.OwnedBytes, span);
             return result;
         }
 
@@ -85,13 +81,12 @@ internal sealed partial class LythonRuntime
             catch { _services.MemoryGovernor.ReleaseReserved(ZlibModule.CompressionScratchBytes); throw; }
             _services.MemoryGovernor.Commit(ZlibModule.CompressionScratchBytes);
             _nativeCharge = ZlibModule.CompressionScratchBytes;
-            Changed();
         }
 
         internal void AbortConstruction()
         {
             try { RetireLocalStorage(); }
-            finally { _services.State.CallTemporaries.RefundUnpublishedValue(this); }
+            finally { _services.State.MemoryGovernor.RefundUnpublishedValue(this); }
         }
 
         private void DiscardNative()
@@ -110,7 +105,6 @@ internal sealed partial class LythonRuntime
             {
                 _services.MemoryGovernor.Release(_nativeCharge);
                 _nativeCharge = 0;
-                Changed();
             }
         }
 
@@ -123,15 +117,7 @@ internal sealed partial class LythonRuntime
                 _pending.Release(); _output.Release();
                 _services.MemoryGovernor.Release(_window.Length);
                 _window = []; _windowLength = _windowPosition = 0;
-                Changed();
             }
-        }
-
-        void IPyFinalizableOwnership.AbandonStorage()
-        {
-            if (_operationContext is not null)
-                throw new InvalidOperationException("Cannot abandon an active gzip operation.");
-            RetireLocalStorage();
         }
 
         private void RetireLocalStorage()
@@ -180,7 +166,6 @@ internal sealed partial class LythonRuntime
                 if (_discard) return;
                 owner._services.CheckExecution(owner._creationSpan);
                 owner._output.Append(buffer);
-                owner.Changed();
             }
             public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
             public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();

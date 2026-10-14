@@ -7,6 +7,11 @@ internal static class RuntimeMemoryEstimates
 {
     private const long BigIntegerObjectOverheadBytes = 32;
 
+    // Coarse source/AST/lowered representation and bounded diagnostic-cache
+    // capacity. This replaces per-node/literal retention inventories.
+    internal static long EstimateCompilationBytes(int sourceLength)
+        => 32768L + 96L * Math.Min(sourceLength, LythonEngine.MaxSourceLength);
+
     // A retained numeric slot pays a conservative box allowance without an
     // identity map. Large magnitudes retain their existing payload owner;
     // only an unowned magnitude needs its byte-count estimate here.
@@ -18,7 +23,7 @@ internal static class RuntimeMemoryEstimates
 
     internal static long EstimateScalarStorageBytes(object? value) => value switch
     {
-        BigInteger integer => integer.GetByteCount() > 9 && !ChargeReclamationPool.IsTrackedValue(value)
+        BigInteger integer => integer.GetByteCount() > 9
             ? ScalarStorageBytes + integer.GetByteCount() : ScalarStorageBytes,
         _ => EstimateNumericSlotBytes(value),
     };

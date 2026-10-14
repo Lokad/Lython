@@ -138,14 +138,8 @@ internal static class PyRendering
         }
     }
 
-
-    // M05: join builders byte-copy each rendered item, so the item transient
-    // is pool-owned here and dropped renders reclaim on sweep. Already-owned
-    // renders (notably __repr__/__str__ returning live values) dedup to a
-    // no-op through the shared table instead of double-owning guest charges.
     internal static PyString OwnJoinItem(PyString rendered, LythonRuntime.ExecutionContext context)
     {
-        context.Services.State.CallTemporaries.TrackFreshString(rendered, null);
         return rendered;
     }
 

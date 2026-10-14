@@ -28,16 +28,16 @@ public sealed class GzipPathScopeLifetimeTests
     {
         var host = new MockLythonHost();
         host.SeedBytes("/data.gz", Member);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 28000 });
+        var budget = new LythonMemoryBudget(28000);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 28000, MemoryBudget = owner });
         var (handle, frame, payload) = CreateHandle(context, mode, close);
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         Assert.False(frame.TryGetTarget(out _));
         Assert.False(payload.TryGetTarget(out _));
-        context.State.CallTemporaries.Sweep(full: true);
-        context.MemoryGovernor.Reserve(16000, null);
-        context.MemoryGovernor.ReleaseReserved(16000);
+        Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(16000, null));
         if (!close && mode.StartsWith('r'))
         {
             var value = Call(handle, "read", context);
@@ -47,6 +47,11 @@ public sealed class GzipPathScopeLifetimeTests
         if (!close) ((IPyContextManager)handle).Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         GC.KeepAlive(handle);
+        handle = null!;
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+        Assert.True(budget.TryReserve(16000, out var next));
+        next.Dispose();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -55,7 +60,6 @@ public sealed class GzipPathScopeLifetimeTests
     {
         var frame = new LythonRuntime.ExecutionContext(parent);
         var payload = PyString.FromString(new string('x', 16000), parent.MemoryGovernor);
-        parent.State.CallTemporaries.TrackFreshString(payload);
         frame.Variables["unrelated"] = payload;
         Assert.True(LythonRuntime.GzipModule.Instance.TryGetMember("open", out var open));
         var handle = Assert.IsAssignableFrom<LythonRuntime.ICallable>(open).Invoke(

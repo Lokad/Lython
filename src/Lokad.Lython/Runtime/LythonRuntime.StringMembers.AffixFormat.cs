@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         return prefix.Length != 0 && text.StartsWith(prefix)
-                            ? OwnMethodResult(SliceByByteCount(text, prefix.Utf8Bytes.Length, text.Utf8Bytes.Length - prefix.Utf8Bytes.Length), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries)
+                            ? OwnMethodResult(SliceByByteCount(text, prefix.Utf8Bytes.Length, text.Utf8Bytes.Length - prefix.Utf8Bytes.Length),text,context.MemoryGovernor,span)
                             : text;
                     }, StrRemovePrefixSignature),
                     "removesuffix" => BoundCallable.Create((arguments, span, context) =>
@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         return suffix.Length != 0 && text.EndsWith(suffix)
-                            ? OwnMethodResult(SliceByByteCount(text, 0, text.Utf8Bytes.Length - suffix.Utf8Bytes.Length), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries)
+                            ? OwnMethodResult(SliceByByteCount(text, 0, text.Utf8Bytes.Length - suffix.Utf8Bytes.Length),text,context.MemoryGovernor,span)
                             : text;
                     }, StrRemoveSuffixSignature),
                     "partition" => CreatePartitionMethod("partition", PyStringOps.Partition, StrPartitionSignature),
@@ -105,8 +105,7 @@ internal sealed partial class LythonRuntime
                                 positional,
                                 keywords,
                                 (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
-                                (value, conversion, spec) => PyRendering.OwnJoinItem(FormatInterpolatedStringPart(value, conversion, spec, context, span), context)), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
-                            context.Services.State.CallTemporaries.TrackFreshString(formatted, span);
+                                (value, conversion, spec) => PyRendering.OwnJoinItem(FormatInterpolatedStringPart(value, conversion, spec, context, span), context)),text,context.MemoryGovernor,span);
                             return formatted;
                         }
                         catch (InvalidOperationException ex)
@@ -139,7 +138,7 @@ internal sealed partial class LythonRuntime
                                 keywords,
                                 (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
                                 (value, conversion, spec) => PyRendering.OwnJoinItem(FormatInterpolatedStringPart(value, conversion, spec, context, span), context),
-                                forbidPositionalFields: true), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+                                forbidPositionalFields: true),text,context.MemoryGovernor,span);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -177,7 +176,7 @@ internal sealed partial class LythonRuntime
 
                         try
                         {
-                            return OwnSplitTupleResult(operation(text, separator, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
+                            return operation(text, separator, context.MemoryGovernor, span);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -253,7 +252,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            return OwnMethodResult(PyString.FromString(builder.ToString()), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+            return OwnMethodResult(PyString.FromString(builder.ToString()),text,context.MemoryGovernor,span);
         }
 
         // Misses keep the character like CPython (only LookupError shapes

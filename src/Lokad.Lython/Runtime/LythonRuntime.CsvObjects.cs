@@ -139,12 +139,11 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "csv.DictReader has no field names.", _span);
             }
 
-            var dict = CreateDictReaderRow(row, FieldNames, _restKey, _restValue, _governor, _span, Rows.Pool);
-            Rows.Pool.TrackMutable(dict, dict.CommittedStorageBytes);
+            var dict = CreateDictReaderRow(row,FieldNames,_restKey,_restValue,_governor,_span);
             return dict;
         }
 
-        private static PyDict CreateDictReaderRow(PyList row, PyString[] fieldNames, object restKey, object restValue, MemoryGovernor governor, LythonSourceSpan span, ChargeReclamationPool pool)
+        private static PyDict CreateDictReaderRow(PyList row,PyString[] fieldNames,object restKey,object restValue,MemoryGovernor governor,LythonSourceSpan span)
         {
             var dict = new PyDict(governor, span);
             var count = Math.Min(row.Count, fieldNames.Length);
@@ -167,7 +166,6 @@ internal sealed partial class LythonRuntime
                 }
 
                 var extrasList = new PyList(extras, governor, span);
-                pool.TrackMutable(extrasList, extrasList.CommittedStorageBytes);
                 dict.SetItem(LythonRuntime.ValidateDictionaryKey(restKey, span), extrasList);
             }
 
@@ -203,7 +201,6 @@ internal sealed partial class LythonRuntime
             catch { MemoryGovernor.ReleaseReserved(charge); throw; }
             MemoryGovernor.Commit(charge);
             OwnedBytes += charge;
-            ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
         }
     }
 
@@ -436,7 +433,6 @@ internal sealed partial class LythonRuntime
 
             var result = InvokeCallableTarget(writer.WriteMethod, span, span, context,
                 () => [CallArgumentValue.Positional(rendered)]);
-            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -450,7 +446,6 @@ internal sealed partial class LythonRuntime
 
             var result = await InvokeCallableTargetAsync(writer.WriteMethod, span, span, context,
                 () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(rendered)])).ConfigureAwait(false);
-            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -481,7 +476,6 @@ internal sealed partial class LythonRuntime
             {
                 RenderCsvDocumentInto(builder, [row], writer.Options, trailingTerminator: true, span);
                 var rendered = builder.ToPyStringAndRelease();
-                context.Services.State.CallTemporaries.TrackFreshString(rendered, span);
                 return rendered;
             }
             finally

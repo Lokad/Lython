@@ -19,7 +19,6 @@ internal static partial class PyIteration
             context.MemoryGovernor.Release(PyIteratorBase.IteratorValueBytes);
             throw;
         }
-        context.Services.State.CallTemporaries.TrackFreshMutable(iterator, PyIteratorBase.IteratorValueBytes);
         return new(iterator, iterator.Iterate(), EnumerateAsyncIterator(iterator));
     }
 
@@ -377,7 +376,6 @@ internal static partial class PyIteration
         private int _movesUntilCheckpoint;
         private IEnumerator<object>? _syncEnumerator;
         private IAsyncEnumerator<object>? _asyncEnumerator;
-
 
         internal static Cursor FromAcquired(PyUserIterator iterator, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
             => new(iterator.Iterator, span, iterator, context);

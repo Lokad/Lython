@@ -53,7 +53,9 @@ public sealed class RepresentativeScriptTests
                 break;
         }
 
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        // This is one finite invocation; guest temporaries are conservatively
+        // retained within it. The separate batch test checks sustained reuse.
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = repetitions <= 16 ? 262144 : 8 * 1024 * 1024 };
         LythonExecutionResult result;
         if (asynchronous)
         {
@@ -79,6 +81,79 @@ public sealed class RepresentativeScriptTests
         Assert.Equal(stdout, result.StandardOutput);
         Assert.Empty(result.StandardError);
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, options.MaxExecutionMemoryBytes!.Value.Bytes);
+        result.Dispose();
+    }
+
+    [Theory]
+    [InlineData("csv-summary", false)]
+    [InlineData("text-summary", false)]
+    [InlineData("json-summary", false)]
+    [InlineData("file-manifest", false)]
+    [InlineData("csv-summary", true)]
+    [InlineData("text-summary", true)]
+    [InlineData("json-summary", true)]
+    [InlineData("file-manifest", true)]
+    public Task HostBatchesReturnSharedAccountingToTheCompiledBaseline(string name, bool asynchronous)
+        => VerifyHostBatches(name, asynchronous, 8);
+
+    [Theory]
+    [Trait("Category", "Stress")]
+    [InlineData("csv-summary", true)]
+    [InlineData("text-summary", true)]
+    [InlineData("json-summary", true)]
+    [InlineData("file-manifest", true)]
+    public Task LongerHostBatchesReturnSharedAccountingToBaseline(string name, bool asynchronous)
+        => VerifyHostBatches(name, asynchronous, 32);
+
+    private static async Task VerifyHostBatches(string name, bool asynchronous, int batches)
+    {
+        var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        for (var batch = 0; batch < batches; batch++)
+        {
+            var csv = "kind,amount,note\n" + string.Concat(Enumerable.Repeat("red,3,ok\nblue,2,ok\n", 16));
+            var text = string.Concat(Enumerable.Repeat("Alpha café 😀\nalpha BETA café\n", 16));
+            var json = string.Concat(Enumerable.Repeat("{\"kind\":\"red\",\"amount\":3}\n{\"kind\":\"blue\",\"amount\":2}\n", 16));
+            LythonExecutionResult result;
+            string output;
+            if (asynchronous)
+            {
+                var host = new DelayedLythonHost();
+                host.SeedFile("/input.csv", csv);
+                host.SeedFile("/input.txt", text);
+                host.SeedFile("/input.jsonl", json);
+                host.SeedBytes("/inbox/a.bin", [0, 127, 128, 255]);
+                result = await script.RunAsync(host, options);
+                Assert.True(host.CompletedAsynchronously > 0);
+                output = name switch { "csv-summary" => host.ReadText("/report.csv"), "text-summary" => host.ReadText("/report.txt"),
+                    "json-summary" => host.ReadText("/report.json"), _ => host.ReadText("/manifest.json") };
+            }
+            else
+            {
+                var host = new MockLythonHost();
+                host.SeedFile("/input.csv", csv);
+                host.SeedFile("/input.txt", text);
+                host.SeedFile("/input.jsonl", json);
+                host.SeedBytes("/inbox/a.bin", [0, 127, 128, 255]);
+                result = script.Run(host, options);
+                output = name switch { "csv-summary" => host.ReadText("/report.csv"), "text-summary" => host.ReadText("/report.txt"),
+                    "json-summary" => host.ReadText("/report.json"), _ => host.ReadText("/manifest.json") };
+            }
+            using (result)
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(name switch { "csv-summary" => "kind,total\nblue,32\nred,48\n", "text-summary" => "alpha=32\nbeta=16\ncafé=32\n😀=16\n",
+                    "json-summary" => "{\"blue\":32,\"red\":48}\n", _ => "[{\"checksum\":510,\"name\":\"a.bin\",\"size\":4}]\n" }, output);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.InRange(budget.PeakBytes, baseline + 1, 512 * 1024);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     private static byte[] ReadOutput(string path, Func<string, string> readText, Func<string, byte[]> readBytes)

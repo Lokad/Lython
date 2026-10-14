@@ -66,19 +66,7 @@ internal sealed partial class LythonRuntime
 
         public bool RequiresLocalVariableMirroring => _codeObject.RequiresLocalVariableMirroring;
 
-        internal long KnownLiveStringBytes(MemoryGovernor governor, ref int remaining)
-        {
-            long largest = 0;
-            for (var i = 0; i < _locals.Length && remaining > 0; i++)
-            {
-                var value = _localCells?[i] is { } cell ? cell.Value : _locals[i];
-                largest = Math.Max(largest, ExecutionFrame.KnownLiveStringBytes(value, governor, ref remaining));
-            }
-            if (_closureCells is not null)
-                for (var i = 0; i < _closureCells.Count && remaining > 0; i++)
-                    largest = Math.Max(largest, ExecutionFrame.KnownLiveStringBytes(_closureCells[i].Value, governor, ref remaining));
-            return largest;
-        }
+
 
         public bool TryResolveOwnLocal(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -245,7 +233,6 @@ internal sealed partial class LythonRuntime
     private struct ExecutableValueStack
     {
         private object?[] _items;
-
 
         public ExecutableValueStack(int capacity)
         {

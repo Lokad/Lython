@@ -56,7 +56,6 @@ internal sealed partial class LythonRuntime
         if (left is PyBytes leftBytes && right is PyBytes rightBytes)
         {
             var joinedBytes = ConcatBytes(leftBytes, rightBytes, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(joinedBytes, joinedBytes.CommittedStorageBytes);
             return joinedBytes;
         }
 
@@ -68,7 +67,6 @@ internal sealed partial class LythonRuntime
                 ? new PyList(leftList)
                 : new PyList(leftList, governor, allocationSpan);
             result.AddRange(rightList);
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 
@@ -81,7 +79,6 @@ internal sealed partial class LythonRuntime
             var joined = governor is null
                 ? new PyTuple(leftItems.Concat(rightItems))
                 : new PyTuple(leftItems.Concat(rightItems), governor, allocationSpan);
-            context.Services.State.CallTemporaries.TrackFreshMutable(joined, joined.CommittedStorageBytes);
             return joined;
         }
 
@@ -93,10 +90,6 @@ internal sealed partial class LythonRuntime
             var dequeSpan = leftDeque.AllocationSpan ?? rightDeque.AllocationSpan;
             var joined = leftDeque.Iterate().Concat(rightDeque.Iterate());
             var joinedDeque = dequeGovernor is null ? new PyDeque(joined, leftDeque.MaxLength) : new PyDeque(joined, leftDeque.MaxLength, dequeGovernor, dequeSpan);
-            if (dequeGovernor is not null)
-            {
-                context.Services.State.CallTemporaries.TrackFreshMutable(joinedDeque, joinedDeque.CommittedStorageBytes);
-            }
             return joinedDeque;
         }
 
@@ -152,7 +145,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.Add(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(PyNumberOps.Add(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (OverflowException ex)
         {
@@ -165,7 +158,7 @@ internal sealed partial class LythonRuntime
     // call of the enclosing operator even when the operands take the fast
     // numeric path below.
     private static object AddCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
-        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => AddCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor, context.Services.State.CallTemporaries), keepPositiveOnly: true, span, context);
+        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => AddCounterCounts(lhs,rhs,span,leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
 
     // Boxed BigInteger is an exact built-in int, so neither operand can supply
     // user operator methods. Keep one result box and the existing ownership and
@@ -174,7 +167,7 @@ internal sealed partial class LythonRuntime
     {
         try
         {
-            return OwnHeapInteger(left + right, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(left + right, context.MemoryGovernor, span);
         }
         catch (OverflowException ex)
         {
@@ -183,7 +176,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static object SubtractCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
-        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor, context.Services.State.CallTemporaries), keepPositiveOnly: true, span, context);
+        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => SubtractCounterCounts(lhs,rhs,span,leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
 
     internal static object AddRuntimeValues(object left, object right, ExecutionContext context, LythonSourceSpan span)
         => EvaluateAdd(left, right, context, span);
@@ -215,8 +208,6 @@ internal sealed partial class LythonRuntime
                 result.ReleaseUnpublishedStorage();
                 throw;
             }
-
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 
@@ -247,7 +238,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.Subtract(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(PyNumberOps.Subtract(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (OverflowException ex)
         {
@@ -286,14 +277,12 @@ internal sealed partial class LythonRuntime
         if (left is PyBytes leftBytes && TryRepeatCount(right, context, span, out var rightByteCount))
         {
             var repeatedBytes = RepeatBytes(leftBytes, rightByteCount, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(repeatedBytes, repeatedBytes.CommittedStorageBytes);
             return repeatedBytes;
         }
 
         if (right is PyBytes rightBytes && TryRepeatCount(left, context, span, out var leftByteCount))
         {
             var repeatedBytes = RepeatBytes(rightBytes, leftByteCount, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(repeatedBytes, repeatedBytes.CommittedStorageBytes);
             return repeatedBytes;
         }
 
@@ -344,7 +333,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.Multiply(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(PyNumberOps.Multiply(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (OverflowException ex)
         {
@@ -394,12 +383,12 @@ internal sealed partial class LythonRuntime
         {
             if (right is PyPath rightPath)
             {
-                return OwnPathResult(PathOps.Join(leftPath.Value, rightPath.Value), leftPath.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+                return OwnPathResult(PathOps.Join(leftPath.Value, rightPath.Value),leftPath.Value,context.MemoryGovernor,span);
             }
 
             if (PyStringOps.TryAsString(right, out var rightText))
             {
-                return OwnPathResult(PathOps.Join(leftPath.Value, rightText), leftPath.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+                return OwnPathResult(PathOps.Join(leftPath.Value, rightText),leftPath.Value,context.MemoryGovernor,span);
             }
         }
 
@@ -447,7 +436,7 @@ internal sealed partial class LythonRuntime
         {
             var floored = PyDateTimeOps.FloorDivide(left, right, context, span, operation);
             return floored is BigInteger flooredInteger
-                ? OwnHeapInteger(flooredInteger, context.MemoryGovernor, context.Services.State.CallTemporaries, span)
+                ? OwnHeapInteger(flooredInteger, context.MemoryGovernor, span)
                 : floored;
         }
 
@@ -458,7 +447,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.FloorDivide(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(PyNumberOps.FloorDivide(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (DivideByZeroException)
         {
@@ -498,7 +487,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.Modulo(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(PyNumberOps.Modulo(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (DivideByZeroException)
         {
@@ -557,8 +546,8 @@ internal sealed partial class LythonRuntime
                 return PyComplex.Own(ComplexPower(new System.Numerics.Complex(leftValue, 0), new System.Numerics.Complex(rightValue, 0), context, span), context, span);
             }
 
-            GuardIntegerPower(lhs, rhs, context.MemoryGovernor, span);
-            return OwnHeapInteger(PyNumberOps.Power(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            using var integerAdmission = GuardIntegerPower(lhs, rhs, context.MemoryGovernor, span);
+            return OwnHeapInteger(PyNumberOps.Power(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (OverflowException)
         {

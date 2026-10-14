@@ -82,11 +82,9 @@ internal sealed partial class LythonRuntime
             {
                 context.MemoryGovernor.EnsureCanReserve(ShellBytes + PyTuple.EstimateApproximateBytes(type.Fields.Length), span);
                 var tuple = new PyTuple(values, context.MemoryGovernor, span);
-                context.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes);
                 context.MemoryGovernor.Reserve(ShellBytes, span);
                 context.MemoryGovernor.Commit(ShellBytes);
                 var result = new UrlResult(type, tuple, context.MemoryGovernor, span);
-                context.State.CallTemporaries.TrackFreshMutable(result, ShellBytes);
                 return result;
             }
             public MemoryGovernor? OwnerMemoryGovernor { get; }
@@ -215,7 +213,6 @@ internal sealed partial class LythonRuntime
             var existing = parameters ? state.UrlParseFieldDefaults : state.UrlSplitFieldDefaults;
             if (existing is not null) return existing;
             var defaults = new PyDict(context.MemoryGovernor, span);
-            context.State.CallTemporaries.TrackFreshMutable(defaults, defaults.CommittedStorageBytes);
             if (parameters) state.UrlParseFieldDefaults = defaults;
             else state.UrlSplitFieldDefaults = defaults;
             return defaults;
@@ -279,7 +276,6 @@ internal sealed partial class LythonRuntime
                     for (var i = 0; i < receiver!.Count; i++) dict.SetItem(type.FieldNames[i], receiver[i]);
                 }
                 catch { context.MemoryGovernor.Release(dict.CommittedStorageBytes); throw; }
-                context.State.CallTemporaries.TrackFreshMutable(dict, dict.CommittedStorageBytes);
                 return dict;
             }
             public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)

@@ -16,12 +16,11 @@ public sealed class IntegerViewOwnershipTests
         var span = new LythonSourceSpan(8, 4, 2, 1);
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         object receiver = BigInteger.One << 4000;
-        LythonRuntime.OwnFreshInteger(receiver, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+        LythonRuntime.OwnFreshInteger(receiver, context.MemoryGovernor, span);
         Assert.True(LythonRuntime.IntMembers.TryGetMember(receiver, member, out var value));
         if (value is LythonRuntime.ICallable callable) value = callable.Invoke([], span, context);
         if (value is PyTuple ratio) value = ratio[0];
         Assert.Same(receiver, value);
-        Assert.True(context.Services.State.CallTemporaries.IsTracked(value));
         GC.KeepAlive(receiver);
     }
 }

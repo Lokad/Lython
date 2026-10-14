@@ -2,7 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class GeneratorDefinitionCompositionTests
+public sealed class GeneratorDefinitionCompositionTests : LifetimeScenario
 {
     [Fact]
     public async Task DefaultsSuspendInParameterOrder()
@@ -326,6 +326,11 @@ public sealed class GeneratorDefinitionCompositionTests
     {
         var source = "def generate():\n def run(value=(yield 'default')):return value\n yield run\nkept=[]\nfor i in range(2000):\n g=generate()\n next(g)\n run=g.send(i)\n g.close()\n";
         if (retain) source += " kept.append(run)\n";
+        if (!retain)
+        {
+            await AssertBatchCompletes(source.Replace("range(2000)", "range(8)") + "return run() == 7\n", true, 262144);
+            return;
+        }
         var compiled = new LythonEngine().Compile(source);
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };

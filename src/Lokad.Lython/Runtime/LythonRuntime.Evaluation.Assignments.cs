@@ -30,7 +30,6 @@ internal sealed partial class LythonRuntime
     private static void ThrowAssertionError(object? message, ExecutionContext context, LythonSourceSpan span)
     {
         var args = new PyTuple(message is null ? [] : [message], context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(args, args.CommittedStorageBytes, span);
         throw new LythonRuntimeException("AssertionError",
             message is null ? string.Empty : ToInterpolatedPyString(message, context).AsString(), span)
         {
@@ -250,8 +249,7 @@ internal sealed partial class LythonRuntime
             scopeFacts: ScopeDirectiveFactsCollector.ForLambda(lambda));
         ChargeFunctionValue(context, lambda.Span);
         ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
-        var closureRetentionBytes = ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
-        TrackFunctionValue(function, loweredParameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes, 0, context, lambda.Span);
+        ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
         RetainLocalsForLambda(context.FunctionClosureContext);
         return function;
     }

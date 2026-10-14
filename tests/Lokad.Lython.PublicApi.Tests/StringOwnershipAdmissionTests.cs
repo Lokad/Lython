@@ -3,14 +3,15 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class ProvedStringAdmissionTests
+public sealed class StringOwnershipAdmissionTests
 {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DirectDeletionDoesNotRequireAnUnrelatedBinding(bool asynchronous)
+    public async Task GuestDeletionKeepsConservativeBatchFundingUntilCleanup(bool asynchronous)
     {
-        var script = new LythonEngine().Compile("""
+        var budget = new LythonMemoryBudget(262144);
+        using var script = new LythonEngine().Compile("""
 held = 'x' * 16000
 try:
     candidate = 'y' * 16000
@@ -19,13 +20,22 @@ except MemoryError:
 del held
 candidate = 'z' * 16000
 return len(candidate)
-""");
+""", budget);
         Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
         var host = new MockLythonHost();
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 28000 };
-        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-        Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal(new BigInteger(16000), result.ReturnValue);
+        using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+        Assert.False(result.Success);
+        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+        result.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
+        using var resumed = new LythonEngine().Run("return len('z' * 16000)", host,
+            new LythonRunOptions { MemoryBudget = budget, MaxExecutionMemoryBytes = 28000 });
+        Assert.True(resumed.Success, resumed.Failure?.Message);
+        Assert.Equal(new BigInteger(16000), resumed.ReturnValue);
+        resumed.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
     }
 
     [Theory]
@@ -61,17 +71,11 @@ return len(candidate)
         var host = new MockLythonHost();
         var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         Assert.InRange(result.PeakExecutionMemoryBytes, 16000, 28000);
-        if (retain)
-        {
-            Assert.False(result.Success);
-            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.Failure?.Attribution?.Reason);
-        }
-        else
-        {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(new BigInteger(16000), result.ReturnValue);
-        }
+        Assert.False(result.Success);
+        Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.Failure?.Attribution?.Reason);
+        result.Dispose();
+        script.Dispose();
     }
 
     [Theory]
@@ -79,7 +83,7 @@ return len(candidate)
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task DeletionAfterCaughtDenialReleasesOnlyUnaliasedStorage(bool asynchronous, bool retain)
+    public async Task DeletionAfterCaughtDenialPreservesBatchAndAliasFunding(bool asynchronous, bool retain)
     {
         var script = new LythonEngine().Compile($$"""
 held = 'x' * 16000
@@ -96,22 +100,16 @@ return len(candidate)
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 28000 };
         var host = new MockLythonHost();
         var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-        if (retain)
-        {
-            Assert.False(result.Success);
-            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        }
-        else
-        {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(new BigInteger(16000), result.ReturnValue);
-        }
+        Assert.False(result.Success);
+        Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+        result.Dispose();
+        script.Dispose();
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task StringLimitPrecedesMemoryProofAndEmptyResultsStayFree(bool asynchronous)
+    public async Task StringLimitPrecedesMemoryAdmissionAndEmptyResultsStayFree(bool asynchronous)
     {
         var script = new LythonEngine().Compile("""
 held = 'é' * 16000

@@ -286,13 +286,7 @@ internal sealed partial class LythonRuntime
             var bytes = input.Source;
             if (options.ObjectPairsHook is not null)
             {
-                // R10: every fresh graph node owns a refundable pool snapshot
-                // so dropped parses reclaim on sweep. Hook results adopt via
-                // plain TrackCallResult inside InvokeJsonCallback, never
-                // refunding an arbitrary callback value that may alias live
-                // state.
                 var pairs = new PyList([], context.MemoryGovernor, span);
-                context.Services.State.CallTemporaries.TrackFreshMutable(pairs, pairs.CommittedStorageBytes, span);
                 var pairValueEnd = -1;
                 while (true)
                 {
@@ -346,7 +340,6 @@ internal sealed partial class LythonRuntime
                     var pairColon = EnsureJsonColon(bytes.Span, pairKeyEnd, input, span, context);
                     var (pairValue, pairEnd) = await ReadJsonValueAsync(input, options, context, span, depth, pairColon + 1, asynchronous).ConfigureAwait(false);
                     var pair = PyTuple.FromOwnedArray([pairKey, pairValue], context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(pair, pair.CommittedStorageBytes, span);
                     pairs.Add(pair);
                     context.ObserveCollectionCount(pairs.Count, span);
                     pairValueEnd = pairEnd;
@@ -354,7 +347,6 @@ internal sealed partial class LythonRuntime
             }
 
             var result = new PyDict(context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
             var valueEnd = -1;
             while (true)
             {
@@ -419,11 +411,7 @@ internal sealed partial class LythonRuntime
         private async ValueTask<(object Value, int End)> ReadJsonArrayAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int openBracket, bool asynchronous)
         {
             var bytes = input.Source;
-            // R10: the fresh list owns a refundable snapshot; each element
-            // adopts ownership at its own construction boundary below, so a
-            // dropped array reclaims both the backing and every element.
             var result = new PyList([], context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
             var valueEnd = -1;
             while (true)
             {
@@ -628,7 +616,6 @@ internal sealed partial class LythonRuntime
             if (options.ParseConstant is not null)
             {
                 var constantText = CreateString(literal, context, span);
-                context.Services.State.CallTemporaries.TrackFreshString(constantText, span);
                 return await InvokeJsonCallbackCoreAsync(options.ParseConstant, constantText, context, span, asynchronous).ConfigureAwait(false);
             }
 
@@ -686,19 +673,15 @@ internal sealed partial class LythonRuntime
                 raw.Contains('e', StringComparison.OrdinalIgnoreCase);
             if (isFloat && options.ParseFloat is not null)
             {
-                // R10: the raw text is a fresh string the callback may drop;
-                // track it before invoking so a denied callback strands
-                // nothing. The callback result adopts via plain
-                // TrackCallResult inside InvokeJsonCallback.
+                // Fund callback text before invocation. It stays batch-owned
+                // because the callback may retain it even when invocation fails.
                 var floatText = CreateString(raw, context, span);
-                context.Services.State.CallTemporaries.TrackFreshString(floatText, span);
                 return await InvokeJsonCallbackCoreAsync(options.ParseFloat, floatText, context, span, asynchronous).ConfigureAwait(false);
             }
 
             if (!isFloat && options.ParseInt is not null)
             {
                 var intText = CreateString(raw, context, span);
-                context.Services.State.CallTemporaries.TrackFreshString(intText, span);
                 return await InvokeJsonCallbackCoreAsync(options.ParseInt, intText, context, span, asynchronous).ConfigureAwait(false);
             }
 
@@ -706,13 +689,13 @@ internal sealed partial class LythonRuntime
             {
                 // Deny on digit scale before parsing allocates the limbs; each
                 // parse yields a fresh magnitude that owns its payload below.
-                GuardIntegerParseBytes(raw, 4, context.MemoryGovernor, span);
+                using var integerAdmission = GuardIntegerParseBytes(raw, 4, context.MemoryGovernor, span);
                 if (long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer))
                 {
                     return new BigInteger(integer);
                 }
 
-                return OwnFreshInteger(BigInteger.Parse(raw, CultureInfo.InvariantCulture), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+                return OwnFreshInteger(BigInteger.Parse(raw, CultureInfo.InvariantCulture), context.MemoryGovernor, span);
             }
 
             return double.Parse(raw, NumberStyles.Float, CultureInfo.InvariantCulture);
@@ -720,12 +703,7 @@ internal sealed partial class LythonRuntime
 
         private static PyString ConvertJsonReaderString(ref Utf8JsonReader reader, ExecutionContext context, LythonSourceSpan span)
         {
-            // R10: each decoded string owns a refundable snapshot so dropped
-            // scalar parses reclaim instead of stranding. Control characters
-            // are validated by the input pre-scan, so the backend never sees
-            // a bare control byte here in either strictness mode.
             var value = CreateString(reader.GetString() ?? string.Empty, context, span);
-            context.Services.State.CallTemporaries.TrackFreshString(value, span);
             return value;
         }
 

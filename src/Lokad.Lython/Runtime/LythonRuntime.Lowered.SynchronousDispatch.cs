@@ -134,7 +134,6 @@ internal sealed partial class LythonRuntime
                     generator.Span,
                     PyIteration.AcquireGeneratorOuter(outer, generator.Clauses[0].Iterable.Span, context), generator.ScopeFacts);
                 producedAsync.AttachAsyncOuter(outer);
-                context.Services.State.CallTemporaries.TrackFreshMutable(producedAsync, PyIteratorBase.IteratorValueBytes);
                 return producedAsync;
             }
             case LoweredTupleLiteralExpression tuple:

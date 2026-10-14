@@ -1,0 +1,2098 @@
+{
+  "base": "9fc7e37e",
+  "manifestSha256": "8E0C06733B276621F62B7C25C14BC1A617D9F66154A2CD47F85BA79BBC351B44",
+  "files": [
+    {
+      "path": "src/Lokad.Lython/Frontend/AbstractState.cs",
+      "sha256": "4FAAD729F1BD38203DEAF7EF7D6587A89120620A8D61454EEDE7C96BBBB693E2"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/AbstractValue.cs",
+      "sha256": "014FA4B6ADC2DADC4A74A4B6D1E703DB2D3C86591A2EBF3A8D6E625049143B40"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/AbstractValueJoin.cs",
+      "sha256": "AC5681A1771FE45436EA3D7A86257D4289E18FB85F90CE94FC432BCED7C4A42F"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/AbstractValueTraitFacts.cs",
+      "sha256": "8B14B3D3734E21EE0337E698F854628515764BB0FCA5EB546FCCD46530A855CB"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/AnnotationDiagnostics.cs",
+      "sha256": "9C60A42865E2456EA30A9349E1288D5CDB3F9630265391A4D94C2225045FE4EF"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/AssignmentTargetFacts.cs",
+      "sha256": "CAA6277EE5656C6A36E65603170DD5CA0B98B337E679485364E837305779BEDA"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ClassCellSyntaxFacts.cs",
+      "sha256": "F9FFECE8D1E05DDCF43C09285F1237E97C3AEE69CF188EA319B2B72B6A76E455"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ComprehensionSyntaxFacts.cs",
+      "sha256": "6360D2D0FF1CFE968AD1B58C225B93DEFBEE3AEC1BBD58DF07D5AB4F844C6FFD"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/CsvOptionArgumentLayout.cs",
+      "sha256": "76369518B98A2F12378809661B6C49622CDEE28941A270A0DF9FC7D91EEA27FD"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs",
+      "sha256": "719C290083779A28F3FE8DC4C82938839213A9B5F3E14497A0F2AE08F6C0198E"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ExecutableScript.cs",
+      "sha256": "AA3089A8DDEA1F65779DCCB04F791C8A3B5F2A7F8568F31F34C836CE851126B1"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs",
+      "sha256": "3717B7B98929836B6C699040D8D3BE2605DBFF4D8728F9C4A11A7C11012130A4"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs",
+      "sha256": "5F5BF7BC1193D25E2F702AA4BA2EB2609D6B9E17C3C29B56829DEAC6EE452A46"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs",
+      "sha256": "3F4AB9C334B63DDFD52CB02FD26370B46628DF7EB36BE025C9BF2FC7C49B51EE"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs",
+      "sha256": "D8E027CA2F28A51CCD8E0C0DB37A7437C309A2459763D09DD22DFA9EB8895DF3"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingExpressions.cs",
+      "sha256": "75524EEAA98C0DB83B3FDB5E371415823FE50191C5F583D4120B44A975B8EFBC"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingStatements.cs",
+      "sha256": "9594E0C8F7EAD2E849E26FCD867F0628606F0914B2F404D50B59F3B89F4A4055"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingTargets.cs",
+      "sha256": "0EA315F8ECB26ED421355B1445576CA753A04124123824103A52BA4D433DCB7D"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ExpressionSyntaxTraversal.cs",
+      "sha256": "1E9EBE1811D10140342617B148EA72CA379987A5674EF889C996CCEC743B1D54"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/FormattedStringLexicalScanner.cs",
+      "sha256": "EDFEF9536BA31934772F9059B7A5FCC06F36EE1862E2B42517F0A760A60E53B2"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/FormattedStringTokenization.cs",
+      "sha256": "8DD4D9988ADDF585A9A3DF8D56B95078A0D0AE4340F13C00C7292BE0341043A3"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/GeneratorSyntaxFacts.cs",
+      "sha256": "47CA446111BF0C936203E1A61C6F269861AD605C996A2B5BBD54389531076B70"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ImplicitSuperSyntaxFacts.cs",
+      "sha256": "669A4FC1F0B2FC6F5CBA99838DF4F6C4FC0F9FF230982AFCF13CB07F651089A1"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ImportSyntaxFacts.cs",
+      "sha256": "BEE3DB35B4E38A65A5581FA359A975F11A7434E71C969389DC57D3B9650D2C45"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/LoweredExpression.cs",
+      "sha256": "D7A07587E72FEA13255F7EBF250B94EF525A917FE8B135DE5BCCF2F738224384"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/LoweredScript.cs",
+      "sha256": "264579068C62CAC919F067D8AB5D06A193EF040C41EE6F8247B61DE557504830"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/LoweredStatement.cs",
+      "sha256": "B7BE4EDE24D956ADDFD4867AC53430A78078052756C81FCDA67B095D13D91792"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/LoweredStoreTarget.cs",
+      "sha256": "F0142C3DAEA0E3C10052F1AED04BEFE27E49663088067D24C2C0E7D6344D6B52"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/LythonDiagnosticCode.cs",
+      "sha256": "E091267005A8EB7788AFA6AB9760231BDB42FDEC823E03CF14E985273FE9B0F7"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/LythonFrontend.cs",
+      "sha256": "3F89A2125DB3A223D28C81AA5577136F5F701308C24980BB189896FEA9DF968F"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ModernTypeSyntaxFacts.cs",
+      "sha256": "7665D4537BBED7408A37AB05AC39176F84270494650D7CD82630F4D28FC3C77D"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.cs",
+      "sha256": "E0E0610B97807E743A75A083BC505509C082D0C8EB3501922EE12E6BDA65AA50"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Expressions.BraceDisplay.cs",
+      "sha256": "443A91FD9E81E7B5CB7192997DBCB823BA48269BCE219437F427B3331ACDDA63"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Expressions.Collections.cs",
+      "sha256": "EF247B0B132A9DD755E8D9A6A6FBB8CE0152C20CAEC5751876EA9B7058763BA2"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Expressions.Comprehensions.cs",
+      "sha256": "5E386A3EA8B288A7F2A015D392317C7E0D55C106FC7C23FB1B0EC15ECA1EFCB1"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Expressions.cs",
+      "sha256": "BC8294B67521D627122E754D53671D94CDF39BE53F4B25612F78E91D306328EB"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Expressions.Postfix.cs",
+      "sha256": "C004AAC90848E9392B06962EDE2EC8F3A3F6593E710A4D7CB7A6F9E2BE2A1164"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Expressions.Primary.cs",
+      "sha256": "0B7805EABB365AAAA8A1869913B3EA832E21FA98520847367095AF27A1078EB7"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.FormattedStrings.cs",
+      "sha256": "40F7CA2A677FC3E3B65CDFB16A30F90C3D9E58B1F512171B87BEA907D2C1D2AD"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Helpers.cs",
+      "sha256": "B315FF562A84E76805843F90AB964C1769F9F7D7F4C1C7A4755A81A4D8548AA5"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Patterns.cs",
+      "sha256": "5A05E41E6B6102D5F0128A8AF2B5EF7F6E6A2F5F47E0E01D1387C8DA73C5C9A0"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Statements.Assignments.cs",
+      "sha256": "24EC52F1CBB907389AC9877BBF540EF04F5F4682F05B9ED355F54BE7980BFE24"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Statements.ControlFlow.cs",
+      "sha256": "F71497B3317E1421C6AF198F4A1BA3930D4E5A381322DEFB768D74C7EA3A0F26"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Statements.cs",
+      "sha256": "1E7006A70E8A04D011E5EB0D6D6CC9873F409662A0655992E6366B62404B7968"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Statements.Imports.cs",
+      "sha256": "C329610A2511783B49E137C4C3F5ED05A6F156E823469A760742D027E10EE9AB"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.StringLiterals.cs",
+      "sha256": "E612D0C38E1AF537676D980A2C85D76BFB5F6E4404AF3107FFD901AB359E0632"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.TypeParameters.cs",
+      "sha256": "FE70DFB91D92F893FA1C99F8CC5C483662C9585B30A448C1214C0E9A2A9013B6"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Parser.Yield.cs",
+      "sha256": "78066FB2DBE8A6353748C8805433F369A3CAD052CB6C0E9741B52CB33DDEB07F"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/PostponedAnnotationText.cs",
+      "sha256": "D82EE60AB4732D0BCBFD23C1DE8D9661042A9E43135D6CF345AE94F7FDF50458"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/RegexPatternFacts.cs",
+      "sha256": "A40481FDAF945AD96DAD8ACE2B86A0918A64B3B0E3AEAD6682D3AF4890BF89FC"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/ScopeDirectiveFacts.cs",
+      "sha256": "9D24C28BB9839928FE82083C671FD2E28ECCBC4414C68CCCEA9C538E75AACAFD"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StatementSyntaxTraversal.cs",
+      "sha256": "8C6A6C3200637566D0477494042169363F9F71733634078D0F5C375C398CD471"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAbstractFacts.cs",
+      "sha256": "3AD2EA14D5E4B2082B539124DBB75D5B1FAD2F76E662059B4896EBED4EDEDA5D"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAbstractInterpreter.cs",
+      "sha256": "2408840747932B22427408414C4887AB6A50CDDEDCA8C3EE1379B8FA37946136"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAbstractInterpreter.ExpressionAnalyzers.cs",
+      "sha256": "E11A5A1694EFCAEDEFD8894ADB9F7CF6B901BD341DB7CE4726D584D89F7296CF"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAbstractInterpreter.Expressions.cs",
+      "sha256": "21B6873F57C4FAC25F6695D546549367FF5419EE3DC4C273D428A269D1C31CC2"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAbstractInterpreter.Statements.cs",
+      "sha256": "7C4A4F1BA7AC060E2353B3038BD73D84202E0A060629DE9AB32E257D9F9EC87E"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAbstractValueResolver.Calls.cs",
+      "sha256": "C767C5C7760B4BFCCF435F4428AAE0FB83BC2A926BDCB30FB69330E216387635"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAbstractValueResolver.Collections.cs",
+      "sha256": "F02107C4CED4A3698B21AC91251028F2D12C5AC2E377197E3CF58AAA773C8543"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAbstractValueResolver.cs",
+      "sha256": "7033CAB2A0E8F3E439A250DD8A5339145A9E4B9B72C73CB6E34715A1108A36DB"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAbstractValueResolver.Operators.cs",
+      "sha256": "17377E482CCAAB5339D6530ECB8F61580256C80F154181EEE8E4344FAB0E73FA"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAbstractValueResolver.Sequences.cs",
+      "sha256": "C0921707702753CD4B73FB0FFEAB8B6FA52EBF9C7C0F218A64F2C1EC18E10D71"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAnalysisContext.cs",
+      "sha256": "32862CFAC0DDF8959AF7B32253E9143FCD579F3EEC8FE7B61D90AEC59E484EEC"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticAnalyzer.cs",
+      "sha256": "5D473C2D24CA78D7764E27581885C50563EF98840E0E803A64808B375E8C1147"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticArgparseContractFamily.cs",
+      "sha256": "19DD14DEC2AA5189D15AFEE47DE3640FD2F7711AEE97FD463887EE5C57FF37E2"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticBindingEngine.Argparse.cs",
+      "sha256": "8B2D7AE55A28BBEBFA758C57EB27F529ADC2E91FA7E6449BF1964816E77C676A"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticBindingEngine.CallResolution.cs",
+      "sha256": "3668A0316D142DA72EA3E8F7311B31FE2E5FE9D98F05CFC83A9B58B0A62BAC33"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticBindingEngine.ClassSummaries.cs",
+      "sha256": "613F2C00E7615850FD58EEEB41733A04D391C8E010EB1433687D9374CBBCF030"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticBindingEngine.cs",
+      "sha256": "15D40E355C0F6476DEC3ED02260280195602063B087B2F38D7D3E19F7B8F1499"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticBindingEngine.Functions.cs",
+      "sha256": "CD10129EF385560F0733C6BFCD71B1B292E3869EB0AE501D683E3F6CD877FA20"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticBindingEngine.Mutations.cs",
+      "sha256": "9812C943118DB177A6C7726E7DD88C09CAD24E3C78E46C284DB5C927439CAD2F"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticCallArguments.cs",
+      "sha256": "C665D043C939C7CA4E51171B41992D0319B4BE736D24FD74E2D6C679558F7272"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticCollectionContractFamily.cs",
+      "sha256": "BCE1F775D2F09A545DB983441A93892204C42B7C945CF237309C473DD16758C3"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticConditionRefinements.cs",
+      "sha256": "04F86A8C88436219A6E9FFA8D982224BBA678DC5C2BCBC8FD95FAE8F8B83A6B9"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContractChecks.cs",
+      "sha256": "774F9D434D7EB8F7F2D990EB3B3A6B76267F9A636B34E5721323BAFAF45CE8B9"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContractEngine.cs",
+      "sha256": "47579A42831CAE20FBFA0383DF6D76F3BA4DB29046B028E64CEC1F9D2F9B90D4"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.CallableMembers.Core.cs",
+      "sha256": "601721315CE2E62B7809F7C0F62C86C18114C801D8B1C0AA1237F46198B5D985"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.CallableMembers.cs",
+      "sha256": "4ACB08E05C77522729EDF929D8EE59C52421BB4E133E0093F202FB2C8C826C19"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.CallableMembers.Data.cs",
+      "sha256": "2BF3B1050B86CD479060C69E1A72E3271EEC5780981963A92B80965CC9BE7B30"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.CallableMembers.Library.cs",
+      "sha256": "BE1D147D9DBC6B81E7DC047AFC56431617B62497B3F6781ABFB88C5B73D9B3FF"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.CallableMembers.OpenPyxl.cs",
+      "sha256": "453170CBADC21499C5F076DD134C72CDA466A9439F7FCAEC41CD31AA29DBD347"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.CoreMemberSurfaces.cs",
+      "sha256": "25F55ED3BE6F354785991CF1E790F614DA10D28C9AD674531315E01A0935933C"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.HostRequirements.cs",
+      "sha256": "00E44965D81910B98266087743185FE9F7D701E7E8AC982F0602264A04D03D94"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.KnownCalls.cs",
+      "sha256": "1C56319198A568EF2A8E9AEEE7A1AF6725DFD1A238A8939C0204282C842B1465"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.MemberReturns.Core.cs",
+      "sha256": "03B23B0E78DBEF3632D3C3951207745C6B651B263C506C043163CA6A52A546ED"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.MemberReturns.cs",
+      "sha256": "49A388EF25B34646DE1FDB664D4793E20E91FE9062C953F4152DA1D9611C6B24"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.MemberReturns.Extended.cs",
+      "sha256": "A707E9E7CD2B3AC31F34CF6DAD440E949EE26C94ACEDBC4C5DCC7575F5A15846"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.MemberSurfaces.cs",
+      "sha256": "1F259FD1DA038FBB9AD36D3D05BB7FBC60B37A86476A2ADE074812A35B3F4344"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.MemberValues.cs",
+      "sha256": "7F9757F0BE3BEA648DEF475EA8D3D2ED908ED7E4B38075FA0F6809B87AF51681"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.Modules.cs",
+      "sha256": "FD28110F545F934D170B30C02D1D7E1122A696157ABDDF40BB7F88DD310958B7"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.ReturnValues.cs",
+      "sha256": "4BE01B3EDF677FA12EFDDD6390347AF569F457A01DD1025B8EFBBE6A3A24898A"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticContracts.Types.cs",
+      "sha256": "5DD2267C42DBB3F5A2148F15C5954C37DC4544C854BD4B8D431148753EA578F0"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticDataclassContractFamily.cs",
+      "sha256": "11ACD960A80ED7B7F127012BCC756A07E9A12A2756A0E01BD36F901E5539A5FD"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticDataclassFacts.cs",
+      "sha256": "F09EA41CCB568BCFCB3C16DCC365674352B96A3F3D14F00FEA9A82F71A8412F1"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticDataModuleContractFamily.CopyRandom.cs",
+      "sha256": "B71A803FDC923EA451E765F9FDD159B8B7224AC95E7A87E24E29882E39B0F6B4"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticDataModuleContractFamily.cs",
+      "sha256": "EE3EAD2799BB6F8769084FE93ED65FB24BCDD7C988C920EB4A7E8D1755A59E92"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticDataModuleContractFamily.DifflibPkgutil.cs",
+      "sha256": "17BB67F5B5E3DA0D5278018ADCD1D0BE8834CA075468313E4900E17294BE67E8"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticDataModuleContractFamily.JsonCsv.cs",
+      "sha256": "FC50AF45078CB4B172BE19F9E54640787EBD55F741B8A56FDE0036D3B2ED549C"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticDestructuringDiagnostics.cs",
+      "sha256": "0E2187E656CEFAD8401966D7165075ACB5AB465A48D6DFE65B25501B74553339"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticDiagnosticSink.cs",
+      "sha256": "96A41341B3399110BD974C0ECD798962377252DF4D745E5033A1557A464B2F4C"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticDictionaryFacts.cs",
+      "sha256": "01B9F49F26B7553441BBA346C0F3BB5FE47A39BC1DC767ABECBFF80EA1497543"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticFilesystemContractFamily.cs",
+      "sha256": "59D03C48C66EFBC5A47AADD16A1D4030A80F72F4745A2666E1DC3C38EA2E4329"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticHostRequirementDiagnostics.cs",
+      "sha256": "13566F1B9E25129C0688BC80A7540E5E568F6AEE284427CEA052373E7A92FD50"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticIterationDiagnostics.cs",
+      "sha256": "F06652B6104D8976E943F8CE26EF8C2F97D0AB60904E1554F1B2DF75F33C4740"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticKnownCallArgumentChecks.cs",
+      "sha256": "17D2B8B1D740B31C76E9E89AB4A1B4240785A82361227BD35A4DF8BA495EF7C9"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticMathContractFamily.cs",
+      "sha256": "8206F52FA7C4756AC85639AC00D0016BBAD4074BFF802DC06473510748044294"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticNameBindingDiagnostics.cs",
+      "sha256": "3DC5B0405141239CA99101DA10A4DF934E835A107B679499500E652CD6DD9351"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticProcessContractFamily.cs",
+      "sha256": "F2506B37E7698541E98322BED1A5466AC0BB5B661AF4EAEE6503F14E6916877B"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticRegexArgumentContracts.cs",
+      "sha256": "0FF681FEF82DB5B346E65C81AAB813D6F2E6FF9ECF992B41B6B5C792F03C3283"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticRegexDiagnostics.cs",
+      "sha256": "CF76EBD818D885F8AB568CDC0F20769E45F65E13E7E54E45F6427035AF5F29D2"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticRegexReturnResolver.cs",
+      "sha256": "20A417D4666FA38EAC54D81669B761F73A11F912BF31B7A5450B0D9B8C3B3226"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticScopeDirectiveDiagnostics.cs",
+      "sha256": "EAA0673C3A2A85999B9EE6B263A024A92DA948DFBADBA6E3E68DDCB7721D07F6"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticStatisticsContractFamily.cs",
+      "sha256": "6657ECE224FD2A620CBCB51455E30A746CDDAAC9F35DF66E78705A8CC3A160A7"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticStringContractFamily.cs",
+      "sha256": "F4F4A6EB4F60C02BEF2D3FC7D91A1D8BD2BA88A94B437A1861609511C647C750"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticStructuralDiagnostics.cs",
+      "sha256": "A24D24B9E8489599F60754A3E866C2039D31A18D88C42CA46D6256073FAB8836"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticStructuralDiagnostics.Operators.cs",
+      "sha256": "36F6A9FA3FEC8F5FAA0C0E1AD21A567B7F45B4F6ADEE9E18857B9DF49B520E92"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticTextContractFacts.cs",
+      "sha256": "7FC620FC2A9C74C0BF46792FC28165A9E3DCA2C275E702BC777326484739B6D9"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticTextIoContractFamily.cs",
+      "sha256": "D4FDF348E413FF1F061DE005E3BCA831815FC80FC8D53F6A457007FED21A245B"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/StaticTypingContractFamily.cs",
+      "sha256": "79BAD292D78D1DE7883F3D80E70EAC72E503594EBCB5CAFE2EC7B62DBD2123EB"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/SubprocessRunArgumentLayout.cs",
+      "sha256": "D2C16DFAB4D17946738D4B38A543A9AEC54B6108F1CF38EDEC22770404CA3EC0"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Syntax.cs",
+      "sha256": "C6C4B18A1436BC8D8B2AD682611BA7B05AED31CEBCEB4FCAE269659B495F7EDF"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/SyntaxValidityDiagnostics.cs",
+      "sha256": "A4E6A0A8D4AC60CE8349E3B170822CEF8BC9C2A0A6C3FC0C55CB8101FF5D957A"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/Token.cs",
+      "sha256": "03E56B153D94BDB9BE075DFADE7B883DD6D4E7AEF75AE97B9A6AAE86BD676AD7"
+    },
+    {
+      "path": "src/Lokad.Lython/Frontend/TokenNamer.cs",
+      "sha256": "2781FC8FDE3E5BC77D3A683D845456316E32B097AB43A1FE3D4421D77B5406F3"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/ILythonHost.cs",
+      "sha256": "69D5B84789CC1ADEE233396DDA27E18296EA3AC344DD956251ECB9D7EAF7F6ED"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/ILythonSubprocessRunner.cs",
+      "sha256": "42FE476FB9ECDA0A7E1597E3ABD69F785D4DF258A4FDB52844F9DE46B262CB8F"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/ILythonSynchronousHostCapability.cs",
+      "sha256": "1DAEBEBD375CE09EFDE418233953E9AD4B2C8B29748FD443D0B3831EC036D0DB"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/ILythonTextInput.cs",
+      "sha256": "8138EA6157A14E9A143BA22047CF68FD2156458399A6358712C88398E915AC77"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/ILythonTextOutput.cs",
+      "sha256": "C8D3F3CDCCC2792B4B08A689D15E3EC799A6FE862D18CBE562E999B88B88A265"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/ILythonTiming.cs",
+      "sha256": "05ADC0A4009DAD96341E6CF513936F549A250546E191567E4BF2128E0EF5FD4C"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/LythonHostCapabilityUnavailableException.cs",
+      "sha256": "A0D612276ADAD722713EE1BA4D8ED118D22582EF288C428B7B380AEEAC23FD3C"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/LythonPathStat.cs",
+      "sha256": "8CD4560551D0A68E4AAA72C85EC32BD0197E62F4BBF3EEB7E7A086BC122EF68B"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/LythonSubprocessCompletion.cs",
+      "sha256": "8C00D31965F58B02C8C1EBD0A1EE55FDA1C20AF13E473411FD86D367D6FD833D"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/LythonSubprocessOutputLimitException.cs",
+      "sha256": "23463AD39286F7E524BCBDB49DC812680A5B44BF4955788D810ACC7F06172C3B"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/LythonSubprocessRequest.cs",
+      "sha256": "AC1286490CB43D45ECC3A19932C0E14D5BFD8687941775872B52D9DFB1F5AF37"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/LythonSubprocessResult.cs",
+      "sha256": "FD30CA8F9BDC23A85173C09521576E6ABACEC5BBF069583145BF8E06EE55E276"
+    },
+    {
+      "path": "src/Lokad.Lython/Host/LythonWalkEntry.cs",
+      "sha256": "CF918FDDCEA6A81A7466225B6942487711AE822D6DEADB1AE91ECAE29E4FA2F3"
+    },
+    {
+      "path": "src/Lokad.Lython/NullabilityExtensions.cs",
+      "sha256": "78CA781BAC941673E26D44971BBE4078B1182FD48E8A99F2EFA8B7EA9598C477"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/ILythonMemoryBudget.cs",
+      "sha256": "2A11CFAE507AA5A558CD74D097AC0048F83475D0386D577A553ACCD543C7F82B"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonCompiledScript.cs",
+      "sha256": "AAC96D648FF6242B95E5C882DE1CC23A6C35FEBE97B50B99D9BEAF40C2ACBA73"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonDiagnostic.cs",
+      "sha256": "586DEF2053DEA3C6E75CC8873CEA9B98DDC6B11CDABBAC92B6ABE104DCBE0EED"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonDiagnosticSeverity.cs",
+      "sha256": "C93503927CFAD6A4E4FB9FF8E8E964C9082D8A0958C9361EC8C9FF4BEA3B5611"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonEngine.cs",
+      "sha256": "6F312B96384C05A2DFA830CBB8B5F522624D844D500D16C0267A1418D0D29409"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonExecutionConsumption.cs",
+      "sha256": "46D01E0A09E1E4A88C8E907C0F59198C7DFA36DEBB46B1325EA550D1F0003D9F"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonExecutionResult.cs",
+      "sha256": "DDAE81F194598E48E638292D2A7AFABE3B86690A03A9CF2D978977B7561BDACD"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonFailureAttribution.cs",
+      "sha256": "751D27D17D8DD22CCA64B28B3B1D05E20D04627CA009CBDA7A56D4ACD6F59F1B"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonLimits.cs",
+      "sha256": "8F5BCC88EE7817D8934471A1E93F89B79F5C7ABCA65B105E79BEDF5C7E812BA2"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonMemoryBudget.cs",
+      "sha256": "A2CDB0711BA48EE73679BBCE5FC40BAB1F5C756066A94AE3FA1BBC62C3635E49"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonPythonVersion.cs",
+      "sha256": "B55623D901409ABDD54F4733040DE972A6B709623A00068B3CE985D05154F007"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonRunOptions.cs",
+      "sha256": "4E8FD882D0DE233191A8F6597C3DF337757CFC7160ADD9778193C35426AE60D4"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonRuntimeFailure.cs",
+      "sha256": "2D632C310B33CE91C525BF0AAC1BAF6A950FAABA2F9125EDB31D471B7B9CAA05"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonSourceSpan.cs",
+      "sha256": "7F3EA05C2FE2C979B0DB32FD8C0B94ABED23B88A563B494ABCF87C50853713F7"
+    },
+    {
+      "path": "src/Lokad.Lython/Public/LythonStackFrame.cs",
+      "sha256": "D116543B99ECB47E6089E539BDE8C39BA2C5C4A9B5DCFBF36827FCAEACB19B88"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Calls/CallableInvocation.cs",
+      "sha256": "7E642CB113A464F22BD681999489332FB4B0D34A8FD2C1AB66FBBD89AA865FD2"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Calls/CallArgumentValue.cs",
+      "sha256": "05E3BE5D16A0C280DF742E3EECC56E52C3569020DB21BCC25940178FF44FC0FD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Calls/CallBinder.cs",
+      "sha256": "BBF5833DF6E76FAB2DD0746DEAFA10FA1FD546C58CC2357AF229114817551FF0"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Calls/CallErrors.cs",
+      "sha256": "61D4334D63CD367BE9B687801DA967A2BFF60E64095B74B9E5DAE7162B64DBF7"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Calls/CallExpansion.cs",
+      "sha256": "3A194818A7AACC3AB98267007B679E210ADD3341B60FDBE216867F61134A2642"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs",
+      "sha256": "D37F4295B1A59259E3B27DF6F1D4CBF9E5285933BF0FA5FD38EFD23F18CAB447"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Calls/LythonCallableSignature.cs",
+      "sha256": "FF386018D336181AE700E8EAF3A382FC8DF8005160D60D64DB53D64F3AD8B08B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Calls/LythonKnownCallableSignatures.Core.cs",
+      "sha256": "138249D75AD9C0E5E2C4557EEACC7642317D35E08A955D16FDA0B6900DEDE42D"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Calls/LythonKnownCallableSignatures.Integrations.cs",
+      "sha256": "9351511E0E02E8F581726C784D427F4CA8D4A5016E748858F9C0E19FC2FE0402"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Calls/LythonKnownCallableSignatures.Numeric.cs",
+      "sha256": "BB4455E443C26476C7A63E820B8EC08D25433D8A09DD6A7CFE5D269FE49C147B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Calls/LythonKnownCallableSignatures.Stdlib.cs",
+      "sha256": "402D8CD8E10571CE880113467F79B7F30D72E805533CD2D921CFE101F7316132"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/CopyProtocolFacts.cs",
+      "sha256": "9E236EAE763090E5875DAAB4ABDB59E3B63BEAB7BB6C9B429A881CDE7DE7C660"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Crc32.cs",
+      "sha256": "9ADB9D8E0AE36AAA132B4EDC9472A1B006E2391E1FDDB031653BBCD3A4E61220"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/ExecutionFrame.cs",
+      "sha256": "5DBC4671F7ECA3DF8CB869EC09B1EEA4EA240BB5D4EB3917D5FC8B2B0BFCDA0A"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/ExecutionGuards.cs",
+      "sha256": "1949F5EDD0F9889F407099F1767EE4E8AFC6D1A82DAEB346AEF1904E5B14F583"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/ExecutionServices.cs",
+      "sha256": "0AAC220B55AB0F28A31C1F75479A934C441D8D0A8319675697C80B4F28C5A0CB"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/ExecutionSort.cs",
+      "sha256": "97014AA1BD54D31BE6440356F1587187CC003D14895F09852E92D37F85B0B2B8"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/ExecutionState.cs",
+      "sha256": "33A27D0A4BBC0839D44E4A0554B010327A64668833F346F9C66D7AB9E4E7EE0B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/ExecutionThreads.cs",
+      "sha256": "95BB670D2E59BC86DD65080AFA32DA8243C8A7EE03F7E7C4D9D1DDF66B0BE531"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/ExecutionValueObservation.cs",
+      "sha256": "106CA923891AA5C03FCECAA509F60FD70C67CA63A93C7A889481E589DE0D9020"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/FloatingPointSpecialFunctions.cs",
+      "sha256": "037EDAB6C3E21112D557E11BB7B11F82FBE51594006DCCA9528E0539BD619538"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/GovernedHostBytes.cs",
+      "sha256": "D73185DEBC36C73CF2B9D95BD36CB144ACDB74FE16D32C6C99902259159EA71B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/HostOperation.cs",
+      "sha256": "3860F1ACA1172A31A69EE7A3D89F3D1EBF5E981FACAD4DA23DCD93BF3E550A08"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/HostOperationException.cs",
+      "sha256": "AED1DBDEB49028C54391A65E97CD0F35153A649D3A7CE67CD60F748BCA984856"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/HostTextStreams.cs",
+      "sha256": "3D3BC592B4BEC481AD08F083C11F2507752C345997E5A9BE199543E7E42BDCAE"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/IExecutionFileWriter.cs",
+      "sha256": "BF9BAB1B358EBA66FA8567D7CA9E76FAC047B86AAD87FFB59575F3F1F8FE2B84"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/IPyContextualDynamicAttributes.cs",
+      "sha256": "9C1486E0510BF32E70F7CABBEA77454BB0951E41AAC93378C852FCBB5754CA4A"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/IPyDynamicAttributes.cs",
+      "sha256": "98825E65BC1FBD47890FE7F735E274DE178B59B57E10A70CD7969D5FC9797FF0"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/IPyGovernedValue.cs",
+      "sha256": "B618F9B2F9138F18A3C3354F6F4BBB63A4511B497D757554C97EED1C9362E0FC"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/IPyOwnershipSnapshot.cs",
+      "sha256": "43B1B5FAEC8EC5FC0D5CD3A59140CE7888800DE19035C078F9C4513D54285386"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ArgparseModule.cs",
+      "sha256": "A1CE96475502F1FEEB7325F37B9A272E5CCAEE16E11D1E2062967FDE52FCEF8E"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ArgparseParser.Consumption.cs",
+      "sha256": "BF3EECCAB9A7089DAE2D699ACEA4D1E8824E5B83AFD36E470E8FFC030D3E959D"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ArgparseParser.Definitions.cs",
+      "sha256": "7473DF083F627158B233675D7FF61E1F7422DB700060EF692A645E850713BEC6"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ArgparseParser.Help.cs",
+      "sha256": "D2B0231D28C001EBF94F1BB8153A66E8EC84AF256F9A6BCBC64195DF93B47B0A"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ArgparseParser.Invocation.cs",
+      "sha256": "E869D6B7DEEA3D20AC43C524782C4E871A0BFEA4656DB45A48FCB6265F9277CE"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.AsciiCodec.cs",
+      "sha256": "DB66EEBF67F3118AC3EE79073618342707205C5D64B06C352CEBF71DE86E8D09"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BinaryFileHandle.cs",
+      "sha256": "395220CF9FFE2FD76BB28B641148C86956BA10BCF4738221DF6A55465223ED14"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BinaryFileHandle.Members.cs",
+      "sha256": "8EC42F052D2DB5B32C5C0E564EF47B5649A377F5F211529BD6AA8863E3D69850"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BinaryFileHandle.Read.cs",
+      "sha256": "61C3DDB718B4D58038845209FD518251B8429B28BF3468859D580E4030993423"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BinaryOpenOptions.cs",
+      "sha256": "2C45A5B952E7875D8659066A4E61338FC82FB41010DE4509DA66FF721654AFC1"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs",
+      "sha256": "D7146CC30C90F690615940E006B884E3B81CD7091EEE262D7D5BD23356AF8DFF"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.cs",
+      "sha256": "DC702F0CBE6A46BA540E24DC7D4AB2770C8A19958262AF885850E4447C8BCCCC"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Ordering.cs",
+      "sha256": "6E387FD9F9EA13D32039D6CC5069650B803CAE9F2E9F018FCF7F7B1640673E44"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinModuleCatalog.cs",
+      "sha256": "DAB757DD9B9F82CA966A1F9AD6E379A096CA8B1B91A9917D068B8556ED2C29BD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs",
+      "sha256": "1CBB1EE984FE1E399CB4F25DA1CB59D305A9C1709048A8CE4E1898E17863BFF9"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs",
+      "sha256": "9CA74FAD8A5974EFC5B35BC3670EBEA019B1AE9D633F290E24D031403785DC28"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.ObjectAndBytes.cs",
+      "sha256": "1D8129A2AFB2C29E35D12457822DA2B839D3FC4A3ADA4AE0870EC8B7E0AB572D"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.Rounding.cs",
+      "sha256": "6CC39DB21DB05540752B0F421F8C5862024A63F25FD24BDAD0AED79C41243DB8"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinsModule.cs",
+      "sha256": "6E80296EBA037DFFAA54ABCCF4136BC991F2B2340AB6AC06AA83C4FC4A49C79E"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BytesIO.cs",
+      "sha256": "65A9DF9BEBC652DB8379337C50491C3DA07121481B0A0E58F766C4C20FDC538B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BytesIO.Storage.cs",
+      "sha256": "8A559475E4D78092A9B6245F2BCF902A7F943FBFA460C24A22326A9E27738A44"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.BytesMembers.cs",
+      "sha256": "2A98115C224A01858127E6A6D4B02D1B94624CFFCB0B8038FA8211D6C8A46835"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs",
+      "sha256": "C17C6146ADA8961E323057CA0874FD8B0CA55573971CCFAC489FB013A400CE98"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs",
+      "sha256": "BA244ECBC8BF96F381CE05D2973CAE49E33726D657511ACD505F3C2D65F00D80"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Print.cs",
+      "sha256": "F53EB4D6C6CF07B6E66DFE5A5A45C9167B5EAB89CFBE81634A1F405E8C255D72"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.CollectionsModule.cs",
+      "sha256": "DE218D935855F9852C83EDAAE38BB805B4A248F45E3342A6C0A71510CD8793A5"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Complex.cs",
+      "sha256": "407AF3FE5FC8C5DAB018529CEC942FD5FC884202D4C2C40C86413CC3E7186048"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Comprehensions.cs",
+      "sha256": "DEFA0BE44B2AC58752E4C7C60218788BF49582586A3E36037C9514C090EA8930"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ContainedXmlReader.cs",
+      "sha256": "DDBDE48ECE8F52986803830321D299DB513ADB7B9ECBEBDAEDE7963EA56058F9"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.CopyModule.cs",
+      "sha256": "2BC453B99BC7275CBBFE1D3ACFF16CF08BAEF0403EAB39E0F07E9066A564C744"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.cs",
+      "sha256": "0F071DEC800BF1CBC6FFA289900696F956575C8B6F4538092A7BCFC513A67B5D"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs",
+      "sha256": "120C317C978E8C326AF1A9C2F46EA46B3D304BDAB8AF5EFA3283C4998F1D0FFA"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs",
+      "sha256": "78500FE61ADDFC51EE81C819E4B8C447F9B8903FD4A5491BA2F76A13732116BA"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.DateTimeMembers.cs",
+      "sha256": "C5E61EBE0BE02113BF6A75F780EA771BBA6F91AD74C4428334D138B048BBA236"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.DecimalModule.cs",
+      "sha256": "6B9DB2AA6B7FC85D4E2CBE65D90913E086F45475E611C44E375BF67BAEB40240"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Deletion.cs",
+      "sha256": "57F93946F1C5D9ABE3B0BAD3ABB699E1497605172ED11E3F317D646E53A54D71"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Difflib.Differ.cs",
+      "sha256": "5134981232C6BE114B43222F952C4354DF81C6E519C00421D7D6DFBA9BC4D647"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Difflib.Html.cs",
+      "sha256": "29087E533ED18C3E3D43DD80A8EC320B832918C33ECD513C4DEABAAB79BC50CD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Difflib.SequenceMatcher.cs",
+      "sha256": "EBE5A7C0F5102D59614E20557B690EFBCFBE8A4975100D1F0292E02BDBB59376"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Difflib.Values.cs",
+      "sha256": "0068BCC6DCE1992D70EC32B733BDCC1863846BC0152D9398A1265D1C1A38D679"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.DifflibModule.cs",
+      "sha256": "1BA404F8704D62E9E0195725694EC9463772F0E1E311FED64E29D29A0F9A6777"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ElementTreeModule.cs",
+      "sha256": "120E9DFDF2AAD78E489714110A62413A94EA25272B06883B47819EAAAA6C89F9"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Assignments.cs",
+      "sha256": "D17AB9A552C4BA636F9F7AED60B1712EC4F799A4B5439D0F3C7D1EB1F451A01E"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.cs",
+      "sha256": "205DFAA8DE3C3A8750E17B00D3DB3CE7F08AB3716A8F7F6E454EDD6374D2B57F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Operators.cs",
+      "sha256": "190AE646331C27B85A195091FCDEF37B642B01F7E3A4FA91F35D65F0D03CFC95"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Patterns.cs",
+      "sha256": "6F4352369A6F20F0C9BA7E3A64CD9BC85F4288AF96700B40A897DB8F7ED0C9D4"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Exceptions.cs",
+      "sha256": "5781B14E428F74AD454A417AECD5D9B925F807B0F23FE49961F8C2F0D9CF95B0"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs",
+      "sha256": "DA90C4AA15BD122AD09CDC98635561E6FD095130BFC31B677F7134F71B5CAC99"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs",
+      "sha256": "F172F42C545ED35E2D2A60C135D7F7691C9B3B659F2DDFF288D26D8D8769874D"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs",
+      "sha256": "FDD06360FAAB510F2B719B86ACB923DF8DA220A85AA79FF8EC7FD621057F86EC"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs",
+      "sha256": "0E9C9A89BB909D8802BA4F6B97AB98BFD61A811FAB2288E7A64B24C328945494"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs",
+      "sha256": "1562BB7F22E10096968B62404F7265CD4C8BD36F98B9F3656D7CC77E00F14063"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs",
+      "sha256": "0193729A5CAEAF94C83CE1C50ACD15FF55F42E8403403D726C7B6D432B216BFA"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs",
+      "sha256": "3E9F0AC95D7A1B95F4874643FC1C755F5F2386947915CD9CFCAD5C4D95E609FB"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs",
+      "sha256": "BC0A9250A0DF2B1EBB19CFA1E203B29C547A7F4E36162969985E8AE9CD21166B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs",
+      "sha256": "64814C2E956BDCA7679692262245D49A0FC108D0F03F84E39B0CDA9F049B6731"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedTargets.cs",
+      "sha256": "155A6A9559DD06BD21BE0471A8C3D91ED478FB03E37CEA77A86247737E7A754F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.SimpleReturn.cs",
+      "sha256": "2D0E3635D1A2C5E0B4E73A0D84D376609E8E874C4B9171E69CA242518D06545A"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs",
+      "sha256": "EE120E6DCE401C3E8CFE121B3616A9D369CF55F154723839D91EC75B5D42090C"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs",
+      "sha256": "9551B47F554D38F053D9BCAF077D45411BDF2ED4B28661606E9E4BE34AB045E0"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionSupport.cs",
+      "sha256": "1490A81EAE5CA805E173E1C310E940B09A9B7FEFC1BF86EDA33048B768582035"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.FilecmpModule.cs",
+      "sha256": "3FEDD6C0425C84982C2819E77DDEFAC6FEA16AE8F157225A108D70A34E6F9658"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.FloatConstants.cs",
+      "sha256": "2BF8C58EF7131CD40CF0BBA9EF4D15466B438526CD55824A2B451E22F0AB7917"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.FnMatchModule.cs",
+      "sha256": "9A38B3A93A329235DB1C1FCA0EEF0FDBE0A1CED7086F5754D52FC345A9164CFC"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Functools.Cache.cs",
+      "sha256": "C114F98CDA4B5157C9CB12D433D5BA9F049CD78A8F6075F3F2264ED731EF31BC"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Functools.Dispatch.cs",
+      "sha256": "AACA4A08367C0EAD50C5D2ABAB661F16485E3A3CC7131E8C80A8E98EC508E4DF"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Functools.Ordering.cs",
+      "sha256": "5C0E93BD1EF8357724060A4697FE9DF0109F2DFB429087FFD47D82F871DAE1B3"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Functools.Partial.cs",
+      "sha256": "C68DCC905D647711E305E1BA7BAAA5DA38A6D52E1CF1C3232195B4141CAD7559"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.FunctoolsCache.cs",
+      "sha256": "9276AA8DE8EEAFE45D8FC30D60038B81189082A8F4977CAB0924B15BD7D4881A"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.FunctoolsModule.cs",
+      "sha256": "C1561F0929DADDB14C84F714A0C7C9B95D1EC04A694238F21E2CC533952F1E7F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs",
+      "sha256": "E528A68AFFF72019A714744002F212580E80E21C37729E511365A76E202E3953"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs",
+      "sha256": "0A8C038B1622037F8D8EB109CCAD0607118EE567F9E1B8096A74555F91247486"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GlobModule.cs",
+      "sha256": "FE011321F4922B4EFCBF84AD0959B8CAEB9DD51281E25B8EDDA8E9547348294C"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GzipFile.cs",
+      "sha256": "2585C7574F8881D1522CB77C6DC4B12DFF49DE0657835EF3C863C15C8B6D0D29"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GzipFileHandle.cs",
+      "sha256": "A27215BAA7667A0C8F8A48434465085A7D24BC4FEBDEE005C3063080E8959457"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GzipFileHandle.Members.cs",
+      "sha256": "452CE928142A833592F45B0BFE29C9EF3D2C81A89DD90F01104191FDCB8E7B07"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GzipFileObject.cs",
+      "sha256": "35D204C583AF125A8348679A2FB4394635BAF51BAC6163EC2D2324180BC52C8D"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GzipFileObject.Members.cs",
+      "sha256": "C1CF8E2A7E2960C1B3FDCE205B415831A877D388FE0D90B7B48FDB1D576D5A28"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GzipFileObject.Read.cs",
+      "sha256": "DE3EE2915305D9B12537BC3ACC2ECB7174890566371E4A3C5AED2C2BAE58749A"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GzipFileObject.Write.cs",
+      "sha256": "5ED3CDF1F76EA29E0EFF9C667031D065139B0BBB4B8CC61081BA02E6CC8D2AF3"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.GzipModule.cs",
+      "sha256": "6C08F20D66A42B69A11F5D115372F2F856BC75DB66324696F3C05DACE76B085C"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.HandleMembers.cs",
+      "sha256": "58B4315F2B73C113655951E4643C4BE20453CB67B23E24C6CA7D42700E0D3F0F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.HashlibModule.cs",
+      "sha256": "7ECEA26B7E0F57259BDC479AC767EAEE5418B8D398378099C8A2BCFF8AE0C2C5"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.HeaderTargets.cs",
+      "sha256": "079EBB9638D217866062F605C1D2B8012F79461B33DD638BA38F101C4C026C76"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.HtmlModule.cs",
+      "sha256": "426575D27B999C7C32CF64568495890EEE5FCB4791234100A62B53E2C70661ED"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.HtmlModule.Unescape.cs",
+      "sha256": "37873305F9579BE28E565E13623CD11AC764C823DA11C5339E5E2C3BD6B1B877"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ImportlibModule.cs",
+      "sha256": "4AA17269927986FEE309AA21FA2E99953F334AC374E662ED1C2C6E5C5262ECF6"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Imports.cs",
+      "sha256": "0B41339C377DC11AB13CD40E35849709DF72BF7FB64BEEE30660F5975EB18446"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.IoModule.cs",
+      "sha256": "BFF5ED5C6C69004E30B6552F409DDF504745C5C554856741AA3304282A04B7D0"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ItertoolsModule.cs",
+      "sha256": "690481E50050FC28DF551347FFBEE9DAC0B23E73381F9B1385CE231AA09F33D7"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Json.Decoder.cs",
+      "sha256": "83F11B59DE4EC3999581A4BA1E2B38C09939E81F7CCE8711299C43E3AF175323"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs",
+      "sha256": "04A3C2F3BB6F3C096CBB5333572F69694B2B69695495130E5BFABD8C2E75C8A5"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs",
+      "sha256": "8108AA496993DFFDCA97FA646EA6972F2C6B1BB0F6C4921D0B327BE66EF3F622"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs",
+      "sha256": "5A1E6019E945ED076CABB586595975549FB0882F9748F4D322C0C7BA70B46ED6"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs",
+      "sha256": "6616DD6CFA8612FF73DA56C227F0837C3D600B02154922E7F4B0B31F58E24561"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Json.Subclass.cs",
+      "sha256": "35ECB6AE3AF1BF27BFB7F2DFDFF4808FCEED72FF208A22DAB90EE21B927980B9"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs",
+      "sha256": "4EEDD8F4A90C468C54952606ADD1A2DDB0E98BA482777298C6D2A2800806CC17"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs",
+      "sha256": "541344AF43829E358342054C134FE4530880BA7AE579B17EE5A25DD4BAE5DE2C"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Dispatch.cs",
+      "sha256": "F015F00D2E6BEE0F948AB78E2391D7DBDE28D11B75695AAE85A6E812C3D8F752"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Expressions.cs",
+      "sha256": "9E66EE3922CA01F7ED6808DA8DB841EA8C062A22A165B3B9994D3EAA7E77C49C"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs",
+      "sha256": "6E891BC8D38AEAF68AC2FDFB4BBDB709EBD38EE010689C76E7FE215A869CADA2"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.SynchronousDispatch.cs",
+      "sha256": "D0ADD58532BAACBB8550F293F6677A3303710EBD5736DD8EAB99140FF8792332"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs",
+      "sha256": "1A7CA806BB049C695D0DB08AAB30CEA7F6E39D3D9F928821BB8C1A50E08CB072"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.Expressions.cs",
+      "sha256": "19CC597D1EE7B300DAC6F5C645EA6A6F4D89679539A1DE067AA186385559734F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.MathModule.cs",
+      "sha256": "58218C53EA1E8A5B54D0B83EEA91A41F25D35264CA9EA5E98C1CFCBB741C9611"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Matrix.cs",
+      "sha256": "3D4382457CA799A9864BD5F239DCF54611FC513024733AF9EFF5492BD3F19655"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs",
+      "sha256": "5157BFB618FCA54B3172CF4DA7E585580DF53CD7D60A9AD4CC26293DE5993044"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Members.DequeSet.cs",
+      "sha256": "A6B3BA3D94B7DC038BE1F59291199C6998A266202B439FAF2351B932F47C9D73"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ModernTyping.cs",
+      "sha256": "DD5F21A4DFCCE43C7168A1741C45F4394D043A5FFD399A64D80DE8999FCDCDE8"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Modules.cs",
+      "sha256": "C1155EA4DAC86C082139C0EB3FD5DB3A63873800CED6D362BE9C5C9F97CF23F6"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.NativeIterableOperation.cs",
+      "sha256": "4D0B99984FE696F4366EC3B49166CC9FFB2EB95B7BC3A1E88A7C504CC26D0C9E"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.NativeWarnings.cs",
+      "sha256": "9E49C7A125CE9C046801D8E4FC5F4E555FCBD533423E30D99F997E81781ACE80"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ObjectAttributeSlots.cs",
+      "sha256": "582B4E9456CBE444788A5C41E08BD9E840E2F914F86C7B1DBFEAC3F9278B6A72"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxl.Values.cs",
+      "sha256": "739087BFAC9B1F221220840CD7A0FF72F39B1D1AEBFB53C2C6546EDF5FAAD1D0"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlHelpers.cs",
+      "sha256": "45D45D7F4FD358365FFB9E6B132A584ED6A08BDD4CB9A2406606DC537C827B99"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlModelSupport.cs",
+      "sha256": "019B8273F7A38127902314CE58384568BD7B5A67760085D36D42AE79AA006DA3"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlModule.cs",
+      "sha256": "DA80D151938A943794AEB5B99C587D3DF60F37CDE2782D60274DDE5CC0F9E293"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlPackage.cs",
+      "sha256": "7DBF25B20E54CDCC6BB2C71FE4FFAD76E4D3FA7677B6543A2436F3A2FC616219"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlPackage.Load.cs",
+      "sha256": "97E1449991E56883CCC2B93866A941F369740E59938C6AD97657DEF2CA706CDF"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlPackage.LoadWorksheet.cs",
+      "sha256": "DFA6AAA326EAA849A819A96674E5868E25C08721DE286FE62BBF2B282712BBF2"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlPackage.WorksheetWriter.cs",
+      "sha256": "8CDEC720D63B7512628D76C7DF08B4A985E6997234F0C4388B5BECB899CCBDCA"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlPackage.Write.cs",
+      "sha256": "78B50C061E9E2D5922ECA7E97D7A00C197287F1B767D4795C4880C939D1C8C69"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlPackage.WriteStyles.cs",
+      "sha256": "9F8DC0BCE7C64534D8C5667FAF2B33413DACFED5ABC6F5CD80A8E6BD23DEB690"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlStyles.Shared.cs",
+      "sha256": "D973E8F6768F1719AB969682AA16AE9E0BF35B8037083D2C3FB440AFED8BFEC8"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlStylesModule.cs",
+      "sha256": "3074955F4EF9E5C80E3CEF3B1F489BF5B32A504ED371EBE4F0BB651CF8468D15"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlUtilsModule.cs",
+      "sha256": "7C00A223441170021EF465441117BC7EFC30BAF512044B6C13193F38CF1CC3E4"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorkbook.cs",
+      "sha256": "E33AE1B0BAD65EF83D9113A82C2C1D8A03999B0DE9980D2F704524A1E4461F3E"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorkbook.Operations.cs",
+      "sha256": "E3054F401FC2C3B3BCA50779EF5FFC7708ADDC960A6FC24A5DFFCCE12B62825D"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorkbook.Persistence.cs",
+      "sha256": "23B06357201FEEBCD0A61A2FDC5A3D0B73A7AC2094384B682CED2B6D429E1328"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorkbookIndex.cs",
+      "sha256": "259047DCE0D09CC745E54EF53F7FA1076AD2F3A8D1A3BCF6D6A5335C5A9B8203"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorkbookModels.cs",
+      "sha256": "29E54B07682B628BA63F4916BB60BB8372D8780F1EB48F67C22854C2FB8C7C25"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorksheet.Cells.cs",
+      "sha256": "87CDC5DAB17D81A833B7EFDE5F0BFDB181713DFE09115D1350459A87E672F2FD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorksheet.cs",
+      "sha256": "250A26EED1956CAA40175DDC60B280E5ECE3B15F0020F1CD40C0CE71939F0E9A"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorksheet.Operations.cs",
+      "sha256": "E78D53EEB1F67D450CC91AA4E972086D143A8929D34C47D173245A641E034E19"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorksheet.Structure.cs",
+      "sha256": "644CBEDBB7EF4FBB1BC4A5E6F1452F12C5911D42FAB1B6297DE2D5E47D92A3AF"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorksheetFeatures.cs",
+      "sha256": "A9AB75D551D3ECCAADA71AC76F9FB13CB4C46C1B06801B7FF0842CBD43FD7DF5"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorksheetFormatting.cs",
+      "sha256": "A7C7AD7C9A608E89DBFC6DF835554430739DD69E357061521AF9D64A379507FA"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorksheetMedia.cs",
+      "sha256": "70605340055DDB024B5D4FA38536EE2EAE43EF3104D77B1659A4E93E93ADDEFE"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Operations.cs",
+      "sha256": "747B57417D4913C3156AD3AE17E398C44F3C8A740F3F3E50638A92661E16F421"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Operations.Formatting.cs",
+      "sha256": "FB7ED6D114F3BEE7BD00A5907A148D72324E32A1FD84690A2579976ED188272C"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OperatorDispatch.cs",
+      "sha256": "BEDC54417E9FBEAE48CC7C2407606F1336D309BECEC9B7A003FE60AFF09368BB"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OperatorModule.cs",
+      "sha256": "70C3A8968735C44F0AD02A9F349E42F1DD95711C92A4FF9C61AD06AB1B3FF8C9"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Os.Environment.cs",
+      "sha256": "046D04BE23E6BE0C4D4388A4C6FB0C09A2894674032E067356691AF1913D2797"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Os.Iterators.cs",
+      "sha256": "E9EC1FA2288882E5F5D4CE1AB465D3B9F5D467C8780F1FEF9A944599046AC656"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Os.Operations.cs",
+      "sha256": "C007832DD2563BDFBB003E66EB174DAEF852C6747107BCCA39B41E0824223FE5"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Os.Path.cs",
+      "sha256": "04886A8BFD47830382AEF57A9DC79E822E9FD43629E8ED9A26C73A5DD5421399"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.OsModules.cs",
+      "sha256": "B2528409C2CD07F2E7746B2891EC689DCAE910853DAD5EE0CD595A7DA9D8B95F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.PathAndTextModules.cs",
+      "sha256": "37AC7461CFD050B2A39D071CA0C41F5961D8954EE51C9DE8794174C63F0FEF3E"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.PathMembers.Bytes.cs",
+      "sha256": "BF978A072F6DC32E2F73899C2D86BCC4431C40B10FADAC50D727440B4D2D7CEE"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.PathMembers.cs",
+      "sha256": "E510C5D25682ECF10D4611271811A3462AE1A40762DBBA39368F5F9BF6CF1052"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.PathMembers.Helpers.cs",
+      "sha256": "69C0B615E388A42A73C770E791B61C1C589E82695A6C6D18951B88DD4C88AA60"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.PathMembers.Host.cs",
+      "sha256": "6457C2B9B4CFBC6FE0ECFADB368C577C15891151CA18A64A98E8227F7305BF27"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.PathMembers.Lexical.cs",
+      "sha256": "6E74EB090BA25D1596E64B60D2BB2440988FEFD666AD857C98660E4D5461D7CE"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.PercentFormatting.cs",
+      "sha256": "2AC532D9ADB43194E54277F4A15381ED821C1D896973AB4F2FB77ACE3F6C60A2"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.PercentFormatting.Floating.cs",
+      "sha256": "014037D6BFDEFFC0DD589A410D2C0F80DC3E0340AA608E318440CD9F9940F210"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.PercentFormatting.Parser.cs",
+      "sha256": "84D7A36B2D27A96A9B03C2EE56F8FDEC77302E343D1F4A56165D84B89EC2C2CD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.PkgutilModule.cs",
+      "sha256": "8172067E0D23FA75521389327900769C364000AA0AC56A1C7733170C64A6E54F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.PkgutilObjects.cs",
+      "sha256": "5B243D7B3DE5EC5D158D558280B6ED16F3E08D495AE266C2D701142B0617B4CB"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Projection.cs",
+      "sha256": "F328395AD3052F8FBC78E7F98B98AB4C84A087D2D5ECA5A2DBBDC225C9FC0BDC"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Random.Distributions.cs",
+      "sha256": "C16279C344459BF97EA8EBC5D16ACF9BF78D96DD4C591AB7248F3532397D3E37"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Random.Helpers.cs",
+      "sha256": "F680EEC786C1B45673657EF989797C478F0479B60FA410A8359312139DD066D4"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Random.Selections.cs",
+      "sha256": "76A05E3ACCE1980DE8C08C4973DBC05F54A62D620FFC18D0F8AAAF2971E5A14A"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Random.Value.cs",
+      "sha256": "2C594B51AE4C4ABF5CC4923ED243D7C4419CA010DABBC2385FF87D8A4912E446"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.RandomModule.cs",
+      "sha256": "66C1FC10FB1AF7AC8AD1600A15B726569588E5C5A265C50E358D79503C9CBB10"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.RegexCompiler.cs",
+      "sha256": "DB75FF5D8631E00CC5970428204A99BC69F1D6A2EF1C9A7BD7EF7620F584656C"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.RegexMatcher.cs",
+      "sha256": "315357D55E858DFC1A089032B6A09416B1F0856207DFA1737C2CB54E81CF61A9"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.RegexModule.cs",
+      "sha256": "01033EF1889DBE7946EB0349725DDE8DE871EFC1F8D7EC47058CEEDFFFC55409"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.RegexObjects.cs",
+      "sha256": "13A8AFE111EAA224F21F9D50E7D88C4FEC0447171310B3A23A7D0986D2DF3399"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs",
+      "sha256": "BC3420572CA89FCB7B22A2F2303762BFAAD136F892F692425381643B980B0850"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Shlex.Lexer.cs",
+      "sha256": "C9B2A63BD2B599DE0ED9633DAEC18914BB9124575AC057772D9153CA167C9078"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Shlex.Lexer.Members.cs",
+      "sha256": "362DB4066CE36515FEB60C7D586CF5272BDD837EF2D4D773FE637F8461B05715"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ShlexModule.cs",
+      "sha256": "1CC2B203E3AB1804B3DF8AA239132ECFC81973EBCB2F1E4BC873644F56567EC3"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ShutilModule.cs",
+      "sha256": "12167666E2C423C24C01635AE4E0796607C2F76B3D6558B4BD6F55AB028FC70F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.StandardModules.cs",
+      "sha256": "D84028F042F5A51B88058D572A728AB806216347220BC4E10D06A7F99ED8AB31"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Statements.cs",
+      "sha256": "334126066CF3F3A761B0A7BB3707867F3B2204346A225A84A2B1BFF07C620BD7"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Statistics.Descriptive.cs",
+      "sha256": "482DA436F2FC3F58D65C2BAAC7CE77B24A07596D777A123C76B82BB42A301630"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Statistics.NormalDist.cs",
+      "sha256": "0611AE95477087B6E13D28A13A1F1E93EEA815084971C6F9339C0E0E0509487B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Statistics.Values.cs",
+      "sha256": "B0535FCE63E383CB3A7CAC3185139AB89448534EC9111D7CD2727E9F7AE406E9"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.StatisticsModule.cs",
+      "sha256": "D2CE8F94E81243221C5EC3E47C5C448B34362668BC81E961ECA8E0C51697F191"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.StringIO.Storage.cs",
+      "sha256": "646D41607FA4AD7A8F35E0F55D322E30DDA6998828E9ADC828981E5AD411E359"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs",
+      "sha256": "41E68FD6F3953201B55D08E27318C0F3831C441C8A94B9A33C164CF123E3ED76"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.AffixFormat.cs",
+      "sha256": "9E195C851771362C5A03759A86970B4328DED29EF1B08BF570AF17EA2C52CFDD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs",
+      "sha256": "54421C9FDFCB31689729428617FEC12A0F3A7E5FF26630732706546DE821DEBA"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.cs",
+      "sha256": "C8D980F10F4DB60E0E42FCB4B80B97E7BBE8AEB595CF1C50C9FD9BA99616AE39"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs",
+      "sha256": "6BB9DA7CBECA7CF6B2EA98E9E9130E7C5808DE4B7B0F90CA0F8FFE4221F974BC"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.StructModule.cs",
+      "sha256": "0D955A1AECEDF722B551E2CED40E8B665159B40557E92125DB129E80867F2F1B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.SubprocessModule.Arguments.cs",
+      "sha256": "780A1E49A62DA15C26A826A94005E3223485506254460B6AE2A1733313DC8911"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.SubprocessModule.cs",
+      "sha256": "F5295E156D1A3C8B2B816D0042FC987D1D6C39926E34161786F28D82D42D3095"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.SubprocessModule.Errors.cs",
+      "sha256": "681CFFE5C80EB143D305D76054D009B3FFFFAA674FE8F40239D40342DA676B5B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.SubprocessPopen.cs",
+      "sha256": "4B1BFA31E984CB004ECA21788A1F6D48578AFB0AC9E16D92B37DB2DEA293A262"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.SubprocessPopen.Streams.cs",
+      "sha256": "E54A89EE7FDADA1287B4C9F235270B94965DAFFA682C01EA21879B8088F6FD51"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.TextCodec.cs",
+      "sha256": "A0ADCAD8AB1B1F29F5286C734BB742750551DDC447DA8F6CBADDD39F3D6BCBD1"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.cs",
+      "sha256": "D5D155B808AC38DCBF08A83AE0CCC2F9B9E7A876BE59F13DA47F23DAC07100A7"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Read.cs",
+      "sha256": "55666EE5271BAD13A85ED7265C2394EC35B1188BDE3C49EBE5239A66D6F87009"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Write.cs",
+      "sha256": "D36B1060CE9BC9B5FBD1A44A43EB7713FC103CCF0AE3EC9BEE4EE364021D2B71"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.TextwrapModule.cs",
+      "sha256": "FC3D07AFD323490F881C2748DAB259B0ED3F9A6B74535F9F011C381ACFB7D2D0"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.TimeModule.cs",
+      "sha256": "70CFCC88161AB48FF74CFA7044EF51360DB5A38E8B792B8ED9C41FEE78C67852"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.TimeModule.HostTiming.cs",
+      "sha256": "47DB5D8CABF6C68969515A4E678908D7C5D8D362CF95C5952F8E8B092A4E3ED2"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.TimeModule.Values.cs",
+      "sha256": "2899278DBFB1BC2C70D8E229862B5CAC25066F3B04B09EFCE4394ABC97C4C4BA"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Cache.cs",
+      "sha256": "D22A32FFE20B94772116D10B4166C2A1DDEA8E9DBE808C40994987677814BA45"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.cs",
+      "sha256": "538C78C6D820B3F347E40032536FBC4D5950BB2F9D4CA02038DCBE8DCD8E1501"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Percent.cs",
+      "sha256": "277BB0419AEDC202D9952C7C9E3AEDFBB38168A63DC5C26095AF6F56C3AA639A"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Query.cs",
+      "sha256": "80947A941C5C17B7856E265C707A6AB9CF2D40C3062B19906DBC20D2093BB937"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Results.cs",
+      "sha256": "99EB07B7173E5F15728CD983144A9C3A1FE3B3BDD3085A102B86A0B0ED5E56AE"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Structured.cs",
+      "sha256": "543A2B5258D4409342BEDFEB4B6DB00521A4CE7D9C6E7AF31F72B86C11130684"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Utf16Codec.cs",
+      "sha256": "C3B127142E69BDDD89140CCD7307EE35F70DC6348FB6E79572789C69EB487E7A"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.VariableAnnotations.cs",
+      "sha256": "2C7E8B2C64448978DDF9410B8F1A7E20B263524050179CA7B6F6C1AEE648E6CD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Windows1252Codec.cs",
+      "sha256": "AF914598B18D4B70880ED1F678D33632525C8C9C95DE6E2D5ABAD34AA5E726F6"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ZipFile.cs",
+      "sha256": "C01B2B7B37C7F4D3B4F7C0C50533F734B92AEB99C126B760441B1EF04C708299"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ZipInfo.cs",
+      "sha256": "4B1BAD75332D007F9BC03333C42344CD35E8F812EA46D492E2709DE61F86E59D"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ZipMember.cs",
+      "sha256": "A7938ACDB9ED88F5A70DE292BD72E904EEA58D8D0F12C17AADBA750A2222A8DA"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ZipModule.cs",
+      "sha256": "BA6FFC884B0C0FD22436FEC676ADF8AC253F18E25BC8B81F7CB9954853641682"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.ZlibModule.cs",
+      "sha256": "5ACB16FC29E2E3653F5A055FA6841AFA9B507A28905A578A8AEF38A5F81A8600"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntimeException.cs",
+      "sha256": "55344BE80D19D94B15285B66A45F4712256562C39491076A0EA096471C96CC93"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/MemoryGovernor.cs",
+      "sha256": "57AEDB449A7A7CF5BE011A49B20302432DFCB7A4BAF7CC713F1BA7E55788A549"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Numbers/PyNumber.cs",
+      "sha256": "63EABE4FCF166CDEF334EC5AE8503F779BDFF259BC6621592AE09905E4053872"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Numbers/PyNumberOps.cs",
+      "sha256": "D730A9B6400852D39A4A6A725CA3F1E15E329892EFFC02A6673A170C7FC222F0"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Numbers/PyRealNumber.cs",
+      "sha256": "B9C858B0DCA7F457103E9241FB0E860BF7D2EF264BEBBC750615687B9E26C603"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/OpenPyxlReferenceFacts.cs",
+      "sha256": "9AAFDAE6DE45CDBB8C03BD73C1F6A65B94A69C7E91F41F15E62801DE779917AD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/OptionalValue.cs",
+      "sha256": "7FDA085F9E638656E275A2FB2A500D7B8BEE0574DDB180F1F4EAC5CCD4433F4B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PathOps.cs",
+      "sha256": "B8A073A0FECE18B231AA2B91D592A8C94D7D91D594856F66C9296DB11AACFBE1"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/ProjectionBudget.cs",
+      "sha256": "2C4804661AB5108E427D564385988FEF57EBFA37DEF32D3FB4F0E874F6D3ABD6"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/ProjectionException.cs",
+      "sha256": "557CD6AE91C5A3C47B1048929EE0614B43EBBCA2CDBF543EF9240998C8307B05"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Protocols/IPyContainsValue.cs",
+      "sha256": "F85C5273D477749D06716266502595F0AB37395CD9C5D9E82895AD55BCA77170"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Protocols/IPyContextManager.cs",
+      "sha256": "2ED035EC89DABE792BF5985CDC8BEBF064F3A4251E6E799D2412444BFC64332F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Protocols/IPyHashableValue.cs",
+      "sha256": "3F9BB4FF0B7700E26CB15C2A0B2B2656D7D3C75B3CF88FE34B744BF775650CED"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Protocols/IPyIndexableValue.cs",
+      "sha256": "31FCCF651C3203FD442F1543B70F7C956C9E29799F3DECFF920264512F8A8A3F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Protocols/IPyIterableValue.cs",
+      "sha256": "B1D27E92E774A1D9DFB9B9B321149D12B3A7FBE5C1AD0445FC06884B86D1FAF4"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Protocols/IPyProtocolIterator.cs",
+      "sha256": "9482E34213078934371A41A6E6DD35B8B5FF39F8134CA040F2E37F93AEBB91CB"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Protocols/IPyRenderableValue.cs",
+      "sha256": "F6F517EC6F9994655FEA9E651DE875838F4D5E78AC6CCD089E6A7E5C8CC357B0"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Protocols/IPySequenceValue.cs",
+      "sha256": "91C9A5E477A423C53212BB4DE087464FB7F3E74420786D0ED614B8E9E5CDD05F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Protocols/IPySizedValue.cs",
+      "sha256": "AF7DCD432612560CED63BA2A30DABCD3C5C79E57A3F014A8162B94CDB1635ADA"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Protocols/IPySubscriptableValue.cs",
+      "sha256": "A1F10A3D38918BEC20359D6FD0DA02E7ADA65E2A85C4E579ECF2431F1FD80866"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Protocols/IPyTruthyValue.cs",
+      "sha256": "9F757B9C45C1DC645C821917AEEB2D673635E130BB411486F88BDCD4159DA9DD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/ProtocolSideIndex.cs",
+      "sha256": "E83C3625E1F9AA69C007B6D09034E634E786B6FBF2AEF35BD897028B7A300282"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PublicProjection.cs",
+      "sha256": "DF5FDA005678E0C3E3F8D4470C5E54F0362A8BF5038F5BFADF3A7C610CA3D87F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PublicProjectionContract.cs",
+      "sha256": "01134B83379035F21D2B4EA9273138177B9936B3C8F9D032B2B0617D2D3A8205"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyAttributeLookup.cs",
+      "sha256": "1B74C1D34E3D56D2A08DBDCCC0F29FF205516CC9C7A19FEB3F9440E8A2855434"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyBinaryStream.cs",
+      "sha256": "D228ACB027907489E48FB6413A62D7E0EC0F04BACDB58C792276AC50E85EB37E"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyBoundMethod.cs",
+      "sha256": "950B6F0C5A5FD14A64DBA4A5E6FFA8D6D265815A0AC55B9007971B8F7DFCCF6B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyBuiltinIterators.cs",
+      "sha256": "87F4D8AE9176D0FD44740E02CEC0102F95908F9E8C00FA0A2786D55906536AE8"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyBuiltinRuntimeType.cs",
+      "sha256": "C3BFE5F335F4920E712DF0F70BED97D7DD146AC62F3BC022743D3994FF41A606"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyBytes.cs",
+      "sha256": "7F2C891C0E804BB67203414216082DD2EBD13DA701DDD4EF3A2263C71CFECB75"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyCollections.cs",
+      "sha256": "947510753B14D0009927F02CEBCDBDDC9A7AFF1EEC8C74085B795CEDF190ECB0"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyComparison.cs",
+      "sha256": "D13CED097C648D02B92512E2F02F327CCE17931CFBEDC383638265BF05288F51"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyComplex.cs",
+      "sha256": "BA1B2F41FEFC1591E0C5D672E711AE20D1F9AF0A63A8647EDC968BCED863956B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyContainment.cs",
+      "sha256": "A8AFEBAE864BF97DC835D609D26099609648052C332008C3D7EFB7C623F66FBB"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyContextManagers.cs",
+      "sha256": "F286C747FCE6833657491C6D2C7EE6C10E153126360950E9B750D54B025381A8"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyCoreIterators.cs",
+      "sha256": "2D79C03F0ECF9775BE428C1C0F09026C916FBAF79A4939656012E1E32C9E35D4"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDataclass.cs",
+      "sha256": "600A3C725BD01671F6A644EDA570427A25DC32E4FB12553D54CF40DC90651EA4"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDataclass.Fields.cs",
+      "sha256": "8656D4FF1D905AD0D907630F2C28774DB7C0DEE4A35B82A6B912CFE24A103AF4"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDataclass.GeneratedMethods.cs",
+      "sha256": "E3781C4C927C2653B5FB1076C86AE94A44C26C449E48E6C44B9F04AE82E362CB"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDataclass.Operations.cs",
+      "sha256": "CFCAAA91FF58B37E602C55C539A6D8BE9DC0B3CCB73751F50F7E83FF0BAE7A17"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDataclass.Values.cs",
+      "sha256": "271F094146C55357BE65848EC3C83915F61E480E0F4F169427CD1221E0F9BB14"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDateTimeObjects.cs",
+      "sha256": "4570220DCCDB23229765539C4BFFB21A62583934B4A850AC0DA7283128B72E00"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDateTimeOps.cs",
+      "sha256": "A9BACC42F810A44F842B9C4E14F3F3D0C55744C9E05948ED7865FA7FA13CAA3A"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDateTimeOps.Formatting.cs",
+      "sha256": "6D6B7FBB23FAB316E511BF6B2D01AC1505E0450CAE09618D9F58E4912D00858D"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDateTimeOps.Helpers.cs",
+      "sha256": "DD3C6135EF55E53185FA5A71A874ACD316AA6BEF414C885EF267F6CA8C2301AF"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDateTimeOps.Parsing.cs",
+      "sha256": "DA855CA0ACC48D14C3DC8E6D5D52DE713C5626C62C4AD94651BBCF0675B4FC5D"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDecimal.cs",
+      "sha256": "CB35657E1D2002A8E0919D938C287A17567E5D35349E3F166E5F5D3080B8F663"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDecimalContext.cs",
+      "sha256": "3E33E193CC5CD7EA09BC2F76F98514994219031D2C58BE67C95F3AC751DB9E1B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDecimalOps.Arithmetic.cs",
+      "sha256": "6EE835925AD4069A99BFCDFE62AB2070D6BC31BE88A4E863935CC203FD8BFD15"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDecimalOps.Formatting.cs",
+      "sha256": "09B47D1E06B89FCE95C05C840F1FA8B61B3A6DA1A8F8A1916B918560FAC79253"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDecimalOps.Methods.cs",
+      "sha256": "1DFC2C594AEE7F10F26FC9C71552C5F0C7C84264CD5F6CB8DA1F40F25A0E43A4"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDict.cs",
+      "sha256": "B3EEB39137AFD7C58B98467B73708DFB6E2998A3342463DFC53B21FC9A85F4ED"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyDictStorage.cs",
+      "sha256": "4C66EE23412ABF59A187C94ACD8666C9769691528E4CAFF720CEEB19BC12D881"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyEllipsis.cs",
+      "sha256": "3BE5F17D201A2A88E75346C428E3C6761102EEFF250A3B566C8A967540D3CAA0"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyEquality.cs",
+      "sha256": "C242B1F4E4160C2DAFD327672E3AE5D61F80C9D5DC6D638D1663F021B030EC3B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyException.cs",
+      "sha256": "DF15EC1DCDAE50E7DFCFE759501FC8C3A7B5ED6A127CFA2FE5E6E088A5D6BDC9"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyExecutableFunction.cs",
+      "sha256": "A8ADE5B8CC9263BE18C5E12ED155AD5261D30ACF64D9E472D2390D4AC835D3ED"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyFunction.cs",
+      "sha256": "763DBD92F53D1337EAF43EC558C243DBCAB835D5B8EA480A5CB8BAD7E5C74D07"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyFunctionBase.cs",
+      "sha256": "676106412DB50E5095687B936BC4B0AA0984FAEF00732971CC24C690E6144298"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyFunctionBinding.cs",
+      "sha256": "4B0EE7FE4424765C3F87917745CBAD388E585D3F35DD790452BCDAC0C2725FE2"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyGeneratorExpression.cs",
+      "sha256": "4354F25A2BCE75E78FAFC95E8DDC1BD438F4D2A92B5A849A12F724A7DACA3B16"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyGeneratorFunction.cs",
+      "sha256": "B7492F54DB4AF091A1692909F544D6308AA4ED30E3CF02D197746EE672530859"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyHashProtocols.cs",
+      "sha256": "BC0D097DC270232E12CC0AD506BC8EBA3DDA6B99E1C51B3AA4B5346125755F0D"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyIndexing.cs",
+      "sha256": "C61073737563832E112C0B06BBE9B73E2331A9867C7F63DD202ED713DE21D796"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyInstance.cs",
+      "sha256": "A22386EF110CAB9E2050498BF4488FECD0C7EB380AF85C9F380173A36250C3E6"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyIteration.cs",
+      "sha256": "02903BBD0BAF4BDBDD83F21E9936631D949E2B8E52CF8D5026CB0491B27B4E3C"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyIteration.Sequences.cs",
+      "sha256": "2C87EC8BFFBB1D7FAFFC2C45CD4F3036B2F925DA0832BA3515151F3F49D8CAC2"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyItertools.Batched.cs",
+      "sha256": "DE39E9094F39B0EE16794E5F62A7B8F1C72B24BBBAD6D49F05ED0D1A9FABC977"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyItertools.Combinatorics.cs",
+      "sha256": "488BE3DC897BF143F9F9A55B2E67824631690D67B5CE25F09940C0F83C592761"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyItertools.cs",
+      "sha256": "4502644CDEC0574E917555CB0A7CE305882BBBC17267870409D8AB063D5CA902"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyItertools.Grouping.cs",
+      "sha256": "F473B6D0F8EB6FA327A15B0547F63C411EF29C29DDCBF90A92609ED07D871F95"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyItertools.Transforms.cs",
+      "sha256": "1CAE1AEB5E2B5997744C957C3264274BE6760F20D0B1783DE993F83AF3ABAF70"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyList.cs",
+      "sha256": "0FE43CC4768B1214E784FE2C75F8AC37ED5556938589CF6A8F46D9301BEFD393"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyListStorage.cs",
+      "sha256": "437528BB132659B9BF4E9491652E7CBB5F53CD301F2FB2B2FE4B29AD1F8E2B31"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyMemberAccess.cs",
+      "sha256": "E44E424FC77A24AEB5A8B727009A26412CE4FD8A501BFCE64A4CF2041A67010D"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyMethodBinding.cs",
+      "sha256": "21E724701D59D355E60C82E31F7DF5D8BDD410F37DC256F8F8C1DF202C2D95F2"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyMethodDecorators.cs",
+      "sha256": "1E84C033363FF7F8FF1BC0B7CAFDE231A782C9E6027CC8BBA39A667A28D8F517"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyModernTyping.cs",
+      "sha256": "45CDAD771394C859419499EAF30DAA5518B670615CAD0037344B2E772B5ADF40"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyModule.cs",
+      "sha256": "AE5E43851E2FAD902F69D5F757C2345E22432F3DCD94A6617D21F63CD6285B32"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyNamedTupleAndChainMap.cs",
+      "sha256": "330933AE1844EF9296A60485AE2CCED5BCF90AA3A2EB0EFDD3EC70C54D062385"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyNone.cs",
+      "sha256": "EE5F70C6444F743DB4B3984BC332820AC697A1C7F65F6E4D3072928849E3EEA5"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyNotImplemented.cs",
+      "sha256": "D54AB59FACB37787E805CAAC4A22D05FB9B189D5519745DBB5BE2A0CE5A2405C"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyNotIterableException.cs",
+      "sha256": "2594DDF3F759244E1CB0A009310B9243BA400D4D03B7F3201A178F6EE80B5E66"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyPath.cs",
+      "sha256": "1FC01CB22960DA6B1A6696941B894F0892F754CAD64DFDAD38E4F20863F50CC5"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyProperty.cs",
+      "sha256": "D1BC10101DEC4DBDCEAACCD3304E53360EB84E427BFF33C57F5D9AF0B5AD7872"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyRandomState.cs",
+      "sha256": "B6FB8E05E6B74FAE9F85BFBE30266110455CDA30968AD6AA0727A927F7414F85"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyRendering.cs",
+      "sha256": "C8E97F3458803ADC8980764BD8DDE55309D448A4A2320DAAB8EBC37791BF9A72"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PySequenceIterator.cs",
+      "sha256": "84BD6295320727864530F6E17C0F972F12B9753BD18FAFA54A92CABBC98713AD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PySequenceMaterialization.cs",
+      "sha256": "B1CB18898860C062797DC7097E51EC1EA540AC2733D8390509176D9E15311E31"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PySet.cs",
+      "sha256": "1FC4311BD88811D3A068EC597A7584545288C761F45B721B6921BA31D44D5F36"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PySlice.cs",
+      "sha256": "DB58BFC27746067ACB47C7AB53E59CD712E07A577F6A14AE065DC63A342BC3FD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyStableSort.cs",
+      "sha256": "69E0CF7C67BA5AD7CB8DFA380C69000188693001429C1E859BFCC047098E9F55"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyStructuralGuard.cs",
+      "sha256": "F09FA226C703B7FF9A2EB1E006F3FF109FA9A91C7F8A73487CBD830EA4C9A61E"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PySuper.cs",
+      "sha256": "3D40122C5385FA0664339CD360EA835ECCB7827DEAA2D5B358298550B8F4ACF1"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyTextStream.cs",
+      "sha256": "122B0643722FE6CC7410E2D663BE91303E9D2A6767EA56F40932A80C5F38E6BA"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PythonExceptionIdentity.cs",
+      "sha256": "D8BE54263E5AED44BBD54C5BB61DE56927D9CD3A3AD2D33BBCAC96B8F6183587"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyTruthiness.cs",
+      "sha256": "14089C330541D89D1AB1839B909660527106628D45F9523413EBF5E861C94E87"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyTuple.cs",
+      "sha256": "B6E193608C1AD2EEA87272B3323B3AFB7650B0F974E874EE931A261EDC7BC885"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyTupleLike.cs",
+      "sha256": "5AC2F41A8182284099A4AE0AFCFE0C06E2F79561EBA79C062F13BBDEF4CA1D57"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyType.cs",
+      "sha256": "92EFAEBCE402C2A21CEA884AFE65F844C840F353026CF9E0D24E844AF4FDAC01"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyTyping.cs",
+      "sha256": "583403F34499564BB602583813577EB8588A04B6C77879BEF30CA35F8E973BD4"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyUnhashableException.cs",
+      "sha256": "A3D93D5A364AE3E8BDF59A5F64153BD427C810D236E5834A7EAC9E4F0BB6B193"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyUserIterator.cs",
+      "sha256": "36F07366EB51BE542E23B27EE839AE902D5BF6E8696D835F3250F66576B40252"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyValueComparer.cs",
+      "sha256": "6584C17A70D40EA366B573286D1C85D46B38AD5C841CB4CE56DD4D1AD5635361"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/RegexPatternCache.cs",
+      "sha256": "B5FF9957FA464FAC9822B1D1CA69258C3163E5DF8184681274C15C55ED2A3710"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/RuntimeArgumentValidation.cs",
+      "sha256": "E7EDF3FF2CF92CE3E9BAB05C48F1095AD27EA7FA67BA1989B19B3D46D6E2CB0B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/RuntimeErrors.cs",
+      "sha256": "161A95471ED27CCC656E873EE5484981EA7B618E02F4C1E85D82C9D4C6DB6FA2"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/RuntimeFailureProjection.cs",
+      "sha256": "88CB989A8A3E753469336DAE752867FF5E08214B296D7FB7D35716B66433377F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs",
+      "sha256": "572C80BF64AAB58C295F8670ED1A1AE5BA8A8DF53DC8E3AB4B51BACC66B2AC27"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/GovernedByteBuilder.cs",
+      "sha256": "AAEDC50751E32F5E41D6398A5F4FD94068ED3DCC42977FF64262E9516B8FDECD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/HtmlEntityData.cs",
+      "sha256": "7C60F800F9171C67587951E8ABE0D974CB98C0C5F389CA4B2983C78C66B8DB22"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/HtmlEntityData.Numeric.cs",
+      "sha256": "F8F9BA050C81973BF25883471E0EA694AEEA7658E46DEF3E4F3699EE45BC6BCE"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/PyString.cs",
+      "sha256": "1AF71E95CA079CFB12417362BD6E05964843D5BC132BD22018867F6FF90FF267"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/PyStringOps.Casing.cs",
+      "sha256": "3393C2FD8E94BA10A05EEA487721E6563467A561D45042F1C19E28BCF58EC935"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/PyStringOps.Classify.cs",
+      "sha256": "F06674DAEC7D05CABBF2A7ED112939EAEE9227C8212A81E0353551CF8720111F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/PyStringOps.cs",
+      "sha256": "C60DF2FB2320DBF1311F28071245CF6638E1C9FA1CC71034E726C2AE43571445"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/PyStringOps.Fold.cs",
+      "sha256": "C483C002DB14B179FF6C975F2065EF3924AD8EA9F09DA8CAA22F1146B02B8C4B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/PyStringOps.Formatting.cs",
+      "sha256": "D66BE3EA5D5F1B6DBE32838D152DF309B6C55B47B38D3D57ADD9BF91A305C77F"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs",
+      "sha256": "7D7FDCD0908D19C2D410462986A304A09C2C9E1650AB1EAAA37F5960837C38DD"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/PyStringOps.Printable.cs",
+      "sha256": "5B97AE87640C110D05FD2A5AA1A7C8CBE16B95BB39AF08A8223764D3DFA31042"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/PyStringOps.Sigma.cs",
+      "sha256": "41C315E689A067218969CA38B4DD9D193899A2C5D6B33F56F0EF04967F8D1431"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs",
+      "sha256": "FB81ECFF59C96BA3118BD1225914BB12FBF53BFABA01A917EAE740FC36012268"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/TextLineScanning.cs",
+      "sha256": "FAEC6BFD1A8D55F28F1069F5864185270294F18C740238F994B3E8EE563E659B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Zip/StrictDeflateInflater.cs",
+      "sha256": "DDFCA6B1889F5FDB7D531E37539570DFBE0C66C9CD4033A6794DC3EA1627662B"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Zip/ZipDirectoryReader.cs",
+      "sha256": "64EEE7FFD999AF6462B5F479DB28A60DC84249DB70A9882B00C94A61682E15E5"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Zip/ZipMemberReader.cs",
+      "sha256": "88A2AC8CC388A76782B755A3D78FA243E5F43CA5738E4AA85AB86CBD6315C066"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/Zip/ZipRecordWriter.cs",
+      "sha256": "BE5F5650199D1271527F163FC3CD9F3A3305B72A993C8B7FD7AE69DE7E0A7C86"
+    }
+  ]
+}

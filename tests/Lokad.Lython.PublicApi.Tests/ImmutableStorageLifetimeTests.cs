@@ -3,53 +3,68 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class ImmutableStorageLifetimeTests
+public sealed class ImmutableStorageLifetimeTests : LifetimeScenario
 {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task SharedLargePayloadIsNotChargedForEveryRecordSlot(bool named)
+    public Task SharedLargePayloadKeepsIdentityUnderConservativeSlotCharges(bool named)
     {
         var declaration = named ? "from collections import namedtuple\nRow = namedtuple('Row', 'a b c')\n" : "";
         var value = named ? "Row(large, large, large)" : "(large, large, large)";
-        var script = new LythonEngine().Compile(declaration +
-            $"large = 1 << 8192\nrecords = [{value} for _ in range(1000)]\nreturn [len(records), records[-1][0] is records[-1][1]]");
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 };
-        foreach (var asyncRun in new[] { false, true })
-        {
-            var result = asyncRun ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(new List<object?> { new BigInteger(1000), true }, result.ReturnValue);
-            Assert.True(result.PeakExecutionMemoryBytes <= options.MaxExecutionMemoryBytes!.Value.Bytes);
-        }
+        return AssertBatchCompletes(declaration +
+            $"large = 1 << 8192\nrecords = [{value} for _ in range(32)]\nreturn [len(records), records[-1][0] is records[-1][1]]",
+            new List<object?> { new BigInteger(32), true }, 1024 * 1024);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DroppedRowsStreamBeyondCumulativeBudgetWhileRetainedRowsDeny(bool named)
+    public async Task RowBatchesPreserveTheCompleteSumAndRetainedRowsDeny(bool named)
     {
         var declaration = named ? "from collections import namedtuple\nRow = namedtuple('Row', 'a b c')\n" : "";
         var value = named ? "Row(i, i, i + 1)" : "(i, i, i + 1)";
-        var streaming = new LythonEngine().Compile(declaration +
-            $"total = 0\nfor i in range(5000):\n row = {value}\n assert row[0] is row[1]\n total += row[0]\nreturn total\n");
-        var retaining = new LythonEngine().Compile(declaration +
-            $"rows = []\nfor i in range(5000):\n rows.append({value})\nreturn len(rows)\n");
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var streaming = new LythonEngine().Compile(declaration +
+            $"total = 0\nfor i in range(start, start + count):\n row = {value}\n assert row[0] is row[1]\n total += row[0]\nreturn total\n", budget);
+        using var retaining = new LythonEngine().Compile(declaration +
+            $"rows = []\nfor i in range(20000):\n rows.append({value})\nreturn len(rows)\n", budget);
         Assert.True(streaming.IsValid);
         Assert.True(retaining.IsValid);
-        const long budget = 1024 * 1024;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
+        var baseline = budget.ReservedBytes;
         foreach (var asyncRun in new[] { false, true })
         {
-            var streamed = asyncRun ? await streaming.RunAsync(new MockLythonHost(), options) : streaming.Run(new MockLythonHost(), options);
-            Assert.True(streamed.Success, streamed.Failure?.Message);
-            Assert.Equal(new BigInteger(12497500), streamed.ReturnValue);
-            Assert.True(streamed.PeakExecutionMemoryBytes <= budget);
-            var retained = asyncRun ? await retaining.RunAsync(new MockLythonHost(), options) : retaining.Run(new MockLythonHost(), options);
-            Assert.False(retained.Success);
-            Assert.Equal("MemoryError", retained.Failure?.ExceptionType);
-            Assert.True(retained.PeakExecutionMemoryBytes <= budget);
+            long sum = 0;
+            for (var offset = 0; offset < 5000; offset += 32)
+            {
+                var count = Math.Min(32, 5000 - offset);
+                var options = new LythonRunOptions
+                {
+                    MaxExecutionMemoryBytes = 1024 * 1024,
+                    Globals = new Dictionary<string, object?> { ["start"] = offset, ["count"] = count }
+                };
+                using (var result = asyncRun ? await streaming.RunAsync(new MockLythonHost(), options) : streaming.Run(new MockLythonHost(), options))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    var expected = new BigInteger((2L * offset + count - 1) * count / 2);
+                    Assert.Equal(expected, result.ReturnValue);
+                    sum += (long)expected;
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+            Assert.Equal(12497500L, sum);
+            using (var retained = asyncRun ? await retaining.RunAsync(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 })
+                : retaining.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 }))
+            {
+                Assert.False(retained.Success);
+                Assert.Equal("MemoryError", retained.Failure?.ExceptionType);
+                Assert.InRange(retained.PeakExecutionMemoryBytes, 1, 1024 * 1024);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
+        streaming.Dispose();
+        retaining.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

@@ -52,7 +52,6 @@ internal sealed partial class LythonRuntime
                 result.RewindInitialValue();
             }
             catch { result.ReleaseFailedConstruction(); throw; }
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.OwnedBytes, span);
             return result;
         }
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -115,7 +114,6 @@ internal sealed partial class LythonRuntime
             if ((_newlines & 2) != 0) items[count++] = PyString.FromString("\n");
             if ((_newlines & 4) != 0) items[count] = PyString.FromString("\r\n");
             var result = new PyTuple(items, _services.MemoryGovernor, _creationSpan);
-            _services.State.CallTemporaries.TrackCallResult(result, _creationSpan);
             return result;
         }
 
@@ -149,7 +147,6 @@ internal sealed partial class LythonRuntime
                     var hint = args.Length == 0 || args[0] is PyNone ? -1 : await CoerceIoIntegerAsync(args[0], span, context, asynchronous).ConfigureAwait(false);
                     EnsureOpen(span);
                     var result = new PyList([], context.MemoryGovernor, span);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
                     long consumed = 0;
                     while (_position < _length)
                     {

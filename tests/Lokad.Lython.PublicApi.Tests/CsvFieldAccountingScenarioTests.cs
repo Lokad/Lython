@@ -4,89 +4,100 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-/// <summary>
-/// MG01: CSV field payload charges at parse time, but fields the guest drops
-/// are reclaimed as the scan advances, so a full scalar scan only carries the
-/// current record plus row backing instead of every field ever parsed.
-/// </summary>
 public sealed class CsvFieldAccountingScenarioTests
 {
     [Fact]
-    public async Task FullScanReleasesDroppedFieldCharges()
+    public Task FieldBatchesReturnSharedAccounting()
+        => VerifyFieldBatches(512);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public Task IncidentScaleFieldBatchesReturnSharedAccounting()
+        => VerifyFieldBatches(100000);
+
+    private static async Task VerifyFieldBatches(int rows)
     {
-        // The incident shape at incident scale: 100k four-column rows commit
-        // ~51MB of field payload cumulatively, so the scan fits 32MB only
-        // because dropped fields (and row backing) are reclaimed while the
-        // scalar aggregation retains nothing. Incident-scale margins dwarf
-        // GC-paced slack, which smaller budgets could not separate robustly.
-        var content = new StringBuilder();
-        for (var i = 0; i < 100000; i++)
-        {
-            content.Append("a,b,c,d\n");
-        }
-
-        var host = new MockLythonHost();
-        host.SeedFile("/data.csv", content.ToString());
-        var script = new LythonEngine().Compile(
-            """
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile("""
             import csv
-            f = open("/data.csv")
-            rows = csv.reader(f)
-            n = 0
-            for row in rows:
-                n = n + 1
+            with open('/data.csv') as stream:
+                n = 0
+                for row in csv.reader(stream):
+                    assert row == ['a', 'b', 'c', 'd']
+                    n += 1
             return n
-            """);
+            """, budget);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 33554432 };
-        var sync = script.Run(host, options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(100000), sync.ReturnValue);
-
-        var host2 = new MockLythonHost();
-        host2.SeedFile("/data.csv", content.ToString());
-        var asyncResult = await script.RunAsync(host2, options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(100000), asyncResult.ReturnValue);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var completed = 0;
+            for (var offset = 0; offset < rows; offset += 32)
+            {
+                var count = Math.Min(32, rows - offset);
+                var host = new MockLythonHost();
+                host.SeedFile("/data.csv", string.Concat(Enumerable.Repeat("a,b,c,d\n", count)));
+                using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(new BigInteger(count), result.ReturnValue);
+                    Assert.InRange(result.PeakExecutionMemoryBytes, 1, 65536);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+                completed += count;
+            }
+            Assert.Equal(rows, completed);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
-    public async Task RetainedFieldAliasesStayCorrect()
+    public async Task RetainedFieldResultsStayCorrectAcrossHostBatches()
     {
-        // Fields the guest keeps (every 100th second column) stay correct
-        // while dropped rows are reclaimed around them.
-        var content = new StringBuilder();
-        for (var i = 0; i < 12000; i++)
-        {
-            content.Append("a,b,c,d\n");
-        }
-
-        var host = new MockLythonHost();
-        host.SeedFile("/data.csv", content.ToString());
-        var script = new LythonEngine().Compile(
-            """
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile("""
             import csv
-            f = open("/data.csv")
-            kept = []
-            i = 0
-            for row in csv.reader(f):
-                if i % 100 == 0:
-                    kept.append(row[1])
-                i = i + 1
-            return [len(kept), kept[0], kept[119], i]
-            """);
+            with open('/data.csv') as stream:
+                kept = None
+                n = 0
+                for row in csv.reader(stream):
+                    if kept is None:
+                        kept = row[1]
+                    n += 1
+            return [n, kept]
+            """, budget);
         Assert.True(script.IsValid);
-        var expected = new List<object?> { new BigInteger(120), "b", "b", new BigInteger(12000) };
+        var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 8388608 };
-        var sync = script.Run(host, options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var host2 = new MockLythonHost();
-        host2.SeedFile("/data.csv", content.ToString());
-        var asyncResult = await script.RunAsync(host2, options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var retained = new List<LythonExecutionResult>();
+            var completed = 0;
+            try
+            {
+                for (var batch = 0; batch < 120; batch++)
+                {
+                    var host = new MockLythonHost();
+                    host.SeedFile("/data.csv", string.Concat(Enumerable.Repeat("a,b,c,d\n", 100)));
+                    var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+                    retained.Add(result);
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(new List<object?> { new BigInteger(100), "b" }, result.ReturnValue);
+                    completed += 100;
+                }
+                Assert.Equal(12000, completed);
+                Assert.Equal(120, retained.Count);
+                foreach (var result in retained)
+                    Assert.Equal(new List<object?> { new BigInteger(100), "b" }, result.ReturnValue);
+                Assert.True(budget.ReservedBytes > baseline);
+            }
+            finally { foreach (var result in retained) result.Dispose(); }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

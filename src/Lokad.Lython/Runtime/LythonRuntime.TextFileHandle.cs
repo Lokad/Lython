@@ -123,7 +123,6 @@ internal sealed partial class LythonRuntime
 
             private static TextFileHandle RegisterOwnership(TextFileHandle handle)
             {
-                handle._services.State.CallTemporaries.TrackFreshMutable(handle, FileHandleValueBytes);
                 return handle;
             }
 
@@ -243,7 +242,6 @@ internal sealed partial class LythonRuntime
 
                 return ChunkedTextFileReadState.DefaultWindowBytes;
             }
-
 
             public static TextFileHandle ForWrite(string path, ExecutionContext context)
                 => ForWrite(path, context, TextEncodingMode.Utf8, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);

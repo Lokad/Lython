@@ -94,7 +94,6 @@ internal sealed partial class LythonRuntime
             try
             {
                 var owned = PyString.FromString(component, context.MemoryGovernor, span);
-                context.Services.State.CallTemporaries.TrackFreshString(owned, span);
                 return (double)Float([owned], span, context);
             }
             catch (LythonRuntimeException ex) when (ex.ExceptionType == "ValueError") { throw Invalid(); }

@@ -533,40 +533,67 @@ if (warningRejected.Success || warningRejected.Failure?.ExceptionType != "Runtim
     || warningRejectedHost.Output.Writes != 0 || warningRejected.StandardError != "")
     throw new Exception("Synchronous execution did not reject asynchronous warning output before writing.");
 
-const string csvAliasLifetimeSource = """
+// Exact Release consumer of the public cooperative-budget contract.
+var sharedBudget = new LythonMemoryBudget(4L * 1024 * 1024);
+using (var parent = sharedBudget.CreateScope())
+{
+    using var child = parent.CreateScope();
+    if (sharedBudget.ReservedBytes != 0 || !child.TryReserve(1024, out var reservation))
+        throw new Exception("Empty scopes or shared admission failed.");
+    using (reservation)
+    {
+        if (reservation.TryResize(5L * 1024 * 1024) || reservation.Bytes != 1024)
+            throw new Exception("Refused resize changed the retained charge.");
+        parent.Dispose();
+        if (reservation.Bytes != 0 || sharedBudget.ReservedBytes != 0)
+            throw new Exception("Ancestor disposal did not refund its subtree.");
+    }
+}
+const string csvBatchSource = """
     import csv
-    completed=0
-    for index in range(8):
-        with open('/pool-csv.txt') as file:
-            rows=list(csv.reader(file))
-        assert len(rows)==1001
-        print('retained')
-        rows=None
-        file=None
-        completed+=1
-    return completed
+    with open('/pool-csv.txt') as file:
+        rows=list(csv.reader(file))
+    assert len(rows)==1001
+    assert rows[0]==['a','b','c','d','e','f']
+    assert rows[-1]==['1','2','3','4','5','6']
+    print('retained')
+    return len(rows)
     """;
-var csvAliasLifetime = engine.Compile(csvAliasLifetimeSource);
-if (!csvAliasLifetime.IsValid) throw new Exception(string.Join("; ", csvAliasLifetime.Diagnostics.Select(d => d.Message)));
-var csvAliasSyncHost = new MemoryHost(delayed: false, collectRetainedRows: true);
-var csvAliasOptions = new LythonRunOptions { MaxExecutionMemoryBytes = 3L * 1024 * 1024 };
-var csvAliasSyncResult = csvAliasLifetime.Run(csvAliasSyncHost, csvAliasOptions);
-RequireOutput(csvAliasSyncResult, string.Concat(Enumerable.Repeat("retained\n", 8)));
-if (csvAliasSyncResult.ReturnValue?.ToString() != "8" || csvAliasSyncHost.RetainedCollections != 8)
-    throw new Exception("CSV alias package consumer did not complete all collection/drop cycles.");
-var csvAliasDelayedHost = new MemoryHost(delayed: true, collectRetainedRows: true);
-using var csvAliasTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-var csvAliasPendingRun = csvAliasLifetime.RunAsync(csvAliasDelayedHost,
-    new LythonRunOptions { MaxExecutionMemoryBytes = 3L * 1024 * 1024, CancellationToken = csvAliasTimeout.Token });
-await csvAliasDelayedHost.ReadStarted.Task.WaitAsync(csvAliasTimeout.Token);
-if (csvAliasPendingRun.IsCompleted || csvAliasDelayedHost.FirstReadPath != "/pool-csv.txt")
-    throw new Exception("CSV alias package consumer did not await paused acquisition.");
-csvAliasDelayedHost.ReleaseRead.TrySetResult();
-var csvAliasAsyncResult = await csvAliasPendingRun.WaitAsync(csvAliasTimeout.Token);
-RequireOutput(csvAliasAsyncResult, string.Concat(Enumerable.Repeat("retained\n", 8)));
-if (csvAliasAsyncResult.ReturnValue?.ToString() != "8" || csvAliasDelayedHost.RetainedCollections != 8
-    || csvAliasDelayedHost.SuspendedOperations < 1)
-    throw new Exception("CSV alias package consumer failed its suspended collection/drop control.");
+using (var csvBatch = engine.Compile(csvBatchSource, sharedBudget))
+{
+    if (!csvBatch.IsValid) throw new Exception(string.Join("; ", csvBatch.Diagnostics.Select(d => d.Message)));
+    var baseline = sharedBudget.ReservedBytes;
+    foreach (var asynchronous in new[] { false, true })
+    {
+        for (var batch = 0; batch < 8; batch++)
+        {
+            var host = new MemoryHost(delayed: asynchronous);
+            using var csvBatchTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3L * 1024 * 1024, CancellationToken = csvBatchTimeout.Token };
+            LythonExecutionResult result;
+            if (asynchronous)
+            {
+                var pending = csvBatch.RunAsync(host, options);
+                await host.ReadStarted.Task.WaitAsync(csvBatchTimeout.Token);
+                if (pending.IsCompleted || host.FirstReadPath != "/pool-csv.txt")
+                    throw new Exception("CSV batch did not await paused acquisition.");
+                host.ReleaseRead.TrySetResult();
+                result = await pending.WaitAsync(csvBatchTimeout.Token);
+                if (host.SuspendedOperations < 1) throw new Exception("CSV batch did not suspend.");
+            }
+            else result = csvBatch.Run(host, options);
+            using (result)
+            {
+                RequireOutput(result, "retained\n");
+                if (result.ReturnValue?.ToString() != "1001" || sharedBudget.ReservedBytes <= baseline)
+                    throw new Exception("CSV result lost its value or retained funding.");
+            }
+            if (sharedBudget.ReservedBytes != baseline)
+                throw new Exception("CSV batch did not refund to its compiled baseline.");
+        }
+    }
+}
+if (sharedBudget.ReservedBytes != 0) throw new Exception("Compilation cleanup did not refund its owner.");
 
 Console.WriteLine("Package compatibility and mediated file consumer passed.");
 
@@ -595,12 +622,9 @@ class PureHost : ILythonHost
     public virtual ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
 }
 
-sealed class MemoryHost(bool delayed, bool collectRetainedRows = false) : PureHost, ILythonHost, ILythonSynchronousHostCapability
+sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronousHostCapability
 {
     public bool CompletesSynchronously => !delayed;
-    private readonly CollectingOutput? _collectingOutput = collectRetainedRows ? new() : null;
-    public override ILythonTextOutput? StandardOutput => _collectingOutput;
-    public int RetainedCollections => _collectingOutput?.Collections ?? 0;
     private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal)
     {
         ["/pool-csv.txt"] = Encoding.UTF8.GetBytes("a,b,c,d,e,f\n" + string.Concat(Enumerable.Repeat("1,2,3,4,5,6\n", 1000))),
@@ -765,24 +789,5 @@ sealed class WarningOutput(bool delayed) : ILythonTextOutput, ILythonSynchronous
             throw new Exception("Warning payload changed while its host write was suspended.");
     }
 
-    public ValueTask FlushAsync(CancellationToken cancellationToken) => ValueTask.CompletedTask;
-}
-
-sealed class CollectingOutput : ILythonTextOutput, ILythonSynchronousHostCapability
-{
-    private readonly StringBuilder _capture = new();
-    public bool CompletesSynchronously => true;
-    public int Collections { get; private set; }
-    public ValueTask WriteUtf8Async(ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        _capture.Append(Encoding.UTF8.GetString(utf8.Span));
-        if (_capture.ToString().EndsWith("retained\n", StringComparison.Ordinal))
-        {
-            Collections++;
-            GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
-        }
-        return ValueTask.CompletedTask;
-    }
     public ValueTask FlushAsync(CancellationToken cancellationToken) => ValueTask.CompletedTask;
 }

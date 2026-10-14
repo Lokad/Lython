@@ -23,6 +23,37 @@ public sealed class LythonEngine
 
     /// <summary>Compiles source and returns both the reusable script and all frontend diagnostics.</summary>
     public LythonCompiledScript Compile(string source)
+        => Compile(source, null);
+
+    /// <summary>
+    /// Compiles under a borrowed budget. The script owns its estimate until
+    /// disposed, including its bounded host-diagnostic cache. Refused admission
+    /// returns an invalid script with a compilation diagnostic.
+    /// </summary>
+    public LythonCompiledScript Compile(string source, ILythonMemoryBudget? memoryBudget)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        var owner = (memoryBudget ?? new LythonMemoryBudget()).CreateScope();
+        // Rough AST/lowered-code capacity plus the four-entry diagnostic cache.
+        // Borrowed source is not copied; this deliberately overestimates.
+        var estimate = RuntimeMemoryEstimates.EstimateCompilationBytes(source.Length);
+        try
+        {
+            if (!owner.TryReserve(estimate, out _))
+            {
+                IReadOnlyList<LythonDiagnostic> denied = [new("LA0008",
+                    "Shared memory budget refused compilation storage.", LythonDiagnosticSeverity.Error, null)];
+                LythonExecutionResult Failure() => LythonExecutionResult.CompilationFailed(1, "", "", denied,
+                    new(LythonFailureReason.SharedMemoryAllowance));
+                return new LythonCompiledScript(source, denied, false, (_, _) => Failure(),
+                    (_, _) => Task.FromResult(Failure())).OwnMemoryScope(owner, memoryBudget);
+            }
+            return CompileCore(source).OwnMemoryScope(owner, memoryBudget);
+        }
+        catch { owner.Dispose(); throw; }
+    }
+
+    private static LythonCompiledScript CompileCore(string source)
     {
         var frontend = LythonFrontend.Compile(source);
         var diagnostics = frontend.Diagnostics;
@@ -131,7 +162,8 @@ public sealed class LythonEngine
         string source,
         ILythonHost host)
     {
-        return Compile(source).Run(host);
+        using var compiled = Compile(source, null);
+        return compiled.Run(host);
     }
 
     /// <summary>Compiles and synchronously runs source with initial globals.</summary>
@@ -140,7 +172,8 @@ public sealed class LythonEngine
         ILythonHost host,
         IReadOnlyDictionary<string, object?> globals)
     {
-        return Compile(source).Run(host, new LythonRunOptions { Globals = globals });
+        using var compiled = Compile(source, null);
+        return compiled.Run(host, new LythonRunOptions { Globals = globals });
     }
 
     /// <summary>Compiles and synchronously runs source with explicit execution options.</summary>
@@ -149,61 +182,68 @@ public sealed class LythonEngine
         ILythonHost host,
         LythonRunOptions options)
     {
-        return Compile(source).Run(host, options);
+        using var compiled = Compile(source, options.MemoryBudget);
+        return compiled.Run(host, options);
     }
 
     /// <summary>Compiles and asynchronously runs source with default options.</summary>
-    public Task<LythonExecutionResult> RunAsync(
+    public async Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host)
     {
-        return Compile(source).RunAsync(host);
+        using var compiled = Compile(source, null);
+        return await compiled.RunAsync(host).ConfigureAwait(false);
     }
 
     /// <summary>Compiles and asynchronously runs source with an external cancellation token.</summary>
-    public Task<LythonExecutionResult> RunAsync(
+    public async Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host,
         CancellationToken cancellationToken)
     {
-        return Compile(source).RunAsync(host, cancellationToken);
+        using var compiled = Compile(source, null);
+        return await compiled.RunAsync(host, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Compiles and asynchronously runs source with initial globals.</summary>
-    public Task<LythonExecutionResult> RunAsync(
+    public async Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host,
         IReadOnlyDictionary<string, object?> globals)
     {
-        return Compile(source).RunAsync(host, globals);
+        using var compiled = Compile(source, null);
+        return await compiled.RunAsync(host, globals).ConfigureAwait(false);
     }
 
     /// <summary>Compiles and asynchronously runs source with initial globals and cancellation.</summary>
-    public Task<LythonExecutionResult> RunAsync(
+    public async Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host,
         IReadOnlyDictionary<string, object?> globals,
         CancellationToken cancellationToken)
     {
-        return Compile(source).RunAsync(host, globals, cancellationToken);
+        using var compiled = Compile(source, null);
+        return await compiled.RunAsync(host, globals, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Compiles and asynchronously runs source with explicit execution options.</summary>
-    public Task<LythonExecutionResult> RunAsync(
+    public async Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host,
         LythonRunOptions options)
     {
-        return Compile(source).RunAsync(host, options);
+        using var compiled = Compile(source, options.MemoryBudget);
+        return await compiled.RunAsync(host, options).ConfigureAwait(false);
     }
 
     /// <summary>Compiles and asynchronously runs source with options and an additional cancellation token.</summary>
-    public Task<LythonExecutionResult> RunAsync(
+    public async Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host,
         LythonRunOptions options,
         CancellationToken cancellationToken)
     {
-        return Compile(source).RunAsync(host, options, cancellationToken);
+        using var compiled = Compile(source, options.MemoryBudget);
+        return await compiled.RunAsync(host, options, cancellationToken).ConfigureAwait(false);
     }
 }

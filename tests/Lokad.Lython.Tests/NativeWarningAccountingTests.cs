@@ -19,7 +19,6 @@ public sealed class NativeWarningAccountingTests
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(length, context.State.StandardError.Length);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(0, context.State.CallTemporaries.Count);
     }
 
     [Fact]
@@ -59,6 +58,5 @@ public sealed class NativeWarningAccountingTests
         Assert.Equal(0, context.State.StandardError.Length);
         Assert.Equal(384, context.MemoryGovernor.CurrentCommittedBytes); // Only the warning registry survives.
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(0, context.State.CallTemporaries.Count);
     }
 }

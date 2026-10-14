@@ -174,7 +174,6 @@ internal sealed partial class LythonRuntime
                 .Any(relationship => IsRelationshipType(relationship, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink")) == true;
         }
 
-
         private static OpenPyxlSaveGuard AddDataOnlySaveGuard(OpenPyxlSaveGuard saveGuard)
         {
             const string reason = "workbook was loaded with data_only=True";
@@ -451,7 +450,6 @@ internal sealed partial class LythonRuntime
 
             return total;
         }
-
 
         private static void ValidateArchiveDirectory(ReadOnlyMemory<byte> payload, ExecutionContext context, LythonSourceSpan span)
         {

@@ -106,8 +106,6 @@ internal sealed partial class LythonRuntime
             result.SetItem(key, value);
             context.ObserveCollectionCount(result.Count, dict.Span);
         }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -128,8 +126,6 @@ internal sealed partial class LythonRuntime
             items.ReleaseUnpublishedStorage();
             throw;
         }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(items, items.CommittedStorageBytes);
         return items;
     }
 
@@ -155,7 +151,6 @@ internal sealed partial class LythonRuntime
             itemScope => result.Add(RuntimeValue(EvaluateLoweredExpression(comprehension.ItemExpression, itemScope))), outer);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -186,8 +181,6 @@ internal sealed partial class LythonRuntime
             result.ReleaseUnpublishedStorage();
             throw;
         }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -208,7 +201,6 @@ internal sealed partial class LythonRuntime
             }, outer);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -524,8 +516,7 @@ internal sealed partial class LythonRuntime
             lambda.GeneratorCode, ScopeDirectiveFactsCollector.ForLambda(lambda.Lambda));
         ChargeFunctionValue(context, lambda.Span);
         ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
-        var closureRetentionBytes = ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
-        TrackFunctionValue(function, loweredParameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes, 0, context, lambda.Span);
+        ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
         RetainLocalsForLambda(context.FunctionClosureContext);
         return function;
     }

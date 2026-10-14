@@ -69,7 +69,6 @@ internal sealed partial class LythonRuntime
                 SplitArguments(arguments, out var standard, out var extras);
                 var bound = CallBinder.BindNamedArguments(standard, span, _signature, PythonCallableKind.Builtin);
                 var result = _implementation(bound, extras, span, context);
-                context.Services.State.CallTemporaries.TrackCallResult(result, span);
                 return result;
             }
 
@@ -81,7 +80,6 @@ internal sealed partial class LythonRuntime
                 var result = _asyncImplementation is null
                     ? _implementation(bound, extras, span, context)
                     : await _asyncImplementation(bound, extras, span, context).ConfigureAwait(false);
-                context.Services.State.CallTemporaries.TrackCallResult(result, span);
                 return result;
             }
 

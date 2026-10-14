@@ -3,15 +3,14 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// MG11: the per-run identity registry owns one entry per distinct live
-// identity (shared across repeated lookups, released with dropped objects);
-// denied insertions strand nothing and recovery works after reclamation.
+// Python id() retains reference-identity semantics. Its metadata estimate stays
+// conservatively owned by the finite execution, not refunded by collection.
 [Collection("AllocationSensitive")]
 public sealed class IdentityRegistryAccountingTests
 {
-    private static LythonRuntime.ExecutionContext NewRoot(long? budget, out MemoryGovernor governor)
+    private static LythonRuntime.ExecutionContext NewRoot(long? budget, out MemoryGovernor governor, ILythonMemoryBudget? shared = null)
     {
-        var root = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = budget });
+        var root = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = budget, MemoryBudget = shared });
         governor = root.MemoryGovernor;
         return root;
     }
@@ -66,7 +65,7 @@ public sealed class IdentityRegistryAccountingTests
             root.State.GetObjectId(key);
         }
 
-        Assert.Equal(1000 * 192 + root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(1000 * 64, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(keys);
     }
@@ -82,7 +81,7 @@ public sealed class IdentityRegistryAccountingTests
             Assert.Equal(first, root.State.GetObjectId(key));
         }
 
-        Assert.Equal(192 + root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(64, governor.CurrentCommittedBytes);
     }
 
     [Fact]
@@ -97,16 +96,18 @@ public sealed class IdentityRegistryAccountingTests
     }
 
     [Fact]
-    public void DroppedIdentitiesRelease()
+    public void CollectedIdentitiesKeepMetadataChargedUntilBatchCleanup()
     {
-        var root = NewRoot(null, out var governor);
-        RegisterMany(root, 1000);
-        Assert.Equal(1000 * 192 + root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        root.State.CallTemporaries.Sweep();
-        Assert.Equal(root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var root = NewRoot(null, out var governor, owner);
+        RegisterMany(root, 16);
+        var funded = budget.ReservedBytes;
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        Assert.Equal(funded, budget.ReservedBytes);
+        Assert.Equal(16 * 64, governor.CurrentCommittedBytes);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
@@ -116,54 +117,51 @@ public sealed class IdentityRegistryAccountingTests
         var failure = Assert.Throws<LythonRuntimeException>(() => root.State.GetObjectId(new object()));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(0, governor.CurrentCommittedBytes);
-        Assert.Equal(0, root.State.CallTemporaries.Count);
     }
 
     [Fact]
-    public void RecoveryWorksAfterReclamation()
+    public void NextExecutionReusesAllowanceAfterIdentityOwnerCleanup()
     {
-        var root = NewRoot(1024, out var governor);
-        var keys = BuildRegistered(root, 5);
-        // Five identities at 192 B each fill 960 B; the sixth denies.
-        Assert.Equal(960 + root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
-        Assert.Throws<LythonRuntimeException>(() => root.State.GetObjectId(new object()));
-        ForgetKeys(keys);
-        keys = null!;
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        root.State.CallTemporaries.Sweep();
-        Assert.Equal(root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
-        root.State.GetObjectId(new object());
-        Assert.Equal(192 + root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
-        Assert.Equal(1, root.State.CallTemporaries.Count);
+        var budget = new LythonMemoryBudget(512);
+        using (var owner = budget.CreateScope())
+        {
+            var root = NewRoot(null, out _, owner);
+            var keys = BuildRegistered(root, 8);
+            Assert.Equal(512, budget.ReservedBytes);
+            Assert.Throws<LythonRuntimeException>(() => root.State.GetObjectId(new object()));
+            ForgetKeys(keys);
+            GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+            Assert.Equal(512, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+        using var next = budget.CreateScope();
+        var resumed = NewRoot(null, out var governor, next);
+        resumed.State.GetObjectId(new object());
+        Assert.Equal(64, governor.CurrentCommittedBytes);
     }
 
     [Fact]
-    public void SecondBoundaryDenialStrandsNothing()
+    public void IdentityShellAdmissionFailureStrandsNothing()
     {
-        // 64 B funds the identity commit but not the pool entry: the whole
-        // registration must fail atomically instead of publishing untracked.
-        var root = NewRoot(64, out var governor);
+        // Admission must fail before publishing a new identity.
+        var root = NewRoot(63, out var governor);
         var failure = Assert.Throws<LythonRuntimeException>(() => root.State.GetObjectId(new object()));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(0, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
-        Assert.Equal(0, root.State.CallTemporaries.Count);
     }
 
     [Fact]
-    public void DeniedRegistrationStaysDenied()
+    public void DeniedIdentityAdmissionStaysDenied()
     {
         // A denied registration publishes nothing, so retrying the same key
         // denies again instead of returning an untracked ID.
-        var root = NewRoot(64, out var governor);
+        var root = NewRoot(63, out var governor);
         var key = new object();
         Assert.Throws<LythonRuntimeException>(() => root.State.GetObjectId(key));
         var retry = Assert.Throws<LythonRuntimeException>(() => root.State.GetObjectId(key));
         Assert.Equal("MemoryError", retry.ExceptionType);
         Assert.Equal(0, governor.CurrentCommittedBytes);
-        Assert.Equal(0, root.State.CallTemporaries.Count);
         GC.KeepAlive(key);
     }
 }

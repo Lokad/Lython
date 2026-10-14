@@ -25,7 +25,7 @@ internal sealed partial class LythonRuntime
                 StringLiteralExpressionSyntax literal => CreateString(literal.Value, context, literal.Span),
                 // MG08: heap-sized integer literals own their magnitude storage like
                 // arithmetic results; inline-range values stay free.
-                IntegerLiteralExpressionSyntax integer => OwnHeapInteger(ParseInteger(integer), context.MemoryGovernor, context.Services.State.CallTemporaries, integer.Span),
+                IntegerLiteralExpressionSyntax integer => OwnHeapInteger(ParseInteger(integer), context.MemoryGovernor, integer.Span),
                 ImaginaryLiteralExpressionSyntax imaginary => PyComplex.Create(0, PyNumberOps.ParseFloat(imaginary.ValueText[..^1]), context, imaginary.Span),
                 FloatLiteralExpressionSyntax floating => ParseFloat(floating),
                 BooleanLiteralExpressionSyntax boolean => boolean.Value,
@@ -88,8 +88,6 @@ internal sealed partial class LythonRuntime
                     var value = RuntimeValue(EvaluateExpression(list.Items[i].Expression, context));
                     AppendListDisplayItem(expanded, value, list.Items[i].IsUnpacking, list.Items[i].Span, list.Span, context);
                 }
-
-                context.Services.State.CallTemporaries.TrackFreshMutable(expanded, expanded.CommittedStorageBytes);
                 return expanded;
             }
 
@@ -101,7 +99,6 @@ internal sealed partial class LythonRuntime
             }
 
             var created = new PyList(items, context.MemoryGovernor, list.Span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(created, created.CommittedStorageBytes);
             return created;
         }
 
@@ -114,7 +111,6 @@ internal sealed partial class LythonRuntime
                     i => RuntimeValue(EvaluateExpression(tuple.Items[i].Expression, context)),
                     context,
                     tuple.Span);
-                context.Services.State.CallTemporaries.TrackFreshMutable(createdTuple, createdTuple.CommittedStorageBytes);
                 return createdTuple;
             }
 
@@ -127,7 +123,6 @@ internal sealed partial class LythonRuntime
 
             context.ObserveCollectionCount(expanded.Count, tuple.Span);
             var expandedTuple = new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(expandedTuple, expandedTuple.CommittedStorageBytes);
             return expandedTuple;
         }
     }

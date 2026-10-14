@@ -69,7 +69,6 @@ internal sealed partial class LythonRuntime
                     operation == TextFileOperation.Append && stat.Exists ? stat.Size : BigInteger.Zero, span);
                 try
                 {
-                    context.State.CallTemporaries.TrackFreshMutable(handle, handle.OwnedBytes, span);
                     if (operation == TextFileOperation.Read)
                         await handle.RefillAsync(span, asynchronous).ConfigureAwait(false);
                     else
@@ -79,8 +78,7 @@ internal sealed partial class LythonRuntime
                 catch
                 {
                     handle.ReleaseBuffers();
-                    // TrackFreshMutable refunds a denied fresh shell. Successful
-                    // registration retains that shell until the abandoned owner is swept.
+                    context.MemoryGovernor.Release(ShellBytes);
                     throw;
                 }
             }
@@ -116,7 +114,6 @@ internal sealed partial class LythonRuntime
                     _writeBuffer.Append(bytes.Bytes.Slice(offset, count));
                     offset += count;
                     _position += count;
-                    ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
                 }
                 return new BigInteger(bytes.Length);
             }
@@ -150,7 +147,6 @@ internal sealed partial class LythonRuntime
                 }
                 _published = true;
                 _writeBuffer.Release();
-                ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
             }
 
             public object Exit()
@@ -180,7 +176,6 @@ internal sealed partial class LythonRuntime
                 _window = [];
                 _windowLength = _windowConsumed = 0;
                 _writeBuffer.Release();
-                ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
             }
 
             object IExecutionFileWriter.Exit(LythonRuntime.ExecutionContext context) => Exit();

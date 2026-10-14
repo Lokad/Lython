@@ -3,13 +3,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// R03a: fresh heap magnitudes produced outside ordinary arithmetic own their
-// payload at the cold production boundary (parses, random draws, enumerated
-// indices, copied host inputs, range bound limbs) and pool-track the box so
-// dropped values reclaim on sweep. Hot arithmetic and store-level retention
-// keep the existing policy for R11/R16; range yields and GetSubscript stay
-// unowned until the shared ownership design lands.
-public sealed class IntegerPayloadOwnershipTests
+public class IntegerPayloadOwnershipTests : LifetimeScenario
 {
 
     private static string Nines(int count) => new string('9', count);
@@ -135,16 +129,8 @@ public sealed class IntegerPayloadOwnershipTests
     }
 
     [Fact]
-    public void DiscardedLoadsReclaimWithoutFalseDenial()
-    {
-        // Cumulative payload is over 4 MiB. A tighter fixed cap forces actual
-        // reclamation instead of depending on when the process GC happens to run.
-        const long cap = 1024 * 1024;
-        var code = "import json\ns = \"7\" * 5000\nfor _ in range(2000):\n json.loads(s)\nreturn 0\n";
-        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
-        Assert.True(result.Success, result.Failure?.Message);
-        Assert.InRange(result.PeakExecutionMemoryBytes, 1, cap);
-    }
+    public Task JsonMagnitudeBatchesReturnSharedAccounting()
+        => AssertBatchCompletes("import json\ns = \"7\" * 5000\nfor _ in range(8):\n json.loads(s)\nreturn 0\n", "0", 1024 * 1024);
 
     [Fact]
     public void RetainedLoadsRejectUnderTheSameFixedCap()
@@ -157,16 +143,16 @@ public sealed class IntegerPayloadOwnershipTests
     }
 
     [Fact]
-    public void AliasedBoxesChargeOnce()
+    public void AliasedBoxesKeepPythonIdentityWithConservativeStorage()
     {
         var payload = Nines(10001);
         var result = new LythonEngine().Run(
-            "x = int(\"" + payload + "\")\nxs = [x, x]\nreturn len(xs)\n",
+            "x = int(\"" + payload + "\")\nxs = [x, x]\nreturn [len(xs), xs[0] is xs[1]]\n",
             new MockLythonHost(),
             new LythonRunOptions { MaxExecutionMemoryBytes = 30000 });
         Assert.True(result.Success, result.Failure?.Message);
-        // One ~4.2KB payload plus entry/backing: far below twice that.
-        Assert.True(result.PeakExecutionMemoryBytes < 10000, $"peak was {result.PeakExecutionMemoryBytes}");
+        Assert.Equal(new List<object?> { new BigInteger(2), true }, result.ReturnValue);
+        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 30000);
     }
 
     [Fact]

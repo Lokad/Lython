@@ -60,12 +60,8 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
     // Governed construction shares snapshotted above; ungoverned types carry nothing.
     internal long CommittedStorageBytes => _committedStorageBytes;
 
-    // Fresh namedtuple types reclaim through the pool once dropped; the constructor
-    // commits the name/fields backing above with no other owner, so adopt the snapshot
-    // with refund on entry denial.
     internal static PyNamedTupleType TrackFreshNamedTupleType(PyNamedTupleType type, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.Services.State.CallTemporaries.TrackFreshMutable(type, type.CommittedStorageBytes, span);
         return type;
     }
 
@@ -132,7 +128,6 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         }
 
         var record = new PyNamedTupleObject(this, values, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(record, record.CommittedStorageBytes);
         return record;
     }
 
@@ -263,7 +258,6 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
             }
 
             var record = _type.CreateFromValues(LythonRuntime.ToSequence(arguments[0].Value, span, context), context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(record, record.CommittedStorageBytes);
             return record;
         }
 
@@ -588,7 +582,6 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
     internal object[] ToArray() => [.. _values];
 
-
     private sealed class BoundNamedTupleAsDict : LythonRuntime.ICallable, IPyRenderableValue
     {
         private readonly PyNamedTupleObject _owner;
@@ -611,8 +604,6 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
             {
                 dict.SetItem(PyString.FromString(_owner._type.FieldNames[i]), _owner._values[i]);
             }
-
-            context.Services.State.CallTemporaries.TrackFreshMutable(dict, dict.CommittedStorageBytes);
             return dict;
         }
 
@@ -655,7 +646,6 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
             }
 
             var record = new PyNamedTupleObject(_owner._type, values, context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(record, record.CommittedStorageBytes);
             return record;
         }
 
@@ -989,13 +979,6 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         return keys;
     }
 
-    // Eager merged-key snapshot with lifetime ownership (R05): reversed-map,
-    // first-seen-wins order matching CPython iteration, per-key collection and
-    // work enforcement, a visit-scale transient for the merge work (shared
-    // layers deny here like the streaming paths), and a durable visit-scale
-    // coupon for the retained slots that trims to the built backing before
-    // publication. Dropped snapshots reclaim through the pool on sweep, so
-    // retained iterators stay charged while abandoned ones release.
     internal List<object> BuildOwnedKeySnapshot(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var governor = OwnerMemoryGovernor;
@@ -1054,8 +1037,6 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                 governor.Release(coupon - exact);
                 coupon = exact;
             }
-
-            context.Services.State.CallTemporaries.TrackFreshMutable(keys, coupon, span);
         }
 
         return keys;
@@ -1125,7 +1106,6 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         }
     }
 
-
     internal bool TryGetMergedValue(object key, [MaybeNullWhen(false)] out object value)
     {
         foreach (var map in _maps)
@@ -1183,7 +1163,6 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             PyDict fellow => fellow.CommittedStorageBytes,
             _ => 0,
         };
-        context.Services.State.CallTemporaries.TrackFreshMutable(copy, backing, span);
         return copy;
     }
 
@@ -1218,7 +1197,6 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             if (argument.IsKeyword)
             {
                 var keyword = PyString.FromString(argument.KeywordName, context.MemoryGovernor, span);
-                context.Services.State.CallTemporaries.TrackFreshString(keyword);
                 first.SetItem(keyword, argument.Value);
             }
         }
@@ -1284,7 +1262,6 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             context.MemoryGovernor.Reserve(64L, span);
             context.MemoryGovernor.Commit(64L);
             var keys = new ChainMapKeysView(_owner);
-            context.Services.State.CallTemporaries.Track(keys, 64L);
             return keys;
         }
     }
@@ -1306,7 +1283,6 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             context.MemoryGovernor.Reserve(64L, span);
             context.MemoryGovernor.Commit(64L);
             var values = new ChainMapValuesView(_owner);
-            context.Services.State.CallTemporaries.Track(values, 64L);
             return values;
         }
     }
@@ -1328,7 +1304,6 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             context.MemoryGovernor.Reserve(64L, span);
             context.MemoryGovernor.Commit(64L);
             var items = new ChainMapItemsView(_owner);
-            context.Services.State.CallTemporaries.Track(items, 64L);
             return items;
         }
     }
@@ -1351,7 +1326,6 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             if (arguments.Length == 0)
             {
                 var fresh = new PyDict(context.MemoryGovernor, span);
-                context.Services.State.CallTemporaries.TrackFreshMutable(fresh, fresh.CommittedStorageBytes);
                 first = fresh;
             }
             else

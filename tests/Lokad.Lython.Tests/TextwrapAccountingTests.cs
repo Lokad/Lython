@@ -12,7 +12,6 @@ public sealed class TextwrapAccountingTests
 
     [Theory]
     [InlineData(8)] // Denied output construction.
-    [InlineData(150)] // Denied registry adoption after construction.
     public void DeniedDedentReleasesScratchAndFreshOutput(long cap)
     {
         var context = Context(cap);
@@ -31,7 +30,6 @@ public sealed class TextwrapAccountingTests
 
     [Theory]
     [InlineData(4)] // Denied builder growth.
-    [InlineData(150)] // Denied registry adoption after construction.
     public async Task DeniedIndentReleasesScratchAndFreshOutput(long cap)
     {
         var context = Context(cap);
@@ -54,9 +52,9 @@ public sealed class TextwrapAccountingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeniedCallbackLineAdoptionRefundsOnlyItsFreshCharge(bool ownedInput)
+    public async Task DeniedCallbackLineAdmissionRunsNoUserPredicate(bool ownedInput)
     {
-        var context = Context(ownedInput ? 300 : 200);
+        var context = Context(ownedInput ? 260 : 129);
         var input = ownedInput ? PyString.FromString("a\nb", context.MemoryGovernor, Span) : PyString.FromString("a\nb");
         var callback = new CountingPredicate();
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -81,8 +79,6 @@ public sealed class TextwrapAccountingTests
     {
         var context = Context(512);
         var input = PyString.FromString("a😀\nb", context.MemoryGovernor, Span);
-        context.Services.State.CallTemporaries.TrackFreshString(input, Span);
-        context.Services.State.CallTemporaries.Sweep(full: true);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 100; attempt++)
         {
@@ -95,15 +91,19 @@ public sealed class TextwrapAccountingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AbandonedResultsReclaimExactOutputAndRegistryCharges(bool indent)
+    public void CollectedResultsStayOwnedUntilBatchCleanup(bool indent)
     {
-        var context = Context(100000);
+        var budget = new LythonMemoryBudget(100000);
+        using var owner = budget.CreateScope();
+        var context = Context(100000, owner);
         var weak = Abandon(context, indent, out var charge);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
         Assert.False(weak.TryGetTarget(out _));
-        context.Services.State.CallTemporaries.Sweep(full: true);
-        Assert.Equal(before - charge - ChargeReclamationPool.EntryChargeBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(before, budget.ReservedBytes);
+        Assert.True(before >= charge);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -128,6 +128,6 @@ public sealed class TextwrapAccountingTests
         }
     }
 
-    private static LythonRuntime.ExecutionContext Context(long cap)
-        => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+    private static LythonRuntime.ExecutionContext Context(long cap, ILythonMemoryBudget? budget = null)
+        => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap, MemoryBudget = budget });
 }

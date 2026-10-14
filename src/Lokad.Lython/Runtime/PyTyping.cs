@@ -129,7 +129,6 @@ internal static class PyTyping
     private static readonly IReadOnlyDictionary<string, PyTypingAlias> Aliases = AliasNames
         .ToDictionary(static name => name, static name => new PyTypingAlias(name), StringComparer.Ordinal);
 
-
     private static readonly IReadOnlyDictionary<string, string> BuiltinOrigins = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         ["List"] = "list",
@@ -394,7 +393,6 @@ internal static class PyTyping
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             => TryGetCallableName("TypeVar", name, out value);
-
 
         public string Name => "typing.TypeVar";
 

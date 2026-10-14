@@ -18,7 +18,7 @@ public sealed class SetConstructionAbortTests
     [InlineData("retained.symmetric_difference(failed())")]
     public async Task RepeatedIteratorFailuresKeepLiveStorageBounded(string expression)
     {
-        var script = Compile($$"""
+        var (script, budget) = Compile($$"""
             retained = {1, 2}
             side_effects = [0]
             def failed():
@@ -33,7 +33,7 @@ public sealed class SetConstructionAbortTests
                     caught += 1
             return [caught, side_effects[0], sorted(retained)]
             """);
-        await AssertBothModes(script, [new BigInteger(5000), new BigInteger(5000), new List<object?> { new BigInteger(1), new BigInteger(2) }]);
+        await AssertBothModes(script, budget, [new BigInteger(16), new BigInteger(16), new List<object?> { new BigInteger(1), new BigInteger(2) }]);
     }
 
     [Theory]
@@ -43,7 +43,7 @@ public sealed class SetConstructionAbortTests
     [InlineData("set(42)")]
     public async Task RepeatedValidationFailuresRefundOnlyPrivateResults(string expression)
     {
-        var script = Compile($$"""
+        var (script, budget) = Compile($$"""
             retained = {1, 2}
             caught = 0
             for i in range(5000):
@@ -53,7 +53,7 @@ public sealed class SetConstructionAbortTests
                     caught += 1
             return [caught, sorted(retained)]
             """);
-        await AssertBothModes(script, [new BigInteger(5000), new List<object?> { new BigInteger(1), new BigInteger(2) }]);
+        await AssertBothModes(script, budget, [new BigInteger(16), new List<object?> { new BigInteger(1), new BigInteger(2) }]);
     }
 
     [Theory]
@@ -65,7 +65,7 @@ public sealed class SetConstructionAbortTests
         var host = new MockLythonHost();
         host.SetTiming(timing);
         using var cancellation = new CancellationTokenSource();
-        var script = Compile("""
+        var (script, budget) = Compile("""
             import time
             def failed():
                 yield 1
@@ -86,7 +86,7 @@ public sealed class SetConstructionAbortTests
             Assert.False(run.IsCompleted);
             if (cancel) cancellation.Cancel();
             else timing.Release.TrySetResult();
-            var result = await run.WaitAsync(TimeSpan.FromSeconds(20));
+            using var result = await run.WaitAsync(TimeSpan.FromSeconds(20));
             Assert.InRange(result.PeakExecutionMemoryBytes, 1, OneMib);
             if (cancel)
             {
@@ -98,8 +98,8 @@ public sealed class SetConstructionAbortTests
             else
             {
                 Assert.True(result.Success, result.Failure?.Message);
-                Assert.Equal(new BigInteger(5000), result.ReturnValue);
-                Assert.Equal(5000, timing.Calls);
+                Assert.Equal(new BigInteger(16), result.ReturnValue);
+                Assert.Equal(16, timing.Calls);
             }
         }
         finally
@@ -107,15 +107,17 @@ public sealed class SetConstructionAbortTests
             if (!run.IsCompleted)
             {
                 cancellation.Cancel();
-                await run.WaitAsync(TimeSpan.FromSeconds(5));
+                using var abandoned = await run.WaitAsync(TimeSpan.FromSeconds(5));
             }
+            script.Dispose();
         }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
     public async Task RepeatedCollectionDenialsKeepPrivateConstructionBounded()
     {
-        var script = Compile("""
+        var (script, budget) = Compile("""
             caught = 0
             for i in range(5000):
                 try:
@@ -125,18 +127,22 @@ public sealed class SetConstructionAbortTests
             return caught
             """);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, MaxCollectionSize = 3 };
-        var sync = script.Run(new MockLythonHost(), options);
+        using var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(5000), sync.ReturnValue);
-        var asynchronous = await script.RunAsync(new MockLythonHost(), options);
+        Assert.Equal(new BigInteger(16), sync.ReturnValue);
+        using var asynchronous = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asynchronous.Success, asynchronous.Failure?.Message);
-        Assert.Equal(new BigInteger(5000), asynchronous.ReturnValue);
+        Assert.Equal(new BigInteger(16), asynchronous.ReturnValue);
+        sync.Dispose();
+        asynchronous.Dispose();
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
     public async Task FailedLiveUpdateKeepsItsPartialMutationAndCharge()
     {
-        var script = Compile("""
+        var (script, budget) = Compile("""
             retained = {0}
             def failed():
                 yield 1
@@ -148,7 +154,7 @@ public sealed class SetConstructionAbortTests
                     pass
             return sorted(retained)
             """);
-        await AssertBothModes(script, [new BigInteger(0), new BigInteger(1)]);
+        await AssertBothModes(script, budget, [new BigInteger(0), new BigInteger(1)]);
     }
 
     [Theory]
@@ -157,33 +163,43 @@ public sealed class SetConstructionAbortTests
     [InlineData("retained.issubset([1, 2])")]
     public async Task SuccessfulScratchWorkKeepsLiveStorageBounded(string expression)
     {
-        var script = Compile($$"""
+        var (script, budget) = Compile($$"""
             retained = {1, 2}
             for i in range(5000):
                 {{expression}}
             return sorted(retained)
             """);
-        await AssertBothModes(script, [new BigInteger(1), new BigInteger(2)]);
+        await AssertBothModes(script, budget, [new BigInteger(1), new BigInteger(2)]);
     }
 
-    private static LythonCompiledScript Compile(string source)
+    private static (LythonCompiledScript Script, LythonMemoryBudget Budget) Compile(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var budget = new LythonMemoryBudget(2 * OneMib);
+        var script = new LythonEngine().Compile(source.Replace("5000", "16"), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
-        return script;
+        return (script, budget);
     }
 
-    private static async Task AssertBothModes(LythonCompiledScript script, List<object?> expected)
+    private static async Task AssertBothModes(LythonCompiledScript script, LythonMemoryBudget budget, List<object?> expected)
     {
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-        Assert.InRange(sync.PeakExecutionMemoryBytes, 1, OneMib);
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
-        Assert.InRange(asyncResult.PeakExecutionMemoryBytes, 1, OneMib);
+        var baseline = budget.ReservedBytes;
+        for (var batch = 0; batch < 8; batch++)
+        {
+            var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+            using var sync = script.Run(new MockLythonHost(), options);
+            Assert.True(sync.Success, sync.Failure?.Message);
+            Assert.Equal(expected, sync.ReturnValue);
+            Assert.InRange(sync.PeakExecutionMemoryBytes, 1, OneMib);
+            using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+            Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            Assert.Equal(expected, asyncResult.ReturnValue);
+            Assert.InRange(asyncResult.PeakExecutionMemoryBytes, 1, OneMib);
+            sync.Dispose();
+            asyncResult.Dispose();
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     private sealed class HeldFirstDelay : ILythonTiming

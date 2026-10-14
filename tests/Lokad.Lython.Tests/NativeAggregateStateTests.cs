@@ -135,29 +135,6 @@ public sealed class NativeAggregateStateTests
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(true, true)]
-    public async Task ResultRegistrationKeepsOperationFundingUntilCompletion(bool asynchronous, bool fail)
-    {
-        var context = Context();
-        var sum = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["sum"]);
-        var value = new RegisteredValue(context, fail);
-        CallArgumentValue[] arguments = [CallArgumentValue.Positional(new PyList()), CallArgumentValue.Positional(value)];
-        if (fail)
-        {
-            var failure = asynchronous ? await Assert.ThrowsAsync<InvalidOperationException>(async () => await sum.InvokeAsync(arguments, Span, context))
-                : Assert.Throws<InvalidOperationException>(() => sum.Invoke(arguments, Span, context));
-            Assert.Equal("controlled registration failure", failure.Message);
-        }
-        else Assert.Same(value, asynchronous ? await sum.InvokeAsync(arguments, Span, context) : sum.Invoke(arguments, Span, context));
-        Assert.True(value.Checked);
-
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-    }
-
-    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task IteratorFailureRefundsOperationWithoutReplacingTheExecutableFrame(bool asynchronous)
@@ -208,19 +185,6 @@ public sealed class NativeAggregateStateTests
         {
             await Task.Yield();
             return Invoke(arguments, span, context);
-        }
-    }
-
-    private sealed class RegisteredValue(LythonRuntime.ExecutionContext context, bool fail) : IPyOwnershipSnapshot
-    {
-        internal bool Checked;
-        public bool TrySnapshotOwnership(out long chargeBytes)
-        {
-            Assert.True(context.MemoryGovernor.CurrentReservedBytes >= 128);
-            Checked = true;
-            if (fail) throw new InvalidOperationException("controlled registration failure");
-            chargeBytes = 0;
-            return false;
         }
     }
 

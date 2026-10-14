@@ -76,4 +76,12 @@ public sealed record LythonSubprocessRequest(
     LythonSubprocessTextEncoding TextEncoding,
     LythonSubprocessTextErrorMode TextErrorMode,
     TimeSpan? Timeout,
-    LythonSubprocessOutputLimit? OutputLimit);
+    LythonSubprocessOutputLimit? OutputLimit)
+{
+    /// <summary>
+    /// Gets the borrowed active memory budget for cooperating host commands.
+    /// The dispatcher may create child scopes and must await all command users
+    /// and cleanup before disposing them or completing the request.
+    /// </summary>
+    public ILythonMemoryBudget? MemoryBudget { get; init; }
+}

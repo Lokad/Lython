@@ -25,13 +25,12 @@ public sealed class ListNumericStoragePolicyTests
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         object value = BigInteger.One << 4000;
-        LythonRuntime.OwnFreshInteger(value, context.MemoryGovernor, context.Services.State.CallTemporaries, null);
+        LythonRuntime.OwnFreshInteger(value, context.MemoryGovernor, null);
         var backing = new PyList([], context.MemoryGovernor).CommittedStorageBytes;
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var list = new PyList([value, value], context.MemoryGovernor);
         Assert.Equal(backing + 128, list.CommittedStorageBytes);
         Assert.Equal(list.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes - before);
-        Assert.True(context.Services.State.CallTemporaries.IsTracked(value));
         GC.KeepAlive(value);
     }
 

@@ -19,11 +19,11 @@ public sealed class ImportExportedEntryAccountingScenarioTests
     private const long GlobalsBudgetBytes = 400000;
     private const long AddsBudgetBytes = 32000;
 
-    private static MockLythonHost SeededBigHost(out HashSet<string> allowed)
+    private static MockLythonHost SeededBigHost(out HashSet<string> allowed, int count = 20000)
     {
         var host = new MockLythonHost();
         var content = new StringBuilder();
-        for (var i = 0; i < GlobalCount; i++)
+        for (var i = 0; i < count; i++)
         {
             content.Append("v").Append(i).Append(" = 1\n");
         }
@@ -64,21 +64,28 @@ public sealed class ImportExportedEntryAccountingScenarioTests
     }
 
     [Fact]
-    public async Task RoomyManyGlobalsSucceed()
+    public async Task FundedFiniteExportsSucceedWithCompilationHeadroom()
     {
-        var host = SeededBigHost(out var allowed);
-        var script = new LythonEngine().Compile("import big\nreturn big.v19999\n");
+        var host = SeededBigHost(out var allowed, count: 32);
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile("import big\nreturn big.v31\n", budget);
+        var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576, AllowedLocalModules = allowed };
         var expected = new BigInteger(1);
-        var sync = script.Run(host, options);
+        using var sync = script.Run(host, options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
 
-        var host2 = SeededBigHost(out var allowed2);
-        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = 1048576, AllowedLocalModules = allowed2 });
+        var host2 = SeededBigHost(out var allowed2, count: 32);
+        using var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = 1048576, AllowedLocalModules = allowed2 });
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
+        sync.Dispose();
+        asyncResult.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

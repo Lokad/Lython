@@ -12,7 +12,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     private const long EntryStorageBytes = 128;
     // Wrapped storage keeps its charged owner alive through escaped views and
     // iterators. All storage mutations refresh that one existing snapshot.
-    internal IPyOwnershipSnapshot? StorageOwner { get; set; }
 
     // Protocol-key side table (R13b): keys needing __hash__/__eq__ dispatch
     // bypass Dictionary probing (which cannot run guest code) and scan with
@@ -93,8 +92,8 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     object IChainMapSource.Underlying => this;
 
-    // Current committed backing charges, for pooled owners that release them
-    // if this dictionary is dropped without wholesale storage replacement.
+    // Current backing funding for unpublished rollback and explicit replacement.
+    // Dropping a guest reference does not refund this batch-owned storage.
     // Every retained pair carries the same small-value headroom. Larger payloads
     // keep their separate owners; aliases never require identity bookkeeping.
     internal long CommittedStorageBytes => _items.CommittedBytes + _protocolBytes + (_sideIndex?.CommittedBytes ?? 0) + _entryStorageBytes;
@@ -252,7 +251,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 _version++;
             }
             else _memoryGovernor?.ReleaseReserved(entryBytes);
-            NoteGrowth(committedBefore);
         }
     }
 
@@ -308,7 +306,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             RemoveProtocolShadow(key);
             ReleaseEntryStorage();
             _version++;
-            NoteGrowth(committedBefore);
             return true;
         }
 
@@ -360,7 +357,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         RemoveProtocolShadow(releaseKey);
         ReleaseEntryStorage();
         _version++;
-        NoteGrowth(committedBefore);
     }
 
     private bool TryRemoveProtocolValue(object key, [MaybeNullWhen(false)] out object value)
@@ -711,7 +707,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _memoryGovernor.Reserve(bytes, _allocationSpan);
         _memoryGovernor.Commit(bytes);
         _protocolBytes += bytes;
-        NotifyStorageChanged();
     }
 
     private void ReleaseSideBytes(long bytes)
@@ -723,7 +718,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         _memoryGovernor.Release(bytes);
         _protocolBytes -= bytes;
-        NotifyStorageChanged();
     }
 
     // Protocol insert: update in place wherever the logical key already
@@ -862,7 +856,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 _version++;
             }
             else _memoryGovernor?.ReleaseReserved(bytes);
-            NoteGrowth(committedBefore);
         }
     }
 
@@ -947,7 +940,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                     _items.Remove(ToStorageKey(pair.Key));
                     RemoveProtocolShadow(pair.Key);
                     ReleaseEntryStorage();
-                    NoteGrowth(committedBefore);
                     return true;
                 }
             }
@@ -1001,7 +993,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         if (!_items.Remove(ToStorageKey(key))) return;
         ReleaseEntryStorage();
         RemoveProtocolShadow(key);
-        NotifyStorageChanged();
     }
 
     public bool TryRemoveLast([MaybeNullWhen(false)] out object key, [MaybeNullWhen(false)] out object value)
@@ -1042,10 +1033,8 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             _protocol = null;
             _protocolBytes = 0;
             ReleaseAllEntryStorage();
-            NotifyStorageChanged();
             return;
         }
-
 
         _version++;
         if (_memoryGovernor is not null)
@@ -1062,7 +1051,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             _items = PyDictStorage.Create(0, _memoryGovernor, _allocationSpan);
             _protocol = null;
             _protocolBytes = 0;
-            NotifyStorageChanged();
             return;
         }
 
@@ -1272,26 +1260,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 _version++;
             }
             else _memoryGovernor?.ReleaseReserved(entryBytes);
-            NoteGrowth(committedBefore);
         }
-    }
-
-    // Refreshes the tracked snapshot when the owned total moved (storage or
-    // entry allowances): a stale snapshot would over-release on a later drop sweep.
-    private void NoteGrowth(long committedBefore)
-    {
-        if (CommittedStorageBytes != committedBefore)
-        {
-            NotifyStorageChanged();
-        }
-    }
-
-    private void NotifyStorageChanged()
-    {
-        var owner = StorageOwner;
-        var bytes = CommittedStorageBytes;
-        if (owner is not null && owner.TrySnapshotOwnership(out var ownerBytes)) bytes = ownerBytes;
-        ChargeReclamationPool.NotifyStorageReplaced(owner ?? (object)this, bytes);
     }
 
     private void ChargeInitialEntries()

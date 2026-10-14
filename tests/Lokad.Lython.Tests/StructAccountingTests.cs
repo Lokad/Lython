@@ -84,9 +84,7 @@ public sealed class StructAccountingTests
 
     [Theory]
     [InlineData(128)]
-    [InlineData(200)]
-    [InlineData(330)]
-    public void TupleCouponAndRegistryDenialsRefund(long cap)
+    public void TupleStorageDenialsRefundUnusedAdmission(long cap)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -103,7 +101,7 @@ public sealed class StructAccountingTests
     [Fact]
     public void IteratorDenialRefundsAndDoesNotDecodeRecords()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 200 });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 127 });
         for (var attempt = 0; attempt < 25; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() => Callable("iter_unpack").Invoke(
@@ -121,11 +119,11 @@ public sealed class StructAccountingTests
         var iterator = Assert.IsAssignableFrom<IPyIteratorValue>(Callable("iter_unpack").Invoke(
             Arguments(PyString.FromString(">20d"), new PyBytes(new byte[160])), Span, context));
         var before = context.MemoryGovernor.CurrentCommittedBytes;
-        var backingBefore = context.State.CallTemporaries.CommittedBackingBytes;
+        var backingBefore = 0;
         for (var attempt = 0; attempt < 20; attempt++)
         {
             Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() => iterator.TryMoveNext(out _)).ExceptionType);
-            Assert.Equal(before + context.State.CallTemporaries.CommittedBackingBytes - backingBefore,
+            Assert.Equal(before - backingBefore,
                 context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }

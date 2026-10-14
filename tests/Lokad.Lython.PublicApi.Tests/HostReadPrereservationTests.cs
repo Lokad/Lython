@@ -85,43 +85,43 @@ public sealed class HostReadPrereservationTests
     }
 
     [Fact]
-    public async Task DroppedLinesCompleteWhileStreaming()
+    public async Task HostBatchesReadAllLinesWithoutWholeFileTransfers()
     {
-        // MG21: streaming opens check the execution budget before the host
-        // allocates and transfers each window (no whole-file prereserve), and
-        // dropped line charges release through pool relief, so a bounded
-        // streaming scan completes: every ranged call stays small and the
-        // windows cover the file exactly once.
-        var script = new LythonEngine().Compile(
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(
             """
             total = 0
             with open("/data.txt") as f:
                 for line in f:
                     total = total + len(line)
             return total
-            """);
+            """, budget);
         Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
-        var expected = new BigInteger(100000);
-        var host = new CountingHost();
-        host.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string((char)121, 999) + "\n", 100)));
-        var sync = script.Run(host, options);
-        Assert.True(sync.Success, sync.Success ? null : StreamingFailureDetails("sync", sync, host));
-        Assert.Equal(expected, sync.ReturnValue);
-        Assert.Equal(0, host.TextReads);
-        Assert.True(host.TextRangeReads > 1);
-        Assert.True(host.TextRangeBytes == 100000);
-        Assert.True(host.MaxTextRangeBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
-
-        var host2 = new CountingHost();
-        host2.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string((char)121, 999) + "\n", 100)));
-        var asyncResult = await script.RunAsync(host2, options);
-        Assert.True(asyncResult.Success, asyncResult.Success ? null : StreamingFailureDetails("async", asyncResult, host2));
-        Assert.Equal(expected, asyncResult.ReturnValue);
-        Assert.Equal(0, host2.TextReads);
-        Assert.True(host2.TextRangeReads > 1);
-        Assert.True(host2.TextRangeBytes == 100000);
-        Assert.True(host2.MaxTextRangeBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var host = new CountingHost();
+            BigInteger total = 0;
+            for (var start = 0; start < 100; start += 8)
+            {
+                var count = Math.Min(8, 100 - start);
+                host.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string('y', 999) + "\n", count)));
+                using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+                {
+                    Assert.True(result.Success, StreamingFailureDetails("batch", result, host));
+                    total += Assert.IsType<BigInteger>(result.ReturnValue);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+            Assert.Equal(new BigInteger(100000), total);
+            Assert.Equal(0, host.TextReads);
+            Assert.True(host.TextRangeReads > 1);
+            Assert.Equal(100000, host.TextRangeBytes);
+            Assert.InRange(host.MaxTextRangeBytes, 1, 16 * 1024);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     private static string StreamingFailureDetails(string phase, LythonExecutionResult result, CountingHost host)
@@ -135,7 +135,7 @@ public sealed class HostReadPrereservationTests
     {
         // MG21: retained line charges still trip mid-stream after several
         // windows: no whole-file transfer ever issues, and acquisition stops
-        // well short of covering the file. Relief must not mask retention.
+        // well short of covering the file. Retained storage remains charged.
         var script = new LythonEngine().Compile(
             """
             lines = []

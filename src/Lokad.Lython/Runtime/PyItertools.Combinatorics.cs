@@ -5,15 +5,8 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PyCombinatoricTuple
 {
-    // Fresh per-item tuples reclaim through the pool once dropped; later funnel
-    // registrations dedup to a no-op. Null keeps ungoverned callers untracked.
     public static PyTuple Create(
-        object[] pool,
-        int[] indices,
-        int count,
-        MemoryGovernor memoryGovernor,
-        LythonSourceSpan span,
-        ChargeReclamationPool? reclamationPool = null)
+        object[] pool,        int[] indices,        int count,        MemoryGovernor memoryGovernor,        LythonSourceSpan span)
     {
         var items = new object[count];
         for (var i = 0; i < count; i++)
@@ -22,16 +15,12 @@ internal static class PyCombinatoricTuple
         }
 
         var created = PyTuple.FromOwnedArray(items, memoryGovernor, span);
-        reclamationPool?.TrackFreshMutable(created, created.CommittedStorageBytes, span);
         return created;
     }
 }
 
 internal static class PyCombinatoricOwnership
 {
-    // Single sources for the per-array charges mirrored in pool coupons: materialized
-    // pools and repeated tables own 64 B plus one slot each, index tables 32 B plus
-    // one int slot each. Factories snapshot the same totals they commit.
     internal static long PoolArrayBytes(long length) => checked(64L + (16L * length));
 
     internal static long IndexArrayBytes(long length) => checked(32L + (4L * length));
@@ -59,9 +48,8 @@ internal sealed class PyProductIterator : PyIteratorBase
     private readonly LythonSourceSpan? _allocationSpan;
     private bool _started;
     private bool _done;
-    private readonly ChargeReclamationPool? _reclamationPool;
 
-    public PyProductIterator(IReadOnlyList<IReadOnlyList<object>> pools, MemoryGovernor? memoryGovernor, LythonSourceSpan? allocationSpan, ChargeReclamationPool? reclamationPool = null)
+    public PyProductIterator(IReadOnlyList<IReadOnlyList<object>> pools,MemoryGovernor? memoryGovernor,LythonSourceSpan? allocationSpan)
     {
         PyIteratorBase.ChargeIteratorValue(memoryGovernor, allocationSpan);
         _pools = pools;
@@ -69,7 +57,6 @@ internal sealed class PyProductIterator : PyIteratorBase
         _indices = new int[pools.Count];
         _memoryGovernor = memoryGovernor;
         _allocationSpan = allocationSpan;
-        _reclamationPool = reclamationPool;
         for (var i = 0; i < pools.Count; i++)
         {
             if (pools[i].Count == 0)
@@ -129,7 +116,6 @@ internal sealed class PyProductIterator : PyIteratorBase
         var created = _memoryGovernor is null
             ? PyTuple.FromOwnedArray(items)
             : PyTuple.FromOwnedArray(items, _memoryGovernor, _allocationSpan);
-        _reclamationPool?.TrackFreshMutable(created, created.CommittedStorageBytes, _allocationSpan);
         return created;
 }
 }
@@ -141,7 +127,6 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;
     private bool _done;
-    private readonly ChargeReclamationPool? _reclamationPool;
     // Per-input exhaustion latches shared by both paths: an input that raises
     // StopIteration stays exhausted (fill value) instead of being retried every
     // row, and _remaining short-circuits the finished state without pulling or
@@ -161,7 +146,6 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
         _fillValue = fillValue;
         _memoryGovernor = memoryGovernor;
         _allocationSpan = allocationSpan;
-        _reclamationPool = context.Services.State.CallTemporaries;
         _exhausted = new bool[iterables.Count];
         _remaining = iterables.Count;
     }
@@ -210,7 +194,6 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
         var produced = _memoryGovernor is null
             ? PyTuple.FromOwnedArray(items)
             : PyTuple.FromOwnedArray(items, _memoryGovernor, _allocationSpan);
-        _reclamationPool?.TrackFreshMutable(produced, produced.CommittedStorageBytes, _allocationSpan);
         value = produced;
         return true;
     }
@@ -257,7 +240,6 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
         var produced = _memoryGovernor is null
             ? PyTuple.FromOwnedArray(items)
             : PyTuple.FromOwnedArray(items, _memoryGovernor, _allocationSpan);
-        _reclamationPool?.TrackFreshMutable(produced, produced.CommittedStorageBytes, _allocationSpan);
         return PyIterationResult.Yield(produced);
     }
 
@@ -424,9 +406,8 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
     private readonly LythonSourceSpan _span;
     private bool _started;
     private bool _done;
-    private readonly ChargeReclamationPool? _reclamationPool;
 
-    public PyCombinationsIterator(object[] pool, int r, MemoryGovernor memoryGovernor, LythonSourceSpan span, ChargeReclamationPool? reclamationPool = null)
+    public PyCombinationsIterator(object[] pool,int r,MemoryGovernor memoryGovernor,LythonSourceSpan span)
     {
         PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _pool = pool;
@@ -434,7 +415,6 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
         _indices = new int[r];
         _memoryGovernor = memoryGovernor;
         _span = span;
-        _reclamationPool = reclamationPool;
         for (var i = 0; i < r; i++)
         {
             _indices[i] = i;
@@ -453,7 +433,7 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
 
         if (!_started)
         {
-            var first = PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span, _reclamationPool);
+            var first = PyCombinatoricTuple.Create(_pool,_indices,_indices.Length,_memoryGovernor,_span);
             _started = true;
             value = first;
             return true;
@@ -480,7 +460,7 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
             _indices[j] = _indices[j - 1] + 1;
         }
 
-        value = PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span, _reclamationPool);
+        value = PyCombinatoricTuple.Create(_pool,_indices,_indices.Length,_memoryGovernor,_span);
         return true;
     }
 
@@ -496,9 +476,8 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
     private readonly LythonSourceSpan _span;
     private bool _started;
     private bool _done;
-    private readonly ChargeReclamationPool? _reclamationPool;
 
-    public PyCombinationsWithReplacementIterator(object[] pool, int r, MemoryGovernor memoryGovernor, LythonSourceSpan span, ChargeReclamationPool? reclamationPool = null)
+    public PyCombinationsWithReplacementIterator(object[] pool,int r,MemoryGovernor memoryGovernor,LythonSourceSpan span)
     {
         PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _pool = pool;
@@ -506,7 +485,6 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
         _indices = new int[r];
         _memoryGovernor = memoryGovernor;
         _span = span;
-        _reclamationPool = reclamationPool;
         _done = pool.Length == 0 && r > 0;
     }
 
@@ -520,7 +498,7 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
 
         if (!_started)
         {
-            var first = PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span, _reclamationPool);
+            var first = PyCombinatoricTuple.Create(_pool,_indices,_indices.Length,_memoryGovernor,_span);
             _started = true;
             value = first;
             return true;
@@ -546,7 +524,7 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
             _indices[j] = next;
         }
 
-        value = PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span, _reclamationPool);
+        value = PyCombinatoricTuple.Create(_pool,_indices,_indices.Length,_memoryGovernor,_span);
         return true;
     }
 
@@ -564,9 +542,8 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
     private readonly LythonSourceSpan _span;
     private bool _started;
     private bool _done;
-    private readonly ChargeReclamationPool? _reclamationPool;
 
-    public PyPermutationsIterator(object[] pool, int r, MemoryGovernor memoryGovernor, LythonSourceSpan span, ChargeReclamationPool? reclamationPool = null)
+    public PyPermutationsIterator(object[] pool,int r,MemoryGovernor memoryGovernor,LythonSourceSpan span)
     {
         PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _pool = pool;
@@ -575,7 +552,6 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
         _r = r;
         _memoryGovernor = memoryGovernor;
         _span = span;
-        _reclamationPool = reclamationPool;
         _indices = new int[pool.Length];
         for (var i = 0; i < _indices.Length; i++)
         {
@@ -601,7 +577,7 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
 
         if (!_started)
         {
-            var first = PyCombinatoricTuple.Create(_pool, _indices, _r, _memoryGovernor, _span, _reclamationPool);
+            var first = PyCombinatoricTuple.Create(_pool,_indices,_r,_memoryGovernor,_span);
             _started = true;
             value = first;
             return true;
@@ -619,7 +595,7 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
 
             var j = _cycles[i];
             (_indices[i], _indices[^j]) = (_indices[^j], _indices[i]);
-            value = PyCombinatoricTuple.Create(_pool, _indices, _r, _memoryGovernor, _span, _reclamationPool);
+            value = PyCombinatoricTuple.Create(_pool,_indices,_r,_memoryGovernor,_span);
             return true;
         }
 

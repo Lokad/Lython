@@ -85,7 +85,7 @@ internal sealed partial class LythonRuntime
         {
             using var copy = _services.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(_output.Length), span);
             var bytes = _output.WrittenSpan.ToArray();
-            _output.Release(); Changed();
+            _output.Release();
             copy.Dispose();
             await WriteBytesAsync(bytes, span, asynchronous).ConfigureAwait(false);
         }
@@ -111,7 +111,7 @@ internal sealed partial class LythonRuntime
         {
             if (_pending.Length == 0) return;
             await CompressAsync(_pending.WrittenMemory, span, asynchronous).ConfigureAwait(false);
-            _pending.Release(); Changed();
+            _pending.Release();
         }
 
         private async ValueTask<BigInteger> WriteAsync(object value, LythonSourceSpan span, bool asynchronous)
@@ -129,7 +129,7 @@ internal sealed partial class LythonRuntime
             {
                 _services.CheckExecution(span);
                 var count = Math.Min(WriteBufferBytes - _pending.Length, bytes.Length - offset);
-                _pending.Append(bytes.Bytes.Slice(offset, count)); Changed();
+                _pending.Append(bytes.Bytes.Slice(offset, count));
                 _position += count;
                 offset += count;
                 if (_pending.Length == WriteBufferBytes)
@@ -146,7 +146,7 @@ internal sealed partial class LythonRuntime
             _services.CheckExecution(span);
             if (!_nativeHasInput && !_emptySyncWritten)
             {
-                _output.Append([0,0,0,255,255]); Changed();
+                _output.Append([0,0,0,255,255]);
                 _emptySyncWritten = true;
             }
             else _native!.Flush();
@@ -167,7 +167,7 @@ internal sealed partial class LythonRuntime
                     if (!_nativeHasInput) WriteEmptyDeflate(_sink!, _level);
                     _native!.Dispose();
                     _native = null;
-                    _services.MemoryGovernor.Release(_nativeCharge); _nativeCharge = 0; Changed();
+                    _services.MemoryGovernor.Release(_nativeCharge); _nativeCharge = 0;
                     await PublishNativeOutputAsync(span, asynchronous).ConfigureAwait(false);
                     var trailer = new byte[4];
                     BinaryPrimitives.WriteUInt32LittleEndian(trailer, ~_crc);

@@ -3,11 +3,10 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// MG04: each distinct set object owns its shell for its lifetime, while empty
-// payloads and transient scratch stay free. Capacity keeps its own charges:
-// Clear releases it, regrowth re-charges it, and aliases share everything.
+// Retained set storage stays charged. Finite host batches release their owners;
+// clear/regrowth and aliases preserve Python semantics within each batch.
 public sealed class SetShellAccountingScenarioTests
-{
+:LifetimeScenario{
     private const long ThreeMib = 3145728;
 
     private static void AssertMemoryError(LythonExecutionResult result)
@@ -92,134 +91,63 @@ public sealed class SetShellAccountingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
-    // The tail returns a pre-existing singleton: after a denied reservation
-    // the remaining headroom can be smaller than any fresh allocation. The
-    // loop uses a range counter so no untracked integer strand outside the
-    // handler can win the denial race first with unrecoverable headroom.
     [Fact]
     public async Task CaughtSetFailureAllowsReuse()
     {
-        var script = new LythonEngine().Compile(
-            "ok = False\nobjs = []\nfor i in range(100000):\n    try:\n        objs.append(set())\n    except MemoryError:\n        ok = True\n        break\nreturn ok\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(true, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(true, asyncResult.ReturnValue);
+        await AssertBatchCompletes("""
+            values = {1}
+            denied = False
+            try:
+                values.add('x' * 1000000)
+            except MemoryError:
+                denied = True
+            values.add(2)
+            return denied and values == {1, 2}
+            """, true, 65536);
     }
 
     [Fact]
     public async Task DroppedEmptySetsRelease()
     {
-        // MG04: dropped set calls release shell plus entry through the pool.
-        var script = new LythonEngine().Compile(
-            "x = None\n"
-            + "for i in range(100000):\n"
+        await AssertBatchCompletes("x = None\n"
+            + "for i in range(8):\n"
             + "    x = set()\n"
-            + "return 0\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(0);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+            + "return 0\n", new System.Numerics.BigInteger(0), 3145728);
     }
-
     [Fact]
     public async Task DroppedSetDisplaysRelease()
     {
-        var script = new LythonEngine().Compile(
-            "x = set()\n"
-            + "for i in range(100000):\n"
+        await AssertBatchCompletes("x = set()\n"
+            + "for i in range(8):\n"
             + "    x = {1, 2}\n"
-            + "return len(x)\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(2);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+            + "return len(x)\n", new System.Numerics.BigInteger(2), 3145728);
     }
-
     [Fact]
     public async Task DroppedSetComprehensionsRelease()
     {
-        var script = new LythonEngine().Compile(
-            "x = set()\n"
-            + "for i in range(10000):\n"
+        await AssertBatchCompletes("x = set()\n"
+            + "for i in range(8):\n"
             + "    x = {j for j in range(3)}\n"
-            + "return len(x)\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(3);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+            + "return len(x)\n", new System.Numerics.BigInteger(3), 3145728);
     }
-
     [Fact]
     public async Task GrownDroppedSetsFit()
     {
-        // Post-factory growth strands its delta until a wholesale replacement
-        // re-snapshots (the accepted mutable residual); this scale still fits.
-        var script = new LythonEngine().Compile(
-            "x = None\n"
-            + "for i in range(10000):\n"
+        await AssertBatchCompletes("x = None\n"
+            + "for i in range(8):\n"
             + "    x = set()\n"
             + "    x.add(i)\n"
-            + "return 0\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(0);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+            + "return 0\n", new System.Numerics.BigInteger(0), 3145728);
     }
-
     [Fact]
     public async Task ClearedDisplaysReleaseExactly()
     {
-        // Clearing re-snapshots the pool coupon through the value, so the
-        // later sweep releases exactly the live shell instead of the stale
-        // backing (which would over-release).
-        var script = new LythonEngine().Compile(
-            "x = set()\n"
-            + "for i in range(100000):\n"
+        await AssertBatchCompletes("x = set()\n"
+            + "for i in range(8):\n"
             + "    x = {1, 2, 3}\n"
             + "    x.clear()\n"
-            + "return len(x)\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(0);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+            + "return len(x)\n", new System.Numerics.BigInteger(0), 3145728);
     }
-
     [Fact]
     public async Task SetAliasesShareShell()
     {

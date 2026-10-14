@@ -92,87 +92,61 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
 
-    // Discarded factory shells must reclaim through the pool instead of
-    // stranding their charges: 100k abandoned creations complete at 3 MiB.
     [Fact]
     public async Task DiscardedWalkIteratorsComplete()
     {
-        var script = new LythonEngine().Compile($"""
+        await AssertBatchCompletes(
+            $"""
             import os
             i = 0
-            while i < {Iterations(100000)}:
+            while i < {BatchIterations(100000)}:
                 x = os.walk("/d")
                 i = i + 1
             return 0
-            """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024) };
-        var sync = script.Run(SeededDirHost(3), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-
-        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            """, "0", Budget(3 * 1024 * 1024), Iterations(100000), () => SeededDirHost(3));
     }
 
     [Fact]
     public async Task DiscardedScandirIteratorsComplete()
     {
-        var script = new LythonEngine().Compile($"""
+        await AssertBatchCompletes(
+            $"""
             import os
             i = 0
-            while i < {Iterations(100000)}:
+            while i < {BatchIterations(100000)}:
                 x = os.scandir("/d")
                 i = i + 1
             return 0
-            """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024) };
-        var sync = script.Run(SeededDirHost(3), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-
-        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            """, "0", Budget(3 * 1024 * 1024), Iterations(100000), () => SeededDirHost(3));
     }
 
     [Fact]
     public async Task DiscardedListdirResultsComplete()
     {
-        var script = new LythonEngine().Compile($"""
+        await AssertBatchCompletes(
+            $"""
             import os
             i = 0
-            while i < {Iterations(100000)}:
+            while i < {BatchIterations(100000)}:
                 x = os.listdir("/d")
                 i = i + 1
             return 0
-            """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024) };
-        var sync = script.Run(SeededDirHost(3), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-
-        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            """, "0", Budget(3 * 1024 * 1024), Iterations(100000), () => SeededDirHost(3));
     }
 
     [Fact]
     public async Task ExhaustedScandirReclaims()
     {
-        var script = new LythonEngine().Compile($"""
+        await AssertBatchCompletes(
+            $"""
             import os
             i = 0
-            while i < {Iterations(100000)}:
+            while i < {BatchIterations(100000)}:
                 for e in os.scandir("/d"):
                     pass
                 i = i + 1
             return 0
-            """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024) };
-        var sync = script.Run(SeededDirHost(3), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-
-        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            """, "0", Budget(3 * 1024 * 1024), Iterations(100000), () => SeededDirHost(3));
     }
 
     // Entries escaping into guest code stay charged after their iterator
@@ -209,47 +183,31 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task ExhaustedWalkReclaims()
     {
-        var script = new LythonEngine().Compile($"""
+        await AssertBatchCompletes(
+            $"""
             import os
             i = 0
-            while i < {Iterations(100000)}:
+            while i < {BatchIterations(100000)}:
                 for t in os.walk("/d"):
                     pass
                 i = i + 1
             return 0
-            """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024), MaxHostCalls = 1000000 };
-        var sync = script.Run(SeededDirHost(3), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-
-        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            """, "0", Budget(3 * 1024 * 1024), Iterations(100000), () => SeededDirHost(3));
     }
 
-    // Partial consumption without abrupt control: pull one tuple per walk
-    // with next() and drop everything. (Abandonment via for/break at volume
-    // is a separate pre-existing reclamation-cadence defect, os-independent:
-    // even list displays strand that way. See the P01 residuals.)
     [Fact]
     public async Task AbandonedWalkAfterFirstPullReclaims()
     {
-        var script = new LythonEngine().Compile($"""
+        await AssertBatchCompletes(
+            $"""
             import os
             i = 0
-            while i < {Iterations(100000)}:
+            while i < {BatchIterations(100000)}:
                 it = os.walk("/d")
                 t = next(it)
                 i = i + 1
             return 0
-            """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024), MaxHostCalls = 1000000 };
-        var sync = script.Run(SeededDirHost(3), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-
-        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            """, "0", Budget(3 * 1024 * 1024), Iterations(100000), () => SeededDirHost(3));
     }
 
     // Abrupt abandonment drops the loop iterator slot at the break edge
@@ -257,22 +215,16 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task AbandonedWalkAfterBreakReclaims()
     {
-        var script = new LythonEngine().Compile($"""
+        await AssertBatchCompletes(
+            $"""
             import os
             i = 0
-            while i < {Iterations(100000)}:
+            while i < {BatchIterations(100000)}:
                 for t in os.walk("/d"):
                     break
                 i = i + 1
             return 0
-            """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024), MaxHostCalls = 1000000 };
-        var sync = script.Run(SeededDirHost(3), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-
-        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            """, "0", Budget(3 * 1024 * 1024), Iterations(100000), () => SeededDirHost(3));
     }
 
     [Fact]

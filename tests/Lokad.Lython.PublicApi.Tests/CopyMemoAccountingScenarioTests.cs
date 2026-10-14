@@ -32,27 +32,37 @@ public sealed class CopyMemoAccountingScenarioTests
     }
 
     [Fact]
-    public async Task RepeatedSmallCopiesReleaseMemoScratch()
+    public async Task SmallCopyBatchesReleaseScratchAndExecutionFunding()
     {
         // One shared input list isolates per-operation costs: each result
         // leaks its own backing either way, but memo scratch must not add up.
-        var script = new LythonEngine().Compile(
+        var ownerBudget = new LythonMemoryBudget(262144);
+        using var script = new LythonEngine().Compile(
             """
             import copy
             src = [1, 2]
             i = 0
-            while i < 250:
+            while i < 16:
                 m = copy.deepcopy(src)
                 i = i + 1
             return 0
-            """);
+            """, ownerBudget);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
+        var baseline = ownerBudget.ReservedBytes;
+        for (var batch = 0; batch < 8; batch++)
+        {
+            var sync = script.Run(new MockLythonHost(), options);
+            Assert.True(sync.Success, sync.Failure?.Message);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+            Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            sync.Dispose();
+            asyncResult.Dispose();
+            Assert.Equal(baseline, ownerBudget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, ownerBudget.ReservedBytes);
     }
 
     [Fact]

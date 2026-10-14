@@ -17,7 +17,6 @@ internal sealed class PyBatchedIterator : PyIteratorBase
     private readonly bool _strict;
     private readonly MemoryGovernor _memoryGovernor;
     private readonly LythonSourceSpan _span;
-    private readonly ChargeReclamationPool? _reclamationPool;
     private readonly LythonRuntime.ExecutionContext _context;
     private bool _exhausted;
 
@@ -29,7 +28,6 @@ internal sealed class PyBatchedIterator : PyIteratorBase
         _strict = strict;
         _memoryGovernor = memoryGovernor;
         _span = span;
-        _reclamationPool = context.Services.State.CallTemporaries;
         _context = context;
     }
 
@@ -150,7 +148,6 @@ internal sealed class PyBatchedIterator : PyIteratorBase
         }
 
         var produced = PyTuple.FromOwnedArray(owned, _memoryGovernor, _span);
-        _reclamationPool?.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
         return produced;
     }
 

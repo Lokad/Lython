@@ -2,7 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class SetNumericStoragePolicyTests
+public sealed class SetNumericStoragePolicyTests : LifetimeScenario
 {
     [Theory]
     [InlineData(false)]
@@ -45,15 +45,9 @@ public sealed class SetNumericStoragePolicyTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DroppedLargeMembersKeepTheirStreamingBudget(bool asyncMode)
+    public async Task LargeMemberBatchesReturnSharedAccounting(bool asyncMode)
     {
-        var script = new LythonEngine().Compile("for i in range(4000):\n values = {(1 << 4000) + i}\nreturn values.pop().bit_length()\n");
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
-        var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
-        Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("4001", result.ReturnValue?.ToString());
-        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
+        await AssertBatchCompletes("for i in range(8):\n values = {(1 << 4000) + i}\nreturn values.pop().bit_length()\n", "4001", 262144, asynchronous: asyncMode);
     }
 
     [Fact]
@@ -65,17 +59,23 @@ public sealed class SetNumericStoragePolicyTests
             del x
             with open('/value', 'r') as stream:
                 stream.read()
-            for _ in range(4000):
+            for _ in range(8):
                 z = 1 << 4000
             return values.pop().bit_length()
             """;
         var host = new DelayedLythonHost();
         host.SeedFile("/value", "ready");
-        var script = new LythonEngine().Compile(code);
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(code, budget);
+        var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid);
-        var result = await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = 262144 });
+        using var result = await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = 262144 });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("4001", result.ReturnValue?.ToString());
         Assert.True(host.CompletedAsynchronously > 0);
+        result.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

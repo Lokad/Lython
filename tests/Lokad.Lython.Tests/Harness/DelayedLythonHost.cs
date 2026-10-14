@@ -40,11 +40,15 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public ILythonSubprocessRunner? SubprocessRunner => _inner.SubprocessRunner;
 
+    public ILythonTiming? Timing => _inner.Timing;
+
     public void SeedFile(string path, string text) => _inner.SeedFile(path, text);
 
     public void SeedBytes(string path, byte[] payload) => _inner.SeedBytes(path, payload);
 
     public string ReadText(string path) => _inner.ReadText(path);
+
+    public void SetTiming(ILythonTiming timing) => _inner.SetTiming(timing);
 
     public byte[] ReadBytes(string path) => _inner.ReadBytes(path);
 

@@ -202,7 +202,6 @@ internal static partial class PyDataclass
         }
     }
 
-
     private static object AsDictInner(object value, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         return value switch

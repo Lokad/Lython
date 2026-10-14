@@ -3,7 +3,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class MixedSubscriptSyntaxTests
-{
+:LifetimeScenario{
     public static IEnumerable<object[]> Cases()
     {
         yield return new object[]
@@ -433,24 +433,14 @@ public sealed class MixedSubscriptSyntaxTests
     [Fact]
     public async Task DroppedSliceTupleKeysReclaimCharges()
     {
-        var compiled = new LythonEngine().Compile("""
+        await AssertBatchCompletes("""
             class Box:
              def __getitem__(self,key):return key
             box=Box()
-            for i in range(5000):key=box[i:i+1,0]
+            for i in range(8):key=box[i:i+1,0]
             print(key[0].start,key[0].stop,key[1])
-            """);
-        Assert.True(compiled.IsValid);
-        const long budget = 524288;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
-        foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
-        {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("4999 5000 0\n", result.StandardOutput);
-            Assert.True(result.PeakExecutionMemoryBytes <= budget);
-        }
+            """, null, 524288, standardOutput: "7 8 0\n");
     }
-
     [Fact]
     public async Task StarredKeysFailCollectionLimitBeforeItemProtocol()
     {

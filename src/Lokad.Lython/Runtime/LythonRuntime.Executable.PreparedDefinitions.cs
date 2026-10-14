@@ -91,7 +91,6 @@ internal sealed partial class LythonRuntime
         {
             _context.MemoryGovernor.Reserve(bytes, span);
             _context.MemoryGovernor.Commit(bytes);
-            _context.Services.State.CallTemporaries.TrackFreshMutable(owner, bytes, span);
         }
 
         private Dictionary<LoweredExpression, LoweredExpression> CaptureDefinitionInputs(IReadOnlyList<LoweredExpression> inputs)

@@ -9,11 +9,20 @@ public sealed class NativeConsumerStreamingTests
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public async Task CsvAggregationWithinOneNativeCallPreservesLiveMemoryProtection(bool retain, bool asynchronous)
+    public Task NativeCsvAggregationBatchesPreserveWorkingAndRetainedStorage(bool retain, bool asynchronous)
+        => VerifyNativeBatches(retain, asynchronous, retain ? 5000 : 256);
+
+    [Theory]
+    [Trait("Category", "Stress")]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task SustainedNativeCsvAggregationBatches(bool asynchronous)
+        => VerifyNativeBatches(false, asynchronous, 5000);
+
+    private static async Task VerifyNativeBatches(bool retain, bool asynchronous, int totalRows)
     {
-        // sum remains active across every generator iteration and host await.
-        // A rule that pins all allocations until native-call return would
-        // incorrectly turn this dropped-data job into cumulative accounting.
+        // Each finite execution keeps sum active through generator pulls and
+        // awaits. Host batches relinquish working storage; retained rows deny.
         var source = "retain = " + (retain ? "True" : "False") + "\n" + """
 import csv
 kept = []
@@ -28,31 +37,44 @@ with open('/report.txt', 'w') as report:
     report.write(str(total) + '\n')
 print(total)
 """;
-        var script = new LythonEngine().Compile(source);
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
-        var input = string.Concat(Enumerable.Repeat("red,1,ok\n", 5000));
-        var delayed = asynchronous ? new DelayedLythonHost() : null;
-        var mock = asynchronous ? null : new MockLythonHost();
-        ILythonHost host = (ILythonHost?)delayed ?? mock!;
-        if (delayed is not null) delayed.SeedFile("/input.csv", input);
-        else mock!.SeedFile("/input.csv", input);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
-        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-        if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
-        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
-        Assert.Empty(result.StandardError);
-        if (retain)
+        var completed = 0;
+        for (var offset = 0; offset < totalRows; offset += retain ? totalRows : 32)
         {
-            Assert.False(result.Success);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
-            Assert.Empty(result.StandardOutput);
-            Assert.False(await host.ExistsAsync("/report.txt", CancellationToken.None));
+            var rows = retain ? totalRows : Math.Min(32, totalRows - offset);
+            var input = string.Concat(Enumerable.Repeat("red,1,ok\n", rows));
+            var delayed = asynchronous ? new DelayedLythonHost() : null;
+            var mock = asynchronous ? null : new MockLythonHost();
+            ILythonHost host = (ILythonHost?)delayed ?? mock!;
+            if (delayed is not null) delayed.SeedFile("/input.csv", input);
+            else mock!.SeedFile("/input.csv", input);
+            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+            using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+            if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+            Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
+            Assert.Empty(result.StandardError);
+            if (retain)
+            {
+                Assert.False(result.Success);
+                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+                Assert.Empty(result.StandardOutput);
+                Assert.False(await host.ExistsAsync("/report.txt", CancellationToken.None));
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal($"{rows}\n", result.StandardOutput);
+                Assert.Equal($"{rows}\n", delayed is not null ? delayed.ReadText("/report.txt") : mock!.ReadText("/report.txt"));
+            }
+            result.Dispose();
+            Assert.Equal(baseline, budget.ReservedBytes);
+            completed += rows;
         }
-        else
-        {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("5000\n", result.StandardOutput);
-            Assert.Equal("5000\n", delayed is not null ? delayed.ReadText("/report.txt") : mock!.ReadText("/report.txt"));
-        }
+        Assert.Equal(totalRows, completed);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

@@ -2,13 +2,10 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// M05: split factories build fresh item strings beside their container, but
-// only the container ever reached a funnel, so dropped results stranded every
-// item. Member sites adopt every governed string item plus the fresh container
-// (partition additionally threads the call governor so literal-receiver slices
-// stay governed); drops reclaim on sweep while retained results stay charged.
 public class SplitLifetimeScenarioTests : LifetimeScenario
 {
+    protected override int BatchSize => 32;
+
     // Fund the fixed live input/pattern as well as a current result.
     protected override long Budget(long stressBudget) => Math.Min(stressBudget, 262144);
 
@@ -17,57 +14,47 @@ public class SplitLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted(long budget) => new() { MaxExecutionMemoryBytes = budget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
     [Fact]
-    public async Task StrSplitDiscardCompletes()
+    public async Task StrSplitBatchDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = \"a,b,c\".split(\",\")\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = \"a,b,c\".split(\",\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task StrRsplitDiscardCompletes()
+    public async Task StrRsplitBatchDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = \"a,b\".rsplit(\",\")\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = \"a,b\".rsplit(\",\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task StrSplitlinesDiscardCompletes()
+    public async Task StrSplitlinesBatchDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = \"a\\nb\".splitlines()\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = \"a\\nb\".splitlines()\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task GovernedSplitDiscardCompletes()
+    public async Task GovernedSplitBatchDiscardCompletes()
         => await AssertCompletes(
-            "s = \"a\" + \"b,c\"\nfor i in range(" + Iterations(50000) + "):\n    x = s.split(\",\")\nreturn 0\n", "0");
+            "s = \"a\" + \"b,c\"\nfor i in range(" + BatchIterations(50000) + "):\n    x = s.split(\",\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task PartitionDiscardCompletes()
+    public async Task PartitionBatchDiscardCompletes()
         => await AssertCompletes(
-            "s = \"a\" + \"b,c\"\nfor i in range(" + Iterations(50000) + "):\n    x = s.partition(\",\")\nreturn 0\n", "0");
+            "s = \"a\" + \"b,c\"\nfor i in range(" + BatchIterations(50000) + "):\n    x = s.partition(\",\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task LiteralPartitionDiscardCompletes()
+    public async Task LiteralPartitionBatchDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = \"a,b\".partition(\",\")\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = \"a,b\".partition(\",\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task RegexSplitDiscardCompletes()
+    public async Task RegexSplitBatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\",\")\nfor i in range(" + Iterations(50000) + "):\n    x = p.split(\"a,b\")\nreturn 0\n", "0");
+            "import re\np = re.compile(\",\")\nfor i in range(" + BatchIterations(50000) + "):\n    x = p.split(\"a,b\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
-    public async Task ShlexSplitDiscardCompletes()
+    public async Task ShlexSplitBatchDiscardCompletes()
         => await AssertCompletes(
-            "import shlex\nfor i in range(" + Iterations(50000) + "):\n    x = shlex.split(\"a b\")\nreturn 0\n", "0");
+            "import shlex\nfor i in range(" + BatchIterations(50000) + "):\n    x = shlex.split(\"a b\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task SplitBehaves()

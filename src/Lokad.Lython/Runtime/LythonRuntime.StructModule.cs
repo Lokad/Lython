@@ -327,7 +327,6 @@ internal sealed partial class LythonRuntime
             }
             funding.Dispose();
             var result = PyTuple.FromOwnedArray(items, context.MemoryGovernor, span);
-            context.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
             return result;
         }
 
@@ -356,7 +355,6 @@ internal sealed partial class LythonRuntime
             if (bytes.Length % layout.Size != 0)
                 throw Error($"iterative unpacking requires a buffer of a multiple of {layout.Size} bytes", span);
             var iterator = new RecordIterator(layout, bytes, context, span);
-            context.State.CallTemporaries.TrackFreshMutable(iterator, PyIteratorBase.IteratorValueBytes, span);
             return iterator;
         }
 

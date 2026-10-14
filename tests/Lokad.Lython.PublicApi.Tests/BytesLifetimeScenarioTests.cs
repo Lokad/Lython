@@ -10,32 +10,22 @@ public class BytesLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted());
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted());
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
     [Fact]
     public async Task EncodedResultsDiscardCompletes()
         => await AssertCompletes(
-            "b = 'x' * 1024\nfor i in range(" + Iterations(10000) + "):\n    y = b.encode()\nreturn 0\n", "0");
+            "b = 'x' * 1024\nfor i in range(" + BatchIterations(10000) + "):\n    y = b.encode()\nreturn 0\n", "0", Iterations(10000));
 
     [Fact]
     public async Task HexDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = b\"abc\".hex()\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = b\"abc\".hex()\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task HexSeparatorDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = b\"abc\".hex(\" \", 1)\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = b\"abc\".hex(\" \", 1)\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task HexBehaves()
@@ -62,12 +52,12 @@ public class BytesLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task PartitionDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = b\"abc\".partition(b\"b\")\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = b\"abc\".partition(b\"b\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task RPartitionDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = b\"abc\".rpartition(b\"b\")\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = b\"abc\".rpartition(b\"b\")\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task PartitionBehaves()

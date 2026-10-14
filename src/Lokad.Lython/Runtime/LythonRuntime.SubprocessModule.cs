@@ -250,7 +250,7 @@ internal sealed partial class LythonRuntime
                 Timeout: timeout is { } timeoutValue ? TimeSpan.FromMilliseconds(timeoutValue) : null,
                 OutputLimit: context.Limits.MaxStringLength is { } maximumOutputBytes
                     ? new LythonSubprocessOutputLimit(maximumOutputBytes)
-                    : null),
+                    : null) { MemoryBudget = context.MemoryGovernor.Budget },
             check,
             policy.Completion);
     }
@@ -401,6 +401,5 @@ internal sealed partial class LythonRuntime
             builder.Append('"');
         }
     }
-
 
 }

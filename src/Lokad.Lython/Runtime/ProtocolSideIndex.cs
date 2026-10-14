@@ -29,9 +29,6 @@ internal interface IProtocolSideEntry
 
 internal sealed class ProtocolSideIndex
 {
-    // Two hash-table nodes plus bucket slots plus amortized capacity, safe
-    // direction. Removals keep it (see above); clear, rollback and drop sweep
-    // release it.
     internal const long IndexBytesPerEntry = 96L;
 
     private readonly Dictionary<int, List<int>> _buckets = new();

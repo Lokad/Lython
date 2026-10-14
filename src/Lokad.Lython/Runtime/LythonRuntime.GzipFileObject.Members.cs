@@ -76,7 +76,6 @@ internal sealed partial class LythonRuntime
                         var hint = args.Length == 0 || args[0] is PyNone ? -1
                             : await CoerceIoIntegerAsync(args[0], span, CurrentContext, asynchronous).ConfigureAwait(false);
                         var result = new PyList([], _services.MemoryGovernor, span);
-                        _services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
                         long consumed = 0;
                         while (true)
                         {

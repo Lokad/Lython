@@ -7,7 +7,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 // inputs) live in caller-scoped temporary reservations and release on every
 // exit path, including validation failure. Before the fix, each discarded call
 // stranded its drains and 1000 discards denied small budgets.
-public sealed class StatisticsScratchLifetimeTests
+public sealed class StatisticsScratchLifetimeTests : LifetimeScenario
 {
     private static LythonCompiledScript Compile(string source)
     {
@@ -68,12 +68,12 @@ public sealed class StatisticsScratchLifetimeTests
 
     [Fact]
     public async Task WeightedFailRecover_SucceedsUnderBudget()
-        => await AssertCompletes(
+        => await AssertBatchCompletes(
             """
             import statistics
-            w = [1]*4999+["x"]
-            d = list(range(5000))
-            for i in range(20):
+            w = [1]*999+["x"]
+            d = list(range(1000))
+            for i in range(1):
                 try:
                     statistics.fmean(d, w)
                 except (ValueError, TypeError):

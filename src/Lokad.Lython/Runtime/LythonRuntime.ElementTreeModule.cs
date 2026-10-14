@@ -36,23 +36,6 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature FindAllSignature =
             LythonCallableSignature.Create("Element.findall", ["path", "namespaces"], requiredCount: 1);
         private const int MaximumDepth = 1024;
-        private static readonly ConditionalWeakTable<object, ContainerShell> ContainerShells = new();
-
-        // Core containers own their backing independently. Each XML-created
-        // wrapper also needs a fixed coupon, including an empty attrib alias.
-        // Ephemeron ownership ties that coupon to the container, without parent
-        // links or a global strong reference keeping abandoned graphs alive.
-        private sealed class ContainerShell : IPyOwnershipSnapshot
-        {
-            // The owning wrapper owns all contents; this record owns only its shell.
-            private const long Bytes = 256; // Wrapper, empty storage and ephemeron entry.
-            internal ContainerShell(MemoryGovernor governor, LythonSourceSpan span)
-            {
-                governor.Reserve(Bytes, span);
-                governor.Commit(Bytes);
-            }
-            public bool TrySnapshotOwnership(out long bytes) { bytes = Bytes; return true; }
-        }
 
         private ElementTreeModule() : base("xml.etree.ElementTree") { }
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -84,6 +67,7 @@ internal sealed partial class LythonRuntime
             private readonly LythonSourceSpan _span;
             private readonly MemoryGovernor.TemporaryMemoryReservation _scratch;
             private readonly List<object> _values = new();
+            private long _wrapperBytes;
             private bool _published;
             internal GraphConstruction(ExecutionContext context, LythonSourceSpan span)
             {
@@ -99,14 +83,13 @@ internal sealed partial class LythonRuntime
             internal T Create<T>(Func<T> create) where T : class
             {
                 FundSlot();
-                var shell = typeof(T) == typeof(PyDict) || typeof(T) == typeof(PyList)
-                    ? Create(() => new ContainerShell(_context.MemoryGovernor, _span)) : null;
-                FundSlot();
+                var shellBytes = typeof(T) == typeof(PyDict) || typeof(T) == typeof(PyList) ? 256L : 0;
+                using var shell = _context.MemoryGovernor.ReserveTemporary(shellBytes, _span);
                 var value = create();
                 _values.Add(value);
-                _context.Services.State.CallTemporaries.TrackCallResult(value, _span);
+                shell.Commit(shellBytes);
+                _wrapperBytes += shellBytes;
                 if (value is PyString text) _context.ObserveString(text, _span);
-                if (shell is not null) ContainerShells.Add(value, shell);
                 return value;
             }
             internal PyString Text(string text)
@@ -119,15 +102,14 @@ internal sealed partial class LythonRuntime
             internal PyString Decode(ReadOnlyMemory<byte> bytes, TextEncodingMode mode)
                 => Create(() => DecodeText(bytes, mode, _context, _span,
                     TextErrorMode.Strict, TextNewlineMode.PreserveLineFeed));
-            internal void Refresh(object value)
-                => _context.Services.State.CallTemporaries.TrackCallResult(value, _span);
             internal void Publish() => _published = true;
             public void Dispose()
             {
                 if (!_published)
                 {
                     for (var index = _values.Count - 1; index >= 0; index--)
-                        _context.Services.State.CallTemporaries.RefundUnpublishedValue(_values[index]);
+                        _context.Services.State.MemoryGovernor.RefundUnpublishedValue(_values[index]);
+                    _context.MemoryGovernor.Release(_wrapperBytes);
                 }
                 _values.Clear();
                 _scratch.Dispose();
@@ -218,7 +200,6 @@ internal sealed partial class LythonRuntime
                                     context.ObserveCollectionCount(++attributeCount, span);
                                     attributes.SetItem(graph.Text(ClarkName(reader.NamespaceURI, reader.LocalName)),
                                         graph.Text(reader.Value));
-                                    graph.Refresh(attributes);
                                 }
                                 while (reader.MoveToNextAttribute());
                                 reader.MoveToElement();
@@ -231,7 +212,6 @@ internal sealed partial class LythonRuntime
                                 var parent = stack[^1];
                                 parent.FinishContent(graph);
                                 parent.Element.Children.Add(element);
-                                graph.Refresh(parent.Element.Children);
                                 parent.LastChild = element;
                             }
                             if (!reader.IsEmptyElement)
@@ -290,7 +270,6 @@ internal sealed partial class LythonRuntime
             end = await IndexBound(end, context, span, asynchronous).ConfigureAwait(false);
             step = await IndexBound(step, context, span, asynchronous).ConfigureAwait(false);
             var result = (PyList)target.GetSlice(PyIndexing.SliceIndices(target.Length, start, end, step, span));
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
             return result;
         }
 
@@ -478,7 +457,6 @@ internal sealed partial class LythonRuntime
                 }
                 if (!all) return current.Count == 0 ? PyNone.Instance : current[0];
                 var result = new PyList(current, context.MemoryGovernor, span);
-                context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
                 return result;
             }
         }

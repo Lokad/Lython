@@ -64,6 +64,12 @@ Do not introduce general guest-heap tracing, root inventories or dormant collect
 scaffolding. Replace weak reclamation and forced GC with working ownership scopes;
 do not wrap the old subsystem in a new scope API. Preserve conservative estimates,
 allocation rollback, deterministic cleanup and funding for retained aliases.
+Use Lython-owned budget/scope/reservation hooks sharing the borrowed host root.
+Scope creation reserves nothing and introduces no independent allowance. Establish
+surviving result/cache owners before allocation; await all users before disposal.
+Use rough major-capacity and replacement estimates, with deliberate headroom for
+minor uninstrumented storage. See [MEMORY.md](MEMORY.md). Initial long streaming
+integration uses bounded host-driven executions, not guest-reference tracing.
 
 Lython is intended to be host-mediated and safe-by-design. Runtime file, directory, subprocess, stdin, stdout, and stderr access must remain mediated through the public host abstractions.
 

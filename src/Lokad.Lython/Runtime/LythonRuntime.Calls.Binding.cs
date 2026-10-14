@@ -85,7 +85,6 @@ internal sealed partial class LythonRuntime
         FunctionBindingPlan plan,
         ExecutionContext context)
     {
-        context.State.NoteBoundCall();
         // Values travel in plan layout order (positional, keyword-only, then
         // variadic names) with presence bits, instead of a per-call name
         // dictionary. The layout arrays live on the shared plan; only the value
@@ -117,7 +116,7 @@ internal sealed partial class LythonRuntime
         FunctionBindingPlan plan,
         ExecutionContext context)
     {
-        var pool = context.State.CallTemporaries;
+        var pool = context.State.MemoryGovernor;
         var assigned = new ArgumentPresence(plan.LayoutParameterNames.Count);
         // The overflow list is scratch: most calls never spill positionals,
         // so materialize it only on the first spill, tracked in the call pool
@@ -142,7 +141,6 @@ internal sealed partial class LythonRuntime
                     if (extraPositional is null)
                     {
                         extraPositional = new PyList([], context.MemoryGovernor, span);
-                        pool.TrackMutable(extraPositional, extraPositional.CommittedStorageBytes);
                     }
 
                     extraPositional.Add(argument.Value);
@@ -227,9 +225,7 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                ChargeReclamationPool.NotifyStorageReplaced(overflow, overflow.CommittedStorageBytes);
                 var overflowTuple = CreateTuple(overflow.Count, i => overflow[i], context, span);
-                pool.TrackMutable(overflowTuple, overflowTuple.CommittedStorageBytes);
                 values[variadicIndex] = overflowTuple;
             }
 
@@ -239,18 +235,14 @@ internal sealed partial class LythonRuntime
         if (plan.VariadicDictionary is not null)
         {
             var keywordDict = new PyDict(context.MemoryGovernor, span);
-            pool.TrackMutable(keywordDict, keywordDict.CommittedStorageBytes);
             if (extraKeywords is not null)
             {
                 foreach (var pair in extraKeywords)
                 {
                     var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
-                    pool.TrackString(keyword);
                     keywordDict.SetItem(keyword, pair.Value);
                 }
             }
-
-            ChargeReclamationPool.NotifyStorageReplaced(keywordDict, keywordDict.CommittedStorageBytes);
             var keywordDictIndex = plan.LayoutParameterIndex[plan.VariadicDictionary.Name];
             values[keywordDictIndex] = keywordDict;
             assigned[keywordDictIndex] = true;
@@ -277,47 +269,10 @@ internal sealed partial class LythonRuntime
         governor.Commit(bytes);
     }
 
-    // Registers a freshly constructed class for its own type record, member
-    // slots and governed construction shares (name copy plus bases/mro backing;
-    // member values stay aliased): dropped definitions reclaim through the pool
-    // once collected, and a denied registration refunds the whole coupon so the
-    // failed definition strands nothing.
-    internal static void TrackClassTypeValue(PyType type, int memberCount, ExecutionContext? context, LythonSourceSpan? span)
-    {
-        if (context is null)
-        {
-            return;
-        }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(
-            type,
-            checked(ClassTypeBaseBytes + ClassMemberSlotBytes * (long)memberCount + type.ConstructionChargeBytes));
-    }
-
     private static void ChargeFunctionValue(ExecutionContext? context, LythonSourceSpan? span)
     {
         context?.MemoryGovernor.Reserve(FunctionValueBytes, span);
         context?.MemoryGovernor.Commit(FunctionValueBytes);
-    }
-
-    // Registers a freshly constructed function or lambda for its own value,
-    // default-map, freshly retained closure-context/cell, governed name and docstring
-    // charges:
-    // dropped definitions reclaim through the pool once collected, and a denied
-    // registration refunds the whole coupon so the failed definition strands nothing.
-    // Lambdas carry the shared ungoverned name, so only def-built functions add
-    // a name share.
-    internal static void TrackFunctionValue(object function, int defaultCount, long retentionBytes, long docstringBytes, ExecutionContext? context, LythonSourceSpan? span)
-    {
-        if (context is null)
-        {
-            return;
-        }
-
-        var nameBytes = function is PyFunctionBase defined ? defined.NameCommittedBytes : 0;
-        context.Services.State.CallTemporaries.TrackFreshMutable(
-            function,
-            checked(FunctionValueBytes + DefaultArgumentSlotBytes * (long)defaultCount + retentionBytes + nameBytes + docstringBytes));
     }
 
     // MG11: default-argument maps survive with the function value. The 128B
@@ -337,29 +292,14 @@ internal sealed partial class LythonRuntime
         governor.Commit(bytes);
     }
 
-    // A function value retains its defining context chain for as long as the
-    // function is retained: intermediate invocation contexts plus the variable
-    // tables mirroring their locals stay alive through the closure, so each
-    // executed def or lambda owns the so-far-unowned storage of every context
-    // it retains, module frames included (imported modules keep per-module
-    // scopes alive through their functions). Shared frames pay once (first-wins
-    // aliasing), with later definitions paying only for variables bound since.
-    // The function CLR wrapper itself stays MG04-owned. Newly charged non-module
-    // retention is returned so the defining site can fold it into the function pool
-    // coupon: dropped definitions then release their own contexts on sweep. Module
-    // frames outlive the run, so their share stays durably committed. Sibling
-    // definitions alias shared frames first-wins, so a partial sibling drop can
-    // transiently undercount one chain while survivors live; the charge balances
-    // once the whole group drops.
     private const long ClosureContextBaseBytes = 512;
     private const long ClosureCellSlotBytes = 32;
 
-    internal static long ChargeClosureRetention(ExecutionContext? closure, MemoryGovernor? governor, LythonSourceSpan? span)
+    internal static void ChargeClosureRetention(ExecutionContext? closure, MemoryGovernor? governor, LythonSourceSpan? span)
     {
-        var retained = 0L;
         if (closure is null || governor is null)
         {
-            return retained;
+            return;
         }
 
         for (var current = closure; current is not null; current = current.ParentContext)
@@ -376,10 +316,6 @@ internal sealed partial class LythonRuntime
                 governor.Commit(bytes);
                 current.ClosureRetentionCharged = true;
                 current.ClosureChargedVariableCount = owned;
-                if (!isModuleFrame)
-                {
-                    retained = checked(retained + bytes);
-                }
 
                 continue;
             }
@@ -391,10 +327,6 @@ internal sealed partial class LythonRuntime
                 governor.Reserve(delta, span);
                 governor.Commit(delta);
                 current.ClosureChargedVariableCount = owned;
-                if (!isModuleFrame)
-                {
-                    retained = checked(retained + delta);
-                }
             }
 
             // A paid context implies paid ancestors: every walk covers the whole
@@ -402,7 +334,6 @@ internal sealed partial class LythonRuntime
             break;
         }
 
-        return retained;
     }
 
     // Module frames start as copies of the run builtins table; those aliases
@@ -421,463 +352,6 @@ internal sealed partial class LythonRuntime
         }
 
         return owned;
-    }
-
-    // MG22: imported definitions retain their lowered body graphs (lowered
-    // nodes plus syntax and constant nodes) for as long as the defined value
-    // is retained, even when bodies never execute. Module slots, scope tables
-    // and source text do not cover that graph, so each module owns its
-    // deferred code once at import preparation: deep syntax-node counts over
-    // every retained function, class-nested, lambda and generator body. Re-imports hit
-    // the registry and pay nothing, nested bodies pay once inside their outer
-    // walk instead of again at execution, and host-owned entry scripts never
-    // flow through import preparation, so no name check exists to spoof.
-    // Top-level executed statements are transient and stay owned through
-    // their values; conditional definitions over-count conservatively.
-    private const long RetainedSyntaxNodeBytes = 64;
-
-    // Per-literal shared-cache entry (weak handle plus table storage) retained
-    // beside each literal payload: one entry per lowered literal node, matching the
-    // reclamation entry rate until M03 calibrates table storage precisely.
-    private const long SharedLiteralEntryBytes = 64;
-
-    // Returns the committed bytes so a failed import can release a charge that was
-    // never published to the module registry; retrying then pays once, not per attempt.
-    internal static long ChargeDeferredModuleCode(
-        IReadOnlyList<StatementSyntax> statements,
-        MemoryGovernor? governor,
-        LythonSourceSpan? span)
-    {
-        if (statements.Count == 0 || governor is null)
-        {
-            return 0;
-        }
-
-        var measured = MeasureDeferredModuleCode(statements);
-        var bytes = RuntimeMemoryEstimates.SaturatingAdd(checked(measured.Nodes * RetainedSyntaxNodeBytes), measured.PayloadBytes);
-        governor.Reserve(bytes, span);
-        governor.Commit(bytes);
-        return bytes;
-    }
-
-    // Measures deferred bodies in one module pass: definitions count their full
-    // subtree once (nested definitions included); compounds, classes and plain
-    // statements contribute only deferred roots found in evaluated positions, since
-    // their own statements execute transiently. Nodes feed the per-node rate;
-    // payloads own retained literal bytes beside them.
-    internal static long CountDeferredModuleCode(IReadOnlyList<StatementSyntax> statements)
-        => MeasureDeferredModuleCode(statements).Nodes;
-
-    internal static (long Nodes, long PayloadBytes) MeasureDeferredModuleCode(
-        IReadOnlyList<StatementSyntax> statements)
-    {
-        var nodes = 0L;
-        var payload = 0L;
-        var search = new Stack<StatementSyntax>();
-        for (var i = statements.Count - 1; i >= 0; i--)
-        {
-            search.Push(statements[i]);
-        }
-
-        while (search.Count > 0)
-        {
-            var statement = search.Pop();
-            if (statement is FunctionDefinitionStatementSyntax)
-            {
-                var defined = MeasureRetainedSubtree(statement);
-                nodes += defined.Nodes;
-                payload = RuntimeMemoryEstimates.SaturatingAdd(payload, defined.PayloadBytes);
-                continue;
-            }
-
-            foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
-            {
-                for (var i = body.Count - 1; i >= 0; i--)
-                {
-                    search.Push(body[i]);
-                }
-            }
-
-            foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
-            {
-                var measured = MeasureDeferredRoots(expression);
-                nodes += measured.Nodes;
-                payload = RuntimeMemoryEstimates.SaturatingAdd(payload, measured.PayloadBytes);
-            }
-
-            var extra = MeasureExtraStatementDeferredRoots(statement);
-            nodes += extra.Nodes;
-            payload = RuntimeMemoryEstimates.SaturatingAdd(payload, extra.PayloadBytes);
-        }
-
-        return (nodes, payload);
-    }
-
-    // Measures deferred roots in evaluated positions: each outermost lambda or
-    // generator expression owns its full subtree once (parameters and clauses
-    // included); anything else there is transient (eager comprehension
-    // scaffolding included). A live generator retains its clauses and item
-    // expression like a function retains its body, so generators are roots
-    // exactly like lambdas.
-    private static (long Nodes, long PayloadBytes) MeasureDeferredRoots(ExpressionSyntax root)
-    {
-        var nodes = 0L;
-        var payload = 0L;
-        var pending = new Stack<ExpressionSyntax>();
-        pending.Push(root);
-        while (pending.Count > 0)
-        {
-            var expression = pending.Pop();
-            if (expression is LambdaExpressionSyntax or GeneratorExpressionSyntax)
-            {
-                var measured = MeasureRetainedSubtree(expression);
-                nodes += measured.Nodes;
-                payload = RuntimeMemoryEstimates.SaturatingAdd(payload, measured.PayloadBytes);
-                continue;
-            }
-
-            foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
-            {
-                pending.Push(child);
-            }
-        }
-
-        return (nodes, payload);
-    }
-
-    // Full retained-measure over one deferred subtree: node counts twin
-    // CountSyntaxNodes exactly (same children, same fail-loud shapes) while
-    // literal occurrences add their retained payloads beside the node rate.
-    // Each occurrence is a distinct lowered literal node with its own shared
-    // cache entry, so payloads charge per occurrence, not per distinct value.
-    internal static (long Nodes, long PayloadBytes) MeasureRetainedSubtree(StatementSyntax root)
-        => MeasureRetainedNodes(root);
-
-    internal static (long Nodes, long PayloadBytes) MeasureRetainedSubtree(ExpressionSyntax root)
-        => MeasureRetainedNodes(root);
-
-    private static (long Nodes, long PayloadBytes) MeasureRetainedNodes(object root)
-    {
-        var nodes = 0L;
-        var payload = 0L;
-        var pending = new Stack<object>();
-        pending.Push(root);
-        while (pending.Count > 0)
-        {
-            switch (pending.Pop())
-            {
-                case StatementSyntax statement:
-                    nodes++;
-                    payload = RuntimeMemoryEstimates.SaturatingAdd(payload, RetainedDeclarationNamesBytes(statement));
-                    PushStatementChildren(statement, pending);
-                    break;
-                case ExpressionSyntax expression:
-                    nodes++;
-                    payload = RuntimeMemoryEstimates.SaturatingAdd(payload, RetainedLiteralBytes(expression));
-                    PushExpressionChildren(expression, pending);
-                    break;
-                case PatternSyntax pattern:
-                    nodes++;
-                    if (pattern.OriginalBindingName is { } spelling)
-                        payload = RuntimeMemoryEstimates.SaturatingAdd(payload, checked(24L + 2L * spelling.Length));
-                    PushPatternChildren(pattern, pending);
-                    break;
-                default:
-                    throw new InvalidOperationException("Unknown retained syntax node.");
-            }
-        }
-
-        return (nodes, payload);
-    }
-
-    // A private declaration retains its original display spelling alongside
-    // its transformed binding. Account for that additional CLR string, including
-    // private type parameters whose public names preserve the source spelling.
-    private static long RetainedDeclarationNamesBytes(StatementSyntax statement)
-    {
-        var (original, parameters) = statement switch
-        {
-            FunctionDefinitionStatementSyntax function => (function.OriginalName, function.TypeParameters),
-            ClassDefinitionStatementSyntax type => (type.OriginalName, type.TypeParameters),
-            TypeAliasStatementSyntax alias => (alias.OriginalName, alias.TypeParameters),
-            _ => ((string?)null, (IReadOnlyList<TypeParameterSyntax>?)null)
-        };
-        static long Bytes(string? name) => name is null ? 0 : checked(24L + 2L * name.Length);
-        var bytes = Bytes(original);
-        if (parameters is not null)
-            foreach (var parameter in parameters)
-                bytes = RuntimeMemoryEstimates.SaturatingAdd(bytes, Bytes(parameter.OriginalName));
-        return bytes;
-    }
-
-    // Retained payload per literal occurrence, mirroring construction charges:
-    // strings and bytes keep their estimated payload, integers keep their
-    // boxed magnitude, each beside one shared-cache entry. Floats parse fresh
-    // per evaluation and singletons retain nothing, so they carry no payload.
-    // Formatted-string text chunks persist inside the retained lowered parts.
-    private static long RetainedLiteralBytes(ExpressionSyntax expression) => RuntimeMemoryEstimates.SaturatingAdd(
-        expression.PostponedAnnotationText is { } text ? checked(24L + 2L * text.Length) : 0,
-        RetainedExpressionLiteralBytes(expression));
-
-    private static long RetainedExpressionLiteralBytes(ExpressionSyntax expression) => expression switch
-    {
-        StringLiteralExpressionSyntax text => RuntimeMemoryEstimates.SaturatingAdd(
-            PyString.EstimateApproximateBytes(Encoding.UTF8.GetByteCount(text.Value)),
-            SharedLiteralEntryBytes),
-        BytesLiteralExpressionSyntax bytes => RuntimeMemoryEstimates.SaturatingAdd(
-            PyBytes.EstimateApproximateBytes(bytes.Value.Length),
-            SharedLiteralEntryBytes),
-        IntegerLiteralExpressionSyntax integer => RuntimeMemoryEstimates.SaturatingAdd(
-            RuntimeMemoryEstimates.EstimateBigIntegerBytes(ParseInteger(integer)),
-            SharedLiteralEntryBytes),
-        FormattedStringExpressionSyntax formatted => RetainedFormatTextBytes(formatted.Parts),
-        _ => 0,
-    };
-
-    private static long RetainedFormatTextBytes(IReadOnlyList<FormattedStringPartSyntax>? parts)
-    {
-        if (parts is null)
-        {
-            return 0;
-        }
-
-        var bytes = 0L;
-        foreach (var part in parts)
-        {
-            switch (part)
-            {
-                case FormattedStringTextPartSyntax text:
-                    bytes = RuntimeMemoryEstimates.SaturatingAdd(bytes, Encoding.UTF8.GetByteCount(text.Text));
-                    break;
-                case FormattedStringExpressionPartSyntax expressionPart:
-                    bytes = RuntimeMemoryEstimates.SaturatingAdd(bytes, RetainedFormatTextBytes(expressionPart.FormatSpecifierParts));
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unknown format part: {part.GetType().Name}");
-            }
-        }
-
-        return bytes;
-    }
-
-    // Match patterns sit outside the shared expression traversal. Their
-    // embedded expressions participate in deferred-root accounting as well.
-    private static (long Nodes, long PayloadBytes) MeasureExtraStatementDeferredRoots(StatementSyntax statement)
-    {
-        var nodes = 0L;
-        var payload = 0L;
-        if (statement is MatchStatementSyntax matchStatement)
-        {
-            foreach (var matchCase in matchStatement.Cases)
-            {
-                var measured = MeasureDeferredRootsInPattern(matchCase.Pattern);
-                nodes += measured.Nodes;
-                payload = RuntimeMemoryEstimates.SaturatingAdd(payload, measured.PayloadBytes);
-            }
-        }
-
-        return (nodes, payload);
-    }
-
-    private static (long Nodes, long PayloadBytes) MeasureDeferredRootsInPattern(PatternSyntax root)
-    {
-        var nodes = 0L;
-        var payload = 0L;
-        var pending = new Stack<PatternSyntax>();
-        pending.Push(root);
-        while (pending.Count > 0)
-        {
-            var pattern = pending.Pop();
-            foreach (var expression in EnumeratePatternExpressions(pattern))
-            {
-                var measured = MeasureDeferredRoots(expression);
-                nodes += measured.Nodes;
-                payload = RuntimeMemoryEstimates.SaturatingAdd(payload, measured.PayloadBytes);
-            }
-
-            foreach (var nested in EnumeratePatternSubpatterns(pattern))
-            {
-                pending.Push(nested);
-            }
-        }
-
-        return (nodes, payload);
-    }
-
-    private static IEnumerable<ExpressionSyntax> EnumeratePatternExpressions(PatternSyntax pattern)
-    {
-        switch (pattern)
-        {
-            case MatchValuePatternSyntax value:
-                yield return value.Expression;
-                break;
-            case MatchMappingPatternSyntax mapping:
-                foreach (var item in mapping.Items)
-                {
-                    yield return item.Key;
-                }
-
-                break;
-            case MatchClassPatternSyntax @class:
-                yield return @class.ClassExpression;
-                break;
-            default:
-                break;
-        }
-    }
-
-    private static IEnumerable<PatternSyntax> EnumeratePatternSubpatterns(PatternSyntax pattern)
-    {
-        switch (pattern)
-        {
-            case MatchSequencePatternSyntax sequence:
-                foreach (var item in sequence.Items)
-                {
-                    yield return item;
-                }
-
-                break;
-            case MatchMappingPatternSyntax mapping:
-                foreach (var item in mapping.Items)
-                {
-                    yield return item.Pattern;
-                }
-
-                break;
-            case MatchClassPatternSyntax @class:
-                foreach (var positional in @class.PositionalPatterns)
-                {
-                    yield return positional;
-                }
-
-                foreach (var keyword in @class.KeywordPatterns)
-                {
-                    yield return keyword.Pattern;
-                }
-
-                break;
-            case MatchAsPatternSyntax @as:
-                yield return @as.Pattern;
-                break;
-            case MatchOrPatternSyntax or:
-                foreach (var alternative in or.Patterns)
-                {
-                    yield return alternative;
-                }
-
-                break;
-            case MatchValuePatternSyntax:
-            case MatchSingletonPatternSyntax:
-            case MatchCapturePatternSyntax:
-            case MatchWildcardPatternSyntax:
-            case MatchStarPatternSyntax:
-                break;
-            default:
-                throw new InvalidOperationException($"Unknown match pattern: {pattern.GetType().Name}");
-        }
-    }
-
-    // Full retained-node count over one deferred subtree: every statement,
-    // expression, pattern and target reference the lowered graph keeps alive
-    // through the defined value. Single pass, iterative for deep nesting.
-    // Full retained-node count over one deferred subtree: every statement,
-    // expression, pattern and target reference the lowered graph keeps alive
-    // through the defined value. Single pass, iterative for deep nesting;
-    // unknown shapes fail loud instead of silently undercounting.
-    internal static long CountSyntaxSubtree(StatementSyntax root)
-        => CountSyntaxNodes(root);
-
-    internal static long CountSyntaxSubtree(ExpressionSyntax root)
-        => CountSyntaxNodes(root);
-
-    private static long CountSyntaxNodes(object root)
-    {
-        var count = 0L;
-        var pending = new Stack<object>();
-        pending.Push(root);
-        while (pending.Count > 0)
-        {
-            switch (pending.Pop())
-            {
-                case StatementSyntax statement:
-                    count++;
-                    PushStatementChildren(statement, pending);
-                    break;
-                case ExpressionSyntax expression:
-                    count++;
-                    PushExpressionChildren(expression, pending);
-                    break;
-                case PatternSyntax pattern:
-                    count++;
-                    PushPatternChildren(pattern, pending);
-                    break;
-                default:
-                    throw new InvalidOperationException("Unknown retained syntax node.");
-            }
-        }
-
-        return count;
-    }
-
-    private static void PushStatementChildren(StatementSyntax statement, Stack<object> pending)
-    {
-        foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
-        {
-            pending.Push(expression);
-        }
-
-        if (statement is MatchStatementSyntax matchStatement)
-        {
-            foreach (var matchCase in matchStatement.Cases)
-            {
-                pending.Push(matchCase.Pattern);
-            }
-        }
-
-        foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
-        {
-            foreach (var nested in body)
-            {
-                pending.Push(nested);
-            }
-        }
-    }
-
-    private static void PushExpressionChildren(ExpressionSyntax expression, Stack<object> pending)
-    {
-        if (expression is LambdaExpressionSyntax lambda)
-        {
-            foreach (var parameter in lambda.Parameters)
-            {
-                if (parameter.Annotation is not null)
-                {
-                    pending.Push(parameter.Annotation);
-                }
-
-                if (parameter.DefaultValue is not null)
-                {
-                    pending.Push(parameter.DefaultValue);
-                }
-            }
-        }
-
-        foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
-        {
-            pending.Push(child);
-        }
-    }
-
-    private static void PushPatternChildren(PatternSyntax pattern, Stack<object> pending)
-    {
-        foreach (var expression in EnumeratePatternExpressions(pattern))
-        {
-            pending.Push(expression);
-        }
-
-        foreach (var nested in EnumeratePatternSubpatterns(pattern))
-        {
-            pending.Push(nested);
-        }
     }
 
     internal static Dictionary<string, object> BuildDefaultArgumentMap(
@@ -951,7 +425,6 @@ internal sealed partial class LythonRuntime
                 if (_annotations is null)
                 {
                     var annotations = new PyDict(_closure.MemoryGovernor);
-                    _closure.Services.State.CallTemporaries.TrackFreshMutable(annotations, annotations.CommittedStorageBytes);
                     _annotations = annotations;
                 }
                 value = _annotations;
@@ -1204,11 +677,10 @@ internal sealed partial class LythonRuntime
                             ?? throw new InvalidOperationException("Missing module exception type.");
                 }
             var tuple = new PyTuple(resolved, context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, span);
             try { context.Services.State.CacheExceptionBases(ExceptionIdentity, tuple, span); }
             catch
             {
-                context.Services.State.CallTemporaries.RefundUnpublishedValue(tuple);
+                context.Services.State.MemoryGovernor.RefundUnpublishedValue(tuple);
                 throw;
             }
             value = tuple;
@@ -1242,14 +714,9 @@ internal sealed partial class LythonRuntime
 
         public override int GetHashCode() => ExceptionIdentity.GetHashCode();
 
-        // M05: only the CLR text survives message rendering, so the transient
-        // is pool-owned here and dropped renders reclaim on sweep. Already-owned
-        // renders (notably PyString args rendering to themselves) dedup to a
-        // no-op through the shared table instead of double-owning guest charges.
         private static string TakeMessageText(PyString rendered, ExecutionContext context, LythonSourceSpan span)
         {
             var text = rendered.AsString();
-            context.Services.State.CallTemporaries.TrackFreshString(rendered, span);
             return text;
         }
 
@@ -1288,10 +755,6 @@ internal sealed partial class LythonRuntime
                 _ => TakeMessageText(PyRendering.ToReprPyString(args, new PyRenderingContext(context)), context, span),
             };
             var payload = values.Length == 0 ? PyNone.Instance : values.Length == 1 ? values[0] : args;
-            // Args own their backing independently from the exception shell.
-            // Register before shell admission so a failed or dropped constructor
-            // leaves no untracked tuple charge; handler rewraps keep the alias.
-            context.Services.State.CallTemporaries.TrackFreshMutable(args, args.CommittedStorageBytes, span);
             return PyException.CreateOwned(ExceptionIdentity, message, payload, context, span, args);
         }
     }

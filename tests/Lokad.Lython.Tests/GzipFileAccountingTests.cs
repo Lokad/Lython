@@ -39,9 +39,7 @@ public sealed class GzipFileAccountingTests
         Assert.Equal(false, closed);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         // Aliases share one registration; close must not refund the live shell.
-        var entries = context.State.CallTemporaries.Count;
-        context.State.CallTemporaries.TrackCallResult(reader, Span);
-        Assert.Equal(entries, context.State.CallTemporaries.Count);
+
         GC.KeepAlive(raw); GC.KeepAlive(reader); GC.KeepAlive(output);
     }
 
@@ -58,11 +56,8 @@ public sealed class GzipFileAccountingTests
         Assert.True(Snapshot(writer) > 512 + LythonRuntime.ZlibModule.CompressionScratchBytes);
         await Call(writer, "close", context, asynchronous);
         Assert.Equal(512, Snapshot(writer));
-        // Remove dead header/trailer/input values but retain both live aliases.
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= 512 + raw.OwnedBytes);
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
-        context.State.CallTemporaries.Sweep(full: true);
-        Assert.Equal(512 + raw.OwnedBytes + 2 * ChargeReclamationPool.EntryChargeBytes
-            + context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         var once = context.MemoryGovernor.CurrentCommittedBytes;
         await Call(writer, "close", context, asynchronous);
@@ -72,15 +67,18 @@ public sealed class GzipFileAccountingTests
     }
 
     [Fact]
-    public void DroppedReaderFinalizesAndReclaimsItsNativeCouponAndCursorGraph()
+    public void CollectedReaderFinalizesWhileAccountingRemainsBatchOwned()
     {
-        var context = Context();
+        var budget = new LythonMemoryBudget(2000000);
+        using var owner = budget.CreateScope();
+        var context = Context(null, owner);
         var weak = DropReader(context);
+        var funded = budget.ReservedBytes;
         for (var attempt = 0; attempt < 3; attempt++) { GC.Collect(); GC.WaitForPendingFinalizers(); }
         Assert.False(weak.IsAlive);
-        context.State.CallTemporaries.Sweep(full: true);
-        Assert.Equal(0, context.State.CallTemporaries.Count);
-        Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(funded, budget.ReservedBytes);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -123,14 +121,18 @@ public sealed class GzipFileAccountingTests
     {
         var context = Context(cap);
         var raw = Raw(context, []);
+        long? admittedSetup = null;
         for (var attempt = 0; attempt < 10; attempt++)
         {
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
                 await Construct(context, raw, "wb", false));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            Assert.Equal(raw.OwnedBytes + ChargeReclamationPool.EntryChargeBytes
-                + context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+            // Setup may retain the borrowed stream's name/dispatch metadata.
+            // A refused wrapper/compressor must not strand another shell on retry.
+            admittedSetup ??= context.MemoryGovernor.CurrentCommittedBytes;
+            Assert.Equal(admittedSetup.Value, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.True(admittedSetup.Value >= raw.OwnedBytes);
         }
         GC.KeepAlive(raw);
     }
@@ -193,94 +195,8 @@ public sealed class GzipFileAccountingTests
         GC.KeepAlive(raw); GC.KeepAlive(wrapper);
     }
 
-    private static LythonRuntime.ExecutionContext Context(long? cap = null)
-        => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task AbandonmentDetachesCursorAndPreservesEscapedInput(bool asynchronous)
-    {
-        var context = Context(2_000_000);
-        var raw = Raw(context, Member);
-        var owner = await Construct(context, raw, "rb", asynchronous);
-        var escaped = await Call(owner, "read", context, asynchronous, BigInteger.One);
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        var cursorField = owner.GetType().GetField("_cursor", flags)!;
-        var cursor = cursorField.GetValue(owner)!;
-        var input = Assert.IsType<PyBytes>(cursor.GetType().GetField("_input", flags)!.GetValue(cursor));
-        Assert.IsAssignableFrom<IPyFinalizableOwnership>(owner).AbandonStorage();
-        Assert.Null(cursorField.GetValue(owner));
-        Assert.Equal(512, Snapshot(owner));
-        GC.KeepAlive(escaped);
-        GC.KeepAlive(input);
-    }
-
-    [Theory]
-    [InlineData("rb", false)]
-    [InlineData("rb", true)]
-    [InlineData("wb", false)]
-    [InlineData("wb", true)]
-    public async Task AbandonmentAtFullCancelledBudgetReleasesOnlyLocalStorage(string mode, bool asynchronous)
-    {
-        const long cap = 2_000_000;
-        using var cancellation = new CancellationTokenSource();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-            { MaxExecutionMemoryBytes = cap, CancellationToken = cancellation.Token });
-        var raw = Raw(context, mode == "rb" ? Member : []);
-        var owner = await Construct(context, raw, mode, asynchronous);
-        PyBytes escaped;
-        if (mode == "rb")
-            escaped = Assert.IsType<PyBytes>(await Call(owner, "read", context, asynchronous, BigInteger.One));
-        else
-        {
-            await Call(owner, "write", context, asynchronous, new PyBytes(new byte[32769]));
-            escaped = raw.GetValue(Span);
-        }
-        var ownedBefore = Snapshot(owner);
-        var rawBytes = raw.OwnedBytes;
-        var rawLength = raw.Length;
-        var rawPosition = raw.Position;
-        var escapedBytes = escaped.CommittedStorageBytes;
-        var committed = context.MemoryGovernor.CurrentCommittedBytes;
-        using var pressure = context.MemoryGovernor.ReserveTemporary(cap - context.MemoryGovernor.CurrentAccountedBytes, Span);
-        cancellation.Cancel();
-        var finalizable = Assert.IsAssignableFrom<IPyFinalizableOwnership>(owner);
-        finalizable.AbandonStorage();
-        Assert.Equal(512, Snapshot(owner));
-        Assert.Equal(committed - ownedBefore + 512, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(rawBytes, raw.OwnedBytes);
-        Assert.Equal(rawLength, raw.Length);
-        Assert.Equal(rawPosition, raw.Position);
-        Assert.Equal(escapedBytes, escaped.CommittedStorageBytes);
-        Assert.Equal(false, Get(raw, "closed"));
-        Assert.Equal(true, Get(owner, "closed"));
-        Assert.Same(PyNone.Instance, Get(owner, "fileobj"));
-        var after = context.MemoryGovernor.CurrentCommittedBytes;
-        finalizable.AbandonStorage();
-        Assert.Equal(after, context.MemoryGovernor.CurrentCommittedBytes);
-        GC.KeepAlive(escaped);
-    }
-
-    [Fact]
-    public async Task AbandonmentDisposalFaultStillReleasesBuffersAndCanBeRepeated()
-    {
-        var context = Context(2_000_000);
-        var raw = Raw(context, []);
-        var owner = await Construct(context, raw, "wb", false);
-        await Call(owner, "write", context, false, new PyBytes(new byte[32769]));
-        var native = ReplaceNativeWithThrowingDisposer(owner);
-        var owned = Snapshot(owner);
-        var committed = context.MemoryGovernor.CurrentCommittedBytes;
-        var finalizable = Assert.IsAssignableFrom<IPyFinalizableOwnership>(owner);
-        Assert.Same(native.Failure, Assert.Throws<IOException>(finalizable.AbandonStorage));
-        Assert.Equal(512, Snapshot(owner));
-        Assert.Equal(committed - owned + 512, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(true, Get(owner, "closed"));
-        Assert.Equal(false, Get(raw, "closed"));
-        finalizable.AbandonStorage();
-        Assert.Equal(1, native.DisposeCount);
-    }
+    private static LythonRuntime.ExecutionContext Context(long? cap = null, ILythonMemoryBudget? budget = null)
+        => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap, MemoryBudget = budget });
 
     [Theory]
     [InlineData(false)]
@@ -314,33 +230,6 @@ public sealed class GzipFileAccountingTests
         var replacement = new ThrowingDeflateStream();
         field.SetValue(owner, replacement);
         return replacement;
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ActiveReadCallbackCannotAbandonItsOwner(bool asynchronous)
-    {
-        var context = Context(2_000_000);
-        var source = new CallbackReadSource();
-        var owner = await Construct(context, source, "rb", asynchronous);
-        var guarded = 0;
-        source.OnRead = () =>
-        {
-            var snapshot = Snapshot(owner);
-            var committed = context.MemoryGovernor.CurrentCommittedBytes;
-            Assert.Throws<InvalidOperationException>(Assert.IsAssignableFrom<IPyFinalizableOwnership>(owner).AbandonStorage);
-            Assert.Equal(snapshot, Snapshot(owner));
-            Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
-            Assert.Equal(false, Get(owner, "closed"));
-            guarded++;
-        };
-        var result = Assert.IsType<PyBytes>(await Call(owner, "read", context, asynchronous, BigInteger.One));
-        Assert.Equal(new byte[] { (byte)'a' }, result.Bytes.ToArray());
-        Assert.True(guarded > 0);
-        Assert.IsAssignableFrom<IPyFinalizableOwnership>(owner).AbandonStorage();
-        Assert.Equal(512, Snapshot(owner));
-        GC.KeepAlive(result);
     }
 
     private sealed class CallbackReadSource : IPyDynamicAttributes
@@ -386,7 +275,6 @@ public sealed class GzipFileAccountingTests
     private static LythonRuntime.BytesIOObject Raw(LythonRuntime.ExecutionContext context, byte[] initial)
     {
         var raw = new LythonRuntime.BytesIOObject(context.Services, Span);
-        context.State.CallTemporaries.TrackFreshMutable(raw, raw.OwnedBytes, Span);
         if (initial.Length > 0) { raw.Write(new PyBytes(initial), Span); raw.Seek(0, 0, Span); }
         return raw;
     }

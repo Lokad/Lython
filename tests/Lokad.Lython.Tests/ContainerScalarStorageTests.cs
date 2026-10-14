@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
@@ -21,19 +20,11 @@ public sealed class ContainerScalarStorageTests
 
 
 
-    private static long PooledCharge(ChargeReclamationPool pool, object value)
+    private static long StorageCharge(object value)
     {
-        // Read the shared registration lookup so this checks the same snapshot
-        // for values with an adjacent entry and values using the weak table.
-        var lookup = typeof(ChargeReclamationPool)
-            .GetMethod("TryGetEntry", BindingFlags.NonPublic | BindingFlags.Static)!;
-        var args = new object?[] { value, null };
-        if (!(bool)lookup.Invoke(null, args)!)
-        {
-            throw new InvalidOperationException("Value is not pool-tracked.");
-        }
-
-        return (long)args[1]!.GetType().GetProperty("ValueCharge")!.GetValue(args[1])!;
+        var owner = Assert.IsAssignableFrom<IPyOwnershipSnapshot>(value);
+        Assert.True(owner.TrySnapshotOwnership(out var bytes));
+        return bytes;
     }
 
     [Fact]
@@ -46,20 +37,18 @@ public sealed class ContainerScalarStorageTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
-        var pool = new ChargeReclamationPool(governor);
         var items = new object[] { new BigInteger(1), new BigInteger(2) };
         var before = governor.CurrentCommittedBytes;
         var list = new PyList(items, governor, span);
         var coupons = 2 * RuntimeMemoryEstimates.ScalarStorageBytes;
-        pool.TrackFreshMutable(list, list.CommittedStorageBytes, span);
-        Assert.Equal(list.CommittedStorageBytes, PooledCharge(pool, list));
-        var trackedBefore = PooledCharge(pool, list);
+        Assert.Equal(list.CommittedStorageBytes, StorageCharge(list));
+        var trackedBefore = StorageCharge(list);
         list.RemoveAt(0);
         list.RemoveAt(0);
-        Assert.Equal(trackedBefore - coupons, PooledCharge(pool, list));
-        Assert.Equal(list.CommittedStorageBytes, PooledCharge(pool, list));
+        Assert.Equal(trackedBefore - coupons, StorageCharge(list));
+        Assert.Equal(list.CommittedStorageBytes, StorageCharge(list));
         Assert.Equal(
-            list.CommittedStorageBytes + ChargeReclamationPool.EntryChargeBytes + pool.CommittedBackingBytes,
+            list.CommittedStorageBytes,
             governor.CurrentCommittedBytes - before);
     }
 
@@ -69,11 +58,9 @@ public sealed class ContainerScalarStorageTests
     public void ListSteppedDeletionReleasesRemovedIdentities(int start, int end, int step)
     {
         var governor = new MemoryGovernor(65536);
-        var pool = new ChargeReclamationPool(governor);
         var items = Enumerable.Range(0, 5).Select(i => (object)new BigInteger(i)).ToArray();
         var list = new PyList(items, governor);
         var backing = list.CommittedStorageBytes - 5 * RuntimeMemoryEstimates.ScalarStorageBytes;
-        pool.TrackFreshMutable(list, list.CommittedStorageBytes);
 
         list.DeleteSlice(new PyIndexing.SliceBounds(start, end, step));
         Assert.Equal(2, list.Count);
@@ -84,8 +71,8 @@ public sealed class ContainerScalarStorageTests
 
         Assert.Empty(list);
         Assert.Equal(backing, list.CommittedStorageBytes);
-        Assert.Equal(backing, PooledCharge(pool, list));
-        Assert.Equal(backing + ChargeReclamationPool.EntryChargeBytes + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(backing, StorageCharge(list));
+        Assert.Equal(backing, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 
@@ -93,11 +80,9 @@ public sealed class ContainerScalarStorageTests
     public void ListSteppedDeletionReleasesRemovedIdentitiesWithArrayStorage()
     {
         var governor = new MemoryGovernor(65536);
-        var pool = new ChargeReclamationPool(governor);
         var items = Enumerable.Range(0, 32).Select(i => (object)new BigInteger(i)).ToArray();
         var list = new PyList(items, governor);
         var backing = list.CommittedStorageBytes - items.Length * RuntimeMemoryEstimates.ScalarStorageBytes;
-        pool.TrackFreshMutable(list, list.CommittedStorageBytes);
 
         list.DeleteSlice(new PyIndexing.SliceBounds(0, items.Length, 2));
         Assert.Equal(16, list.Count);
@@ -105,8 +90,8 @@ public sealed class ContainerScalarStorageTests
         while (list.Count != 0) list.RemoveAt(0);
 
         Assert.Equal(backing, list.CommittedStorageBytes);
-        Assert.Equal(backing, PooledCharge(pool, list));
-        Assert.Equal(backing + ChargeReclamationPool.EntryChargeBytes + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(backing, StorageCharge(list));
+        Assert.Equal(backing, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 
@@ -114,25 +99,23 @@ public sealed class ContainerScalarStorageTests
     public void ListSteppedDeletionReleasesEachNumericSlot()
     {
         var governor = new MemoryGovernor(65536);
-        var pool = new ChargeReclamationPool(governor);
         object removed = new BigInteger(1);
         object kept = new BigInteger(2);
         var list = new PyList(new object[] { removed, kept, removed, kept, new BigInteger(3) }, governor);
         var backing = list.CommittedStorageBytes - 5 * RuntimeMemoryEstimates.ScalarStorageBytes;
-        pool.TrackFreshMutable(list, list.CommittedStorageBytes);
 
         list.DeleteSlice(new PyIndexing.SliceBounds(0, 5, 2));
         Assert.Equal(2, list.Count);
         Assert.Same(kept, list[0]);
         Assert.Same(kept, list[1]);
         Assert.Equal(backing + 2 * RuntimeMemoryEstimates.ScalarStorageBytes, list.CommittedStorageBytes);
-        Assert.Equal(list.CommittedStorageBytes, PooledCharge(pool, list));
+        Assert.Equal(list.CommittedStorageBytes, StorageCharge(list));
         list.RemoveAt(0);
         Assert.Equal(backing + RuntimeMemoryEstimates.ScalarStorageBytes, list.CommittedStorageBytes);
         list.RemoveAt(0);
         Assert.Equal(backing, list.CommittedStorageBytes);
-        Assert.Equal(backing, PooledCharge(pool, list));
-        Assert.Equal(backing + ChargeReclamationPool.EntryChargeBytes + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(backing, StorageCharge(list));
+        Assert.Equal(backing, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 
@@ -145,16 +128,14 @@ public sealed class ContainerScalarStorageTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
-        var pool = new ChargeReclamationPool(governor);
         var set = new PySet(governor, span);
-        pool.TrackFreshMutable(set, set.CommittedStorageBytes, span);
         object box = new BigInteger(7);
         Assert.True(set.Add(box));
-        var trackedAfterFirst = PooledCharge(pool, set);
+        var trackedAfterFirst = StorageCharge(set);
         Assert.False(set.Add(box));
-        Assert.Equal(trackedAfterFirst, PooledCharge(pool, set));
+        Assert.Equal(trackedAfterFirst, StorageCharge(set));
         Assert.False(set.Add(new BigInteger(7)));
-        Assert.Equal(trackedAfterFirst, PooledCharge(pool, set));
+        Assert.Equal(trackedAfterFirst, StorageCharge(set));
     }
 
     [Fact]
@@ -166,19 +147,17 @@ public sealed class ContainerScalarStorageTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
-        var pool = new ChargeReclamationPool(governor);
         var before = governor.CurrentCommittedBytes;
         var set = new PySet(new object[] { new BigInteger(1), new BigInteger(2) }, governor, span);
         var coupons = 2 * RuntimeMemoryEstimates.ScalarStorageBytes;
-        pool.TrackFreshMutable(set, set.CommittedStorageBytes, span);
-        Assert.Equal(set.CommittedStorageBytes, PooledCharge(pool, set));
-        var trackedBefore = PooledCharge(pool, set);
+        Assert.Equal(set.CommittedStorageBytes, StorageCharge(set));
+        var trackedBefore = StorageCharge(set);
         Assert.True(set.Remove(new BigInteger(1)));
         Assert.True(set.Remove(new BigInteger(2)));
-        Assert.Equal(trackedBefore - coupons, PooledCharge(pool, set));
-        Assert.Equal(set.CommittedStorageBytes, PooledCharge(pool, set));
+        Assert.Equal(trackedBefore - coupons, StorageCharge(set));
+        Assert.Equal(set.CommittedStorageBytes, StorageCharge(set));
         Assert.Equal(
-            set.CommittedStorageBytes + ChargeReclamationPool.EntryChargeBytes + pool.CommittedBackingBytes,
+            set.CommittedStorageBytes,
             governor.CurrentCommittedBytes - before);
     }
 
@@ -191,15 +170,13 @@ public sealed class ContainerScalarStorageTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
-        var pool = new ChargeReclamationPool(governor);
         var set = new PySet(governor, span);
         object held = new BigInteger(7);
         Assert.True(set.Add(held));
-        pool.TrackFreshMutable(set, set.CommittedStorageBytes, span);
-        var trackedBefore = PooledCharge(pool, set);
+        var trackedBefore = StorageCharge(set);
         Assert.False(set.Add(new BigInteger(7)));
         Assert.True(set.Remove(new BigInteger(7)));
-        Assert.Equal(trackedBefore - RuntimeMemoryEstimates.ScalarStorageBytes, PooledCharge(pool, set));
+        Assert.Equal(trackedBefore - RuntimeMemoryEstimates.ScalarStorageBytes, StorageCharge(set));
         Assert.Equal(0, set.Count);
     }
 
@@ -254,14 +231,12 @@ public sealed class ContainerScalarStorageTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
-        var pool = new ChargeReclamationPool(governor);
         var dict = new PyDict(governor, span);
         object key = new BigInteger(1);
         dict.SetItem(key, new BigInteger(100));
-        pool.TrackFreshMutable(dict, dict.CommittedStorageBytes, span);
-        var trackedAfterInsert = PooledCharge(pool, dict);
+        var trackedAfterInsert = StorageCharge(dict);
         dict.SetItem(key, new BigInteger(200));
-        Assert.Equal(trackedAfterInsert, PooledCharge(pool, dict));
+        Assert.Equal(trackedAfterInsert, StorageCharge(dict));
         Assert.Equal(new BigInteger(200), dict.GetItem(key));
     }
 
@@ -274,14 +249,12 @@ public sealed class ContainerScalarStorageTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
-        var pool = new ChargeReclamationPool(governor);
         var dict = new PyDict(governor, span);
         object held = new BigInteger(7);
         dict.SetItem(held, new BigInteger(100));
-        pool.TrackFreshMutable(dict, dict.CommittedStorageBytes, span);
-        var trackedBefore = PooledCharge(pool, dict);
+        var trackedBefore = StorageCharge(dict);
         Assert.True(dict.Remove(7.0));
-        Assert.Equal(trackedBefore - 128L, PooledCharge(pool, dict));
+        Assert.Equal(trackedBefore - 128L, StorageCharge(dict));
         Assert.Equal(0, dict.Count);
     }
 

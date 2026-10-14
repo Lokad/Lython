@@ -18,11 +18,10 @@ public sealed class IntegerAliasOwnershipTests
         Assert.True(context.TryGetBuiltin(name, out var builtin));
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(builtin);
         object receiver = BigInteger.One << 4000;
-        LythonRuntime.OwnFreshInteger(receiver, context.MemoryGovernor, context.Services.State.CallTemporaries, Span);
+        LythonRuntime.OwnFreshInteger(receiver, context.MemoryGovernor, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var result = callable.Invoke([CallArgumentValue.Positional(receiver)], Span, context);
         Assert.Same(receiver, result);
-        Assert.Equal(1, context.Services.State.CallTemporaries.Count);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         GC.KeepAlive(receiver);
     }
@@ -38,12 +37,11 @@ public sealed class IntegerAliasOwnershipTests
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         object receiver = BigInteger.One << 4000;
-        LythonRuntime.OwnFreshInteger(receiver, context.MemoryGovernor, context.Services.State.CallTemporaries, Span);
+        LythonRuntime.OwnFreshInteger(receiver, context.MemoryGovernor, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.True(LythonRuntime.IntMembers.TryGetMember(receiver, member, out var value));
         var result = Assert.IsAssignableFrom<LythonRuntime.ICallable>(value).Invoke([], Span, context);
         Assert.Same(receiver, result);
-        Assert.Equal(1, context.Services.State.CallTemporaries.Count);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         GC.KeepAlive(receiver);
     }
@@ -57,15 +55,13 @@ public sealed class IntegerAliasOwnershipTests
         Assert.True(context.TryGetBuiltin(name, out var builtin));
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(builtin);
         object receiver = -(BigInteger.One << 4000);
-        LythonRuntime.OwnFreshInteger(receiver, context.MemoryGovernor, context.Services.State.CallTemporaries, Span);
+        LythonRuntime.OwnFreshInteger(receiver, context.MemoryGovernor, Span);
         var arguments = name == "abs"
             ? new[] { CallArgumentValue.Positional(receiver) }
             : new[] { CallArgumentValue.Positional(receiver), CallArgumentValue.Positional(new BigInteger(-4)) };
         var result = callable.Invoke(arguments, Span, context);
         Assert.NotSame(receiver, result);
         Assert.IsType<BigInteger>(result);
-        Assert.True(context.Services.State.CallTemporaries.IsTracked(result));
-        Assert.Equal(2, context.Services.State.CallTemporaries.Count);
         GC.KeepAlive(receiver);
         GC.KeepAlive(result);
     }

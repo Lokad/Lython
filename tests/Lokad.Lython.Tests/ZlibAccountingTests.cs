@@ -25,7 +25,6 @@ public sealed class ZlibAccountingTests
                 Assert.Equal(PythonExceptionIdentity.Module("zlib", "error"), error.Identity);
                 Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-                Assert.Equal(0, context.State.CallTemporaries.Count);
             }
     }
 
@@ -45,8 +44,7 @@ public sealed class ZlibAccountingTests
                 LythonRuntime.ZlibModule.DecompressBytes(Expansion, context, Span));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
-            Assert.Equal(0, context.State.CallTemporaries.Count);
+            Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         }
     }
 
@@ -67,24 +65,22 @@ public sealed class ZlibAccountingTests
                 LythonRuntime.ZlibModule.CompressBytes(data, 6, context, Span));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
-            Assert.Equal(0, context.State.CallTemporaries.Count);
+            Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         }
     }
 
     [Fact]
-    public void PublicationRegistryDenialRefundsTheExactCopy()
+    public void PublicationCopyAdmissionDenialRefundsScratch()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 256 });
+            new LythonRunOptions { MaxExecutionMemoryBytes = 40 });
         for (var attempt = 0; attempt < 20; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
                 LythonRuntime.ZlibModule.CompressBytes(ReadOnlyMemory<byte>.Empty, 6, context, Span));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
-            Assert.Equal(0, context.State.CallTemporaries.Count);
+            Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         }
     }
 
@@ -128,29 +124,32 @@ public sealed class ZlibAccountingTests
     }
 
     [Fact]
-    public void ReturnedOutputOwnsOnlyItsRetainedCoupon()
+    public void ReturnedOutputKeepsOnlyItsPayloadFunding()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         var bytes = LythonRuntime.ZlibModule.DecompressBytes(Expansion, context, Span);
         Assert.Equal(20000, bytes.Length);
         Assert.Same(context.MemoryGovernor, bytes.OwnerMemoryGovernor);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(20032 + 128 + context.State.CallTemporaries.CommittedBackingBytes,
+        Assert.Equal(bytes.CommittedStorageBytes,
             context.MemoryGovernor.CurrentCommittedBytes);
         Assert.True(context.MemoryGovernor.PeakReservedBytes >= LythonRuntime.ZlibModule.InflationScratchBytes);
         GC.KeepAlive(bytes);
     }
 
     [Fact]
-    public void DroppedOutputReclaimsItsPayload()
+    public void CollectedOutputRemainsOwnedUntilBatchCleanup()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var budget = new LythonMemoryBudget(512000);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         var weak = CreateDroppedOutput(context);
+        var funded = budget.ReservedBytes;
         for (var attempt = 0; attempt < 4; attempt++) { GC.Collect(); GC.WaitForPendingFinalizers(); }
         Assert.False(weak.IsAlive);
-        context.State.CallTemporaries.Sweep(full: true);
-        Assert.Equal(0, context.State.CallTemporaries.Count);
-        Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(funded, budget.ReservedBytes);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

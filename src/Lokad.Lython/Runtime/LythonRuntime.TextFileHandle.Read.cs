@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
             bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
                 => OwnershipSnapshot.Owned(_services.MemoryGovernor, OwnedBytes, out chargeBytes);
 
-            private void RefreshOwnership() => ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
+            private void RefreshOwnership() { }
 
             internal ChunkedTextFileReadState(
                 string path,
@@ -74,7 +74,6 @@ internal sealed partial class LythonRuntime
                 _windowBytes = windowBytes;
                 context.MemoryGovernor.Reserve(ShellBytes, null);
                 context.MemoryGovernor.Commit(ShellBytes);
-                context.State.CallTemporaries.TrackFreshMutable(this, ShellBytes);
             }
 
             public BigInteger Position => new(_position);
@@ -213,7 +212,7 @@ internal sealed partial class LythonRuntime
             public void ReleaseUnpublished()
             {
                 Release();
-                _services.State.CallTemporaries.RefundUnpublishedValue(this);
+                _services.State.MemoryGovernor.RefundUnpublishedValue(this);
             }
 
             private PyString ReadBounded(int size)
@@ -353,9 +352,6 @@ internal sealed partial class LythonRuntime
             // them after this reader closes or is abandoned.
             private void TrackEmission(PyString value)
             {
-                // Every emission is freshly constructed and unpublished. If
-                // registration is denied, return its orphaned payload charge.
-                _services.State.CallTemporaries.TrackFreshString(value);
             }
 
             private bool Drained()

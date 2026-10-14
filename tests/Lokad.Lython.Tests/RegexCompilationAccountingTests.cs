@@ -6,8 +6,6 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-// M05: adopted compilation results additionally hold one 128 B pool entry plus
-// one 32 B young-tier growth beside the allowance below.
 /// MG09: each compilation commits the retained-state allowance and releases
 /// its scratch when the pattern is invalid.
 /// </summary>
@@ -30,8 +28,7 @@ public sealed class RegexCompilationAccountingTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = CreatePattern(PyString.FromString("a(b|c)*d"), context, span);
-        // N19: allowance and pool charges as before, plus one 64B cache slot.
-        Assert.Equal(65760L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(65536L + 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -44,7 +41,7 @@ public sealed class RegexCompilationAccountingTests
         // Ten groups: 65536 + 9 x 2048, length inside the free envelope, plus one
         // 64B cache slot (N19).
         _ = CreatePattern(PyString.FromString(string.Concat(Enumerable.Repeat("(a)", 10))), context, span);
-        Assert.Equal(84192L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(65536L + 9L * 2048L + 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -56,7 +53,7 @@ public sealed class RegexCompilationAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         // 100 chars, no groups: 65536 + 36 x 256, plus one 64B cache slot (N19).
         _ = CreatePattern(PyString.FromString(new string('a', 100)), context, span);
-        Assert.Equal(74976L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(65536L + 36L * 256L + 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

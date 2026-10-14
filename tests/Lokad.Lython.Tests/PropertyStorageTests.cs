@@ -100,15 +100,14 @@ public sealed class PropertyStorageTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         object large = BigInteger.One << 4096;
         if (owned) LythonRuntime.OwnFreshInteger(large, context.MemoryGovernor,
-            context.Services.State.CallTemporaries, Span);
+Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
-        var fieldBytes = 64 + (owned ? 0 : ((BigInteger)large).GetByteCount());
+        var fieldBytes = 64 + ((BigInteger)large).GetByteCount();
         var property = PyProperty.Create(PyNone.Instance, PyNone.Instance, PyNone.Instance, large, context, Span);
         Assert.Equal(128 + fieldBytes, property.CommittedBytes);
         Assert.True(property.TryGetMember("__doc__", out var escaped));
         Assert.Same(large, escaped);
         Assert.True(property.TryDeleteMember("__doc__", Span));
-        context.Services.State.CallTemporaries.Sweep(full: true);
         Assert.Equal(128, property.CommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= before + 128);
@@ -143,9 +142,6 @@ public sealed class PropertyStorageTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
         Assert.False(weak.TryGetTarget(out _));
-        var pool = context.Services.State.CallTemporaries;
-        pool.Sweep(full: true);
-        Assert.Equal(1, pool.Count);
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes >=
             RuntimeMemoryEstimates.EstimateBigIntegerBytes((BigInteger)escaped));
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -158,7 +154,7 @@ public sealed class PropertyStorageTests
     {
         object large = BigInteger.One << 4096;
         LythonRuntime.OwnFreshInteger(large, context.MemoryGovernor,
-            context.Services.State.CallTemporaries, Span);
+Span);
         var property = PyProperty.Create(PyNone.Instance, PyNone.Instance, PyNone.Instance, large, context, Span);
         Assert.True(property.TryGetMember("__doc__", out var escaped));
         Assert.Same(large, escaped);

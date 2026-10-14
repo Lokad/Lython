@@ -59,7 +59,6 @@ public sealed class FunctionBodyTemporaryLifetimeTests
         {
             Assert.Same(tape.Root.Services, context.Services);
             var list = new PyList([], context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(list, list.CommittedStorageBytes, span);
             tape.Result = new(list);
             return list;
         }

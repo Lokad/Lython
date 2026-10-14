@@ -139,7 +139,6 @@ internal sealed partial class LythonRuntime
 
             context.CheckExecution(span);
             var iterator = new JsonEncodeIterator(arguments[0], GetDumpOptions(context, span), context, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(iterator, PyIteratorBase.IteratorValueBytes, span);
             return iterator;
         }
 
@@ -434,7 +433,6 @@ internal sealed partial class LythonRuntime
                     // transfer ownership to the retained chunk itself.
                     charge.Grow(builder.Length);
                     var chunk = LythonRuntime.CreateString(builder.ToString(), _context, _span);
-                    _context.Services.State.CallTemporaries.TrackFreshString(chunk, _span);
                     return PyIterationResult.Yield(chunk);
                 }
             }
@@ -452,11 +450,6 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        // Sort scratch is funded before growth and tracked in the pool against
-        // this iterator, so exhaustion denies cleanly and a dropped iterator
-        // reclaims on sweep. Funding before tracking would strand on drop;
-        // tracking before funding would over-release when funding denies, so
-        // the reservation is held aside until tracking succeeds.
         private void GrowScratch(long bytes)
         {
             if (bytes <= 0)
@@ -464,21 +457,11 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
-            var pool = _context.Services.State.CallTemporaries;
+            var pool = _context.Services.State.MemoryGovernor;
             _context.MemoryGovernor.Reserve(bytes, _span);
-            try
-            {
-                pool.TrackMutable(this, checked(_scratchBytes + bytes), _span);
-            }
-            catch (LythonRuntimeException)
-            {
-                _context.MemoryGovernor.ReleaseReserved(bytes);
-                throw;
-            }
 
             _context.MemoryGovernor.Commit(bytes);
             _scratchBytes += bytes;
-            ChargeReclamationPool.NotifyStorageReplaced(this, _scratchBytes);
         }
 
         private void ReleaseScratch(long bytes)
@@ -494,8 +477,6 @@ internal sealed partial class LythonRuntime
             {
                 _scratchBytes = 0;
             }
-
-            ChargeReclamationPool.NotifyStorageReplaced(this, _scratchBytes);
         }
 
         private void DiscardScratch()
@@ -504,7 +485,6 @@ internal sealed partial class LythonRuntime
             {
                 _context.MemoryGovernor.Release(_scratchBytes);
                 _scratchBytes = 0;
-                ChargeReclamationPool.NotifyStorageReplaced(this, 0);
             }
         }
 

@@ -3,7 +3,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class RegexFindAllListTests
-{
+:LifetimeScenario{
     public static IEnumerable<object[]> Shapes()
     {
         foreach (var compiled in new[] { false, true })
@@ -118,15 +118,14 @@ public sealed class RegexFindAllListTests
     [Fact]
     public async Task LazyDotStarDiscardedListsReclaimOwnedStringsAndStorage()
     {
-        await AssertBothModes("""
+        await AssertBatchCompletes("""
             import re
             pattern = re.compile('.*?')
-            for i in range(10000):
+            for i in range(8):
                 value = pattern.findall('abcdefgh')
             print(type(value) is list, len(value))
-            """, "True 17\n", maxMemory: 1048576);
+            """, null, 1048576, standardOutput: "True 17\n");
     }
-
     [Fact]
     public async Task LazyDotStarRetainedListsRemainCharged()
     {
@@ -184,12 +183,12 @@ public sealed class RegexFindAllListTests
             """, "unsupported\n");
 
     private const string Prelude = """
-        import re, json
-        calls = []
-        def bad(value):
-            calls.append('default')
-            raise AssertionError('default must not run')
-        """;
+            import re, json
+            calls = []
+            def bad(value):
+                calls.append('default')
+                raise AssertionError('default must not run')
+            """;
 
     private static string FindAll(bool compiled, string pattern, string text)
         => compiled ? $"re.compile({pattern}).findall({text})" : $"re.findall({pattern}, {text})";

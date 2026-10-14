@@ -37,9 +37,8 @@ public sealed class IntegerFromBytesOwnershipTests
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var value = method.Invoke(Arguments(512, order, signed), Span, context);
         var integer = Assert.IsType<BigInteger>(value);
-        Assert.True(context.Services.State.CallTemporaries.IsTracked(value));
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes - before >= integer.GetByteCount() + 32);
-        Assert.Same(value, LythonRuntime.OwnFreshInteger(value, context.MemoryGovernor, context.Services.State.CallTemporaries, Span));
+        Assert.Same(value, LythonRuntime.OwnFreshInteger(value, context.MemoryGovernor, Span));
         GC.KeepAlive(value);
     }
 
@@ -57,7 +56,7 @@ public sealed class IntegerFromBytesOwnershipTests
     }
 
     [Fact]
-    public void DeniedTrackingRefundsOnlyTheFreshPayload()
+    public void DeniedConversionOverlapPreservesExistingFunding()
     {
         const long budget = 4096;
         const long payload = 32 + 513; // Unsigned 512 octets with a sign byte.
@@ -72,7 +71,6 @@ public sealed class IntegerFromBytesOwnershipTests
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Equal(before, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
-        Assert.Equal(0, context.Services.State.CallTemporaries.Count);
     }
 
     [Fact]
@@ -82,22 +80,25 @@ public sealed class IntegerFromBytesOwnershipTests
         var value = ConvertFresh(context);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
-        Assert.Equal(0, context.Services.State.CallTemporaries.Sweep(full: true));
-        Assert.True(context.Services.State.CallTemporaries.IsTracked(value));
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         GC.KeepAlive(value);
     }
 
     [Fact]
-    public void DroppedPayloadReleasesItsActualCharge()
+    public void CollectedPayloadRemainsBatchOwnedUntilCleanup()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
-        var before = context.MemoryGovernor.CurrentCommittedBytes;
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MemoryBudget = owner });
         var weak = ConvertDropped(context);
+        var funded = budget.ReservedBytes;
         GC.Collect();
         Assert.False(weak.TryGetTarget(out _));
-        Assert.True(context.Services.State.CallTemporaries.Sweep(full: true) > 512);
-        Assert.Equal(before + context.Services.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(funded, budget.ReservedBytes);
+        Assert.True(funded >= 512);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

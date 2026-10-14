@@ -8,8 +8,6 @@ namespace Lokad.Lython.Tests;
 /// <summary>
 /// MG11: constructed date/time values commit one slot each; the factories
 /// always carry a governor, so there is no ungoverned case.
-// M05: adopted results additionally hold one 128 B pool entry each, plus tier
-// growth where the shared pool crosses a backing boundary.
 /// </summary>
 public sealed class DateTimeValueAccountingTests
 {
@@ -31,11 +29,11 @@ public sealed class DateTimeValueAccountingTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = PyDateTimeOps.CreateDateTime(Ints(2024, 1, 1), span, context);
-        Assert.Equal(224L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(64L, context.MemoryGovernor.CurrentCommittedBytes);
         _ = PyDateTimeOps.CreateDate(Ints(2024, 1, 1), span, context);
         _ = PyDateTimeOps.CreateTime(Ints(1, 2, 3), span, context);
         _ = PyDateTimeOps.CreateTimedelta([], span, context);
-        Assert.Equal(800L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(4 * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -43,16 +41,14 @@ public sealed class DateTimeValueAccountingTests
     public void FromIsoCalendarCommitsLikeOtherFactories()
     {
         // N27: date.fromisocalendar used to return a bare shell with no
-        // construction charge and no pool entry, leaving retained dates
-        // invisible (PyDate is neither adoptable nor pool-tracked).
+        // construction charge, leaving retained dates unaccounted.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var value = PyDateTimeOps.DateFromIsoCalendar(
             new object[] { new BigInteger(2024), new BigInteger(1), new BigInteger(1) }, span, context);
         Assert.IsType<PyDate>(value);
-        Assert.Equal(224L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.True(ChargeReclamationPool.IsTrackedValue(value));
     }
 }

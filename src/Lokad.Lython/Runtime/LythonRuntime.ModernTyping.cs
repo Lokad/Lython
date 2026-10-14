@@ -13,7 +13,6 @@ internal sealed partial class LythonRuntime
         parent.MemoryGovernor.Reserve(bytes, span);
         parent.MemoryGovernor.Commit(bytes);
         var scope = new ExecutionContext(parent) { IsAnnotationScope = true, IsTypeParameterScope = names != 0 };
-        parent.Services.State.CallTemporaries.TrackFreshMutable(scope, bytes, span);
         RetainLocalsForLambda(parent);
         return scope;
     }
@@ -41,7 +40,6 @@ internal sealed partial class LythonRuntime
             if (!ReferenceEquals(scope, closure)) closure.Variables[parameter.Syntax.Name] = variable;
         }
         var tuple = values.Length == 0 ? PyTuple.Empty : new PyTuple(values, context.MemoryGovernor, span);
-        if (tuple.Count != 0) context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, span);
         return new(scope, closure, tuple);
     }
 
@@ -65,12 +63,11 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span, bool asynchronous)
     {
         if (origin is not PyType type || !type.TryGetMember("__type_params__", out var raw) || raw is not PyTuple parameters)
-            return PyGenericAlias.Create(origin, index, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+            return PyGenericAlias.Create(origin,index,context.MemoryGovernor,span);
         if (parameters.Count(parameter => parameter is PyTypeParameter { Kind: TypeParameterKind.TypeVarTuple }) > 1)
             throw new LythonRuntimeException("TypeError", "More than one TypeVarTuple parameter in generic class", span);
         var arguments = index is PyTuple tuple ? tuple : new PyTuple([index], context.MemoryGovernor, span);
         var values = new PyList([], context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(values, values.CommittedStorageBytes, span);
         var offset = 0;
         for (var parameterIndex = 0; parameterIndex < parameters.Count; parameterIndex++)
         {
@@ -104,10 +101,8 @@ internal sealed partial class LythonRuntime
             else throw new LythonRuntimeException("TypeError", "Too few arguments for generic class", span);
         }
         if (offset != arguments.Count) throw new LythonRuntimeException("TypeError", "Too many arguments for generic class", span);
-        context.Services.State.CallTemporaries.TrackGrowth(values, values.CommittedStorageBytes, span);
         var final = new PyTuple(values, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(final, final.CommittedStorageBytes, span);
-        return PyGenericAlias.Create(origin, final, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+        return PyGenericAlias.Create(origin,final,context.MemoryGovernor,span);
 
         async ValueTask<object> Default(PyTypeParameter parameter)
             => asynchronous ? (await parameter.TryGetMemberAsync("__default__", context, span).ConfigureAwait(false)).Value
@@ -122,7 +117,6 @@ internal sealed partial class LythonRuntime
         if (definition.TypeParameters is null && !HasTypeParameterScope(definingContext) &&
             definition.ReturnAnnotation is null && definition.Parameters.All(p => p.Annotation is null)) return;
         var annotations = new PyDict(definingContext.MemoryGovernor, definition.Span);
-        definingContext.Services.State.CallTemporaries.TrackFreshMutable(annotations, annotations.CommittedStorageBytes, definition.Span);
         // CPython's annotation table visits regular arguments before positional-only
         // arguments, followed by *args, keyword-only arguments and **kwargs.
         foreach (var parameter in definition.Parameters.OrderBy(parameter => parameter.Kind switch
@@ -150,8 +144,7 @@ internal sealed partial class LythonRuntime
         classContext.HasModernTypeDeclarations = true;
         classContext.Variables["__type_params__"] = scope.Parameters;
         classContext.Variables["__parameters__"] = scope.Parameters;
-        var originalBases = new PyTuple(baseTypes.Concat([PyGenericAlias.Create(GetTypingGeneric(classContext, definition.Span), scope.Parameters, classContext.MemoryGovernor, definition.Span, classContext.Services.State.CallTemporaries)]), classContext.MemoryGovernor, definition.Span);
-        classContext.Services.State.CallTemporaries.TrackFreshMutable(originalBases, originalBases.CommittedStorageBytes, definition.Span);
+        var originalBases = new PyTuple(baseTypes.Concat([PyGenericAlias.Create(GetTypingGeneric(classContext, definition.Span),scope.Parameters,classContext.MemoryGovernor,definition.Span)]), classContext.MemoryGovernor, definition.Span);
         classContext.Variables["__orig_bases__"] = originalBases;
         await ValueTask.CompletedTask;
     }
@@ -171,7 +164,6 @@ internal sealed partial class LythonRuntime
                 value = new PyDict(context.MemoryGovernor, statement.Span);
                 if (context.GlobalNamespace is not null) StoreGlobalNamespaceName(context, "__annotations__", value);
                 else context.Variables["__annotations__"] = value;
-                context.Services.State.CallTemporaries.TrackFreshMutable((PyDict)value, ((PyDict)value).CommittedStorageBytes, statement.Span);
             }
         }
         await StoreAnnotationEntryAsync(value, name.Name, annotation, context, statement.Span, asynchronous).ConfigureAwait(false);
@@ -186,7 +178,6 @@ internal sealed partial class LythonRuntime
         var generic = new PyType("Generic", [root!], members, context.MemoryGovernor, span);
         if (context.TryGetBuiltinType("type", out var metatype)) generic.SetMetaType(metatype);
         ChargeClassTypeValue(members.Count, context.MemoryGovernor, span);
-        TrackClassTypeValue(generic, members.Count, context, span);
         context.Services.State.TypingGeneric = generic;
         return generic;
     }
@@ -241,7 +232,6 @@ internal sealed partial class LythonRuntime
         if (constraints.Count != 0)
         {
             var tuple = new PyTuple(constraints, context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, span);
             bound = tuple;
         }
         return new PyTypeParameter(name.AsString(), kind, inferVariance, null, constraints.Count != 0, null, false,
@@ -263,9 +253,7 @@ internal sealed partial class LythonRuntime
         Add(leftItems ?? new PyTuple([left])); Add(rightItems ?? new PyTuple([right]));
         if (values.Count == 1) { value = values[0]; return true; }
         var args = new PyTuple(values, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(args, args.CommittedStorageBytes, span);
-        value = PyGenericAlias.Create(PyGenericAlias.UnionOrigin, args, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
-        context.Services.State.CallTemporaries.TrackCallResult(value, span);
+        value = PyGenericAlias.Create(PyGenericAlias.UnionOrigin,args,context.MemoryGovernor,span);
         return true;
 
         void Add(PyTuple items)

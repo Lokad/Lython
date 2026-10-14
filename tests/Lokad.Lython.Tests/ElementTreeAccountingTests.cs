@@ -21,15 +21,13 @@ public sealed class ElementTreeAccountingTests
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         var governor = context.MemoryGovernor;
-        var pool = context.Services.State.CallTemporaries;
         var initial = governor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 50; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
                 Parse("<r a='value'>before<x>inside</x>tail<y a='one' b='two'>broken", context));
             Assert.Equal(PythonExceptionIdentity.Module("xml.etree.ElementTree", "ParseError"), error.Identity);
-            Assert.Equal(0, pool.Count);
-            Assert.Equal(initial + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+            Assert.Equal(initial, governor.CurrentCommittedBytes);
             Assert.Equal(0, governor.CurrentReservedBytes);
         }
     }
@@ -47,16 +45,13 @@ public sealed class ElementTreeAccountingTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MaxExecutionMemoryBytes = cap });
         var source = "<r>" + string.Concat(Enumerable.Repeat("<x a='value'>inside</x>tail", 50)) + "</r>";
-        var pool = context.Services.State.CallTemporaries;
         for (var attempt = 0; attempt < 20; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() => Parse(source, context));
             Assert.Equal("MemoryError", error.ExceptionType);
-            Assert.Equal(0, pool.Count);
-            Assert.Equal(pool.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
-        if (cap >= 60000) Assert.True(pool.CommittedBackingBytes > 0);
     }
 
     [Fact]
@@ -73,7 +68,6 @@ public sealed class ElementTreeAccountingTests
             var error = Assert.Throws<LythonRuntimeException>(() => Parse(source, context));
             Assert.Equal(PythonExceptionIdentity.Module("xml.etree.ElementTree", "ParseError"), error.Identity);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            Assert.Equal(0, context.Services.State.CallTemporaries.Count);
         }
         var valid = Parse(string.Concat(Enumerable.Repeat("<r>", 1025)) +
             string.Concat(Enumerable.Repeat("</r>", 1025)), context);
@@ -108,9 +102,7 @@ public sealed class ElementTreeAccountingTests
             Assert.Equal("RuntimeError", error.ExceptionType);
             Assert.Contains("maximum", error.Message);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            var pool = context.Services.State.CallTemporaries;
-            Assert.Equal(0, pool.Count);
-            Assert.Equal(pool.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         }
     }
 
@@ -120,10 +112,7 @@ public sealed class ElementTreeAccountingTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         var (parent, child) = ChildAlias(context);
         GC.Collect();
-        context.Services.State.CallTemporaries.Sweep(full: true);
         Assert.False(parent.IsAlive);
-        Assert.True(context.Services.State.CallTemporaries.IsTracked(child));
-        Assert.True(context.Services.State.CallTemporaries.IsTracked(child.Tag));
         Assert.Equal("text", ((PyString)child.Text).AsString());
         GC.KeepAlive(child);
     }
@@ -142,11 +131,8 @@ public sealed class ElementTreeAccountingTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         var (root, child, attributes, text) = ScalarAliases(context);
         GC.Collect();
-        context.Services.State.CallTemporaries.Sweep(full: true);
         Assert.False(root.IsAlive);
         Assert.False(child.IsAlive);
-        Assert.True(context.Services.State.CallTemporaries.IsTracked(attributes));
-        Assert.True(context.Services.State.CallTemporaries.IsTracked(text));
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= attributes.CommittedStorageBytes + text.CommittedOwnedBytes);
         Assert.Equal("text", text.AsString());
         Assert.True(attributes.TryGetValue(PyString.FromString("a"), out var value));
@@ -170,11 +156,9 @@ public sealed class ElementTreeAccountingTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         var (root, attributes) = EmptyAttributeAlias(context);
         GC.Collect();
-        var pool = context.Services.State.CallTemporaries;
-        pool.Sweep(full: true);
         Assert.False(root.IsAlive);
         Assert.Equal(0, attributes.Count);
-        Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= 256 + ChargeReclamationPool.EntryChargeBytes + pool.CommittedBackingBytes);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= 256);
         GC.KeepAlive(attributes);
     }
 

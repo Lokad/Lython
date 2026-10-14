@@ -32,7 +32,7 @@ internal static class PublicProjection
             uint => value,
             long => value,
             ulong => value,
-            BigInteger => value,
+            BigInteger integer => ProjectInteger(value, integer, budget),
             float => value,
             double => value,
             PyComplex complex => new Complex(complex.Real, complex.Imaginary),
@@ -84,6 +84,15 @@ internal static class PublicProjection
         => active.Remove(container);
 
     public static object? ProjectNone() => null;
+
+    private static object ProjectInteger(object value, BigInteger integer, ProjectionBudget? budget)
+    {
+        // Large magnitudes may alias execution storage. Establish retained
+        // result funding before the execution owner is disposed. Small inline
+        // scalars remain part of the documented approximation allowance.
+        if (integer.GetByteCount() > 9) budget?.Reserve(64L + integer.GetByteCount());
+        return value;
+    }
 
     public static string ProjectString(PyString text)
         => ProjectString(text, null);

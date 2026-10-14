@@ -5,7 +5,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class BinaryFileWindowAndLifecycleTests
 {
     [Fact]
-    public async Task SequentialScanUsesBoundedNativeWindows()
+    public async Task SequentialBatchesUseBoundedManagedReadWindows()
     {
         var source = """
             count = 0
@@ -16,19 +16,33 @@ public sealed class BinaryFileWindowAndLifecycleTests
                     count += len(piece)
             print(count)
             """;
-        var script = new LythonEngine().Compile(source);
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
         foreach (var asynchronous in new[] { false, true })
         {
-            var host = new MockLythonHost();
-            host.SeedBytes("/source.bin", new byte[4 * 1024 * 1024]);
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 128 * 1024 };
-            var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("4194304\n", result.StandardOutput);
-            Assert.True(host.RangedReadCount > 250);
-            Assert.InRange(host.MaxRangeBytesServed, 1, 16 * 1024);
+            var reads = 0;
+            var total = 0;
+            for (var batch = 0; batch < 256; batch++)
+            {
+                var host = new MockLythonHost();
+                host.SeedBytes("/source.bin", new byte[16 * 1024]);
+                var options = new LythonRunOptions { MaxExecutionMemoryBytes = 128 * 1024 };
+                using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("16384\n", result.StandardOutput);
+                reads += host.RangedReadCount;
+                total += 16 * 1024;
+                Assert.InRange(host.MaxRangeBytesServed, 1, 16 * 1024);
+                result.Dispose();
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+            Assert.Equal(4194304, total);
+            Assert.True(reads > 250);
         }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

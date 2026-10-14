@@ -25,22 +25,6 @@ public sealed class InstanceStorageOwnershipTests
     }
 
     [Fact]
-    public void FreshRegistrationDenialRefundsOnlyItsShell()
-    {
-        var governor = new MemoryGovernor(4096);
-        var pool = new ChargeReclamationPool(governor);
-        governor.Reserve(3936, Span);
-        governor.Commit(3936);
-        var instance = new PyInstance(Type(), governor, Span);
-        var error = Assert.Throws<LythonRuntimeException>(() => pool.TrackFreshMutable(instance, instance.CommittedStorageBytes, Span));
-        Assert.Equal("MemoryError", error.ExceptionType);
-        Assert.False(pool.IsTracked(instance));
-        Assert.Equal(3936, governor.CurrentCommittedBytes);
-        Assert.Equal(0, governor.CurrentReservedBytes);
-        GC.KeepAlive(instance);
-    }
-
-    [Fact]
     public void PopulatedAttachmentDenialLeavesTheOwnerRetryable()
     {
         var instance = new PyInstance(Type());
@@ -69,25 +53,22 @@ public sealed class InstanceStorageOwnershipTests
     }
 
     [Fact]
-    public void DroppedOwnerReclaimsItsShellAfterAllAttributesAreDeleted()
+    public void ClearedInstanceShellStaysOwnedUntilBatchCleanup()
     {
-        var governor = new MemoryGovernor(null);
-        var pool = new ChargeReclamationPool(governor);
-        CreateDrop(pool, governor);
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        pool.Sweep(full: true);
-        Assert.Equal(0, pool.Count);
-        Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var governor = new MemoryGovernor(null, owner);
+        CreateDrop(governor);
+        Assert.Equal(160, budget.ReservedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void CreateDrop(ChargeReclamationPool pool, MemoryGovernor governor)
+    private static void CreateDrop(MemoryGovernor governor)
     {
         var instance = new PyInstance(Type(), governor, Span);
-        pool.TrackFreshMutable(instance, instance.CommittedStorageBytes, Span);
         instance.SetAttribute("first", 1);
         instance.SetAttribute("second", 2);
         instance.SetAttribute("first", 3);
@@ -107,7 +88,6 @@ public sealed class InstanceStorageOwnershipTests
         var type = new PyType("Alias", [], new() { ["__new__"] = allocator });
         var instance = new PyInstance(type, context.MemoryGovernor, Span);
         allocator.Result = instance;
-        context.State.CallTemporaries.TrackFreshMutable(instance, instance.CommittedStorageBytes, Span);
         PinRemaining(context.MemoryGovernor);
         var before = context.MemoryGovernor.CurrentAccountedBytes;
         var result = asynchronous ? await type.InvokeAsync([], Span, context) : type.Invoke([], Span, context);
@@ -129,30 +109,6 @@ public sealed class InstanceStorageOwnershipTests
         Assert.Equal(4096, context.MemoryGovernor.CurrentCommittedBytes);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task AllocatorAliasRegistrationDenialKeepsItsLiveStorage(bool asynchronous)
-    {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 4096 });
-        var allocator = new Allocator();
-        var type = new PyType("Alias", [], new() { ["__new__"] = allocator });
-        var instance = new PyInstance(type, context.MemoryGovernor, Span);
-        allocator.Result = instance;
-        var pinned = PinRemaining(context.MemoryGovernor);
-        await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-        {
-            if (asynchronous) await type.InvokeAsync([], Span, context);
-            else type.Invoke([], Span, context);
-        });
-        Assert.Equal(4096, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        context.MemoryGovernor.Release(pinned);
-        var result = asynchronous ? await type.InvokeAsync([], Span, context) : type.Invoke([], Span, context);
-        Assert.Same(instance, result);
-        Assert.True(context.State.CallTemporaries.IsTracked(instance));
-    }
-
     private static long PinRemaining(MemoryGovernor governor)
     {
         var bytes = 4096 - governor.CurrentAccountedBytes;
@@ -172,8 +128,6 @@ public sealed class InstanceStorageOwnershipTests
         var child = new PyInstance(hookType, context.MemoryGovernor, Span);
         var source = new PyInstance(Type(), context.MemoryGovernor, Span);
         source.SetAttribute("child", child);
-        context.State.CallTemporaries.TrackFreshMutable(child, child.CommittedStorageBytes, Span);
-        context.State.CallTemporaries.TrackFreshMutable(source, source.CommittedStorageBytes, Span);
         context.MemoryGovernor.Reserve(32, Span);
         var memoType = typeof(LythonRuntime).GetNestedType("CopyMemo", BindingFlags.NonPublic)!;
         var memo = (IDisposable)memoType.GetConstructors().Single(c => c.GetParameters().Length == 2).Invoke([context, Span]);

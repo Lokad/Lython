@@ -53,7 +53,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var strIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(strIterResult, PyIteratorBase.IteratorValueBytes);
                     return strIterResult;
                 });
                 return true;

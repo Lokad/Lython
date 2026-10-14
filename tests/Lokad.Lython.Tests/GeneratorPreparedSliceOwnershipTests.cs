@@ -21,7 +21,6 @@ public sealed class GeneratorPreparedSliceOwnershipTests
         Assert.True(first.HasValue);
         Assert.Equal(new BigInteger(2), first.Value);
         var key = Assert.Single(fixture.Tape.Keys);
-        Assert.True(fixture.Context.Services.State.CallTemporaries.IsTracked(key));
         Assert.Same(PyNone.Instance, key.Start);
         Assert.Same(PyNone.Instance, key.Stop);
         Assert.Equal(new BigInteger(1), key.Step);
@@ -31,7 +30,7 @@ public sealed class GeneratorPreparedSliceOwnershipTests
         Assert.Equal(new BigInteger(3), second.Value);
         Assert.Equal(2, fixture.Tape.Keys.Count);
         Assert.Same(key, fixture.Tape.Keys[1]);
-        Assert.All(fixture.Tape.Tracked, Assert.True);
+
         Assert.Equal(new BigInteger(4), fixture.Tape.Stored);
         AssertUnwound(fixture.Context);
     }
@@ -50,7 +49,6 @@ public sealed class GeneratorPreparedSliceOwnershipTests
         Assert.True(second.HasValue);
         Assert.Equal(new BigInteger(3), second.Value);
         var key = Assert.Single(fixture.Tape.Keys);
-        Assert.True(fixture.Context.Services.State.CallTemporaries.IsTracked(key));
         Assert.Equal(new BigInteger(3), key.Start);
         Assert.Same(PyNone.Instance, key.Stop);
         Assert.Equal(new BigInteger(1), key.Step);
@@ -79,7 +77,6 @@ public sealed class GeneratorPreparedSliceOwnershipTests
             Assert.Same(fixture.Context.Services, callbackFrame.Services);
             Assert.Same(fixture.Context.MemoryGovernor, callbackFrame.MemoryGovernor);
             Assert.Same(fixture.Active, callbackFrame.Services.CurrentException);
-            Assert.All(fixture.Tape.Keys, key => Assert.True(fixture.Context.Services.State.CallTemporaries.IsTracked(key)));
             if (phase == "store") Assert.Same(fixture.Tape.Keys[0], fixture.Tape.Keys[1]);
             if (cancel)
             {
@@ -150,7 +147,7 @@ public sealed class GeneratorPreparedSliceOwnershipTests
     private sealed class Tape(Context root, CancellationToken cancellation)
     {
         public List<PySlice> Keys { get; } = [];
-        public List<bool> Tracked { get; } = [];
+
         public object? Stored { get; private set; }
         public string? Pause { get; set; }
         public bool RequireAsync { get; set; }
@@ -162,7 +159,7 @@ public sealed class GeneratorPreparedSliceOwnershipTests
             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
             var key = Assert.IsType<PySlice>(arguments[0].Value);
             Keys.Add(key);
-            Tracked.Add(root.Services.State.CallTemporaries.IsTracked(key));
+
             if (phase == "store") Stored = arguments[1].Value;
             return phase == "get" ? new BigInteger(1) : PyNone.Instance;
         }

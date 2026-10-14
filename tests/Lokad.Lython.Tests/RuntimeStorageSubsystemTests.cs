@@ -494,7 +494,7 @@ public sealed class RuntimeStorageSubsystemTests
         var context = new LythonRuntime.ExecutionContext(
             host,
             // Preserve the original buffer headroom while funding the owner entry.
-            new LythonRunOptions { MaxExecutionMemoryBytes = 256 + ChargeReclamationPool.EntryChargeBytes });
+            new LythonRunOptions { MaxExecutionMemoryBytes = 256 });
         var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output.txt", context);
         var owned = context.MemoryGovernor.CurrentAccountedBytes;
 
@@ -539,7 +539,7 @@ public sealed class RuntimeStorageSubsystemTests
         host.SeedBytes("/output.txt", Enumerable.Repeat((byte)'a', 1_000).ToArray());
         var context = new LythonRuntime.ExecutionContext(
             host,
-            new LythonRunOptions { MaxExecutionMemoryBytes = 256 + ChargeReclamationPool.EntryChargeBytes });
+            new LythonRunOptions { MaxExecutionMemoryBytes = 256 });
         var handle = await LythonRuntime.ExecutionContext.TextFileHandle.ForAppendAsync(
             "/output.txt",
             context,

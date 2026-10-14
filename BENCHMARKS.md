@@ -2,6 +2,7 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| CSV parse and discard [G] | 16 data rows | 0.0780 ms | 0.0285 ms | — | One short governed-memory diagnostic; uncommitted source, unqualified |
 | Sum generated squares [A] | 20,000 items | 3.947 ms | 0.499 ms | — | One short diagnostic at 09d81bb1 source; no qualified multiplier |
 | Integer reduction loop [M] | 16,384 iterations | 1.162 ms | 0.617 ms | — | Short diagnostic at b43664e0; one run, no qualified multiplier |
 | Integer reduction loop [L] | 16,384 iterations | 3.58–3.72 ms | 0.578–0.666 ms | — | Historical diagnostic; failed control and cross-session stability |
@@ -27,7 +28,7 @@ including a loop whose cost grows with its iteration count. They support
 investigating interpreter dispatch and application workloads. **No workload
 multiplier qualified in either campaign. These timings do not describe today's
 HEAD:** subsequent interpreter and containment changes have been integrated.
-The newer A and M rows are separate short diagnostics at their named revisions; they do
+The newer G, A and M rows are separate short diagnostics at their named revisions; they do
 not qualify a current overall or complete-script multiplier.
 There is no current complete-script CPython timing baseline or overall speedup.
 
@@ -35,6 +36,7 @@ There is no current complete-script CPython timing baseline or overall speedup.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| G | 2026-10-14 | Working migration on `9fc7e37e`, before local-import simplification | [Governed-memory diagnostic](benchmarks/results/2026-10-14-governed-memory/README.md), [loaded identities](benchmarks/results/2026-10-14-governed-memory/micro.json) |
 | A | 2026-10-14 | `09d81bb153c006f3c248d8ba0dfdfe9cdbc70d63` source, built before commit | [Native state qualification](benchmarks/results/2026-10-14-native-working-state/README.md), [all attempts and loaded identities](benchmarks/results/2026-10-14-native-working-state/micro.json) |
 | M | 2026-10-13 | `b43664e0f60aa78f3cbd638578e0ced28d926194` | [Shared frames and transfer cost](benchmarks/results/2026-10-13-shared-async-frames/README.md), [all attempts](benchmarks/results/2026-10-13-shared-async-frames/micro.json) |
 | Q | 2026-10-09 | `9358c4e72f1a29e55703eee02b28ea404d01bc0a` | [Four-lane run](benchmarks/results/2026-10-09-quick/README.md), [warm medians and exclusions](benchmarks/results/2026-10-09-quick/warm.md) |
@@ -68,6 +70,10 @@ both synchronous and genuinely yielded asynchronous execution, plus independent
 CPython 3.13.2 checks on Windows. Its fixture repeats expand into different record/byte counts for
 each script; they are not a shared row count. Correctness tests are not timing
 measurements. The [original scripts](benchmarks/scripts) remain ordinary Python.
+
+G uses the same shared Windows workstation/toolchain as A and CPython3.13.2.
+Its warm CSV comparison excludes compilation/startup and is a single7.320-second
+diagnostic; later local-import changes are unmeasured.
 
 ## Execution, compilation and startup are separate
 
@@ -158,6 +164,10 @@ multiplier. Complete ownership and forced-GC independence remain open.
 The [zip containment diagnostic](benchmarks/results/2026-10-14-zip-state/README.md)
 retains a higher candidate median with substantial noise. Its status is
 inconclusive; it does not establish today's HEAD performance or async pull cost.
+
+The [governed-memory CSV diagnostic](benchmarks/results/2026-10-14-governed-memory/README.md)
+keeps the earlier Lython comparison separate from the primary CPython baseline.
+It establishes neither a current complete-script multiplier nor host tail latency.
 
 - [Measurement methods, commands and qualification rules](benchmarks/COMPARISON.md)
 - [Experimental history, profiles and rejected optimizations](benchmarks/EXPERIMENTS.md)

@@ -125,12 +125,38 @@ public sealed class LythonRunOptions
     /// <summary>Gets the CLR projection-memory limit override.</summary>
     public LythonByteLimit? MaxProjectionMemoryBytes { get; init; }
 
+    /// <summary>Gets a borrowed memory budget shared with other executions and host-mediated child work.</summary>
+    /// <remarks>
+    /// Null uses Lython's standalone default. The supplied budget and its ancestors
+    /// must outlive all work and any results owned beneath them. Lython disposes only
+    /// scopes it creates; it never disposes the supplied budget or copies its balance.
+    /// Estimates cover major storage; allow headroom for minor and runtime memory.
+    /// </remarks>
+    public ILythonMemoryBudget? MemoryBudget { get; init; }
+
+    /// <summary>Gets a borrowed longer-lived parent budget for projected results.</summary>
+    /// <remarks>
+    /// Null uses the invocation's supplied parent budget. Specify a separate parent
+    /// when a result must survive disposal of the invocation's supplied ancestors.
+    /// Result ownership is established before projection; no reparenting occurs.
+    /// </remarks>
+    public ILythonMemoryBudget? ResultMemoryBudget { get; init; }
+
+    internal ILythonMemoryBudget? ExecutionMemoryOwner { get; init; }
+    internal ILythonMemoryBudget? ProjectionMemoryOwner { get; init; }
+
     /// <summary>
     /// Copies every option while replacing the cancellation token. This is the
     /// single copy site for cancellation merging (R32): add future options here
     /// rather than duplicating the list at call sites.
     /// </summary>
     internal LythonRunOptions WithCancellation(CancellationToken cancellationToken)
+        => Copy(cancellationToken, ExecutionMemoryOwner, ProjectionMemoryOwner);
+
+    internal LythonRunOptions WithMemoryOwners(ILythonMemoryBudget execution, ILythonMemoryBudget projection)
+        => Copy(CancellationToken, execution, projection);
+
+    private LythonRunOptions Copy(CancellationToken cancellationToken, ILythonMemoryBudget? execution, ILythonMemoryBudget? projection)
         => new()
         {
             Globals = Globals,
@@ -152,5 +178,9 @@ public sealed class LythonRunOptions
             MaxStandardErrorBytes = MaxStandardErrorBytes,
             MaxExecutionMemoryBytes = MaxExecutionMemoryBytes,
             MaxProjectionMemoryBytes = MaxProjectionMemoryBytes,
+            MemoryBudget = MemoryBudget,
+            ResultMemoryBudget = ResultMemoryBudget,
+            ExecutionMemoryOwner = execution,
+            ProjectionMemoryOwner = projection,
         };
 }

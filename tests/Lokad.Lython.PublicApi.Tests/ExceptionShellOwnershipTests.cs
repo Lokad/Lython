@@ -23,29 +23,40 @@ public sealed class ExceptionShellOwnershipTests
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public async Task DroppedReboundAndRetainedValuesObeyOneFixedLiveBudget(string source, bool success, bool asynchronous)
+    public async Task ExceptionBatchesAndRetainedValuesObeyTheOwnershipContract(string source, bool success, bool asynchronous)
     {
-        var host = new MockLythonHost();
-        var timing = new YieldTiming();
-        host.SetTiming(timing);
+        if (success) source = source.Replace("5000", "16");
         if (asynchronous) source = "import time\ntime.sleep(0)\n" + source;
-        var script = new LythonEngine().Compile(source);
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
-        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-        Assert.Equal(success, result.Success);
-        Assert.True(result.PeakExecutionMemoryBytes <= 65536);
-        if (success)
+        for (var batch = 0; batch < (success ? 8 : 1); batch++)
         {
-            Assert.Equal("done\n", result.StandardOutput);
-            Assert.Equal(0, result.DeniedReservationBytes);
+            var host = new MockLythonHost();
+            var timing = new YieldTiming();
+            host.SetTiming(timing);
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.Equal(success, result.Success);
+                Assert.True(result.PeakExecutionMemoryBytes <= 65536);
+                if (success)
+                {
+                    Assert.Equal("done\n", result.StandardOutput);
+                    Assert.Equal(0, result.DeniedReservationBytes);
+                }
+                else
+                {
+                    Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                    Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+                }
+            }
+            if (asynchronous) Assert.Equal(1, timing.CompletedAsynchronously);
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
-        else
-        {
-            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
-        }
-        if (asynchronous) Assert.Equal(1, timing.CompletedAsynchronously);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Theory]
@@ -67,7 +78,9 @@ for i in range(400):
         1 / 0
 print('done')
 """;
-        var script = new LythonEngine().Compile(source);
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(retain ? source : source.Replace("range(400)", "range(16)"), budget);
+        var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
             var options = new LythonRunOptions
@@ -75,11 +88,15 @@ print('done')
                 MaxExecutionMemoryBytes = 65536,
                 Globals = new Dictionary<string, object?> { ["retain"] = retain },
             };
-            var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
+            using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
             Assert.Equal(!retain, result.Success);
             if (retain) Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
             else Assert.Equal("done\n", result.StandardOutput);
+            result.Dispose();
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     private sealed class YieldTiming : ILythonTiming

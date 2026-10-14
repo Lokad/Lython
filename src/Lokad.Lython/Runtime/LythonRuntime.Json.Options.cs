@@ -54,12 +54,8 @@ internal sealed partial class LythonRuntime
             var document = input.Document;
             var position = document.ByteIndexToRuneIndex(bytePosition);
             var location = ComputeJsonErrorLocation(document, bytePosition);
-            // R10: the error payload and message own refundable snapshots
-            // so a caught and dropped decode error reclaims on sweep.
             var payload = new PyDict(context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(payload, payload.CommittedStorageBytes, span);
             var errorMessage = CreateString(message, context, span);
-            context.Services.State.CallTemporaries.TrackFreshString(errorMessage, span);
             payload.SetItem(PyString.FromString("msg"), errorMessage);
             payload.SetItem(PyString.FromString("doc"), document);
             payload.SetItem(PyString.FromString("pos"), new BigInteger(position));
@@ -74,12 +70,8 @@ internal sealed partial class LythonRuntime
         private static LythonRuntimeException NewJsonDecodeFailureAtRune(JsonParseInput input, string message, long runePosition, LythonSourceSpan span, ExecutionContext context)
         {
             var location = ComputeJsonRuneLocation(input.Document, runePosition);
-            // R10: the error payload and message own refundable snapshots
-            // so a caught and dropped decode error reclaims on sweep.
             var payload = new PyDict(context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(payload, payload.CommittedStorageBytes, span);
             var errorMessage = CreateString(message, context, span);
-            context.Services.State.CallTemporaries.TrackFreshString(errorMessage, span);
             payload.SetItem(PyString.FromString("msg"), errorMessage);
             payload.SetItem(PyString.FromString("doc"), input.Document);
             payload.SetItem(PyString.FromString("pos"), new BigInteger(runePosition));
@@ -255,9 +247,6 @@ internal sealed partial class LythonRuntime
         internal static object InvokeJsonCallback(ICallable callable, object argument, ExecutionContext context, LythonSourceSpan span)
         {
             var result = InvokeCallableTarget(callable, span, span, context, [CallArgumentValue.Positional(argument)]);
-            // Plain adoption only: callback results may alias live values, so
-            // a denial must never refund charges the caller still holds.
-            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -266,7 +255,6 @@ internal sealed partial class LythonRuntime
             if (!asynchronous) return InvokeJsonCallback(callable, argument, context, span);
             var result = await InvokeCallableTargetAsync(callable, span, span, context,
                 () => ValueTask.FromResult(new[] { CallArgumentValue.Positional(argument) })).ConfigureAwait(false);
-            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -365,7 +353,6 @@ internal sealed partial class LythonRuntime
             => index < arguments.Length ? arguments[index] : PyNone.Instance;
 
 
-
         private enum JsonDumpCallForm
         {
             Dump,
@@ -373,9 +360,7 @@ internal sealed partial class LythonRuntime
         }
 
 
-
         private readonly record struct JsonSourceLocation(int Line, int Column);
-
 
 
         private sealed class UnsupportedJsonClassFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue

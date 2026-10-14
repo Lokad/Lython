@@ -40,10 +40,7 @@ public sealed class CollectionKwargsKeyAccountingTests
         var key = Assert.IsType<PyString>(pair.Key);
         Assert.Same(context.MemoryGovernor, key.OwnerMemoryGovernor);
         Assert.Equal("k", key.AsString());
-        // Shell (64) plus the governed backing (192) and key (128 + 1),
-        // plus one pool entry per retained value (2 x 128) and first tier growth (32),
-        // plus the retained key/value entry allowance.
-        Assert.Equal(673L + 128L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(counter.CommittedStorageBytes + key.CommittedOwnedBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -57,10 +54,7 @@ public sealed class CollectionKwargsKeyAccountingTests
         var key = Assert.IsType<PyString>(dict.Single().Key);
         Assert.Same(context.MemoryGovernor, key.OwnerMemoryGovernor);
         Assert.Equal("k", key.AsString());
-        // Shell (64) plus the governed backing (192) and key (128 + 1),
-        // plus one pool entry per retained value (2 x 128) and first tier growth (32),
-        // plus the retained key/value entry allowance.
-        Assert.Equal(673L + 128L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(dict.CommittedStorageBytes + key.CommittedOwnedBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -72,9 +66,7 @@ public sealed class CollectionKwargsKeyAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var dict = Assert.IsType<PyDict>(InvokeFactory("OrderedDict", context, span, CallArgumentValue.Keyword("k", new BigInteger(1))));
         Assert.Equal("k", SingleKey(dict, context.MemoryGovernor).AsString());
-        // Governed backing (192) and key (128 + 1); no extra shell.
-        // Plus the retained key/value allowance and the early owner entry/backing.
-        Assert.Equal(321L + 128L + 128L + 32L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(dict.CommittedStorageBytes + SingleKey(dict, context.MemoryGovernor).CommittedOwnedBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

@@ -238,11 +238,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public int Length => Count;
 
-    // Current committed shell-plus-backing charges, for pooled owners that
-    // release them if this set is dropped. Incremental growth after the
-    // snapshot only ever leaves a safe residual behind; wholesale
-    // replacement re-snapshots through Clear below. Numeric member allowances
-    // fold in, so snapshots and drop sweeps carry them without an identity map.
     internal long CommittedStorageBytes => (_shellCharged ? SetShellBytes + _committedBytes : _committedBytes) + _protocolBytes + (_sideIndex?.CommittedBytes ?? 0) + _numericStorageBytes;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
@@ -286,19 +281,16 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             if (!_items.Add(item))
             {
                 if (numericBytes > 0) _memoryGovernor!.Release(numericBytes);
-                NoteGrowth(committedBefore);
                 return false;
             }
         }
         catch
         {
             if (numericBytes > 0) _memoryGovernor!.Release(numericBytes);
-            NoteGrowth(committedBefore);
             throw;
         }
 
         _numericStorageBytes += numericBytes;
-        NoteGrowth(committedBefore);
         _version++;
         return true;
     }
@@ -419,7 +411,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             ReleaseAllNumericStorage();
             _items = new HashSet<object>(PyValueComparer.Instance);
             _protocol = null;
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             return;
         }
 
@@ -552,8 +543,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             _memoryGovernor.Commit(ProtocolEntryBytes);
             _protocolBytes += ProtocolEntryBytes;
         }
-
-        NoteGrowth(committedBefore);
     }
 
     private bool ContainsProtocolItem(object item)
@@ -803,7 +792,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         _memoryGovernor.Release(bytes);
         _protocolBytes -= bytes;
-        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
     }
 
     public void UnionWith(PySet other)
@@ -1021,16 +1009,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     private static long EstimateSlots(int previousCapacity, int newCapacity)
         => (24L * (newCapacity - previousCapacity)) + (previousCapacity == 0 ? 80L : 0L);
 
-    // Refreshes the tracked snapshot when the owned total moved (storage or
-    // numeric allowances): a stale snapshot would over-release on a later drop sweep.
-    private void NoteGrowth(long committedBefore)
-    {
-        if (CommittedStorageBytes != committedBefore)
-        {
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
-        }
-    }
-
     private long NumericBytes(object value) => _memoryGovernor is null ? 0 : RuntimeMemoryEstimates.EstimateNumericSlotBytes(value);
 
     private void ReserveNumericStorage(long bytes)
@@ -1077,7 +1055,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var committedBefore = CommittedStorageBytes;
         _memoryGovernor!.Release(bytes);
         _numericStorageBytes -= bytes;
-        NoteGrowth(committedBefore);
     }
 
     private void ReleaseAllNumericStorage()
@@ -1086,7 +1063,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var committedBefore = CommittedStorageBytes;
         _memoryGovernor!.Release(_numericStorageBytes);
         _numericStorageBytes = 0;
-        NoteGrowth(committedBefore);
     }
 
     private List<object> FilterContained(PySet other, bool keepContained)
@@ -1130,7 +1106,5 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         {
             Add(item);
         }
-
-        NoteGrowth(committedBefore);
     }
 }

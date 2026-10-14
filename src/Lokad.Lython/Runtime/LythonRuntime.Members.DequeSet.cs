@@ -65,12 +65,9 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
-        // Fresh copies reclaim through the pool once dropped; the later funnel
-        // no-ops on the already-tracked value through reference-identity dedup.
         private static PyDeque TrackDequeCopy(PyDeque receiver, ExecutionContext context, LythonSourceSpan span)
         {
             var copy = new PyDeque(receiver, receiver.MaxLength, context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(copy, copy.CommittedStorageBytes);
             return copy;
         }
 
@@ -262,7 +259,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var dequeIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(dequeIterResult, PyIteratorBase.IteratorValueBytes);
                     return dequeIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(deque, "deque.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -345,7 +341,6 @@ internal sealed partial class LythonRuntime
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var dequeReversedResult = new PyReversedIterator(deque.Length, deque.GetIndex);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(dequeReversedResult, PyIteratorBase.IteratorValueBytes);
                     return dequeReversedResult;
                 }, DequeReversedSignature),
                 _ => MissingMemberValue.Instance,
@@ -656,7 +651,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var setIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(setIterResult, PyIteratorBase.IteratorValueBytes);
                     return setIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(set, "set.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -983,8 +977,6 @@ internal sealed partial class LythonRuntime
                 result.ReleaseUnpublishedStorage();
                 throw;
             }
-
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 
@@ -1006,8 +998,6 @@ internal sealed partial class LythonRuntime
                 result.ReleaseUnpublishedStorage();
                 throw;
             }
-
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 

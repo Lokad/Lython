@@ -2,7 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class JsonCollectionsMappingTests
+public sealed class JsonCollectionsMappingTests : LifetimeScenario
 {
     [Theory]
     [InlineData(false, "dumps", false)]
@@ -109,17 +109,17 @@ public sealed class JsonCollectionsMappingTests
     }
 
     [Fact]
-    public async Task AbandonedIncrementalMappingEncodersReclaimTheirOwnership()
+    public async Task AbandonedMappingEncoderBatchesReturnSharedAccounting()
     {
-        await AssertBothModes("""
+        await AssertBatchCompletes("""
             import json
             from collections import Counter, defaultdict
-            for i in range(3000):
+            for i in range(8):
                 value = defaultdict(None, {'a': Counter({'x': i})})
                 iterator = json.JSONEncoder(sort_keys=True).iterencode(value)
                 next(iterator)
             print('done')
-            """, "done\n", maxMemory: 1048576);
+            """, null, 1048576, standardOutput: "done\n");
     }
 
     private const string Prelude = """

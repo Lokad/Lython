@@ -8,38 +8,28 @@ public class FactoryLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted());
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted());
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }    [Fact]
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);    [Fact]
     public async Task ListComprehensionsDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(100000) + "):\n    x = [j for j in range(2)]\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(100000) + "):\n    x = [j for j in range(2)]\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task DictComprehensionsDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(100000) + "):\n    x = {j: j for j in range(2)}\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(100000) + "):\n    x = {j: j for j in range(2)}\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task ListDisplaysDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(100000) + "):\n    x = [1, 2]\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(100000) + "):\n    x = [1, 2]\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task SetComprehensionOverRangeCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(100000) + "):\n    x = {j for j in range(2)}\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(100000) + "):\n    x = {j for j in range(2)}\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task SetComprehensionOverTupleCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(100000) + "):\n    x = {j for j in (1,)}\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(100000) + "):\n    x = {j for j in (1,)}\nreturn 0\n", "0", Iterations(100000));
 }

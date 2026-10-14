@@ -19,7 +19,6 @@ internal sealed class PySequenceIterator : PyIteratorBase
         _context = context;
         _span = span;
         ChargeIteratorValue(context.MemoryGovernor, span);
-        context.State.CallTemporaries.TrackFreshMutable(this, IteratorValueBytes, span);
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)

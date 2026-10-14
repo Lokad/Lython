@@ -41,14 +41,12 @@ internal static partial class PyDataclass
             return false;
         }
 
-
         private readonly FunctionBindingPlan _bindingPlan;
         private readonly IReadOnlyList<DataclassFieldSpec> _fields;
         private readonly string _typeName;
         private readonly PyString? _moduleName;
 
         public PyString? ModuleName => _moduleName;
-
 
         public DataclassInitMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields, PyString? moduleName)
         {
@@ -211,7 +209,6 @@ internal static partial class PyDataclass
             return false;
         }
 
-
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
@@ -274,7 +271,6 @@ internal static partial class PyDataclass
             value = PyNone.Instance;
             return false;
         }
-
 
         private readonly FunctionBindingPlan _bindingPlan =
             new($"{typeName}.__eq__", PythonCallableKind.Function, BinaryProtocolParameters, EmptyDefaultValues);
@@ -368,7 +364,6 @@ internal static partial class PyDataclass
             return false;
         }
 
-
         private readonly FunctionBindingPlan _bindingPlan;
         private readonly DataclassOrderOperation _operation;
         private readonly string _typeName;
@@ -457,7 +452,6 @@ internal static partial class PyDataclass
             return false;
         }
 
-
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
@@ -504,7 +498,6 @@ internal static partial class PyDataclass
             return false;
         }
 
-
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
@@ -546,7 +539,6 @@ internal static partial class PyDataclass
             value = PyNone.Instance;
             return false;
         }
-
 
         public object Bind(object self) => new PyBoundMethod(self, this);
 

@@ -8,9 +8,19 @@ internal sealed class MemoryGovernor
     // governed value, and release when that value discards its backing storage.
     // Reserved and committed bytes are both accounted so allocation cannot pass
     // through an uncharged window; estimates intentionally need only be safe.
-    public MemoryGovernor(long? maxAccountedBytes)
+    private readonly ILythonMemoryReservation? _ownership;
+    internal ILythonMemoryBudget? Budget { get; }
+
+    public MemoryGovernor(long? maxAccountedBytes, ILythonMemoryBudget? budget = null)
     {
         MaxAccountedBytes = maxAccountedBytes;
+        Budget = budget;
+        if (budget is not null)
+        {
+            if (!budget.TryReserve(0, out _ownership))
+                throw RuntimeErrors.Attributed("MemoryError", "shared memory budget refused ownership", null,
+                    LythonFailureReason.SharedMemoryAllowance);
+        }
     }
 
     public long? MaxAccountedBytes { get; }
@@ -31,104 +41,23 @@ internal sealed class MemoryGovernor
     // Stays zero when nothing was ever denied; a later denial overwrites it.
     public long LastDeniedReservationBytes { get; private set; }
 
-    // The run's one storage pool. Untracked standalone charges still deny
-    // without forcing a collection that cannot release accounted storage.
-    internal ChargeReclamationPool? ReclamationPool { get; set; }
-
-    // Successful reservation or commit since the last relief. Scratch can
-    // reserve before a following payload commits; both need an opportunity to
-    // collect the garbage a partial drain left behind. Net committed
-    // bytes may stay flat or fall while replacements allocate and old values
-    // become collectible. Repeated pinned denials without new allocation still
-    // fail fast instead of paying a collection per caught trip.
-    private bool _hasAllocatedSinceReclaim;
-
-    public void EnsureCanReserve(long bytes, LythonSourceSpan? span, long knownLiveBytes = 0)
+    public void EnsureCanReserve(long bytes, LythonSourceSpan? span)
     {
-        if (bytes <= 0)
+        if (bytes <= 0) return;
+        var next = AddChecked(CurrentAccountedBytes, bytes, span);
+        if (MaxAccountedBytes is { } limit && next > limit)
         {
-            return;
-        }
-
-        var nextAccounted = AddChecked(CurrentAccountedBytes, bytes, span);
-        if (MaxAccountedBytes is { } maxAccountedBytes && nextAccounted > maxAccountedBytes)
-        {
-            if (bytes > maxAccountedBytes || knownLiveBytes > maxAccountedBytes - bytes)
-            {
-                // A request that cannot fit beside a certainly live payload
-                // needs no relief. Do not consume the opportunity to reclaim
-                // after a later withdrawal of that reference.
-                LastDeniedReservationBytes = bytes;
-                throw RuntimeErrors.Attributed("MemoryError", $"execution memory budget exceeded ({maxAccountedBytes})", span,
-                    LythonFailureReason.ExecutionMemoryLimit, maxAccountedBytes, CurrentAccountedBytes, bytes);
-            }
-
-            // CLR collection can make existing owners refundable without a
-            // guest allocation. Reconcile them without authorizing forced GC;
-            // unchanged pinned denials do not rescan the complete inventory.
-            if (!_hasAllocatedSinceReclaim && ReclamationPool is
-                { Count: > 0, HasCollectionSinceFullSweep: true } collectedPool)
-            {
-                collectedPool.Sweep(full: true);
-                nextAccounted = AddChecked(CurrentAccountedBytes, bytes, span);
-            }
-
-            if (nextAccounted > maxAccountedBytes && _hasAllocatedSinceReclaim)
-            {
-                // Sweep/collection makes no admissions or guest callbacks.
-                // A failed pending allocation does not authorize another retry.
-                _hasAllocatedSinceReclaim = false;
-                ReclaimForExhaustion(nextAccounted - maxAccountedBytes);
-            }
-            nextAccounted = AddChecked(CurrentAccountedBytes, bytes, span);
-            if (nextAccounted > maxAccountedBytes)
-            {
-                LastDeniedReservationBytes = bytes;
-                throw RuntimeErrors.Attributed("MemoryError", $"execution memory budget exceeded ({maxAccountedBytes})", span,
-                    LythonFailureReason.ExecutionMemoryLimit, maxAccountedBytes, CurrentAccountedBytes, bytes);
-            }
+            LastDeniedReservationBytes = bytes;
+            throw RuntimeErrors.Attributed("MemoryError", $"execution memory budget exceeded ({limit})", span,
+                LythonFailureReason.ExecutionMemoryLimit, limit, CurrentAccountedBytes, bytes);
         }
     }
 
-    // Last-resort relief for a denied reservation: unreachable tracked values
-    // cannot release their charges until collected, and a quiet loop may never
-    // trigger a collection before the budget trips. Collecting and sweeping
-    // fully before failing attributes the denial to live retention rather
-    // than garbage pressure for tracked storage. Untracked retained charges
-    // still deny without relief.
-    private void ReclaimForExhaustion(long shortfallBytes)
+    // Only fresh, unpublished transaction values can be refunded here.
+    // Published storage remains conservatively owned by its execution batch.
+    internal void RefundUnpublishedValue(object value)
     {
-        if (ReclamationPool is not { Count: > 0 } pool)
-        {
-            return;
-        }
-
-        // Release already-collected targets first: when bursty drops pile up
-        // faster than collections run, that alone can cover the shortfall and
-        // skip the process-wide pause. The net committed comparison keeps this
-        // exact; sweeps themselves allocate nothing and require no funding.
-        var committedBefore = CurrentCommittedBytes;
-        pool.Sweep(full: true);
-
-        if (committedBefore - CurrentCommittedBytes >= shortfallBytes)
-        {
-            return;
-        }
-
-        // Most dropped streaming values are young. Collect only as far as
-        // needed to fund this reservation; old unreachable storage still gets
-        // a full collection before denial. CLR generations need no owner-age
-        // registry, and all existing live snapshots remain charged.
-        for (var generation = 0; generation <= GC.MaxGeneration; generation++)
-        {
-            GC.Collect(generation);
-            pool.Sweep(full: true);
-
-            if (committedBefore - CurrentCommittedBytes >= shortfallBytes)
-            {
-                break;
-            }
-        }
+        if (value is IPyOwnershipSnapshot ownership && ownership.TrySnapshotOwnership(out var bytes)) Release(bytes);
     }
 
     public void Reserve(long bytes, LythonSourceSpan? span)
@@ -140,8 +69,14 @@ internal sealed class MemoryGovernor
 
         EnsureCanReserve(bytes, span);
 
+        if (_ownership is not null && !_ownership.TryResize(checked(CurrentAccountedBytes + bytes)))
+        {
+            LastDeniedReservationBytes = bytes;
+            throw RuntimeErrors.Attributed("MemoryError", "shared memory budget exceeded", span,
+                LythonFailureReason.SharedMemoryAllowance, observed: CurrentAccountedBytes, requested: bytes);
+        }
+
         CurrentReservedBytes += bytes;
-        _hasAllocatedSinceReclaim = true;
         if (CurrentReservedBytes > PeakReservedBytes)
         {
             PeakReservedBytes = CurrentReservedBytes;
@@ -163,12 +98,6 @@ internal sealed class MemoryGovernor
     /// accounting negative, but callers must still pair every reserve with a
     /// matching commit or release. Debug builds throw on unpaired use.
     /// </summary>
-    // Publishing metadata whose fee was funded earlier is still allocation
-    // progress, even though ownership transfer changes no accounting total.
-    // Give a later denial the same reclamation opportunity as an ordinary
-    // successful commit; repeated denials without progress still fail fast.
-    internal void NotePrefundedAllocation() => _hasAllocatedSinceReclaim = true;
-
     public void Commit(long bytes)
     {
         if (bytes <= 0)
@@ -186,7 +115,6 @@ internal sealed class MemoryGovernor
         var committed = Math.Min(bytes, CurrentReservedBytes);
         CurrentReservedBytes -= committed;
         CurrentCommittedBytes = checked(CurrentCommittedBytes + committed);
-        if (committed > 0) _hasAllocatedSinceReclaim = true;
 
         if (CurrentCommittedBytes > PeakCommittedBytes)
         {
@@ -214,6 +142,7 @@ internal sealed class MemoryGovernor
 #endif
 
         CurrentCommittedBytes = Math.Max(0, CurrentCommittedBytes - bytes);
+        _ownership?.TryResize(CurrentAccountedBytes);
     }
 
     internal void ReleaseReserved(long bytes)
@@ -224,6 +153,7 @@ internal sealed class MemoryGovernor
         }
 
         CurrentReservedBytes = Math.Max(0, CurrentReservedBytes - bytes);
+        _ownership?.TryResize(CurrentAccountedBytes);
     }
 
     private long AddChecked(long left, long right, LythonSourceSpan? span)

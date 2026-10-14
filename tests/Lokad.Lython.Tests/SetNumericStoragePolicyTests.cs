@@ -29,7 +29,7 @@ public sealed class SetNumericStoragePolicyTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         object value = BigInteger.One << 4000;
         if (owned)
-            LythonRuntime.OwnFreshInteger(value, context.MemoryGovernor, context.Services.State.CallTemporaries, null);
+            LythonRuntime.OwnFreshInteger(value, context.MemoryGovernor, null);
         var set = new PySet(context.MemoryGovernor);
         Assert.True(set.Add(value));
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -115,16 +115,14 @@ public sealed class SetNumericStoragePolicyTests
     }
 
     [Fact]
-    public void BooleanTwinRemovalRefreshesTheActualPoolSnapshot()
+    public void BooleanTwinRemovalKeepsTheActualStorageFunding()
     {
         var governor = new MemoryGovernor(4096);
-        var pool = new ChargeReclamationPool(governor);
         var set = new PySet(new object[] { BigInteger.One }, governor);
-        pool.TrackMutable(set, set.CommittedStorageBytes);
         var before = governor.CurrentCommittedBytes;
         Assert.True(set.Remove(true));
         Assert.Equal(before - 64, governor.CurrentCommittedBytes);
-        Assert.Equal(set.CommittedStorageBytes + 128 + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(set.CommittedStorageBytes, governor.CurrentCommittedBytes);
         GC.KeepAlive(set);
     }
 

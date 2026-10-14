@@ -19,9 +19,8 @@ public sealed class FileHandleAccountingTests
             ?? throw new InvalidOperationException("ForWrite not found.");
         _ = method.Invoke(null, ["/f.txt", context]);
         // One table slot; the path aliases caller-owned or governed strings.
-        Assert.Equal(64L + ChargeReclamationPool.EntryChargeBytes + context.State.CallTemporaries.CommittedBackingBytes,
+        Assert.Equal(64L,
             context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(1, context.State.CallTemporaries.Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

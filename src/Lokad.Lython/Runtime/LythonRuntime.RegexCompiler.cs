@@ -104,11 +104,6 @@ internal sealed partial class LythonRuntime
                     groupSummary.NamedGroups);
                 context.MemoryGovernor.Reserve(patternBytes, span);
                 context.MemoryGovernor.Commit(patternBytes);
-                // M05: the durable compilation charge commits with no owning funnel
-                // (every module-level re call compiles through here), so dropped
-                // compilations stranded ~64KiB each. Fresh results adopt here and
-                // reclaim on sweep; retained patterns stay charged.
-                context.Services.State.CallTemporaries.TrackFreshMutable(result, patternBytes, span);
                 cache.Add(patternText, rawFlags, result, context.MemoryGovernor, span);
                 return result;
             }
@@ -159,18 +154,13 @@ internal sealed partial class LythonRuntime
             {
                 ThrowIfCompiledFlags(arguments, 2, span, context);
                 var compiledRange = CreateSubjectRange(text, pos, endPos);
-                context.Services.State.CallTemporaries.TrackFreshString(compiledRange.Segment, span);
                 return new RegexPatternRange(compiled, compiledRange);
             }
 
             object[] patternArguments = arguments.Length >= 3 && !ReferenceEquals(arguments[2], PyNone.Instance)
                 ? [arguments[0], arguments[2]]
                 : [arguments[0]];
-            // The subject segment is a fresh governed copy on every call:
-            // own it so dropped matches reclaim on sweep (substitute and
-            // split adopt their own segments; the funnel never sees these).
             var matchRange = CreateSubjectRange(text, pos, endPos);
-            context.Services.State.CallTemporaries.TrackFreshString(matchRange.Segment, span);
             return new RegexPatternRange(
                 CreatePattern(patternArguments, signature, span, context),
                 matchRange);
@@ -210,11 +200,7 @@ internal sealed partial class LythonRuntime
                 pattern = CreatePattern(patternArguments, signature, span, context);
             }
 
-            // The subject segment is a fresh governed copy on every call:
-            // own it so dropped substitutions reclaim on sweep (split and
-            // match paths keep their own ranges; the funnel never sees this).
             var substituteInputs = new RegexSubstituteInputs(pattern, replacement, CreateSubjectRange(text, pos, endPos), count);
-            context.Services.State.CallTemporaries.TrackFreshString(substituteInputs.Range.Segment, span);
             return substituteInputs;
         }
 
@@ -252,11 +238,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            // The subject segment is a fresh governed copy on every call:
-            // own it so dropped splits reclaim on sweep (substitute and
-            // match adopt their own segments; the funnel never sees these).
             var splitRange = CreateSubjectRange(text, pos, endPos);
-            context.Services.State.CallTemporaries.TrackFreshString(splitRange.Segment, span);
             return new RegexSplitInputs(pattern, splitRange, maxSplit);
         }
 

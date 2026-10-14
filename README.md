@@ -13,6 +13,11 @@ the compilation, runtime, containment, and verification boundaries in
 Performance against CPython, measured revisions and remaining gaps are summarized
 in [BENCHMARKS.md](BENCHMARKS.md).
 
+Hosts can share a memory allowance across executions through Lython's budget,
+scope and reservation interfaces. Compiled programs and results have explicit
+disposal lifetimes; long streams use bounded host-driven batches. See
+[governed memory](MEMORY.md) for admission, ownership and approximation contracts.
+
 It is meant for the kind of Python a coding agent naturally writes when it needs to:
 
 - read and rewrite text files
@@ -68,7 +73,7 @@ On the host side, the plumbing is deliberately small:
 
 ```csharp
 var engine = new LythonEngine();
-var result = engine.Run(script, host);
+using var result = engine.Run(script, host);
 
 switch (result.State)
 {

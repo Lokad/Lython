@@ -66,7 +66,6 @@ internal sealed partial class LythonRuntime
                             ? await InvokeCallableTargetAsync(keysMember.Value, span, span, _context, () => new ValueTask<CallArgumentValue[]>([])).ConfigureAwait(false)
                             : InvokeCallableTarget(keysMember.Value, span, span, _context, () => []);
                         var snapshot = new PyList([], _context.MemoryGovernor, span);
-                        _context.Services.State.CallTemporaries.TrackFreshMutable(snapshot, snapshot.CommittedStorageBytes, span);
                         if (asynchronous)
                         {
                             await foreach (var key in ToSequenceAsync(keys, span, _context).ConfigureAwait(false))
@@ -92,7 +91,6 @@ internal sealed partial class LythonRuntime
                 case ExecutableFinishTuple:
                     var expanded = (PyList)Pop(ref _stack, span);
                     var tuple = new PyTuple(expanded, _context.MemoryGovernor, span);
-                    _context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, span);
                     PushObserved(tuple, span);
                     break;
                 case ExecutableStartCall call:
@@ -132,7 +130,6 @@ internal sealed partial class LythonRuntime
                         for (var i = first; i < _stack.Count; i++) builder.Append((PyString)_stack[i]);
                         _stack.RemoveTail(join.Count);
                         var text = builder.ToPyStringAndRelease();
-                        _context.Services.State.CallTemporaries.TrackFreshString(text, span);
                         PushObserved(text, span);
                     }
                     finally { builder.Release(); }
@@ -173,7 +170,6 @@ internal sealed partial class LythonRuntime
             _context.MemoryGovernor.Commit(bytes);
             var overlay = new CapturedComprehensionClauses(clauses,
                 clauses[0] with { Iterable = new LoweredCapturedExpression(clauses[0].Iterable.Syntax, value) });
-            _context.Services.State.CallTemporaries.TrackFreshMutable(overlay, bytes, span);
             return overlay;
         }
         return expression switch

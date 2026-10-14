@@ -239,12 +239,10 @@ internal sealed partial class LythonRuntime
         private readonly MemoryGovernor _governor;
         private readonly LythonSourceSpan? _span;
         private readonly Stack<WalkFrame> _frames = [];
-        private readonly ChargeReclamationPool? _reclamationPool;
 
         public PyWalkIterator(string root, bool topdown, ICallable? onerror, ExecutionContext context, LythonSourceSpan? span)
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-            _reclamationPool = context.Services.State.CallTemporaries;
             _topdown = topdown;
             _onerror = onerror;
             _context = context;
@@ -470,12 +468,10 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < items.Count; i++)
             {
                 var text = PyString.FromString(items[i], _governor, _span);
-                _reclamationPool?.TrackFreshString(text, _span);
                 values[i] = text;
             }
 
             var list = new PyList(values, _governor, _span);
-            _reclamationPool?.TrackFreshMutable(list, list.CommittedStorageBytes, _span);
             return list;
         }
 
@@ -487,7 +483,6 @@ internal sealed partial class LythonRuntime
             }
 
             var payload = PyString.FromString(message, _governor, _span);
-            _context.State.CallTemporaries.TrackFreshString(payload, _span);
             var callbackSpan = _span ?? new LythonSourceSpan(0, 0, 0, 0);
             _ = InvokeCallableTarget(
                 _onerror,
@@ -506,7 +501,6 @@ internal sealed partial class LythonRuntime
             }
 
             var payload = PyString.FromString(message, _governor, _span);
-            _context.State.CallTemporaries.TrackFreshString(payload, _span);
             var callbackSpan = _span ?? new LythonSourceSpan(0, 0, 0, 0);
             _ = await InvokeCallableTargetAsync(
                 _onerror,
@@ -520,7 +514,6 @@ internal sealed partial class LythonRuntime
         private object CreateTuple(WalkFrame frame)
         {
             var directory = PyString.FromString(frame.DirectoryPath, _governor, _span);
-            _reclamationPool?.TrackFreshString(directory, _span);
             var tuple = new PyTuple(
             [
                 directory,
@@ -529,7 +522,6 @@ internal sealed partial class LythonRuntime
             ],
             _governor,
             _span);
-            _reclamationPool?.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, _span);
             return tuple;
         }
 

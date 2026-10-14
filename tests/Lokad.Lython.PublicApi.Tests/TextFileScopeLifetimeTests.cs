@@ -22,10 +22,11 @@ public sealed class TextFileScopeLifetimeTests
     [InlineData("r", false, true, true)]
     [InlineData("r", true, false, true)]
     [InlineData("r", true, true, true)]
-    public async Task EscapingFileDropsUnrelatedLocalsAndKeepsExplicitAliases(
+    public async Task EscapingFilePreservesBatchFundingAndExplicitAliases(
         string mode, bool close, bool asynchronous, bool retain)
     {
-        var script = new LythonEngine().Compile($$"""
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile($$"""
 def acquire():
     unrelated = 'x' * 16000
     assert len(locals()['unrelated']) == 16000
@@ -46,41 +47,51 @@ if not file.closed:
         file.write('résumé\n')
     file.close()
 return len(candidate)
-""");
+""", budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
-        var delayed = asynchronous ? new DelayedLythonHost() : null;
-        var mock = asynchronous ? null : new MockLythonHost();
-        ILythonHost host = (ILythonHost?)delayed ?? mock!;
-        if (delayed is not null)
+        var baseline = budget.ReservedBytes;
+        // The original cap refuses conservatively, even after guest withdrawal.
+        // A funded run separately preserves the handle and alias semantics.
+        foreach (var cap in new[] { 28000L, 120000L })
         {
-            delayed.SeedFile("/text", "g");
-            delayed.SeedBytes("/checkpoint", [(byte)'g']);
-        }
-        else
-        {
-            mock!.SeedFile("/text", "g");
-            mock.SeedBytes("/checkpoint", [(byte)'g']);
-        }
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 28000 };
-        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-        if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
-        Assert.Equal("gate\n", result.StandardOutput);
-        Assert.InRange(result.PeakExecutionMemoryBytes, 16000, 28000);
-        if (retain)
-        {
-            Assert.False(result.Success);
-            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        }
-        else
-        {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(new BigInteger(16000), result.ReturnValue);
-            if (mode != "r")
+            var delayed = asynchronous ? new DelayedLythonHost() : null;
+            var mock = asynchronous ? null : new MockLythonHost();
+            ILythonHost host = (ILythonHost?)delayed ?? mock!;
+            if (delayed is not null)
             {
-                var actual = await host.ReadTextUtf8Async("/text", CancellationToken.None);
-                Assert.Equal(close ? (mode == "w" ? "" : "g") : (mode == "w" ? "résumé\n" : "grésumé\n"),
-                    System.Text.Encoding.UTF8.GetString(actual.Span));
+                delayed.SeedFile("/text", "g");
+                delayed.SeedBytes("/checkpoint", [(byte)'g']);
             }
+            else
+            {
+                mock!.SeedFile("/text", "g");
+                mock.SeedBytes("/checkpoint", [(byte)'g']);
+            }
+            var options = new LythonRunOptions { MaxExecutionMemoryBytes = cap };
+            using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+            if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+            Assert.Equal("gate\n", result.StandardOutput);
+            Assert.InRange(result.PeakExecutionMemoryBytes, 16000, cap);
+            if (cap == 28000)
+            {
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new BigInteger(16000), result.ReturnValue);
+                if (mode != "r")
+                {
+                    var actual = await host.ReadTextUtf8Async("/text", CancellationToken.None);
+                    Assert.Equal(close ? (mode == "w" ? "" : "g") : (mode == "w" ? "résumé\n" : "grésumé\n"),
+                        System.Text.Encoding.UTF8.GetString(actual.Span));
+                }
+            }
+            result.Dispose();
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

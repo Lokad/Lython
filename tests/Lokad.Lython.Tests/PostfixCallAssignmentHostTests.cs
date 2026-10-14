@@ -85,7 +85,6 @@ public sealed class PostfixCallAssignmentHostTests
                 {
                     Assert.Same(runner, frame.Variables["self"]);
                     produced = new PyList([], frame.MemoryGovernor, span);
-                    frame.Services.State.CallTemporaries.TrackFreshMutable(produced, produced.CommittedStorageBytes, span);
                     value = produced;
                 }
                 else if (stage == "receiver") value = actualTarget;

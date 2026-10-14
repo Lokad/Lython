@@ -173,7 +173,6 @@ internal sealed partial class LythonRuntime
                     generator.Span,
                     await PyIteration.AcquireGeneratorOuterAsync(outer, generator.Clauses[0].Iterable.Span, context).ConfigureAwait(false), generator.ScopeFacts);
                 producedAsync.AttachAsyncOuter(outer);
-                context.Services.State.CallTemporaries.TrackFreshMutable(producedAsync, PyIteratorBase.IteratorValueBytes);
                 return producedAsync;
             }
             case LoweredTupleLiteralExpression tuple:
@@ -240,9 +239,6 @@ internal sealed partial class LythonRuntime
         {
             var value = _builder.ToPyStringAndRelease();
             _context.ObserveString(value, _span);
-            // M05: same ownership as the executable f-string display: dropped
-            // results reclaim on sweep while retained results stay charged.
-            _context.Services.State.CallTemporaries.TrackFreshString(value, _span);
             return value;
         }
     }
@@ -456,8 +452,8 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         Dictionary<string, object> defaults)
     {
-        var (generatorCells, generatorCellBytes) = functionDefinition.GeneratorCode is { ClosureNames.Count: > 0 } generatorCode && context.CurrentExecutableFrame is not null
-            ? CaptureExecutableClosures(generatorCode, context, functionDefinition.Span) : ([], 0L);
+        var generatorCells = functionDefinition.GeneratorCode is { ClosureNames.Count: > 0 } generatorCode && context.CurrentExecutableFrame is not null
+            ? CaptureExecutableClosures(generatorCode, context, functionDefinition.Span) : [];
         PyFunctionBase function = functionDefinition.GeneratorCode is not null
             ? new PyGeneratorFunction(functionDefinition, context.FunctionClosureContext, defaults, generatorCells)
             : new PyFunction(
@@ -469,19 +465,11 @@ internal sealed partial class LythonRuntime
             ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax));
         ChargeFunctionValue(context, functionDefinition.Span);
         ChargeDefaultArguments(functionDefinition.Parameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, functionDefinition.Span);
-        var closureRetentionBytes = ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, functionDefinition.Span);
-        var docstringBytes = PyFunctionBase.CaptureFunctionDocstring(function, functionDefinition.Body, context, functionDefinition.Span);
-        TrackFunctionValue(function, functionDefinition.Parameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes + generatorCellBytes, docstringBytes, context, functionDefinition.Span);
+        ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, functionDefinition.Span);
+        PyFunctionBase.CaptureFunctionDocstring(function, functionDefinition.Body, context, functionDefinition.Span);
         return function;
     }
 
-    // Class-based typing.NamedTuple builds the same pooled namedtuple type the
-    // functional form returns. Fields are annotated names in definition order
-    // (ClassVar names are excluded like dataclasses); values on annotated names
-    // are rightmost defaults like CPython, and member values stay aliased like
-    // plain class attributes. Anything else in the body (methods, plain
-    // attributes) is explicitly unsupported. The type adopts through the shared
-    // namedtuple choke while dropped definitions reclaim on sweep.
     private static object CreateNamedTupleClassType(
         LoweredClassDefinitionStatement classDefinition,
         ExecutionContext classContext,
@@ -625,8 +613,6 @@ internal sealed partial class LythonRuntime
 
             if (annotations is not null)
             {
-                // Dropped annotated definitions reclaim the filled map through the pool.
-                context.Services.State.CallTemporaries.TrackFreshMutable(annotations, annotations.CommittedStorageBytes);
                 members["__annotations__"] = annotations;
             }
         }
@@ -693,7 +679,6 @@ internal sealed partial class LythonRuntime
         PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, classContext, classDefinition.Span);
         type.InitializeClassMembers(definingContext, classDefinition.Span);
         ChargeClassTypeValue(classContext.Variables.Count, definingContext.MemoryGovernor, classDefinition.Span);
-        TrackClassTypeValue(type, classContext.Variables.Count, definingContext, classDefinition.Span);
         return type;
     }
 
@@ -707,18 +692,6 @@ internal sealed partial class LythonRuntime
         where T : IReadOnlyCollection<object>
     {
         context.ObserveCollectionCount(collection.Count, span);
-        // Display literals are freshly built: dropped ones release through the
-        // pool once collected, and a denied registry charge refunds the snapshot.
-        switch (collection)
-        {
-            case PyList list when list.OwnerMemoryGovernor is not null:
-                context.Services.State.CallTemporaries.TrackFreshMutable(list, list.CommittedStorageBytes);
-                break;
-            case PyTuple tuple when tuple.OwnerMemoryGovernor is not null:
-                context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes);
-                break;
-        }
-
         return collection;
     }
 

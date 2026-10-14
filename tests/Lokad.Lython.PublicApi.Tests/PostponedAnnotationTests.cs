@@ -2,7 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed partial class PostponedAnnotationTests
+public sealed partial class PostponedAnnotationTests : LifetimeScenario
 {
     [Theory]
     [InlineData(false)]
@@ -103,17 +103,10 @@ public sealed partial class PostponedAnnotationTests
     [InlineData("def f[T](x:T)->Other:pass")]
     [InlineData("def f():pass\n unused=f.__annotations__")]
     [InlineData("f=lambda:7\n unused=f.__annotations__")]
-    public async Task DroppedFunctionsReclaimAnnotationMetadata(string definition)
+    public async Task FunctionMetadataIsReleasedAfterEachBatch(string definition)
     {
-        var source = "from __future__ import annotations\nfor i in range(5000):\n " + definition + "\nprint('done')";
-        var compiled = new LythonEngine().Compile(source);
-        Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
-        foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
-        {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("done\n", result.StandardOutput);
-        }
+        var source = "from __future__ import annotations\nfor i in range(8):\n " + definition + "\nprint('done')";
+        await AssertBatchCompletes(source, null, 524288, standardOutput: "done\n");
     }
 
     [Theory]

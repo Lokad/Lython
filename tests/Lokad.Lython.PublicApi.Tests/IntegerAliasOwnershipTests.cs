@@ -2,7 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class IntegerAliasOwnershipTests
+public sealed class IntegerAliasOwnershipTests : LifetimeScenario
 {
     private const string Prelude = """
         import math, operator
@@ -78,15 +78,9 @@ public sealed class IntegerAliasOwnershipTests
     [InlineData("round(x)", true)]
     [InlineData("operator.index(AsIndex())", false)]
     [InlineData("operator.index(AsIndex())", true)]
-    public async Task DroppedAliasesKeepTheirStreamingBudget(string expression, bool asyncMode)
+    public async Task AliasBatchesReturnSharedAccounting(string expression, bool asyncMode)
     {
-        var script = new LythonEngine().Compile(Prelude + "for _ in range(4000):\n x = 1 << 4000\n y = " + expression + "\nreturn y.bit_length()\n");
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
-        var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
-        Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("4001", result.ReturnValue?.ToString());
-        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
+        await AssertBatchCompletes(Prelude + "for _ in range(8):\n x = 1 << 4000\n y = " + expression + "\nreturn y.bit_length()\n", "4001", 262144, asynchronous: asyncMode);
     }
 
     [Fact]
@@ -99,17 +93,23 @@ public sealed class IntegerAliasOwnershipTests
             del x
             with open('/value', 'r') as stream:
                 stream.read()
-            for _ in range(4000):
+            for _ in range(8):
                 z = 1 << 4000
             return method() is y
             """;
         var host = new DelayedLythonHost();
         host.SeedFile("/value", "ready");
-        var script = new LythonEngine().Compile(code);
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(code, budget);
+        var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid);
-        var result = await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = 262144 });
+        using var result = await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = 262144 });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(Assert.IsType<bool>(result.ReturnValue));
         Assert.True(host.CompletedAsynchronously > 0);
+        result.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

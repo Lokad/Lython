@@ -1444,6 +1444,8 @@ text = str(data)
             MaxStandardErrorBytes = 18,
             MaxExecutionMemoryBytes = 19,
             MaxProjectionMemoryBytes = 20,
+            MemoryBudget = new LythonMemoryBudget(100),
+            ResultMemoryBudget = new LythonMemoryBudget(200),
         };
         var properties = typeof(LythonRunOptions).GetProperties();
         foreach (var property in properties)

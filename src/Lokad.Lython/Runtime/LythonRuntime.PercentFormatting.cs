@@ -75,10 +75,7 @@ internal sealed partial class LythonRuntime
 
             _builder.AppendString(_format[literalStart..]);
             EnsureAllArgumentsConsumed();
-            // The built string commits with no owning funnel on the operator path:
-            // adopt it here; drops reclaim on sweep while retained results stay charged.
             var formatted = _builder.ToPyStringAndRelease();
-            _context.Services.State.CallTemporaries.TrackFreshString(formatted, _span);
             return formatted;
         }
 
@@ -168,8 +165,6 @@ internal sealed partial class LythonRuntime
 
         private void AppendText(object value, PercentSpecifier specifier)
         {
-            // Rendered items are byte-copied below, so own them like other join
-            // items (drops reclaim on sweep); the precision slice re-owns its copy.
             var rendered = PyRendering.OwnJoinItem(specifier.Conversion switch
             {
                 's' => ToInterpolatedPyString(value, _context),

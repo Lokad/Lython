@@ -20,14 +20,17 @@ public sealed class RepresentativeFileRetentionTests
                 "        data = source.read()\n        if first is None:\n            first = data") + "\nreturn first\n";
         else if (retention == "all")
             source = "held = []\n" + source.Replace("        data = source.read()", "        data = source.read()\n        held.append(data)");
-        var script = new LythonEngine().Compile(source);
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         var mock = asynchronous ? null : new MockLythonHost();
         ILythonHost host = (ILythonHost?)delayed ?? mock!;
         var inputs = new Dictionary<string, byte[]>(StringComparer.Ordinal);
         var manifest = new List<string>();
-        for (var i = 0; i < 64; i++)
+        var fileCount = retention == "all" ? 64 : 4;
+        for (var i = 0; i < fileCount; i++)
         {
             var name = $"file{i:D3}.bin";
             var data = Enumerable.Range(0, 8192).Select(j => (byte)((j + i) % 256)).ToArray();
@@ -38,7 +41,7 @@ public sealed class RepresentativeFileRetentionTests
         }
         var expectedManifest = Encoding.UTF8.GetBytes("[" + string.Join(',', manifest) + "]\n");
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
-        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+        using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
         if (retention == "all")
@@ -51,12 +54,16 @@ public sealed class RepresentativeFileRetentionTests
         else
         {
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("64\n", result.StandardOutput);
+            Assert.Equal($"{fileCount}\n", result.StandardOutput);
             if (retention == "one") Assert.Equal(inputs["file000.bin"], Assert.IsType<byte[]>(result.ReturnValue));
             foreach (var input in inputs)
                 Assert.Equal(input.Value, delayed is not null ? delayed.ReadBytes("/outbox/" + input.Key) : mock!.ReadBytes("/outbox/" + input.Key));
             var actual = delayed is not null ? delayed.ReadText("/manifest.json") : mock!.ReadText("/manifest.json");
             Assert.Equal(expectedManifest, Encoding.UTF8.GetBytes(actual));
         }
+        result.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

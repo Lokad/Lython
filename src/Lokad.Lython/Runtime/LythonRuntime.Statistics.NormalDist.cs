@@ -140,7 +140,6 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-
         private static bool IsWholeInteger(double value)
             => double.IsFinite(value) && Math.Abs(value % 1.0) < 1e-12;
 

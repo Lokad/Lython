@@ -10,7 +10,6 @@ internal sealed partial class LythonRuntime
         if (context.Variables.ContainsKey("__annotations__") || !ContainsAnnotation(statements)) return;
         var span = statements[0].Span;
         var annotations = new PyDict(context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(annotations, annotations.CommittedStorageBytes, span);
         if (context.GlobalNamespace is not null) StoreGlobalNamespaceName(context, "__annotations__", annotations);
         else context.Variables["__annotations__"] = annotations;
 
@@ -36,7 +35,6 @@ internal sealed partial class LythonRuntime
     {
         var text = expression.PostponedAnnotationText ?? throw RuntimeErrors.Runtime("Postponed annotation metadata is unavailable.", expression.Span);
         var result = PyString.FromString(text, context.MemoryGovernor, expression.Span);
-        context.Services.State.CallTemporaries.TrackFreshString(result, expression.Span);
         context.ObserveString(result, expression.Span);
         return result;
     }
@@ -45,15 +43,12 @@ internal sealed partial class LythonRuntime
         ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
         var key = PyString.FromString(name, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshString(key, span);
         context.ObserveString(key, span);
         if (annotations is PyDict dictionary && !dictionary.ContainsKey(key))
             context.ObserveCollectionCount(dictionary.Count + 1, span);
         if (asynchronous)
             await SetHeaderSubscriptAsync(annotations, key, annotation, span, context).ConfigureAwait(false);
         else SetSubscriptValue(annotations, key, annotation, span, context);
-        if (annotations is PyDict stored)
-            context.Services.State.CallTemporaries.TrackGrowth(stored, stored.CommittedStorageBytes, span);
     }
 
     private static async ValueTask EvaluateAnnotationTargetReadsAsync(LoweredAnnotatedAssignmentStatement statement,

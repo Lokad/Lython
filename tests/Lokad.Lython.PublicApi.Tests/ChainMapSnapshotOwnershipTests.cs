@@ -3,10 +3,6 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// R05: merged key snapshots escaping through iterators own their lifetime.
-// Retained iterators stay charged (and deny), abandoned ones release on sweep,
-// partial iterators stay independent, and scalar len/membership never build
-// retained snapshots.
 public sealed class ChainMapSnapshotOwnershipTests
 {
     private const string ThousandKeys = "{i: i for i in range(1000)}";

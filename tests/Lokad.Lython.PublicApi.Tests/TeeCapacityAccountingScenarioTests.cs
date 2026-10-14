@@ -8,7 +8,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// payload references, so drained retained pairs cannot recycle the budget.
 /// </summary>
 public sealed class TeeCapacityAccountingScenarioTests
-{
+:LifetimeScenario{
     [Fact]
     public async Task DrainedRetainedPairsStayCharged()
     {
@@ -86,30 +86,21 @@ public sealed class TeeCapacityAccountingScenarioTests
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
 
-    // The shared coupon mirrors live queue and backing growth, so buffered
-    // tees dropped whole reclaim instead of stranding their backlog charges.
+    // Buffered clones stay charged until their finite execution owner ends.
     [Fact]
     public async Task BufferedTeeDropsReclaim()
     {
-        var script = new LythonEngine().Compile("""
+        await AssertBatchCompletes("""
             import itertools
             i = 0
-            while i < 1000:
+            while i < 8:
                 a, b = itertools.tee(range(100))
                 for x in a:
                     pass
                 i = i + 1
             return 0
-            """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024 };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+            """, new System.Numerics.BigInteger(0), 3145728);
     }
-
     [Fact]
     public async Task FailedSourceKeepsQueuedBacklog()
     {

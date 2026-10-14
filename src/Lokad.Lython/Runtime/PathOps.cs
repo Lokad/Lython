@@ -296,23 +296,23 @@ internal static class PathOps
     }
 
     public static PyList Parents(PyString path)
-        => Parents(path, null, null, null);
+        => Parents(path,null,null);
 
     public static PyList Parents(PyString path, MemoryGovernor? governor)
-        => Parents(path, governor, null, null);
+        => Parents(path,governor,null);
 
-    public static PyList Parents(PyString path, MemoryGovernor? governor, LythonSourceSpan? span, ChargeReclamationPool? pool)
+    public static PyList Parents(PyString path,MemoryGovernor? governor,LythonSourceSpan? span)
     {
         var values = governor is null ? new PyList() : new PyList([], governor, span);
         var current = Parent(path);
         if (current.Equals(path))
         {
-            return LythonRuntime.OwnSplitListResult(values, span, pool);
+            return values;
         }
 
         while (true)
         {
-            values.Add(governor is null ? new PyPath(current) : LythonRuntime.OwnPathResult(current, path, governor, span, pool));
+            values.Add(governor is null ? new PyPath(current) : LythonRuntime.OwnPathResult(current,path,governor,span));
             if (current.Equals(PyStringOps.SlashLiteral) || current.Equals(PyStringOps.DotLiteral))
             {
                 break;
@@ -321,21 +321,21 @@ internal static class PathOps
             current = Parent(current);
         }
 
-        return LythonRuntime.OwnSplitListResult(values, span, pool);
+        return values;
     }
 
     public static PyTuple Parts(PyString path)
-        => Parts(path, null, null, null);
+        => Parts(path,null,null);
 
     public static PyTuple Parts(PyString path, MemoryGovernor? governor)
-        => Parts(path, governor, null, null);
+        => Parts(path,governor,null);
 
-    public static PyTuple Parts(PyString path, MemoryGovernor? governor, LythonSourceSpan? span, ChargeReclamationPool? pool)
+    public static PyTuple Parts(PyString path,MemoryGovernor? governor,LythonSourceSpan? span)
     {
         var normalized = NormalizeLexical(path.AsString());
         if (normalized == ".")
         {
-            return LythonRuntime.OwnSplitTupleResult(governor is null ? PyTuple.FromOwnedArray([]) : PyTuple.FromOwnedArray([], governor, span), span, pool);
+            return governor is null ? PyTuple.FromOwnedArray([]) : PyTuple.FromOwnedArray([], governor, span);
         }
 
         var values = new List<object>();
@@ -349,10 +349,10 @@ internal static class PathOps
         {
             foreach (var part in normalized.Split('/', StringSplitOptions.RemoveEmptyEntries))
             {
-                values.Add(governor is null ? PyString.FromString(part) : LythonRuntime.OwnMethodResult(PyString.FromString(part), path, governor, span, pool));
+                values.Add(governor is null ? PyString.FromString(part) : LythonRuntime.OwnMethodResult(PyString.FromString(part),path,governor,span));
             }
         }
 
-        return LythonRuntime.OwnSplitTupleResult(governor is null ? new PyTuple(values) : new PyTuple(values, governor, span), span, pool);
+        return governor is null ? new PyTuple(values) : new PyTuple(values, governor, span);
     }
 }

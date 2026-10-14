@@ -14,11 +14,11 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static void GuardIntegerPower(PyNumber lhs, PyNumber rhs, MemoryGovernor governor, LythonSourceSpan span)
+    private static MemoryGovernor.TemporaryMemoryReservation? GuardIntegerPower(PyNumber lhs, PyNumber rhs, MemoryGovernor governor, LythonSourceSpan span)
     {
         if (lhs.IsFloat || rhs.IsFloat || rhs.Integer < BigInteger.Zero)
         {
-            return;
+            return null;
         }
 
         var baseBits = RuntimeMemoryEstimates.GetMagnitudeBitLength(lhs.Integer);
@@ -31,66 +31,43 @@ internal sealed partial class LythonRuntime
             _ => RuntimeMemoryEstimates.SaturatingMultiply(baseBits, (long)exponent)
         };
 
-        GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits), governor, span);
+        return GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits), governor, span);
     }
 
-    private static void GuardIntegerLeftShift(BigInteger lhs, BigInteger rhs, MemoryGovernor governor, LythonSourceSpan span)
+    private static MemoryGovernor.TemporaryMemoryReservation? GuardIntegerLeftShift(BigInteger lhs, BigInteger rhs, MemoryGovernor governor, LythonSourceSpan span)
     {
         if (rhs < BigInteger.Zero)
         {
-            return;
+            return null;
         }
 
         var lhsBits = RuntimeMemoryEstimates.GetMagnitudeBitLength(lhs);
         var shiftBits = rhs > long.MaxValue ? long.MaxValue : (long)rhs;
         var resultBits = RuntimeMemoryEstimates.SaturatingAdd(lhsBits, shiftBits);
-        GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits), governor, span);
+        return GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits), governor, span);
     }
 
-    private static void GuardIntegerResultBytes(long estimatedBytes, MemoryGovernor governor, LythonSourceSpan? span)
+    private static MemoryGovernor.TemporaryMemoryReservation? GuardIntegerResultBytes(long estimatedBytes, MemoryGovernor governor, LythonSourceSpan? span)
     {
-        // Preflight only: fail before materializing a giant result. Durable
-        // ownership of the actual result happens at the arithmetic sites below.
+        // Hold admission while a major magnitude and its computation scratch
+        // are allocated. Small inline values need no separate scratch owner.
         governor.EnsureCanReserve(estimatedBytes, span);
+        return estimatedBytes > 64 ? governor.ReserveTemporary(estimatedBytes, span) : null;
     }
 
-    // Integers above the inline range retain heap magnitude storage. R11 shares
-    // the fresh-magnitude rule below: commit durable payload ownership and
-    // pool-track the box so dropped values reclaim on sweep instead of
-    // stranding. Each box owns its coupon independently (charge on track,
-    // release exactly once on collection), so shared limb arrays stay
-    // conservatively charged while shared and exact once fully collected;
-    // alias dedup keeps a shared box from double-committing. Inline-range
-    // values, floats and untracked inputs stay free.
-    private static object OwnHeapInteger(object value, MemoryGovernor governor, ChargeReclamationPool pool, LythonSourceSpan? span)
-        => OwnFreshInteger(value, governor, pool, span);
+    // Major magnitudes stay conservatively charged to the execution owner.
+    private static object OwnHeapInteger(object value, MemoryGovernor governor, LythonSourceSpan? span)
+        => OwnFreshInteger(value, governor, span);
 
-    // Fresh heap magnitudes produced outside ordinary arithmetic (parses, random
-    // draws, enumerated indices, copied host inputs): commit durable payload
-    // ownership above the inline range like arithmetic does, and pool-track the
-    // box so dropped values reclaim on sweep instead of stranding. Aliases dedup
-    // before committing so a shared box never double-charges; distinct boxes
-    // sharing limb arrays overcount conservatively until R11 reclaims precisely.
-    // Callers must pass the single box that flows onward: boxing a struct twice
-    // would track a dead box while the live twin escapes unowned.
-    internal static object OwnFreshInteger(object box, MemoryGovernor governor, ChargeReclamationPool pool, LythonSourceSpan? span)
+    // Fresh arithmetic, parsed and copied magnitudes have no identity ledger.
+    internal static object OwnFreshInteger(object box, MemoryGovernor governor, LythonSourceSpan? span)
     {
         if (box is BigInteger integer &&
-            RuntimeMemoryEstimates.GetMagnitudeBitLength(integer) > 64 &&
-            !pool.IsTracked(box))
+            RuntimeMemoryEstimates.GetMagnitudeBitLength(integer) > 64)
         {
             var bytes = RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer);
             governor.Reserve(bytes, span);
             governor.Commit(bytes);
-            try
-            {
-                pool.Track(box, bytes, span);
-            }
-            catch (LythonRuntimeException)
-            {
-                governor.Release(bytes);
-                throw;
-            }
         }
 
         return box;
@@ -98,9 +75,9 @@ internal sealed partial class LythonRuntime
 
     // Preflight for text-parsed magnitudes: deny on digit scale before the
     // conversion allocates the limbs. Bits-per-digit upper-bounds the base.
-    internal static void GuardIntegerParseBytes(string text, int bitsPerDigit, MemoryGovernor governor, LythonSourceSpan? span)
+    internal static MemoryGovernor.TemporaryMemoryReservation? GuardIntegerParseBytes(string text, int bitsPerDigit, MemoryGovernor governor, LythonSourceSpan? span)
     {
-        GuardIntegerResultBytes(
+        return GuardIntegerResultBytes(
             RuntimeMemoryEstimates.SaturatingMultiply(2, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
                 RuntimeMemoryEstimates.SaturatingMultiply(text.Length, bitsPerDigit))),
             governor,
@@ -234,8 +211,6 @@ internal sealed partial class LythonRuntime
             {
                 maps.Add(leftChainMap.Maps[i]);
             }
-
-            context.Services.State.CallTemporaries.TrackFreshMutable(first, first.CommittedStorageBytes);
             return new PyChainMap(maps);
         }
 
@@ -251,8 +226,6 @@ internal sealed partial class LythonRuntime
             {
                 merged.SetItem(pair.Key, pair.Value);
             }
-
-            context.Services.State.CallTemporaries.TrackFreshMutable(merged, merged.CommittedStorageBytes);
             return new PyChainMap([merged]);
         }
 
@@ -267,7 +240,6 @@ internal sealed partial class LythonRuntime
 
             var factory = left is PyDefaultDict leftDefault ? leftDefault.DefaultFactory : ((PyDefaultDict)right).DefaultFactory;
             var unionResult = new PyDefaultDict(factory, context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(unionResult, unionResult.CommittedStorageBytes, span);
             var merged = unionResult.InnerDict;
             foreach (var pair in leftPairs)
             {
@@ -294,8 +266,6 @@ internal sealed partial class LythonRuntime
             {
                 plain.SetItem(pair.Key, pair.Value);
             }
-
-            context.Services.State.CallTemporaries.TrackFreshMutable(plain, plain.CommittedStorageBytes);
             return plain;
         }
 
@@ -323,8 +293,6 @@ internal sealed partial class LythonRuntime
                 result.ReleaseUnpublishedStorage();
                 throw;
             }
-
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 
@@ -335,8 +303,6 @@ internal sealed partial class LythonRuntime
             {
                 merged.SetItem(pair.Key, pair.Value);
             }
-
-            context.Services.State.CallTemporaries.TrackFreshMutable(merged, merged.CommittedStorageBytes);
             return merged;
         }
 
@@ -345,7 +311,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.UnsupportedOperands(operation ?? "|", left, right, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.BitwiseOr(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+        return OwnHeapInteger(PyNumberOps.BitwiseOr(lhs, rhs), context.MemoryGovernor, span);
     }
 
     // Counter branches keep their combining lambda in a callee: the lambda
@@ -389,8 +355,6 @@ internal sealed partial class LythonRuntime
                 result.ReleaseUnpublishedStorage();
                 throw;
             }
-
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 
@@ -399,7 +363,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.UnsupportedOperands(operation ?? "^", left, right, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.BitwiseXor(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+        return OwnHeapInteger(PyNumberOps.BitwiseXor(lhs, rhs), context.MemoryGovernor, span);
     }
 
     private static object EvaluateBitwiseAnd(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
@@ -440,8 +404,6 @@ internal sealed partial class LythonRuntime
                 result.ReleaseUnpublishedStorage();
                 throw;
             }
-
-            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 
@@ -450,7 +412,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.UnsupportedOperands(operation ?? "&", left, right, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.BitwiseAnd(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+        return OwnHeapInteger(PyNumberOps.BitwiseAnd(lhs, rhs), context.MemoryGovernor, span);
     }
 
     private static object EvaluateLeftShift(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
@@ -462,8 +424,8 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            GuardIntegerLeftShift(lhs, rhs, context.MemoryGovernor, span);
-            return OwnHeapInteger(PyNumberOps.LeftShift(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            using var integerAdmission = GuardIntegerLeftShift(lhs, rhs, context.MemoryGovernor, span);
+            return OwnHeapInteger(PyNumberOps.LeftShift(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (PyNegativeShiftException ex)
         {
@@ -484,7 +446,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.RightShift(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(PyNumberOps.RightShift(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (PyNegativeShiftException ex)
         {
@@ -534,7 +496,7 @@ internal sealed partial class LythonRuntime
     {
         if (operand is PyCounter negativeCounter)
         {
-            return BuildCounterUnaryResult(negativeCounter, count => NegateCounterCount(count, span, negativeCounter.OwnerMemoryGovernor, context.Services.State.CallTemporaries), keepPositiveOnly: true, span, context);
+            return BuildCounterUnaryResult(negativeCounter, count => NegateCounterCount(count,span,negativeCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
         }
 
         if (operand is PyTimedelta)
@@ -562,7 +524,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.BadUnaryOperand("-", operand, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.Negate(numeric), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+        return OwnHeapInteger(PyNumberOps.Negate(numeric), context.MemoryGovernor, span);
     }
 
     private static PyCounter BuildCounterUnaryResult(
@@ -583,8 +545,6 @@ internal sealed partial class LythonRuntime
 
             result.SetItem(pair.Key, count);
         }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -611,8 +571,6 @@ internal sealed partial class LythonRuntime
                 AddResult(pair.Key, BigInteger.Zero, pair.Value);
             }
         }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
 
         void AddResult(object key, object leftCount, object rightCount)
@@ -625,13 +583,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static object AddCounterCounts(object left, object right, LythonSourceSpan span, MemoryGovernor? governor, ChargeReclamationPool? pool)
+    internal static object AddCounterCounts(object left,object right,LythonSourceSpan span,MemoryGovernor? governor)
     {
         left = ExpectCounterCount(left, span);
         right = ExpectCounterCount(right, span);
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Add(left, right, span, "+"), governor, span, pool);
+            return OwnDecimalValue(PyDecimalOps.Add(left, right, span, "+"),governor,span);
         }
 
         PyNumberOps.TryAsNumber(left, out var lhs);
@@ -639,11 +597,11 @@ internal sealed partial class LythonRuntime
         return PyNumberOps.Add(lhs, rhs);
     }
 
-    private static object SubtractCounterCounts(object left, object right, LythonSourceSpan span, MemoryGovernor? governor, ChargeReclamationPool? pool)
+    private static object SubtractCounterCounts(object left,object right,LythonSourceSpan span,MemoryGovernor? governor)
     {
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span, "-"), governor, span, pool);
+            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span, "-"),governor,span);
         }
 
         PyNumberOps.TryAsNumber(left, out var lhs);
@@ -651,9 +609,9 @@ internal sealed partial class LythonRuntime
         return PyNumberOps.Subtract(lhs, rhs);
     }
 
-    private static object NegateCounterCount(object value, LythonSourceSpan span, MemoryGovernor? governor, ChargeReclamationPool? pool)
+    private static object NegateCounterCount(object value,LythonSourceSpan span,MemoryGovernor? governor)
         => value is PyDecimal decimalValue
-            ? OwnDecimalValue(new PyDecimal(-decimalValue.Value, decimalValue.Exponent), governor, span, pool)
+            ? OwnDecimalValue(new PyDecimal(-decimalValue.Value, decimalValue.Exponent),governor,span)
             : PyNumberOps.TryAsNumber(value, out var number)
                 ? PyNumberOps.Negate(number)
                 : throw new LythonRuntimeException("TypeError", "Counter mapping values must be numeric.", span);
@@ -700,7 +658,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.BadUnaryOperand("~", operand, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.BitwiseNot(integer), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+        return OwnHeapInteger(PyNumberOps.BitwiseNot(integer), context.MemoryGovernor, span);
     }
 
     private static bool TryGetNumericOperands(object left, object right, out PyNumber lhs, out PyNumber rhs)
@@ -736,10 +694,6 @@ internal sealed partial class LythonRuntime
         }
 
         var result = left.Concat(right, context.MemoryGovernor, span);
-        // Dropped concatenations release through the reclamation pool once
-        // collected; without tracking, every temporary owned its construction
-        // charge forever and bounded call-free loops could never complete.
-        context.Services.State.CallTemporaries.TrackFreshString(result);
         return result;
     }
 
@@ -763,16 +717,7 @@ internal sealed partial class LythonRuntime
         return governor is null ? new PyBytes(combined) : new PyBytes(combined, governor, span);
     }
 
-    // String methods build results from receiver storage, so a result derived
-    // from an unowned (shared-constant) receiver would escape accounting. Adopt
-    // fresh results here; aliases and the shared empty string stay free.
-    // Adopted results register with refund-on-deny semantics: when the pool entry
-    // cannot be funded, the in-flight denial orphans this fresh value, so its
-    // construction charge releases instead of stranding. Results returned as-is
-    // above stay on the alias-safe plain path (the later funnel no-ops on the
-    // already-tracked adoption through reference-identity dedup). A null pool is only
-    // valid beside a null governor (both stay together on ungoverned paths).
-    internal static PyString OwnMethodResult(PyString result, PyString receiver, MemoryGovernor? governor, LythonSourceSpan? span, ChargeReclamationPool? pool)
+    internal static PyString OwnMethodResult(PyString result,PyString receiver,MemoryGovernor? governor,LythonSourceSpan? span)
     {
         if (governor is null || result.OwnerMemoryGovernor is not null ||
             ReferenceEquals(result, receiver) || ReferenceEquals(result, PyString.Empty))
@@ -781,84 +726,22 @@ internal sealed partial class LythonRuntime
         }
 
         var owned = PyString.FromString(result.AsString(), governor, span);
-        pool?.TrackFreshString(owned, span);
         return owned;
-    }
-
-    // Split-family members build fresh item strings beside their container: the
-    // call funnel owns the container snapshot at most, while the items never
-    // pass a funnel, so dropped results stranded every item. Adopt every governed
-    // string item first (shared items dedup; ungoverned stay free), then the fresh
-    // container with refund; drops reclaim on sweep while retained results stay
-    // charged. Items-first ordering keeps denial atomic: an item denial strands
-    // only its own bytes, and a container denial refunds with every item already
-    // owned. A null pool is only valid beside a null governor like above.
-    // Only string split-family producers call this twin. Their nonempty slices
-    // are fresh distinct identities; shared Empty remains ungoverned. General
-    // path/difflib lists keep the existing alias-aware eager adoption below.
-    internal static PyList OwnFreshStringSplitListResult(PyList result, LythonSourceSpan? span, ChargeReclamationPool? pool)
-        => pool is not null && result.TryDeferFreshSplitOwnership(pool, span)
-            ? result
-            : OwnSplitListResult(result, span, pool);
-
-    internal static PyList OwnSplitListResult(PyList result, LythonSourceSpan? span, ChargeReclamationPool? pool)
-    {
-        if (pool is not null)
-        {
-            foreach (var item in result)
-            {
-                if (item is PyString text)
-                {
-                    pool.TrackString(text, span);
-                }
-            }
-
-            if (result.OwnerMemoryGovernor is not null)
-            {
-                pool.TrackFreshMutable(result, result.CommittedStorageBytes, span);
-            }
-        }
-
-        return result;
-    }
-
-    internal static PyTuple OwnSplitTupleResult(PyTuple result, LythonSourceSpan? span, ChargeReclamationPool? pool)
-    {
-        if (pool is not null)
-        {
-            for (var i = 0; i < result.Count; i++)
-            {
-                if (result[i] is PyString text)
-                {
-                    pool.TrackString(text, span);
-                }
-            }
-
-            if (result.OwnerMemoryGovernor is not null)
-            {
-                pool.TrackFreshMutable(result, result.CommittedStorageBytes, span);
-            }
-        }
-
-        return result;
     }
 
     // Path values wrap a governed string payload; the wrapper itself retains a
     // small object header beside that payload, so own both together.
-    internal static PyPath OwnPathResult(PyString raw, PyString receiver, MemoryGovernor? governor, LythonSourceSpan? span, ChargeReclamationPool? pool)
+    internal static PyPath OwnPathResult(PyString raw,PyString receiver,MemoryGovernor? governor,LythonSourceSpan? span)
     {
         if (governor is null)
         {
             return new PyPath(raw);
         }
 
-        var owned = OwnMethodResult(raw, receiver, governor, span, pool);
+        var owned = OwnMethodResult(raw,receiver,governor,span);
         governor.Reserve(64L, span);
         governor.Commit(64L);
         var result = new PyPath(owned);
-        // The wrapper header has no owner yet: adopt the shell beside its payload so
-        // dropped paths reclaim on sweep while retained paths stay charged.
-        pool?.TrackFreshMutable(result, 64L, span);
         return result;
     }
 
@@ -880,38 +763,11 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.StringLength(maxStringLength, resultLength, span);
         }
 
-        long knownLiveBytes = 0;
-        if (text.Utf8Bytes.Length > 0 && context.MemoryGovernor.MaxAccountedBytes is { } cap)
-        {
-            var requested = RuntimeMemoryEstimates.SaturatingAdd(PyString.EstimateApproximateBytes(0),
-                RuntimeMemoryEstimates.SaturatingMultiply(text.Utf8Bytes.Length, (long)count));
-            if (requested <= cap && context.MemoryGovernor.CurrentAccountedBytes > cap - requested)
-                knownLiveBytes = KnownLiveStringBytes(context);
-        }
-        var repeated = text.Repeat((int)count, context.MemoryGovernor, span, knownLiveBytes);
-        context.Services.State.CallTemporaries.TrackFreshString(repeated);
+        var repeated = text.Repeat((int)count, context.MemoryGovernor, span);
         GC.KeepAlive(context);
         return repeated;
     }
 
-    // Keep sampled references out of the interpreter/async caller's later stack.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    private static long KnownLiveStringBytes(ExecutionContext context)
-    {
-        var remaining = 64;
-        long largest = 0;
-        for (var current = context; current is not null && remaining > 0; current = current.ParentContext)
-        {
-            remaining--; // Empty contexts must also consume the work bound.
-            if (current.CurrentExecutableFrame is { } frame)
-                largest = Math.Max(largest, frame.KnownLiveStringBytes(context.MemoryGovernor, ref remaining));
-            largest = Math.Max(largest, current.KnownLiveStringBytes(context.MemoryGovernor, ref remaining));
-        }
-        return largest;
-    }
-
-    // Bytes repetition mirrors RepeatString without a string-length cap:
-    // the byte budget flows through the memory governor instead.
     private static PyBytes RepeatBytes(PyBytes value, BigInteger count, LythonSourceSpan span)
     {
         if (count <= BigInteger.Zero || value.Length == 0)
@@ -948,7 +804,6 @@ internal sealed partial class LythonRuntime
         if (repeatCount == 0 || list.Count == 0)
         {
             var emptyList = new PyList([], context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(emptyList, emptyList.CommittedStorageBytes);
             return emptyList;
         }
 
@@ -964,8 +819,6 @@ internal sealed partial class LythonRuntime
             result.AddRange(list);
             context.ObserveCollectionCount(result.Count, span);
         }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -974,7 +827,6 @@ internal sealed partial class LythonRuntime
         if (count <= BigInteger.Zero || tuple.Count == 0)
         {
             var emptyTuple = new PyTuple([], context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(emptyTuple, emptyTuple.CommittedStorageBytes);
             return emptyTuple;
         }
 
@@ -1012,7 +864,6 @@ internal sealed partial class LythonRuntime
         // Fresh array transfers without copying (escape proof: allocated here,
         // never retained elsewhere).
         var repeated = PyTuple.FromOwnedArray(items, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(repeated, repeated.CommittedStorageBytes);
         return repeated;
     }
 
@@ -1095,8 +946,6 @@ internal sealed partial class LythonRuntime
                 RuntimeValue(EvaluateExpression(keyValue.Value, context)));
             context.ObserveCollectionCount(result.Count, dict.Span);
         }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -1117,8 +966,6 @@ internal sealed partial class LythonRuntime
             result.ReleaseUnpublishedStorage();
             throw;
         }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 

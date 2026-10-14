@@ -179,7 +179,6 @@ internal sealed partial class LythonRuntime
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
                     var bytesIterResult = new PyEnumerableIterator(receiver, span, context);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(bytesIterResult, PyIteratorBase.IteratorValueBytes);
                     return bytesIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(bytes, "bytes.__len__", static (receiver, span, context) => Len([receiver], span, context)),
@@ -492,11 +491,7 @@ internal sealed partial class LythonRuntime
             perSep = perSep == int.MinValue ? int.MaxValue : -perSep;
         }
 
-        // M05: the hex render is a fresh governed string beside no container, and
-        // this raw callable bypasses every funnel, so own it here with refund:
-        // drops reclaim on sweep while retained results stay charged.
         var hex = CreateString(RenderHex(value.ToArray(), separator, perSep), context, span);
-        context.Services.State.CallTemporaries.TrackFreshString(hex, span);
         return hex;
     }
 
@@ -1654,13 +1649,11 @@ internal sealed partial class LythonRuntime
             // this raw callable bypasses every funnel, so own the container here with refund while leaving
             // item ownership untouched (fresh items self-track, receiver and separator stay aliased).
             var missedTuple = governor is null ? new PyTuple(missed) : new PyTuple(missed, governor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(missedTuple, missedTuple.CommittedStorageBytes, span);
             return missedTuple;
         }
 
         var parts = new object[] { SliceBytesRange(source, 0, match, context, span), separatorBytes, SliceBytesRange(source, match + needle.Length, source.Length, context, span) };
         var tuple = governor is null ? new PyTuple(parts) : new PyTuple(parts, governor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, span);
         return tuple;
     }
     private static object JoinBytes(PyBytes separator, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

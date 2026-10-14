@@ -36,6 +36,7 @@
     <None Include="..\..\CHANGELOG.md" Pack="true" PackagePath="\" Visible="false" />
     <None Include="..\..\SUPPORTED_SYNTAX.md" Pack="true" PackagePath="\" Visible="false" />
     <None Include="..\..\SPEC.md" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="..\..\MEMORY.md" Pack="true" PackagePath="\" Visible="false" />
     <None Include="..\..\icon.png" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 

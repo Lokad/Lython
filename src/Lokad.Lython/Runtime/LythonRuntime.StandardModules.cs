@@ -223,7 +223,6 @@ internal sealed partial class LythonRuntime
         private static string ContainedImportBaseDirectory(ExecutionContext context)
             => context.SourcePath is null ? context.Host.Cwd : PathOps.Parent(context.SourcePath);
 
-
         private static PyDict CreateModulesSnapshot(ExecutionContext context)
         {
             var modules = new PyDict(context.MemoryGovernor);

@@ -24,9 +24,6 @@ internal static partial class PyDataclass
             dict.SetItem(PyString.FromString(field.Name), new PyDataclassFieldObject(field));
         }
 
-        // Dropped dataclasses reclaim the filled map through the pool.
-        context.Services.State.CallTemporaries.TrackFreshMutable(dict, dict.CommittedStorageBytes);
-
         return dict;
     }
 
@@ -400,12 +397,9 @@ internal static partial class PyDataclass
            text.StartsWith("InitVar[", StringComparison.Ordinal) ||
            text.StartsWith("dataclasses.InitVar[", StringComparison.Ordinal);
 
-    // Fresh metadata maps ride the pool beside their field: dropped dataclasses
-    // reclaim the shell once collected, and a denied registration refunds it.
     private static PyDict TrackNewMetadataDict(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var fresh = new PyDict(context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(fresh, fresh.CommittedStorageBytes);
         return fresh;
     }
 
@@ -426,8 +420,6 @@ internal static partial class PyDataclass
         {
             copy.SetItem(pair.Key, pair.Value);
         }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(copy, copy.CommittedStorageBytes);
         return copy;
     }
 
@@ -501,12 +493,6 @@ internal static partial class PyDataclass
 
         var attributesBefore = instance.CommittedAttributeBytes;
         instance.SetAttribute(name, value);
-        // M04: dataclass fields bypass the __setattr__ slot, so adopt here like
-        // the slot wrapper does; change-detected for steady state.
-        if (instance.CommittedAttributeBytes != attributesBefore)
-        {
-            context.Services.State.CallTemporaries.TrackGrowth(instance, instance.CommittedStorageBytes, span);
-        }
     }
 
     private static bool ExpectBool(object value, string owner, LythonSourceSpan span)

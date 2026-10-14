@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
             // Upper-bound the exact result before computing (log2(n!) < n * bitlen(n)):
             // reserve result plus product/scratch coexistence so an enormous
             // factorial denies before any multiply traffic instead of after it.
-            GuardFactorialBytes(count, n, "math.factorial", span, context);
+            using var integerAdmission = GuardFactorialBytes(count, n, "math.factorial", span, context);
             var result = BigInteger.One;
             for (var i = 2; i <= count; i++)
             {
@@ -40,13 +40,13 @@ internal sealed partial class LythonRuntime
                 result *= i;
             }
 
-            return OwnHeapInteger(result, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
-        private static void GuardFactorialBytes(int count, BigInteger n, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static MemoryGovernor.TemporaryMemoryReservation? GuardFactorialBytes(int count, BigInteger n, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             var resultBits = RuntimeMemoryEstimates.SaturatingMultiply(count, RuntimeMemoryEstimates.GetMagnitudeBitLength(n));
-            GuardIntegerResultBytes(
+            return GuardIntegerResultBytes(
                 RuntimeMemoryEstimates.SaturatingMultiply(3, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits)),
                 context.MemoryGovernor,
                 span);
@@ -66,7 +66,7 @@ internal sealed partial class LythonRuntime
                 result = BigInteger.GreatestCommonDivisor(result, BigInteger.Abs(ExpectInteger(argument, span, context)));
             }
 
-            return OwnHeapInteger(result, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
         private static object Lcm(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -91,7 +91,7 @@ internal sealed partial class LythonRuntime
                 // needs at most bits(result) + bits(value), with quotient scratch
                 // coexisting transiently. This covers large-magnitude inputs that
                 // few iterations would otherwise grow without any bound.
-                GuardIntegerResultBytes(
+                using var integerAdmission = GuardIntegerResultBytes(
                     RuntimeMemoryEstimates.SaturatingMultiply(3, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
                         RuntimeMemoryEstimates.SaturatingAdd(
                             RuntimeMemoryEstimates.GetMagnitudeBitLength(result),
@@ -101,7 +101,7 @@ internal sealed partial class LythonRuntime
                 result = BigInteger.Abs(result / BigInteger.GreatestCommonDivisor(result, value) * value);
             }
 
-            return OwnHeapInteger(result, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
         private static object Comb(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -117,7 +117,7 @@ internal sealed partial class LythonRuntime
             var count = ExpectBoundedLoopCount(k, "math.comb", span);
             // C(n,k) < 2^n: reserve result plus product/quotient scratch
             // coexistence before iterating.
-            GuardIntegerResultBytes(
+            using var integerAdmission = GuardIntegerResultBytes(
                 RuntimeMemoryEstimates.SaturatingMultiply(3, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
                     RuntimeMemoryEstimates.SaturatingAdd(RuntimeMemoryEstimates.GetMagnitudeBitLength(n), 1))),
                 context.MemoryGovernor,
@@ -133,7 +133,7 @@ internal sealed partial class LythonRuntime
                 result = result * (n - count + i) / i;
             }
 
-            return OwnHeapInteger(result, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
         private static object Perm(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -150,7 +150,7 @@ internal sealed partial class LythonRuntime
             var count = ExpectBoundedLoopCount(k, "math.perm", span);
             // P(n,k) <= n^k: reserve result plus product/scratch coexistence
             // before iterating (also covers large n with small k).
-            GuardFactorialBytes(count, n, "math.perm", span, context);
+            using var integerAdmission = GuardFactorialBytes(count, n, "math.perm", span, context);
             var result = BigInteger.One;
             for (var i = 0; i < count; i++)
             {
@@ -162,12 +162,12 @@ internal sealed partial class LythonRuntime
                 result *= n - i;
             }
 
-            return OwnHeapInteger(result, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
         private static object ISqrt(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            return OwnHeapInteger(IntegerSquareRoot(ExpectNonNegativeInteger(arguments[0], "isqrt() argument must be nonnegative", span, context), context, span), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+            return OwnHeapInteger(IntegerSquareRoot(ExpectNonNegativeInteger(arguments[0], "isqrt() argument must be nonnegative", span, context), context, span), context.MemoryGovernor, span);
         }
 
         private static object Dist(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -623,7 +623,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("OverflowError", ex.Message, span);
                 }
 
-                total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, context.Services.State.CallTemporaries, span), context, span);
+                total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
                 pairs++;
                 context.ObserveCollectionCount(pairs, span);
                 if ((pairs & 63) == 0)
@@ -679,7 +679,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("OverflowError", ex.Message, span);
                 }
 
-                total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, context.Services.State.CallTemporaries, span), context, span);
+                total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
                 pairs++;
                 context.ObserveCollectionCount(pairs, span);
                 if ((pairs & 63) == 0)
@@ -736,7 +736,7 @@ internal sealed partial class LythonRuntime
             // work budgets once per iteration (each step divides huge operands).
             var inputBytes = RuntimeMemoryEstimates.EstimateBigIntegerBytes(value);
             var resultBits = (RuntimeMemoryEstimates.GetMagnitudeBitLength(value) + 1) / 2;
-            GuardIntegerResultBytes(
+            using var integerAdmission = GuardIntegerResultBytes(
                 RuntimeMemoryEstimates.SaturatingAdd(inputBytes,
                     RuntimeMemoryEstimates.SaturatingMultiply(3, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits))),
                 context.MemoryGovernor,

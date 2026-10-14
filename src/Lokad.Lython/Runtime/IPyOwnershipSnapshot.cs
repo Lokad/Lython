@@ -1,28 +1,11 @@
 namespace Lokad.Lython.Runtime;
 
-// R16: the common ownership snapshot for pool registration. Each governed
-// value reports the exact committed bytes the reclamation pool must retain
-// while it is reachable, so snapshot rules live on the values instead of a
-// pool-side concrete-type switch. Unowned values (shared empties, values
-// built outside any governor) report no ownership. Transfer state stays where
-// it belongs: callers choose the refunding TrackFresh* twins for fresh
-// orphanable results and the plain Track*/TrackCallResult paths for aliases.
+// Construction transactions use these local storage estimates to refund only
+// fresh unpublished values. Published values remain owned by their batch;
+// this interface neither registers identities nor describes graph edges.
 internal interface IPyOwnershipSnapshot
 {
     bool TrySnapshotOwnership(out long chargeBytes);
-}
-
-// Native resources remain live while their owner awaits finalization. Owners
-// implementing this marker release those resources in a managed finalizer;
-// the reclamation pool must retain their snapshot through that finalizer and
-// reclaim it only after the finalized owner is collected. Finalizers must not
-// call the host or mutate a governor (both belong to the execution thread).
-internal interface IPyFinalizableOwnership : IPyOwnershipSnapshot
-{
-    // Relinquish an inactive owner's local resources on the execution thread,
-    // without guest/host calls or new governed storage. The owner shell and
-    // independently owned aliases remain charged until separately retired.
-    void AbandonStorage();
 }
 
 internal static class OwnershipSnapshot

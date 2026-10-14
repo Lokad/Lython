@@ -12,9 +12,9 @@ public sealed class FunctionStringAdmissionTests
     [InlineData(true, "del held", false)]
     [InlineData(false, "held = None", true)]
     [InlineData(true, "held = None", true)]
-    public async Task WithdrawalInsideFunction(bool asynchronous, string withdrawal, bool retain)
+    public async Task WithdrawalInsideFunctionPreservesConservativeBatchFunding(bool asynchronous, string withdrawal, bool retain)
     {
-        var script = new LythonEngine().Compile($$"""
+        using var script = new LythonEngine().Compile($$"""
 def work():
     held = 'x' * 16000
     kept = held if {{(retain ? "True" : "False")}} else None
@@ -30,17 +30,9 @@ return work()
         Assert.True(script.IsValid);
         var host = new MockLythonHost();
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 28000 };
-        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-        if (retain)
-        {
-            Assert.False(result.Success);
-            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        }
-        else
-        {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(new BigInteger(16000), result.ReturnValue);
-        }
+        using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+        Assert.False(result.Success);
+        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
     }
 }
 

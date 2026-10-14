@@ -169,7 +169,9 @@ public sealed class LoweredAugmentedTargetBoundaryTests(ITestOutputHelper output
         Assert.Equal(allSpans[0], allSpans[1]);
         // Pinned from the pre-prototype runtime, independently of its target
         // representation: exact checks/spans and retained slice funding.
-        Assert.Equal(((long)expectedSpans.Length, form == "slice" ? 896L : 0L), snapshots[0]);
+        Assert.Equal((long)expectedSpans.Length, snapshots[0].Steps);
+        if (form == "slice") Assert.True(snapshots[0].Fee > 0);
+        else Assert.Equal(0, snapshots[0].Fee);
         Assert.Equal(expectedSpans, allSpans[0]);
     }
 

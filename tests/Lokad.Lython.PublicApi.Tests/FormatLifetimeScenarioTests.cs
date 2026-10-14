@@ -2,11 +2,6 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// M05: %-format and str.format build rendered part transients beside their
-// results, but the parts never pass a funnel and CustomMethodCallable results
-// bypass it too, so dropped formats stranded every part. Part appends adopt
-// through the shared join helper and both displays adopt their built results;
-// drops reclaim on sweep while retained results stay charged.
 public class FormatLifetimeScenarioTests : LifetimeScenario
 {
     private long StreamingBudget => Budget(3145728);
@@ -14,47 +9,37 @@ public class FormatLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted(long budget) => new() { MaxExecutionMemoryBytes = budget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
     [Fact]
     public async Task PercentLiteralDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = \"100%%\" % ()\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = \"100%%\" % ()\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task PercentStrIntDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = \"%s-%d\" % (\"a\", 2)\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = \"%s-%d\" % (\"a\", 2)\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task PercentCharDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = \"%c\" % 65\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = \"%c\" % 65\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task PercentReprDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = \"%r\" % 1\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = \"%r\" % 1\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task FormatDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = \"{0}{1}\".format(1, 2)\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = \"{0}{1}\".format(1, 2)\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task FormatMapDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(" + Iterations(50000) + "):\n    x = \"{x}\".format_map({\"x\": 1})\nreturn 0\n", "0");
+            "for i in range(" + BatchIterations(50000) + "):\n    x = \"{x}\".format_map({\"x\": 1})\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task FormatBehaves()

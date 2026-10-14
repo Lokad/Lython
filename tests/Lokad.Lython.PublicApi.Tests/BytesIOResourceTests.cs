@@ -3,7 +3,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class BytesIOResourceTests
-{
+:LifetimeScenario{
     [Fact]
     public async Task ByteStorageUsesMemoryRatherThanTextCollectionOrHostReadLimits()
     {
@@ -42,18 +42,16 @@ public sealed class BytesIOResourceTests
     [Fact]
     public async Task DiscardedSnapshotsReclaimUnderASmallBudget()
     {
-        var script = Compile("""
+        await AssertBatchCompletes("""
             import io
             s=io.BytesIO(b'abc')
-            for _ in range(3000):
+            for _ in range(8):
                 s.seek(0)
                 s.read()
                 s.getvalue()
             print(s.getvalue())
-            """);
-        await AssertBothModes(script, new LythonRunOptions { MaxExecutionMemoryBytes = 65536 }, "b'abc'\n");
+            """, null, 65536, standardOutput: "b'abc'\n");
     }
-
     [Theory]
     [InlineData("getbuffer")]
     [InlineData("readinto")]

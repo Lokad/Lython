@@ -24,6 +24,9 @@ public sealed class IntegerBuiltinAccountingStressTests : IntegerBuiltinAccounti
 [Trait("Category", "Stress")]
 public sealed class InstanceLifetimeStressTests : InstanceLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -33,6 +36,9 @@ public sealed class InstanceLifetimeStressTests : InstanceLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class ExceptionLifetimeStressTests : ExceptionLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -42,6 +48,9 @@ public sealed class ExceptionLifetimeStressTests : ExceptionLifetimeScenarioTest
 [Trait("Category", "Stress")]
 public sealed class DiffRenderLifetimeStressTests : DiffRenderLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -51,6 +60,9 @@ public sealed class DiffRenderLifetimeStressTests : DiffRenderLifetimeScenarioTe
 [Trait("Category", "Stress")]
 public sealed class SequenceMatcherLifetimeStressTests : SequenceMatcherLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -60,6 +72,9 @@ public sealed class SequenceMatcherLifetimeStressTests : SequenceMatcherLifetime
 [Trait("Category", "Stress")]
 public sealed class FactoryLifetimeStressTests : FactoryLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -69,6 +84,9 @@ public sealed class FactoryLifetimeStressTests : FactoryLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class PathLifetimeStressTests : PathLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -78,6 +96,9 @@ public sealed class PathLifetimeStressTests : PathLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class WrapperLifetimeStressTests : WrapperLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -87,6 +108,9 @@ public sealed class WrapperLifetimeStressTests : WrapperLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class RangeLifetimeStressTests : RangeLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -96,6 +120,9 @@ public sealed class RangeLifetimeStressTests : RangeLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class RegexLifetimeStressTests : RegexLifetimeScenarioTests
 {
+    protected override int BatchSize => 256;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -105,6 +132,9 @@ public sealed class RegexLifetimeStressTests : RegexLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class ClassLifetimeStressTests : ClassLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -114,6 +144,9 @@ public sealed class ClassLifetimeStressTests : ClassLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class ItertoolsLifetimeStressTests : ItertoolsLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -126,15 +159,18 @@ public sealed class CsvBoundedScanStressTests : CsvBoundedScanScenarioTests
     protected override long MemoryLimit => 3145728;
     protected override int SmallRows => 20000;
     protected override int LargeRows => 200000;
+    protected override int BatchRows => 512;
 }
 
 [Collection("RuntimeStress")]
 [Trait("Category", "Stress")]
-public sealed class GrowthReclamationScenarioStressTests : GrowthReclamationScenarioTests
+public sealed class GrowthStorageScenarioStressTests : GrowthStorageScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override long AppendBudget => 3145728;
     protected override int AppendIterations => 10000000;
-    protected override int GrowthIterations(int stressIterations) => stressIterations;
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -144,6 +180,9 @@ public sealed class GrowthReclamationScenarioStressTests : GrowthReclamationScen
 [Trait("Category", "Stress")]
 public sealed class OsIteratorAccountingScenarioStressTests : OsIteratorAccountingScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -153,6 +192,9 @@ public sealed class OsIteratorAccountingScenarioStressTests : OsIteratorAccounti
 [Trait("Category", "Stress")]
 public sealed class IntConversionAccountingStressTests : IntConversionAccountingTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -162,6 +204,9 @@ public sealed class IntConversionAccountingStressTests : IntConversionAccounting
 [Trait("Category", "Stress")]
 public sealed class BytesLifetimeStressTests : BytesLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -171,6 +216,9 @@ public sealed class BytesLifetimeStressTests : BytesLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class ChainMapLifetimeStressTests : ChainMapLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -180,6 +228,9 @@ public sealed class ChainMapLifetimeStressTests : ChainMapLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class CounterArithmeticLifetimeStressTests : CounterArithmeticLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -189,6 +240,9 @@ public sealed class CounterArithmeticLifetimeStressTests : CounterArithmeticLife
 [Trait("Category", "Stress")]
 public sealed class DatetimeLifetimeStressTests : DatetimeLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -198,6 +252,9 @@ public sealed class DatetimeLifetimeStressTests : DatetimeLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class DecimalLifetimeStressTests : DecimalLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -207,6 +264,9 @@ public sealed class DecimalLifetimeStressTests : DecimalLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class DictUpdateLifetimeStressTests : DictUpdateLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -216,6 +276,9 @@ public sealed class DictUpdateLifetimeStressTests : DictUpdateLifetimeScenarioTe
 [Trait("Category", "Stress")]
 public sealed class DifflibShellLifetimeStressTests : DifflibShellLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -225,6 +288,9 @@ public sealed class DifflibShellLifetimeStressTests : DifflibShellLifetimeScenar
 [Trait("Category", "Stress")]
 public sealed class FormatLifetimeStressTests : FormatLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -234,6 +300,9 @@ public sealed class FormatLifetimeStressTests : FormatLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class HashlibLifetimeStressTests : HashlibLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -243,6 +312,9 @@ public sealed class HashlibLifetimeStressTests : HashlibLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class LambdaLifetimeStressTests : LambdaLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -252,6 +324,9 @@ public sealed class LambdaLifetimeStressTests : LambdaLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class NamedTupleLifetimeStressTests : NamedTupleLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -261,6 +336,9 @@ public sealed class NamedTupleLifetimeStressTests : NamedTupleLifetimeScenarioTe
 [Trait("Category", "Stress")]
 public sealed class NestedFunctionLifetimeStressTests : NestedFunctionLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -270,6 +348,9 @@ public sealed class NestedFunctionLifetimeStressTests : NestedFunctionLifetimeSc
 [Trait("Category", "Stress")]
 public sealed class PartialLifetimeStressTests : PartialLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -279,6 +360,9 @@ public sealed class PartialLifetimeStressTests : PartialLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class RandomLifetimeStressTests : RandomLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -288,6 +372,9 @@ public sealed class RandomLifetimeStressTests : RandomLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class RenderJoinLifetimeStressTests : RenderJoinLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -297,6 +384,9 @@ public sealed class RenderJoinLifetimeStressTests : RenderJoinLifetimeScenarioTe
 [Trait("Category", "Stress")]
 public sealed class SliceLifetimeStressTests : SliceLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int SliceLength => 1000;
     protected override int Iterations(int stressIterations) => stressIterations;
 
@@ -307,6 +397,9 @@ public sealed class SliceLifetimeStressTests : SliceLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class SortedLifetimeStressTests : SortedLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -316,6 +409,9 @@ public sealed class SortedLifetimeStressTests : SortedLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class SplitLifetimeStressTests : SplitLifetimeScenarioTests
 {
+    protected override int BatchSize => 256;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -325,6 +421,9 @@ public sealed class SplitLifetimeStressTests : SplitLifetimeScenarioTests
 [Trait("Category", "Stress")]
 public sealed class StatisticsModeLifetimeStressTests : StatisticsModeLifetimeScenarioTests
 {
+    protected override int BatchSize => 32;
+    protected override int BatchRepetitions(int iterations) => iterations == 0 ? 8 : Math.Max(8, (iterations + BatchSize - 1) / BatchSize);
+
     protected override int Iterations(int stressIterations) => stressIterations;
 
     protected override long Budget(long stressBudget) => stressBudget;
@@ -338,8 +437,12 @@ public sealed class ImportedCodeRetentionStressTests : ImportedCodeRetentionScen
     protected override int NestedStatements => 10000;
     protected override int SmallStatements => 500;
     protected override int SharedStatements => 4000;
+    // One coarse compilation fits; duplicate preparation of this body would not.
+    protected override long SharedImportBudget => 4194304;
     protected override int LoopDefinitions => 3000;
     protected override long RetentionBudget => 1048576;
-    protected override long FundedBudget => 16777216;
+    // Three large modules now admit their conservative compilation capacity,
+    // rather than retaining only a precise deferred-body node inventory.
+    protected override long FundedBudget => 67108864;
     protected override long LoopRetainBudget => 1572864;
 }

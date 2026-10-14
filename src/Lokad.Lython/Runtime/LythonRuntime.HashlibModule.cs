@@ -261,11 +261,8 @@ internal sealed partial class LythonRuntime
     {
         private const long ObjectOverhead = 96;
 
-        // Fresh hash shells reclaim through the pool once dropped; the member-call funnel
-        // has no hash-object branch, so this choke point owns it.
         internal static HashlibHashObject TrackFreshHashObject(HashlibHashObject value, ExecutionContext context)
         {
-            context.Services.State.CallTemporaries.TrackFreshMutable(value, ObjectOverhead);
             return value;
         }
 

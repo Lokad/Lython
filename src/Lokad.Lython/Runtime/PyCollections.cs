@@ -36,7 +36,6 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
             throw;
         }
         governor?.Commit(64L);
-        _items.StorageOwner = this;
     }
 
     public object DefaultFactory { get; private set; }
@@ -218,7 +217,6 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
             throw;
         }
         governor?.Commit(64L);
-        _items.StorageOwner = this;
     }
 
     public int Count => _items.Count;
@@ -282,11 +280,11 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
 
     public void Clear() => _items.Clear();
 
-    public void Increment(object key, object delta, LythonSourceSpan span, ChargeReclamationPool? pool)
+    public void Increment(object key,object delta,LythonSourceSpan span)
     {
         LythonRuntime.ValidateDictionaryKey(key, span);
         var incoming = _items.TryGetValue(key, out var value)
-            ? LythonRuntime.AddCounterCounts(value, delta, span, OwnerMemoryGovernor, pool) : delta;
+            ? LythonRuntime.AddCounterCounts(value,delta,span,OwnerMemoryGovernor) : delta;
         _items.SetItem(key, incoming);
     }
 
@@ -428,9 +426,8 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         _shellCharged = true;
     }
 
-    // Current committed shell-plus-node charges, for pooled owners that
-    // release them if this deque is dropped. Growth after the snapshot only
-    // ever leaves a safe residual behind; every release path re-snapshots below.
+    // Shell and current node funding for unpublished rollback. Explicit node
+    // removal can refund its storage; the shell remains charged to the batch.
     internal long CommittedStorageBytes => (_shellCharged ? DequeShellBytes : 0) + _committedNodeBytes;
 
     public PyDeque(int? maxLength, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
@@ -533,11 +530,9 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         catch (Exception)
         {
             ReleaseNode();
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             throw;
         }
     }
-
 
     public void AppendLeft(object value)
     {
@@ -563,7 +558,6 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         catch (Exception)
         {
             ReleaseNode();
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             throw;
         }
     }
@@ -578,7 +572,6 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         var value = _items.Last.RequireNotNull().Value;
         _items.RemoveLast();
         ReleaseNode();
-        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
         return value;
     }
 
@@ -592,7 +585,6 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         var value = _items.First.RequireNotNull().Value;
         _items.RemoveFirst();
         ReleaseNode();
-        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
         return value;
     }
 
@@ -709,7 +701,6 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
             {
                 _items.Remove(current);
                 ReleaseNode();
-                ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
                 return true;
             }
 
@@ -745,7 +736,6 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         catch (Exception)
         {
             ReleaseNode();
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             throw;
         }
     }
@@ -759,7 +749,6 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
             {
                 _items.Remove(current);
                 ReleaseNode();
-                ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
                 return true;
             }
 
@@ -836,7 +825,6 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         }
 
         _items.Clear();
-        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
     }
 
     public object GetItem(int index) => GetNodeAt(index).Value;
@@ -895,7 +883,6 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         var node = GetNodeAt(index);
         _items.Remove(node);
         ReleaseNode();
-        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
     }
 
     public bool IsTruthy() => Count != 0;
@@ -928,7 +915,6 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         _memoryGovernor.Reserve(DequeNodeBytes, _allocationSpan);
         _memoryGovernor.Commit(DequeNodeBytes);
         _committedNodeBytes += DequeNodeBytes;
-        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
     }
 
     private void ReleaseNode()
@@ -960,7 +946,6 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         _committedNodeBytes = 0;
         _shellCharged = false;
     }
-
 
     private LinkedListNode<object> GetNodeAt(int index)
     {

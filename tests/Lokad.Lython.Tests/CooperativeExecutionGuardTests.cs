@@ -37,21 +37,21 @@ public sealed class CooperativeExecutionGuardTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void BoundaryCheckpointSweepsBeforeFuelOrCancellationFailure(bool explicitFuel)
+    public void BoundaryCheckpointPreservesOwnershipWhileEnforcingFuelAndCancellation(bool explicitFuel)
     {
         using var cancellation = new CancellationTokenSource();
+        var budget = new LythonMemoryBudget(8192);
+        using var owner = budget.CreateScope();
         var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
         {
+            MemoryBudget = owner,
             MaxExecutionMemoryBytes = 8192,
             MaxExecutionSteps = explicitFuel ? 255 : null,
             CancellationToken = cancellation.Token,
         });
-        var dropped = TrackTemporary(state);
+        var dropped = CreateWorkingStorage(state);
         var before = state.MemoryGovernor.CurrentCommittedBytes;
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        Assert.False(dropped.TryGetTarget(out _));
+        Assert.Equal(before, budget.ReservedBytes);
 
         for (var i = 0; i < 255; i++) state.Guards.CheckExecution(null);
         Assert.Equal(before, state.MemoryGovernor.CurrentCommittedBytes);
@@ -63,7 +63,11 @@ public sealed class CooperativeExecutionGuardTests
         Assert.Equal(explicitFuel ? "maximum execution step count exceeded (255)" : "execution canceled", failure.Message);
         Assert.Equal(span, failure.Span);
         Assert.Equal(explicitFuel ? 256 : 0, state.Limits.ExecutionStepCount);
-        Assert.True(state.MemoryGovernor.CurrentCommittedBytes <= before - 4096);
+        Assert.Equal(before, state.MemoryGovernor.CurrentCommittedBytes);
+        GC.KeepAlive(dropped);
+        dropped = null!;
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
         Assert.Equal(0, state.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -89,39 +93,43 @@ public sealed class CooperativeExecutionGuardTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void CheckpointsReclaimDroppedTemporariesWithAndWithoutOptInFuel(bool explicitFuel)
+    public void CheckpointsPreserveBatchOwnershipWithAndWithoutOptInFuel(bool explicitFuel)
     {
+        var budget = new LythonMemoryBudget(8192);
+        using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
         {
+            MemoryBudget = owner,
             MaxExecutionMemoryBytes = 8192,
             MaxExecutionSteps = explicitFuel ? 4096 : null,
         });
-        var dropped = TrackTemporary(context);
+        var dropped = CreateWorkingStorage(context);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        Assert.False(dropped.TryGetTarget(out _));
+        Assert.Equal(before, budget.ReservedBytes);
 
-        // No guest calls or allocation-pressure sweep supplies reclamation here.
+        // Checkpoints neither sweep nor retire a still-active owner.
         for (var i = 0; i < 2048; i++) context.CheckExecution(null);
 
-        Assert.True(context.MemoryGovernor.CurrentCommittedBytes <= before - 4096);
+        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        using var funded = context.MemoryGovernor.ReserveTemporary(4096, null);
+        GC.KeepAlive(dropped);
+        dropped = null!;
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+        using var next = budget.CreateScope();
+        Assert.True(next.TryReserve(4096, out _));
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference<object> TrackTemporary(LythonRuntime.ExecutionContext context)
-        => TrackTemporary(context.State);
+    private static object CreateWorkingStorage(LythonRuntime.ExecutionContext context)
+        => CreateWorkingStorage(context.State);
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference<object> TrackTemporary(ExecutionState state)
+    private static object CreateWorkingStorage(ExecutionState state)
     {
-        var value = new object();
         state.MemoryGovernor.Reserve(4096, null);
+        var value = new byte[4096];
         state.MemoryGovernor.Commit(4096);
-        state.CallTemporaries.Track(value, 4096);
-        return new WeakReference<object>(value);
+        return value;
     }
 }

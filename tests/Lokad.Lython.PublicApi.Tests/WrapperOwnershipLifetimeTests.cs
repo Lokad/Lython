@@ -16,10 +16,10 @@ public sealed class WrapperOwnershipLifetimeTests
         var body = "import collections\ndef bad():\n yield 1\n raise ValueError('stop')\n" +
             "def build(ctor):\n try:\n  " + call +
             "\n except (TypeError, ValueError):\n  return True\n return False\n" +
-            "for i in range(2000):\n assert build(collections." + (counter ? "Counter" : "defaultdict") + ")\nreturn i + 1\n";
-        var result = await Run(body, asynchronous);
+            "for i in range(16):\n assert build(collections." + (counter ? "Counter" : "defaultdict") + ")\nreturn i + 1\n";
+        using var result = await Run(body, asynchronous);
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal(new BigInteger(2000), result.ReturnValue);
+        Assert.Equal(new BigInteger(16), result.ReturnValue);
     }
 
     [Theory]
@@ -27,11 +27,11 @@ public sealed class WrapperOwnershipLifetimeTests
     [InlineData(true)]
     public async Task CopyAndUnionTurnoverDoesNotStrandIntermediateDictionaries(bool asynchronous)
     {
-        var result = await Run("""
+        using var result = await Run("""
             from collections import defaultdict, ChainMap
             original = defaultdict(None, [(1, None)])
             chain = ChainMap(original)
-            for i in range(500):
+            for i in range(16):
                 copied = original.copy()
                 assert len(copied) == 1
                 combined = original | {2: None}
@@ -59,7 +59,7 @@ public sealed class WrapperOwnershipLifetimeTests
             "\n  raise ValueError('stop')\n" +
             "source = defaultdict(None, {'payload': [1] * 64, 'bomb': Bomb()})\n" +
             "for i in range(128):\n try:\n  copy.deepcopy(source)\n except ValueError:\n  pass\nreturn len(saved)\n";
-        var result = await Run(body, asynchronous);
+        using var result = await Run(retain ? body : body.Replace("range(128)", "range(8)"), asynchronous, batches: retain ? 1 : 8);
         if (retain)
         {
             Assert.False(result.Success);
@@ -72,24 +72,38 @@ public sealed class WrapperOwnershipLifetimeTests
         }
     }
 
-    private static async Task<LythonExecutionResult> Run(string body, bool asynchronous)
+    private static async Task<LythonExecutionResult> Run(string body, bool asynchronous, int batches = 8)
     {
-        var script = new LythonEngine().Compile("with open('/ready', 'r') as stream:\n stream.read()\n" + body);
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile("with open('/ready', 'r') as stream:\n stream.read()\n" + body, budget);
+        var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
-        if (asynchronous)
+        LythonExecutionResult? last = null;
+        for (var batch = 0; batch < batches; batch++)
         {
-            var host = new DelayedLythonHost();
-            host.SeedFile("/ready", "ready");
-            var result = await script.RunAsync(host, options);
-            Assert.True(host.CompletedAsynchronously > 0);
+            LythonExecutionResult result;
+            if (asynchronous)
+            {
+                var host = new DelayedLythonHost();
+                host.SeedFile("/ready", "ready");
+                result = await script.RunAsync(host, options);
+                Assert.True(host.CompletedAsynchronously > 0);
+            }
+            else
+            {
+                var host = new MockLythonHost();
+                host.SeedFile("/ready", "ready");
+                result = script.Run(host, options);
+            }
             Assert.InRange(result.PeakExecutionMemoryBytes, 1, 65536);
-            return result;
+            if (batch == batches - 1) last = result;
+            else
+            {
+                using (result) Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
         }
-        var synchronous = new MockLythonHost();
-        synchronous.SeedFile("/ready", "ready");
-        var completed = script.Run(synchronous, options);
-        Assert.InRange(completed.PeakExecutionMemoryBytes, 1, 65536);
-        return completed;
+        return last!;
     }
 }

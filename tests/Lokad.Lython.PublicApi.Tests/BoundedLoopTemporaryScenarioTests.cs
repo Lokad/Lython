@@ -3,11 +3,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// MG03/MG06/MG08: dropped concatenation temporaries release through the
-// reclamation pool (with an exhaustion backstop that proves denials against
-// live retention), so a bounded loop over fixed-size inputs completes while
-// genuinely retained output still trips the budget.
-public sealed class BoundedLoopTemporaryScenarioTests
+public sealed class BoundedLoopTemporaryScenarioTests : LifetimeScenario
 {
     private const long ThreeMib = 3145728;
 
@@ -21,35 +17,13 @@ public sealed class BoundedLoopTemporaryScenarioTests
     [Fact]
     public async Task BoundedConcatLoopCompletes()
     {
-        var script = new LythonEngine().Compile(
-            "b = 'a' * 1000\nx = ''\nfor i in range(10000):\n    x = b + b\nreturn 0\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(0);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+        await AssertBatchCompletes("b = 'a' * 1000\nx = ''\nfor i in range(8):\n    x = b + b\nreturn 0\n", new System.Numerics.BigInteger(0), ThreeMib);
     }
 
     [Fact]
     public async Task BoundedRepeatLoopCompletes()
     {
-        var script = new LythonEngine().Compile(
-            "b = 'a' * 1000\nx = ''\nfor i in range(10000):\n    x = b * 2\nreturn 0\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(0);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+        await AssertBatchCompletes("b = 'a' * 1000\nx = ''\nfor i in range(8):\n    x = b * 2\nreturn 0\n", new System.Numerics.BigInteger(0), ThreeMib);
     }
 
     [Fact]

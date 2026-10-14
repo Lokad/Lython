@@ -33,8 +33,7 @@ public sealed class UserSliceMutationOwnershipTests
         var fixture = await Define(form);
         await Invoke(fixture, asynchronous);
         var key = Assert.Single(fixture.Tape.Keys);
-        Assert.True(fixture.Root.Services.State.CallTemporaries.IsTracked(key));
-        Assert.All(fixture.Tape.Tracked, Assert.True);
+
         Assert.Same(fixture.Root.Variables["start_value"], key.Start);
         Assert.Same(fixture.Root.Variables["stop_value"], key.Stop);
         Assert.Same(fixture.Root.Variables["step_value"], key.Step);
@@ -62,7 +61,6 @@ public sealed class UserSliceMutationOwnershipTests
             Assert.Same(fixture.Target, frame.Variables["self"]);
             Assert.Same(fixture.Active, frame.Services.CurrentException);
             var key = Assert.Single(fixture.Tape.Keys);
-            Assert.True(fixture.Root.Services.State.CallTemporaries.IsTracked(key));
             var alias = Assert.IsAssignableFrom<PyFunctionBase>(fixture.Root.Variables["alias"]);
             Assert.Same(fixture.Target, await alias.InvokeAsync([], Span, fixture.Root));
             if (cancel) cancellation.Cancel();
@@ -134,7 +132,6 @@ public sealed class UserSliceMutationOwnershipTests
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(deletion.Script.RequireNotNull()).Statements, fixture.Root);
         Collect();
         Assert.False(IsAlive(weak));
-        fixture.Root.Services.State.CallTemporaries.Sweep(full: true);
         Assert.True(fixture.Root.MemoryGovernor.CurrentCommittedBytes < before);
         AssertUnwound(fixture.Root);
         GC.KeepAlive(fixture);
@@ -145,7 +142,6 @@ public sealed class UserSliceMutationOwnershipTests
     {
         Invoke(fixture, asynchronous).GetAwaiter().GetResult();
         var weak = new WeakReference<object>(Assert.Single(fixture.Tape.Keys));
-        Assert.True(fixture.Root.Services.State.CallTemporaries.IsTracked(fixture.Tape.Keys[0]));
         fixture.Tape.Keys.Clear();
         return weak;
     }
@@ -225,7 +221,7 @@ public sealed class UserSliceMutationOwnershipTests
     {
         public List<string> Events { get; } = [];
         public List<PySlice> Keys { get; } = [];
-        public List<bool> Tracked { get; } = [];
+
         public bool IndexMutated { get; private set; }
         public bool PinAtLastBound { get; set; }
         public IDisposable? Pin { get; private set; }
@@ -253,7 +249,7 @@ public sealed class UserSliceMutationOwnershipTests
                 {
                     var key = Assert.IsType<PySlice>(args[offset].Value);
                     Keys.Add(key);
-                    Tracked.Add(root.Services.State.CallTemporaries.IsTracked(key));
+
                     Assert.Same(root.Variables["start_value"], key.Start);
                     Assert.Same(root.Variables["stop_value"], key.Stop);
                     Assert.Same(root.Variables["step_value"], key.Step);
@@ -263,7 +259,6 @@ public sealed class UserSliceMutationOwnershipTests
             Assert.Empty(args);
             if (stage == "step" && PinAtLastBound)
             {
-                root.Services.State.CallTemporaries.Sweep(full: true);
                 Pin = root.MemoryGovernor.ReserveTemporary(root.MemoryGovernor.MaxAccountedBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes, Span);
             }
             return root.Variables[stage == "receiver" ? "target" : stage + "_value"];

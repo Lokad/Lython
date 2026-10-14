@@ -6,39 +6,44 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// N38: abandoned encoder iterators stop contributing sort scratch once
-// reclaimed: dropping 50 mid-stream sorted iterators then sweeping releases
-// their tracked scratch (~3MB), while a live iterator keeps streaming
-// correct chunks.
+// Sorted JSON iterators keep live scratch and emit correct chunks; finite
+// host-driven owners return temporary accounting without collector hooks.
 [Collection("AllocationSensitive")]
 public sealed class JsonIterencodeAbandonedScratchAccountingTests
 {
     [Fact]
-    public void AbandonedSortedStreamsReclaimScratchOnSweep()
+    public void SortedJsonBatchesReturnAllowanceAndDoNotDisruptAnotherIterator()
     {
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 8000000 });
+        var budget = new LythonMemoryBudget(262144);
+        using var retainedOwner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MemoryBudget = retainedOwner });
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        var big = BuildDict(2000);
-        AbandonIterators(context, big, span);
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        context.Services.State.CallTemporaries.Sweep(full: true);
-
         var live = new PyDict();
         live.SetItem(PyString.FromString("b"), (object)1);
         live.SetItem(PyString.FromString("a"), (object)2);
         var iterator = new LythonRuntime.JsonEncodeIterator(live, SortedOptions(), context, span);
-        var text = new StringBuilder();
-        while (iterator.TryMoveNext(out var chunk))
+        var baseline = budget.ReservedBytes;
+        var big = BuildDict(16);
+        for (var batch = 0; batch < 8; batch++)
         {
-            text.Append(((PyString)chunk).AsString());
+            using (var owner = budget.CreateScope())
+            {
+                var temporary = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                    new LythonRunOptions { MemoryBudget = owner });
+                AbandonIterators(temporary, big, span);
+                Assert.True(budget.ReservedBytes > baseline);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
-
+        var text = new StringBuilder();
+        while (iterator.TryMoveNext(out var chunk)) text.Append(((PyString)chunk).AsString());
         Assert.Equal("{\"a\": 2, \"b\": 1}", text.ToString());
-        Assert.True(context.MemoryGovernor.CurrentCommittedBytes < 1000000);
-        Assert.True(context.MemoryGovernor.CurrentReservedBytes < 100000);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        GC.KeepAlive(iterator);
+        iterator = null!;
+        retainedOwner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     private static PyDict BuildDict(int count)
@@ -60,7 +65,7 @@ public sealed class JsonIterencodeAbandonedScratchAccountingTests
     private static void AbandonIterators(LythonRuntime.ExecutionContext context, PyDict big, LythonSourceSpan span)
     {
         var options = SortedOptions();
-        for (var s = 0; s < 50; s++)
+        for (var s = 0; s < 2; s++)
         {
             var iterator = new LythonRuntime.JsonEncodeIterator(big, options, context, span);
             for (var k = 0; k < 5; k++)

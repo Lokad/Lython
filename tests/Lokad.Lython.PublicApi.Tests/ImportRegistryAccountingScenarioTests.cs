@@ -13,12 +13,12 @@ public sealed class ImportRegistryAccountingScenarioTests
 {
     private const int ModuleCount = 500;
 
-    private static MockLythonHost SeededHost(out HashSet<string> allowed, out string source)
+    private static MockLythonHost SeededHost(out HashSet<string> allowed, out string source, int count = ModuleCount)
     {
         var host = new MockLythonHost();
         allowed = new HashSet<string>(StringComparer.Ordinal);
         source = "";
-        for (var i = 0; i < ModuleCount; i++)
+        for (var i = 0; i < count; i++)
         {
             host.SeedFile("/m" + i + ".py", "value = 1\n");
             allowed.Add("m" + i);
@@ -49,21 +49,28 @@ public sealed class ImportRegistryAccountingScenarioTests
     }
 
     [Fact]
-    public async Task RoomyManyImportsSucceed()
+    public async Task FundedFiniteImportsSucceedWithCompilationHeadroom()
     {
-        var host = SeededHost(out var allowed, out var source);
-        var script = new LythonEngine().Compile(source);
+        var host = SeededHost(out var allowed, out var source, count: 16);
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576, AllowedLocalModules = allowed };
         var expected = new BigInteger(1);
-        var sync = script.Run(host, options);
+        using var sync = script.Run(host, options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
 
-        var host2 = SeededHost(out var allowed2, out _);
-        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = 1048576, AllowedLocalModules = allowed2 });
+        var host2 = SeededHost(out var allowed2, out _, count: 16);
+        using var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = 1048576, AllowedLocalModules = allowed2 });
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
+        sync.Dispose();
+        asyncResult.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

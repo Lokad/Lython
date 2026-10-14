@@ -42,23 +42,12 @@ internal sealed partial class LythonRuntime
 
         public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
-        // Current committed shell, backing and metadata charges, for pooled owners that
-        // release them if this partial is dropped. Metadata growth re-snapshots below.
+        // Current shell, backing and metadata funding for unpublished rollback.
+        // Published partials and their metadata remain charged to their batch.
         internal long CommittedStorageBytes =>
             OwnerMemoryGovernor is null
                 ? 0
                 : checked(PartialObjectBytes + EstimateBoundArgumentsBytes(_boundArguments.Length) + (MetadataSlotBytes * _metadata.Count));
-
-        // Refreshes the pool coupon after metadata growth; change-detected over field
-        // reads so steady use costs nothing when charges are unchanged.
-        private void NoteGrowth(long beforeCharges)
-        {
-            var current = CommittedStorageBytes;
-            if (current != beforeCharges)
-            {
-                ChargeReclamationPool.NotifyStorageReplaced(this, current);
-            }
-        }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             => _callable.Invoke(CombineArguments(arguments), span, context);
@@ -180,7 +169,6 @@ internal sealed partial class LythonRuntime
 
         public bool TrySetMember(string name, object value)
         {
-            var beforeCharges = CommittedStorageBytes;
             if (!_metadata.ContainsKey(name))
             {
                 _memoryGovernor.Reserve(MetadataSlotBytes, _allocationSpan);
@@ -188,7 +176,6 @@ internal sealed partial class LythonRuntime
             }
 
             _metadata[name] = value;
-            NoteGrowth(beforeCharges);
             return true;
         }
 
@@ -306,7 +293,6 @@ internal sealed partial class LythonRuntime
 
             EnsureNoUnsupportedPlaceholder(arguments.AsSpan(1), span);
             var partial = new PyPartial(callable, arguments[1..], context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(partial, partial.CommittedStorageBytes);
             return partial;
         }
 
@@ -361,7 +347,6 @@ internal sealed partial class LythonRuntime
             }
 
             var bound = new PyPartial(callable, _boundArguments, _memoryGovernor, _allocationSpan);
-            context.Services.State.CallTemporaries.TrackFreshMutable(bound, bound.CommittedStorageBytes);
             return bound;
         }
 
@@ -403,7 +388,6 @@ internal sealed partial class LythonRuntime
 
             EnsureNoUnsupportedPlaceholder(arguments.AsSpan(1), span);
             var method = new PyPartialMethod(callable, arguments[1..], context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(method, PyPartialMethod.EstimateObjectBytes(arguments.Length - 1));
             return method;
         }
 
@@ -468,7 +452,6 @@ internal sealed partial class LythonRuntime
             }
 
             var wrapper = new PyPartial(UpdateWrapperCallable.Instance, bound, context.MemoryGovernor, span);
-            context.Services.State.CallTemporaries.TrackFreshMutable(wrapper, wrapper.CommittedStorageBytes);
             return wrapper;
         }
 

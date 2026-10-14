@@ -154,7 +154,7 @@ internal sealed partial class LythonRuntime
                 InitializeModuleAnnotations(definition.Body, context);
             if (!ClassCellSyntaxFacts.RequiresCell(definition)) return context;
             var closureParent = parent.FunctionClosureContext;
-            var retention = ChargeClosureRetention(closureParent, parent.MemoryGovernor, definition.Span);
+            ChargeClosureRetention(closureParent, parent.MemoryGovernor, definition.Span);
             const long bytes = ClosureContextBaseBytes + ClosureCellSlotBytes + 48L;
             parent.MemoryGovernor.Reserve(bytes, definition.Span);
             parent.MemoryGovernor.Commit(bytes);
@@ -168,7 +168,6 @@ internal sealed partial class LythonRuntime
             cellScope.ClassCell = new ExecutableCell(UninitializedLocal, cellScope, "__class__") { RetentionCharged = true };
             context.ClassCell = cellScope.ClassCell;
             context.FunctionClosureContext = cellScope;
-            parent.Services.State.CallTemporaries.TrackFreshMutable(cellScope, bytes + retention, definition.Span);
             return context;
         }
 
@@ -597,7 +596,7 @@ internal sealed partial class LythonRuntime
                     // Host magnitudes copy into Lython-owned scalars: observe limits
                     // as before, then own heap payloads above the inline range.
                     context.ObserveValue(value, null);
-                    return OwnFreshInteger(value!, context.MemoryGovernor, context.Services.State.CallTemporaries, null);
+                    return OwnFreshInteger(value!, context.MemoryGovernor, null);
                 case sbyte integer:
                     return integer;
                 case byte integer:

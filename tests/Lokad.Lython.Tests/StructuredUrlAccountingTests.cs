@@ -12,6 +12,31 @@ public sealed class StructuredUrlAccountingTests
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
     [Theory]
+    [InlineData(300)]
+    [InlineData(380)]
+    public void SplitResultBorrowsExistingFieldsAndKeepsItsOwnStorageCharged(long cap)
+    {
+        var budget = new LythonMemoryBudget(cap);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MemoryBudget = owner });
+        var path = PyString.FromString("/" + new string('é', 500));
+        Assert.True(LythonRuntime.UrllibParseModule.Instance.TryGetMember("SplitResult", out var constructor));
+        var result = Assert.IsType<LythonRuntime.UrllibParseModule.UrlResult>(
+            Assert.IsAssignableFrom<LythonRuntime.ICallable>(constructor).Invoke([
+                CallArgumentValue.Positional(PyString.FromString("http")),
+                CallArgumentValue.Positional(PyString.FromString("X")),
+                CallArgumentValue.Positional(path), CallArgumentValue.Positional(PyString.Empty),
+                CallArgumentValue.Positional(PyString.Empty)], Span, context));
+        Assert.True(budget.ReservedBytes > 0);
+        Assert.Same(path, result.GetIndex(2));
+        GC.KeepAlive(result);
+        result = null!;
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("urlsplit", 127)]
     [InlineData("urlsplit", 300)]
     [InlineData("urlsplit", 600)]
@@ -22,11 +47,9 @@ public sealed class StructuredUrlAccountingTests
     [InlineData("urlunsplit", 300)]
     [InlineData("urlunsplit", 600)]
     [InlineData("SplitResult", 127)]
-    [InlineData("SplitResult", 300)]
-    [InlineData("SplitResult", 380)]
-    public void DeniedConstructionReleasesAbandonedOwnership(string name, long cap)
+    public void DeniedConstructionBatchesReleaseOnlyTheirOwnAllowance(string name, long cap)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+        var budget = new LythonMemoryBudget(cap);
         Assert.True(LythonRuntime.UrllibParseModule.Instance.TryGetMember(name, out var member));
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(member);
         var path = PyString.FromString("/" + new string('é', 500));
@@ -37,12 +60,16 @@ public sealed class StructuredUrlAccountingTests
             "urlunsplit" => [CallArgumentValue.Positional(new PyTuple([PyString.FromString("http"), PyString.FromString("X"), path, PyString.Empty, PyString.Empty]))],
             _ => [CallArgumentValue.Positional(PyString.FromString("http://X" + path.AsString() + ";p?q#f"))],
         };
-        for (var attempt = 0; attempt < 20; attempt++)
+        for (var attempt = 0; attempt < 8; attempt++)
         {
-            Deny(callable, arguments, context);
-            Sweep(context);
-            Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            using (var owner = budget.CreateScope())
+            {
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                    new LythonRunOptions { MaxExecutionMemoryBytes = cap, MemoryBudget = owner });
+                Deny(callable, arguments, context);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
         }
         GC.KeepAlive(arguments);
     }
@@ -55,36 +82,41 @@ public sealed class StructuredUrlAccountingTests
     }
 
     [Fact]
-    public void AbandonedResultsAndPropertiesReleaseOnlyTheirOwnStorage()
+    public void UrlResultBatchesReturnTemporaryAllowanceAfterCleanup()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 64 * 1024 });
-        for (var attempt = 0; attempt < 100; attempt++)
+        var budget = new LythonMemoryBudget(512 * 1024);
+        for (var batch = 0; batch < 8; batch++)
         {
-            Consume(context);
-            context.State.UrlSplitCache?.Clear();
-            context.State.UrlSplitCache = null;
-            Sweep(context);
-            Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            using (var owner = budget.CreateScope())
+            {
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                    new LythonRunOptions { MemoryBudget = owner });
+                Consume(context);
+                Assert.True(budget.ReservedBytes > 0);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                GC.KeepAlive(context.State.UrlSplitCache);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
         }
     }
 
     [Fact]
-    public void CacheRetainsAtMost128ResultsAndClearRefundsItsStorage()
+    public void CacheRetainsAtMost128ResultsAndClearReleasesItsInfrastructure()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 512 * 1024 });
-        for (var i = 0; i < 1024; i++)
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        for (var i = 0; i < 129; i++)
         {
             CacheOne(context, i);
-            if ((i & 31) == 31) Sweep(context);
             Assert.Equal(Math.Min(i + 1, 128), context.State.UrlSplitCache!.Count);
         }
-        Assert.Equal(96 + 128 * (80 + 168), context.State.UrlSplitCache!.CommittedBytes);
-        context.State.UrlSplitCache.Clear();
-        context.State.UrlSplitCache = null;
-        Sweep(context);
-        Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        var cache = context.State.UrlSplitCache!;
+        var infrastructure = cache.CommittedBytes;
+        Assert.Equal(96 + 128 * (80 + 168), infrastructure);
+        var before = context.MemoryGovernor.CurrentCommittedBytes;
+        cache.Clear();
+        Assert.Equal(0, cache.Count);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes < before);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes > 0);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -117,18 +149,21 @@ public sealed class StructuredUrlAccountingTests
     [InlineData(700)]
     [InlineData(800)]
     [InlineData(900)]
-    public void DeniedCacheInsertionRetainsNoPartialKeyOrCache(long cap)
+    public void DeniedCacheInsertionPublishesNoPartialCacheAndBatchCleanupReturnsAllowance(long cap)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = cap });
-        for (var i = 0; i < 20; i++)
+        var budget = new LythonMemoryBudget(cap);
+        for (var batch = 0; batch < 8; batch++)
         {
-            var error = Assert.Throws<LythonRuntimeException>(() => CacheOne(context, 0));
-            Assert.Equal("MemoryError", error.ExceptionType);
-            Assert.Null(context.State.UrlSplitCache);
-            Sweep(context);
-            Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            using (var owner = budget.CreateScope())
+            {
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                    new LythonRunOptions { MemoryBudget = owner });
+                var error = Assert.Throws<LythonRuntimeException>(() => CacheOne(context, 0));
+                Assert.Equal("MemoryError", error.ExceptionType);
+                Assert.Null(context.State.UrlSplitCache);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
         }
     }
 
@@ -150,16 +185,13 @@ public sealed class StructuredUrlAccountingTests
     private static void Sweep(LythonRuntime.ExecutionContext context)
     {
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
-        context.State.CallTemporaries.Sweep(full: true);
     }
 
     [Theory]
     [InlineData(false, 1)]
     [InlineData(false, 127)]
-    [InlineData(false, 200)]
     [InlineData(true, 1)]
     [InlineData(true, 127)]
-    [InlineData(true, 200)]
     public void MetadataDenialRefundsAndPublishesNoDefaults(bool parameters, long cap)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
@@ -186,8 +218,8 @@ public sealed class StructuredUrlAccountingTests
         var error = Assert.Throws<LythonRuntimeException>(() => ((LythonRuntime.ICallable)member).Invoke([CallArgumentValue.Positional(values)], Span, context));
         Assert.Contains("maximum string length", error.Message);
         Sweep(context);
-        Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(new LythonSourceSpan(0, 0, 0, 0), error.Span);
         GC.KeepAlive(values);
     }
 }

@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
                 PyPath path => path,
                 _ when PyStringOps.TryAsString(value, out var text) => context is null
                     ? new PyPath(PathOps.NormalizeLexical(text))
-                    : OwnPathResult(PathOps.NormalizeLexical(text), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries),
+                    : OwnPathResult(PathOps.NormalizeLexical(text),text,context.MemoryGovernor,span),
                 _ => throw new LythonRuntimeException("TypeError", $"{signature} expects a Path or string argument.", span)
             };
         }
@@ -519,7 +519,7 @@ internal sealed partial class LythonRuntime
             foreach (var name in context.HostListDir(root.AsString(), span))
             {
                 context.CheckExecution(span);
-                var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)), root, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+                var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)),root,context.MemoryGovernor,span);
                 context.RegisterHostCall(span);
                 var stat = context.HostStat(child.Value.AsString(), span);
                 if (stat.IsDir)
@@ -546,7 +546,7 @@ internal sealed partial class LythonRuntime
             foreach (var name in names)
             {
                 context.CheckExecution(span);
-                var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)), root, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+                var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)),root,context.MemoryGovernor,span);
                 context.RegisterHostCall(span);
                 var stat = await context.HostStatAsync(child.Value.AsString(), span).ConfigureAwait(false);
                 if (stat.IsDir)

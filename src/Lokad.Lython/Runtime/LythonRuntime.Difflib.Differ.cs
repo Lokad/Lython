@@ -36,10 +36,8 @@ internal sealed partial class LythonRuntime
 
                     var a = DifflibModule.RequireStringSequence(arguments[0], "Differ.compare(a, b)", span, context);
                     var b = DifflibModule.RequireStringSequence(arguments[1], "Differ.compare(a, b)", span, context);
-                    // The result list owns its fresh rendered lines like split results do;
-                    // drops reclaim items and container on sweep while retained results stay charged.
                     var result = new PyList(CompareLines(a, b, span, context), context.MemoryGovernor, span);
-                    return OwnSplitListResult(result, span, context.Services.State.CallTemporaries);
+                    return result;
                 }, "Differ.compare", ["a", "b"]),
                 _ => MissingMemberValue.Instance,
             };

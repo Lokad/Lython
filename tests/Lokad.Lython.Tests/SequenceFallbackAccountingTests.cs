@@ -7,9 +7,7 @@ public sealed class SequenceFallbackAccountingTests
 {
     [Theory]
     [InlineData(127)]
-    [InlineData(128)]
-    [InlineData(200)]
-    public void DeniedSequenceIteratorRefundsConstructionAndRegistration(long cap)
+    public void DeniedSequenceIteratorLeavesConstructionFundingUnchanged(long cap)
     {
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });

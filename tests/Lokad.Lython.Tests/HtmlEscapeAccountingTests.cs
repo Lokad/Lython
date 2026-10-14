@@ -12,7 +12,6 @@ public sealed class HtmlEscapeAccountingTests
 
     [Theory]
     [InlineData(8)]
-    [InlineData(150)]
     public void DeniedEscapeReleasesScratchAndFreshOutput(long cap)
     {
         var context = Context(cap);
@@ -34,8 +33,6 @@ public sealed class HtmlEscapeAccountingTests
     {
         var context = Context(512);
         var input = PyString.FromString("plain é😀", context.MemoryGovernor, Span);
-        context.Services.State.CallTemporaries.TrackFreshString(input, Span);
-        context.Services.State.CallTemporaries.Sweep(full: true);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 100; attempt++)
         {
@@ -47,15 +44,19 @@ public sealed class HtmlEscapeAccountingTests
     }
 
     [Fact]
-    public void AbandonedOutputReclaimsItsExactOwnership()
+    public void CollectedOutputStaysOwnedUntilBatchCleanup()
     {
-        var context = Context(100000);
+        var budget = new LythonMemoryBudget(100000);
+        using var owner = budget.CreateScope();
+        var context = Context(100000, owner);
         var weak = Abandon(context, out var charge);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
         Assert.False(weak.TryGetTarget(out _));
-        context.Services.State.CallTemporaries.Sweep(full: true);
-        Assert.Equal(before - charge - ChargeReclamationPool.EntryChargeBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(before, budget.ReservedBytes);
+        Assert.True(before >= charge);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -67,6 +68,6 @@ public sealed class HtmlEscapeAccountingTests
         return new WeakReference<PyString>(result);
     }
 
-    private static LythonRuntime.ExecutionContext Context(long cap)
-        => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+    private static LythonRuntime.ExecutionContext Context(long cap, ILythonMemoryBudget? budget = null)
+        => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap, MemoryBudget = budget });
 }

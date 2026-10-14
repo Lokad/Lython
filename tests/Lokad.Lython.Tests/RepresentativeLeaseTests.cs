@@ -48,7 +48,6 @@ public sealed class RepresentativeLeaseTests
         Assert.Equal(0, context.Limits.CurrentRecursionDepth);
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
         GC.Collect();
-        context.State.CallTemporaries.Sweep(full: true);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.True(context.MemoryGovernor.PeakAccountedBytes <= 262144);
     }
@@ -103,11 +102,9 @@ public sealed class RepresentativeLeaseTests
         Assert.Equal(0, context.Limits.CurrentRecursionDepth);
         var escaped = Assert.IsType<PyString>(context.Variables["escaped"]);
         GC.Collect();
-        context.State.CallTemporaries.Sweep(full: true);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Equal(expected, escaped.AsString());
         Assert.Same(context.MemoryGovernor, escaped.OwnerMemoryGovernor);
-        Assert.True(ChargeReclamationPool.IsTrackedValue(escaped));
         Assert.True(((IPyOwnershipSnapshot)escaped).TrySnapshotOwnership(out var charge));
         Assert.True(charge > 0);
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= charge);

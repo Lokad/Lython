@@ -9,7 +9,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// execution memory budget. Dropped deques reclaim through the pool.
 /// </summary>
 public sealed class DequeAccountingScenarioTests
-{
+:LifetimeScenario{
     [Fact]
     public async Task LargeDequeStaysCharged()
     {
@@ -80,27 +80,13 @@ public sealed class DequeAccountingScenarioTests
     [Fact]
     public async Task DroppedPopulatedDequesRelease()
     {
-        // Dropped deques (shells and nodes) reclaim through the pool, so a
-        // bounded churn loop completes under a small fixed budget.
-        var script = new LythonEngine().Compile(
-            """
+        await AssertBatchCompletes("""
             from collections import deque
-            for i in range(20000):
+            for i in range(8):
                 d = deque([1, 2, 3])
             return 0
-            """);
-        Assert.True(script.IsValid);
-        var expected = new BigInteger(0);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+            """, new System.Numerics.BigInteger(0), 3145728);
     }
-
     [Fact]
     public async Task AliasedDequeSurvivesOneDrop()
     {

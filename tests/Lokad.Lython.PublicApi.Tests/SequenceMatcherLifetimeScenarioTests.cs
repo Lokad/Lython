@@ -10,37 +10,27 @@ public class SequenceMatcherLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted());
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted());
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
     [Fact]
     public async Task MatcherCtorDiscardCompletes()
         => await AssertCompletes(
-            "import difflib\na = 'x' * 100\nb = 'y' * 100\nfor i in range(" + Iterations(20000) + "):\n    m = difflib.SequenceMatcher(None, a, b)\nreturn 0\n", "0");
+            "import difflib\na = 'x' * 100\nb = 'y' * 100\nfor i in range(" + BatchIterations(20000) + "):\n    m = difflib.SequenceMatcher(None, a, b)\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
     public async Task MatcherOpcodesDiscardCompletes()
         => await AssertCompletes(
-            "import difflib\na = 'x' * 100\nb = 'y' * 100\nfor i in range(" + Iterations(20000) + "):\n    n = len(list(difflib.SequenceMatcher(None, a, b).get_opcodes()))\nreturn 0\n", "0");
+            "import difflib\na = 'x' * 100\nb = 'y' * 100\nfor i in range(" + BatchIterations(20000) + "):\n    n = len(list(difflib.SequenceMatcher(None, a, b).get_opcodes()))\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
     public async Task MatcherReseqDiscardCompletes()
         => await AssertCompletes(
-            "import difflib\nm = difflib.SequenceMatcher(None, 'x' * 100, 'y' * 100)\nfor i in range(" + Iterations(20000) + "):\n    m.set_seq2('z' * 100)\n    m.set_seq2('y' * 100)\nreturn 0\n", "0");
+            "import difflib\nm = difflib.SequenceMatcher(None, 'x' * 100, 'y' * 100)\nfor i in range(" + BatchIterations(20000) + "):\n    m.set_seq2('z' * 100)\n    m.set_seq2('y' * 100)\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
     public async Task MatcherCachesDiscardCompletes()
         => await AssertCompletes(
-            "import difflib\nm = difflib.SequenceMatcher(None, 'x' * 100, 'y' * 100)\nfor i in range(" + Iterations(20000) + "):\n    r = m.ratio()\n    o = m.get_opcodes()\n    b = m.b2j\nreturn 0\n", "0");
+            "import difflib\nm = difflib.SequenceMatcher(None, 'x' * 100, 'y' * 100)\nfor i in range(" + BatchIterations(20000) + "):\n    r = m.ratio()\n    o = m.get_opcodes()\n    b = m.b2j\nreturn 0\n", "0", Iterations(20000));
 
     [Fact]
     public async Task MatcherBehaves()

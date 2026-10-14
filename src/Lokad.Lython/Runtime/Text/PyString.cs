@@ -22,19 +22,15 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private int _hashCode;
     private bool _hashCodeComputed;
 
-    // Keep the registration beside its governed value. The entry points back
-    // weakly, so the pool can still reclaim the string without an additional
-    // process-wide ephemeron table entry for every split item.
-    internal ChargeReclamationPool.ReclamationEntry? ReclamationEntry { get; set; }
 
     private PyString(byte[] utf8)
     {
         _utf8 = utf8;
     }
 
-    private PyString(byte[] utf8, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    private PyString(byte[] utf8, MemoryGovernor governor, LythonSourceSpan? allocationSpan, bool prefunded = false)
     {
-        ChargeGovernedAllocation(governor, allocationSpan, EstimateApproximateBytes(utf8.Length));
+        if (!prefunded) ChargeGovernedAllocation(governor, allocationSpan, EstimateApproximateBytes(utf8.Length));
         _utf8 = utf8;
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
@@ -142,7 +138,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         var byteCount = Utf8.GetByteCount(text);
         var bytes = AllocateGovernedUtf8(byteCount, governor, allocationSpan);
         _ = Utf8.GetBytes(text.AsSpan(), bytes.AsSpan());
-        return new PyString(bytes, governor, allocationSpan);
+        return new PyString(bytes, governor, allocationSpan, prefunded: true);
     }
 
     internal static PyString FromOwnedUtf8(byte[] utf8)
@@ -187,7 +183,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
         var copy = AllocateGovernedUtf8(utf8.Length, governor, allocationSpan);
         utf8.Span.CopyTo(copy);
-        return new PyString(copy, governor, allocationSpan);
+        return new PyString(copy, governor, allocationSpan, prefunded: true);
     }
 
     public PyString Concat(PyString other)
@@ -210,7 +206,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             : AllocateGovernedUtf8(resultLength, governor, allocationSpan);
         Buffer.BlockCopy(_utf8, 0, result, 0, _utf8.Length);
         Buffer.BlockCopy(other._utf8, 0, result, _utf8.Length, other._utf8.Length);
-        return governor is null ? new PyString(result) : new PyString(result, governor, allocationSpan);
+        return governor is null ? new PyString(result) : new PyString(result, governor, allocationSpan, prefunded: true);
     }
 
     public PyString Repeat(int count)
@@ -218,10 +214,10 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return RepeatCore(count, _memoryGovernor, _allocationSpan);
     }
 
-    public PyString Repeat(int count, MemoryGovernor governor, LythonSourceSpan? allocationSpan, long knownLiveBytes = 0)
-        => RepeatCore(count, governor, allocationSpan, knownLiveBytes);
+    public PyString Repeat(int count, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+        => RepeatCore(count, governor, allocationSpan);
 
-    private PyString RepeatCore(int count, MemoryGovernor? governor, LythonSourceSpan? allocationSpan, long knownLiveBytes = 0)
+    private PyString RepeatCore(int count, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
     {
         if (count <= 0 || _utf8.Length == 0)
         {
@@ -233,13 +229,13 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             allocationSpan);
         var result = governor is null
             ? new byte[resultLength]
-            : AllocateGovernedUtf8(resultLength, governor, allocationSpan, knownLiveBytes);
+            : AllocateGovernedUtf8(resultLength, governor, allocationSpan);
         for (var i = 0; i < count; i++)
         {
             Buffer.BlockCopy(_utf8, 0, result, i * _utf8.Length, _utf8.Length);
         }
 
-        return governor is null ? new PyString(result) : new PyString(result, governor, allocationSpan);
+        return governor is null ? new PyString(result) : new PyString(result, governor, allocationSpan, prefunded: true);
     }
 
     public PyString Slice(IReadOnlyList<int> runeIndices)
@@ -267,7 +263,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             offset += length;
         }
 
-        return _memoryGovernor is null ? new PyString(result) : new PyString(result, _memoryGovernor, _allocationSpan);
+        return _memoryGovernor is null ? new PyString(result) : new PyString(result, _memoryGovernor, _allocationSpan, prefunded: true);
     }
 
     public PyString Slice(PyIndexing.SliceBounds bounds)
@@ -303,7 +299,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             offset += length;
         }
 
-        return _memoryGovernor is null ? new PyString(result) : new PyString(result, _memoryGovernor, _allocationSpan);
+        return _memoryGovernor is null ? new PyString(result) : new PyString(result, _memoryGovernor, _allocationSpan, prefunded: true);
     }
 
     public PyString Index(int runeIndex)
@@ -318,7 +314,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             ? new byte[length]
             : AllocateGovernedUtf8(length, _memoryGovernor, _allocationSpan);
         Buffer.BlockCopy(_utf8, start, bytes, 0, length);
-        return _memoryGovernor is null ? new PyString(bytes) : new PyString(bytes, _memoryGovernor, _allocationSpan);
+        return _memoryGovernor is null ? new PyString(bytes) : new PyString(bytes, _memoryGovernor, _allocationSpan, prefunded: true);
     }
 
     public IEnumerable<PyString> EnumerateRunes()
@@ -337,7 +333,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
                 ? new byte[runeLength]
                 : AllocateGovernedUtf8(runeLength, _memoryGovernor, _allocationSpan);
             Buffer.BlockCopy(_utf8, byteIndex, bytes, 0, runeLength);
-            yield return _memoryGovernor is null ? new PyString(bytes) : new PyString(bytes, _memoryGovernor, _allocationSpan);
+            yield return _memoryGovernor is null ? new PyString(bytes) : new PyString(bytes, _memoryGovernor, _allocationSpan, prefunded: true);
             byteIndex += runeLength;
         }
     }
@@ -352,10 +348,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return Utf8.GetString(_utf8);
     }
 
-    // Total owned charges for pooled owners: construction plus every retained
-    // cache table, array and per-rune payload below. Cache builds re-snapshot the
-    // pool coupon through this total, so dropped strings release tables and runes
-    // with the construction charge instead of stranding them.
     internal long CommittedOwnedBytes => EstimateApproximateBytes(_utf8.Length) + _committedCacheBytes;
 
     private void CommitCacheCharge(long bytes)
@@ -373,7 +365,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     // throws before mutating, leaving the old coupon (and retry headroom) intact.
     private void NoteCacheBuilt()
     {
-        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedOwnedBytes);
     }
 
     public string AsString(int runeIndex)
@@ -624,7 +615,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             ? new byte[length]
             : AllocateGovernedUtf8(length, _memoryGovernor, _allocationSpan);
         Buffer.BlockCopy(_utf8, startByte, result, 0, result.Length);
-        return _memoryGovernor is null ? new PyString(result) : new PyString(result, _memoryGovernor, _allocationSpan);
+        return _memoryGovernor is null ? new PyString(result) : new PyString(result, _memoryGovernor, _allocationSpan, prefunded: true);
     }
 
     public static int IndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
@@ -720,7 +711,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
                     ? new byte[runeLength]
                     : AllocateGovernedUtf8(runeLength, _memoryGovernor, _allocationSpan);
                 Buffer.BlockCopy(_utf8, byteIndex, bytes, 0, runeLength);
-                runes[runeIndex++] = _memoryGovernor is null ? new PyString(bytes) : new PyString(bytes, _memoryGovernor, _allocationSpan);
+                runes[runeIndex++] = _memoryGovernor is null ? new PyString(bytes) : new PyString(bytes, _memoryGovernor, _allocationSpan, prefunded: true);
                 if (_memoryGovernor is not null)
                 {
                     _committedCacheBytes += EstimateApproximateBytes(runeLength);
@@ -795,10 +786,13 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return false;
     }
 
-    private static byte[] AllocateGovernedUtf8(int length, MemoryGovernor governor, LythonSourceSpan? allocationSpan, long knownLiveBytes = 0)
+    private static byte[] AllocateGovernedUtf8(int length, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        governor.EnsureCanReserve(EstimateApproximateBytes(length), allocationSpan, knownLiveBytes);
-        return new byte[length];
+        var charge = EstimateApproximateBytes(length);
+        using var admission = governor.ReserveTemporary(charge, allocationSpan);
+        var storage = new byte[length];
+        admission.Commit(charge);
+        return storage;
     }
 
     private static int CheckedByteLength(long length, LythonSourceSpan? span)

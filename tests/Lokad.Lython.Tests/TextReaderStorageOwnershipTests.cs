@@ -15,7 +15,7 @@ public sealed class TextReaderStorageOwnershipTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AbandonedUnclosedStorageReclaimsOnceWhileEscapedLineKeepsItsFunding(bool retainLine)
+    public void CollectedReaderRemainsBatchOwnedWhileEscapedLineKeepsItsFunding(bool retainLine)
     {
         var host = new MockLythonHost(); host.SeedFile("/file", "first café 😀\n" + new string('x', 128));
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = Cap });
@@ -24,16 +24,12 @@ public sealed class TextReaderStorageOwnershipTests
         var committed = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
         Assert.False(dropped.Reference.TryGetTarget(out _));
-        var expected = dropped.Charge + ChargeReclamationPool.EntryChargeBytes;
-        Assert.Equal(expected, context.State.CallTemporaries.Sweep(full: true));
-        Assert.Equal(committed - expected, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.State.CallTemporaries.Sweep(full: true));
-        Assert.True(context.State.CallTemporaries.IsTracked(retained));
+        Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(committed >= dropped.Charge);
         Assert.Equal("first café 😀\n", retained.ReadLine(-1).AsString());
         if (dropped.Line is { } line)
         {
             Assert.Equal("first café 😀\n", line.AsString());
-            Assert.True(context.State.CallTemporaries.IsTracked(line));
             Assert.True(line.CommittedOwnedBytes > 0);
         }
         GC.KeepAlive(retained);
@@ -41,7 +37,7 @@ public sealed class TextReaderStorageOwnershipTests
     }
 
     [Fact]
-    public void SuccessfulCloseRefreshesTheStorageSnapshotBeforeLaterCollection()
+    public void SuccessfulCloseReleasesBackingAndKeepsTheShellBatchOwned()
     {
         var host = new MockLythonHost(); host.SeedFile("/file", new string('x', 128));
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = Cap });
@@ -49,8 +45,8 @@ public sealed class TextReaderStorageOwnershipTests
         var committed = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
         Assert.False(reference.TryGetTarget(out _));
-        Assert.Equal(State.ShellBytes + ChargeReclamationPool.EntryChargeBytes, context.State.CallTemporaries.Sweep(full: true));
-        Assert.Equal(committed - State.ShellBytes - ChargeReclamationPool.EntryChargeBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(committed >= State.ShellBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -68,8 +64,7 @@ public sealed class TextReaderStorageOwnershipTests
             : Assert.Throws<LythonRuntimeException>(() => Handle.ForRead("/file", context,
                 LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal));
         Assert.Equal("UnicodeDecodeError", error.ExceptionType);
-        Assert.Equal(before + context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.State.CallTemporaries.Count);
+        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -92,9 +87,8 @@ public sealed class TextReaderStorageOwnershipTests
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => open);
         Assert.Equal("RuntimeError", error.ExceptionType);
         Assert.Contains("cancel", error.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(0, context.State.CallTemporaries.Count);
         Assert.True(host.CompletedAsynchronously > 0);
     }
 

@@ -10,47 +10,37 @@ public class PathLifetimeScenarioTests : LifetimeScenario
 
     private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private async Task AssertCompletes(string source, string expected)
-    {
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted());
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted());
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }
+    private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
     [Fact]
     public async Task PathCtorDiscardCompletes()
         => await AssertCompletes(
-            "from pathlib import Path\nfor i in range(" + Iterations(100000) + "):\n    x = Path('/a/b')\nreturn 0\n", "0");
+            "from pathlib import Path\nfor i in range(" + BatchIterations(100000) + "):\n    x = Path('/a/b')\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task PathJoinDiscardCompletes()
         => await AssertCompletes(
-            "from pathlib import Path\nfor i in range(" + Iterations(100000) + "):\n    x = Path('/a') / 'b'\nreturn 0\n", "0");
+            "from pathlib import Path\nfor i in range(" + BatchIterations(100000) + "):\n    x = Path('/a') / 'b'\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task PathJoinpathDiscardCompletes()
         => await AssertCompletes(
-            "from pathlib import Path\np = Path('/a/b/c.txt')\nfor i in range(" + Iterations(100000) + "):\n    x = p.joinpath('d')\nreturn 0\n", "0");
+            "from pathlib import Path\np = Path('/a/b/c.txt')\nfor i in range(" + BatchIterations(100000) + "):\n    x = p.joinpath('d')\nreturn 0\n", "0", Iterations(100000));
 
     [Fact]
     public async Task PathParentsDiscardCompletes()
         => await AssertCompletes(
-            "from pathlib import Path\nfor i in range(" + Iterations(50000) + "):\n    x = Path('/a/b/c/d/e/f/g').parents\nreturn 0\n", "0");
+            "from pathlib import Path\nfor i in range(" + BatchIterations(50000) + "):\n    x = Path('/a/b/c/d/e/f/g').parents\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task PathPartsDiscardCompletes()
         => await AssertCompletes(
-            "from pathlib import Path\nfor i in range(" + Iterations(50000) + "):\n    x = Path('/a/b/c/d/e/f/g').parts\nreturn 0\n", "0");
+            "from pathlib import Path\nfor i in range(" + BatchIterations(50000) + "):\n    x = Path('/a/b/c/d/e/f/g').parts\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task PathSuffixesDiscardCompletes()
         => await AssertCompletes(
-            "from pathlib import Path\nfor i in range(" + Iterations(50000) + "):\n    x = Path('/a/b.tar.gz.bz2.zip').suffixes\nreturn 0\n", "0");
+            "from pathlib import Path\nfor i in range(" + BatchIterations(50000) + "):\n    x = Path('/a/b.tar.gz.bz2.zip').suffixes\nreturn 0\n", "0", Iterations(50000));
 
     [Fact]
     public async Task PathPluralBehaves()

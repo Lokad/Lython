@@ -241,7 +241,6 @@ internal sealed partial class LythonRuntime
             }
         }
 
-
         private static async ValueTask AppendOutputAsync(PyString value, ExecutionContext context, PrintOutputTarget outputTarget, LythonSourceSpan span)
         {
             switch (outputTarget)

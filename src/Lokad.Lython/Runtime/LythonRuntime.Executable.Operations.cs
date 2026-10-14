@@ -27,7 +27,6 @@ internal sealed partial class LythonRuntime
         stack.RemoveTail(valueCount);
 
         context.ObserveCollectionCount(dict.Count, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(dict, dict.CommittedStorageBytes);
         return dict;
     }
 
@@ -57,8 +56,6 @@ internal sealed partial class LythonRuntime
             set.ReleaseUnpublishedStorage();
             throw;
         }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(set, set.CommittedStorageBytes);
         return set;
     }
 
@@ -180,7 +177,6 @@ internal sealed partial class LythonRuntime
 
         stack.RemoveTail(count);
         var list = new PyList(items, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(list, list.CommittedStorageBytes);
         return list;
     }
 
@@ -201,7 +197,6 @@ internal sealed partial class LythonRuntime
 
         stack.RemoveTail(count);
         var tuple = new PyTuple(items, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes);
         return tuple;
     }
 

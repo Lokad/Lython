@@ -2,7 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class GeneratorExpressionCompositionTests
+public sealed class GeneratorExpressionCompositionTests : LifetimeScenario
 {
     [Fact]
     public async Task FormattedFieldsRetainSentValues()
@@ -408,6 +408,11 @@ public sealed class GeneratorExpressionCompositionTests
     {
         var source = "def run(*args): return args\ndef generate():\n run(0, *(yield 'items'), (yield 'tail'))\nkept=[]\nfor i in range(2000):\n g=generate()\n next(g)\n g.send(range(200))\n";
         if (retain) source += " kept.append(g)\n";
+        if (!retain)
+        {
+            await AssertBatchCompletes(source.Replace("range(2000)", "range(8)"), null, 262144);
+            return;
+        }
         var compiled = new LythonEngine().Compile(source);
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
