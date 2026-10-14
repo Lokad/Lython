@@ -1,0 +1,72 @@
+{
+  "candidate": {
+    "version": "0.4.0-scalar.48",
+    "producer": "cab9c04209c7f0d291623791e0d585af507d53af",
+    "manifestSha256": "4a3409d6aa3018a11c8b02ae26d36fddb8fc9addb88cc973d6381ae80986b288",
+    "packagesAndSymbolsVerified": true,
+    "dllAndPdbHashesVerified": true,
+    "packages": [
+      {
+        "id": "Lokad.Utf8Regex",
+        "dependencies": [],
+        "packageSha256": "55AB8D07524BE9593499DD575FAF66375DFBC7146D06E62121BF8D93831F6996",
+        "assemblySha256": "339BE7B334BBD71906ECACB8F0928B8DB9C8E03BE453758962D114D9E7657B46"
+      },
+      {
+        "id": "Lokad.Utf8Regex.PythonRe",
+        "dependencies": [
+          {
+            "id": "Lokad.Utf8Regex",
+            "version": "0.4.0-scalar.48",
+            "exclude": "Build,Analyzers"
+          }
+        ],
+        "packageSha256": "D676F3C4FDC01938CBD23299631F64C03C79FE9DFC6ABCDB85BDF733BAEC0895",
+        "assemblySha256": "6F8181520C153416F7940526719C16F4ED89E630E1DA24D86E1F2F561514D290"
+      }
+    ],
+    "frozenUtc": "2026-10-14T18:47:40.422991+00:00"
+  },
+  "audit": {
+    "managedOnly": false,
+    "assemblies": [
+      {
+        "name": "Lokad.Utf8Regex.PythonRe",
+        "informationalVersion": "0.4.0-scalar.48+cab9c04209c7f0d291623791e0d585af507d53af",
+        "sha256": "6F8181520C153416F7940526719C16F4ED89E630E1DA24D86E1F2F561514D290"
+      },
+      {
+        "name": "Lokad.Utf8Regex",
+        "informationalVersion": "0.4.0-scalar.48+cab9c04209c7f0d291623791e0d585af507d53af",
+        "sha256": "339BE7B334BBD71906ECACB8F0928B8DB9C8E03BE453758962D114D9E7657B46"
+      }
+    ],
+    "unsafeApiReferences": [
+      "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.Add",
+      "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.As",
+      "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.AsRef",
+      "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.ReadUnaligned",
+      "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.SizeOf",
+      "Lokad.Utf8Regex:System.Runtime.Intrinsics.Vector128.LoadUnsafe",
+      "Lokad.Utf8Regex:System.Runtime.Intrinsics.Vector256.LoadUnsafe"
+    ],
+    "semanticControlsRun": false
+  },
+  "receipt": {
+    "pid": 52048,
+    "exitCode": 0,
+    "hasExited": true,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 330,
+    "executable": "C:/Program Files/dotnet/dotnet.exe",
+    "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+    "arguments": [
+      ".git/agent-notes/regex-scalar-48-20261014/audit/bin/Release/net10.0/audit.dll"
+    ]
+  },
+  "handoffSha256": "00149E36F3DAE171A013C4DAA151B404C55CDAEFFBE663805DC9850AE7285688",
+  "decision": "Rejected at mandatory managed-only gate; no semantic/resource/performance matrix or promotion.",
+  "productionDependency": "Lokad.Utf8Regex.PythonRe 0.2.0",
+  "siblingRebuilt": false,
+  "published": false
+}
