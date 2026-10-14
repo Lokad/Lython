@@ -1,9 +1,6 @@
 --- baseline/src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs
 +++ rejected/src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs
-@@ -937,7 +937,28 @@
- 
-                 _fieldStarted = true;
-                 _recordStarted = true;
+@@ -940 +940,22 @@
 -                AppendField(c);
 +                if (_escapeCharacter is null && _delimiter.Length == 1
 +                    && (_quoteCharacter is null || _quoteCharacter.Length == 1))
@@ -27,6 +24,3 @@
 +                    i = end - 1;
 +                }
 +                else AppendField(c);
-             }
- 
-             if (_inQuotes)
