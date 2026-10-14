@@ -314,23 +314,70 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<enumerate object>");
 }
 
-internal sealed class PyZipIterator : PyIteratorBase
+internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot, IMemoryStorageEdges
 {
-    private readonly PyIteration.Cursor[] _cursors;
+    private PyIteration.Cursor[] _cursors;
     private readonly MemoryGovernor _governor;
     private readonly ChargeReclamationPool _pool;
     private readonly bool _strict;
     private readonly LythonSourceSpan _span;
     private bool _finished;
+    private long _storageBytes;
+    private readonly LythonRuntime.ExecutionContext _context;
+
+    internal long CommittedStorageBytes => _storageBytes;
+    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
+        => OwnershipSnapshot.Owned(_governor, _storageBytes, out chargeBytes);
+
+    public void VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        foreach (var cursor in _cursors) if (!visitor.Add(cursor)) return;
+        visitor.Add(_context);
+    }
 
     public PyZipIterator(object[] iterables, bool strict, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        : this(iterables.Length, strict, span, context)
     {
-        _cursors = iterables.Select(value => PyIteration.Cursor.Create(value, span, context)).ToArray();
+        try { InitializeCursors(iterables, context); }
+        catch { DiscardUnpublishedStorage(); throw; }
+    }
+
+    // Allocate the actual owner and preflight its cursor storage before any
+    // source __iter__ can run. The builtin publishes it before initialization.
+    internal PyZipIterator(int count, bool strict, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
         _governor = context.MemoryGovernor;
         _pool = context.Services.State.CallTemporaries;
         _strict = strict;
         _span = span;
-        ChargeIteratorValue(context.MemoryGovernor, span);
+        _context = context;
+        var bytes = checked(IteratorValueBytes + 32L + 256L * count);
+        _governor.Reserve(bytes, span);
+        try { _cursors = new PyIteration.Cursor[count]; }
+        catch { _governor.ReleaseReserved(bytes); throw; }
+        _governor.Commit(bytes);
+        _storageBytes = bytes;
+    }
+
+    internal void InitializeCursors(object[] iterables, LythonRuntime.ExecutionContext context)
+    {
+        for (var i = 0; i < iterables.Length; i++)
+            _cursors[i] = PyIteration.Cursor.Create(iterables[i], _span, context);
+    }
+
+    internal void InitializeCursors(CallArgumentValue[] arguments, LythonRuntime.ExecutionContext context)
+    {
+        var index = 0;
+        foreach (var argument in arguments)
+            if (argument.IsPositional) _cursors[index++] = PyIteration.Cursor.Create(argument.Value, _span, context);
+    }
+
+    internal void DiscardUnpublishedStorage()
+    {
+        _cursors = [];
+        var bytes = _storageBytes;
+        _storageBytes = 0;
+        _governor.Release(bytes);
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
@@ -341,45 +388,58 @@ internal sealed class PyZipIterator : PyIteratorBase
             return false;
         }
 
-        var items = new object[_cursors.Length];
-        for (var i = 0; i < _cursors.Length; i++)
+        var funding = checked(32L + 80L * _cursors.Length);
+        using var operation = LythonRuntime.NativeIterableOperation.Create(this, PyNone.Instance, _context, _span);
+        _governor.Reserve(funding, _span);
+        try
         {
-            if (_cursors[i].TryMoveNext(out var item))
+            var items = new object[_cursors.Length];
+            operation.Current = items;
+            for (var i = 0; i < _cursors.Length; i++)
             {
-                items[i] = item;
-                continue;
-            }
-
-            _finished = true;
-            if (_strict)
-            {
-                // Like CPython, an exhausted cursor behind earlier yielders
-                // is shorter; only the first cursor peeks ahead for a longer
-                // tail, naming the first diverging argument.
-                if (i > 0)
+                if (_cursors[i].TryMoveNext(out var item))
                 {
-                    throw new LythonRuntimeException("ValueError", "zip() argument " + (i + 1) + " is shorter than " + StrictOthers(i), _span);
+                    items[i] = item;
+                    continue;
                 }
 
-                for (var j = i + 1; j < _cursors.Length; j++)
+                _finished = true;
+                if (_strict)
                 {
-                    if (_cursors[j].TryMoveNext(out _))
+                    // Like CPython, an exhausted cursor behind earlier yielders
+                    // is shorter; only the first cursor peeks ahead for a longer
+                    // tail, naming the first diverging argument.
+                    if (i > 0)
                     {
-                        throw new LythonRuntimeException("ValueError", "zip() argument " + (j + 1) + " is longer than " + StrictOthers(j), _span);
+                        throw new LythonRuntimeException("ValueError", "zip() argument " + (i + 1) + " is shorter than " + StrictOthers(i), _span);
+                    }
+
+                    for (var j = i + 1; j < _cursors.Length; j++)
+                    {
+                        if (_cursors[j].TryMoveNext(out _))
+                        {
+                            throw new LythonRuntimeException("ValueError", "zip() argument " + (j + 1) + " is longer than " + StrictOthers(j), _span);
+                        }
                     }
                 }
+
+                value = PyNone.Instance;
+                return false;
             }
 
-            value = PyNone.Instance;
-            return false;
+            // Each yielded item is a fresh governed tuple: track it at this factory
+            // so dropped items reclaim through the pool; later registrations dedup.
+            var produced = PyTuple.FromOwnedArray(items, _governor, _span);
+            operation.Result = produced;
+            _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+            value = produced;
+            return true;
         }
-
-        // Each yielded item is a fresh governed tuple: track it at this factory
-        // so dropped items reclaim through the pool; later registrations dedup.
-        var produced = new PyTuple(items, _governor, _span);
-        _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
-        value = produced;
-        return true;
+        finally
+        {
+            operation.Current = PyNone.Instance;
+            _governor.ReleaseReserved(funding);
+        }
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -389,42 +449,55 @@ internal sealed class PyZipIterator : PyIteratorBase
             return PyIterationResult.End;
         }
 
-        var items = new object[_cursors.Length];
-        for (var i = 0; i < _cursors.Length; i++)
+        var funding = checked(32L + 80L * _cursors.Length);
+        await using var operation = LythonRuntime.NativeIterableOperation.Create(this, PyNone.Instance, _context, _span);
+        _governor.Reserve(funding, _span);
+        try
         {
-            var (hasValue, item) = await _cursors[i].TryMoveNextAsync().ConfigureAwait(false);
-            if (hasValue)
+            var items = new object[_cursors.Length];
+            operation.Current = items;
+            for (var i = 0; i < _cursors.Length; i++)
             {
-                items[i] = item;
-                continue;
-            }
-
-            _finished = true;
-            if (_strict)
-            {
-                // Same strict tail-peeking as the sync path above.
-                if (i > 0)
+                var (hasValue, item) = await _cursors[i].TryMoveNextAsync().ConfigureAwait(false);
+                if (hasValue)
                 {
-                    throw new LythonRuntimeException("ValueError", "zip() argument " + (i + 1) + " is shorter than " + StrictOthers(i), _span);
+                    items[i] = item;
+                    continue;
                 }
 
-                for (var j = i + 1; j < _cursors.Length; j++)
+                _finished = true;
+                if (_strict)
                 {
-                    var (laterHasValue, _) = await _cursors[j].TryMoveNextAsync().ConfigureAwait(false);
-                    if (laterHasValue)
+                    // Same strict tail-peeking as the sync path above.
+                    if (i > 0)
                     {
-                        throw new LythonRuntimeException("ValueError", "zip() argument " + (j + 1) + " is longer than " + StrictOthers(j), _span);
+                        throw new LythonRuntimeException("ValueError", "zip() argument " + (i + 1) + " is shorter than " + StrictOthers(i), _span);
+                    }
+
+                    for (var j = i + 1; j < _cursors.Length; j++)
+                    {
+                        var (laterHasValue, _) = await _cursors[j].TryMoveNextAsync().ConfigureAwait(false);
+                        if (laterHasValue)
+                        {
+                            throw new LythonRuntimeException("ValueError", "zip() argument " + (j + 1) + " is longer than " + StrictOthers(j), _span);
+                        }
                     }
                 }
+
+                return PyIterationResult.End;
             }
 
-            return PyIterationResult.End;
+            // Same fresh-tuple ownership as the sync path above.
+            var produced = PyTuple.FromOwnedArray(items, _governor, _span);
+            operation.Result = produced;
+            _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+            return PyIterationResult.Yield(produced);
         }
-
-        // Same fresh-tuple ownership as the sync path above.
-        var produced = new PyTuple(items, _governor, _span);
-        _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
-        return PyIterationResult.Yield(produced);
+        finally
+        {
+            operation.Current = PyNone.Instance;
+            _governor.ReleaseReserved(funding);
+        }
     }
 
     private static string StrictOthers(int index)

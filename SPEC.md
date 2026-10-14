@@ -2984,6 +2984,16 @@ retain their own funding. Async conversion fills the actual governed list
 directly. Collection and memory limits can therefore reject an input earlier
 during consumption than the former drain-then-copy implementation.
 
+Native `zip` preflights its shell, cursor array and a conservative allowance per
+input before iterator acquisition. Partial initialization stays published through
+its native operation and failed construction refunds its unpublished storage.
+Each pull preflights a row buffer and keeps partial items and the produced tuple
+stored through callback reentry and result registration. The tuple takes ownership
+of that buffer, preserving fresh tuple identity without a second array copy.
+New helper admissions can reject a tiny budget before consuming inputs; denials
+after a completed pull retain the existing consumption behavior. Held inputs and
+previously returned tuple aliases keep their own funding.
+
 Lython does not need to promise a perfect hard memory ceiling from inside the same managed process, but it must provide conservative in-process resource controls that make runaway allocation materially harder.
 
 #### 14.6.1 Combined Peak Envelope

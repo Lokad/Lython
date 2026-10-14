@@ -4,7 +4,7 @@ internal sealed partial class LythonRuntime
 {
     // The native consumer's actual evolving state, using the same active head/caller
     // link as function and executable frames. No separate activation registry.
-    private sealed class NativeIterableOperation : ExecutionFrame, IDisposable, IAsyncDisposable
+    internal sealed class NativeIterableOperation : ExecutionFrame, IDisposable, IAsyncDisposable
     {
         private const long ShellBytes = 128;
         private readonly MemoryGovernor _governor;

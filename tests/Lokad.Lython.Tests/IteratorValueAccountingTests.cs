@@ -28,10 +28,10 @@ public sealed class IteratorValueAccountingTests
         Assert.Equal(128L, context.MemoryGovernor.CurrentCommittedBytes);
         _ = new PyFilterIterator(new StubCallable(), source, context, span);
         Assert.Equal(2L * 128L, context.MemoryGovernor.CurrentCommittedBytes);
-        _ = new PyZipIterator([source], false, span, context);
-        Assert.Equal(3L * 128L, context.MemoryGovernor.CurrentCommittedBytes);
+        var zip = new PyZipIterator([source], false, span, context);
+        Assert.Equal(2L * 128L + zip.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes);
         _ = new PyEnumerateIterator(source, new System.Numerics.BigInteger(0), span, context);
-        Assert.Equal(4L * 128L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(3L * 128L + zip.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

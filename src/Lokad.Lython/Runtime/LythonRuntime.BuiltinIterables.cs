@@ -271,14 +271,14 @@ internal sealed partial class LythonRuntime
 
     private static object Zip(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var iterables = new List<object>();
+        var positionalCount = 0;
         var strict = false;
         var sawStrict = false;
         foreach (var argument in arguments)
         {
             if (argument.IsPositional)
             {
-                iterables.Add(argument.Value);
+                positionalCount++;
                 continue;
             }
 
@@ -291,9 +291,16 @@ internal sealed partial class LythonRuntime
             strict = IsTruthy(argument.Value);
         }
 
-        var zipResult = new PyZipIterator([.. iterables], strict, span, context);
-        context.Services.State.CallTemporaries.TrackFreshMutable(zipResult, PyIteratorBase.IteratorValueBytes);
-        return zipResult;
+        using var operation = NativeIterableOperation.Create(arguments, PyNone.Instance, context, span);
+        var zipResult = new PyZipIterator(positionalCount, strict, span, context);
+        operation.Result = zipResult;
+        try
+        {
+            zipResult.InitializeCursors(arguments, context);
+            context.State.CallTemporaries.TrackMutable(zipResult, zipResult.CommittedStorageBytes, span);
+            return zipResult;
+        }
+        catch { zipResult.DiscardUnpublishedStorage(); throw; }
     }
 
     private static object Zip(object[] arguments, LythonSourceSpan span, ExecutionContext context)
