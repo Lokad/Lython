@@ -18,6 +18,11 @@ scripts = Path(__file__).resolve().parents[1] / 'benchmarks' / 'scripts'
 checks = []
 for n in (0, 16, 1024):
     cases = {
+        'config-edit': (
+            {'config.json': (json.dumps({'name': 'café', 'retries': 2, 'enabled': False,
+                'paths': [f'p{i}' for i in range(n)], 'untouched': {'version': 1, 'note': '😀'}}, ensure_ascii=False, separators=(',', ':')) + '\n').encode()},
+            {'config.json': (json.dumps({'enabled': True, 'name': 'café', 'paths': [f'p{i}' for i in range(n)] + ['generated'],
+                'retries': 3, 'untouched': {'note': '😀', 'version': 1}}, ensure_ascii=False, sort_keys=True, separators=(',', ':')) + '\n').encode()}, f'{n+1}\n'),
         'csv-summary': (
             {'input.csv': ('kind,amount,note\n' + 'red,3,"café,\nquoted"\nblue,2,😀\nred,-1,skip\nblue,5,ok\n' * n).encode()},
             {'report.csv': ('kind,total\n' + (f'blue,{7*n}\nred,{3*n}\n' if n else '')).encode()}, f'{3*n}\n'),

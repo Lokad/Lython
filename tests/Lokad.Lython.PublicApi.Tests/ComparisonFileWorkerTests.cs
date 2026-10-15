@@ -7,6 +7,27 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class ComparisonFileWorkerTests
 {
+    [Theory]
+    [InlineData("{\"inputFiles\":{\"config.json\":\"\"},\"outputFiles\":{\"CONFIG.json\":\"\"}}")]
+    [InlineData("{\"inputFiles\":{\"config.json\":\"\",\"config.json\":\"\"},\"outputFiles\":{}}")]
+    [InlineData("{\"inputFiles\":{\"config.json\":\"\"},\"outputFiles\":{\"config.json\":\"\",\"config.json\":\"\"}}")]
+    [InlineData("{\"inputFiles\":{\"config\":\"\"},\"outputFiles\":{\"config/file\":\"\"}}")]
+    public void InputOverwriteStillRejectsAmbiguousOrConflictingPaths(string fixture)
+        => Assert.Throws<InvalidDataException>(() => ComparisonFileFixture.Parse(fixture));
+
+    [Fact]
+    public void InputOverwriteKeepsTheUniqueFileLimit()
+    {
+        var files = Enumerable.Range(0, ComparisonFileFixture.MaximumFiles)
+            .ToDictionary(i => "file" + i, _ => "");
+        string Fixture() => JsonSerializer.Serialize(new { inputFiles = files, outputFiles = files });
+        var accepted = ComparisonFileFixture.Parse(Fixture());
+        Assert.Equal(ComparisonFileFixture.MaximumFiles, accepted!.Inputs.Count);
+        Assert.Equal(ComparisonFileFixture.MaximumFiles, accepted.Outputs.Count);
+        files.Add("excess", "");
+        Assert.Throws<InvalidDataException>(() => ComparisonFileFixture.Parse(Fixture()));
+    }
+
     public static IEnumerable<object[]> Scripts => WorkloadCatalog.CreateRepresentative().Select(c => new object[] { c.Id });
 
     [Theory]

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -7,7 +8,7 @@ public sealed class RepresentativeScriptTests
 {
     public static IEnumerable<object[]> Cases()
     {
-        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase" })
+        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit" })
             foreach (var repetitions in new[] { 0, 16, 1024 })
                 foreach (var asynchronous in new[] { false, true })
                     yield return [name, repetitions, asynchronous];
@@ -27,6 +28,12 @@ public sealed class RepresentativeScriptTests
         string Repeat(string value) => string.Concat(Enumerable.Repeat(value, repetitions));
         switch (name)
         {
+            case "config-edit":
+                var paths = Enumerable.Range(0, repetitions).Select(i => "p" + i.ToString(System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+                inputs["/config.json"] = Utf8("{\"name\":\"café\",\"retries\":2,\"enabled\":false,\"paths\":" + JsonSerializer.Serialize(paths) + ",\"untouched\":{\"version\":1,\"note\":\"😀\"}}\n");
+                outputs["/config.json"] = Utf8("{\"enabled\":true,\"name\":\"café\",\"paths\":" + JsonSerializer.Serialize(paths.Append("generated")) + ",\"retries\":3,\"untouched\":{\"note\":\"😀\",\"version\":1}}\n");
+                stdout = $"{repetitions + 1}\n";
+                break;
             case "csv-summary":
                 inputs["/input.csv"] = Utf8("kind,amount,note\n" + Repeat("red,3,\"café,\nquoted\"\nblue,2,😀\nred,-1,skip\nblue,5,ok\n"));
                 outputs["/report.csv"] = Utf8("kind,total\n" + (repetitions == 0 ? "" : $"blue,{7 * repetitions}\nred,{3 * repetitions}\n"));
@@ -175,6 +182,7 @@ public sealed class RepresentativeScriptTests
     [InlineData("text-summary", "/report.txt")]
     [InlineData("json-summary", "/report.json")]
     [InlineData("file-manifest", "/manifest.json")]
+    [InlineData("config-edit", "/config.json")]
     public async Task CancelledPendingPublicationPreservesPreviousFileBytes(string name, string reportPath)
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
@@ -186,7 +194,7 @@ public sealed class RepresentativeScriptTests
         host.SeedFile("/input.jsonl", "{\"kind\":\"red\",\"amount\":3}\n");
         host.SeedBytes("/inbox/a.bin", [0, 127, 128, 255]);
         host.SeedBytes("/inbox/é.txt", Encoding.UTF8.GetBytes("café 😀\n"));
-        const string previous = "previous café 😀\n";
+        var previous = name == "config-edit" ? "{\"enabled\":false,\"retries\":2,\"paths\":[],\"note\":\"café 😀\"}\n" : "previous café 😀\n";
         host.SeedFile(reportPath, previous);
         var started = host.PauseWriteUntilCancellation(reportPath);
         using var cancellation = new CancellationTokenSource();

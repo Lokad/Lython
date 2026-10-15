@@ -8,6 +8,11 @@ count and retained matching line. They publish complete output files.
 The uppercase-report job reads one bounded UTF-8 text file and publishes its
 uppercase form, including full-case expansions. It reports the output's Python
 character count; fixtures check exact report bytes independently.
+The configuration-edit job loads JSON, edits a flag and retry count, appends one
+path and writes the same file back. Independent goldens preserve Unicode and
+untouched nested metadata at zero,16 and1,024 existing paths. Zero paths is a
+metadata-only configuration, rather than an empty input file. Worker resets
+restore the original input before every invocation, including in warm lanes.
 Text reports explicitly use LF on Windows and Linux. Each run needs fresh input
 files and a writable working directory; the file job creates its output directory.
 

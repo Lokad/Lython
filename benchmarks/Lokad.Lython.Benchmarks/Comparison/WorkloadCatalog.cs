@@ -58,7 +58,7 @@ internal static class WorkloadCatalog
     {
         var cases = new List<ComparisonWorkload>();
         foreach (var n in new[] { 0, 16, 1024 })
-        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase" })
+        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit" })
         {
             var inputs = new Dictionary<string, byte[]>();
             var outputs = new Dictionary<string, byte[]>();
@@ -66,6 +66,11 @@ internal static class WorkloadCatalog
             string stdout;
             switch (name)
             {
+                case "config-edit":
+                    var paths = Enumerable.Range(0, n).Select(i => "p" + i.ToString(Invariant)).ToArray();
+                    inputs["config.json"] = Utf8("{\"name\":\"café\",\"retries\":2,\"enabled\":false,\"paths\":" + JsonSerializer.Serialize(paths) + ",\"untouched\":{\"version\":1,\"note\":\"😀\"}}\n");
+                    outputs["config.json"] = Utf8("{\"enabled\":true,\"name\":\"café\",\"paths\":" + JsonSerializer.Serialize(paths.Append("generated")) + ",\"retries\":3,\"untouched\":{\"note\":\"😀\",\"version\":1}}\n");
+                    stdout = $"{n + 1}\n"; break;
                 case "csv-summary":
                     inputs["input.csv"] = Utf8("kind,amount,note\n" + Repeat("red,3,\"café,\nquoted\"\nblue,2,😀\nred,-1,skip\nblue,5,ok\n", n));
                     outputs["report.csv"] = Utf8("kind,total\n" + (n == 0 ? "" : $"blue,{7 * n}\nred,{3 * n}\n"));

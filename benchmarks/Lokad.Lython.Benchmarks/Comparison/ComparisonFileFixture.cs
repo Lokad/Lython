@@ -21,14 +21,17 @@ internal sealed record ComparisonFileFixture(IReadOnlyDictionary<string, byte[]>
         if (!hasInputs || !hasOutputs) throw new InvalidDataException("File fixtures need inputs and output goldens.");
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         long bytes = 0;
-        Dictionary<string, byte[]> Read(JsonElement value)
+        Dictionary<string, byte[]> Read(JsonElement value, IReadOnlyDictionary<string, byte[]>? overwrites = null)
         {
             if (value.ValueKind != JsonValueKind.Object) throw new InvalidDataException("Invalid file fixture map.");
             var result = new Dictionary<string, byte[]>(StringComparer.Ordinal);
             foreach (var entry in value.EnumerateObject())
             {
                 ValidatePath(entry.Name);
-                if (!names.Add(entry.Name) || names.Count > MaximumFiles)
+                // A job may overwrite its exact input path. Ambiguous case
+                // spellings and duplicates within either map remain invalid.
+                if (result.ContainsKey(entry.Name) ||
+                    (!names.Add(entry.Name) && overwrites?.ContainsKey(entry.Name) != true) || names.Count > MaximumFiles)
                     throw new InvalidDataException("Duplicate or excessive file fixture paths.");
                 var encoded = entry.Value.GetString() ?? throw new InvalidDataException("Missing file payload.");
                 if (encoded.Length > 4 * ((MaximumBytes + 2) / 3)) throw new InvalidDataException("File fixture is too large.");
@@ -42,7 +45,7 @@ internal sealed record ComparisonFileFixture(IReadOnlyDictionary<string, byte[]>
             return result;
         }
         var inputFiles = Read(inputs);
-        var outputFiles = Read(outputs);
+        var outputFiles = Read(outputs, inputFiles);
         foreach (var name in names)
             for (var slash = name.IndexOf('/'); slash >= 0; slash = name.IndexOf('/', slash + 1))
                 if (names.Contains(name[..slash])) throw new InvalidDataException("A fixture file is also a parent directory.");

@@ -37,7 +37,7 @@ def file_fixture(fixture):
         return None
     import base64
     names, byte_count = set(), 0
-    def read(rows):
+    def read(rows, overwrites=()):
         nonlocal byte_count
         if type(rows) is not dict:
             raise ValueError('Invalid file fixture map')
@@ -53,7 +53,10 @@ def file_fixture(fixture):
                         or len(stem) == 4 and stem[:3] in ('COM', 'LPT') and stem[3] in '0123456789'):
                     raise ValueError('Invalid fixture path segment')
             folded = name.casefold()
-            if folded in names or len(names) >= MAX_FIXTURE_FILES:
+            # Permit only an exact input/output overwrite, never case aliases
+            # or repeated entries in the same map.
+            if (folded in names and (name not in overwrites or name in result)
+                    or folded not in names and len(names) >= MAX_FIXTURE_FILES):
                 raise ValueError('Duplicate or excessive file fixture paths')
             names.add(folded)
             if type(encoded) is not str or len(encoded) > 4 * ((MAX_OUTPUT_BYTES + 2) // 3):
@@ -64,7 +67,8 @@ def file_fixture(fixture):
                 raise ValueError('Noncanonical or excessive file fixture bytes')
             result[name] = payload
         return result
-    inputs, outputs = read(fixture['inputFiles']), read(fixture['outputFiles'])
+    inputs = read(fixture['inputFiles'])
+    outputs = read(fixture['outputFiles'], inputs)
     for name in names:
         parts = name.split('/')
         if any('/'.join(parts[:n]) in names for n in range(1, len(parts))):
