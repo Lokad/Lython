@@ -90,6 +90,17 @@ switch (result.State)
 
 The example elides the host implementation on purpose. In practice, `host` is your controlled bridge to files and directories through `ILythonHost`.
 
+For file-processing workloads, override `ReadTextUtf8RangeAsync` and
+`ReadBytesRangeAsync` with bounded reads: their compatible defaults load the
+whole file before slicing. Override `AppendBytesAsync` with native append when
+available; its default reads and rewrites the existing prefix, so repeated small
+appends can perform quadratic work and are not atomic with concurrent writers.
+Write buffers remain valid until the returned operation completes. Consume or
+copy them before completing; storage retained afterward belongs to the host.
+See [the host contract](src/Lokad.Lython/Host/ILythonHost.cs) and the observable
+[range](tests/Lokad.Lython.PublicApi.Tests/HostRangedReadTests.cs) and
+[append](tests/Lokad.Lython.PublicApi.Tests/HostAppendFallbackTests.cs) controls.
+
 Compile once for repeated inputs, with explicit module selection and finite
 limits on each invocation:
 

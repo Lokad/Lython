@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Await reflected augmented methods for builtin Boolean, integer, float, complex and decimal values, including host integer representations. Preserve cancellation and complex/matrix augmented error tokens when reflected methods decline.
+
+- Add a complete JSON configuration read/edit/write workload with independent files, replay and cancelled-publication checks. Both comparison workers allow exact input/output path overwrites while retaining path, collision and fixture bounds.
+
 - Share the synchronous binary/augmented operator handler for exact integer operands during `RunAsync`, avoiding generic async operation dispatch while retaining preflights, errors, fuel/cancellation and result ownership. Mixed/user operands keep their existing protocol routes.
 
 - Await user-instance augmented numeric methods and exact-integer reflected fallbacks under `RunAsync`, preserving in-place/ordinary/reflected order, augmented error tokens and cancellation. Share the existing operator mappings instead of restricting asynchronous dispatch to addition.

@@ -27,7 +27,8 @@ The script and CI gate prepare and verify packages; publishing is a separate
 release action. Generated artifacts and the temporary consumer remain
 available for inspection.
 
-The source-lifetime control retains CSV rows while a mediated stdout callback
-collects their reader, then drops them and repeats eight times at a 3 MiB cap.
-It checks that surviving aliases keep their reclamation tracker and later
-release their charges, including an actually paused asynchronous acquisition.
+The CSV ownership control runs eight bounded batches per execution API at a
+3 MiB cap, including a genuinely paused asynchronous acquisition. Each result
+keeps its execution storage funded until disposal; disposing it returns the
+shared allowance to the compiled-script baseline independently of CLR collection.
+Disposing the compiled script then returns the allowance to zero.
