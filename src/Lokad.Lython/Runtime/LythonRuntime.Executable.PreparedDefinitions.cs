@@ -37,19 +37,25 @@ internal sealed partial class LythonRuntime
                     }
                     break;
                 case ExecutableCreateLambda lambda:
-                    using (var storage = _context.MemoryGovernor.ReserveTemporary(256L + 256L * lambda.Parameters.Count, span))
                     {
-                        var captured = CaptureDefinitionInputs(lambda.Parameters.Where(p => p.DefaultValue is not null).Select(p => p.DefaultValue!).ToArray());
-                        var expression = lambda.Expression with
+                        var parameters = lambda.Expression.Parameters;
+                        var count = parameters.Count(parameter => parameter.DefaultValue is not null);
+                        using var storage = ReserveDefaultArgumentsWorkingStorage(count, _context.MemoryGovernor, span);
+                        var first = _stack.Count - count;
+                        PyFunctionBase function;
+                        try
                         {
-                            PreparedParameters = lambda.Parameters.Select(p => p with
+                            var defaults = new Dictionary<string, object>(count, StringComparer.Ordinal);
+                            var slot = first;
+                            foreach (var parameter in parameters)
                             {
-                                DefaultValue = p.DefaultValue is null ? null : captured[p.DefaultValue],
-                            }).ToArray(),
-                        };
-                        RetainPreparedDefinitionStorage(expression.PreparedParameters!, 64L + 160L * lambda.Parameters.Count, span);
-                        PushObserved(asynchronous ? await CreateLoweredLambdaAsync(expression, _context).ConfigureAwait(false)
-                            : CreateLoweredLambda(expression, _context), span);
+                                if (parameter.DefaultValue is not null)
+                                    defaults.Add(parameter.Name, RuntimeValue(_stack[slot++]));
+                            }
+                            function = CreateLambdaFunction(lambda.Expression, parameters, defaults, _context, lambda.CodeObject);
+                        }
+                        finally { _stack.RemoveTail(count); }
+                        PushObserved(function, span);
                     }
                     break;
                 case ExecutableStartClassHeader header:

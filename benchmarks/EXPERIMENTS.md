@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 lambda delivery](results/2026-10-15-executable-lambdas/README.md)
+deletes the separate callable, reuses shared binding/metadata and then compiles
+eligible bodies through the named-function builder/cells. One unchanged stable-sort
+case observed 1.778 -> 1.595 ms, CPython 0.3020 ms, spread 2.4%/3.5%/0.7%:
+10.2% lower median, unqualified. Both roles already contain runtime consolidation;
+the class deletion is unmeasured. No new fixture or repeat capture.
+
 The [2026-10-15 expanded-call delivery](results/2026-10-15-executable-expanded-calls/README.md)
 shares generator call lowering and first fixes argument evaluation for non-callable
 targets. One fixed forwarding-helper diagnostic observed 2.412 -> 2.077 ms,

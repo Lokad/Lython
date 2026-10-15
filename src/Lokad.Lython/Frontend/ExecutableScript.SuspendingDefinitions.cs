@@ -1,7 +1,8 @@
 namespace Lokad.Lython.Frontend;
 
 internal sealed record ExecutableCreateFunction(LoweredFunctionDefinitionStatement Definition, IReadOnlyList<LoweredExpression> Inputs) : ExecutableOperation;
-internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression, IReadOnlyList<LoweredFunctionParameter> Parameters) : ExecutableOperation;
+internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression,
+    ExecutableCodeObject? CodeObject) : ExecutableOperation;
 internal sealed record ExecutableAnnotationsEnabled : ExecutableOperation;
 internal sealed record ExecutableStartClassHeader(int Count) : ExecutableOperation;
 internal sealed record ExecutableCreateClass(LoweredClassDefinitionStatement Definition, bool ExpandedHeader) : ExecutableOperation;
@@ -34,13 +35,13 @@ internal sealed partial class ExecutableScript
             return after;
         }
 
-        private int CompileSuspendingLambda(LoweredLambdaExpression lambda, int block)
+        private int CompileLambda(LoweredLambdaExpression lambda, int block)
         {
-            var parameters = lambda.Lambda.Parameters.Select(p => new LoweredFunctionParameter(p.Name, p.Kind, null,
-                p.DefaultValue is null ? null : LoweredScript.LowerExpression(p.DefaultValue))).ToArray();
-            foreach (var parameter in parameters)
+            foreach (var parameter in lambda.Parameters)
                 if (parameter.DefaultValue is not null) block = CompileExpression(parameter.DefaultValue, block);
-            EmitOperation(new ExecutableCreateLambda(lambda, parameters), lambda.Span, block);
+            var code = CompileFunctionCode("<lambda>", lambda.Parameters, lambda.FunctionBody,
+                lambda.ScopeFacts, lambda.GeneratorCode);
+            EmitOperation(new ExecutableCreateLambda(lambda, code), lambda.Span, block);
             return block;
         }
 

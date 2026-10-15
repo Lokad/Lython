@@ -1,0 +1,25 @@
+{
+  "baselineRevision": "24e6442a7bfbbdae98684b90c96527d5f0ca7fa6",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs": "0493ae153cd5b0001a5a4a83cbde53e3d30309c02e0190b20e016ffb035ff18c",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "f4879b1547731d30184771c8a91a25e4f19844235fe31065a25a1dbe1e0e794d",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "ad65d5c3ac41624baf4de41379f50bd800f49310c9d70d9c0fe4b0d4714c8c30",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs": "1e4f2e6ef6918a549e4dea3d64350b3dd2364b3fb280a0e48955ab2b20d30f63",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingExpressions.cs": "a9ae0902a2402039e1066feda5f64e928ef40d410d2035d19a32e1e2e5f51fe7",
+    "src/Lokad.Lython/Frontend/LoweredExpression.cs": "ba849d51dc8e878b5410fedf7c5f5bc5aabfdfad2aaa5f26ad9aee1b9429b933",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "ec4f4de18a0d19c1d24e434db99ba04131368bc3ba1bd161ad583efc1235da96",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs": "c2011b9337378e28bd6388a22d76d82cfa523c41d6afc9dc4ce37c2004e4b5ca",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Expressions.cs": "5c336cd96aa022e8b1cb10b03786b5c55177e7f0bdcb9106d61feafa0cf80727",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "a2895d47de013002471f2c960e64b84387a3f7270a9d69638b3119b9dcce067b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.Expressions.cs": "b5a3a8416e7876e745d419146732a6df8588762adb5ea2e8f8f5dd88414dcb38"
+  },
+  "sourceArchiveSha256": "55ec72820bef77b16a3d3a9bad059650a5bebc886e3f2cde2f25b76ba7d047b1",
+  "caseId": "lists.stable-sort.medium",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Compile eligible lambda bodies through the shared function builder/cells; remove whole-expression fallback and prepared captured-expression/default clones. Closure array admission now precedes allocation. Both roles already use shared function runtime and omit the duplicate LambdaFunction class.",
+  "normalGCAndTiering": true,
+  "boundary": "Existing warm stable-sort script with lambda key and 2048 tuples, fresh run state, execution/projection and prior-result disposal; compilation/startup/transport/hash excluded.",
+  "stoppingRule": "One fixed existing affected workload after source/semantic gates; no repeat, retuning or new fixture/framework."
+}

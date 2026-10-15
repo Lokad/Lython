@@ -507,7 +507,7 @@ internal sealed partial class LythonRuntime
 
     private static object CreateLoweredLambda(LoweredLambdaExpression lambda, ExecutionContext context)
     {
-        var loweredParameters = LowerLambdaParameters(lambda);
+        var loweredParameters = lambda.Parameters;
         using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
         return CreateLambdaFunction(lambda, loweredParameters,
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)), context);

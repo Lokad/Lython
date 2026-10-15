@@ -119,7 +119,8 @@ internal sealed partial class ExecutableScript
                 _statementFallbacks.Count != 0 ||
                 _functions.Any(function => function.CodeObject is null || function.Function.ReturnAnnotation is not null ||
                     function.Function.Parameters.Any(p => p.Annotation is not null)) ||
-                _functions.Any(function => function.CodeObject?.RequiresLocalVariableMirroring == true);
+                _functions.Any(function => function.CodeObject?.RequiresLocalVariableMirroring == true) ||
+                _constants.OfType<ExecutableCreateLambda>().Any(lambda => lambda.CodeObject is null || lambda.CodeObject.RequiresLocalVariableMirroring);
             var capturedLocalSlots = CollectCapturedLocalSlots();
 
             return new ExecutableCodeObject(
@@ -149,10 +150,6 @@ internal sealed partial class ExecutableScript
 
             int[] CollectCapturedLocalSlots()
             {
-                if (_functions.Count == 0)
-                {
-                    return [];
-                }
                 // No local-index short-circuit here: an intermediate def can own no
                 // locals of its own (nested def names do not bind local slots) while
                 // still needing to forward transitively free names into its closures;
@@ -160,14 +157,15 @@ internal sealed partial class ExecutableScript
 
 
                 var captured = new HashSet<int>();
-                foreach (var function in _functions)
+                foreach (var code in _functions.Select(function => function.CodeObject)
+                    .Concat(_constants.OfType<ExecutableCreateLambda>().Select(lambda => lambda.CodeObject)))
                 {
-                    if (function.CodeObject is null)
+                    if (code is null)
                     {
                         continue;
                     }
 
-                    foreach (var closureName in function.CodeObject.ClosureNames)
+                    foreach (var closureName in code.ClosureNames)
                     {
                         if (_localIndexes.TryGetValue(closureName, out var slot))
                         {

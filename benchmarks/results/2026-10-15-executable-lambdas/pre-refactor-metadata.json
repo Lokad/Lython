@@ -1,0 +1,218 @@
+[
+  {
+    "asynchronous": false,
+    "probes": [
+      {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "<lambda> <lambda> None 3\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1927,
+          "PeakProjectionMemoryBytes": 82,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "<lambda> Holder.<lambda> None 3\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      },
+      {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "<lambda> outer.<locals>.<lambda> 3\nlambda '<lambda>' received too many positional arguments.\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2511,
+          "PeakProjectionMemoryBytes": 218,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "<lambda> outer.<locals>.<lambda> 3\nouter.<locals>.<lambda>() takes from 0 to 1 positional arguments but 2 were given\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      },
+      {
+        "Index": 2,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1296,
+          "PeakProjectionMemoryBytes": 246,
+          "DeniedReservationBytes": 0,
+          "Failure": {
+            "ExceptionType": "AttributeError",
+            "Message": "'function' object has no attribute 'tag' and no __dict__ for setting new attributes",
+            "Span": "line 2, column 1",
+            "Frames": [
+              "<module> (line 2)"
+            ]
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "7 [1] ([1],)\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    ]
+  },
+  {
+    "asynchronous": true,
+    "probes": [
+      {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "<lambda> <lambda> None 3\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1927,
+          "PeakProjectionMemoryBytes": 82,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "<lambda> Holder.<lambda> None 3\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      },
+      {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "<lambda> outer.<locals>.<lambda> 3\nlambda '<lambda>' received too many positional arguments.\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2511,
+          "PeakProjectionMemoryBytes": 218,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "<lambda> outer.<locals>.<lambda> 3\nouter.<locals>.<lambda>() takes from 0 to 1 positional arguments but 2 were given\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      },
+      {
+        "Index": 2,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1296,
+          "PeakProjectionMemoryBytes": 246,
+          "DeniedReservationBytes": 0,
+          "Failure": {
+            "ExceptionType": "AttributeError",
+            "Message": "'function' object has no attribute 'tag' and no __dict__ for setting new attributes",
+            "Span": "line 2, column 1",
+            "Frames": [
+              "<module> (line 2)"
+            ]
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "7 [1] ([1],)\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    ]
+  }
+]

@@ -474,7 +474,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> CreateLoweredLambdaAsync(LoweredLambdaExpression lambda, ExecutionContext context)
     {
-        var loweredParameters = LowerLambdaParameters(lambda);
+        var loweredParameters = lambda.Parameters;
         using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
         return CreateLambdaFunction(lambda, loweredParameters,
             await BuildDefaultArgumentMapAsync(loweredParameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false), context);

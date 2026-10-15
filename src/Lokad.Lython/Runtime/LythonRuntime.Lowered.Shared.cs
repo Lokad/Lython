@@ -830,20 +830,23 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static IReadOnlyList<LoweredFunctionParameter> LowerLambdaParameters(LoweredLambdaExpression lambda)
-        => lambda.PreparedParameters ?? lambda.Parameters;
-
     private static PyFunctionBase CreateLambdaFunction(LoweredLambdaExpression lambda,
-        IReadOnlyList<LoweredFunctionParameter> parameters, Dictionary<string, object> defaults, ExecutionContext context)
+        IReadOnlyList<LoweredFunctionParameter> parameters, Dictionary<string, object> defaults, ExecutionContext context,
+        ExecutableCodeObject? code = null)
     {
+        var cells = code is null ? [] : CaptureExecutableClosures(code, context, lambda.Span);
         ChargeFunctionValue(context, lambda.Span);
         PyFunctionBase function = lambda.GeneratorCode is { } generator
             ? new PyGeneratorFunction("<lambda>", parameters, generator, context.FunctionClosureContext,
-                defaults, lambda.ScopeFacts, callableKind: PythonCallableKind.Lambda)
+                defaults, lambda.ScopeFacts, cells, PythonCallableKind.Lambda)
+            : code is not null
+            ? new PyExecutableFunction("<lambda>", parameters, code, context.FunctionClosureContext,
+                cells, defaults, lambda.ScopeFacts, PythonCallableKind.Lambda)
             : new PyFunction("<lambda>", parameters, lambda.FunctionBody, context.FunctionClosureContext,
                 defaults, lambda.ScopeFacts, PythonCallableKind.Lambda);
         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
-        RetainLocalsForLambda(context.FunctionClosureContext);
+        if (code is null || code.RequiresLocalVariableMirroring)
+            RetainLocalsForLambda(context.FunctionClosureContext);
         return function;
     }
 

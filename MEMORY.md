@@ -68,6 +68,12 @@ admitting output capacity while those parts still exist. Intermediate estimates
 can remain with the finite execution/result owner after a caught formatting or
 join failure. Earlier denial than the incremental lowered builder is possible;
 pending protocol callbacks and escaping text retain the same ownership protection.
+Executable lambdas retain shared closure cells rather than forcing complete local
+namespace mirroring. Cell-array capacity and newly retained cells are admitted
+before allocating the captured array; denied capture publishes no funding marks.
+Lowered bodies and dynamic namespace consumers retain their existing dictionary
+ownership. Lambda metadata now uses ordinary function storage, so small allowances
+can reject at different thresholds; pending users and escaping aliases stay funded.
 
 Host command requests carry the active budget in
 `LythonSubprocessRequest.MemoryBudget`. A cooperating dispatcher borrows it,

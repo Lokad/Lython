@@ -4,6 +4,19 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class LambdaExecutionTests
 {
+    [Fact]
+    public async Task NestedBodiesRespectExistingParserAdmission()
+    {
+        using var admitted = new LythonEngine().Compile("f=" + string.Concat(Enumerable.Repeat("lambda: ", 48)) + "0\nprint(1)");
+        Assert.True(admitted.IsValid);
+        using var result = await admitted.RunAsync(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("1\n", result.StandardOutput);
+        using var refused = new LythonEngine().Compile("f=" + string.Concat(Enumerable.Repeat("lambda: ", 192)) + "0\nprint(1)");
+        Assert.False(refused.IsValid);
+        Assert.Contains(refused.Diagnostics, d => d.Code == "LA0003" && d.Message.Contains("maximum of 64", StringComparison.Ordinal));
+    }
+
     public static TheoryData<string, string> Programs => new()
     {
         { "class Holder:\n method=lambda self,value=3:value\nf=Holder.method\nprint(f.__name__,f.__qualname__,f.__doc__,Holder().method())", "<lambda> Holder.<lambda> None 3\n" },
@@ -17,6 +30,7 @@ public sealed class LambdaExecutionTests
         { "def outer():\n value=1\n f=lambda:value\n value=2\n return f\nprint(outer()())", "2\n" },
         { "def outer():\n value=7\n def middle():\n  return lambda:value\n return middle\nprint(outer()()())", "7\n" },
         { "def make():\n f=lambda value=(yield 'default'):value+1\n yield f\ng=make()\nprint(next(g),g.send(3)(4))", "default 5\n" },
+        { "f=lambda value=1,*,first=2,last=3:(value,first,last)\nprint(f.__defaults__,list(f.__kwdefaults__.items()))\nf.__defaults__=(4,)\nf.__kwdefaults__={'first':5,'last':6}\nprint(f())", "(1,) [('first', 2), ('last', 3)]\n(4, 5, 6)\n" },
     };
 
     [Theory]
@@ -81,6 +95,29 @@ public sealed class LambdaExecutionTests
             using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
         }
         Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task RetainedLambdaAdmissionFailsBeforePublishingOutput()
+    {
+        const string source = "functions=[]\nfor i in range(10000):functions.append(lambda value=i:value)\nwith open('result.txt','w') as output:output.write('published')";
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        var baseline = budget.ReservedBytes;
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var host = new MockLythonHost();
+            host.SeedFile("/result.txt", "before");
+            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                Assert.Equal("before", host.ReadText("/result.txt"));
+                Assert.InRange(result.PeakExecutionMemoryBytes, 1, 131072);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
     }
 
     [Fact]

@@ -29,7 +29,7 @@ internal sealed partial class ExecutableScript
             switch (expression)
             {
                 case LoweredLambdaExpression lambda:
-                    result = CompileSuspendingLambda(lambda, block);
+                    result = CompileLambda(lambda, block);
                     return true;
                 case LoweredFormattedStringExpression formatted:
                     result = CompileFormattedParts(formatted.Parts, formatted.Span, block);

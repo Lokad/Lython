@@ -1,0 +1,6 @@
+{
+  "depth": 192,
+  "exitCode": 1,
+  "stdout": "{\"Index\":0,\"Lython\":{\"Success\":false,\"StandardOutput\":\"\",\"StandardError\":\"\",\"ExitCode\":1,\"Diagnostics\":[{\"Code\":\"LA0003\",\"Message\":\"Syntax nesting exceeds the maximum of 64 levels.\"}],\"PeakExecutionMemoryBytes\":0,\"PeakProjectionMemoryBytes\":0,\"DeniedReservationBytes\":0,\"Failure\":null},\"CPython\":null,\"Matches\":true,\"Note\":null,\"Compared\":false,\"Options\":{\"MaxMemoryBytes\":null,\"Async\":false}}\n",
+  "stderr": ""
+}

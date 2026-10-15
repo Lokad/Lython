@@ -309,7 +309,6 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     public IReadOnlyList<LoweredStatement> FunctionBody { get; }
     public ScopeDirectiveFacts ScopeFacts { get; }
     public override ExpressionSyntax Syntax => Lambda;
-    public IReadOnlyList<LoweredFunctionParameter>? PreparedParameters { get; init; }
     public ExecutableCodeObject? GeneratorCode { get; }
 }
 

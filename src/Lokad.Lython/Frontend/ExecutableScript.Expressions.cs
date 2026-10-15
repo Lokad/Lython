@@ -33,6 +33,9 @@ internal sealed partial class ExecutableScript
                 case LoweredFormattedStringExpression formatted:
                     return CompileFormattedParts(formatted.Parts, formatted.Span, currentBlock);
 
+                case LoweredLambdaExpression lambda:
+                    return CompileLambda(lambda, currentBlock);
+
                 case LoweredBytesLiteralExpression bytes:
                     AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(new PyBytes(bytes.Literal.Value.ToArray())), bytes.Span));
                     return currentBlock;

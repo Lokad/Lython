@@ -1,0 +1,6 @@
+{
+  "depth": 48,
+  "exitCode": 0,
+  "stdout": "{\"Index\":0,\"Lython\":{\"Success\":true,\"StandardOutput\":\"1\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":945,\"PeakProjectionMemoryBytes\":36,\"DeniedReservationBytes\":0,\"Failure\":null},\"CPython\":null,\"Matches\":true,\"Note\":null,\"Compared\":false,\"Options\":{\"MaxMemoryBytes\":null,\"Async\":false}}\n",
+  "stderr": ""
+}

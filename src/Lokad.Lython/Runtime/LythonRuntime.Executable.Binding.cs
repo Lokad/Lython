@@ -596,10 +596,8 @@ internal sealed partial class LythonRuntime
         }
 
         var frame = context.CurrentExecutableFrame;
-        var cells = new ExecutableCell[codeObject.ClosureNames.Count];
-        for (var i = 0; i < codeObject.ClosureNames.Count; i++)
+        ExecutableCell Resolve(string name)
         {
-            var name = codeObject.ClosureNames[i];
             ExecutableCell? cell = null;
             if (frame?.TryGetCell(name, out cell) != true &&
                 !(name == "__class__" && context.TryGetLexicalClassCell(out cell)))
@@ -607,7 +605,7 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.NameNotDefined(name, span);
             }
 
-            cells[i] = cell.RequireNotNull();
+            return cell.RequireNotNull();
         }
 
         // MG11: captured cells outlive the invocation frame through the new
@@ -615,9 +613,9 @@ internal sealed partial class LythonRuntime
         // owned here. Marks commit after the charge, so a tripped attempt pays
         // nothing and a retry fails closed again instead of slipping through.
         var uncharged = 0;
-        foreach (var cell in cells)
+        foreach (var name in codeObject.ClosureNames)
         {
-            if (!cell.RetentionCharged)
+            if (!Resolve(name).RetentionCharged)
             {
                 uncharged++;
             }
@@ -625,17 +623,24 @@ internal sealed partial class LythonRuntime
 
         var retainedBytes = checked(
             ExecutableCellsArrayBaseBytes +
-            ExecutableCellsArraySlotBytes * (long)cells.Length +
+            ExecutableCellsArraySlotBytes * (long)codeObject.ClosureNames.Count +
             48L * uncharged);
         context.MemoryGovernor.Reserve(retainedBytes, span);
         context.MemoryGovernor.Commit(retainedBytes);
-        // The captured array stays charged to this execution owner.
-        foreach (var cell in cells)
+        try
         {
-            cell.RetentionCharged = true;
+            var cells = new ExecutableCell[codeObject.ClosureNames.Count];
+            for (var i = 0; i < cells.Length; i++) cells[i] = Resolve(codeObject.ClosureNames[i]);
+            // Resolve has no callbacks or mutation, so admission precedes the
+            // array allocation and these marks publish only a completed capture.
+            foreach (var cell in cells) cell.RetentionCharged = true;
+            return cells;
         }
-
-        return cells;
+        catch
+        {
+            context.MemoryGovernor.Release(retainedBytes);
+            throw;
+        }
     }
 
     // Lambdas resolve free names by walking parent Variables, but executable

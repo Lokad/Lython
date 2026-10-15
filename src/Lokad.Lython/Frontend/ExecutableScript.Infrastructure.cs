@@ -399,23 +399,9 @@ internal sealed partial class ExecutableScript
         {
             if (_generator && StatementSyntaxTraversal.EnumerateDirectExpressions(functionDefinition.Syntax).Any(GeneratorSyntaxFacts.ContainsYield))
                 throw new GeneratorLoweringException("Suspension in nested definition decorators, defaults or annotations is not supported.", functionDefinition.Span);
-            ExecutableCodeObject? codeObject;
-            try
-            {
-                codeObject = functionDefinition.GeneratorCode ?? new Builder(
-                    functionDefinition.Parameters,
-                    // Forward our own candidates downward: a nested def only sees the names its
-                    // parent captured or owns at build time, so without our candidates a
-                    // transitively free name falls back to a global load and dies once the
-                    // definers return. Module functions keep null (globals resolve correctly).
-                    _functionParameters is null ? null : _locals.Concat(_closures).Concat(_parentClosureCandidates).Except(_scopeFacts.GlobalNames, StringComparer.Ordinal),
-                    ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax))
-                    .CompileCodeObject(functionDefinition.Syntax.DeclaredName, functionDefinition.Body);
-            }
-            catch (ExecutableLoweringFallbackException)
-            {
-                codeObject = null;
-            }
+            var codeObject = CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
+                functionDefinition.Parameters, functionDefinition.Body,
+                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax), functionDefinition.GeneratorCode);
 
             var defaultValues = functionDefinition.Parameters
                 .Where(parameter => parameter.DefaultValue is not null)
@@ -426,6 +412,28 @@ internal sealed partial class ExecutableScript
 
             _functions.Add(new ExecutableFunctionBinding(functionDefinition, codeObject, defaultValues));
             return _functions.Count - 1;
+        }
+
+        private ExecutableCodeObject? CompileFunctionCode(string name,
+            IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body,
+            ScopeDirectiveFacts scopeFacts, ExecutableCodeObject? generatorCode)
+        {
+            try
+            {
+                return generatorCode ?? new Builder(
+                    parameters,
+                    // Forward our own candidates downward: a nested def only sees the names its
+                    // parent captured or owns at build time, so without our candidates a
+                    // transitively free name falls back to a global load and dies once the
+                    // definers return. Module functions keep null (globals resolve correctly).
+                    _functionParameters is null ? null : _locals.Concat(_closures).Concat(_parentClosureCandidates).Except(_scopeFacts.GlobalNames, StringComparer.Ordinal),
+                    scopeFacts)
+                    .CompileCodeObject(name, body);
+            }
+            catch (ExecutableLoweringFallbackException)
+            {
+                return null;
+            }
         }
 
         private int InternMatchCase(MatchCaseSyntax matchCase)

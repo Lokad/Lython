@@ -1,0 +1,65 @@
+{
+  "python": "CPython 3.13.2",
+  "checks": [
+    {
+      "source": "class Holder:\n method=lambda self,value=3:value\nf=Holder.method\nprint(f.__name__,f.__qualname__,f.__doc__,Holder().method())",
+      "expected": "<lambda> Holder.<lambda> None 3\n",
+      "stdout": "<lambda> Holder.<lambda> None 3\n"
+    },
+    {
+      "source": "f=lambda value=[]:value\nf.tag=7\nf().append(1)\nprint(f.tag,f(),f.__defaults__)",
+      "expected": "7 [1] ([1],)\n",
+      "stdout": "7 [1] ([1],)\n"
+    },
+    {
+      "source": "events=[]\ndef default():\n events.append('default')\n return []\nf=lambda value=default():value\nf().append(1)\nprint(f(),events,f.__defaults__)",
+      "expected": "[1] ['default'] ([1],)\n",
+      "stdout": "[1] ['default'] ([1],)\n"
+    },
+    {
+      "source": "def outer(value):\n return lambda step:lambda:value+step\nf=outer(3)(4)\nprint(f(),f.__qualname__)",
+      "expected": "7 outer.<locals>.<lambda>.<locals>.<lambda>\n",
+      "stdout": "7 outer.<locals>.<lambda>.<locals>.<lambda>\n"
+    },
+    {
+      "source": "f=lambda value:((local:=value+1),locals()['local'])\nprint(f(3))",
+      "expected": "(4, 4)\n",
+      "stdout": "(4, 4)\n"
+    },
+    {
+      "source": "class Base:\n def value(self): return 3\nclass Child(Base):\n value=lambda self:super().value()+1\nprint(Child().value())",
+      "expected": "4\n",
+      "stdout": "4\n"
+    },
+    {
+      "source": "value=9\nclass Holder:\n value=2\n method=lambda self:value\nprint(Holder().method())",
+      "expected": "9\n",
+      "stdout": "9\n"
+    },
+    {
+      "source": "f=lambda value=3:(yield value)\ng=f()\nprint(next(g))\ntry:g.send(7)\nexcept StopIteration as done:print(done.value)",
+      "expected": "3\n7\n",
+      "stdout": "3\n7\n"
+    },
+    {
+      "source": "def outer():\n value=1\n f=lambda:value\n value=2\n return f\nprint(outer()())",
+      "expected": "2\n",
+      "stdout": "2\n"
+    },
+    {
+      "source": "def outer():\n value=7\n def middle():\n  return lambda:value\n return middle\nprint(outer()()())",
+      "expected": "7\n",
+      "stdout": "7\n"
+    },
+    {
+      "source": "def make():\n f=lambda value=(yield 'default'):value+1\n yield f\ng=make()\nprint(next(g),g.send(3)(4))",
+      "expected": "default 5\n",
+      "stdout": "default 5\n"
+    },
+    {
+      "source": "f=lambda value=1,*,first=2,last=3:(value,first,last)\nprint(f.__defaults__,list(f.__kwdefaults__.items()))\nf.__defaults__=(4,)\nf.__kwdefaults__={'first':5,'last':6}\nprint(f())",
+      "expected": "(1,) [('first', 2), ('last', 3)]\n(4, 5, 6)\n",
+      "stdout": "(1,) [('first', 2), ('last', 3)]\n(4, 5, 6)\n"
+    }
+  ]
+}

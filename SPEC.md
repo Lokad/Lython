@@ -251,6 +251,17 @@ Existing operation checkpoints can change explicit fuel thresholds from the
 lowered route. Accumulator storage and its final array overlap are admitted
 before allocation and released after invocation or failed/cancelled expansion;
 retained argument aliases keep their surviving execution/result ownership.
+Lambdas share ordinary function binding, metadata and invocation, including the
+existing generator function representation. Their lambda-specific argument error
+labels remain. In executable enclosing code, defaults and eligible bodies use
+compiled instructions and shared closure cells; remaining expression fallbacks
+still require namespace mirroring. Required lowered/class-suite routes remain.
+Defaults are evaluated once at definition, including actual host suspension or
+generator yields. Shared metadata supports class-qualified names and custom
+attribute writes; arbitrary custom-attribute deletion remains unsupported by the
+shared function implementation. Added return/creation checkpoints can change
+explicit fuel thresholds; conservative metadata/capture admission can reject
+earlier. Compilation and runtime managed stack policies are unchanged.
 Guest-visible Python exception shells have a conservative160-byte estimate.
 Rebinding or rethrowing an alias does not allocate another shell. Execution owners
 retain admitted guest storage conservatively until their finite batch ends;
