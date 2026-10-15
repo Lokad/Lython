@@ -6,6 +6,7 @@ public sealed class SubscriptIndexProtocolTests
 {
     public static TheoryData<string, string> Programs => new()
     {
+        { "for value in (None,'bad',1.5):\n class Index:\n  def __index__(self): return value\n try: print([0][Index()])\n except TypeError as error: print(str(error))", "__index__ returned non-int (type NoneType)\n__index__ returned non-int (type str)\n__index__ returned non-int (type float)\n" },
         { "class Index: pass\nkey=Index()\nkey.__index__=lambda:0\ntry: print([10,20][key])\nexcept TypeError: print('type-only')", "type-only\n" },
         { "class Index:\n __index__=None\ntry: print([10,20][Index()])\nexcept TypeError: print('not-callable')", "not-callable\n" },
         { "class Index:\n def __index__(self): return 'bad'\ntry: print([10,20][Index()])\nexcept TypeError: print('non-int')", "non-int\n" },

@@ -66,3 +66,15 @@ assertion was relaxed. No collector, forced GC, native shortcut, second indexing
 implementation or configuration is added. Exact package/platform qualification
 is recorded at delivery; original Stress and full local public suites were not
 rerun. The broader AP02 operation-coverage work remains partial.
+
+Full CI38825310166 caught an existing error-text contract outside the focused
+group: the shared converter omitted the returned Python type in invalid-index
+errors. The regression is reproduced locally; a follow-up restores the type name
+and checks None/string/float results in both APIs. All 143 expanded focused public
+checks pass, with one additional independent CPython program.
+[Post-label evidence](post-label-validation.json) and [golden](post-label-goldens.json)
+are separate from the original validation. This one additional resolution-source
+change is **unmeasured**; the frozen dispatch file is unchanged. Original CI/log,
+failing receipt and timing remain preserved. No assertion relaxation or timing
+repeat. Final HEAD therefore includes this declared follow-up beyond the timed
+candidate; exact package/platform qualification is checked again at delivery.

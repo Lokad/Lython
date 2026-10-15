@@ -1,0 +1,11 @@
+{
+  "python": "CPython 3.13.2",
+  "checks": [
+    {
+      "source": "for value in (None,'bad',1.5):\n class Index:\n  def __index__(self): return value\n try: print([0][Index()])\n except TypeError as error: print(str(error))",
+      "expected": "__index__ returned non-int (type NoneType)\n__index__ returned non-int (type str)\n__index__ returned non-int (type float)\n",
+      "stdout": "__index__ returned non-int (type NoneType)\n__index__ returned non-int (type str)\n__index__ returned non-int (type float)\n"
+    }
+  ],
+  "priorIndependentPrograms": 11
+}
