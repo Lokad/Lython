@@ -1,0 +1,126 @@
+{
+  "groupsOverlap": true,
+  "groups": [
+    {
+      "stage": "starred-list-full-white",
+      "filter": "Category!=Stress",
+      "assemblySha256": "0BFFEFA2CA3E2F655451D847A276A9E649CEE4CEE6B3C98FE4CEBFE620949089",
+      "counters": {
+        "total": "2310",
+        "executed": "2310",
+        "passed": "2310",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 13893
+    },
+    {
+      "stage": "starred-list-final-focused-white",
+      "filter": "FullyQualifiedName~StarredListExecutableTests",
+      "assemblySha256": "0BFFEFA2CA3E2F655451D847A276A9E649CEE4CEE6B3C98FE4CEBFE620949089",
+      "counters": {
+        "total": "4",
+        "executed": "4",
+        "passed": "4",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 1156
+    },
+    {
+      "stage": "starred-list-final-focused-public",
+      "filter": "FullyQualifiedName~StarredListExecutionTests",
+      "assemblySha256": "5BE36F18DC74AFDAE2161AF67C8CA446919B79688B113E9C0CD1AF43FDE791B1",
+      "counters": {
+        "total": "12",
+        "executed": "12",
+        "passed": "12",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 2199
+    },
+    {
+      "stage": "starred-list-semantic-public",
+      "filter": "(FullyQualifiedName~StarredList|FullyQualifiedName~Generator|FullyQualifiedName~CollectionDisplay|FullyQualifiedName~ScopeDirective|FullyQualifiedName~Unpacking|FullyQualifiedName~Locals)&Category!=Stress",
+      "assemblySha256": "5BE36F18DC74AFDAE2161AF67C8CA446919B79688B113E9C0CD1AF43FDE791B1",
+      "counters": {
+        "total": "339",
+        "executed": "339",
+        "passed": "339",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 4683
+    },
+    {
+      "stage": "starred-list-governed-public",
+      "filter": "(FullyQualifiedName~Governed|FullyQualifiedName~Representative|FullyQualifiedName~ComparisonFileWorkerTests)&Category!=Stress",
+      "assemblySha256": "5BE36F18DC74AFDAE2161AF67C8CA446919B79688B113E9C0CD1AF43FDE791B1",
+      "counters": {
+        "total": "284",
+        "executed": "284",
+        "passed": "284",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 15024
+    }
+  ],
+  "note": "Baseline structural test failed as intended. First public denial case incorrectly assumed post-exhaustion allocation for printing; failure preserved privately. Replaced with direct target-state white check and public unchanged-file/refund checks, without changing budgets, timeouts or runtime protection. No local full-public/original Stress rerun."
+}

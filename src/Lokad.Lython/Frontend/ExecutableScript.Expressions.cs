@@ -77,8 +77,7 @@ internal sealed partial class ExecutableScript
                 case LoweredListLiteralExpression list:
                     if (list.List.HasUnpacking)
                     {
-                        AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(list), list.Span));
-                        return currentBlock;
+                        return CompileDisplay(list.Items, ExecutableDisplayKind.List, list.Span, currentBlock);
                     }
 
                     foreach (var item in list.Items)

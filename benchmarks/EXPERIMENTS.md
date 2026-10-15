@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 ordinary starred-list lowering](results/2026-10-15-starred-list-executable/README.md)
+reuses existing generator display operations, removing one real expression
+fallback and associated local mirroring without runtime changes. One shared
+helper diagnostic observed2.664 ->2.179ms, CPython0.3541ms; spread1.3%/0.7%/0.3%.
+No qualified multiplier, complete-job claim or rerun of rejected comprehensions.
+
 The [2026-10-15 fresh configuration job](results/2026-10-15-config-fresh/README.md)
 compiles once and edits/publishes one JSON file per invocation in an already-running
 host. Two identical654b4f5a Lython controls gave2.817-3.142ms, CPython1.572ms;

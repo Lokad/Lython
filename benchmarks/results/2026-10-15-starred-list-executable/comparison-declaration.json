@@ -1,0 +1,16 @@
+{
+  "baselineRevision": "8f290b57675f9bbff5cb704bfc96d332f1baaa1f",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "e5b080f066c3c051157854c2386c35684809448208a97d230cd77fb210ddae57",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingExpressions.cs": "69fb5bd8dc3236fe3457dcbaf7d0a333fe8a78da37b8c681031ae100d3cb6012"
+  },
+  "sourceArchiveSha256": "02332d7c14cd90a706a7b3f4ac901bcd1fbba7b5c0ab771ab4d7c6d2cbdd0fca",
+  "caseId": "lists.starred-merge.medium",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Reuse generator display lowering for ordinary starred lists; remove their expression fallback and resulting local mirroring; no runtime changes or new opcodes.",
+  "normalGCAndTiering": true,
+  "boundary": "Already compiled helper/list merge job, fresh per-run state, execution/projection and prior-result disposal; compilation/startup/transport/hash excluded.",
+  "stoppingRule": "One fixed affected helper job after source gates/focused checks. Preserve all samples; no retuning or repeat of rejected comprehension producers."
+}

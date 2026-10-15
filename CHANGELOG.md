@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile ordinary starred-list displays with the existing generator display operations, removing their expression fallback and unnecessary local mirroring. Preserve interleaved evaluation, async iteration, cancellation, admission and alias funding. Explicit fuel now uses those existing per-item checkpoints.
+
 - Await reflected augmented methods for builtin Boolean, integer, float, complex and decimal values, including host integer representations. Preserve cancellation and complex/matrix augmented error tokens when reflected methods decline.
 
 - Add a complete JSON configuration read/edit/write workload with independent files, replay and cancelled-publication checks. Both comparison workers allow exact input/output path overwrites while retaining path, collision and fixture bounds.

@@ -45,13 +45,13 @@ internal sealed partial class ExecutableScript
                     EmitOperation(new ExecutableFinishCall(call.Target.Span), call.Span, result);
                     return true;
                 case LoweredListLiteralExpression list when list.List.HasUnpacking:
-                    result = CompileSuspendingDisplay(list.Items, ExecutableDisplayKind.List, list.Span, block);
+                    result = CompileDisplay(list.Items, ExecutableDisplayKind.List, list.Span, block);
                     return true;
                 case LoweredTupleLiteralExpression tuple when tuple.Tuple.HasUnpacking:
-                    result = CompileSuspendingDisplay(tuple.Items, ExecutableDisplayKind.Tuple, tuple.Span, block);
+                    result = CompileDisplay(tuple.Items, ExecutableDisplayKind.Tuple, tuple.Span, block);
                     return true;
                 case LoweredSetLiteralExpression set when set.Set.HasUnpacking:
-                    result = CompileSuspendingDisplay(set.Items, ExecutableDisplayKind.Set, set.Span, block);
+                    result = CompileDisplay(set.Items, ExecutableDisplayKind.Set, set.Span, block);
                     return true;
                 case LoweredDictLiteralExpression dict when dict.Items.Any(i => i.IsUnpacking):
                     EmitOperation(new ExecutableStartDisplay(ExecutableDisplayKind.Dictionary), dict.Span, result);
@@ -97,7 +97,7 @@ internal sealed partial class ExecutableScript
             return block;
         }
 
-        private int CompileSuspendingDisplay(IReadOnlyList<LoweredCollectionDisplayItem> items, ExecutableDisplayKind kind, LythonSourceSpan span, int block)
+        private int CompileDisplay(IReadOnlyList<LoweredCollectionDisplayItem> items, ExecutableDisplayKind kind, LythonSourceSpan span, int block)
         {
             EmitOperation(new ExecutableStartDisplay(kind), span, block);
             foreach (var item in items)

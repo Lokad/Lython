@@ -224,6 +224,10 @@ rejection, failed runtime admission and manually constructed public-factory
 results have no snapshot. This adds no always-on instruction counting, resource
 ledger or deadline watchdog; cooperative cancellation and separate execution/
 projection memory accounting keep their existing contracts.
+Ordinary starred-list displays use the same incremental executable display
+operations as yielding generators. Expressions and starred iteration interleave
+in source order. The existing per-item checkpoints remain active; explicit fuel
+consumption can therefore differ from the previous lowered-expression route.
 Guest-visible Python exception shells have a conservative160-byte estimate.
 Rebinding or rethrowing an alias does not allocate another shell. Execution owners
 retain admitted guest storage conservatively until their finite batch ends;
