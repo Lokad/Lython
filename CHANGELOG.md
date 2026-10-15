@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Share lambda binding, metadata, invocation and generator handling with the existing function classes, deleting the separate lambda callable. Prepare parameters/scope facts once; class lambdas keep their qualified name and support the shared function attribute writes.
+- Share lambda binding, metadata, invocation and generator handling with the existing function classes, deleting the separate lambda callable. Prepare parameters/scope facts once; preserve the shared immutable lambda-name label, while class lambdas keep their qualified name and support the shared function attribute writes.
 
 - Compile lambda bodies/defaults through the shared function compiler and closure cells, removing ordinary lambda fallbacks and prepared captured-expression/default clones. Preserve lowered body fallbacks where needed, actual suspension, alias funding and managed admission. Admit closure-array storage before allocating it.
 

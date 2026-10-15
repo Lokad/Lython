@@ -5,6 +5,7 @@ namespace Lokad.Lython.Runtime;
 
 internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes
 {
+    private static readonly PyString LambdaName = PyString.FromString("<lambda>");
 
     private readonly FunctionBindingPlan _bindingPlan;
     private readonly LythonRuntime.ExecutionContext _closure;
@@ -36,7 +37,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         Name = name;
         _closure = closure;
         _memoryGovernor = closure.MemoryGovernor;
-        _nameValue = PyString.FromString(name, closure.MemoryGovernor, null);
+        _nameValue = callableKind == PythonCallableKind.Lambda
+            ? LambdaName : PyString.FromString(name, closure.MemoryGovernor, null);
         _bindingPlan = new FunctionBindingPlan(name, callableKind, parameters, defaultValues, closure);
         _scopeFacts = scopeFacts;
     }

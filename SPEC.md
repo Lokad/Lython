@@ -253,8 +253,9 @@ before allocation and released after invocation or failed/cancelled expansion;
 retained argument aliases keep their surviving execution/result ownership.
 Lambdas share ordinary function binding, metadata and invocation, including the
 existing generator function representation. Their lambda-specific argument error
-labels remain. In executable enclosing code, defaults and eligible bodies use
-compiled instructions and shared closure cells; remaining expression fallbacks
+labels and the existing shared immutable `<lambda>` name label remain.
+In executable enclosing code, defaults and eligible bodies use compiled
+instructions and shared closure cells; remaining expression fallbacks
 still require namespace mirroring. Required lowered/class-suite routes remain.
 Defaults are evaluated once at definition, including actual host suspension or
 generator yields. Shared metadata supports class-qualified names and custom

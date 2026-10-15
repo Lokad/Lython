@@ -17,6 +17,13 @@ their retained charges are removed. Closure-array admission now precedes array
 allocation, with rollback and funding marks published only after complete capture.
 No callable ABI, owner, iterator or scope-analysis framework is added.
 
+Full Windows/Ubuntu qualification on 0e0c53e1 caught one regression: the shared
+immutable lambda-name label had become per-function storage. The follow-up
+restores that fixed label in PyFunctionBase; the duplicate callable stays deleted.
+[24 focused regressions](post-label-validation.json) pass, including the existing
+cross-lambda identity control. This fix follows the frozen timing candidate and
+is unmeasured; the diagnostic does not describe the final qualified HEAD.
+
 Eligible lambda bodies execute instructions. Unsupported child expressions still
 use their own fallbacks; class suites/required lowered bodies remain lowered.
 Comprehensions are not made executable by this change. The existing dictionary
