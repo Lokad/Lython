@@ -996,14 +996,14 @@ internal sealed partial class LythonRuntime
     {
         // Async twin of the fallback drain above: known mappings stay on the
         // shared pure-memory path while arbitrary iterables await each pull.
-        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-        if (TryCountKnownMapping(counter, source, span, context, subtract))
+        using (PyStructuralGuard.PushAmbient(context, span))
         {
-            return;
+            if (TryCountKnownMapping(counter, source, span, context, subtract)) return;
         }
 
         await foreach (var item in ToSequenceAsync(source, span, context).ConfigureAwait(false))
         {
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             counter.Increment(RuntimeValue(item),subtract ? -BigInteger.One : BigInteger.One,span);
             context.ObserveCollectionCount(counter.Count, span);
         }

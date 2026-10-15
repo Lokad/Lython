@@ -253,7 +253,6 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "set(iterable) expects one argument.", span);
         }
 
-        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         return await SetMembers.MaterializeSetAsync(arguments[0], span, context).ConfigureAwait(false);
     }
 
@@ -543,15 +542,15 @@ internal sealed partial class LythonRuntime
         // pure-memory path; arbitrary pair streams await each pull while pair
         // validation reuses the same bounded sync checks over materialized
         // pair values.
-        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-        if (TryUpdateFromKnownMapping(target, source, span, context))
+        using (PyStructuralGuard.PushAmbient(context, span))
         {
-            return;
+            if (TryUpdateFromKnownMapping(target, source, span, context)) return;
         }
 
         var elementIndex = 0;
         await foreach (var pair in ToSequenceAsync(source, span, context).ConfigureAwait(false))
         {
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             ReadUpdatePair(pair, elementIndex, context, span, out var key, out var elementValue);
             target.SetItem(ValidateDictionaryKey(key, span), elementValue);
             elementIndex++;

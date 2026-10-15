@@ -989,6 +989,7 @@ internal sealed partial class LythonRuntime
             {
                 await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
                 {
+                    using var ambient = PyStructuralGuard.PushAmbient(context, span);
                     result.Add(ValidateSetItem(item, span));
                     context.ObserveCollectionCount(result.Count, span);
                 }
