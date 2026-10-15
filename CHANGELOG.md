@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Await user-instance augmented numeric methods and exact-integer reflected fallbacks under `RunAsync`, preserving in-place/ordinary/reflected order, augmented error tokens and cancellation. Share the existing operator mappings instead of restricting asynchronous dispatch to addition.
+
 - Sum exact immutable bytes with a machine-integer subtotal and one preflighted exact-integer result, removing per-byte boxes/iteration adapters. Preserve empty/start aliases, integer promotion, terminal fuel checks, native ownership and dynamic async fallbacks.
 
 - Forward validated JSON value reads directly to the existing parser ValueTask, removing a redundant async state machine while preserving callbacks, errors and owned-input cleanup.

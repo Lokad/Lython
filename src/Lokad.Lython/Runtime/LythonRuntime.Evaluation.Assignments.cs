@@ -740,22 +740,7 @@ internal sealed partial class LythonRuntime
             return AddExactIntegers(leftInteger, rightInteger, context, span);
 
         if (op == AugmentedAssignmentOperatorSyntax.MatrixMultiply) return EvaluateMatrixInPlaceAsync(currentValue, right, context, span, false).GetAwaiter().GetResult();
-        var inPlaceMethod = op switch
-        {
-            AugmentedAssignmentOperatorSyntax.Add => "__iadd__",
-            AugmentedAssignmentOperatorSyntax.Subtract => "__isub__",
-            AugmentedAssignmentOperatorSyntax.Multiply => "__imul__",
-            AugmentedAssignmentOperatorSyntax.Divide => "__itruediv__",
-            AugmentedAssignmentOperatorSyntax.FloorDivide => "__ifloordiv__",
-            AugmentedAssignmentOperatorSyntax.Modulo => "__imod__",
-            AugmentedAssignmentOperatorSyntax.Power => "__ipow__",
-            AugmentedAssignmentOperatorSyntax.BitwiseOr => "__ior__",
-            AugmentedAssignmentOperatorSyntax.BitwiseXor => "__ixor__",
-            AugmentedAssignmentOperatorSyntax.BitwiseAnd => "__iand__",
-            AugmentedAssignmentOperatorSyntax.LeftShift => "__ilshift__",
-            AugmentedAssignmentOperatorSyntax.RightShift => "__irshift__",
-            _ => null,
-        };
+        var inPlaceMethod = AugmentedInPlaceMethod(op);
         if (inPlaceMethod is not null &&
             TryInvokeBinarySpecialMethod(currentValue, inPlaceMethod, right, context, span, out var inPlaceResult) &&
             inPlaceResult is not PyNotImplemented)
@@ -874,7 +859,33 @@ internal sealed partial class LythonRuntime
         // A missing or declining in-place slot falls back to ordinary binary
         // protocols, including reflected/subclass precedence. Keep the final
         // builtin funnel below so unsupported operands still name the += token.
-        var binaryOperator = op switch
+        var binaryOperator = AugmentedBinaryOperator(op);
+        if (TryEvaluateNumericProtocol(binaryOperator, currentValue, right, context, span, out var fallbackResult))
+            return fallbackResult;
+
+        return EvaluateAugmentedBuiltin(currentValue, right, op, context, span);
+    }
+
+    private static string? AugmentedInPlaceMethod(AugmentedAssignmentOperatorSyntax op)
+        => op switch
+        {
+            AugmentedAssignmentOperatorSyntax.Add => "__iadd__",
+            AugmentedAssignmentOperatorSyntax.Subtract => "__isub__",
+            AugmentedAssignmentOperatorSyntax.Multiply => "__imul__",
+            AugmentedAssignmentOperatorSyntax.Divide => "__itruediv__",
+            AugmentedAssignmentOperatorSyntax.FloorDivide => "__ifloordiv__",
+            AugmentedAssignmentOperatorSyntax.Modulo => "__imod__",
+            AugmentedAssignmentOperatorSyntax.Power => "__ipow__",
+            AugmentedAssignmentOperatorSyntax.BitwiseOr => "__ior__",
+            AugmentedAssignmentOperatorSyntax.BitwiseXor => "__ixor__",
+            AugmentedAssignmentOperatorSyntax.BitwiseAnd => "__iand__",
+            AugmentedAssignmentOperatorSyntax.LeftShift => "__ilshift__",
+            AugmentedAssignmentOperatorSyntax.RightShift => "__irshift__",
+            _ => null,
+        };
+
+    private static BinaryOperatorSyntax AugmentedBinaryOperator(AugmentedAssignmentOperatorSyntax op)
+        => op switch
         {
             AugmentedAssignmentOperatorSyntax.Add => BinaryOperatorSyntax.Add,
             AugmentedAssignmentOperatorSyntax.Subtract => BinaryOperatorSyntax.Subtract,
@@ -890,10 +901,10 @@ internal sealed partial class LythonRuntime
             AugmentedAssignmentOperatorSyntax.RightShift => BinaryOperatorSyntax.RightShift,
             _ => throw new InvalidOperationException($"Unsupported augmented assignment operator: {op}")
         };
-        if (TryEvaluateNumericProtocol(binaryOperator, currentValue, right, context, span, out var fallbackResult))
-            return fallbackResult;
 
-        return op switch
+    private static object EvaluateAugmentedBuiltin(object currentValue, object right,
+        AugmentedAssignmentOperatorSyntax op, ExecutionContext context, LythonSourceSpan span)
+        => op switch
         {
             AugmentedAssignmentOperatorSyntax.Add => EvaluateAdd(currentValue, right, context, span, "+="),
             AugmentedAssignmentOperatorSyntax.Subtract => EvaluateSubtract(currentValue, right, context, span, "-="),
@@ -909,7 +920,6 @@ internal sealed partial class LythonRuntime
             AugmentedAssignmentOperatorSyntax.RightShift => EvaluateRightShift(currentValue, right, context, span, ">>="),
             _ => throw new InvalidOperationException($"Unsupported augmented assignment operator: {op}")
         };
-    }
 
     private static async ValueTask<object> EvaluateAugmentedAssignmentAsync(
         object currentValue,
@@ -919,16 +929,16 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
     {
         if (op == AugmentedAssignmentOperatorSyntax.MatrixMultiply) return await EvaluateMatrixInPlaceAsync(currentValue, right, context, span, true).ConfigureAwait(false);
-        if (op == AugmentedAssignmentOperatorSyntax.Add && currentValue is PyInstance)
+        if (currentValue is PyInstance)
         {
-            var inPlace = await InvokeBinarySpecialMethodAsync(currentValue, "__iadd__", right, context, span).ConfigureAwait(false);
+            var inPlace = await InvokeBinarySpecialMethodAsync(currentValue, AugmentedInPlaceMethod(op)!, right, context, span).ConfigureAwait(false);
             if (inPlace.Kind == SpecialMethodInvocationKind.Invoked && inPlace.Value is not PyNotImplemented)
                 return inPlace.Value;
-            return await EvaluateAugmentedAddProtocolFallbackAsync(currentValue, right, context, span).ConfigureAwait(false);
+            return await EvaluateAugmentedProtocolFallbackAsync(currentValue, right, op, context, span).ConfigureAwait(false);
         }
         // Async twin covering the in-place drains whose sources can suspend
-        // (list/deque extension, dict-family staged merges). User addition slots
-        // use the async protocol path; remaining shapes retain existing handling.
+        // (list/deque extension, dict-family staged merges). User instance slots
+        // use the async protocol path; builtin mutation branches retain their order.
         if (op == AugmentedAssignmentOperatorSyntax.Add &&
             currentValue is PyList currentList)
         {
@@ -992,16 +1002,16 @@ internal sealed partial class LythonRuntime
             return currentChain;
         }
 
-        if (op == AugmentedAssignmentOperatorSyntax.Add && right is PyInstance)
-            return await EvaluateAugmentedAddProtocolFallbackAsync(currentValue, right, context, span).ConfigureAwait(false);
+        if (right is PyInstance && (op == AugmentedAssignmentOperatorSyntax.Add || currentValue is BigInteger))
+            return await EvaluateAugmentedProtocolFallbackAsync(currentValue, right, op, context, span).ConfigureAwait(false);
         return EvaluateAugmentedAssignment(currentValue, right, op, context, span);
     }
 
-    private static async ValueTask<object> EvaluateAugmentedAddProtocolFallbackAsync(
-        object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask<object> EvaluateAugmentedProtocolFallbackAsync(
+        object left, object right, AugmentedAssignmentOperatorSyntax op, ExecutionContext context, LythonSourceSpan span)
     {
-        var fallback = await EvaluateNumericProtocolAsync(BinaryOperatorSyntax.Add, left, right, context, span).ConfigureAwait(false);
+        var fallback = await EvaluateNumericProtocolAsync(AugmentedBinaryOperator(op), left, right, context, span).ConfigureAwait(false);
         return fallback.Kind == SpecialMethodInvocationKind.Invoked ? fallback.Value
-            : EvaluateAdd(left, right, context, span, "+=");
+            : EvaluateAugmentedBuiltin(left, right, op, context, span);
     }
 }
