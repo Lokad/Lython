@@ -1,0 +1,31 @@
+{
+  "python": "CPython 3.13.2",
+  "checks": [
+    {
+      "source": "for value in (-1,0,1,1<<100):\n print(+value is value,-value,~value,not value)",
+      "expected": "True 1 0 False\nTrue 0 -1 True\nTrue -1 -2 False\nTrue -1267650600228229401496703205376 -1267650600228229401496703205377 False\n",
+      "stdout": "True 1 0 False\nTrue 0 -1 True\nTrue -1 -2 False\nTrue -1267650600228229401496703205376 -1267650600228229401496703205377 False\n"
+    },
+    {
+      "source": "events=[]\nclass Base: pass\nclass Number(Base):\n def __init__(self,value): pass\n def __pos__(self):\n  events.append('pos')\n  return 41\n def __neg__(self):\n  events.append('neg')\n  return 42\n def __invert__(self):\n  events.append('invert')\n  return 43\n def __bool__(self):\n  events.append('bool')\n  return False\nvalue=Number(7)\nprint(+value,-value,~value,not value,events)",
+      "expected": "41 42 43 True ['pos', 'neg', 'invert', 'bool']\n",
+      "stdout": "41 42 43 True ['pos', 'neg', 'invert', 'bool']\n"
+    },
+    {
+      "source": "events=[]\nclass Value:\n def __bool__(self):\n  events.append('bool')\n  return True\nprint(not Value(),events)",
+      "expected": "False ['bool']\n",
+      "stdout": "False ['bool']\n"
+    },
+    {
+      "source": "class Value:\n __neg__=None\ntry: print(-Value())\nexcept TypeError: print('not-callable')",
+      "expected": "not-callable\n",
+      "stdout": "not-callable\n"
+    },
+    {
+      "source": "class Value:\n def __invert__(self): return NotImplemented\nprint(~Value() is NotImplemented)",
+      "expected": "True\n",
+      "stdout": "True\n"
+    }
+  ],
+  "correction": "Original builtin int subclass fixture is unsupported by Lython; supported user-defined inheritance retains callback assertions."
+}

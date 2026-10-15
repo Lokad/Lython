@@ -1,0 +1,20 @@
+{
+  "baselineRevision": "66addead03315549b79b57f3c18135220c8c9cd5",
+  "candidateRevision": "f2fb4e074afb745da73884dcf8cc4fec157857dd",
+  "fixtureRevision": "5d298b6fade0986a1ad95c45ef94c30646f6f5d4",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "5a17d7de0621ec64332e3a9cecbd319ecf3ae091708436030a3b923db7278f74"
+  },
+  "commonFixtureSourceHashes": {
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "be978cc9d04bb6fabdd11530d8208a091c091cbb693f2820ee5a41287c556fd0"
+  },
+  "sourceArchiveSha256": "54cedff1abb3c1a8ae39c9b92726ef5b36f4494eb61adab17c5808343dfba899",
+  "caseId": "loops.integer-unary.medium",
+  "lane": "warm-async",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Route exact BigInteger unary instructions through existing synchronous operation/observed transfer handler in RunAsync; retain actual asynchronous guest protocols for all other operands.",
+  "normalGCAndTiering": true,
+  "boundary": "Warm completed-host RunAsync for 2048 dynamic values with +,-,~,not and checksum; CPython ordinary warm code. Fresh invocation state and prior-result disposal included; compilation/startup/transport/hash excluded.",
+  "stoppingRule": "Exactly one fixed affected dynamic-unary comparison; no repeat, retuning or 600-second lane. Preserve all samples and qualify uncertainty."
+}

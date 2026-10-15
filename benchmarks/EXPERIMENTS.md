@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 exact-unary dispatch candidate](results/2026-10-16-async-integer-unary/README.md)
+shares the synchronous arithmetic/value-transfer handler for exact integer operands
+under RunAsync. One dynamic loop diagnostic observed 1.5519 -> 1.1854 ms,
+CPython 0.2455 ms; spread 1.1%/1.4%/0.4%. The observed 23.6% lower Lython median
+is unqualified. Both roles use the same fixture/tooling; one production file
+differs. Guest callbacks still suspend/cancel. No repeat or retuning.
+
 The [2026-10-16 eager-comprehension delivery](results/2026-10-16-inline-comprehensions/README.md)
 uses ordinary instructions in the caller frame with the existing binding scope.
 One declared per-item helper-call diagnostic observed 0.6107 -> 0.5851 ms,
