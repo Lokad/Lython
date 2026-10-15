@@ -96,7 +96,7 @@ internal sealed partial class LythonRuntime
             return new JsonPrefixDecode(value, end);
         }
 
-        private async ValueTask<(object Value, int End)> ReadJsonValueAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position, bool asynchronous)
+        private ValueTask<(object Value, int End)> ReadJsonValueAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position, bool asynchronous)
         {
             var bytes = input.Source;
             position = SkipJsonWhitespace(bytes.Span, position, context, span);
@@ -105,7 +105,7 @@ internal sealed partial class LythonRuntime
                 throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
             }
 
-            return await ReadJsonValueExactAsync(input, options, context, span, depth, position, asynchronous).ConfigureAwait(false);
+            return ReadJsonValueExactAsync(input, options, context, span, depth, position, asynchronous);
         }
 
         // Reads one value at the exact byte position with no leading

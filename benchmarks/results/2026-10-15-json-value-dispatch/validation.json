@@ -1,0 +1,177 @@
+{
+  "receipts": [
+    {
+      "pid": 20968,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 15415,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "build",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--nologo"
+      ],
+      "stage": "json-dispatch-first-build"
+    },
+    {
+      "source": "working-on-50583327",
+      "production": "direct-json-value-forward",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "5673B12DCA095C63002C2BF398C936412BFB3812D089E888E6DE210E74073370",
+      "filter": "FullyQualifiedName~Json&Category!=Stress",
+      "pid": 65696,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 7328,
+      "stdoutSha256": "65FF1C78BEA6CEE2E8662A6A2F060665FA860AF312EB36A6D81227F84954DC80",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "stage": "json-dispatch-focused-public",
+      "arguments": []
+    },
+    {
+      "source": "working-on-50583327",
+      "production": "direct-json-value-forward",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "91AFB58547EB6937E65FA15D519A13B7E1343F240875C069E606D2ACF2687619",
+      "filter": "FullyQualifiedName~Json&Category!=Stress",
+      "pid": 62012,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1187,
+      "stdoutSha256": "68B95BB661407B0E4D0C409C2194913F39BB2A63A7D65D7091DE740968CC7EDF",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "stage": "json-dispatch-focused-white",
+      "arguments": []
+    },
+    {
+      "pid": 63448,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 10353,
+      "executable": "C:\\Windows\\System32\\OpenSSH\\ssh.exe",
+      "executableSha256": "98D447730047F5DF91373E852D057928A921C3D1E89938700AB656BA84B19DC8",
+      "arguments": [
+        "-i",
+        "<user-profile>/.ssh/id_lython-bench.pem",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectTimeout=10",
+        "lokad@20.166.121.73",
+        "sudo -n systemd-run --unit lython-ap05-json-dispatch-warm-20261015 --uid=lokad --property RuntimeMaxSec=30 --property TimeoutStopSec=0 --property KillMode=control-group --wait --pipe /bin/bash /home/lokad/lython-bench-checks/ap05-json-dispatch-20261015/micro.sh warm"
+      ],
+      "stage": "json-dispatch-one-warm"
+    },
+    {
+      "pid": 64400,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 2152,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "build",
+        "tools/LythonProbe/LythonProbe.csproj",
+        "-c",
+        "Release",
+        "--nologo"
+      ],
+      "stage": "json-dispatch-probe-build"
+    },
+    {
+      "pid": 54676,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 2306,
+      "executable": "C:\\Windows\\System32\\OpenSSH\\scp.exe",
+      "executableSha256": "B9CC1AE5FDBA1F3833CC1130F6E11A9BED84A7953099DC40789C7D2744A862A1",
+      "arguments": [
+        "-i",
+        "<user-profile>/.ssh/id_lython-bench.pem",
+        "-o",
+        "BatchMode=yes",
+        "lokad@20.166.121.73:/home/lokad/lython-bench-checks/ap05-json-dispatch-20261015/warm.json",
+        "lokad@20.166.121.73:/home/lokad/lython-bench-checks/ap05-json-dispatch-20261015/baseline-correctness.json",
+        "lokad@20.166.121.73:/home/lokad/lython-bench-checks/ap05-json-dispatch-20261015/candidate-correctness.json",
+        "lokad@20.166.121.73:/home/lokad/lython-bench-checks/ap05-json-dispatch-20261015/cleanup-source-proof.json",
+        ".git/agent-notes/json-dispatch-20261015/"
+      ],
+      "stage": "json-dispatch-proof-download"
+    },
+    {
+      "pid": 35852,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 488,
+      "executable": "C:\\Windows\\System32\\OpenSSH\\ssh.exe",
+      "executableSha256": "98D447730047F5DF91373E852D057928A921C3D1E89938700AB656BA84B19DC8",
+      "arguments": [
+        "-i",
+        "<user-profile>/.ssh/id_lython-bench.pem",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectTimeout=10",
+        "lokad@20.166.121.73",
+        "flock -n /home/lokad/lython-bench-checks/comparison-vm.lock python3 /home/lokad/lython-bench-checks/ap05-json-dispatch-20261015/proof.py"
+      ],
+      "stage": "json-dispatch-proof-run"
+    },
+    {
+      "pid": 57048,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 22012,
+      "executable": "C:\\Windows\\System32\\OpenSSH\\ssh.exe",
+      "executableSha256": "98D447730047F5DF91373E852D057928A921C3D1E89938700AB656BA84B19DC8",
+      "arguments": [
+        "-i",
+        "<user-profile>/.ssh/id_lython-bench.pem",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectTimeout=10",
+        "lokad@20.166.121.73",
+        "sudo -n systemd-run --unit lython-ap05-json-dispatch-prepare-20261015 --uid=lokad --property RuntimeMaxSec=180 --property TimeoutStopSec=0 --property KillMode=control-group --wait --pipe /bin/bash /home/lokad/lython-bench-checks/ap05-json-dispatch-20261015/prepare.sh"
+      ],
+      "stage": "json-dispatch-vm-preparation"
+    },
+    {
+      "pid": 57920,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 5578,
+      "executable": "C:\\Windows\\System32\\OpenSSH\\scp.exe",
+      "executableSha256": "B9CC1AE5FDBA1F3833CC1130F6E11A9BED84A7953099DC40789C7D2744A862A1",
+      "arguments": [
+        "-i",
+        "<user-profile>/.ssh/id_lython-bench.pem",
+        "-o",
+        "BatchMode=yes",
+        ".git/agent-notes/json-dispatch-20261015/vm-input/source.tar",
+        ".git/agent-notes/json-dispatch-20261015/vm-input/candidate-overlay.tar",
+        ".git/agent-notes/json-dispatch-20261015/vm-input/prepare.sh",
+        ".git/agent-notes/json-dispatch-20261015/vm-input/micro.sh",
+        ".git/agent-notes/json-dispatch-20261015/proof.py",
+        ".git/agent-notes/json-dispatch-20261015/comparison-declaration.json",
+        "lokad@20.166.121.73:/home/lokad/lython-bench-checks/ap05-json-dispatch-20261015/"
+      ],
+      "stage": "json-dispatch-vm-upload"
+    }
+  ],
+  "fullStressRerun": false,
+  "fullPublicLocalRerun": false,
+  "qualification": "Focused JSON controls now; full platform/package shared with uppercase checkpoint"
+}

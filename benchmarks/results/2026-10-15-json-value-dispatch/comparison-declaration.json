@@ -1,0 +1,19 @@
+{
+  "baselineRevision": "505833275217e87f2322cfa0a276495885f69f1b",
+  "candidateBaseRevision": "505833275217e87f2322cfa0a276495885f69f1b",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "d57e1bf2ad92c137f0d227666086c9e013435fdfbaaa323f2895a3fa8f5a56e2"
+  },
+  "sourceArchiveSha256": "f2a46e69b8eb4fa02a6da74d6b3fe7752aa3440889df180593fa50bb8cf8da09",
+  "productionChange": "Return existing JSON value-parser ValueTask directly after unchanged whitespace/incomplete-input validation; delete redundant async forwarding state machine",
+  "case": "scripts.json-summary.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "none",
+  "executionBoundary": "Already compiled complete JSON-lines aggregation file job with matched disk staging, output-file checks, fresh state, execution/projection and cleanup; compilation/process startup excluded",
+  "stop": "One short affected complete JSON job diagnostic; no repeats, retuning, parser duplication or broader callback/frame redesign"
+}

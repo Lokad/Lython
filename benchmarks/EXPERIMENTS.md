@@ -7,6 +7,11 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 JSON value-dispatch cleanup](results/2026-10-15-json-value-dispatch/README.md)
+removes one generated async forwarding state machine without another parser.
+One complete JSON file job is 9.425 ->9.692ms, CPython4.260ms; the change is within
+14.3%/7.3% spread. No elapsed benefit is established; no repeat or retuning.
+
 The [2026-10-15 UTF-8 uppercase delivery](results/2026-10-15-utf8-upper/README.md)
 removes ordinary per-scalar CLR strings and shares existing expansions with legacy
 casing helpers. One new complete report job is identical in both roles:
