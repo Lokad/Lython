@@ -118,17 +118,18 @@ internal sealed partial class LythonRuntime
                or PkgutilLoaderObject
                or PyDirEntryObject);
 
-    // Bound callables close over their receiver, so sharing one per site is
-    // always sound, even for mutable targets whose data arms must stay fresh.
+    // Only immediate calls may reuse a bound callable: an ordinary attribute
+    // read must preserve the identity of the freshly resolved method object.
     // Instances, types and super objects keep their existing behavior: user-level
     // rebinding and descriptors must resolve anew on every access.
-    private static bool CanCacheRuntimeMemberValue(object target, object value)
-        => CanCacheRuntimeMemberTarget(target) ||
+    private static bool CanCacheRuntimeMemberValue(object target, object value, bool isCallTarget = false)
+        => (isCallTarget || value is not ICallable) &&
+           (CanCacheRuntimeMemberTarget(target) ||
            (value is ICallable &&
             target is not PyInstance &&
             target is not PyType &&
             target is not PySuper &&
-            target is not IPyContextualDynamicAttributes);
+            target is not IPyContextualDynamicAttributes));
 
     private static object Pop(ref ExecutableValueStack stack, LythonSourceSpan span)
     {

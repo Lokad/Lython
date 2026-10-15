@@ -306,7 +306,16 @@ internal sealed partial class ExecutableScript
                 }
             }
 
-            exitBlock = CompileExpression(call.Target, exitBlock);
+            var callTarget = call.Target;
+            while (callTarget is LoweredParenthesizedExpression parenthesized)
+                callTarget = parenthesized.Inner;
+            if (callTarget is LoweredMemberExpression member)
+            {
+                exitBlock = CompileExpression(member.Target, exitBlock);
+                AddInstruction(exitBlock, ExecutableInstruction.LoadCallMember(
+                    InternName(member.Member.MemberName), AllocateMemberCache(), member.Span));
+            }
+            else exitBlock = CompileExpression(call.Target, exitBlock);
             if (call.Call.PreloadImplicitSuperArguments)
                 AddInstruction(exitBlock, ExecutableInstruction.PreloadImplicitSuperArguments(call.Span));
             foreach (var argument in call.Arguments)

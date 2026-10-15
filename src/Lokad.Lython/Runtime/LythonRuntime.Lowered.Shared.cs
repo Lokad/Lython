@@ -736,9 +736,11 @@ internal sealed partial class LythonRuntime
     private static object ResolveLoweredMemberValue(
         LoweredMemberExpression member,
         object target,
-        ExecutionContext context)
+        ExecutionContext context,
+        bool isCallTarget = false)
     {
-        if (context.State.TryReadRuntimeMemberCache(member, target, out var value))
+        if (context.State.TryReadRuntimeMemberCache(member, target, out var value) &&
+            (isCallTarget || value is not ICallable))
         {
             return value;
         }
@@ -748,7 +750,7 @@ internal sealed partial class LythonRuntime
             throw PyMemberAccess.CreateMissingMemberError(target, member.Member.MemberName, member.Span, context);
         }
 
-        if (CanCacheRuntimeMemberValue(target, value))
+        if (CanCacheRuntimeMemberValue(target, value, isCallTarget))
         {
             context.State.WriteRuntimeMemberCache(member, target, value);
         }

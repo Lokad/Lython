@@ -1,0 +1,23 @@
+{
+  "baselineRevision": "0eb587a9facdff0fad52e130b926c9952bf935a7",
+  "candidateBaseRevision": "0eb587a9facdff0fad52e130b926c9952bf935a7",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "b4c8777105877867ed77e3ac40355cebe95e7772d980fdbe65e144e9df4c0572",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "8ca7329f5f5686912516ae255641c6f56c784db92b0874ff9d8be65d5a2ea064",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "aa4dcb1a7ca913d84f285fb6ca63a5bfd0c1249ebb764a877e8a5ef194151d54",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "d00fe92045ff260d6a04ff1da943a939bda739858e8d37f3da449f545ca71805",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs": "56f7747003504aab20df628ad7fb859818d48c8bc068b27c5a4a3e7aac408414",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Expressions.cs": "f7f796d04e680b340579bbaca1b8d2a6d8f45aaf4c427a50025cddb48843e1e8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "721d32dbb799241ce26a9eaec287ec5edc1cf96cfe2446b327b5bf7b9dde3b1e"
+  },
+  "sourceArchiveSha256": "ad3aebd9a3f8ecdd25d99625d020df8b764b0d161d5005d7eb62b5c37a09cd26",
+  "productionChange": "ordinary member reads expose fresh bound callables; immediate-call loads retain their cache; lowered immediate calls retain checkpoints",
+  "case": "dicts.tuple-key-update.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "stop": "one short control for retained immediate-call route; retain independent Python identity fix without speedup claim"
+}

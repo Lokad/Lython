@@ -973,6 +973,12 @@ reads before assignment.
 
 Function features not specified here remain unsupported. Any future additions must be implemented faithfully or rejected explicitly.
 
+Repeated reads of a builtin instance method, such as `items.append`, expose
+distinct method objects. Saved methods retain their receiver and remain callable
+after its original name is reassigned. Immediate calls resolve their method before
+evaluating arguments; internal call caching must preserve these observable rules.
+Stable module functions, such as `math.sqrt`, retain their existing identity.
+
 ### 9.6 Collections
 
 Collection behavior must follow modern Python semantics for supported operations.

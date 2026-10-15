@@ -7,6 +7,11 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 method-exposure delivery](results/2026-10-15-method-exposure/README.md)
+corrects exposed builtin method identity while keeping immediate-call caching.
+One dictionary-update diagnostic is within spread; no timing claim or retry.
+Receiver-independent dispatch and direct argument binding remain separate work.
+
 The [2026-10-15 async integer-addition delivery](results/2026-10-15-async-integer-dispatch/README.md)
 shares the synchronous observed-value handler for exact integers. One async-loop
 diagnostic observes a 14.4% lower median with 6.0% candidate spread. A genuinely

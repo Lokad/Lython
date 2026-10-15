@@ -529,7 +529,16 @@ internal sealed partial class LythonRuntime
 
     private static object InvokeLoweredCall(LoweredCallExpression call, ExecutionContext context)
     {
-        var target = EvaluateLoweredExpression(call.Target, context);
+        object target;
+        if (call.Target is LoweredMemberExpression member)
+        {
+            // Preserve the member expression's checkpoint and stack admission;
+            // only this immediate call may reuse its bound callable.
+            context.CheckExecution(member.Span);
+            ExecutionGuards.EnsureInterpreterStack(member.Span);
+            target = ResolveLoweredMemberValue(member, EvaluateLoweredExpression(member.Target, context), context, true);
+        }
+        else target = EvaluateLoweredExpression(call.Target, context);
         if (call.Call.PreloadImplicitSuperArguments)
         {
             context.CheckExecution(call.Span);

@@ -22,6 +22,7 @@ internal enum ExecutableOpCode
     EvaluateFallbackExpression,
     ApplyOperation,
     LoadMember,
+    LoadCallMember,
     PreloadImplicitSuperArguments,
     StoreLocal,
     StoreClosure,
@@ -248,6 +249,13 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction LoadMember(int nameIndex, int cacheIndex, LythonSourceSpan span)
         => CreateIndexed(
             ExecutableOpCode.LoadMember,
+            new Operand(OperandKind.NameIndex, nameIndex),
+            new Operand(OperandKind.MemberCacheIndex, cacheIndex),
+            span);
+
+    public static ExecutableInstruction LoadCallMember(int nameIndex, int cacheIndex, LythonSourceSpan span)
+        => CreateIndexed(
+            ExecutableOpCode.LoadCallMember,
             new Operand(OperandKind.NameIndex, nameIndex),
             new Operand(OperandKind.MemberCacheIndex, cacheIndex),
             span);

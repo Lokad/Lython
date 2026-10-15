@@ -241,6 +241,7 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.LoadMember:
+                case ExecutableOpCode.LoadCallMember:
                     var target = Pop(ref _stack, instruction.Span);
                     var memberName = _codeObject.Names[instruction.NameIndex];
                     var cachedMember = _memberCaches[instruction.MemberCacheIndex];
@@ -259,7 +260,8 @@ internal sealed partial class LythonRuntime
                         }
 
                         memberValue = resolvedMember;
-                        _memberCaches[instruction.MemberCacheIndex] = CanCacheRuntimeMemberValue(target, memberValue)
+                        _memberCaches[instruction.MemberCacheIndex] = CanCacheRuntimeMemberValue(target, memberValue,
+                            instruction.OpCode == ExecutableOpCode.LoadCallMember)
                             ? new ExecutableMemberCache(target, memberValue)
                             : null;
                     }
@@ -708,6 +710,7 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.LoadName or
                                  ExecutableOpCode.EvaluateFallbackExpression or
                                  ExecutableOpCode.LoadMember or
+                                 ExecutableOpCode.LoadCallMember or
                                  ExecutableOpCode.PreloadImplicitSuperArguments or
                                  ExecutableOpCode.StoreLocal or
                                  ExecutableOpCode.StoreClosure or
@@ -717,7 +720,7 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.PopTop:
                                 if (instruction.OpCode == ExecutableOpCode.EvaluateFallbackExpression)
                                     PushObserved(await EvaluateLoweredExpressionAsync(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, _context).ConfigureAwait(false), instruction.Span);
-                                else if (instruction.OpCode == ExecutableOpCode.LoadMember)
+                                else if (instruction.OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember)
                                 {
                                     var target = Pop(ref _stack, instruction.Span);
                                     var name = _codeObject.Names[instruction.NameIndex];

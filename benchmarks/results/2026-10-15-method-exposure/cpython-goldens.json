@@ -1,0 +1,53 @@
+{
+  "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "source": "import math\nmethods=[math.sqrt for i in range(2)]\nprint(methods[0] is methods[1])\nprint(methods[0](9))",
+      "expected": "True\n3.0\n",
+      "stdout": "True\n3.0\n",
+      "exitCode": 0
+    },
+    {
+      "source": "value='abc'\nmethods=[]\nfor i in range(2): methods.append(value.upper)\nprint(methods[0] is methods[1])\nprint(methods[0](),methods[1]())",
+      "expected": "False\nABC ABC\n",
+      "stdout": "False\nABC ABC\n",
+      "exitCode": 0
+    },
+    {
+      "source": "value='abc'\nmethods=[value.upper for i in range(2)]\nprint(methods[0] is methods[1])\nprint(methods[0](),methods[1]())",
+      "expected": "False\nABC ABC\n",
+      "stdout": "False\nABC ABC\n",
+      "exitCode": 0
+    },
+    {
+      "source": "items=[]\nmethods=[]\nfor i in range(2): methods.append(items.append)\nprint(methods[0] is methods[1])\nmethods[0](1)\nmethods[1](2)\nprint(items)",
+      "expected": "False\n[1, 2]\n",
+      "stdout": "False\n[1, 2]\n",
+      "exitCode": 0
+    },
+    {
+      "source": "class Holder:\n    value='abc'\n    methods=[]\n    for i in range(2): methods.append(value.upper)\nprint(Holder.methods[0] is Holder.methods[1])\nprint(Holder.methods[0](),Holder.methods[1]())",
+      "expected": "False\nABC ABC\n",
+      "stdout": "False\nABC ABC\n",
+      "exitCode": 0
+    },
+    {
+      "source": "class C:\n    def f(self): return 1\nx=C()\nold=x.f\nC.f=lambda self: 2\nprint(old is x.f,old(),x.f())",
+      "expected": "False 1 2\n",
+      "stdout": "False 1 2\n",
+      "exitCode": 0
+    },
+    {
+      "source": "items=[1]\nother=[2]\nmethods=[items.pop,other.pop]\nitems=None\nother=None\nprint(methods[0](),methods[1]())\nprint(methods[0] is methods[1])",
+      "expected": "1 2\nFalse\n",
+      "stdout": "1 2\nFalse\n",
+      "exitCode": 0
+    },
+    {
+      "source": "class C:\n    def old(self,x): return x+1\n    def new(self,x): return x+100\n    f=old\nvalue=C()\ndef argument():\n    C.f=C.new\n    return 3\nprint(value.f(argument()),value.f(3))",
+      "expected": "4 103\n",
+      "stdout": "4 103\n",
+      "exitCode": 0
+    }
+  ]
+}

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Preserve fresh exposed builtin method objects in synchronous execution, including comprehensions and class bodies. Keep immediate method-call caching separate from attribute reads, preserving lookup-before-argument order and receiver lifetime.
+
 - Share the synchronous integer-addition handler during RunAsync while preserving admission and cancellation. Await user-defined in-place addition and declined/reflected fallback without replaying host effects.
 
 - Preserve eligible executable function bodies, argument slots and captured cells in RunAsync. Await yielding defaults, decorators and body callbacks without replay, and remove blanket async module mirroring. Import stores update their own slots without erasing unrelated locals.

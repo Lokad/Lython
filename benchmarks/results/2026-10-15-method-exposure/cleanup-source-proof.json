@@ -1,0 +1,66 @@
+{
+  "checks": [
+    {
+      "engine": "timing-baseline",
+      "pid": 2309035,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-candidate",
+      "pid": 2309056,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-CPython",
+      "pid": 2309071,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-verify-lythonIdentity",
+      "pid": 2308757,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-verify-pythonIdentity",
+      "pid": 2308778,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-verify-lythonIdentity",
+      "pid": 2308892,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-verify-pythonIdentity",
+      "pid": 2308913,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    }
+  ],
+  "productionDifferences": [
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Expressions.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs"
+  ],
+  "frozenSourceHashesMatch": true,
+  "comparisonSourcesIdentical": true,
+  "relevantUnits": "",
+  "leaseAcquired": true
+}

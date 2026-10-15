@@ -7,9 +7,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG03: the lowered member cache aliases site-stable values (one wrapper or
-/// boxed value per site while the target is identical) without pooling across
-/// targets; mutable data arms and instances resolve anew on every access.
+/// Only immediate calls may reuse bound method objects. Exposed methods and
+/// mutable data arms resolve anew; immutable data caching stays run-local.
 /// </summary>
 public sealed class MemberCacheAliasTests
 {
@@ -19,11 +18,11 @@ public sealed class MemberCacheAliasTests
         return new LoweredMemberExpression(new MemberExpressionSyntax(null!, name, span), null!);
     }
 
-    private static object Resolve(object target, LoweredMemberExpression site, LythonRuntime.ExecutionContext context)
+    private static object Resolve(object target, LoweredMemberExpression site, LythonRuntime.ExecutionContext context, bool isCallTarget = false)
     {
         var method = typeof(LythonRuntime).GetMethod("ResolveLoweredMemberValue", BindingFlags.Static | BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("ResolveLoweredMemberValue not found.");
-        return method.Invoke(null, [site, target, context])
+        return method.Invoke(null, [site, target, context, isCallTarget])
             ?? throw new InvalidOperationException("Resolve returned null.");
     }
 
@@ -42,31 +41,53 @@ public sealed class MemberCacheAliasTests
     }
 
     [Fact]
-    public void CachedControlAliases()
+    public void ExposedListMethodsAreFresh()
     {
         var context = NewContext();
         var site = SiteFor("append");
         var target = new PyList();
-        Assert.Same(Resolve(target, site, context), Resolve(target, site, context));
+        Assert.NotSame(Resolve(target, site, context), Resolve(target, site, context));
     }
 
     [Fact]
-    public void CounterMethodAliases()
+    public void ExposedCounterMethodsAreFresh()
     {
         var context = NewContext();
         var site = SiteFor("most_common");
         var target = new PyCounter();
-        Assert.Same(Resolve(target, site, context), Resolve(target, site, context));
+        Assert.NotSame(Resolve(target, site, context), Resolve(target, site, context));
     }
 
     [Fact]
-    public void ZipInfoMethodAliases()
+    public void ExposedZipInfoMethodsAreFresh()
     {
         var context = NewContext();
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var site = SiteFor("is_dir");
         var target = MakeZipInfo(context, span);
-        Assert.Same(Resolve(target, site, context), Resolve(target, site, context));
+        Assert.NotSame(Resolve(target, site, context), Resolve(target, site, context));
+    }
+
+    [Fact]
+    public void ImmediateCallsKeepTheReceiverCache()
+    {
+        var context = NewContext();
+        var site = SiteFor("append");
+        var target = new PyList();
+        var first = Resolve(target, site, context, true);
+        Assert.Same(first, Resolve(target, site, context, true));
+        Assert.NotSame(first, Resolve(target, site, context));
+    }
+
+    [Fact]
+    public void ExecutableMemberReadsAndImmediateCallsRemainDistinct()
+    {
+        var frontend = LythonFrontend.Compile("items=[]\nmethod=items.append\n(items.append)(1)\n");
+        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
+        var instructions = code.EntryPoint.Blocks.SelectMany(block => block.Instructions).ToArray();
+        Assert.Single(instructions, i => i.OpCode == ExecutableOpCode.LoadMember);
+        Assert.Single(instructions, i => i.OpCode == ExecutableOpCode.LoadCallMember);
+        Assert.Empty(code.EntryPoint.ExpressionFallbacks);
     }
 
     [Fact]
