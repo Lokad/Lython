@@ -1,5 +1,6 @@
 using System.Numerics;
 using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -783,12 +784,19 @@ internal sealed partial class LythonRuntime
                                     jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                 break;
 
+                            case ExecutableOpCode.Subscript:
+                                if (_stack[_stack.Count - 1] is BigInteger &&
+                                    _stack[_stack.Count - 2] is PyList or PyTuple or PyBytes or PyString or PyRange)
+                                    ExecuteObservedValueOperation(instruction);
+                                else
+                                    jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+                                break;
+
                             case ExecutableOpCode.GetIter or
                                  ExecutableOpCode.ForNext or
                                  ExecutableOpCode.AssignLoopTarget or
                                  ExecutableOpCode.AssignUnpackingTargets or
                                  ExecutableOpCode.Call or
-                                 ExecutableOpCode.Subscript or
                                  ExecutableOpCode.Slice or
                                  ExecutableOpCode.MakeSlice:
                                 jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
