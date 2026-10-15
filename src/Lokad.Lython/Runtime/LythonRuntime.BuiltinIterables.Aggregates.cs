@@ -88,6 +88,7 @@ internal sealed partial class LythonRuntime
         var operation = NativeIterableOperation.Create(arguments[0], total, context, span);
         try
         {
+            if (TrySumExactBytes(operation, total, span, context)) return operation;
             operation.Iterator = ToSequence(operation.Source, span, context).GetEnumerator();
             while (operation.Iterator.MoveNext())
             {
@@ -109,6 +110,7 @@ internal sealed partial class LythonRuntime
         var operation = NativeIterableOperation.Create(arguments[0], total, context, span);
         try
         {
+            if (TrySumExactBytes(operation, total, span, context)) return operation;
             operation.AsyncIterator = ToSequenceAsync(operation.Source, span, context).GetAsyncEnumerator();
             while (await operation.AsyncIterator.MoveNextAsync().ConfigureAwait(false))
             {
@@ -122,6 +124,31 @@ internal sealed partial class LythonRuntime
             return operation;
         }
         catch { await operation.DisposeAsync().ConfigureAwait(false); throw; }
+    }
+
+    private static bool TrySumExactBytes(NativeIterableOperation operation, object start, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (operation.Source is not PyBytes bytes || !PyNumberOps.IsInteger(start)) return false;
+        var source = bytes.Bytes;
+        long subtotal = 0;
+        for (var i = 0; ; i++)
+        {
+            // Match checked iteration, including the final unsuccessful pull.
+            if ((i & 63) == 0) context.CheckExecution(span);
+            if (i == source.Length) break;
+            // Even a maximum-length CLR byte array totals less than 2^39.
+            subtotal += source[i];
+        }
+        if (source.Length != 0)
+        {
+            _ = PyNumberOps.TryAsInteger(start, out var initial);
+            var subtotalBits = subtotal == 0 ? 0 : BitOperations.Log2((ulong)subtotal) + 1;
+            var bits = Math.Max(RuntimeMemoryEstimates.GetMagnitudeBitLength(initial), subtotalBits) + 1;
+            using var admission = GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(bits), context.MemoryGovernor, span);
+            operation.Result = OwnHeapInteger(initial + subtotal, context.MemoryGovernor, span);
+        }
+        operation.FinishIteration();
+        return true;
     }
 
     private static object ValidateSumStart(object[] arguments, LythonSourceSpan span)

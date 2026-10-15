@@ -70,6 +70,12 @@ resize through disposed owners throw `ObjectDisposedException`.
 
 Major backing capacity, copies and replacement overlap are conservatively
 charged. Internal execution/projection limits remain separate policy limits.
+Exact immutable-byte sums with builtin integer starts keep a machine subtotal
+and preflight one final exact-integer result, using existing temporary ownership
+for major magnitudes. This avoids per-byte numeric storage while preserving
+input/result overlap, empty-start aliases and native-operation ownership. The
+conservative final preflight can refuse earlier at narrow allowances; identical
+tiny-budget thresholds are not a contract.
 Function parameter-name maps/layout arrays and live default containers own
 capacity charges. Definition-time default maps use temporary admission during
 construction, returning it once the Python containers own their storage; failed

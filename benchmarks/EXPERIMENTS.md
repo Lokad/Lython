@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 exact-byte accumulator](results/2026-10-15-bytes-sum/README.md)
+removes byte iteration adapters, per-item integer boxes and repeated arithmetic
+under existing native ownership. Final magnitude admission precedes allocation;
+dynamic starts still suspend. One complete manifest job is6.394 ->6.080ms,
+CPython0.4382ms, within6.7%/11.7% spread; no qualified elapsed claim or retuning.
+
 The [2026-10-15 JSON value-dispatch cleanup](results/2026-10-15-json-value-dispatch/README.md)
 removes one generated async forwarding state machine without another parser.
 One complete JSON file job is 9.425 ->9.692ms, CPython4.260ms; the change is within

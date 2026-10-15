@@ -1,0 +1,266 @@
+{
+  "receipts": [
+    {
+      "pid": 66680,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 14818,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "build",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--nologo"
+      ],
+      "stage": "bytes-sum-first-build"
+    },
+    {
+      "source": "working-on-64fecd53",
+      "production": "exact-bytes-accumulator",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "4352E2D7661858F82467A9C4F481CAF99D9B21B0DFE814D537FA9A655F5998F9",
+      "filter": "(FullyQualifiedName~BytesSumTests|FullyQualifiedName~BuiltinIterationCancellationTests|FullyQualifiedName~NativeIterable)&Category!=Stress",
+      "pid": 55120,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 3509,
+      "stdoutSha256": "81740DFFB9E9B49E7D9AFCD38488AF834953F9F9BE69440D2816D43BA3D1194B",
+      "stderrSha256": "1B25A755EB4D21B705AD09A406F31CEC878E5D6C243194E0DC0E4515A7B8E1B3",
+      "stage": "bytes-sum-first-public",
+      "arguments": []
+    },
+    {
+      "source": "working-on-64fecd53",
+      "production": "exact-bytes-accumulator",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "27E30440936904CEF610349AA9E0B148345991CA20A2F57D56361376BE9AA0A2",
+      "filter": "(FullyQualifiedName~ExactBytesSumTests|FullyQualifiedName~NativeAggregateStateTests)&Category!=Stress",
+      "pid": 60052,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1182,
+      "stdoutSha256": "FECD3E46CF843498051EA6AE87C589DC3750B75D16386C7E0B392AF077EE67E7",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "stage": "bytes-sum-first-white",
+      "arguments": []
+    },
+    {
+      "source": "working-on-64fecd53",
+      "production": "exact-bytes-accumulator",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "27E30440936904CEF610349AA9E0B148345991CA20A2F57D56361376BE9AA0A2",
+      "filter": "Category!=Stress",
+      "pid": 67160,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 11725,
+      "stdoutSha256": "210E8A73994586D817ABBE67297D957FD9F1D4A3E12578652B6CCF88F76BD04D",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "stage": "bytes-sum-full-white",
+      "arguments": []
+    },
+    {
+      "source": "working-on-64fecd53",
+      "production": "exact-bytes-accumulator",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "E64FAE491E4D610B611E503CBCF4FBB22186DB185F78C13A2FCD7C34DA3B8548",
+      "filter": "(FullyQualifiedName~Governed|FullyQualifiedName~Representative|FullyQualifiedName~ComparisonFileWorkerTests)&Category!=Stress",
+      "pid": 58296,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 14286,
+      "stdoutSha256": "A2E5B6035C240D28E93CFB5908B0D6FB979E8D25561240D70F82B1B53CCEB27F",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "stage": "bytes-sum-governed-public",
+      "arguments": []
+    },
+    {
+      "pid": 52480,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 8326,
+      "executable": "C:\\Windows\\System32\\OpenSSH\\ssh.exe",
+      "executableSha256": "98D447730047F5DF91373E852D057928A921C3D1E89938700AB656BA84B19DC8",
+      "arguments": [
+        "-i",
+        "<user-profile>/.ssh/id_lython-bench.pem",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectTimeout=10",
+        "lokad@20.166.121.73",
+        "sudo -n systemd-run --unit lython-ap06-bytes-sum-warm-20261015 --uid=lokad --property RuntimeMaxSec=30 --property TimeoutStopSec=0 --property KillMode=control-group --wait --pipe /bin/bash /home/lokad/lython-bench-checks/ap06-bytes-sum-20261015/micro.sh warm"
+      ],
+      "stage": "bytes-sum-one-warm"
+    },
+    {
+      "pid": 28192,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 2185,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "build",
+        "tools/LythonProbe/LythonProbe.csproj",
+        "-c",
+        "Release",
+        "--nologo"
+      ],
+      "stage": "bytes-sum-probe-build"
+    },
+    {
+      "pid": 33164,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 2504,
+      "executable": "C:\\Windows\\System32\\OpenSSH\\scp.exe",
+      "executableSha256": "B9CC1AE5FDBA1F3833CC1130F6E11A9BED84A7953099DC40789C7D2744A862A1",
+      "arguments": [
+        "-i",
+        "<user-profile>/.ssh/id_lython-bench.pem",
+        "-o",
+        "BatchMode=yes",
+        "lokad@20.166.121.73:/home/lokad/lython-bench-checks/ap06-bytes-sum-20261015/warm.json",
+        "lokad@20.166.121.73:/home/lokad/lython-bench-checks/ap06-bytes-sum-20261015/baseline-correctness.json",
+        "lokad@20.166.121.73:/home/lokad/lython-bench-checks/ap06-bytes-sum-20261015/candidate-correctness.json",
+        "lokad@20.166.121.73:/home/lokad/lython-bench-checks/ap06-bytes-sum-20261015/cleanup-source-proof.json",
+        ".git/agent-notes/bytes-sum-20261015/"
+      ],
+      "stage": "bytes-sum-proof-download"
+    },
+    {
+      "pid": 28296,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 507,
+      "executable": "C:\\Windows\\System32\\OpenSSH\\ssh.exe",
+      "executableSha256": "98D447730047F5DF91373E852D057928A921C3D1E89938700AB656BA84B19DC8",
+      "arguments": [
+        "-i",
+        "<user-profile>/.ssh/id_lython-bench.pem",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectTimeout=10",
+        "lokad@20.166.121.73",
+        "flock -n /home/lokad/lython-bench-checks/comparison-vm.lock python3 /home/lokad/lython-bench-checks/ap06-bytes-sum-20261015/proof.py"
+      ],
+      "stage": "bytes-sum-proof-run"
+    },
+    {
+      "pid": 42056,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 6930,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "build",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--nologo"
+      ],
+      "stage": "bytes-sum-qualified-build"
+    },
+    {
+      "source": "working-on-64fecd53",
+      "production": "exact-bytes-accumulator",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "E64FAE491E4D610B611E503CBCF4FBB22186DB185F78C13A2FCD7C34DA3B8548",
+      "filter": "(FullyQualifiedName~BytesSumTests|FullyQualifiedName~BuiltinIterationCancellationTests|FullyQualifiedName~NativeIterable)&Category!=Stress",
+      "pid": 38884,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 3618,
+      "stdoutSha256": "5516A085CBB2C97EA2AD7C8F19CA26B3EDE2D6111F60F12BE13F24D42DFABC48",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "stage": "bytes-sum-qualified-public",
+      "arguments": []
+    },
+    {
+      "pid": 53936,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 13519,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "build",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--nologo"
+      ],
+      "stage": "bytes-sum-tests-build"
+    },
+    {
+      "pid": 64772,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 22404,
+      "executable": "C:\\Windows\\System32\\OpenSSH\\ssh.exe",
+      "executableSha256": "98D447730047F5DF91373E852D057928A921C3D1E89938700AB656BA84B19DC8",
+      "arguments": [
+        "-i",
+        "<user-profile>/.ssh/id_lython-bench.pem",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "ConnectTimeout=10",
+        "lokad@20.166.121.73",
+        "sudo -n systemd-run --unit lython-ap06-bytes-sum-prepare-20261015 --uid=lokad --property RuntimeMaxSec=180 --property TimeoutStopSec=0 --property KillMode=control-group --wait --pipe /bin/bash /home/lokad/lython-bench-checks/ap06-bytes-sum-20261015/prepare.sh"
+      ],
+      "stage": "bytes-sum-vm-preparation"
+    },
+    {
+      "pid": 44516,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1782,
+      "executable": "C:\\Windows\\System32\\OpenSSH\\scp.exe",
+      "executableSha256": "B9CC1AE5FDBA1F3833CC1130F6E11A9BED84A7953099DC40789C7D2744A862A1",
+      "arguments": [
+        "-i",
+        "<user-profile>/.ssh/id_lython-bench.pem",
+        "-o",
+        "BatchMode=yes",
+        ".git/agent-notes/bytes-sum-20261015/vm-input/source.tar",
+        ".git/agent-notes/bytes-sum-20261015/vm-input/candidate-overlay.tar",
+        ".git/agent-notes/bytes-sum-20261015/vm-input/prepare.sh",
+        ".git/agent-notes/bytes-sum-20261015/vm-input/micro.sh",
+        ".git/agent-notes/bytes-sum-20261015/proof.py",
+        ".git/agent-notes/bytes-sum-20261015/comparison-declaration.json",
+        "lokad@20.166.121.73:/home/lokad/lython-bench-checks/ap06-bytes-sum-20261015/"
+      ],
+      "stage": "bytes-sum-vm-upload"
+    }
+  ],
+  "overlappingGroups": true,
+  "initialSetupFailures": [
+    {
+      "name": "Lokad.Lython.PublicApi.Tests.BytesSumTests.ExactBytesAndDynamicFallbacksPreservePythonResults(source: \"class Data:\\n    def __iter__(self): return iter(b\"\u00b7\u00b7\u00b7, expected: \"3 3 3\\n\")",
+      "message": "name 'bytearray' is not defined"
+    }
+  ],
+  "setupCorrection": "Removed unsupported bytearray assumption; retained supported user iteration, dynamic arithmetic and native bytes; memoryview was not reached or qualified",
+  "fullStressRerun": false,
+  "fullPublicLocalRerun": false
+}

@@ -1,0 +1,77 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "arguments": [
+    "-I",
+    "-S",
+    "-X",
+    "utf8"
+  ],
+  "checks": [
+    {
+      "source": "print(sum(b''),sum(b'\\x00\\x01\\x7f\\x80\\xff'),sum(b'\\xff'*300,5))",
+      "expected": "0 511 76505\n",
+      "actual": "0 511 76505\n",
+      "exitCode": 0
+    },
+    {
+      "source": "print(sum(b'',True) is True,type(sum(b'\\x01',True)) is int,sum(b'\\xff',False))",
+      "expected": "True True 255\n",
+      "actual": "True True 255\n",
+      "exitCode": 0
+    },
+    {
+      "source": "print(sum(b'\\x01\\xff',2**63-1),sum(b'\\xff',-(2**63)),sum(b'\\xff',2**64-1))",
+      "expected": "9223372036854776063 -9223372036854775553 18446744073709551870\n",
+      "actual": "9223372036854776063 -9223372036854775553 18446744073709551870\n",
+      "exitCode": 0
+    },
+    {
+      "source": "start=1<<1024\nresult=sum(bytes(range(256)),start)\nprint(result-start,sum(b'',start) is start,start==1<<1024)",
+      "expected": "32640 True True\n",
+      "actual": "32640 True True\n",
+      "exitCode": 0
+    },
+    {
+      "source": "print(sum(b'\\xff',-256),sum(b'\\xff',-255),sum(b'\\xff',-254))",
+      "expected": "-1 0 1\n",
+      "actual": "-1 0 1\n",
+      "exitCode": 0
+    },
+    {
+      "source": "marker=[]\nprint(sum(b'',marker) is marker,sum(b'',None) is None)",
+      "expected": "True True\n",
+      "actual": "True True\n",
+      "exitCode": 0
+    },
+    {
+      "source": "for start in ['x',b'x']:\n    try: sum(b'',start)\n    except TypeError: print('start')",
+      "expected": "start\nstart\n",
+      "actual": "start\nstart\n",
+      "exitCode": 0
+    },
+    {
+      "source": "class Total:\n    def __init__(self,value): self.value=value\n    def __add__(self,item):\n        print(item)\n        return Total(self.value+item+sum(b'\\x01'))\nprint(sum(b'\\x01\\x02',Total(5)).value)",
+      "expected": "1\n2\n10\n",
+      "actual": "1\n2\n10\n",
+      "exitCode": 0
+    },
+    {
+      "source": "class Data:\n    def __iter__(self): return iter(b'\\x01\\x02')\nprint(sum(Data()))",
+      "expected": "3\n",
+      "actual": "3\n",
+      "exitCode": 0
+    },
+    {
+      "source": "import decimal\nprint(sum(b'\\x01\\x02',0.5),sum(b'\\x01\\x02',1+2j),sum(b'\\x01\\x02',decimal.Decimal('0.5')))",
+      "expected": "3.5 (4+2j) 3.5\n",
+      "actual": "3.5 (4+2j) 3.5\n",
+      "exitCode": 0
+    },
+    {
+      "source": "print(sum(b'\\x01',start=4),sum(*[b'\\x01'],**{'start':-1}))\ntry: sum(iterable=b'\\x01')\nexcept TypeError: print('positional')",
+      "expected": "5 0\npositional\n",
+      "actual": "5 0\npositional\n",
+      "exitCode": 0
+    }
+  ]
+}

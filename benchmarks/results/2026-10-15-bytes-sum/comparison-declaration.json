@@ -1,0 +1,19 @@
+{
+  "baselineRevision": "64fecd53e2b01efbbeef621f0ad71d851459d97c",
+  "candidateBaseRevision": "64fecd53e2b01efbbeef621f0ad71d851459d97c",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs": "7a1e4216135a008224bbad09ab4fafbadf58028390161d06f82cd6d13fbe85d9"
+  },
+  "sourceArchiveSha256": "79c9c783beb351c4a5573df76a91c5c9c8e60d4c3c2bddf0e33204abad0bdb9e",
+  "productionChange": "Exact immutable bytes sum with machine-integer subtotal and one preflighted exact start/result addition; preserve native operation ownership and per64/terminal iterator guards; dynamic fallback unchanged",
+  "case": "scripts.file-manifest.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "none",
+  "executionBoundary": "Already compiled complete file copy/checksum/JSON manifest job with matched disk staging/output-byte checks, fresh state, execution/projection and cleanup; compilation/process startup excluded",
+  "stop": "One short complete manifest/checksum job diagnostic; no repeats, retuning, tagged values, heap tracing or new numeric ABI"
+}

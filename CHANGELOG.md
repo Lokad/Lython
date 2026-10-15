@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Sum exact immutable bytes with a machine-integer subtotal and one preflighted exact-integer result, removing per-byte boxes/iteration adapters. Preserve empty/start aliases, integer promotion, terminal fuel checks, native ownership and dynamic async fallbacks.
+
 - Forward validated JSON value reads directly to the existing parser ValueTask, removing a redundant async state machine while preserving callbacks, errors and owned-input cleanup.
 
 - Write ordinary uppercase scalars directly to governed UTF-8 storage. Share the existing expansion table with legacy casing helpers and preserve admission, ownership and cancellation. Add a complete uppercase-report comparison workload with independent output checks.
