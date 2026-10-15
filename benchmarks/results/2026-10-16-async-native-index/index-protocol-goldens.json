@@ -1,0 +1,35 @@
+{
+  "python": "CPython 3.13.2",
+  "checks": [
+    {
+      "source": "class Index: pass\nkey=Index()\nkey.__index__=lambda:0\ntry: print([10,20][key])\nexcept TypeError: print('type-only')",
+      "expected": "type-only\n",
+      "stdout": "type-only\n"
+    },
+    {
+      "source": "class Index:\n __index__=None\ntry: print([10,20][Index()])\nexcept TypeError: print('not-callable')",
+      "expected": "not-callable\n",
+      "stdout": "not-callable\n"
+    },
+    {
+      "source": "class Index:\n def __index__(self): return 'bad'\ntry: print([10,20][Index()])\nexcept TypeError: print('non-int')",
+      "expected": "non-int\n",
+      "stdout": "non-int\n"
+    },
+    {
+      "source": "events=[]\nclass Index:\n def __index__(self):\n  events.append('index')\n  raise ValueError('bad')\nvalue='before'\ntry: value=[10,20][Index()]\nexcept ValueError: print(value,events)",
+      "expected": "before ['index']\n",
+      "stdout": "before ['index']\n"
+    },
+    {
+      "source": "events=[]\nclass Index:\n @property\n def __index__(self):\n  events.append('bind')\n  return lambda:1\nprint([10,20][Index()],events)",
+      "expected": "20 ['bind']\n",
+      "stdout": "20 ['bind']\n"
+    },
+    {
+      "source": "class Index:\n def __index__(self): return 1<<100\nprint(range(1<<101)[Index()]==1<<100)\ntry: print([10,20][Index()])\nexcept IndexError: print('out-of-range')",
+      "expected": "True\nout-of-range\n",
+      "stdout": "True\nout-of-range\n"
+    }
+  ]
+}

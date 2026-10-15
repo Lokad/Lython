@@ -1,0 +1,16 @@
+{
+  "baselineRevision": "06e7f2dfef2d1dd012a9b6cd9ec4890b5b36e116",
+  "candidateRevision": "917d8bb9704af61bb62e49c5fab294a2d076766f",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "9212bb9d7476709158b7156841d63835a151dcd4159bb963d3e9ef892d204633"
+  },
+  "sourceArchiveSha256": "93636f8678b30a407b6b464bfdcf5e03a8f97f64d2c904cfa500b9c3a07a0fff",
+  "caseId": "strings.index-ascii.medium",
+  "lane": "warm-async",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Exact BigInteger index plus sealed native list/tuple/bytes/string/range dispatch reuses synchronous observed transfer. Both roles already contain shared type-level index correctness fix; that fix is unmeasured.",
+  "normalGCAndTiering": true,
+  "boundary": "Warm completed-host RunAsync, existing ASCII indexed-text script with 512 dynamic reads and checksum; ordinary warm CPython. Fresh state and prior-result disposal included; compilation/startup/transport/hash excluded.",
+  "stoppingRule": "Exactly one fixed existing affected indexed-text comparison; no repeat, retuning, new workload/framework or 600-second lane. Preserve samples and uncertainty; reject unjustified guard."
+}

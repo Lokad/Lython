@@ -1,0 +1,56 @@
+{
+  "groups": [
+    {
+      "stage": "exact-index-qualified-white",
+      "filter": "Category!=Stress",
+      "assemblySha256": "74E09BB8B695702280094A9D5153946560BC76FA15A0A37B046A0B0E0C3464FB",
+      "counters": {
+        "total": "2354",
+        "executed": "2354",
+        "passed": "2354",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 11929
+    },
+    {
+      "stage": "exact-index-focused-public",
+      "filter": "(FullyQualifiedName~ExactSequenceSubscriptTests|FullyQualifiedName~SubscriptIndexProtocolTests|FullyQualifiedName~ElementTree|FullyQualifiedName~MixedSubscriptSyntaxTests)&Category!=Stress",
+      "assemblySha256": "FC846CF58284973CF83EB578AAFF91AB8C465BF07579B08BD5A6CE259FA85F62",
+      "counters": {
+        "total": "112",
+        "executed": "112",
+        "passed": "112",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 4184
+    }
+  ],
+  "groupsOverlap": true,
+  "independentCPythonGoldens": 11,
+  "originalStressRerun": false,
+  "fullLocalPublicRerun": false
+}

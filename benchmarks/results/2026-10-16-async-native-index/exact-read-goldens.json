@@ -1,0 +1,30 @@
+{
+  "python": "CPython 3.13.2",
+  "checks": [
+    {
+      "source": "for data in ([11,22],(11,22),b'ab','ab',range(11,13)):\n print(data[0],data[-1],data[True])",
+      "expected": "11 22 22\n11 22 22\n97 98 98\na b b\n11 12 12\n",
+      "stdout": "11 22 22\n11 22 22\n97 98 98\na b b\n11 12 12\n"
+    },
+    {
+      "source": "failures=0\nfor data in ([1,2],(1,2),b'ab','ab',range(2)):\n for key in (-3,2,1<<100):\n  value='before'\n  try: value=data[key]\n  except IndexError: failures+=value=='before'\nprint(failures)",
+      "expected": "15\n",
+      "stdout": "15\n"
+    },
+    {
+      "source": "text='a\ud83d\ude00\ud834\udd1ez'\nprint(text[1],text[-2],text[True])",
+      "expected": "\ud83d\ude00 \ud834\udd1e \ud83d\ude00\n",
+      "stdout": "\ud83d\ude00 \ud834\udd1e \ud83d\ude00\n"
+    },
+    {
+      "source": "data=range(0,1<<102,2)\nprint(data[1<<100]==1<<101,data[-1]==(1<<102)-2)",
+      "expected": "True True\n",
+      "stdout": "True True\n"
+    },
+    {
+      "source": "events=[]\nclass Items:\n def __getitem__(self,key):\n  events.append(key)\n  return key*2\ndata=Items()\nprint(data[1],data[True],events)",
+      "expected": "2 2 [1, True]\n",
+      "stdout": "2 2 [1, True]\n"
+    }
+  ]
+}

@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 native-index candidate](results/2026-10-16-async-native-index/README.md)
+shares synchronous observed transfer for exact integer reads on sealed native
+sequences. One existing ASCII indexed-text diagnostic observed 0.4388 -> 0.3918 ms,
+CPython 0.05844 ms; spread 2.0%/4.0%/0.2%, 10.7% lower unqualified median. Both
+roles already contain the shared type-level index correctness prerequisite, so
+that fix is unmeasured. One production difference, identical tooling; no repeat,
+retuning or new workload. Custom protocols still suspend and cancel.
+
 The [2026-10-16 exact-unary dispatch candidate](results/2026-10-16-async-integer-unary/README.md)
 shares the synchronous arithmetic/value-transfer handler for exact integer operands
 under RunAsync. One dynamic loop diagnostic observed 1.5519 -> 1.1854 ms,
