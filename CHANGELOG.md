@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Diagnose unsupported surrogate string literals before executable lowering, including f-strings and unpaired UTF-16 input. Reject out-of-range eight-digit Unicode escapes without signed wraparound.
+
 - Dispatch ordinary builtin `dict.get` calls without bound-method or argument packaging. Share lookup with exposed methods, await stored-key equality for string lookups, and forward async unbound methods correctly. Reject builtin `dict.get` keyword arguments while preserving receiver/default aliases through suspension.
 
 - Reject keyword arguments to builtin `list.append` before mutation, including exposed, descriptor-bound, unbound and expanded calls. Preserve keyword binding for user-defined methods.

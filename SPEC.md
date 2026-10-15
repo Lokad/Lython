@@ -494,6 +494,13 @@ are outside the subset and must produce an explicit compilation diagnostic
 before guest effects. Raw literals, bytes literals and escaped backslashes keep
 their Python meanings; unsupported text escapes must not silently corrupt data.
 
+Lython strings contain Unicode scalar values. Surrogate code points U+D800 through
+U+DFFF in numeric text escapes, including adjacent surrogate escapes, are outside
+the subset and produce `LA2000`; unpaired UTF-16 source units in text literals are
+also diagnosed. Supplementary scalars use an actual character or one `\U` escape.
+Raw `r'\ud800'` remains ordinary backslash text. Out-of-range numeric escapes are
+malformed literals, including eight-digit values that exceed signed integer range.
+
 Adjacent bytes literals concatenate at compilation in expressions and literal/
 mapping patterns, across supported prefixes, quoting and line joining. Prefixes
 must touch their literals; mixing bytes and text is a compilation error. The

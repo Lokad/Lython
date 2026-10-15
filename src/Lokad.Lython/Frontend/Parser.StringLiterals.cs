@@ -4,9 +4,11 @@ internal sealed partial class Parser
 {
     private const string UnsupportedNamedUnicodeEscapeMessage =
         "Unsupported named Unicode escape '\\N{...}'; use a Unicode character or numeric '\\u'/'\\U' escapes instead.";
+    private const string UnsupportedSurrogateStringMessage =
+        "Unsupported surrogate code point in string literal; Lython strings contain Unicode scalar values.";
 
     private static string StringLiteralDiagnosticCode(string message)
-        => message == UnsupportedNamedUnicodeEscapeMessage ? "LA2000"
+        => message is UnsupportedNamedUnicodeEscapeMessage or UnsupportedSurrogateStringMessage ? "LA2000"
             : message == SyntaxNestingLimitMessage ? "LA0003"
             : message == PrivateNameExpansionLimitMessage ? "LA0004" : "LA1007";
 
@@ -69,7 +71,7 @@ internal sealed partial class Parser
             // Tokenization has already established the closing delimiter. Raw strings
             // preserve every body code unit here, including backslash sequences.
             value = literal[start..end];
-            return true;
+            return ValidateScalarString(value, out message);
         }
 
         var builder = new System.Text.StringBuilder(end - start);
@@ -142,17 +144,27 @@ internal sealed partial class Parser
                         return false;
                     }
 
+                    if (shortCodePoint is >= 0xD800 and <= 0xDFFF)
+                    {
+                        message = UnsupportedSurrogateStringMessage;
+                        return false;
+                    }
                     builder.Append((char)shortCodePoint);
                     i += 4;
                     break;
                 case 'U' when decodeUnicodeEscapes:
                     if (!TryReadHexCodePoint(literal, i + 1, 8, end, out var longCodePoint) ||
-                        longCodePoint > 0x10FFFF)
+                        (uint)longCodePoint > 0x10FFFF)
                     {
                         message = "Invalid string literal. Malformed \\U escape; expected eight hexadecimal digits naming a Unicode code point.";
                         return false;
                     }
 
+                    if (longCodePoint is >= 0xD800 and <= 0xDFFF)
+                    {
+                        message = UnsupportedSurrogateStringMessage;
+                        return false;
+                    }
                     if (longCodePoint <= char.MaxValue)
                     {
                         builder.Append((char)longCodePoint);
@@ -190,6 +202,23 @@ internal sealed partial class Parser
         }
 
         value = builder.ToString();
+        return ValidateScalarString(value, out message);
+    }
+
+    private static bool ValidateScalarString(string text, out string message)
+    {
+        for (var i = 0; i < text.Length; i++)
+        {
+            if (!char.IsSurrogate(text[i])) continue;
+            if (char.IsHighSurrogate(text[i]) && i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
+            {
+                i++;
+                continue;
+            }
+            message = UnsupportedSurrogateStringMessage;
+            return false;
+        }
+        message = string.Empty;
         return true;
     }
 
@@ -318,8 +347,7 @@ internal sealed partial class Parser
         if (isRaw)
         {
             value = text;
-            message = string.Empty;
-            return true;
+            return ValidateScalarString(value, out message);
         }
 
         // This is an already-delimited f-string text segment, so synthetic
