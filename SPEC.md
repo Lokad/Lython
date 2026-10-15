@@ -259,8 +259,12 @@ instructions and shared closure cells; remaining expression fallbacks
 still require namespace mirroring. Required lowered/class-suite routes remain.
 Defaults are evaluated once at definition, including actual host suspension or
 generator yields. Shared metadata supports class-qualified names and custom
-attribute writes; arbitrary custom-attribute deletion remains unsupported by the
-shared function implementation. Added return/creation checkpoints can change
+attribute writes and deletion. Missing custom attributes raise AttributeError;
+deleting `__name__`, `__qualname__` or `__dict__` raises TypeError. Deleting
+`__doc__`/`__module__` resets them to None; `__annotations__` is recreated lazily
+as an empty dictionary. Defaults retain their live binding/reset behavior.
+Metadata deletion retains capacity and escaped-value funding; reinsertion can
+conservatively reserve another slot. Added return/creation checkpoints can change
 explicit fuel thresholds; conservative metadata/capture admission can reject
 earlier. Compilation and runtime managed stack policies are unchanged.
 In executable enclosing code, eager list/set/dictionary comprehensions use

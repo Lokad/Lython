@@ -23,7 +23,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // clears a premature ownerless computation.
     private PyString? _qualNameValue;
     private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
-    private long _additionalMetadataBytes;
     private readonly ScopeDirectiveFacts _scopeFacts;
 
     protected PyFunctionBase(
@@ -281,18 +280,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         {
             _memoryGovernor.Reserve(AttributeSlotBytes, null);
             _memoryGovernor.Commit(AttributeSlotBytes);
-            if (name != "__doc__")
-            {
-                try
-                {
-                    _additionalMetadataBytes += AttributeSlotBytes;
-                }
-                catch
-                {
-                    _memoryGovernor.Release(AttributeSlotBytes);
-                    throw;
-                }
-            }
         }
 
         _metadata[name] = value;
@@ -300,7 +287,17 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     }
 
     public bool TryDeleteMember(string name, LythonSourceSpan? span)
-        => _bindingPlan.TrySetDefaultMetadata(name, PyNone.Instance, span);
+    {
+        if (_bindingPlan.TrySetDefaultMetadata(name, PyNone.Instance, span)) return true;
+        if (name is "__name__" or "__qualname__" or "__dict__")
+            throw new LythonRuntimeException("TypeError", $"cannot delete {name}", span);
+        if (name is "__doc__" or "__module__") return TrySetMember(name, PyNone.Instance);
+
+        // Removing a key retains table capacity and funding for escaped values.
+        // Annotations are recreated lazily, including after repeated deletion.
+        var removed = _metadata.Remove(name);
+        return removed || name == "__annotations__";
+    }
 
     public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<function {Name}>");
 

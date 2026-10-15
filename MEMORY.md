@@ -74,6 +74,9 @@ before allocating the captured array; denied capture publishes no funding marks.
 Lowered bodies and dynamic namespace consumers retain their existing dictionary
 ownership. Lambda metadata now uses ordinary function storage, so small allowances
 can reject at different thresholds; pending users and escaping aliases stay funded.
+Deleting function metadata removes the reference without refunding table capacity
+or escaped data. Reinsertions conservatively admit another slot. Reserved-field
+resets that need a new metadata entry must admit it before publication.
 Executable eager comprehensions reuse the existing binding lifetime in the caller
 frame. Scope end restores lookup/capture state and does not refund collection or
 element storage retained by a result. Failed/cancelled nested scopes unwind in
