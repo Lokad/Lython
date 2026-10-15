@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Route exact integer unary instructions under RunAsync through the existing synchronous arithmetic and value-transfer handler. Other operands retain asynchronous unary/truth protocols, including real host suspension and cancellation.
+
 - Resolve mutable function callable attributes again at reused call sites, so replacement and deletion take effect while retained callable aliases remain valid.
 
 - Support custom-attribute deletion on named, lambda and generator functions through their shared metadata table. Preserve missing-key errors, protected names, default binding and Python-shaped reserved-field resets; retain capacity and escaped-value funding. Remove an unused metadata-byte counter and its rollback branch.

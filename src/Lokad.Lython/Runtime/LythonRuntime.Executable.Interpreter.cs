@@ -776,6 +776,13 @@ internal sealed partial class LythonRuntime
                                     jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                 break;
 
+                            case ExecutableOpCode.Unary:
+                                if (_stack[_stack.Count - 1] is BigInteger)
+                                    ExecuteObservedValueOperation(instruction);
+                                else
+                                    jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+                                break;
+
                             case ExecutableOpCode.GetIter or
                                  ExecutableOpCode.ForNext or
                                  ExecutableOpCode.AssignLoopTarget or
@@ -783,8 +790,7 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.Call or
                                  ExecutableOpCode.Subscript or
                                  ExecutableOpCode.Slice or
-                                 ExecutableOpCode.MakeSlice or
-                                 ExecutableOpCode.Unary:
+                                 ExecutableOpCode.MakeSlice:
                                 jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                 break;
 
