@@ -90,9 +90,13 @@ internal sealed partial class LythonRuntime
                     try
                     {
                         object result;
-                        if (call.IsPositionalOnly && callable is PyExecutableFunction { SupportsDirectPositional: true } function)
+                        if (call.HasReceiver && ReferenceEquals(callable, DirectListAppend))
                         {
-                            result = await InvokePositionalFunctionAsync(function, _stack.Slice(start + 1, call.ArgumentCount),
+                            result = InvokeListAppend((PyList)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context);
+                        }
+                        else if (call.IsPositionalOnly && callable is PyExecutableFunction { SupportsDirectPositional: true } function)
+                        {
+                            result = await InvokePositionalFunctionAsync(function, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
                                 call.CallSpan, _context).ConfigureAwait(false);
                         }
                         else

@@ -23,6 +23,7 @@ internal enum ExecutableOpCode
     ApplyOperation,
     LoadMember,
     LoadCallMember,
+    LoadCallReceiver,
     PreloadImplicitSuperArguments,
     StoreLocal,
     StoreClosure,
@@ -258,6 +259,13 @@ internal readonly record struct ExecutableInstruction
             new Operand(OperandKind.MemberCacheIndex, cacheIndex),
             span);
 
+    public static ExecutableInstruction LoadCallReceiver(int nameIndex, int cacheIndex, LythonSourceSpan span)
+        => CreateIndexed(
+            ExecutableOpCode.LoadCallReceiver,
+            new Operand(OperandKind.NameIndex, nameIndex),
+            new Operand(OperandKind.MemberCacheIndex, cacheIndex),
+            span);
+
     public static ExecutableInstruction PreloadImplicitSuperArguments(LythonSourceSpan span)
         => Create(ExecutableOpCode.PreloadImplicitSuperArguments, span);
 
@@ -452,9 +460,12 @@ internal sealed record ExecutableCallSite(
     int ArgumentCount,
     IReadOnlyList<ExecutableCallArgumentSpec> Arguments,
     LythonSourceSpan TargetSpan,
-    LythonSourceSpan CallSpan)
+    LythonSourceSpan CallSpan,
+    bool HasReceiver = false)
 {
     public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
+    public int TargetOffset => HasReceiver ? 1 : 0;
+    public int ArgumentOffset => TargetOffset + 1;
 }
 
 internal sealed record ExecutableLoopTargetBinding(

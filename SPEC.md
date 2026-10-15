@@ -1637,6 +1637,11 @@ The supported subset must support the following list methods:
 - `copy`
 - `clear`
 
+Builtin list append takes one positional value: `items.append(value)` or
+`list.append(items, value)`. Keywords raise `TypeError`, including through an
+exposed method, descriptor binding or `**kwargs`, without appending an item.
+Lookup precedes argument evaluation; binding errors follow argument evaluation.
+
 Lists must support Python-style repetition with `list * int`, `int * list`, and plain-name `list *= int`.
 
 Lists must support Python-style slice assignment and deletion for ordinary contiguous and stepped slices. Extended-slice assignment must reject replacement sequences whose length does not match the selected slice length.

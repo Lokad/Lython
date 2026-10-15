@@ -7,6 +7,10 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    // Internal operand only: its receiver occupies a separate slot. A guest
+    // list-valued attribute can never be confused with this resolved method.
+    private static readonly object DirectListAppend = new();
+
     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
     {
         var value = locals[slot];
@@ -473,14 +477,14 @@ internal sealed partial class LythonRuntime
         ref ExecutableValueStack stack,
         out object target)
     {
-        var valueCount = callSite.ArgumentCount + 1;
+        var valueCount = callSite.ArgumentCount + callSite.ArgumentOffset;
         if (valueCount < 0 || stack.Count < valueCount)
         {
             throw RuntimeErrors.Runtime("executable stack underflow", callSite.CallSpan);
         }
 
         var start = stack.Count - valueCount;
-        target = stack[start];
+        target = stack[start + callSite.TargetOffset];
         return start;
     }
 
@@ -499,8 +503,8 @@ internal sealed partial class LythonRuntime
                 }
 
                 arguments[i] = spec.Kind == CallArgumentKind.Keyword
-                    ? CallArgumentValue.Keyword(spec.KeywordName, stack[start + i + 1])
-                    : CallArgumentValue.Positional(stack[start + i + 1]);
+                    ? CallArgumentValue.Keyword(spec.KeywordName, stack[start + i + callSite.ArgumentOffset])
+                    : CallArgumentValue.Positional(stack[start + i + callSite.ArgumentOffset]);
             }
             return arguments;
         }
@@ -536,9 +540,13 @@ internal sealed partial class LythonRuntime
         try
         {
             object result;
-            if (callSite.IsPositionalOnly && target is PyExecutableFunction { SupportsDirectPositional: true } function)
+            if (callSite.HasReceiver && ReferenceEquals(target, DirectListAppend))
             {
-                result = InvokePositionalFunction(function, stack.Slice(start + 1, callSite.ArgumentCount).Span, callSite.CallSpan, context);
+                result = InvokeListAppend((PyList)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+            }
+            else if (callSite.IsPositionalOnly && target is PyExecutableFunction { SupportsDirectPositional: true } function)
+            {
+                result = InvokePositionalFunction(function, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span, callSite.CallSpan, context);
             }
             else
             {

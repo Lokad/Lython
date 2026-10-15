@@ -1,0 +1,26 @@
+{
+  "baselineRevision": "99e8701fe3d4d3e043d8ff1d4ea761003305580c",
+  "candidateBaseRevision": "99e8701fe3d4d3e043d8ff1d4ea761003305580c",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "ea1ad2a725be492c5ca3f90351bdb1c8bd5bda767ddb31a0188de3926a5007c7",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "0b8177ca1af9d61171d30f423ecbcb064f7728911f307af20cc60c890b33b0b1",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "d83b972fd2fd763110a1f889b7672799460d10efd3396300434a24a490deccdd",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "6a829f0e82f730a38ab4ffe2e67c87c7bf27c53f68f39b63d0e7325be597e7d3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "f440d9b9cb1fec5e053b4f7e1c91c051895c44e3f2a896815b6d98fb5f35de40",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "743e5118b6cc5343f086c2b24bf5265320b4255deb1c69848b32d945c2f02e2e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "4c3ad3625b909db5a483952bf62b671a4347ece42c4ee4032770531264fca6a9",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "c4385d5f40d0a7becc25d9abe66e25f875d82b3bbb05b682cb32c38c9d4eafd2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs": "262ce85e43a2fa8a95b9a93721a5069e040d41f1fd7f4226ff87104c4f54a51a"
+  },
+  "sourceArchiveSha256": "760cc08942ae630f65692f6f77b4d83dc7cf93b8bec8d7cef1aa863f1935a76e",
+  "productionChange": "Direct exact list.append with separate receiver/immutable operation slots, shared mutation helper, unchanged call checkpoints; positional-only signature fix",
+  "case": "calls.append-distinct.large",
+  "lane": "warm-async",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "one distinct-list append case shared identically; comparison/execution tooling unchanged",
+  "stop": "one short affected diagnostic; no retuning, sample replacement or additional campaign"
+}

@@ -157,6 +157,14 @@ for i in range(N):
     total += adjust(i)
 print(total)
 """, n => Line(3L * ((long)n * (n - 1) / 2 + n)));
+        Add("calls.append-distinct", "calls", "core", CoreSizes, """
+total = 0
+for i in range(N):
+    items = []
+    items.append(i)
+    total += items[0]
+print(total)
+""", n => Line((long)n * (n - 1) / 2));
         Add("calls.keyword", "calls", "core", CoreSizes, """
 def add(value, offset=1):
     return value + offset

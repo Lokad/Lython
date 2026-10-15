@@ -135,6 +135,21 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    // Exact list.append cannot suspend or invoke a guest protocol. Keep the
+    // same call-entry and bound-callable checkpoints as the general route.
+    private static object InvokeListAppend(PyList receiver, object value, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            return ListMembers.Append(receiver, value, span, context);
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private static bool TryTranslateCallableException(
         Exception exception,
         LythonSourceSpan callSpan,

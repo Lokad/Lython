@@ -91,6 +91,7 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.EvaluateFallbackExpression or
                                  ExecutableOpCode.LoadMember or
                                  ExecutableOpCode.LoadCallMember or
+                                 ExecutableOpCode.LoadCallReceiver or
                                  ExecutableOpCode.PreloadImplicitSuperArguments or
                                  ExecutableOpCode.StoreClosure or
                                  ExecutableOpCode.StoreGlobal or

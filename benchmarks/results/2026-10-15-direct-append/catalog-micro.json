@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "calls.append-distinct.large",
+      "family": "calls",
+      "category": "core",
+      "scale": "large",
+      "size": 16384,
+      "source": "N = 16384\ntotal = 0\nfor i in range(N):\n    items = []\n    items.append(i)\n    total += items[0]\nprint(total)\n",
+      "fixtureJson": "{\"size\":16384,\"text\":null}",
+      "expectedOutput": "134209536\n",
+      "sourceUtf8Bytes": 109,
+      "expectedOutputUtf8Bytes": 10,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "bfb6963db89bb3422916343c8d2314a3e3813403d40a043b6546c6773d93bbe6",
+      "fixtureSha256": "c1c16fa8a40dac165afc8c9915fab90012d9af6a9836b6a2e03812eb3f441155",
+      "expectedOutputSha256": "c7939ac0ea0d28651f4d14f9dc0ebe2f3071fdac68b0a490b64651b863de6cb9"
+    }
+  ]
+}

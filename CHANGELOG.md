@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Reject keyword arguments to builtin `list.append` before mutation, including exposed, descriptor-bound, unbound and expanded calls. Preserve keyword binding for user-defined methods.
+
+- Invoke ordinary one-argument builtin `list.append` calls with separate receiver/implementation operands, avoiding bound method construction and argument arrays across distinct lists. Preserve lookup order, dynamic fallback, call guards and suspension lifetimes.
+
 - Reuse invocation-owned bound storage for executable functions whose parameter and local layouts match, removing a second local array and copy. Preserve separate captured cells and retain storage through asynchronous completion and cancellation.
 
 - Remove the redundant executable call cache, its frame arrays and compiler operands/counters. Preserve dynamic call resolution and update generator admission for the removed storage.

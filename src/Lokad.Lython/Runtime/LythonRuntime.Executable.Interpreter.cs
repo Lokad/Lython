@@ -15,6 +15,17 @@ internal sealed partial class LythonRuntime
 
         private readonly ExecutionContext _context;
 
+        private bool TryLoadDirectCallReceiver(ExecutableInstruction instruction)
+        {
+            if (instruction.OpCode != ExecutableOpCode.LoadCallReceiver
+                || _stack[_stack.Count - 1] is not PyList
+                || _codeObject.Names[instruction.NameIndex] != "append") return false;
+            // Keep the evaluated receiver, then append the immutable operation.
+            // Arguments are evaluated afterwards and can rebind the source name.
+            _stack.Push(DirectListAppend);
+            return true;
+        }
+
         public ExecutableFrameInterpreter(
             ExecutableCodeObject codeObject,
             ExecutionContext context,
@@ -238,6 +249,9 @@ internal sealed partial class LythonRuntime
                     _stack.Push(fallback);
                     break;
 
+                case ExecutableOpCode.LoadCallReceiver:
+                    if (TryLoadDirectCallReceiver(instruction)) break;
+                    goto case ExecutableOpCode.LoadCallMember;
                 case ExecutableOpCode.LoadMember:
                 case ExecutableOpCode.LoadCallMember:
                     var target = Pop(ref _stack, instruction.Span);
@@ -259,12 +273,13 @@ internal sealed partial class LythonRuntime
 
                         memberValue = resolvedMember;
                         _memberCaches[instruction.MemberCacheIndex] = CanCacheRuntimeMemberValue(target, memberValue,
-                            instruction.OpCode == ExecutableOpCode.LoadCallMember)
+                            instruction.OpCode is ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)
                             ? new ExecutableMemberCache(target, memberValue)
                             : null;
                     }
 
                     _context.ObserveValue(memberValue, instruction.Span);
+                    if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver) _stack.Push(PyNone.Instance);
                     _stack.Push(memberValue);
                     break;
 
@@ -708,6 +723,7 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.EvaluateFallbackExpression or
                                  ExecutableOpCode.LoadMember or
                                  ExecutableOpCode.LoadCallMember or
+                                 ExecutableOpCode.LoadCallReceiver or
                                  ExecutableOpCode.PreloadImplicitSuperArguments or
                                  ExecutableOpCode.StoreLocal or
                                  ExecutableOpCode.StoreClosure or
@@ -717,12 +733,14 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.PopTop:
                                 if (instruction.OpCode == ExecutableOpCode.EvaluateFallbackExpression)
                                     PushObserved(await EvaluateLoweredExpressionAsync(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, _context).ConfigureAwait(false), instruction.Span);
-                                else if (instruction.OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember)
+                                else if (instruction.OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)
                                 {
+                                    if (TryLoadDirectCallReceiver(instruction)) break;
                                     var target = Pop(ref _stack, instruction.Span);
                                     var name = _codeObject.Names[instruction.NameIndex];
                                     var member = await TryResolveRuntimeMemberAsync(target, name, _context, instruction.Span).ConfigureAwait(false);
                                     if (!member.Found) throw PyMemberAccess.CreateMissingMemberError(target, name, instruction.Span, _context);
+                                    if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver) _stack.Push(PyNone.Instance);
                                     PushObserved(member.Value, instruction.Span);
                                 }
                                 else ExecuteStackTransfer(instruction);

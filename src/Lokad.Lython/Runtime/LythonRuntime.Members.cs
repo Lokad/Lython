@@ -33,7 +33,9 @@ internal sealed partial class LythonRuntime
         // no name-array allocation, bucket scan or lock on cache misses. Each
         // factory call below matches its previous inline arguments exactly, so the
         // interner hands back the same instance and binding facts cannot drift.
-        private static readonly LythonCallableSignature ListAppendSignature = LythonCallableSignature.Create("list.append", ["value"]);
+        private static readonly LythonCallableSignature ListAppendSignature = LythonCallableSignature.Create(
+            "list.append", ["value"], requiredCount: 1, maximumPositionalArgumentCount: 1,
+            variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
         private static readonly LythonCallableSignature ListExtendSignature = LythonCallableSignature.Create("list.extend", ["iterable"]);
         private static readonly LythonCallableSignature ListIndexSignature = LythonCallableSignature.Create("list.index", ["value", "start", "stop"], 1);
         private static readonly LythonCallableSignature ListCountSignature = LythonCallableSignature.Create("list.count", ["value"]);
@@ -116,22 +118,19 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", "list.remove(x): x not in list", span);
         }
 
+        internal static object Append(PyList list, object value, LythonSourceSpan span, ExecutionContext context)
+        {
+            list.AttachMemoryGovernor(context.MemoryGovernor, span);
+            list.Add(value);
+            context.ObserveCollectionCount(list.Count, span);
+            return PyNone.Instance;
+        }
+
         public static bool TryGetMember(PyList list, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
-                "append" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "list.append(value) expects one argument.", span);
-                    }
-
-                    list.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    list.Add(arguments[0]);
-                    context.ObserveCollectionCount(list.Count, span);
-                    return PyNone.Instance;
-                }, ListAppendSignature),
+                "append" => BoundCallable.Create((arguments, span, context) => Append(list, arguments[0], span, context), ListAppendSignature),
                 "extend" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)

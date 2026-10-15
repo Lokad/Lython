@@ -368,13 +368,14 @@ internal sealed partial class ExecutableScript
 
         private int AllocateMemberCache() => _memberCacheCount++;
 
-        private int InternCallSite(LoweredCallExpression call)
+        private int InternCallSite(LoweredCallExpression call, bool hasReceiver)
         {
             _callSites.Add(new ExecutableCallSite(
                 call.Arguments.Count,
                 call.Arguments.Select(argument => new ExecutableCallArgumentSpec(argument.Form)).ToArray(),
                 call.Target.Span,
-                call.Span));
+                call.Span,
+                hasReceiver));
             return _callSites.Count - 1;
         }
 

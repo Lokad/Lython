@@ -309,11 +309,16 @@ internal sealed partial class ExecutableScript
             var callTarget = call.Target;
             while (callTarget is LoweredParenthesizedExpression parenthesized)
                 callTarget = parenthesized.Inner;
+            var hasReceiver = callTarget is LoweredMemberExpression { Member.MemberName: "append" }
+                && call.Arguments.Count == 1 && call.Arguments[0].Kind == CallArgumentKind.Positional;
             if (callTarget is LoweredMemberExpression member)
             {
                 exitBlock = CompileExpression(member.Target, exitBlock);
-                AddInstruction(exitBlock, ExecutableInstruction.LoadCallMember(
-                    InternName(member.Member.MemberName), AllocateMemberCache(), member.Span));
+                var nameIndex = InternName(member.Member.MemberName);
+                var cacheIndex = AllocateMemberCache();
+                AddInstruction(exitBlock, hasReceiver
+                    ? ExecutableInstruction.LoadCallReceiver(nameIndex, cacheIndex, member.Span)
+                    : ExecutableInstruction.LoadCallMember(nameIndex, cacheIndex, member.Span));
             }
             else exitBlock = CompileExpression(call.Target, exitBlock);
             if (call.Call.PreloadImplicitSuperArguments)
@@ -323,7 +328,7 @@ internal sealed partial class ExecutableScript
                 exitBlock = CompileExpression(argument.Expression, exitBlock);
             }
 
-            AddInstruction(exitBlock, ExecutableInstruction.Call(InternCallSite(call), call.Span));
+            AddInstruction(exitBlock, ExecutableInstruction.Call(InternCallSite(call, hasReceiver), call.Span));
             return true;
         }
 
