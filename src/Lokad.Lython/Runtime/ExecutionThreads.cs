@@ -31,7 +31,22 @@ internal sealed class ExecutionThreads : IDisposable
     internal LythonExecutionResult Run(Func<LythonExecutionResult> runner)
     {
         ArgumentNullException.ThrowIfNull(runner);
-        var work = new WorkItem(runner, ClrExecutionContext.Capture());
+        var work = new SynchronousWorkItem(runner, ClrExecutionContext.Capture());
+        Schedule(work);
+        return work.Wait();
+    }
+
+    internal Task<LythonExecutionResult> RunAsync(Func<Task<LythonExecutionResult>> runner)
+    {
+        ArgumentNullException.ThrowIfNull(runner);
+        var work = new AsynchronousWorkItem(runner, ClrExecutionContext.Capture());
+        var task = work.Task;
+        Schedule(work);
+        return task;
+    }
+
+    private void Schedule(WorkItem work)
+    {
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -54,7 +69,6 @@ internal sealed class ExecutionThreads : IDisposable
                 }
             }
         }
-        return work.Wait();
     }
 
     public void Dispose()
@@ -116,7 +130,7 @@ internal sealed class ExecutionThreads : IDisposable
             Thread = new Thread(Run, owner._stackBytes)
             {
                 IsBackground = true,
-                Name = "Lython sync execution",
+                Name = "Lython execution",
             };
         }
 
@@ -135,20 +149,13 @@ internal sealed class ExecutionThreads : IDisposable
         }
     }
 
-    private sealed class WorkItem
+    private abstract class WorkItem(ClrExecutionContext? context)
     {
-        private readonly object _completionGate = new();
-        private Func<LythonExecutionResult>? _runner;
-        private ClrExecutionContext? _context;
-        private LythonExecutionResult? _result;
-        private ExceptionDispatchInfo? _failure;
-        private bool _completed;
-
-        internal WorkItem(Func<LythonExecutionResult> runner, ClrExecutionContext? context)
-        {
-            _runner = runner;
-            _context = context;
-        }
+        private ClrExecutionContext? _context = context;
+        protected ExceptionDispatchInfo? Failure;
+        protected abstract void Run();
+        protected abstract void ClearRunner();
+        internal abstract void Complete();
 
         // Keep transient runner/context roots out of the idle worker's frame.
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -159,19 +166,29 @@ internal sealed class ExecutionThreads : IDisposable
                 ClrExecutionContext.Run(_context ?? cleanContext,
                     static state =>
                     {
-                        var work = (WorkItem)state!;
-                        work._result = work._runner!();
+                        ((WorkItem)state!).Run();
                     }, this);
             }
-            catch (Exception ex) { _failure = ExceptionDispatchInfo.Capture(ex); }
+            catch (Exception ex) { Failure = ExceptionDispatchInfo.Capture(ex); }
             finally
             {
-                _runner = null;
+                ClearRunner();
                 _context = null;
             }
         }
+    }
 
-        internal void Complete()
+    private sealed class SynchronousWorkItem(Func<LythonExecutionResult> runner, ClrExecutionContext? context) : WorkItem(context)
+    {
+        private readonly object _completionGate = new();
+        private Func<LythonExecutionResult>? _runner = runner;
+        private LythonExecutionResult? _result;
+        private bool _completed;
+
+        protected override void Run() => _result = _runner!();
+        protected override void ClearRunner() => _runner = null;
+
+        internal override void Complete()
         {
             lock (_completionGate)
             {
@@ -188,14 +205,54 @@ internal sealed class ExecutionThreads : IDisposable
             {
                 while (!_completed) Monitor.Wait(_completionGate);
                 result = _result;
-                failure = _failure;
+                failure = Failure;
                 // An idle worker may still have the completed work item in a
                 // CLR local. Never let it retain a guest result or an exception.
                 _result = null;
-                _failure = null;
+                Failure = null;
             }
             failure?.Throw();
             return result ?? throw new InvalidOperationException("Lython sync execution ended without a result.");
+        }
+    }
+
+    private sealed class AsynchronousWorkItem(Func<Task<LythonExecutionResult>> runner, ClrExecutionContext? context) : WorkItem(context)
+    {
+        private Func<Task<LythonExecutionResult>>? _runner = runner;
+        private Task<LythonExecutionResult>? _pending;
+        private TaskCompletionSource<LythonExecutionResult>? _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        internal Task<LythonExecutionResult> Task => _completion!.Task;
+        protected override void Run() => _pending = _runner!();
+        protected override void ClearRunner() => _runner = null;
+
+        // The worker may keep this work item in a CLR local while idle. Move
+        // all result/context owners into completion before publishing anything.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal override void Complete()
+        {
+            var completion = _completion!;
+            var pending = _pending;
+            var failure = Failure;
+            _completion = null;
+            _pending = null;
+            Failure = null;
+            if (failure is not null) completion.TrySetException(failure.SourceException);
+            else if (pending is null) completion.TrySetException(new InvalidOperationException("Lython async execution ended without a task."));
+            else if (pending.IsCompleted) Relay(pending, completion);
+            else
+            {
+                _ = pending.ContinueWith(static (task, state) => Relay(task, (TaskCompletionSource<LythonExecutionResult>)state!),
+                    completion, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            }
+        }
+
+        private static void Relay(Task<LythonExecutionResult> task, TaskCompletionSource<LythonExecutionResult> completion)
+        {
+            // Called only for a terminal task: no worker waits through I/O.
+            // Keep the old relay's faulted-task treatment of cancellation.
+            try { completion.TrySetResult(task.GetAwaiter().GetResult()); }
+            catch (Exception error) { completion.TrySetException(error); }
         }
     }
 }

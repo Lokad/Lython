@@ -2769,10 +2769,13 @@ The public embedding API may expose synchronous execution, asynchronous executio
 
 When asynchronous execution is used with an asynchronous host, host I/O must be awaited through the async host boundary even when the I/O is reached by lazy iterator advancement, iterable materialization, or common iterator combinators. Synchronous execution may still fail explicitly if a host operation cannot complete synchronously.
 
-An asynchronous run starts on a dedicated large-stack thread so its synchronous
-prefix has the same stack protection as synchronous execution. Once the run
-genuinely suspends, that starting thread exits; it does not remain blocked for
-the lifetime of host I/O. Continuations preserve the run's execution state and
+An asynchronous run schedules its synchronous prefix on the same reusable
+large-stack workers as synchronous execution, without blocking its caller through
+that prefix. Once the run genuinely suspends, the worker becomes available for
+another execution; it does not remain blocked for the lifetime of host I/O.
+Idle workers are bounded to at most eight (or the processor count, if smaller)
+and retire after 30 seconds. Each reserves a 16 MiB stack; active prefixes are
+not queued behind busy workers. Continuations preserve the run's execution state and
 caller CLR execution context, and retain stack-headroom and nesting guards on
 their current thread. Host callbacks must not assume a stable thread identity.
 

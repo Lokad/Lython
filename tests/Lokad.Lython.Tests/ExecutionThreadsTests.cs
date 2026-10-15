@@ -127,4 +127,75 @@ public sealed class ExecutionThreadsTests
         Assert.Throws<InvalidOperationException>(() => threads.Run(() => ThrowFromRunner(exception)));
         return [new(exception), new(payload)];
     }
+
+    [Fact]
+    public void IdleWorkerDoesNotRetainAsyncResultFailureOrContext()
+    {
+        using var threads = Create();
+        var references = FinishAsyncAndDrop(threads);
+        threads.Run(Success);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        Assert.All(references, reference => Assert.False(reference.IsAlive));
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference[] FinishAsyncAndDrop(ExecutionThreads threads)
+    {
+        var ambient = new AsyncLocal<object?>();
+        var payload = new object();
+        ambient.Value = payload;
+        try
+        {
+            var result = Success();
+            Assert.Same(result, threads.RunAsync(() => Task.FromResult(result)).GetAwaiter().GetResult());
+            var error = new InvalidOperationException();
+            error.Data["payload"] = payload;
+            Assert.Same(error, Assert.Throws<InvalidOperationException>(() => threads.RunAsync(
+                () => Task.FromException<LythonExecutionResult>(error)).GetAwaiter().GetResult()));
+            return [new(result), new(error), new(payload)];
+        }
+        finally { ambient.Value = null; }
+    }
+
+    [Fact]
+    public async Task SuspendedContinuationKeepsItsContextWhileWorkerRunsAnotherCaller()
+    {
+        using var threads = Create(maxIdle: 1);
+        var ambient = new AsyncLocal<string?> { Value = "first" };
+        var entered = new TaskCompletionSource<Thread>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pending = threads.RunAsync(async () =>
+        {
+            Assert.Equal("first", ambient.Value);
+            ambient.Value = "suspended";
+            entered.SetResult(Thread.CurrentThread);
+            await release.Task.ConfigureAwait(false);
+            Assert.Equal("suspended", ambient.Value);
+            return Success();
+        });
+        try
+        {
+            var worker = await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.True(SpinWait.SpinUntil(() => (worker.ThreadState & ThreadState.WaitSleepJoin) != 0,
+                TimeSpan.FromSeconds(3)));
+            Assert.Equal("first", ambient.Value);
+            ambient.Value = "second";
+            await threads.RunAsync(() =>
+            {
+                Assert.Same(worker, Thread.CurrentThread);
+                Assert.Equal("second", ambient.Value);
+                ambient.Value = "host mutation";
+                return Task.FromResult(Success());
+            }).WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.Equal("second", ambient.Value);
+        }
+        finally
+        {
+            release.TrySetResult();
+            Assert.True((await pending.WaitAsync(TimeSpan.FromSeconds(10))).Success);
+            ambient.Value = null;
+        }
+    }
 }

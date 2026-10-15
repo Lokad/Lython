@@ -330,12 +330,12 @@ internal sealed partial class LythonRuntime
     // same way for its synchronous prefix. Unexpected failures marshal
     // back with their original stack preserved.
     private const int SyncExecutionStackBytes = 16 * 1024 * 1024;
-    private static readonly ExecutionThreads SyncExecutionThreads = new(
+    private static readonly ExecutionThreads ExecutionWorkers = new(
         SyncExecutionStackBytes, Math.Clamp(Environment.ProcessorCount, 1, 8), TimeSpan.FromSeconds(30));
 
     private static LythonExecutionResult RunOnDedicatedStack(Func<LythonExecutionResult> runner)
     {
-        return SyncExecutionThreads.Run(runner);
+        return ExecutionWorkers.Run(runner);
     }
 
     // Async counterpart of the dedicated-stack hop above: the synchronous
@@ -344,32 +344,11 @@ internal sealed partial class LythonRuntime
     // while continuations after genuine host yields resume on pool threads.
     // Those hops start shallow with the persisted counters intact, so the
     // caps keep bounding them. At the first incomplete await the startup
-    // thread exits, releasing its stack instead of parking throughout I/O.
-    // The relay catches failures from both the prefix and continuations;
-    // asynchronous completion never requires pumping the caller's context.
+    // worker returns to the bounded idle pool instead of parking through I/O.
+    // Scheduling never blocks the caller through a CPU-only prefix; completion
+    // catches prefix/continuation failures without pumping the caller's context.
     internal static Task<LythonExecutionResult> RunAsyncOnDedicatedStack(Func<Task<LythonExecutionResult>> runner)
-    {
-        var completion = new TaskCompletionSource<LythonExecutionResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var thread = new Thread(
-            async () =>
-            {
-                try
-                {
-                    completion.TrySetResult(await runner().ConfigureAwait(false));
-                }
-                catch (Exception ex)
-                {
-                    completion.TrySetException(ex);
-                }
-            },
-            SyncExecutionStackBytes)
-        {
-            IsBackground = true,
-            Name = "Lython async execution",
-        };
-        thread.Start();
-        return completion.Task;
-    }
+        => ExecutionWorkers.RunAsync(runner);
 
     private static LythonExecutionResult CreateSuccessfulResult(ExecutionContext context, object? returnValue, LythonRunOptions? options)
     {

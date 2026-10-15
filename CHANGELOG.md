@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Keep thread-local structural comparison scopes within synchronous work after awaited expression evaluation and iterable pulls. Prevent stale execution/cancellation contexts from escaping async dictionary/set construction and comprehensions.
+
+- Reuse protected execution workers for asynchronous startup without blocking the caller through a CPU prefix or retaining a worker through suspended I/O. Share bounded idle retirement and isolated caller contexts with synchronous runs.
+
 - Diagnose unsupported surrogate string literals before executable lowering, including f-strings and unpaired UTF-16 input. Reject out-of-range eight-digit Unicode escapes without signed wraparound.
 
 - Dispatch default builtin `str.strip()` calls without method/binding packaging; preserve dynamic fallback and owned output. Return unchanged trim inputs directly instead of copying, and reject keywords to builtin `str.strip`.

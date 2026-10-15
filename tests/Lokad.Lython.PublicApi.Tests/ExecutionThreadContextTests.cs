@@ -73,19 +73,21 @@ public sealed class ExecutionThreadContextTests
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
-    public void ConsecutiveCallersAndSuppressedFlowDoNotInheritHostMutations()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ConsecutiveCallersAndSuppressedFlowDoNotInheritHostMutations(bool asyncRun)
     {
         var original = Ambient.Value;
         try
         {
             Ambient.Value = "first";
-            CheckBoundary();
+            CheckBoundary(asyncRun);
             Assert.Equal("first", Ambient.Value);
             Ambient.Value = "second";
-            CheckBoundary();
+            CheckBoundary(asyncRun);
             Assert.Equal("second", Ambient.Value);
-            using (System.Threading.ExecutionContext.SuppressFlow()) CheckBoundary();
+            using (System.Threading.ExecutionContext.SuppressFlow()) CheckBoundary(asyncRun);
             Assert.Equal("second", Ambient.Value);
         }
         finally { Ambient.Value = original; }
@@ -128,10 +130,15 @@ public sealed class ExecutionThreadContextTests
         Assert.Equal(new System.Numerics.BigInteger(9), result.ReturnValue);
     }
 
-    [Fact]
-    public void FinishedRunsDoNotPinHostScriptResultOrCapturedContext()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FinishedRunsDoNotPinHostScriptResultOrCapturedContext(bool asyncRun)
     {
-        var references = RunAndDrop();
+        var references = RunAndDrop(asyncRun);
+        // Ensure completion has returned before testing the idle worker's roots.
+        var barrier = new LythonEngine().Compile("pass");
+        using (barrier.Run(new MockLythonHost())) { }
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
@@ -139,7 +146,7 @@ public sealed class ExecutionThreadContextTests
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference[] RunAndDrop()
+    private static WeakReference[] RunAndDrop(bool asyncRun)
     {
         var previous = Ambient.Value;
         var payload = new object();
@@ -148,7 +155,7 @@ public sealed class ExecutionThreadContextTests
         Ambient.Value = payload;
         try
         {
-            var result = script.Run(host);
+            var result = asyncRun ? script.RunAsync(host).GetAwaiter().GetResult() : script.Run(host);
             Assert.True(result.Success, result.Failure?.Message);
             return [new(host), new(script), new(result), new(payload)];
         }

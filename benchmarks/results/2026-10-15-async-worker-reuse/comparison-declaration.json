@@ -1,0 +1,20 @@
+{
+  "baselineRevision": "05eb4efcda4d613d2026e8b8ef0d570034a12c7c",
+  "candidateBaseRevision": "05eb4efcda4d613d2026e8b8ef0d570034a12c7c",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/ExecutionThreads.cs": "3c359b93b6680242330e34c4cd07ac0123cfbe89a199ad0ec272e0341a37d7ff",
+    "src/Lokad.Lython/Runtime/LythonRuntime.cs": "3f628e87e8b6ae67c99912895230b11b50783f0cddd0442ea586aad79b7dcbab"
+  },
+  "sourceArchiveSha256": "08206e40e4c4e37c7ee4395729acd8e16bc1fc3313f4f274a077cba02e0a13da",
+  "productionChange": "Shared nonblocking protected worker scheduling for asynchronous startup; delete per-invocation Thread and async-void relay",
+  "case": "control.empty.control",
+  "lane": "warm-async",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "none",
+  "executionBoundary": "Already compiled pass; public RunAsync including invocation initialization, startup scheduling, result creation/disposal; compile and process startup excluded",
+  "stop": "One short affected setup diagnostic, preserve all samples; no retries, tuning or whole-script speed claims"
+}

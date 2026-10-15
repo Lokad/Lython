@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 async startup reuse](results/2026-10-15-async-worker-reuse/README.md)
+removes per-invocation thread construction and the async-void relay. One empty
+setup diagnostic predates a required structural ambient correctness fix; preserve
+its exact prototype identity and noise. No final-source or useful-script timing
+claim follows. Async ambient scopes are narrowed to synchronous work after pulls.
+
 The [2026-10-15 executable call-cache deletion](results/2026-10-15-call-cache-deletion/README.md)
 removes an identity-only record, unused async frame arrays and compiler cache
 metadata. One synchronous keyword-call diagnostic is within spread; no elapsed

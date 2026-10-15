@@ -3,6 +3,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
+[Collection("RuntimeStress")]
 public sealed class AsyncExecutionWorkerLifetimeTests
 {
     private static readonly AsyncLocal<int?> Ambient = new();
@@ -14,8 +15,8 @@ public sealed class AsyncExecutionWorkerLifetimeTests
     public async Task PendingHostOperationsReleaseStartupThreadsAndKeepRunContexts(bool cancel)
     {
         var previous = Ambient.Value;
-        var script = new LythonEngine().Compile("import time\ntime.sleep(1)\nprint('done')\nreturn 7");
-        var child = new LythonEngine().Compile("return 11");
+        using var script = new LythonEngine().Compile("import time\ntime.sleep(1)\nprint('done')\nreturn 7");
+        using var child = new LythonEngine().Compile("return 11");
         var timings = Enumerable.Range(0, 8).Select(_ => new HeldTiming()).ToArray();
         var calls = new List<Task<LythonExecutionResult>>();
         using var cancellation = new CancellationTokenSource();
@@ -33,14 +34,17 @@ public sealed class AsyncExecutionWorkerLifetimeTests
                     if (captured) return;
                     captured = true;
                     Assert.Equal(index, Ambient.Value);
-                    Assert.Equal(new BigInteger(11), child.Run(new MockLythonHost()).ReturnValue);
+                    using var nested = child.Run(new MockLythonHost());
+                    Assert.Equal(new BigInteger(11), nested.ReturnValue);
                 };
                 calls.Add(script.RunAsync(host, cancellationToken: cancellation.Token));
+                var worker = await timings[i].Started.Task.WaitAsync(Watchdog);
+                Assert.True(SpinWait.SpinUntil(() => !worker.IsAlive ||
+                    (worker.ThreadState & ThreadState.WaitSleepJoin) != 0, TimeSpan.FromSeconds(3)),
+                    "Startup worker did not become available while host I/O was pending.");
             }
             var workers = await Task.WhenAll(timings.Select(t => t.Started.Task)).WaitAsync(Watchdog);
-            Assert.Equal(timings.Length, workers.Distinct().Count());
-            Assert.All(workers, worker => Assert.True(worker.Join(TimeSpan.FromSeconds(3)),
-                "Startup thread remained alive while host I/O was pending."));
+            Assert.Single(workers.Distinct());
             Assert.All(calls, call => Assert.False(call.IsCompleted));
         }
         finally
@@ -51,6 +55,7 @@ public sealed class AsyncExecutionWorkerLifetimeTests
             var results = await Task.WhenAll(calls).WaitAsync(Watchdog);
             foreach (var result in results)
             {
+                using var owned = result;
                 if (cancel)
                 {
                     Assert.False(result.Success);
