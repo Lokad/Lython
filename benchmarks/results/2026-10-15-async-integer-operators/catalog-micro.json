@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "loops.branch.large",
+      "family": "loops",
+      "category": "core",
+      "scale": "large",
+      "size": 16384,
+      "source": "N = 16384\ntotal = 0\nfor i in range(N):\n    if i % 3 == 0:\n        total += i\n    else:\n        total -= i\nprint(total)\n",
+      "fixtureJson": "{\"size\":16384,\"text\":null}",
+      "expectedOutput": "-44725590\n",
+      "sourceUtf8Bytes": 119,
+      "expectedOutputUtf8Bytes": 10,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "f561f11f62301d183ac0e240174d882de9b34ad052d97b922f3711d050e6cf4e",
+      "fixtureSha256": "c1c16fa8a40dac165afc8c9915fab90012d9af6a9836b6a2e03812eb3f441155",
+      "expectedOutputSha256": "ab70aca1cfff0ed830442be061346b94369520fefae5a75bc63048e7ed3f7d87"
+    }
+  ]
+}

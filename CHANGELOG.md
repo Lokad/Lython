@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Share the synchronous binary/augmented operator handler for exact integer operands during `RunAsync`, avoiding generic async operation dispatch while retaining preflights, errors, fuel/cancellation and result ownership. Mixed/user operands keep their existing protocol routes.
+
 - Await user-instance augmented numeric methods and exact-integer reflected fallbacks under `RunAsync`, preserving in-place/ordinary/reflected order, augmented error tokens and cancellation. Share the existing operator mappings instead of restricting asynchronous dispatch to addition.
 
 - Sum exact immutable bytes with a machine-integer subtotal and one preflighted exact-integer result, removing per-byte boxes/iteration adapters. Preserve empty/start aliases, integer promotion, terminal fuel checks, native ownership and dynamic async fallbacks.

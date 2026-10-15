@@ -1,0 +1,16 @@
+{
+  "baselineRevision": "60277f65c07e56fd13c4a3e47f5da7f7742c527d",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "17397bca01b22f0d7d58b8ee6152d1f4172beacb2d00186ce5b1119662f433ef"
+  },
+  "caseId": "loops.branch.large",
+  "lane": "warm-async",
+  "measurementStatusAtDeclaration": "Unmeasured; single declared diagnostic only",
+  "stoppingRule": "One unchanged micro run, normal GC/tiering; preserve all samples, no retries/retuning",
+  "note": "Both roles contain the prior augmented-protocol correctness fix; candidate differs only in exact integer dispatch gate.",
+  "comparisons": 1,
+  "retries": false,
+  "GCAndTiering": "ordinary unchanged",
+  "executionBoundary": "Warm compiled RunAsync with completed host operations; fresh per-run state, execution/projection and previous-result disposal. Excludes compilation, startup, protocol transport and full output hash checks.",
+  "sourceArchiveSha256": "9640b2005da62a899c0c39a5a5d3b35118af788e1c9817f64db6b577b54d3bbe"
+}

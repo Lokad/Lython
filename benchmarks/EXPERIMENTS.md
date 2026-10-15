@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 async exact-integer operator family](results/2026-10-15-async-integer-operators/README.md)
+extends the existing synchronous handler gate beyond addition. Yielding controls
+first exposed and fixed synchronous invocation of other augmented user slots.
+One unchanged branch-loop diagnostic observed 9.846 ->6.321ms, CPython0.9599ms;
+spread3.0%/10.4%/0.5%. No qualified multiplier, complete-job claim or retuning.
+
 The [2026-10-15 exact-byte accumulator](results/2026-10-15-bytes-sum/README.md)
 removes byte iteration adapters, per-item integer boxes and repeated arithmetic
 under existing native ownership. Final magnitude admission precedes allocation;

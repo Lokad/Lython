@@ -1,0 +1,102 @@
+{
+  "groupsOverlap": true,
+  "groups": [
+    {
+      "stage": "integer-family-protocol-public",
+      "filter": "FullyQualifiedName~ExactIntegerOperatorTests|FullyQualifiedName~AugmentedProtocolFallbackTests|FullyQualifiedName~ExactIntegerAdditionTests",
+      "assemblySha256": "C0290DA91015C76BEF2371C5952E2897F54B46184679EF044B01BF3BF1319B17",
+      "elapsedMillisecondsIncludingCleanup": 4472,
+      "counters": {
+        "total": "106",
+        "executed": "106",
+        "passed": "106",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "stage": "integer-family-protocol-white",
+      "filter": "FullyQualifiedName~ExecutableAugmentedIntegerBoundaryTests|FullyQualifiedName~LoweredAugmentedTargetBoundaryTests|FullyQualifiedName~IntegerViewOwnershipTests",
+      "assemblySha256": "F2D740CC3D7D7110E94DF90771332628C107FC17AC2548B85505555C3F8E6901",
+      "elapsedMillisecondsIncludingCleanup": 1168,
+      "counters": {
+        "total": "48",
+        "executed": "48",
+        "passed": "48",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "stage": "integer-family-full-white",
+      "filter": "Category!=Stress",
+      "assemblySha256": "1F31D824B8BFEA8B177FF0BFCEE499937670EE060AFD4FEACB9FE6D643427451",
+      "elapsedMillisecondsIncludingCleanup": 11708,
+      "counters": {
+        "total": "2306",
+        "executed": "2306",
+        "passed": "2306",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "stage": "integer-family-governed-public",
+      "filter": "(FullyQualifiedName~Governed|FullyQualifiedName~Representative|FullyQualifiedName~ComparisonFileWorkerTests|FullyQualifiedName~AssignmentTargetCompatibilityTests|FullyQualifiedName~AugmentedTargetRetentionTests)&Category!=Stress",
+      "assemblySha256": "D736D90E07413AABD432727C53124B426EFF0C1703A8357579E58750E5133E09",
+      "elapsedMillisecondsIncludingCleanup": 14757,
+      "counters": {
+        "total": "333",
+        "executed": "333",
+        "passed": "333",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    }
+  ],
+  "note": "First public group had 12 real asynchronous protocol failures; preserved privately, fixed by 60277f65 before final checks. No timeouts/assertions relaxed; no fresh full public or original stress run."
+}

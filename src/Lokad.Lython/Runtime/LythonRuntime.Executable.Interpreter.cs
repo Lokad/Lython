@@ -764,8 +764,8 @@ internal sealed partial class LythonRuntime
                                 jumped = await ExecuteStructureAsync(instruction).ConfigureAwait(false);
                                 break;
 
-                            case ExecutableOpCode.Binary when instruction.BinaryOperator == ExecutableBinaryOperator.Add:
-                            case ExecutableOpCode.Augmented when instruction.AugmentedOperator == ExecutableAugmentedOperator.Add:
+                            case ExecutableOpCode.Binary:
+                            case ExecutableOpCode.Augmented:
                                 // Exact integers cannot invoke guest protocols. Share the
                                 // synchronous transfer/admission path before creating any
                                 // operation-helper state machine; never retry a guest call.
@@ -783,8 +783,6 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.Subscript or
                                  ExecutableOpCode.Slice or
                                  ExecutableOpCode.MakeSlice or
-                                 ExecutableOpCode.Binary or
-                                 ExecutableOpCode.Augmented or
                                  ExecutableOpCode.Unary:
                                 jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                 break;

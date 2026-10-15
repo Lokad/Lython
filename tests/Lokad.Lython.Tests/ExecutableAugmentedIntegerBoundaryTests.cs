@@ -13,6 +13,54 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
     private const string Source = "global left\nleft += right\n";
 
     [Theory]
+    [InlineData("-")]
+    [InlineData("*")]
+    [InlineData("/")]
+    [InlineData("//")]
+    [InlineData("%")]
+    [InlineData("**")]
+    [InlineData("|")]
+    [InlineData("^")]
+    [InlineData("&")]
+    [InlineData("<<")]
+    [InlineData(">>")]
+    public void OtherIntegerOperatorsPreserveEveryFuelBoundary(string token)
+    {
+        var source = $"global left\nleft {token}= right\n";
+        var completed = Create("13", "4");
+        Run(completed, false, source);
+        Assert.Equal(6, completed.Limits.ExecutionStepCount);
+        for (var fuel = 0; fuel <= 6; fuel++)
+        {
+            (object Value, long Bytes, LythonSourceSpan? Span)? synchronous = null;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                var context = Create("13", "4");
+                var original = context.Variables["left"];
+                context.Limits.ExecutionStepCount = 1000 - fuel;
+                var failure = Record.Exception(() => Run(context, asynchronous, source));
+                if (fuel < 6)
+                {
+                    var error = Assert.IsType<LythonRuntimeException>(failure);
+                    Assert.Equal("maximum execution step count exceeded (1000)", error.Message);
+                    Assert.Equal(1001, context.Limits.ExecutionStepCount);
+                    if (fuel < 5) Assert.Same(original, context.Variables["left"]);
+                }
+                else
+                {
+                    Assert.Null(failure);
+                    Assert.Equal(completed.Variables["left"], context.Variables["left"]);
+                }
+                var observation = (context.Variables["left"], context.MemoryGovernor.CurrentAccountedBytes,
+                    (failure as LythonRuntimeException)?.Span);
+                if (asynchronous) Assert.Equal(synchronous!.Value, observation);
+                else synchronous = observation;
+                AssertUnwound(context);
+            }
+        }
+    }
+
+    [Theory]
     [InlineData("127", "1", "128")]
     [InlineData("-128", "-1", "-129")]
     [InlineData("9223372036854775807", "1", "9223372036854775808")]
@@ -102,6 +150,32 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
     }
 
     [Theory]
+    [InlineData("*")]
+    [InlineData("<<")]
+    [InlineData("**")]
+    public void OtherIntegerResultPreflightsRefuseBeforeAssignment(string token)
+    {
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var context = Create("18446744073709551615", "2");
+            var governor = context.MemoryGovernor;
+            var padding = 1024 * 1024 - governor.CurrentAccountedBytes;
+            governor.Reserve(padding, null);
+            governor.Commit(padding);
+            var before = governor.CurrentCommittedBytes;
+            var original = context.Variables["left"];
+            var error = Assert.Throws<LythonRuntimeException>(() => Run(context, asynchronous,
+                $"global left\nleft {token}= right\n"));
+            Assert.Equal("MemoryError", error.ExceptionType);
+            Assert.Same(original, context.Variables["left"]);
+            Assert.Equal(before, governor.CurrentCommittedBytes);
+            Assert.True(governor.LastDeniedReservationBytes > 0);
+            Assert.Equal(4, context.Limits.ExecutionStepCount);
+            AssertUnwound(context);
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void FuelFailureStillPrecedesCancellation(bool fuelDenied)
@@ -132,9 +206,9 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
         return context;
     }
 
-    private static void Run(Context context, bool asynchronous)
+    private static void Run(Context context, bool asynchronous, string source = Source)
     {
-        var frontend = LythonFrontend.Compile(Source);
+        var frontend = LythonFrontend.Compile(source);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
         if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context).GetAwaiter().GetResult();

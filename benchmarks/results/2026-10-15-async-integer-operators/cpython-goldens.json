@@ -1,0 +1,48 @@
+{
+  "python": "C:\\Python313\\python.exe",
+  "version": "Python 3.13.2",
+  "cases": [
+    {
+      "source": "print(13-4,13*4,13/4,13//4,13%4,13**4)",
+      "expected": "9 52 3.25 3 1 28561\n",
+      "exitCode": 0,
+      "stdout": "9 52 3.25 3 1 28561\n"
+    },
+    {
+      "source": "print(-13//4,-13%4,13//-4,13%-4,2**-3)",
+      "expected": "-4 3 -4 -3 0.125\n",
+      "exitCode": 0,
+      "stdout": "-4 3 -4 -3 0.125\n"
+    },
+    {
+      "source": "print(13|4,13^4,13&4,13<<4,13>>4,-13>>4)",
+      "expected": "13 9 4 208 0 -1\n",
+      "exitCode": 0,
+      "stdout": "13 9 4 208 0 -1\n"
+    },
+    {
+      "source": "print(13<4,13<=13,13>4,13>=13,13==4,13!=4)",
+      "expected": "False True True True False True\n",
+      "exitCode": 0,
+      "stdout": "False True True True False True\n"
+    },
+    {
+      "source": "x=1<<100\nprint(x is x,x is not x,x==int(str(x)),(x*x)//x==x)",
+      "expected": "True False True True\n",
+      "exitCode": 0,
+      "stdout": "True False True True\n"
+    },
+    {
+      "source": "print((2**63)*2,(2**64)-1,(-(2**64))>>63,(-1)<<(65))",
+      "expected": "18446744073709551616 18446744073709551615 -2 -36893488147419103232\n",
+      "exitCode": 0,
+      "stdout": "18446744073709551616 18446744073709551615 -2 -36893488147419103232\n"
+    },
+    {
+      "source": "print(True-1,True*4,4/True,False|1,13-0.5,2*1.5)",
+      "expected": "0 4 4.0 1 12.5 3.0\n",
+      "exitCode": 0,
+      "stdout": "0 4 4.0 1 12.5 3.0\n"
+    }
+  ]
+}
