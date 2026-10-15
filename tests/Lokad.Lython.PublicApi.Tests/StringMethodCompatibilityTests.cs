@@ -113,7 +113,7 @@ vals = []
 vals.append("banana".replace(old="na", new="X", count=1))
 vals.append(str("a,b,c".split(sep=",", maxsplit=1)))
 vals.append(str("a,b,c".rsplit(sep=",", maxsplit=1)))
-vals.append("xyabcxy".strip(chars="xy"))
+vals.append("xyabcxy".strip("xy"))
 vals.append("abc".center(width=7))
 vals.append("42".zfill(width=5))
 vals.append("{name}:{count}".format(name="alpha", count=2))
