@@ -1,0 +1,55 @@
+{
+  "python": "CPython 3.13.2",
+  "checks": [
+    {
+      "source": "def sink(*args,**kw): return args,list(kw.items())\nprint(sink(1,*[2,3],flag=4,**{'end':5}))",
+      "expected": "((1, 2, 3), [('flag', 4), ('end', 5)])\n",
+      "stdout": "((1, 2, 3), [('flag', 4), ('end', 5)])\n"
+    },
+    {
+      "source": "events=[]\nclass Values:\n def __iter__(self):\n  events.append('iterate')\n  return iter([1])\ndef mark():\n events.append('keyword')\n return 2\ndef sink(*args,**kw): return args,kw\nprint(sink(*Values(),flag=mark()),events)",
+      "expected": "((1,), {'flag': 2}) ['keyword', 'iterate']\n",
+      "stdout": "((1,), {'flag': 2}) ['keyword', 'iterate']\n"
+    },
+    {
+      "source": "events=[]\ndef sink(**kw): return kw\nclass Mapping:\n def keys(self):\n  def produce():\n   for key in ['a','b']:\n    events.append('key:'+key)\n    yield key\n  return produce()\n def __getitem__(self,key):\n  events.append('get:'+key)\n  return key.upper()\nprint(sink(**Mapping()),events)",
+      "expected": "{'a': 'A', 'b': 'B'} ['key:a', 'key:b', 'get:a', 'get:b']\n",
+      "stdout": "{'a': 'A', 'b': 'B'} ['key:a', 'key:b', 'get:a', 'get:b']\n"
+    },
+    {
+      "source": "events=[]\ndef sink(**kw): events.append('called')\nclass Mapping:\n def keys(self): return ['a']\n def __getitem__(self,key):\n  events.append('get')\n  return 2\ntry: sink(a=1,**Mapping())\nexcept TypeError: print(events)",
+      "expected": "[]\n",
+      "stdout": "[]\n"
+    },
+    {
+      "source": "events=[]\ndef sink(**kw): events.append('called')\nclass Mapping:\n def keys(self): return [1]\n def __getitem__(self,key):\n  events.append('get')\n  return 2\ntry: sink(**Mapping())\nexcept TypeError: print(events)",
+      "expected": "['get']\n",
+      "stdout": "['get']\n"
+    },
+    {
+      "source": "def outer(value):\n def invoke(target,values):\n  local=value+1\n  result=target(*values,key=local)\n  return result,locals()['local']\n return invoke\ndef sink(*args,**kw): return args,kw\nprint(outer(3)(sink,[1,2]))",
+      "expected": "(((1, 2), {'key': 4}), 4)\n",
+      "stdout": "(((1, 2), {'key': 4}), 4)\n"
+    },
+    {
+      "source": "def sink(*args,**kw): return args,kw\ndef run():\n yield sink(*(yield 'values'),**(yield 'keywords'))\ng=run()\nprint(next(g),g.send([1,2]),g.send({'end':3}))",
+      "expected": "values keywords ((1, 2), {'end': 3})\n",
+      "stdout": "values keywords ((1, 2), {'end': 3})\n"
+    },
+    {
+      "source": "events=[]\nclass Values:\n def __iter__(self):\n  events.append('iterate')\n  return iter([1])\nclass Mapping:\n def keys(self):\n  events.append('keys')\n  return ['end']\n def __getitem__(self,key):\n  events.append('get:'+key)\n  return 2\ndef sink(*args,**kw):\n events.append('call')\n return args,kw\nprint(sink(*Values(),**Mapping()),events)",
+      "expected": "((1,), {'end': 2}) ['keys', 'get:end', 'iterate', 'call']\n",
+      "stdout": "((1,), {'end': 2}) ['keys', 'get:end', 'iterate', 'call']\n"
+    },
+    {
+      "source": "def inspect():\n value=7\n return locals(*[])['value']\nprint(inspect())",
+      "expected": "7\n",
+      "stdout": "7\n"
+    },
+    {
+      "source": "class Base:\n def value(self): return 3\nclass Child(Base):\n def value(self): return super(*[]).value()+1\nprint(Child().value())",
+      "expected": "4\n",
+      "stdout": "4\n"
+    }
+  ]
+}

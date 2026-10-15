@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "calls.expanded-helper.medium",
+      "family": "calls",
+      "category": "core",
+      "scale": "medium",
+      "size": 2048,
+      "source": "N = 2048\ndef combine(left, right, marker=0):\n    return left + right + marker\ndef forward(values, keywords):\n    return combine(*values, **keywords)\nvalues = (1, 2)\nkeywords = {'marker':4}\ntotal = 0\nfor i in range(N):\n    total += forward(values, keywords)\nprint(total)\n",
+      "fixtureJson": "{\"size\":2048,\"text\":null}",
+      "expectedOutput": "14336\n",
+      "sourceUtf8Bytes": 270,
+      "expectedOutputUtf8Bytes": 6,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "e9605c63d65d2d3761eb4d1c59c4439c972f051999e77496bd46014a7d3af72c",
+      "fixtureSha256": "cc19526c1d9f59f92c233c4276c92e42e48bc1ecbbeec305f81a44877bd877d6",
+      "expectedOutputSha256": "619d459833efb09e755270b78b27baffa05ea615aae375df67d991bb6bf057a7"
+    }
+  ]
+}

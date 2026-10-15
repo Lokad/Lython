@@ -1,0 +1,61 @@
+{
+  "checks": [
+    {
+      "engine": "timing-baseline",
+      "pid": 2350465,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-candidate",
+      "pid": 2350486,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-CPython",
+      "pid": 2350501,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-lythonIdentity",
+      "pid": 2350200,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-pythonIdentity",
+      "pid": 2350221,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-lythonIdentity",
+      "pid": 2350332,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-pythonIdentity",
+      "pid": 2350353,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    }
+  ],
+  "productionDifferences": [
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingExpressions.cs"
+  ],
+  "frozenSourceHashesMatch": true,
+  "comparisonSourcesIdentical": true,
+  "relevantUnits": "",
+  "leaseAcquired": true
+}

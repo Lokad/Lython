@@ -1,0 +1,150 @@
+{
+  "groupsOverlap": true,
+  "groups": [
+    {
+      "stage": "expanded-call-final-white",
+      "filter": "Category!=Stress",
+      "assemblySha256": "09BE6D83A12FD78B4681E0AAD07C1FBF4611073F1176FFE4809C31018DB52B8E",
+      "counters": {
+        "total": "2330",
+        "executed": "2330",
+        "passed": "2330",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 11701
+    },
+    {
+      "stage": "expanded-call-candidate-white",
+      "filter": "FullyQualifiedName~ExpandedCallExecutableTests|FullyQualifiedName~CallArgumentEvaluationTests",
+      "assemblySha256": "6035039A64BF8AC80CA1F85E817B5270366BEED5ED97B5EF8E1C9FB25DB78FEA",
+      "counters": {
+        "total": "5",
+        "executed": "5",
+        "passed": "5",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 1025
+    },
+    {
+      "stage": "expanded-call-candidate-public",
+      "filter": "FullyQualifiedName~ExpandedCallExecutionTests|FullyQualifiedName~CallArgumentEvaluationTests",
+      "assemblySha256": "DF7F8EF9562C09B14665610D528B96FE385F289F41454881946E5DACC5695311",
+      "counters": {
+        "total": "25",
+        "executed": "25",
+        "passed": "25",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 2823
+    },
+    {
+      "stage": "expanded-call-semantic-public",
+      "filter": "(FullyQualifiedName~ExpandedCall|FullyQualifiedName~CallArgument|FullyQualifiedName~CallBinder|FullyQualifiedName~PositionalCall|FullyQualifiedName~Unpacking|FullyQualifiedName~Super|FullyQualifiedName~Locals|FullyQualifiedName~Generator|FullyQualifiedName~NamedArgument)&Category!=Stress",
+      "assemblySha256": "79CBB81681B168E8E9D37CCA5214C8AAB5FB0B92FE5D425A73139488D0FB0FBF",
+      "counters": {
+        "total": "411",
+        "executed": "411",
+        "passed": "411",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 15305
+    },
+    {
+      "stage": "expanded-call-governed-public",
+      "filter": "(FullyQualifiedName~Governed|FullyQualifiedName~Representative|FullyQualifiedName~ComparisonFileWorkerTests)&Category!=Stress",
+      "assemblySha256": "79CBB81681B168E8E9D37CCA5214C8AAB5FB0B92FE5D425A73139488D0FB0FBF",
+      "counters": {
+        "total": "284",
+        "executed": "284",
+        "passed": "284",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 15112
+    },
+    {
+      "stage": "expanded-call-order-public",
+      "filter": "FullyQualifiedName~CallArgumentEvaluationTests",
+      "assemblySha256": "3BC6C4C8FD58B304F27C319ECC163B6B318100E400ECF773577CF9FE65AB6004",
+      "counters": {
+        "total": "8",
+        "executed": "8",
+        "passed": "8",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 2128
+    }
+  ],
+  "note": "Raw syntax and six public argument-order controls failed before9e6bdd57; one raw/eight public pass after. Four call-routing controls failed before compiler reuse and pass after. One obsolete assertion requiring starred-call fallback was removed; class fallback coverage retained. No timeout/budget relaxation, full local public or fresh original Stress claim."
+}

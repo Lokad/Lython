@@ -243,6 +243,14 @@ operations with yielding generators. Formatting protocols can suspend under
 coexist during joining and remain conservatively funded. Allocation admission
 and explicit fuel can occur at different checkpoints than the lowered route;
 exact historical thresholds are not part of the contract.
+Expanded calls share executable target/argument evaluation and the existing
+temporary accumulator with yielding generators. Arguments and expansion errors
+precede rejection of a non-callable target. A sole starred positional argument
+retains its deferred iteration order relative to keyword expressions/mappings.
+Existing operation checkpoints can change explicit fuel thresholds from the
+lowered route. Accumulator storage and its final array overlap are admitted
+before allocation and released after invocation or failed/cancelled expansion;
+retained argument aliases keep their surviving execution/result ownership.
 Guest-visible Python exception shells have a conservative160-byte estimate.
 Rebinding or rethrowing an alias does not allocate another shell. Execution owners
 retain admitted guest storage conservatively until their finite batch ends;

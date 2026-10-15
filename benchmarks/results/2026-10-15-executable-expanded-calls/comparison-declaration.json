@@ -1,0 +1,16 @@
+{
+  "baselineRevision": "42dfd7747c76950fa28b2890914faa14c94c9744",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "97107e340b1a330c3123d62ddac3bb1a46f68281c737215b0d55f7ab812a55bf",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingExpressions.cs": "277c95414591a097c80da7e152f9b4540b93def013a2c404895f23b8a546506c"
+  },
+  "sourceArchiveSha256": "e1134a961dacc70e5d4693a3a83edf14afbcc35bc4626341a5c29ad1c1d39201",
+  "caseId": "calls.expanded-helper.medium",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Ordinary expanded calls reuse existing generator call accumulator lowering; remove fallback and try-compile boolean route. Both roles contain non-callable argument-order fix. No new runtime opcode, owner or binder.",
+  "normalGCAndTiering": true,
+  "boundary": "Warm compiled expanded-call forwarder, fresh run state, execution/projection and prior-result disposal; compilation/startup/transport/hash excluded.",
+  "stoppingRule": "One fixed affected helper diagnostic after source/semantic gates; no repeat or retuning."
+}

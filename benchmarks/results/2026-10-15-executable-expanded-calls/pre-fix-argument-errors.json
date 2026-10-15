@@ -1,0 +1,140 @@
+[
+  {
+    "asynchronous": false,
+    "probes": [
+      {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "type []\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1721,
+          "PeakProjectionMemoryBytes": 48,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "value ['value']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      },
+      {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "[]\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2097,
+          "PeakProjectionMemoryBytes": 38,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "['star', 'keyword']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    ]
+  },
+  {
+    "asynchronous": true,
+    "probes": [
+      {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "type []\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1721,
+          "PeakProjectionMemoryBytes": 48,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "value ['value']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      },
+      {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "[]\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2097,
+          "PeakProjectionMemoryBytes": 38,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "['star', 'keyword']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    ]
+  }
+]

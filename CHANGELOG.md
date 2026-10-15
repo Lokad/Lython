@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Compile ordinary expanded calls with the existing generator call operations, removing their expression fallback, unnecessary local mirroring and boolean fallback selection. Preserve argument order, mapping/iteration suspension, cancellation, admission and retained aliases without a new binder or owner.
+
+- Evaluate deferred arguments before rejecting a non-callable target in syntax and lowered sync/async execution. Argument effects, exceptions and cancellation now precede the target error; callable-target frame admission is unchanged.
+
 - Compile ordinary f-strings through the existing executable field, format-specifier and join operations, removing their expression fallback and unnecessary local mirroring. Preserve formatting protocol suspension, evaluation order, cancellation and conservative intermediate/result admission.
 
 - Compile expanded set/dictionary displays through the existing generator display operations, removing their ordinary expression fallbacks and unnecessary local mirroring. Reuse one dictionary lowering helper; preserve mapping suspension, key/value order, cancellation and retained funding without new opcodes or storage machinery.

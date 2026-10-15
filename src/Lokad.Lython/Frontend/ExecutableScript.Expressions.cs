@@ -71,11 +71,7 @@ internal sealed partial class ExecutableScript
                     return currentBlock;
 
                 case LoweredCallExpression call:
-                    if (!TryCompileCallExpression(call, currentBlock, out currentBlock))
-                    {
-                        AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(call), call.Span));
-                    }
-                    return currentBlock;
+                    return CompileCallExpression(call, currentBlock);
 
                 case LoweredListLiteralExpression list:
                     if (list.List.HasUnpacking)
@@ -294,17 +290,14 @@ internal sealed partial class ExecutableScript
             return currentBlock;
         }
 
-        private bool TryCompileCallExpression(LoweredCallExpression call, int currentBlock, out int exitBlock)
+        private int CompileCallExpression(LoweredCallExpression call, int currentBlock)
         {
-            exitBlock = currentBlock;
-            foreach (var argument in call.Arguments)
+            if (call.Arguments.Any(argument => argument.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary))
             {
-                if (argument.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary)
-                {
-                    return false;
-                }
+                return CompileExpandedCall(call, currentBlock);
             }
 
+            var exitBlock = currentBlock;
             var callTarget = call.Target;
             while (callTarget is LoweredParenthesizedExpression parenthesized)
                 callTarget = parenthesized.Inner;
@@ -335,7 +328,7 @@ internal sealed partial class ExecutableScript
             }
 
             AddInstruction(exitBlock, ExecutableInstruction.Call(InternCallSite(call, hasReceiver), call.Span));
-            return true;
+            return exitBlock;
         }
 
         // Conditional expressions branch natively instead of paying one

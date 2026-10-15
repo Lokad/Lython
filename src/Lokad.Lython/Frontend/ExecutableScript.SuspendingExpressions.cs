@@ -35,14 +35,7 @@ internal sealed partial class ExecutableScript
                     result = CompileFormattedParts(formatted.Parts, formatted.Span, block);
                     return true;
                 case LoweredCallExpression call when call.Arguments.Any(a => a.Form.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary):
-                    result = CompileExpression(call.Target, block);
-                    EmitOperation(new ExecutableStartCall(call.Arguments.Count, call.Arguments.Count(a => a.Form.Kind is CallArgumentKind.Positional or CallArgumentKind.StarredList) == 1), call.Span, result);
-                    foreach (var argument in call.Arguments)
-                    {
-                        result = CompileExpression(argument.Expression, result);
-                        EmitOperation(new ExecutableAppendCall(argument.Form), argument.Expression.Span, result);
-                    }
-                    EmitOperation(new ExecutableFinishCall(call.Target.Span), call.Span, result);
+                    result = CompileExpandedCall(call, block);
                     return true;
                 case LoweredListLiteralExpression list when list.List.HasUnpacking:
                     result = CompileDisplay(list.Items, ExecutableDisplayKind.List, list.Span, block);
@@ -69,6 +62,20 @@ internal sealed partial class ExecutableScript
             result = CompileExpression(clauses[0].Iterable, block);
             EmitOperation(new ExecutableCreateComprehension(expression), expression.Span, result);
             return true;
+        }
+
+        private int CompileExpandedCall(LoweredCallExpression call, int block)
+        {
+            block = CompileExpression(call.Target, block);
+            EmitOperation(new ExecutableStartCall(call.Arguments.Count,
+                call.Arguments.Count(a => a.Form.Kind is CallArgumentKind.Positional or CallArgumentKind.StarredList) == 1), call.Span, block);
+            foreach (var argument in call.Arguments)
+            {
+                block = CompileExpression(argument.Expression, block);
+                EmitOperation(new ExecutableAppendCall(argument.Form), argument.Expression.Span, block);
+            }
+            EmitOperation(new ExecutableFinishCall(call.Target.Span), call.Span, block);
+            return block;
         }
 
         private int CompileFormattedParts(IReadOnlyList<LoweredFormattedStringPart> parts, LythonSourceSpan span, int block)

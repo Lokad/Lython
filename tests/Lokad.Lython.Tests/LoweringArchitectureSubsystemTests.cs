@@ -460,20 +460,17 @@ return value
     }
 
     [Fact]
-    public void ExecutableScript_CompilesRepresentativeFallbackShapes()
+    public void ExecutableScript_CompilesClassDefinitionFallback()
     {
         var frontend = LythonFrontend.Compile("""
 class Box:
     pass
-
-value = sorted(*[[3, 1, 2]], reverse=True)
 """);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
 
         Assert.NotEmpty(executable.EntryPoint.StatementFallbacks);
-        Assert.NotEmpty(executable.EntryPoint.ExpressionFallbacks);
     }
 
     [Fact]
