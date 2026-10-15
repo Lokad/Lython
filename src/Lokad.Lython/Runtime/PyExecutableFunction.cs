@@ -10,6 +10,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     // slot, or -1 when the name is not a frame local (like a name-lookup
     // miss today). Built once per function value.
     private readonly int[] _argumentSlotMap;
+    private readonly bool _argumentsAreLocals;
 
     public PyExecutableFunction(
         string name,
@@ -31,6 +32,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         {
             _argumentSlotMap[i] = codeObject.LocalNameToSlot.TryGetValue(layout[i], out var slot) ? slot : -1;
         }
+        // The invocation already owns this exact-size array through completion.
+        // Captures use separate cells; exposed locals copy values, never the array.
+        _argumentsAreLocals = !codeObject.RequiresLocalVariableMirroring && layout.Count == codeObject.LocalNames.Count;
+        for (var i = 0; _argumentsAreLocals && i < _argumentSlotMap.Length; i++)
+            _argumentsAreLocals = _argumentSlotMap[i] == i;
     }
 
     protected override bool RequiresArgumentMirroring => _codeObject.RequiresLocalVariableMirroring;
@@ -58,7 +64,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         _ = span;
         if (LythonRuntime.TryExecuteSimpleReturn(_codeObject, frame, boundArguments, _argumentSlotMap, out var result))
             return result;
-        return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _argumentSlotMap, _closureCells)
+        return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _argumentSlotMap, _closureCells, _argumentsAreLocals)
             ?? PyNone.Instance;
     }
 
@@ -72,7 +78,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         if (LythonRuntime.TryExecuteSimpleReturn(_codeObject, frame, boundArguments, _argumentSlotMap, out var result))
             return result;
         return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
-            _codeObject, frame, boundArguments, _argumentSlotMap, _closureCells).ConfigureAwait(false)
+            _codeObject, frame, boundArguments, _argumentSlotMap, _closureCells, _argumentsAreLocals).ConfigureAwait(false)
             ?? PyNone.Instance;
     }
 }

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse invocation-owned bound storage for executable functions whose parameter and local layouts match, removing a second local array and copy. Preserve separate captured cells and retain storage through asynchronous completion and cancellation.
+
 - Remove the redundant executable call cache, its frame arrays and compiler operands/counters. Preserve dynamic call resolution and update generator admission for the removed storage.
 
 - Pass eligible compiled positional calls from existing operand storage without packaged call-argument arrays or async argument-factory closures. Share frame entry/body cleanup with ordinary invocation, preserving live defaults, cancellation, admission and owned arguments across suspension.

@@ -147,6 +147,16 @@ for i in range(N):
     total += add(i)
 print(total)
 """, n => Line((long)n * (n - 1) / 2 + 3L * n));
+        Add("calls.parameter-update", "calls", "core", CoreSizes, """
+def adjust(value, offset=1):
+    value += offset
+    value *= 3
+    return value
+total = 0
+for i in range(N):
+    total += adjust(i)
+print(total)
+""", n => Line(3L * ((long)n * (n - 1) / 2 + n)));
         Add("calls.keyword", "calls", "core", CoreSizes, """
 def add(value, offset=1):
     return value + offset

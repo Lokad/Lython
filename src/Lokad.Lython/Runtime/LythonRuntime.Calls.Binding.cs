@@ -11,9 +11,10 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     // Pooled binder value slots for the common layout widths. The consumer
-    // audit shows bound Values never escape alive: frames copy refs out,
-    // bodies and dataclass dunders read transiently, and the struct itself
-    // never leaves its Invoke. ThreadStatic plus take-null with keep-first
+    // bound Values remain invocation-owned: matching executable frames borrow
+    // them through completion, other frames copy refs out, and dataclass
+    // dunders read transiently. Captures/exposed locals retain values or cells,
+    // never this array. ThreadStatic plus take-null with keep-first
     // stays safe under recursion, suspension and parallel tests; slots are
     // cleared before caching (fresh arrays start null too). Binding failures
     // drop the box instead of caching it. Only the hot user-function paths

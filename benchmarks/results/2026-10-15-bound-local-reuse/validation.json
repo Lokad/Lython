@@ -1,0 +1,152 @@
+{
+  "checks": [
+    {
+      "stage": "bound-local-reuse-qualified-white",
+      "receipt": {
+        "source": "f93e9258 plus matching local-array reuse and final controls",
+        "production": "controls Release solution build",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "836DB10AF5314997C1E375D8C2AB639ECF33DAE6B7A9BF688127D5E8E3C0AB73",
+        "filter": "Category!=Stress&(FullyQualifiedName~PositionalCallTransportTests|FullyQualifiedName~SimpleFunction|FullyQualifiedName~ExecutableCallTransfer|FullyQualifiedName~AsyncExecutableFunction|FullyQualifiedName~CallBinding|FullyQualifiedName~FunctionBinding|FullyQualifiedName~ExecutableInstruction|FullyQualifiedName~LoweringArchitecture)",
+        "pid": 17968,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1316,
+        "stdoutSha256": "7F0C6048F740B08374585801F36EF1B7666E0B80D4BDC6D6FF05C4EBC4DE92A6",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counters": {
+        "total": "121",
+        "executed": "121",
+        "passed": "121",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "trxSha256": "da0e17d9e9aa6c49fc7f6996023d39cfd2e2c104d0166f9b21b43c1bca3c0e9f"
+    },
+    {
+      "stage": "bound-local-reuse-qualified-public",
+      "receipt": {
+        "source": "f93e9258 plus matching local-array reuse and final controls",
+        "production": "controls Release solution build",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "D319413576256BE33D67ADEB8048A353ACAC47F4A022B567A01DDDF4DEE1E3D0",
+        "filter": "Category!=Stress&(FullyQualifiedName~PositionalCallSemanticsTests|FullyQualifiedName~AsyncExecutableFunctionTests|FullyQualifiedName~FunctionDefaultMetadataTests|FullyQualifiedName~CancellationTests|FullyQualifiedName~GeneratorConstructionTests|FullyQualifiedName~GeneratorFunctionTests)",
+        "pid": 8644,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3981,
+        "stdoutSha256": "2C96DB787E74781B92D3AA5F80F16C2C92D3D14273CE8B8830F880A8C5751B0F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counters": {
+        "total": "79",
+        "executed": "79",
+        "passed": "79",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "trxSha256": "09134c77572271e0877dcabecad3a56be5298fec4dac9377989fe13e5915b215"
+    },
+    {
+      "stage": "bound-local-reuse-full-white",
+      "receipt": {
+        "source": "f93e9258 plus matching local-array reuse and final controls",
+        "production": "controls Release solution build",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "836DB10AF5314997C1E375D8C2AB639ECF33DAE6B7A9BF688127D5E8E3C0AB73",
+        "filter": "Category!=Stress",
+        "pid": 51208,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 11603,
+        "stdoutSha256": "CD195A4D14CA48A1A4C703771CCA20BFC1A7CB13D7216CE2000783152B3FC5B7",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counters": {
+        "total": "2172",
+        "executed": "2172",
+        "passed": "2172",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "trxSha256": "adcdbb5a3dd759da217191555dbc62836e71c72ef830b998eeecb55fb9e4bc4c"
+    },
+    {
+      "stage": "bound-local-reuse-governed-public",
+      "receipt": {
+        "source": "f93e9258 plus matching local-array reuse and final controls",
+        "production": "controls Release solution build",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "D319413576256BE33D67ADEB8048A353ACAC47F4A022B567A01DDDF4DEE1E3D0",
+        "filter": "(FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedCursorAdmissionTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~NativeConsumerStreamingTests|FullyQualifiedName~RepresentativeScriptTests|FullyQualifiedName~GeneratorCleanupCompositionTests)&Category!=Stress",
+        "pid": 43168,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 13339,
+        "stdoutSha256": "F833CFB5E88E879A30E75290B433C0D5F1A030E4DA62073A006612672EACBCAF",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counters": {
+        "total": "103",
+        "executed": "103",
+        "passed": "103",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "trxSha256": "d0610c2862a7ceeed0b5f5381583fa2b66c465a52d9fa7b6a8c1669bcc5c586c"
+    }
+  ],
+  "groupsOverlap": true,
+  "fullStressRerun": false,
+  "initialFixtureFailure": "First public group: 78 passed, one fixture rejected statically by existing LA3146; final deletion/reassignment fixture and 15 Python goldens pass",
+  "source": "f93e9258 plus declared three-file production change"
+}

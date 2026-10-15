@@ -1,0 +1,20 @@
+{
+  "baselineRevision": "f93e92585c4b2c77564e0dcf3c3ba0390f55b2de",
+  "candidateBaseRevision": "f93e92585c4b2c77564e0dcf3c3ba0390f55b2de",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "4b50860f654662fbfe5728a8c9d3682524f69a70cb532e48512cb467c6425ed8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "4bc31af99e7ab40ee00d02805a5d1f2b765a4626fbad9498e0240e5645ab7bd3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "da38c9bdf93caf7dc7bb5f3a6be91ce0420e61b623689d502d6496c013d474e5"
+  },
+  "sourceArchiveSha256": "6698362d161cdcaf0f69d3c2bcf02a811952124f6ac5f70a7c363f8e0de781ff",
+  "productionChange": "Matching parameter/local layouts borrow invocation-owned bound storage; no extra local allocation/initialization/copy; separate captured cells and existing cleanup",
+  "case": "calls.parameter-update.large",
+  "lane": "warm-async",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "one full-body parameter-update catalog case shared identically; simple-return case is unaffected",
+  "stop": "one affected diagnostic; retain structural/resource benefit without elapsed claim if within spread; do not retune"
+}

@@ -361,13 +361,14 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         BoundCallArguments boundArguments,
         int[] argumentSlotMap,
-        IReadOnlyList<ExecutableCell>? closureCells)
+        IReadOnlyList<ExecutableCell>? closureCells,
+        bool argumentsAreLocals = false)
     {
         var previousExecutableFrame = context.CurrentExecutableFrame;
         context.EnterInterpreterFrame(null);
         try
         {
-            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells);
+            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells, argumentsAreLocals);
             // Even a zero-local module has live operands during calls. Publish
             // the same existing frame that the async entry publishes; local
             // slot counts do not determine whether an invocation is active.
@@ -390,13 +391,14 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         BoundCallArguments boundArguments,
         int[] argumentSlotMap,
-        IReadOnlyList<ExecutableCell>? closureCells)
+        IReadOnlyList<ExecutableCell>? closureCells,
+        bool argumentsAreLocals = false)
     {
         var previousExecutableFrame = context.CurrentExecutableFrame;
         context.EnterInterpreterFrame(null);
         try
         {
-            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells);
+            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells, argumentsAreLocals);
             context.EnterExecutableSlots(interpreter);
             await interpreter.ExecuteAsync().ConfigureAwait(false);
             return interpreter.HasFrameReturn ? interpreter.FrameReturnValue : null;
@@ -413,10 +415,14 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         BoundCallArguments boundArguments,
         int[] argumentSlotMap,
-        IReadOnlyList<ExecutableCell>? closureCells)
+        IReadOnlyList<ExecutableCell>? closureCells,
+        bool argumentsAreLocals)
     {
-        var locals = new object[codeObject.LocalNames.Count];
-        Array.Fill(locals, UninitializedLocal);
+        // InvokeBound owns bound storage until this interpreter has detached,
+        // including actual asynchronous suspension. No second local array/copy
+        // is needed when the precomputed layouts coincide.
+        var locals = argumentsAreLocals ? boundArguments.Values : new object[codeObject.LocalNames.Count];
+        if (!argumentsAreLocals) Array.Fill(locals, UninitializedLocal);
         var needsLocalCells = codeObject.CapturedLocalSlots.Count != 0;
         ExecutableCell?[]? localCells = null;
         if (needsLocalCells)
@@ -424,11 +430,12 @@ internal sealed partial class LythonRuntime
             localCells = new ExecutableCell[codeObject.LocalNames.Count];
             for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
             {
-                localCells[codeObject.CapturedLocalSlots[i]] = new ExecutableCell(UninitializedLocal, context, codeObject.LocalNames[codeObject.CapturedLocalSlots[i]]);
+                var slot = codeObject.CapturedLocalSlots[i];
+                localCells[slot] = new ExecutableCell(argumentsAreLocals ? locals[slot] : UninitializedLocal, context, codeObject.LocalNames[slot]);
             }
         }
 
-        for (var i = 0; i < argumentSlotMap.Length; i++)
+        for (var i = 0; !argumentsAreLocals && i < argumentSlotMap.Length; i++)
         {
             var slot = argumentSlotMap[i];
             if (slot < 0)

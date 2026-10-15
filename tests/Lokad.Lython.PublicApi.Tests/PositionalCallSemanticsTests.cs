@@ -6,6 +6,11 @@ public sealed class PositionalCallSemanticsTests
 {
     public static TheoryData<string, string> Programs => new()
     {
+        { "def f(value,offset=2):\n    value+=offset\n    value*=3\n    return value\nprint(f(4),f(value=5,offset=1))", "18 18\n" },
+        { "def f(value,saved=None):\n    saved=locals()\n    value=99\n    return saved,value\nprint(f(7))", "({'value': 7, 'saved': None}, 99)\n" },
+        { "def keep(value):\n    def value(): return value\n    return value\nf=keep(7)\nkeep(9)\nprint(f() is f)", "True\n" },
+        { "def f(value):\n    if value: return value*f(value-1)\n    return 1\nprint(f(6),f(value=4))", "720 24\n" },
+        { "def f(value):\n    del value\n    value=9\n    return value\nprint(f(7),f(value=8))", "9 9\n" },
         { "def f(value): return value+10\ndef argument():\n    print('argument')\n    return -3\nfor target in [abs,f,None,abs]:\n    try: print(target(argument()))\n    except TypeError: print('not-callable')", "argument\n3\nargument\n7\nargument\nnot-callable\nargument\n3\n" },
         { "class C:\n    def __call__(self,value): return value+1\ntarget=C()\nfor i in range(2):\n    print(target(3))\n    C.__call__=lambda self,value: value+100", "4\n103\n" },
         { "def f(): return 7\nprint(f())", "7\n" },
@@ -24,7 +29,7 @@ public sealed class PositionalCallSemanticsTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
-        Assert.True(script.IsValid);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
