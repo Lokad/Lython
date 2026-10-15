@@ -91,6 +91,12 @@ internal sealed class GovernedByteBuilder
 
     public void Append(PyString value) => Append(value.Utf8Bytes.Span);
 
+    public void Append(Rune value)
+    {
+        EnsureAdditionalCapacity(value.Utf8SequenceLength);
+        _length += value.EncodeToUtf8(_buffer.AsSpan(_length));
+    }
+
     public void AppendRepeated(byte value, int count)
     {
         if (count <= 0)

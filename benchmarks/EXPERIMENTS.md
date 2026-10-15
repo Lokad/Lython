@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 UTF-8 lowercase delivery](results/2026-10-15-utf8-lower/README.md)
+removes ordinary per-scalar CLR strings while preserving expansions, final sigma,
+governed capacity and cancellation cleanup. One complete file-job diagnostic is
+7.107 ->6.553ms, CPython1.231ms; the 7.8% difference is near baseline spread7.5%,
+so timing remains inconclusive. Keep allocation removal; no retry/retuning.
+
 The [2026-10-15 compiled-layout prototype](results/2026-10-15-parameter-layout-rejected/README.md)
 is rejected and removed: fresh default-helper compile/run is 185.643 ->293.721us,
 CPython37.302us. Preserve the single capture and source patch, without retuning

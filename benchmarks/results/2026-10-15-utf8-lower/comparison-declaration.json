@@ -1,0 +1,20 @@
+{
+  "baselineRevision": "d083c8cfdc5d836e8931d050ec9a1cf3faf81491",
+  "candidateBaseRevision": "d083c8cfdc5d836e8931d050ec9a1cf3faf81491",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/Text/GovernedByteBuilder.cs": "4aa62700e2eede20d333abf641fe1bdb1bedbbb622fbf9d54799c56271d2e436",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "d4eb558893ac41af654ad62ffc6a4d25b3228f99cde667346cac9643c241b26d"
+  },
+  "sourceArchiveSha256": "13c576543e069d17bcad34ba269cb5706528a85269b2173532906c255cd6e908",
+  "productionChange": "Write ordinary lowercase Rune scalars directly to existing governed UTF-8 builder; preserve dotted-I expansion, contextual sigma, ownership/cancellation and other casing paths",
+  "case": "scripts.text-summary.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "none",
+  "executionBoundary": "Already compiled complete text-summary file job: matched disk input/output staging and checks, fresh state, execution/projection and cleanup; compilation and process startup excluded",
+  "stop": "One short complete text job diagnostic, preserve all samples; no repeats, retuning, sigma lookup changes or new framework"
+}

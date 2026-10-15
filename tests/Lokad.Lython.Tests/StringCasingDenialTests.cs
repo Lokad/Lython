@@ -10,6 +10,7 @@ public sealed class StringCasingDenialTests
     [InlineData("ABCD", false)]
     [InlineData("abcd", true)]
     [InlineData("İ", false)]
+    [InlineData("Ⱥ", false)]
     public void CasingDenialReleasesScratch(string source, bool upper)
     {
         var length = Encoding.UTF8.GetByteCount(source);

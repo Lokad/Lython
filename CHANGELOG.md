@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Write ordinary lowercase scalars directly into governed UTF-8 storage, removing per-character CLR strings. Preserve dotted-I expansion, contextual final sigma, capacity preflights, cancellation and scratch cleanup.
+
 - Remove the unused function-binding name table and retained parameter-list field. Preserve the canonical slot map, live defaults and conservative layout admission; retain evidence of a rejected compiled-layout sharing prototype.
 
 - Keep thread-local structural comparison scopes within synchronous work after awaited expression evaluation and iterable pulls. Prevent stale execution/cancellation contexts from escaping async dictionary/set construction and comprehensions.
