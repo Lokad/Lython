@@ -1,0 +1,231 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "casingChecks": [
+    {
+      "text": "\u00df",
+      "upper": "SS",
+      "title": "Ss",
+      "actual": [
+        "SS",
+        "Ss",
+        "Ss",
+        "SS"
+      ]
+    },
+    {
+      "text": "\u0149",
+      "upper": "\u02bcN",
+      "title": "\u02bcN",
+      "actual": [
+        "\u02bcN",
+        "\u02bcN",
+        "\u02bcN",
+        "\u02bcN"
+      ]
+    },
+    {
+      "text": "\u01f0",
+      "upper": "J\u030c",
+      "title": "J\u030c",
+      "actual": [
+        "J\u030c",
+        "J\u030c",
+        "J\u030c",
+        "J\u030c"
+      ]
+    },
+    {
+      "text": "\u0390",
+      "upper": "\u0399\u0308\u0301",
+      "title": "\u0399\u0308\u0301",
+      "actual": [
+        "\u0399\u0308\u0301",
+        "\u0399\u0308\u0301",
+        "\u0399\u0308\u0301",
+        "\u0399\u0308\u0301"
+      ]
+    },
+    {
+      "text": "\u03b0",
+      "upper": "\u03a5\u0308\u0301",
+      "title": "\u03a5\u0308\u0301",
+      "actual": [
+        "\u03a5\u0308\u0301",
+        "\u03a5\u0308\u0301",
+        "\u03a5\u0308\u0301",
+        "\u03a5\u0308\u0301"
+      ]
+    },
+    {
+      "text": "\u0587",
+      "upper": "\u0535\u0552",
+      "title": "\u0535\u0582",
+      "actual": [
+        "\u0535\u0552",
+        "\u0535\u0582",
+        "\u0535\u0582",
+        "\u0535\u0552"
+      ]
+    },
+    {
+      "text": "\ufb00",
+      "upper": "FF",
+      "title": "Ff",
+      "actual": [
+        "FF",
+        "Ff",
+        "Ff",
+        "FF"
+      ]
+    },
+    {
+      "text": "\ufb01",
+      "upper": "FI",
+      "title": "Fi",
+      "actual": [
+        "FI",
+        "Fi",
+        "Fi",
+        "FI"
+      ]
+    },
+    {
+      "text": "\ufb02",
+      "upper": "FL",
+      "title": "Fl",
+      "actual": [
+        "FL",
+        "Fl",
+        "Fl",
+        "FL"
+      ]
+    },
+    {
+      "text": "\ufb03",
+      "upper": "FFI",
+      "title": "Ffi",
+      "actual": [
+        "FFI",
+        "Ffi",
+        "Ffi",
+        "FFI"
+      ]
+    },
+    {
+      "text": "\ufb04",
+      "upper": "FFL",
+      "title": "Ffl",
+      "actual": [
+        "FFL",
+        "Ffl",
+        "Ffl",
+        "FFL"
+      ]
+    },
+    {
+      "text": "\ufb05",
+      "upper": "ST",
+      "title": "St",
+      "actual": [
+        "ST",
+        "St",
+        "St",
+        "ST"
+      ]
+    },
+    {
+      "text": "\ufb06",
+      "upper": "ST",
+      "title": "St",
+      "actual": [
+        "ST",
+        "St",
+        "St",
+        "ST"
+      ]
+    },
+    {
+      "text": "\ufb13",
+      "upper": "\u0544\u0546",
+      "title": "\u0544\u0576",
+      "actual": [
+        "\u0544\u0546",
+        "\u0544\u0576",
+        "\u0544\u0576",
+        "\u0544\u0546"
+      ]
+    },
+    {
+      "text": "\ufb14",
+      "upper": "\u0544\u0535",
+      "title": "\u0544\u0565",
+      "actual": [
+        "\u0544\u0535",
+        "\u0544\u0565",
+        "\u0544\u0565",
+        "\u0544\u0535"
+      ]
+    },
+    {
+      "text": "\ufb15",
+      "upper": "\u0544\u053b",
+      "title": "\u0544\u056b",
+      "actual": [
+        "\u0544\u053b",
+        "\u0544\u056b",
+        "\u0544\u056b",
+        "\u0544\u053b"
+      ]
+    },
+    {
+      "text": "\ufb16",
+      "upper": "\u054e\u0546",
+      "title": "\u054e\u0576",
+      "actual": [
+        "\u054e\u0546",
+        "\u054e\u0576",
+        "\u054e\u0576",
+        "\u054e\u0546"
+      ]
+    },
+    {
+      "text": "\ufb17",
+      "upper": "\u0544\u053d",
+      "title": "\u0544\u056d",
+      "actual": [
+        "\u0544\u053d",
+        "\u0544\u056d",
+        "\u0544\u056d",
+        "\u0544\u053d"
+      ]
+    }
+  ],
+  "fileChecks": [
+    {
+      "repetitions": 0,
+      "inputUtf8Bytes": 0,
+      "outputUtf8Bytes": 0,
+      "stdout": "0\n",
+      "rawStdoutHex": "300d0a",
+      "exitCode": 0
+    },
+    {
+      "repetitions": 16,
+      "inputUtf8Bytes": 368,
+      "outputUtf8Bytes": 368,
+      "stdout": "304\n",
+      "rawStdoutHex": "3330340d0a",
+      "exitCode": 0
+    },
+    {
+      "repetitions": 1024,
+      "inputUtf8Bytes": 23552,
+      "outputUtf8Bytes": 23552,
+      "stdout": "19456\n",
+      "rawStdoutHex": "31393435360d0a",
+      "exitCode": 0
+    }
+  ],
+  "localStdoutBoundary": "Windows physical stdout CRLF normalized as universal newlines; raw bytes preserved, report bytes compared exactly",
+  "initialVerifierFailure": "Expected LF on captured Windows physical stdout; corrected the verifier boundary, not script/file outputs"
+}

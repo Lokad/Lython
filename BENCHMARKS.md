@@ -2,6 +2,7 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | One diagnostic; elapsed change within spread; allocation removal only |
 | Complete text-summary file job [AA], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.553 ms | 1.231 ms | — | One diagnostic; observed improvement near baseline spread; no qualified ratio |
 | Default-argument helper [Z], fresh compile/run | 256 calls | 0.186 ms | 0.0373 ms | — | Historical diagnostic at 3b34fad2; sharing prototype was slower and removed; final cleanup unmeasured |
 | Split lines, strip and sum lengths [X], warm `RunAsync` | 32,768 lines / 425,984 UTF-8 bytes | 23.464 ms | 3.132 ms | — | One default-strip diagnostic on 88e0992b; inconclusive, baseline/candidate spread 16.5%/23.3% |
@@ -47,7 +48,7 @@ including a loop whose cost grows with its iteration count. They support
 investigating interpreter dispatch and application workloads. **No workload
 multiplier qualified in either campaign. These timings do not describe today's
 HEAD:** subsequent interpreter and containment changes have been integrated.
-The newer AA, Z, X, W, N, B, K, R, V, D, I, E, H, P, F, T, J, C, G, A and M rows are separate short diagnostics at their named revisions; they do
+The newer AB, AA, Z, X, W, N, B, K, R, V, D, I, E, H, P, F, T, J, C, G, A and M rows are separate short diagnostics at their named revisions; they do
 not qualify a current overall or complete-script multiplier.
 The F, T, J and C rows supply complete-script comparisons; their timing evidence
 remains inconclusive. F is a range of medians from two identical Lython control
@@ -57,6 +58,7 @@ processes, not two revisions. No complete-script multiplier or overall speedup i
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| AB | 2026-10-15 | Working UTF-8 upper candidate on 29a1862e; one frozen source; identical new report script/catalog in both roles | [Complete report, noise and expansion/ownership checks](benchmarks/results/2026-10-15-utf8-upper/README.md) |
 | AA | 2026-10-15 | Working UTF-8 lower candidate on d083c8cf; two frozen production files; unchanged script/tooling | [Complete text job, noise and allocation/containment checks](benchmarks/results/2026-10-15-utf8-lower/README.md) |
 | Z | 2026-10-15 | Baseline 3b34fad2; ten-source compiled-layout candidate rejected and removed | [Fresh helper timing, rejection and retained cleanup](benchmarks/results/2026-10-15-parameter-layout-rejected/README.md) |
 | X | 2026-10-15 | Working direct-strip/trim-identity candidate on 88e0992b; seven performance files frozen; parser fix shared by both roles | [Inconclusive text timing, allocation removal and Unicode diagnostics](benchmarks/results/2026-10-15-direct-string-strip/README.md) |
@@ -162,6 +164,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Direct UTF-8 uppercase output, 2026-10-15 | 29a1862e → frozen candidate | Inconclusive: 2.610 →2.651 ms report job; spread9.5%/10.8% | [One diagnostic and allocation removal](benchmarks/results/2026-10-15-utf8-upper/README.md) |
 | Direct UTF-8 lowercase output, 2026-10-15 | d083c8cf → frozen candidate | Inconclusive: 7.107 →6.553 ms complete text job; baseline spread7.5% | [One diagnostic and allocation removal](benchmarks/results/2026-10-15-utf8-lower/README.md) |
 | Async startup worker reuse, 2026-10-15 | 05eb4efc → frozen prototype, before ambient correctness fix | Setup control only: 110.505 →14.339 us; CPython1.661 us; final delivered source unmeasured | [Noise, source boundary and correctness prerequisite](benchmarks/results/2026-10-15-async-worker-reuse/README.md) |
 | Positional operand transport, 2026-10-15 | 1f2ef306 → frozen candidate | 13.7%, 16,384 helper calls through `RunAsync`; baseline spread 9.4% | [One diagnostic and unchanged-tooling proof](benchmarks/results/2026-10-15-positional-calls/README.md) |

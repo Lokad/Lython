@@ -1,0 +1,23 @@
+{
+  "baselineRevision": "29a1862ef5386c15c831fa03e623c87e22a120ba",
+  "candidateBaseRevision": "29a1862ef5386c15c831fa03e623c87e22a120ba",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "fceddca70ed28c00a389c8759f07a8cd74c535fe21e1d4db8b952ca15c3774d5"
+  },
+  "sourceArchiveSha256": "dce3242c1ffc8461cf06543f97af971b8181cb4811093663e0f73dc659ffc8f1",
+  "commonSourceHashes": {
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "9c799d083a850162517172934b3832ca6b83211703037ef0b1caf2716a9d254c",
+    "benchmarks/scripts/text-uppercase.py": "38b344b5780b0cd5b68f54670ecce4ccf57b2cdc7bdd0c630263b395c9104df8"
+  },
+  "productionChange": "Direct managed uppercase scalars to existing governed UTF-8 append; extract existing full expansion table shared with legacy casing helpers",
+  "case": "scripts.text-uppercase.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "One complete text-to-uppercase-report script and catalog case, identical in both roles; timing/execution tooling unchanged",
+  "executionBoundary": "Already compiled complete uppercase file/report job: matched input/output staging and checks, fresh state, execution/projection and cleanup; compilation/process startup excluded",
+  "stop": "One short complete report job diagnostic, preserve all samples; no repeats, retuning, Unicode database or new framework"
+}

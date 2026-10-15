@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Write ordinary uppercase scalars directly to governed UTF-8 storage. Share the existing expansion table with legacy casing helpers and preserve admission, ownership and cancellation. Add a complete uppercase-report comparison workload with independent output checks.
+
 - Write ordinary lowercase scalars directly into governed UTF-8 storage, removing per-character CLR strings. Preserve dotted-I expansion, contextual final sigma, capacity preflights, cancellation and scratch cleanup.
 
 - Remove the unused function-binding name table and retained parameter-list field. Preserve the canonical slot map, live defaults and conservative layout admission; retain evidence of a rejected compiled-layout sharing prototype.

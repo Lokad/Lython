@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 UTF-8 uppercase delivery](results/2026-10-15-utf8-upper/README.md)
+removes ordinary per-scalar CLR strings and shares existing expansions with legacy
+casing helpers. One new complete report job is identical in both roles:
+2.610 ->2.651ms, CPython0.2444ms, spread9.5%/10.8%. No elapsed benefit established;
+keep allocation removal and independent report/legacy casing checks, without retuning.
+
 The [2026-10-15 UTF-8 lowercase delivery](results/2026-10-15-utf8-lower/README.md)
 removes ordinary per-scalar CLR strings while preserving expansions, final sigma,
 governed capacity and cancellation cleanup. One complete file-job diagnostic is

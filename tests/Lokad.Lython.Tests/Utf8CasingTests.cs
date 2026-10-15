@@ -5,7 +5,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class Utf8LowerCasingTests
+public sealed class Utf8CasingTests
 {
     [Theory]
     [InlineData("ASCII NUL\0ÉΔ😀𐐀", "ascii nul\0éδ😀𐐨")]
@@ -19,26 +19,31 @@ public sealed class Utf8LowerCasingTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void OrdinaryLoweringDoesNotAllocatePerScalarStrings(bool unicode)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void OrdinaryCasingDoesNotAllocatePerScalarStrings(bool upper, bool unicode)
     {
-        _ = PyStringOps.Lower(PyString.FromString("CAFÉΔ😀𐐀"));
+        var warm = PyString.FromString("CAFÉΔ😀𐐀");
+        _ = upper ? PyStringOps.Upper(warm) : PyStringOps.Lower(warm);
         var text = unicode ? string.Concat(Enumerable.Repeat("CAFÉΔ😀𐐀", 512)) : new string('A', 4096);
         var input = PyString.FromString(text);
         var before = GC.GetAllocatedBytesForCurrentThread();
-        var result = PyStringOps.Lower(input);
+        var result = upper ? PyStringOps.Upper(input) : PyStringOps.Lower(input);
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
         // Input-sized scratch plus owned output and fixed bookkeeping. The
         // former per-scalar CLR strings exceed this by an order of magnitude.
-        Assert.True(allocated <= 3L * input.Utf8Bytes.Length + 4096, $"Lower allocated {allocated} bytes.");
+        Assert.True(allocated <= 3L * input.Utf8Bytes.Length + 4096, $"Casing allocated {allocated} bytes.");
         GC.KeepAlive(result);
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AbortedLoweringReleasesScratchAndPreservesInput(bool cancel)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void AbortedCasingReleasesScratchAndPreservesInput(bool upper, bool cancel)
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
@@ -53,7 +58,7 @@ public sealed class Utf8LowerCasingTests
         var span = new LythonSourceSpan(0, 1, 1, 1);
         using (PyStructuralGuard.PushAmbient(context, span))
         {
-            var failure = Assert.Throws<LythonRuntimeException>(() => PyStringOps.Lower(input));
+            var failure = Assert.Throws<LythonRuntimeException>(() => upper ? PyStringOps.Upper(input) : PyStringOps.Lower(input));
             Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.ExecutionStepLimit, failure.Attribution?.Reason);
             Assert.Equal(span, failure.Span);
         }
@@ -61,4 +66,12 @@ public sealed class Utf8LowerCasingTests
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Equal(new string('A', 4096), input.AsString());
     }
+
+    [Theory]
+    [InlineData("ascii nul\0éδ😀𐐨", "ASCII NUL\0ÉΔ😀𐐀")]
+    [InlineData("ɐſßﬃσς😀𐐨", "ⱯSSSFFIΣΣ😀𐐀")]
+    [InlineData("i\u0307İ", "I\u0307İ")]
+    [InlineData("", "")]
+    public void UpperKeepsScalarWidthsAndFullExpansion(string source, string expected)
+        => Assert.Equal(Encoding.UTF8.GetBytes(expected), PyStringOps.Upper(PyString.FromString(source)).Utf8Bytes.ToArray());
 }

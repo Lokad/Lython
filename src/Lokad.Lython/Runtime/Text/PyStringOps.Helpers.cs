@@ -92,6 +92,11 @@ internal static partial class PyStringOps
                         : Rune.ToLowerInvariant(rune);
                     builder.Append(mapped);
                 }
+                else if (mapping == CaseMapping.Upper)
+                {
+                    if (GetCaseExpansion(rune, mapping) is { } expansion) builder.AppendString(expansion);
+                    else builder.Append(Rune.ToUpperInvariant(rune));
+                }
                 else builder.AppendString(MapCase(rune, mapping));
                 if (mapping == CaseMapping.Lower && !SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
                     precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
@@ -103,6 +108,19 @@ internal static partial class PyStringOps
     }
 
     private static string MapCase(Rune rune, CaseMapping mapping)
+    {
+        if (GetCaseExpansion(rune, mapping) is { } expansion) return expansion;
+        var text = rune.ToString();
+        return mapping switch
+        {
+            CaseMapping.Lower => text.ToLowerInvariant(),
+            CaseMapping.Upper => text.ToUpperInvariant(),
+            CaseMapping.Title => text.ToUpperInvariant(),
+            _ => text
+        };
+    }
+
+    private static string? GetCaseExpansion(Rune rune, CaseMapping mapping)
     {
         if (mapping == CaseMapping.Lower && rune.Value == 0x0130)
         {
@@ -151,14 +169,7 @@ internal static partial class PyStringOps
             }
         }
 
-        var text = rune.ToString();
-        return mapping switch
-        {
-            CaseMapping.Lower => text.ToLowerInvariant(),
-            CaseMapping.Upper => text.ToUpperInvariant(),
-            CaseMapping.Title => text.ToUpperInvariant(),
-            _ => text
-        };
+        return null;
     }
 
     private static bool CheckAllRunes(PyString value, Func<Rune, bool> predicate)
