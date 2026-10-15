@@ -18,6 +18,8 @@ public sealed class AsyncFunctionHostingTests
         { "failed_default_old_binding", "def f():\n    return 11\ndef fail():\n    note('fail')\n    raise ValueError('default')\ntry:\n    def f(x=fail()):\n        return x\nexcept ValueError:\n    note('caught')\nprint(f())", "11\n", "fail\ncaught\n" },
         { "defaults_once", "def f(a=read(),b=read()):\n    return a+b\nprint(f())", "6\n", "default\ndefault\n" },
         { "imports_preserve_slots", "note('import')\nmarker=9\nimport math\ndef f(value):\n    preserved=value+1\n    import operator\n    return operator.add(preserved,marker)\nprint(f(2))", "12\n", "import\n" },
+        { "yielding_iadd", "class Number:\n    def __iadd__(self,other):\n        note('iadd')\n        with open('number.txt') as source:\n            return int(source.read())+other\ndef f(value):\n    value+=1\n    return value\nprint(f(Number()))", "4\n", "iadd\n" },
+        { "yielding_iadd_fallback", "class Left:\n    def __iadd__(self,other):\n        note('iadd')\n        with open('number.txt') as source: source.read()\n        return NotImplemented\n    def __add__(self,other):\n        note('add')\n        with open('number.txt') as source: source.read()\n        return NotImplemented\nclass Right:\n    def __radd__(self,other):\n        note('radd')\n        with open('number.txt') as source: source.read()\n        return 42\nvalue=Left()\nvalue+=Right()\nprint(value)", "42\n", "iadd\nadd\nradd\n" },
     };
 
     [Theory]

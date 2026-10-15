@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython.Runtime;
@@ -736,6 +737,17 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.ExitContextManager or
                                  ExecutableOpCode.MatchCase:
                                 jumped = await ExecuteStructureAsync(instruction).ConfigureAwait(false);
+                                break;
+
+                            case ExecutableOpCode.Binary when instruction.BinaryOperator == ExecutableBinaryOperator.Add:
+                            case ExecutableOpCode.Augmented when instruction.AugmentedOperator == ExecutableAugmentedOperator.Add:
+                                // Exact integers cannot invoke guest protocols. Share the
+                                // synchronous transfer/admission path before creating any
+                                // operation-helper state machine; never retry a guest call.
+                                if (_stack[_stack.Count - 2] is BigInteger && _stack[_stack.Count - 1] is BigInteger)
+                                    ExecuteObservedValueOperation(instruction);
+                                else
+                                    jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                 break;
 
                             case ExecutableOpCode.GetIter or

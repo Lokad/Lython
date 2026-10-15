@@ -1,0 +1,33 @@
+{
+  "checks": [
+    {
+      "engine": "baseline",
+      "pid": 2307259,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate",
+      "pid": 2307280,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "CPython",
+      "pid": 2307295,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    }
+  ],
+  "productionDifferences": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Assignments.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs"
+  ],
+  "frozenSourceHashesMatch": true,
+  "comparisonSourcesIdentical": true,
+  "relevantUnits": "",
+  "leaseAcquired": true
+}

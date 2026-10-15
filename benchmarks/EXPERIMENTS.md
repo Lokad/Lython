@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 async integer-addition delivery](results/2026-10-15-async-integer-dispatch/README.md)
+shares the synchronous observed-value handler for exact integers. One async-loop
+diagnostic observes a 14.4% lower median with 6.0% candidate spread. A genuinely
+yielding in-place addition witness also exposed and fixes synchronous user-slot
+dispatch. Other augmented operators remain separate work.
+
 The [2026-10-15 async-function delivery](results/2026-10-15-async-compiled-functions/README.md)
 shares compiled function construction and real async bound-slot/cell execution.
 One completed-host async diagnostic observes a 40.3% lower median; the sync

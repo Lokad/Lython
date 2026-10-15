@@ -1,0 +1,13 @@
+{
+  "source": "def note(message):\n    with open('events.txt','a',newline='') as target:\n        target.write(message+'\\n')\ndef read():\n    note('default')\n    with open('number.txt') as source:\n        return int(source.read())\nclass Number:\n    def __iadd__(self,other):\n        note('iadd')\n        with open('number.txt') as source:\n            return int(source.read())+other\ndef f(value):\n    value+=1\n    return value\nprint(f(Number()))",
+  "stdout": "4\n",
+  "events": "iadd\n",
+  "exitCode": 0,
+  "python": "Python 3.13.2",
+  "flags": [
+    "-I",
+    "-S",
+    "-X",
+    "utf8"
+  ]
+}

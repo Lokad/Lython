@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Share the synchronous integer-addition handler during RunAsync while preserving admission and cancellation. Await user-defined in-place addition and declined/reflected fallback without replaying host effects.
+
 - Preserve eligible executable function bodies, argument slots and captured cells in RunAsync. Await yielding defaults, decorators and body callbacks without replay, and remove blanket async module mirroring. Import stores update their own slots without erasing unrelated locals.
 
 - Compile ordinary break/continue in protected with/try regions instead of abandoning executable lowering. Preserve abrupt branch destinations through normalization so terminal loop exits run cleanup once and discard the correct iterator.

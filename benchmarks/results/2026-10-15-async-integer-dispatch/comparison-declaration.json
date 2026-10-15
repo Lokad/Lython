@@ -1,0 +1,19 @@
+{
+  "baselineRevision": "88f781061d5a628b1f134994d14b4c117a4e1261",
+  "candidateBaseRevision": "88f781061d5a628b1f134994d14b4c117a4e1261",
+  "productionChange": "exact BigInteger Add/Augmented Add share synchronous observed-value handler; user augmented-add slots use async protocol dispatch once",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Assignments.cs": "664f07bb7bdd710731f4d4d221a38e7193563392c59b2e994f44f991b825022f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "6c0fd451649f617ad44b4f0bc46a86a0c3a7d25a110b8d2f286928c15ca56c71"
+  },
+  "sourceArchiveSha256": "bd8fe59f5bbf461ad1d5bc8e5cb568cfd5d022cc9034865d6b79f4afcb0ca2dc",
+  "case": "loops.integer.large",
+  "lane": "warm-async",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "hostBoundary": "RunAsync with completed comparison host; CPython ordinary warm loop",
+  "stop": "One declared comparison; retain dispatch only with demonstrated benefit; retain independent async user-protocol correctness fix regardless of noisy timing."
+}

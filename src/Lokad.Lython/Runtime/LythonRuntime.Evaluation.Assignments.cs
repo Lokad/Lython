@@ -919,11 +919,16 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
     {
         if (op == AugmentedAssignmentOperatorSyntax.MatrixMultiply) return await EvaluateMatrixInPlaceAsync(currentValue, right, context, span, true).ConfigureAwait(false);
+        if (op == AugmentedAssignmentOperatorSyntax.Add && currentValue is PyInstance)
+        {
+            var inPlace = await InvokeBinarySpecialMethodAsync(currentValue, "__iadd__", right, context, span).ConfigureAwait(false);
+            if (inPlace.Kind == SpecialMethodInvocationKind.Invoked && inPlace.Value is not PyNotImplemented)
+                return inPlace.Value;
+            return await EvaluateAugmentedAddProtocolFallbackAsync(currentValue, right, context, span).ConfigureAwait(false);
+        }
         // Async twin covering the in-place drains whose sources can suspend
-        // (list/deque extension, dict-family staged merges). Every other shape
-        // rides the sync path unchanged, preserving its fail-fast behavior and
-        // exact error precedence (special-method attempts, repeats, set
-        // algebra over PySet operands, Counter merges, generic operators).
+        // (list/deque extension, dict-family staged merges). User addition slots
+        // use the async protocol path; remaining shapes retain existing handling.
         if (op == AugmentedAssignmentOperatorSyntax.Add &&
             currentValue is PyList currentList)
         {
@@ -987,6 +992,16 @@ internal sealed partial class LythonRuntime
             return currentChain;
         }
 
+        if (op == AugmentedAssignmentOperatorSyntax.Add && right is PyInstance)
+            return await EvaluateAugmentedAddProtocolFallbackAsync(currentValue, right, context, span).ConfigureAwait(false);
         return EvaluateAugmentedAssignment(currentValue, right, op, context, span);
+    }
+
+    private static async ValueTask<object> EvaluateAugmentedAddProtocolFallbackAsync(
+        object left, object right, ExecutionContext context, LythonSourceSpan span)
+    {
+        var fallback = await EvaluateNumericProtocolAsync(BinaryOperatorSyntax.Add, left, right, context, span).ConfigureAwait(false);
+        return fallback.Kind == SpecialMethodInvocationKind.Invoked ? fallback.Value
+            : EvaluateAdd(left, right, context, span, "+=");
     }
 }

@@ -507,6 +507,8 @@ Standalone expression lists may begin with a starred item; a comma is required
 to make a tuple. Augmented targets are read once before evaluating the full
 right-hand expression list and are stored only after successful unpacking and
 operator evaluation. Property getters/setters await delayed hosts in RunAsync.
+User-defined `+=` also awaits `__iadd__` and its ordinary/reflected addition
+fallback when declined with `NotImplemented`, without replaying a method.
 
 List, tuple, and set displays support iterable unpacking with `*`; dictionary
 displays support mapping unpacking with `**`. Display operands and ordinary

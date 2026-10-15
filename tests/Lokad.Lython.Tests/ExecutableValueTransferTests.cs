@@ -47,21 +47,32 @@ public sealed class ExecutableValueTransferTests
     [InlineData(true, true)]
     public async Task FailedOrCancelledOperationWithdrawsOnlyItsInputs(bool asynchronous, bool cancellation)
     {
-        var (code, context, probe) = PrepareOperation("return (23, left() + right())\n", "__add__", 3);
-        probe.Failure = cancellation ? new OperationCanceledException() : new LythonRuntimeException("ValueError", "controlled operation failure", null);
-        async Task Execute()
+        foreach (var augmented in new[] { false, true })
         {
-            if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
-            else Run(code, context);
+            var (code, context, probe) = augmented
+                ? PrepareOperation("v = left()\nv += right()\nreturn v\n", "__iadd__", 2)
+                : PrepareOperation("return (23, left() + right())\n", "__add__", 3);
+            probe.Failure = cancellation ? new OperationCanceledException() : new LythonRuntimeException("ValueError", "controlled operation failure", null);
+            async Task Execute()
+            {
+                if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
+                else Run(code, context);
+            }
+            if (cancellation) await Assert.ThrowsAnyAsync<OperationCanceledException>(Execute);
+            else Assert.Same(probe.Failure, await Assert.ThrowsAsync<LythonRuntimeException>(Execute));
+            Assert.True(probe.Checked);
+            // Cancellation leaves the surrounding expression for frame unwinding.
+            if (cancellation && !augmented) Assert.Equal(new object[] { new BigInteger(23) }, Operands(probe.Frame!));
+            else Assert.Empty(Operands(probe.Frame!));
+            if (augmented)
+            {
+                var frame = Assert.IsAssignableFrom<LythonRuntime.ExecutableFrameState>(probe.Frame);
+                Assert.True(frame.TryResolveOwnLocal("v", out var original));
+                Assert.Same(probe.Left, original);
+            }
+            Assert.Null(context.CurrentExecutableFrame);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
-        if (cancellation) await Assert.ThrowsAnyAsync<OperationCanceledException>(Execute);
-        else Assert.Same(probe.Failure, await Assert.ThrowsAsync<LythonRuntimeException>(Execute));
-        Assert.True(probe.Checked);
-        // Cancellation leaves the surrounding expression for frame unwinding.
-        if (cancellation) Assert.Equal(new object[] { new BigInteger(23) }, Operands(probe.Frame!));
-        else Assert.Empty(Operands(probe.Frame!));
-        Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
     [Theory]
