@@ -164,7 +164,12 @@ internal sealed partial class ExecutableScript
                 {
                     switch (instruction.OpCode)
                     {
+                        // Unwinding depends on the original target's region.
+                        // Threading through its jump could leave that region
+                        // and run cleanup before a loop iterator is discarded.
                         case ExecutableOpCode.AbruptJump:
+                            pending.Push(instruction.TargetBlockIndex);
+                            break;
                         case ExecutableOpCode.Jump:
                         case ExecutableOpCode.JumpIfFalse:
                         case ExecutableOpCode.ForNext:
@@ -214,7 +219,8 @@ internal sealed partial class ExecutableScript
         {
             return instruction.OpCode switch
             {
-                ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or
+                ExecutableOpCode.AbruptJump => instruction.WithTargetBlockIndex(indexMap[instruction.TargetBlockIndex]),
+                ExecutableOpCode.Jump or
                 ExecutableOpCode.JumpIfFalse or
                 ExecutableOpCode.ForNext or
                 ExecutableOpCode.EndFinally => instruction.WithTargetBlockIndex(indexMap[FinalJumpTarget(instruction.TargetBlockIndex)]),

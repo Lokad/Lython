@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile ordinary break/continue in protected with/try regions instead of abandoning executable lowering. Preserve abrupt branch destinations through normalization so terminal loop exits run cleanup once and discard the correct iterator.
+
 - Align packaged release notes and property/gzip contracts with explicit ownership lifetimes; preserve older collector changes as labeled history.
 
 - Bind builtin json.load/loads options directly into the existing parser, avoiding temporary decoder attributes and bound-method allocation while preserving custom classes, explicit decoders, hooks and error behavior.

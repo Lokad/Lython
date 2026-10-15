@@ -592,11 +592,6 @@ internal sealed partial class ExecutableScript
 
         private int? CompileBreakStatement(LoweredBreakStatement statement, int currentBlock)
         {
-            if (_protectedDepth > 0 && !_generator)
-            {
-                throw new ExecutableLoweringFallbackException("Executable IR lowering does not support break inside a protected with/try region; using the lowered execution path.");
-            }
-
             if (!_loops.TryPeek(out var loop))
             {
                 throw new ExecutableLoweringFallbackException("Executable IR lowering cannot emit break outside a loop.");
@@ -619,11 +614,6 @@ internal sealed partial class ExecutableScript
 
         private int? CompileContinueStatement(LoweredContinueStatement statement, int currentBlock)
         {
-            if (_protectedDepth > 0 && !_generator)
-            {
-                throw new ExecutableLoweringFallbackException("Executable IR lowering does not support continue inside a protected with/try region; using the lowered execution path.");
-            }
-
             if (!_loops.TryPeek(out var loop))
             {
                 throw new ExecutableLoweringFallbackException("Executable IR lowering cannot emit continue outside a loop.");
