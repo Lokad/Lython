@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 compiled-layout prototype](results/2026-10-15-parameter-layout-rejected/README.md)
+is rejected and removed: fresh default-helper compile/run is 185.643 ->293.721us,
+CPython37.302us. Preserve the single capture and source patch, without retuning
+or attribution to a particular component. Only an unused binding map/field deletion
+and public isolation/admission regressions remain; that final cleanup is unmeasured.
+
 The [2026-10-15 async startup reuse](results/2026-10-15-async-worker-reuse/README.md)
 removes per-invocation thread construction and the async-void relay. One empty
 setup diagnostic predates a required structural ambient correctness fix; preserve

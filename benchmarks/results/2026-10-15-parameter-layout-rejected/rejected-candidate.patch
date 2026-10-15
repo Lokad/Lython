@@ -1,0 +1,354 @@
+diff --git a/src/Lokad.Lython/Frontend/LoweredStatement.cs b/src/Lokad.Lython/Frontend/LoweredStatement.cs
+index 5a15abe6..78051116 100644
+--- a/src/Lokad.Lython/Frontend/LoweredStatement.cs
++++ b/src/Lokad.Lython/Frontend/LoweredStatement.cs
+@@ -1,3 +1,5 @@
++using Lokad.Lython.Runtime;
++
+ namespace Lokad.Lython.Frontend;
+ 
+ internal enum LoweredStatementKind
+@@ -50,6 +52,7 @@ internal sealed record LoweredFunctionDefinitionStatement(
+     IReadOnlyList<LoweredStatement> Body) : LoweredStatement(Syntax.Span)
+ {
+     public override LoweredStatementKind Kind => LoweredStatementKind.FunctionDefinition;
++    public FunctionParameterLayout ParameterLayout { get; } = new(Parameters);
+     public IReadOnlyList<LoweredTypeParameter>? TypeParameters { get; } = LoweredScript.LowerTypeParameters(Syntax.TypeParameters);
+     public ExecutableCodeObject? GeneratorCode { get; } = GeneratorSyntaxFacts.IsGenerator(Syntax.Body)
+         ? ExecutableScript.CompileGenerator(Parameters, Body, ScopeDirectiveFactsCollector.ForFunction(Syntax)) : null;
+diff --git a/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs b/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs
+index 935277f3..bfcff2e4 100644
+--- a/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs
++++ b/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs
+@@ -5,85 +5,25 @@ namespace Lokad.Lython.Runtime;
+ 
+ internal sealed class FunctionBindingPlan
+ {
++    private readonly FunctionParameterLayout _layout;
+     public FunctionBindingPlan(
+         string callableName,
+         PythonCallableKind callableKind,
+         IReadOnlyList<LoweredFunctionParameter> parameters,
+         IReadOnlyDictionary<string, object> defaultValues,
+-        LythonRuntime.ExecutionContext? context = null)
++        LythonRuntime.ExecutionContext? context = null,
++        FunctionParameterLayout? parameterLayout = null)
+     {
+         var governor = context?.MemoryGovernor;
+-        // Two name maps and the positional/keyword/layout arrays are owned by
+-        // this plan. Admit their capacity before allocating, including working
+-        // lists; the estimate remains conservative until layouts are shared.
+-        var layoutBytes = parameters.Count == 0 ? 0 : 128L + 128L * parameters.Count;
++        // Ordinary def layouts are already funded by the compiled owner.
++        // Dynamic signatures still admit their own immutable layout first.
++        var layoutBytes = parameterLayout is not null || parameters.Count == 0 ? 0 : 128L + 128L * parameters.Count;
+         governor?.Reserve(layoutBytes, null);
+         try
+         {
+             CallableName = callableName;
+             CallableKind = callableKind;
+-            Parameters = parameters;
+-
+-            var positional = new List<LoweredFunctionParameter>(parameters.Count);
+-            var keywordOnly = new List<LoweredFunctionParameter>(parameters.Count);
+-            var named = new Dictionary<string, LoweredFunctionParameter>(parameters.Count, StringComparer.Ordinal);
+-            foreach (var parameter in parameters)
+-            {
+-                switch (parameter.Kind)
+-                {
+-                    case FunctionParameterKind.PositionalOnly:
+-                        positional.Add(parameter);
+-                        PositionalOnlyCount++;
+-                        break;
+-                    case FunctionParameterKind.Positional:
+-                        positional.Add(parameter);
+-                        named[parameter.Name] = parameter;
+-                        break;
+-                    case FunctionParameterKind.KeywordOnly:
+-                        keywordOnly.Add(parameter);
+-                        named[parameter.Name] = parameter;
+-                        break;
+-                    case FunctionParameterKind.VariadicList:
+-                        VariadicList = parameter;
+-                        break;
+-                    case FunctionParameterKind.VariadicDictionary:
+-                        VariadicDictionary = parameter;
+-                        break;
+-                }
+-            }
+-
+-            PositionalParameters = positional.ToArray();
+-            KeywordOnlyParameters = keywordOnly.ToArray();
+-            NamedParameters = named;
+-            var layoutNames = new List<string>(parameters.Count);
+-            var layoutIndex = new Dictionary<string, int>(parameters.Count, StringComparer.Ordinal);
+-            foreach (var parameter in positional)
+-            {
+-                layoutIndex[parameter.Name] = layoutNames.Count;
+-                layoutNames.Add(parameter.Name);
+-            }
+-
+-            foreach (var parameter in keywordOnly)
+-            {
+-                layoutIndex[parameter.Name] = layoutNames.Count;
+-                layoutNames.Add(parameter.Name);
+-            }
+-
+-            NamedLayoutCount = layoutNames.Count;
+-            if (VariadicList is not null)
+-            {
+-                layoutIndex[VariadicList.Name] = layoutNames.Count;
+-                layoutNames.Add(VariadicList.Name);
+-            }
+-
+-            if (VariadicDictionary is not null)
+-            {
+-                layoutIndex[VariadicDictionary.Name] = layoutNames.Count;
+-                layoutNames.Add(VariadicDictionary.Name);
+-            }
+-
+-            LayoutParameterNames = layoutNames.ToArray();
+-            LayoutParameterIndex = layoutIndex;
++            _layout = parameterLayout ?? new FunctionParameterLayout(parameters);
+ 
+             var nameStorageBytes = KeywordOnlyParameters.Count == 0 ? 0 : 32L + 8L * KeywordOnlyParameters.Count;
+             governor?.Reserve(nameStorageBytes, null);
+@@ -144,33 +84,29 @@ internal sealed class FunctionBindingPlan
+ 
+     public PythonCallableKind CallableKind { get; }
+ 
+-    public IReadOnlyList<LoweredFunctionParameter> Parameters { get; }
+-
+-    public IReadOnlyList<LoweredFunctionParameter> PositionalParameters { get; }
+-
+-    public IReadOnlyList<LoweredFunctionParameter> KeywordOnlyParameters { get; }
++    public IReadOnlyList<LoweredFunctionParameter> PositionalParameters => _layout.PositionalParameters;
+ 
+-    public IReadOnlyDictionary<string, LoweredFunctionParameter> NamedParameters { get; }
++    public IReadOnlyList<LoweredFunctionParameter> KeywordOnlyParameters => _layout.KeywordOnlyParameters;
+ 
+     // Flat call-time layout: positional, then keyword-only, then variadic
+-    // names. Built once per plan and shared across invocations; per-call
++    // names. Shared by def instances of the same compiled definition; per-call
+     // binding fills values in this order with presence bits instead of a
+     // per-call name dictionary.
+-    public IReadOnlyList<string> LayoutParameterNames { get; }
++    public IReadOnlyList<string> LayoutParameterNames => _layout.LayoutParameterNames;
+ 
+-    public IReadOnlyDictionary<string, int> LayoutParameterIndex { get; }
++    public IReadOnlyDictionary<string, int> LayoutParameterIndex => _layout.LayoutParameterIndex;
+ 
+     // Number of positional plus keyword-only slots. Keyword matching must
+     // stay below this count and at or above PositionalOnlyCount: a keyword
+     // equal to a positional-only or variadic name is overflow,
+     // exactly like a name the plan never declared.
+-    public int NamedLayoutCount { get; }
++    public int NamedLayoutCount => _layout.NamedLayoutCount;
+ 
+-    public int PositionalOnlyCount { get; }
++    public int PositionalOnlyCount => _layout.PositionalOnlyCount;
+ 
+-    public LoweredFunctionParameter? VariadicList { get; }
++    public LoweredFunctionParameter? VariadicList => _layout.VariadicList;
+ 
+-    public LoweredFunctionParameter? VariadicDictionary { get; }
++    public LoweredFunctionParameter? VariadicDictionary => _layout.VariadicDictionary;
+ 
+     public object? PositionalDefaults { get; private set; }
+     public object? KeywordDefaults { get; private set; }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 6e775ac0..7e7f8e8d 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -368,7 +368,7 @@ internal sealed partial class LythonRuntime
+                     functionBinding.Function.Body,
+                     context.FunctionClosureContext,
+                     defaults,
+-                    ScopeDirectiveFactsCollector.ForFunction(functionBinding.Function.Syntax))
++                    ScopeDirectiveFactsCollector.ForFunction(functionBinding.Function.Syntax), functionBinding.Function.ParameterLayout)
+                 : new PyExecutableFunction(
+                     functionBinding.Function.Syntax.DeclaredName,
+                     functionBinding.Function.Parameters,
+@@ -376,7 +376,7 @@ internal sealed partial class LythonRuntime
+                     context.FunctionClosureContext,
+                     closureCells,
+                     defaults,
+-                    functionBinding.CodeObject.ScopeFacts);
++                    functionBinding.CodeObject.ScopeFacts, functionBinding.Function.ParameterLayout);
+             ChargeFunctionValue(context, functionBinding.Function.Span);
+             ChargeClosureRetention(
+                 context.FunctionClosureContext,
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
+index 5fab808c..ee5a9b30 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
+@@ -462,7 +462,7 @@ internal sealed partial class LythonRuntime
+             functionDefinition.Body,
+             context.FunctionClosureContext,
+             defaults,
+-            ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax));
++            ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax), functionDefinition.ParameterLayout);
+         ChargeFunctionValue(context, functionDefinition.Span);
+         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, functionDefinition.Span);
+         PyFunctionBase.CaptureFunctionDocstring(function, functionDefinition.Body, context, functionDefinition.Span);
+diff --git a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+index ff7c75db..897c6cee 100644
+--- a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+@@ -19,8 +19,9 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+         LythonRuntime.ExecutionContext closure,
+         IReadOnlyList<LythonRuntime.ExecutableCell> closureCells,
+         Dictionary<string, object> defaultValues,
+-        ScopeDirectiveFacts scopeFacts)
+-        : base(name, parameters, closure, defaultValues, scopeFacts)
++        ScopeDirectiveFacts scopeFacts,
++        FunctionParameterLayout? parameterLayout = null)
++        : base(name, parameters, closure, defaultValues, scopeFacts, parameterLayout)
+     {
+         _codeObject = codeObject;
+         _closureCells = closureCells;
+diff --git a/src/Lokad.Lython/Runtime/PyFunction.cs b/src/Lokad.Lython/Runtime/PyFunction.cs
+index 9f00df87..4c626cb7 100644
+--- a/src/Lokad.Lython/Runtime/PyFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyFunction.cs
+@@ -12,8 +12,9 @@ internal sealed class PyFunction : PyFunctionBase
+         IReadOnlyList<LoweredStatement> body,
+         LythonRuntime.ExecutionContext closure,
+         Dictionary<string, object> defaultValues,
+-        ScopeDirectiveFacts scopeFacts)
+-        : base(name, parameters, closure, defaultValues, scopeFacts)
++        ScopeDirectiveFacts scopeFacts,
++        FunctionParameterLayout? parameterLayout = null)
++        : base(name, parameters, closure, defaultValues, scopeFacts, parameterLayout)
+     {
+         _body = body;
+     }
+diff --git a/src/Lokad.Lython/Runtime/PyFunctionBase.cs b/src/Lokad.Lython/Runtime/PyFunctionBase.cs
+index 9e80d99d..5f4dc03a 100644
+--- a/src/Lokad.Lython/Runtime/PyFunctionBase.cs
++++ b/src/Lokad.Lython/Runtime/PyFunctionBase.cs
+@@ -11,7 +11,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+     // Metadata tables grow one CLR entry per guest attribute name; charge
+     // each new key so retained attributes accumulate. The key strings
+     // themselves are caller-owned; only the table slot is charged here.
+-    // Reclamation follows the function's metadata table when it becomes unreachable.
++    // Storage remains charged to the function's execution/result owner.
+     private const long AttributeSlotBytes = 64;
+     private MemoryGovernor? _memoryGovernor;
+     private readonly PyString _nameValue;
+@@ -30,13 +30,14 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+         IReadOnlyList<LoweredFunctionParameter> parameters,
+         LythonRuntime.ExecutionContext closure,
+         Dictionary<string, object> defaultValues,
+-        ScopeDirectiveFacts scopeFacts)
++        ScopeDirectiveFacts scopeFacts,
++        FunctionParameterLayout? parameterLayout = null)
+     {
+         Name = name;
+         _closure = closure;
+         _memoryGovernor = closure.MemoryGovernor;
+         _nameValue = PyString.FromString(name, closure.MemoryGovernor, null);
+-        _bindingPlan = new FunctionBindingPlan(name, PythonCallableKind.Function, parameters, defaultValues, closure);
++        _bindingPlan = new FunctionBindingPlan(name, PythonCallableKind.Function, parameters, defaultValues, closure, parameterLayout);
+         _scopeFacts = scopeFacts;
+     }
+ 
+diff --git a/src/Lokad.Lython/Runtime/PyGeneratorFunction.cs b/src/Lokad.Lython/Runtime/PyGeneratorFunction.cs
+index 825f3b79..7fe200db 100644
+--- a/src/Lokad.Lython/Runtime/PyGeneratorFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyGeneratorFunction.cs
+@@ -5,7 +5,7 @@ namespace Lokad.Lython.Runtime;
+ internal sealed class PyGeneratorFunction(LoweredFunctionDefinitionStatement definition,
+     LythonRuntime.ExecutionContext closure, Dictionary<string, object> defaults, IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null)
+     : PyFunctionBase(definition.Syntax.DeclaredName, definition.Parameters, closure, defaults,
+-        ScopeDirectiveFactsCollector.ForFunction(definition.Syntax))
++        ScopeDirectiveFactsCollector.ForFunction(definition.Syntax), definition.ParameterLayout)
+ {
+ 
+     protected override bool RequiresArgumentMirroring => true;
+diff --git a/src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs b/src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs
+index c549a8ab..3cc718ed 100644
+--- a/src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs
++++ b/src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs
+@@ -8,9 +8,12 @@ internal static class RuntimeMemoryEstimates
+     private const long BigIntegerObjectOverheadBytes = 32;
+ 
+     // Coarse source/AST/lowered representation and bounded diagnostic-cache
+-    // capacity. This replaces per-node/literal retention inventories.
++    // capacity, including immutable def parameter layouts. The extra 64 bytes
++    // per source character cover exact-sized partitions, slot maps and per-def
++    // metadata before lowering allocates them (parameters require source text).
++    // This replaces per-node/literal retention inventories.
+     internal static long EstimateCompilationBytes(int sourceLength)
+-        => 32768L + 96L * Math.Min(sourceLength, LythonEngine.MaxSourceLength);
++        => 32768L + 160L * Math.Min(sourceLength, LythonEngine.MaxSourceLength);
+ 
+     // A retained numeric slot pays a conservative box allowance without an
+     // identity map. Large magnitudes retain their existing payload owner;
+diff --git a/src/Lokad.Lython/Runtime/Calls/FunctionParameterLayout.cs b/src/Lokad.Lython/Runtime/Calls/FunctionParameterLayout.cs
+new file mode 100644
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/Calls/FunctionParameterLayout.cs
+@@ -0,0 +1,62 @@
++using Lokad.Lython.Frontend;
++
++namespace Lokad.Lython.Runtime;
++
++// Immutable binding metadata. Ordinary def layouts belong to compiled storage;
++// dynamically generated signatures admit this storage when their plan is built.
++internal sealed class FunctionParameterLayout
++{
++    internal FunctionParameterLayout(IReadOnlyList<LoweredFunctionParameter> parameters)
++    {
++        var positionalCount = 0;
++        var keywordCount = 0;
++        foreach (var parameter in parameters)
++        {
++            switch (parameter.Kind)
++            {
++                case FunctionParameterKind.PositionalOnly:
++                    PositionalOnlyCount++;
++                    positionalCount++;
++                    break;
++                case FunctionParameterKind.Positional: positionalCount++; break;
++                case FunctionParameterKind.KeywordOnly: keywordCount++; break;
++                case FunctionParameterKind.VariadicList: VariadicList = parameter; break;
++                case FunctionParameterKind.VariadicDictionary: VariadicDictionary = parameter; break;
++            }
++        }
++        var positional = new LoweredFunctionParameter[positionalCount];
++        var keywordOnly = new LoweredFunctionParameter[keywordCount];
++        var p = 0;
++        var k = 0;
++        foreach (var parameter in parameters)
++        {
++            if (parameter.Kind is FunctionParameterKind.PositionalOnly or FunctionParameterKind.Positional)
++                positional[p++] = parameter;
++            else if (parameter.Kind == FunctionParameterKind.KeywordOnly)
++                keywordOnly[k++] = parameter;
++        }
++        PositionalParameters = positional;
++        KeywordOnlyParameters = keywordOnly;
++        NamedLayoutCount = positionalCount + keywordCount;
++        var names = new string[NamedLayoutCount + (VariadicList is null ? 0 : 1) + (VariadicDictionary is null ? 0 : 1)];
++        var indexes = new Dictionary<string, int>(names.Length, StringComparer.Ordinal);
++        var index = 0;
++        foreach (var parameter in positional) Add(parameter.Name);
++        foreach (var parameter in keywordOnly) Add(parameter.Name);
++        if (VariadicList is not null) Add(VariadicList.Name);
++        if (VariadicDictionary is not null) Add(VariadicDictionary.Name);
++        LayoutParameterNames = names;
++        LayoutParameterIndex = indexes;
++
++        void Add(string name) { indexes[name] = index; names[index++] = name; }
++    }
++
++    internal IReadOnlyList<LoweredFunctionParameter> PositionalParameters { get; }
++    internal IReadOnlyList<LoweredFunctionParameter> KeywordOnlyParameters { get; }
++    internal IReadOnlyList<string> LayoutParameterNames { get; }
++    internal IReadOnlyDictionary<string, int> LayoutParameterIndex { get; }
++    internal int NamedLayoutCount { get; }
++    internal int PositionalOnlyCount { get; }
++    internal LoweredFunctionParameter? VariadicList { get; }
++    internal LoweredFunctionParameter? VariadicDictionary { get; }
++}

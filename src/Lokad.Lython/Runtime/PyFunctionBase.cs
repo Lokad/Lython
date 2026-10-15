@@ -11,7 +11,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // Metadata tables grow one CLR entry per guest attribute name; charge
     // each new key so retained attributes accumulate. The key strings
     // themselves are caller-owned; only the table slot is charged here.
-    // Reclamation follows the function's metadata table when it becomes unreachable.
+    // Storage remains charged to the function's execution/result owner.
     private const long AttributeSlotBytes = 64;
     private MemoryGovernor? _memoryGovernor;
     private readonly PyString _nameValue;

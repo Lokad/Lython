@@ -13,7 +13,7 @@ internal sealed class FunctionBindingPlan
         LythonRuntime.ExecutionContext? context = null)
     {
         var governor = context?.MemoryGovernor;
-        // Two name maps and the positional/keyword/layout arrays are owned by
+        // The slot map and positional/keyword/layout arrays are owned by
         // this plan. Admit their capacity before allocating, including working
         // lists; the estimate remains conservative until layouts are shared.
         var layoutBytes = parameters.Count == 0 ? 0 : 128L + 128L * parameters.Count;
@@ -22,11 +22,9 @@ internal sealed class FunctionBindingPlan
         {
             CallableName = callableName;
             CallableKind = callableKind;
-            Parameters = parameters;
 
             var positional = new List<LoweredFunctionParameter>(parameters.Count);
             var keywordOnly = new List<LoweredFunctionParameter>(parameters.Count);
-            var named = new Dictionary<string, LoweredFunctionParameter>(parameters.Count, StringComparer.Ordinal);
             foreach (var parameter in parameters)
             {
                 switch (parameter.Kind)
@@ -37,11 +35,9 @@ internal sealed class FunctionBindingPlan
                         break;
                     case FunctionParameterKind.Positional:
                         positional.Add(parameter);
-                        named[parameter.Name] = parameter;
                         break;
                     case FunctionParameterKind.KeywordOnly:
                         keywordOnly.Add(parameter);
-                        named[parameter.Name] = parameter;
                         break;
                     case FunctionParameterKind.VariadicList:
                         VariadicList = parameter;
@@ -54,7 +50,6 @@ internal sealed class FunctionBindingPlan
 
             PositionalParameters = positional.ToArray();
             KeywordOnlyParameters = keywordOnly.ToArray();
-            NamedParameters = named;
             var layoutNames = new List<string>(parameters.Count);
             var layoutIndex = new Dictionary<string, int>(parameters.Count, StringComparer.Ordinal);
             foreach (var parameter in positional)
@@ -144,13 +139,9 @@ internal sealed class FunctionBindingPlan
 
     public PythonCallableKind CallableKind { get; }
 
-    public IReadOnlyList<LoweredFunctionParameter> Parameters { get; }
-
     public IReadOnlyList<LoweredFunctionParameter> PositionalParameters { get; }
 
     public IReadOnlyList<LoweredFunctionParameter> KeywordOnlyParameters { get; }
-
-    public IReadOnlyDictionary<string, LoweredFunctionParameter> NamedParameters { get; }
 
     // Flat call-time layout: positional, then keyword-only, then variadic
     // names. Built once per plan and shared across invocations; per-call

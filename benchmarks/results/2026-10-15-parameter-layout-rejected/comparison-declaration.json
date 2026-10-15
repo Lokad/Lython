@@ -1,0 +1,28 @@
+{
+  "baselineRevision": "3b34fad26ff6847073a96aa3c87e39404d0a44b4",
+  "candidateBaseRevision": "3b34fad26ff6847073a96aa3c87e39404d0a44b4",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/LoweredStatement.cs": "94d71f9c202fb059f187d60c13bc8a86ff5f8998a11ea360fba527c45deaf422",
+    "src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs": "53aa3e8be3d8e76fdbf8c1a4687e3de44bd99d562e9675ed3a510e4965f04be6",
+    "src/Lokad.Lython/Runtime/Calls/FunctionParameterLayout.cs": "e7f8e95a4462ac085c63086299bd09a9424d1cf390a78edc51d7bea59af14a93",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "5d54228459dd1b4d47951a6cd77a485b0e45e91f0bc24bc0a94565583e817ee7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "52b085b62b3c98e129823fa2285cadea82ed195f6b12ca2f48c5bfa105079904",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "5d0e86a63f22a91c1ca8ecef8c9c552e7081e63fbecf0e52d87347d4776c49a6",
+    "src/Lokad.Lython/Runtime/PyFunction.cs": "e6ddd198dba4361f7f83b68ceec2c8cdc0b0c437872281d8c96f404c2873b356",
+    "src/Lokad.Lython/Runtime/PyFunctionBase.cs": "b56c9090fbe0661504d78059f8c20eb9bdd8bb9bc0a6c2b1538da883cbf211b0",
+    "src/Lokad.Lython/Runtime/PyGeneratorFunction.cs": "87f37e967a70a2f31c656c9a3f027ce68375861d28f495196e6c08cf36c981ce",
+    "src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs": "28c937c08ffefdbed0483f806192a30603951e6d23bb9f71238b10fc3ec9dc8a"
+  },
+  "sourceArchiveSha256": "06cad9cf8d1bb89e1bfa7a225a8490742c88ce1d16b4e24866e037dd2a7a5cfd",
+  "productionChange": "Compiled-owned immutable def parameter layout; delete unused named map, temporary lists and repeated per-definition construction; independent live defaults; conservative compile admission",
+  "case": "calls.defaults.small",
+  "lane": "compile-run",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "none",
+  "executionBoundary": "Fresh compilation and synchronous execution in an already-running host; new invocation state, result/projection and cleanup; process startup excluded",
+  "stop": "One affected short fresh compile-to-result diagnostic, preserve all samples; no repeat, retuning or new framework"
+}

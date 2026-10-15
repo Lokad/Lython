@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Remove the unused function-binding name table and retained parameter-list field. Preserve the canonical slot map, live defaults and conservative layout admission; retain evidence of a rejected compiled-layout sharing prototype.
+
 - Keep thread-local structural comparison scopes within synchronous work after awaited expression evaluation and iterable pulls. Prevent stale execution/cancellation contexts from escaping async dictionary/set construction and comprehensions.
 
 - Reuse protected execution workers for asynchronous startup without blocking the caller through a CPU prefix or retaining a worker through suspended I/O. Share bounded idle retirement and isolated caller contexts with synchronous runs.

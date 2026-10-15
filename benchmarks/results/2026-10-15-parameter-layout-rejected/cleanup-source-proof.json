@@ -1,0 +1,69 @@
+{
+  "checks": [
+    {
+      "engine": "timing-baseline",
+      "pid": 2336117,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-candidate",
+      "pid": 2336138,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-CPython",
+      "pid": 2336153,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-lythonIdentity",
+      "pid": 2335844,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-pythonIdentity",
+      "pid": 2335865,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-lythonIdentity",
+      "pid": 2335977,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-pythonIdentity",
+      "pid": 2335998,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    }
+  ],
+  "productionDifferences": [
+    "src/Lokad.Lython/Frontend/LoweredStatement.cs",
+    "src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs",
+    "src/Lokad.Lython/Runtime/Calls/FunctionParameterLayout.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs",
+    "src/Lokad.Lython/Runtime/PyFunction.cs",
+    "src/Lokad.Lython/Runtime/PyFunctionBase.cs",
+    "src/Lokad.Lython/Runtime/PyGeneratorFunction.cs",
+    "src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs"
+  ],
+  "frozenSourceHashesMatch": true,
+  "comparisonSourcesIdentical": true,
+  "relevantUnits": "",
+  "leaseAcquired": true
+}
