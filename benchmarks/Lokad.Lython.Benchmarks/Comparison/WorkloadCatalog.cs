@@ -121,6 +121,15 @@ for i in range(N):
     total += i
 print(total)
 """, n => Line((long)n * (n - 1) / 2));
+        Add("loops.integer-unary", "loops", "core", CoreSizes, """
+total = 0
+for value in range(N):
+    total += +value
+    total += -value
+    total += ~value
+    total += not value
+print(total)
+""", n => Line(1L - (long)n * (n + 1) / 2));
         Add("loops.wide-integer", "loops", "core", CoreSizes, """
 base = 9007199254740993
 total = 0
