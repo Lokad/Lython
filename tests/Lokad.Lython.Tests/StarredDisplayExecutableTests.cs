@@ -6,14 +6,51 @@ using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class StarredListExecutableTests
+public sealed class StarredDisplayExecutableTests
 {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void DeniedGrowthLeavesTheOriginalTargetUnchanged(bool asynchronous)
+    public void TupleFinalConversionRefusesBeforeAssignment(bool asynchronous)
     {
-        var syntax = LythonFrontend.Compile("global target\ntarget=[1,*range(10000),2]").Script!;
+        var syntax = LythonFrontend.Compile("global target\ntarget=(*source,)").Script!;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        Context Create()
+        {
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 });
+            context.Variables["source"] = new PyTuple(new object[] { new BigInteger(7), new BigInteger(8) }, context.MemoryGovernor, null);
+            context.Variables["target"] = PyNone.Instance;
+            return context;
+        }
+        void Run(Context context)
+        {
+            if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).GetAwaiter().GetResult();
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+        }
+        var complete = Create();
+        Run(complete);
+        var denied = Create();
+        var padding = 1024 * 1024 - complete.MemoryGovernor.PeakAccountedBytes + 1;
+        Assert.True(padding > 0);
+        denied.MemoryGovernor.Reserve(padding, null);
+        denied.MemoryGovernor.Commit(padding);
+        var failure = Assert.Throws<LythonRuntimeException>(() => Run(denied));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(new LythonSourceSpan(21, 10, 2, 8), failure.Span);
+        Assert.Same(PyNone.Instance, denied.Variables["target"]);
+        Assert.Null(denied.CurrentExecutableFrame);
+        Assert.Equal(0, denied.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, denied.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void DeniedGrowthLeavesTheOriginalTargetUnchanged(bool asynchronous, bool tuple)
+    {
+        var syntax = LythonFrontend.Compile("global target\ntarget=" + (tuple ? "(1,*range(10000),2)" : "[1,*range(10000),2]")).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
         var original = new PyList(new object[] { new BigInteger(17) }, context.MemoryGovernor, null);
@@ -30,10 +67,12 @@ public sealed class StarredListExecutableTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    [Fact]
-    public void EveryFuelBoundaryPreservesPublicationAndUnwindsBothDrivers()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EveryFuelBoundaryPreservesPublicationAndUnwindsBothDrivers(bool tuple)
     {
-        var syntax = LythonFrontend.Compile("global target\ntarget=[0,*range(3),4]").Script!;
+        var syntax = LythonFrontend.Compile("global target\ntarget=" + (tuple ? "(0,*range(3),4)" : "[0,*range(3),4]")).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         Context Context() => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionSteps = 1000 });
         void Run(Context context, bool asynchronous)
@@ -62,7 +101,7 @@ public sealed class StarredListExecutableTests
                 }
                 else Assert.Null(failure);
                 var published = !ReferenceEquals(original, context.Variables["target"]);
-                if (published) Assert.Equal(new object[] { new BigInteger(0), new BigInteger(0), new BigInteger(1), new BigInteger(2), new BigInteger(4) }, (PyList)context.Variables["target"]);
+                if (published) Assert.Equal(new object[] { new BigInteger(0), new BigInteger(0), new BigInteger(1), new BigInteger(2), new BigInteger(4) }, Assert.IsAssignableFrom<IEnumerable<object>>(context.Variables["target"]));
                 var observation = (published, (failure as LythonRuntimeException)?.Span, context.Limits.ExecutionStepCount);
                 if (asynchronous) Assert.Equal(synchronous!.Value, observation);
                 else synchronous = observation;
@@ -74,13 +113,15 @@ public sealed class StarredListExecutableTests
         }
     }
 
-    [Fact]
-    public void StarredListDoesNotForceExpressionFallbackOrLocalMirroring()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void StarredDisplayDoesNotForceExpressionFallbackOrLocalMirroring(bool tuple)
     {
-        var frontend = LythonFrontend.Compile("""
+        var frontend = LythonFrontend.Compile($$"""
 def combine(left, right, marker):
     before = marker + 1
-    result = [before, *left, marker, *right]
+    result = {{(tuple ? "(before, *left, marker, *right)" : "[before, *left, marker, *right]")}}
     return result
 print(combine([1], [2], 3))
 """);

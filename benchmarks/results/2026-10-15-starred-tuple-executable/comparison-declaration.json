@@ -1,0 +1,15 @@
+{
+  "baselineRevision": "5cf03da9fe224f7452ce35f597c975a1d7a9f36e",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "2bd97c05798c02ea4a89ede4121ffddae26131e3c6d3215ef063c6ffd5f2af81"
+  },
+  "sourceArchiveSha256": "65a87110969a470dbdedc1606d6bd5b3c541c33d8b2b77aa06270a0cbe0b8dcd",
+  "caseId": "tuples.starred-merge.medium",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Reuse generator display lowering for ordinary starred tuples; remove their expression fallback and resulting local mirroring; both roles include empty-tuple correctness fix; no new runtime path or opcode.",
+  "normalGCAndTiering": true,
+  "boundary": "Already compiled helper/list merge job, fresh per-run state, execution/projection and prior-result disposal; compilation/startup/transport/hash excluded.",
+  "stoppingRule": "One fixed affected helper job after source gates/focused checks. Preserve all samples; no retuning or repeat of rejected comprehension producers."
+}

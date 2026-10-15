@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 ordinary starred-tuple lowering](results/2026-10-15-starred-tuple-executable/README.md)
+shares existing generator display/immutable-finish operations. Qualification fixed
+empty tuple identity in both roles first. One helper diagnostic gave2.659 ->2.629ms,
+CPython0.3477ms, within1.1%/5.6%/0.6% spread: no elapsed benefit or retuning.
+Conservative working-list/result overlap and fuel changes are explicit contracts.
+
 The [2026-10-15 ordinary starred-list lowering](results/2026-10-15-starred-list-executable/README.md)
 reuses existing generator display operations, removing one real expression
 fallback and associated local mirroring without runtime changes. One shared

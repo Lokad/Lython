@@ -2,6 +2,7 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Ordinary starred-tuple helper [AH], warm `Run` | 2,048 calls; six-element immutable results | 2.629 ms | 0.3477 ms | — | One diagnostic; elapsed change within spread; fallback removed, conservative overlap funded |
 | Ordinary starred-list helper [AG], warm `Run` | 2,048 calls; six-element merged lists | 2.179 ms | 0.3541 ms | — | One diagnostic; observed 18.2% lower Lython median; fallback/mirroring removed |
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Branch/integer loop [AE], warm `RunAsync` | 16,384 iterations; modulo/comparison/add/subtract | 6.321 ms | 0.9599 ms | — | One diagnostic; observed 35.8% lower Lython median; remaining gap substantial |
@@ -53,7 +54,7 @@ including a loop whose cost grows with its iteration count. They support
 investigating interpreter dispatch and application workloads. **No workload
 multiplier qualified in either campaign. These timings do not describe today's
 HEAD:** subsequent interpreter and containment changes have been integrated.
-The newer AG, AF, AE, AD, AC, AB, AA, Z, X, W, N, B, K, R, V, D, I, E, H, P, F, T, J, C, G, A and M rows are separate short diagnostics at their named revisions; they do
+The newer AH, AG, AF, AE, AD, AC, AB, AA, Z, X, W, N, B, K, R, V, D, I, E, H, P, F, T, J, C, G, A and M rows are separate short diagnostics at their named revisions; they do
 not qualify a current overall or complete-script multiplier.
 The F, T, J and C rows supply complete-script comparisons; their timing evidence
 remains inconclusive. F is a range of medians from two identical Lython control
@@ -63,6 +64,7 @@ processes, not two revisions. No complete-script multiplier or overall speedup i
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| AH | 2026-10-15 | Working tuple-lowering candidate on5cf03da9; one frozen compiler source; both roles include empty-tuple fix | [Immutable conversion, admission and identity checks](benchmarks/results/2026-10-15-starred-tuple-executable/README.md) |
 | AG | 2026-10-15 | Working starred-list lowering candidate on8f290b57; two frozen compiler sources; identical helper/tooling | [Executable displays, ordered effects and ownership checks](benchmarks/results/2026-10-15-starred-list-executable/README.md) |
 | AF | 2026-10-15 | 654b4f5a; two identical Lython controls, freshly compiled configuration job | [Compile-to-result boundary, controls and independent file goldens](benchmarks/results/2026-10-15-config-fresh/README.md) |
 | AE | 2026-10-15 | Working exact-integer dispatch candidate on 60277f65; one frozen interpreter source; unchanged case/tooling | [Async integer operators, suspension and boundary checks](benchmarks/results/2026-10-15-async-integer-operators/README.md) |

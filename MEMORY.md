@@ -51,6 +51,13 @@ disposal invalidates descendants and refunds their reservations, so descendants
 and their storage must never outlive an ancestor. There is no automatic ownership
 transfer or refund triggered by CLR collection.
 
+Executable starred-tuple expansion uses an owned mutable working list before
+constructing its immutable result. Working and result storage are funded together
+during conversion. Their estimates may remain charged until the execution/result
+owner ends, so narrow allowances can reject earlier than with the former lowered
+temporary-list path. Empty results reuse the existing immutable empty tuple;
+no new cache or identity tracking is introduced.
+
 Host command requests carry the active budget in
 `LythonSubprocessRequest.MemoryBudget`. A cooperating dispatcher borrows it,
 creates any working scopes it needs, forwards it to nested Lython executions,

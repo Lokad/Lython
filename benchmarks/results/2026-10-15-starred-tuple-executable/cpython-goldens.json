@@ -1,0 +1,90 @@
+{
+  "python": "Python 3.13.2",
+  "checks": [
+    {
+      "source": "print([0,*range(3),3,*'\u00e9\ud83d\ude00'])",
+      "expected": "[0, 0, 1, 2, 3, '\u00e9', '\ud83d\ude00']\n",
+      "stdout": "[0, 0, 1, 2, 3, '\u00e9', '\ud83d\ude00']\n"
+    },
+    {
+      "source": "def combine(left,right):\n marker=7\n return [*left,marker,*right]\nprint(combine([1,2],(3,4)))",
+      "expected": "[1, 2, 7, 3, 4]\n",
+      "stdout": "[1, 2, 7, 3, 4]\n"
+    },
+    {
+      "source": "events=[]\ndef mark(name,value):\n events.append(name)\n return value\ndef items():\n events.append('pull1')\n yield 1\n events.append('pull2')\n yield 2\nresult=[mark('a',0),*mark('iterable',items()),mark('b',3),*[4,5]]\nprint(result)\nprint(','.join(events))",
+      "expected": "[0, 1, 2, 3, 4, 5]\na,iterable,pull1,pull2,b\n",
+      "stdout": "[0, 1, 2, 3, 4, 5]\na,iterable,pull1,pull2,b\n"
+    },
+    {
+      "source": "events=[]\ntarget=['old']\ntry: target=[1,*None,events.append('suffix')]\nexcept TypeError: print(target,events)",
+      "expected": "['old'] []\n",
+      "stdout": "['old'] []\n"
+    },
+    {
+      "source": "marker=[]\nresult=[*([marker]*2),marker]\nresult[0].append(9)\nprint(result,result[0] is result[2])",
+      "expected": "[[9], [9], [9]] True\n",
+      "stdout": "[[9], [9], [9]] True\n"
+    },
+    {
+      "source": "def make():\n x=7\n def inner(): return x\n result=[*range(2),x,inner()]\n x=9\n return result,inner(),locals()['x']\nprint(make())",
+      "expected": "([0, 1, 7, 7], 9, 9)\n",
+      "stdout": "([0, 1, 7, 7], 9, 9)\n"
+    },
+    {
+      "source": "def g():\n values=[0,*(yield [1]),2]\n yield values\niterator=g()\nprint(next(iterator))\nprint(iterator.send((3,4)))",
+      "expected": "[1]\n[0, 3, 4, 2]\n",
+      "stdout": "[1]\n[0, 3, 4, 2]\n"
+    },
+    {
+      "source": "events=[]\ndef items():\n try:\n  yield 1\n  raise ValueError('bad')\n finally: events.append('closed')\ntarget=['old']\ntry: target=[0,*items(),2]\nexcept ValueError: print(target,events)",
+      "expected": "['old'] ['closed']\n",
+      "stdout": "['old'] ['closed']\n"
+    },
+    {
+      "source": "print((0,*range(3),3,*'\u00e9\ud83d\ude00'))",
+      "expected": "(0, 0, 1, 2, 3, '\u00e9', '\ud83d\ude00')\n",
+      "stdout": "(0, 0, 1, 2, 3, '\u00e9', '\ud83d\ude00')\n"
+    },
+    {
+      "source": "def combine(left,right):\n marker=7\n return (*left,marker,*right)\nprint(combine([1,2],(3,4)))",
+      "expected": "(1, 2, 7, 3, 4)\n",
+      "stdout": "(1, 2, 7, 3, 4)\n"
+    },
+    {
+      "source": "events=[]\ndef mark(name,value):\n events.append(name)\n return value\ndef items():\n events.append('pull1')\n yield 1\n events.append('pull2')\n yield 2\nresult=(mark('a',0),*mark('iterable',items()),mark('b',3),*[4,5])\nprint(result)\nprint(','.join(events))",
+      "expected": "(0, 1, 2, 3, 4, 5)\na,iterable,pull1,pull2,b\n",
+      "stdout": "(0, 1, 2, 3, 4, 5)\na,iterable,pull1,pull2,b\n"
+    },
+    {
+      "source": "events=[]\ntarget=('old',)\ntry: target=(1,*None,events.append('suffix'))\nexcept TypeError: print(target,events)",
+      "expected": "('old',) []\n",
+      "stdout": "('old',) []\n"
+    },
+    {
+      "source": "marker=[]\nresult=(*([marker]*2),marker)\nresult[0].append(9)\nprint(result,result[0] is result[2])",
+      "expected": "([9], [9], [9]) True\n",
+      "stdout": "([9], [9], [9]) True\n"
+    },
+    {
+      "source": "def make():\n x=7\n def inner(): return x\n result=(*range(2),x,inner())\n x=9\n return result,inner(),locals()['x']\nprint(make())",
+      "expected": "((0, 1, 7, 7), 9, 9)\n",
+      "stdout": "((0, 1, 7, 7), 9, 9)\n"
+    },
+    {
+      "source": "def g():\n values=(0,*(yield [1]),2)\n yield values\niterator=g()\nprint(next(iterator))\nprint(iterator.send((3,4)))",
+      "expected": "[1]\n(0, 3, 4, 2)\n",
+      "stdout": "[1]\n(0, 3, 4, 2)\n"
+    },
+    {
+      "source": "print((*[],),(*[1],),(*[],*()))",
+      "expected": "() (1,) ()\n",
+      "stdout": "() (1,) ()\n"
+    },
+    {
+      "source": "empty=tuple()\nliteral=()\nprint(literal is empty,(*[],) is empty,(*[],*()) is empty)\nclass Holder: empty=(*[],)\nprint(Holder.empty is empty)",
+      "expected": "True True True\nTrue\n",
+      "stdout": "True True True\nTrue\n"
+    }
+  ]
+}

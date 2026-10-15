@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile ordinary starred tuples through the existing display/immutable-finish operations, removing their expression fallback and unnecessary local mirroring. Conservative scratch/result overlap can reject earlier; explicit fuel uses existing per-item checkpoints.
+
 - Reuse the existing immutable empty tuple for empty literals and completed tuple expansions across executable and lowered execution. Preserve identity with `tuple()` without a new cache or identity ledger.
 
 - Compile ordinary starred-list displays with the existing generator display operations, removing their expression fallback and unnecessary local mirroring. Preserve interleaved evaluation, async iteration, cancellation, admission and alias funding. Explicit fuel now uses those existing per-item checkpoints.

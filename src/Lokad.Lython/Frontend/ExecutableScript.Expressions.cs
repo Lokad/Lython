@@ -90,8 +90,7 @@ internal sealed partial class ExecutableScript
                 case LoweredTupleLiteralExpression tuple:
                     if (tuple.Tuple.HasUnpacking)
                     {
-                        AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(tuple), tuple.Span));
-                        return currentBlock;
+                        return CompileDisplay(tuple.Items, ExecutableDisplayKind.Tuple, tuple.Span, currentBlock);
                     }
 
                     foreach (var item in tuple.Items)

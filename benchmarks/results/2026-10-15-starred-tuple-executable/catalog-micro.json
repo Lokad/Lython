@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "tuples.starred-merge.medium",
+      "family": "tuples",
+      "category": "core",
+      "scale": "medium",
+      "size": 2048,
+      "source": "N = 2048\ndef merge(left, right, marker):\n    before = marker + 1\n    return (before, *left, marker, *right)\nleft = (1, 2)\nright = (3, 4)\ntotal = 0\nfor i in range(N):\n    values = merge(left, right, i)\n    total += values[0] + values[3] + len(values)\nprint(total)\n",
+      "fixtureJson": "{\"size\":2048,\"text\":null}",
+      "expectedOutput": "4206592\n",
+      "sourceUtf8Bytes": 263,
+      "expectedOutputUtf8Bytes": 8,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "7f1986453d5d8351ab96e67ffc132961b5160c6b0c07f0cde44d0d9acbefb711",
+      "fixtureSha256": "cc19526c1d9f59f92c233c4276c92e42e48bc1ecbbeec305f81a44877bd877d6",
+      "expectedOutputSha256": "529f7b625b3cfe59a61e9429fedae85ff471fea34db28a04bc9eb2b3c034fab4"
+    }
+  ]
+}
