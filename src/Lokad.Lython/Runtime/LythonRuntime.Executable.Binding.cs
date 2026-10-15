@@ -347,6 +347,7 @@ internal sealed partial class LythonRuntime
             var closureCells = functionBinding.CodeObject is null
                 ? []
                 : CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Function.Span);
+            using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(functionBinding.DefaultValues.Count, context.MemoryGovernor, functionBinding.Function.Span);
             var defaults = asynchronous
                 ? await BuildDefaultArgumentMapAsync(functionBinding.Function.Parameters,
                     expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false)
@@ -371,7 +372,6 @@ internal sealed partial class LythonRuntime
                     defaults,
                     functionBinding.CodeObject.ScopeFacts);
             ChargeFunctionValue(context, functionBinding.Function.Span);
-            ChargeDefaultArguments(functionBinding.DefaultValues.Count, context.MemoryGovernor, functionBinding.Function.Span);
             ChargeClosureRetention(
                 context.FunctionClosureContext,
                 context.MemoryGovernor,

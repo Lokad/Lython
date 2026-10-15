@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Make def/lambda positional and keyword-default metadata live for argument binding, including mutation, deletion, type checks and supported container subclasses. Await custom-key default lookup, preserve its owner through suspension, and admit parameter-layout/default storage before allocation. Return temporary definition-map allowance after construction instead of retaining its old per-default fee.
+
 - Preserve fresh exposed builtin method objects in synchronous execution, including comprehensions and class bodies. Keep immediate method-call caching separate from attribute reads, preserving lookup-before-argument order and receiver lifetime.
 
 - Share the synchronous integer-addition handler during RunAsync while preserving admission and cancellation. Await user-defined in-place addition and declined/reflected fallback without replaying host effects.

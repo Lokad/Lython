@@ -508,6 +508,7 @@ internal sealed partial class LythonRuntime
     private static object CreateLoweredLambda(LoweredLambdaExpression lambda, ExecutionContext context)
     {
         var loweredParameters = LowerLambdaParameters(lambda);
+        using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
         var function = new LambdaFunction(
             loweredParameters,
             lambda.Body,
@@ -515,7 +516,6 @@ internal sealed partial class LythonRuntime
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)),
             lambda.GeneratorCode, ScopeDirectiveFactsCollector.ForLambda(lambda.Lambda));
         ChargeFunctionValue(context, lambda.Span);
-        ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
         RetainLocalsForLambda(context.FunctionClosureContext);
         return function;

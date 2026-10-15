@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 live-defaults delivery](results/2026-10-15-function-defaults/README.md)
+removes disconnected binding metadata and persistent default-map fees, admits
+layout/default capacity and awaits custom-key lookup. One async default-call
+diagnostic has a 4.2% higher median; no speedup or qualified regression is claimed.
+The CPython dictionary-lifetime edge and original-scale accounting boundaries are
+documented explicitly. Direct calls and immutable layout sharing remain open.
+
 The [2026-10-15 method-exposure delivery](results/2026-10-15-method-exposure/README.md)
 corrects exposed builtin method identity while keeping immediate-call caching.
 One dictionary-update diagnostic is within spread; no timing claim or retry.

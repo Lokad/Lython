@@ -70,6 +70,14 @@ resize through disposed owners throw `ObjectDisposedException`.
 
 Major backing capacity, copies and replacement overlap are conservatively
 charged. Internal execution/projection limits remain separate policy limits.
+Function parameter-name maps/layout arrays and live default containers own
+capacity charges. Definition-time default maps use temporary admission during
+construction, returning it once the Python containers own their storage; failed
+construction refunds only new, unpublished metadata. Clearing/replacing published
+defaults does not refund storage that can still have aliases or an active lookup.
+Parameter-heavy definition batches can therefore refuse earlier than older
+revisions that omitted layout capacity. Use bounded execution batches; immutable
+layout sharing remains a performance opportunity, not an accounting exemption.
 Approximation deliberately leaves roughly 20% of minor objects, metadata and
 short-lived temporaries uninstrumented; this is a design allowance, not a
 measured coverage percentage. Keep additional host headroom for CLR/runtime

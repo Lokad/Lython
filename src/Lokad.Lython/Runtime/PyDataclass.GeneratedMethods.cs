@@ -48,7 +48,7 @@ internal static partial class PyDataclass
 
         public PyString? ModuleName => _moduleName;
 
-        public DataclassInitMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields, PyString? moduleName)
+        public DataclassInitMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields, PyString? moduleName, LythonRuntime.ExecutionContext context)
         {
             _typeName = typeName;
             _fields = fields;
@@ -58,6 +58,7 @@ internal static partial class PyDataclass
             {
                 new("self", FunctionParameterKind.Positional, null, null)
             };
+            using var defaultStorage = LythonRuntime.ReserveDefaultArgumentsWorkingStorage(fields.Count(static field => field.HasDefault || field.HasDefaultFactory), context.MemoryGovernor, null);
             var defaults = new Dictionary<string, object>(StringComparer.Ordinal);
             foreach (var field in fields)
             {
@@ -81,7 +82,7 @@ internal static partial class PyDataclass
                 }
             }
 
-            _bindingPlan = new FunctionBindingPlan($"{typeName}.__init__", PythonCallableKind.Function, parameters, defaults);
+            _bindingPlan = new FunctionBindingPlan($"{typeName}.__init__", PythonCallableKind.Function, parameters, defaults, context);
         }
 
         public object Bind(object self) => new PyBoundMethod(self, this);

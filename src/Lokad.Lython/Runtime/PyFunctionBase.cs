@@ -3,7 +3,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyMutableDynamicAttributes
+internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes
 {
 
     private readonly FunctionBindingPlan _bindingPlan;
@@ -36,7 +36,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         _closure = closure;
         _memoryGovernor = closure.MemoryGovernor;
         _nameValue = PyString.FromString(name, closure.MemoryGovernor, null);
-        _bindingPlan = new FunctionBindingPlan(name, PythonCallableKind.Function, parameters, defaultValues);
+        _bindingPlan = new FunctionBindingPlan(name, PythonCallableKind.Function, parameters, defaultValues, closure);
         _scopeFacts = scopeFacts;
     }
 
@@ -89,7 +89,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
-        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
+        var boundArguments = await LythonRuntime.BindFunctionArgumentsAsync(arguments, span, _bindingPlan, context).ConfigureAwait(false);
         LythonRuntime.ExecutionContext frame;
         try
         {
@@ -138,6 +138,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
+        if (_bindingPlan.TryGetDefaultMetadata(name, out value)) return true;
         if (_metadata.TryGetValue(name, out value))
         {
             return true;
@@ -255,6 +256,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     public bool TrySetMember(string name, object value)
     {
+        if (_bindingPlan.TrySetDefaultMetadata(name, value)) return true;
         if (_memoryGovernor is not null && !_metadata.ContainsKey(name))
         {
             _memoryGovernor.Reserve(AttributeSlotBytes, null);
@@ -276,6 +278,9 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         _metadata[name] = value;
         return true;
     }
+
+    public bool TryDeleteMember(string name, LythonSourceSpan? span)
+        => _bindingPlan.TrySetDefaultMetadata(name, PyNone.Instance, span);
 
     public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<function {Name}>");
 

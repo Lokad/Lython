@@ -1,0 +1,29 @@
+{
+  "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "name": "pure-replacement",
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        f.__kwdefaults__={'x':99,'y':100}\n        return other=='x'\ndef f(*,x,y): return x,y\nf.__kwdefaults__={Key():7,'y':8}\nprint(f())\nprint(f())",
+      "stdout": "(7, 100)\n(99, 100)\n",
+      "stderr": "",
+      "exitCode": 0,
+      "events": ""
+    },
+    {
+      "name": "file-replacement",
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        f.__kwdefaults__={'x':99,'y':100}\n        with open('events.txt','a') as target: target.write('eq\\n')\n        return other=='x'\ndef f(*,x,y): return x,y\nf.__kwdefaults__={Key():7,'y':8}\nprint(f())\nprint(f())",
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 9, in <module>\n    print(f())\n          ~^^\nTypeError: f() missing 1 required keyword-only argument: 'x'\n",
+      "exitCode": 1,
+      "events": "eq\n"
+    },
+    {
+      "name": "file-replacement-retained-dict",
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        f.__kwdefaults__={'x':99,'y':100}\n        with open('events.txt','a') as target: target.write('eq\\n')\n        return other=='x'\ndef f(*,x,y): return x,y\noriginal={Key():7,'y':8}\nf.__kwdefaults__=original\nprint(f())\nprint(f())",
+      "stdout": "(7, 100)\n(99, 100)\n",
+      "stderr": "",
+      "exitCode": 0,
+      "events": "eq\n"
+    }
+  ]
+}

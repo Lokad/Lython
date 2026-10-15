@@ -106,6 +106,44 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    internal static ValueTask<BoundCallArguments> BindFunctionArgumentsAsync(
+        CallArgumentValue[] arguments, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context)
+    {
+        var defaults = plan.KeywordDefaultStorage;
+        if (defaults is not { HasProtocolKeys: true })
+            return new(BindFunctionArguments(arguments, span, plan, context));
+        return BindProtocolDefaultsAsync(arguments, span, plan, context);
+    }
+
+    private static async ValueTask<BoundCallArguments> BindProtocolDefaultsAsync(
+        CallArgumentValue[] arguments, LythonSourceSpan span, FunctionBindingPlan plan,
+        ExecutionContext context)
+    {
+        var values = plan.LayoutParameterNames.Count == 0 ? [] : RentBoundValues(plan.LayoutParameterNames.Count);
+        try
+        {
+            var bound = BindInto(values, arguments, span, plan, context, deferKeywordDefaults: true);
+            for (var k = 0; k < plan.KeywordOnlyParameters.Count; k++)
+            {
+                var index = plan.PositionalParameters.Count + k;
+                if (bound.Assigned[index]) continue;
+                var defaults = plan.KeywordDefaultStorage;
+                if (defaults is null)
+                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.KeywordOnlyParameters[k].Name, span);
+                var value = await defaults.TryGetBuiltinStringAsync(plan.KeywordDefaultNames[k], context, span).ConfigureAwait(false);
+                if (!value.Found)
+                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.KeywordOnlyParameters[k].Name, span);
+                values[index] = value.Value;
+            }
+            return bound;
+        }
+        catch
+        {
+            ReturnBoundValues(values);
+            throw;
+        }
+    }
+
     // Post-rent binding body: every throw inside (too many positionals,
     // unexpected or duplicated keywords, missing arguments) funnels through
     // the catch in BindFunctionArguments, which returns the rented box.
@@ -114,7 +152,8 @@ internal sealed partial class LythonRuntime
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
         FunctionBindingPlan plan,
-        ExecutionContext context)
+        ExecutionContext context,
+        bool deferKeywordDefaults = false)
     {
         var pool = context.State.MemoryGovernor;
         var assigned = new ArgumentPresence(plan.LayoutParameterNames.Count);
@@ -188,7 +227,7 @@ internal sealed partial class LythonRuntime
             }
 
             var parameterName = plan.PositionalParameters[i].Name;
-            if (plan.DefaultValues.TryGetValue(parameterName, out var defaultValue))
+            if (plan.TryGetPositionalDefault(i, out var defaultValue))
             {
                 values[i] = defaultValue;
                 continue;
@@ -197,7 +236,7 @@ internal sealed partial class LythonRuntime
             throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
         }
 
-        for (var k = 0; k < plan.KeywordOnlyParameters.Count; k++)
+        for (var k = 0; !deferKeywordDefaults && k < plan.KeywordOnlyParameters.Count; k++)
         {
             var i = plan.PositionalParameters.Count + k;
             if (assigned[i])
@@ -206,7 +245,8 @@ internal sealed partial class LythonRuntime
             }
 
             var parameterName = plan.KeywordOnlyParameters[k].Name;
-            if (plan.DefaultValues.TryGetValue(parameterName, out var defaultValue))
+            var keywordDefaults = plan.KeywordDefaultStorage;
+            if (keywordDefaults is not null && keywordDefaults.TryGetValue(plan.KeywordDefaultNames[k], out var defaultValue, context, span))
             {
                 values[i] = defaultValue;
                 continue;
@@ -252,7 +292,7 @@ internal sealed partial class LythonRuntime
     }
 
     // Constructed function objects retain a wrapper plus binding plan and
-    // default map per evaluation. Defs and lambdas execute per evaluation,
+    // default containers per evaluation. Defs and lambdas execute per evaluation,
     // so each constructed value charges once built.
     private const long FunctionValueBytes = 128;
 
@@ -275,22 +315,12 @@ internal sealed partial class LythonRuntime
         context?.MemoryGovernor.Commit(FunctionValueBytes);
     }
 
-    // MG11: default-argument maps survive with the function value. The 128B
-    // constructed-value unit covers the wrapper, binding plan and an empty map,
-    // so each defaulted parameter owns one 64B table slot beside it.
-    private const long DefaultArgumentSlotBytes = 64;
-
-    internal static void ChargeDefaultArguments(int defaultCount, MemoryGovernor? governor, LythonSourceSpan? span)
-    {
-        if (defaultCount <= 0 || governor is null)
-        {
-            return;
-        }
-
-        var bytes = checked(DefaultArgumentSlotBytes * (long)defaultCount);
-        governor.Reserve(bytes, span);
-        governor.Commit(bytes);
-    }
+    // The definition-time name map is scratch; only the Python default
+    // containers survive with the function. Cover replacement overlap while
+    // constructing them, then return the scratch allowance deterministically.
+    internal static MemoryGovernor.TemporaryMemoryReservation? ReserveDefaultArgumentsWorkingStorage(
+        int defaultCount, MemoryGovernor? governor, LythonSourceSpan? span)
+        => defaultCount <= 0 ? null : governor?.ReserveTemporary(64L + 64L * defaultCount, span);
 
     private const long ClosureContextBaseBytes = 512;
     private const long ClosureCellSlotBytes = 32;
@@ -386,7 +416,7 @@ internal sealed partial class LythonRuntime
         return defaults;
     }
 
-    private sealed class LambdaFunction : IPyBindableCallable, IPyDynamicAttributes, INamedRuntimeCallable
+    private sealed class LambdaFunction : IPyBindableCallable, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, INamedRuntimeCallable
     {
         public string Name => "<lambda>";
 
@@ -412,7 +442,7 @@ internal sealed partial class LythonRuntime
             _generatorCode = generatorCode;
             _body = body;
             _closure = closure;
-            _bindingPlan = new FunctionBindingPlan("<lambda>", PythonCallableKind.Lambda, parameters, defaultValues);
+            _bindingPlan = new FunctionBindingPlan("<lambda>", PythonCallableKind.Lambda, parameters, defaultValues, closure);
             _scopeFacts = scopeFacts ?? ScopeDirectiveFactsCollector.ForLambda(parameters, body.Syntax);
         }
 
@@ -420,6 +450,7 @@ internal sealed partial class LythonRuntime
         // scope: <lambda>, the nested qualname and the defining module.
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
+            if (_bindingPlan.TryGetDefaultMetadata(name, out value)) return true;
             if (name == "__annotations__")
             {
                 if (_annotations is null)
@@ -460,6 +491,11 @@ internal sealed partial class LythonRuntime
             value = PyNone.Instance;
             return false;
         }
+
+        public bool TrySetMember(string name, object value) => _bindingPlan.TrySetDefaultMetadata(name, value);
+
+        public bool TryDeleteMember(string name, LythonSourceSpan? span)
+            => _bindingPlan.TrySetDefaultMetadata(name, PyNone.Instance, span);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -504,7 +540,7 @@ internal sealed partial class LythonRuntime
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
-            var boundArguments = BindFunctionArguments(arguments, span, _bindingPlan, context);
+            var boundArguments = await BindFunctionArgumentsAsync(arguments, span, _bindingPlan, context).ConfigureAwait(false);
 
             ExecutionContext frame;
             try

@@ -979,6 +979,25 @@ after its original name is reassigned. Immediate calls resolve their method befo
 evaluating arguments; internal call caching must preserve these observable rules.
 Stable module functions, such as `math.sqrt`, retain their existing identity.
 
+Ordinary defs and lambdas expose live `__defaults__` (tuple or `None`) and
+`__kwdefaults__` (dict or `None`). Repeated reads preserve identity. Assignment
+validates the container type, deletion resets it to `None`, and in-place mutation
+of keyword defaults affects later calls. Positional defaults apply to trailing
+parameters; excess entries are retained but only the applicable suffix is used.
+Supported tuple/dict subclasses retain identity; keyword lookup bypasses
+`defaultdict` factories and `Counter` missing-value behavior.
+
+Default binding follows argument evaluation. `RunAsync` awaits custom-key equality
+during keyword-default lookup without replay; cancellation drains it before
+returning allowance. Each lookup retains its dictionary across callbacks, while
+the next missing parameter consults the function's current `__kwdefaults__`.
+This is a deliberate managed-lifetime rule: CPython 3.13.2/3.13.16 can instead
+raise `TypeError` when an allocating callback replaces the dictionary's sole
+reference. Keeping an explicit alias makes the observed CPython results agree.
+Lython preserves the lookup's owner and deliberately does not reproduce that
+observed CPython edge case; [function-default evidence](benchmarks/results/2026-10-15-function-defaults/README.md)
+records both outcomes.
+
 ### 9.6 Collections
 
 Collection behavior must follow modern Python semantics for supported operations.

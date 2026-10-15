@@ -1,0 +1,70 @@
+{
+  "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "name": "reads",
+      "source": "def f(a=1,*,b=2): return a,b\nprint(f.__defaults__,f.__kwdefaults__)\nprint(f.__defaults__ is f.__defaults__,f.__kwdefaults__ is f.__kwdefaults__)",
+      "expected": "(1,) {'b': 2}\nTrue True\n"
+    },
+    {
+      "name": "positional-replacement",
+      "source": "def f(x=5): return x\nf.__defaults__=(7,)\nprint(f())",
+      "expected": "7\n"
+    },
+    {
+      "name": "keyword-live-mutation",
+      "source": "def f(*,x=2): return x\ndefaults=f.__kwdefaults__\ndefaults['x']=9\nprint(f(),defaults is f.__kwdefaults__)",
+      "expected": "9 True\n"
+    },
+    {
+      "name": "deletion-none",
+      "source": "def f(a=1,*,b=2): return a,b\ndel f.__defaults__\ndel f.__kwdefaults__\nprint(f.__defaults__,f.__kwdefaults__)\ntry: f()\nexcept TypeError: print('missing')",
+      "expected": "None None\nmissing\n"
+    },
+    {
+      "name": "wrong-types",
+      "source": "def f(x=1): return x\ntry: f.__defaults__=[]\nexcept TypeError: print('tuple-required')\ntry: f.__kwdefaults__=()\nexcept TypeError: print('dict-required')\nprint(f())",
+      "expected": "tuple-required\ndict-required\n1\n"
+    },
+    {
+      "name": "extra-positional-defaults",
+      "source": "def f(a,b): return a,b\nf.__defaults__=(1,2,3)\nprint(f())",
+      "expected": "(2, 3)\n"
+    },
+    {
+      "name": "argument-mutation",
+      "source": "def f(x=1): return x\ndef argument():\n    f.__defaults__=(9,)\n    return []\nprint(f(*argument()))",
+      "expected": "9\n"
+    },
+    {
+      "name": "keyword-custom-key",
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        print('eq')\n        return True\ndef f(*,x): return x\nf.__kwdefaults__={Key():42}\nprint(f())",
+      "expected": "eq\n42\n"
+    },
+    {
+      "name": "lambda",
+      "source": "f=lambda x=2,*,y=3:(x,y)\nprint(f.__defaults__,f.__kwdefaults__)\nf.__defaults__=(5,)\nf.__kwdefaults__['y']=7\nprint(f())\ndel f.__defaults__\nprint(f.__defaults__)",
+      "expected": "(2,) {'y': 3}\n(5, 7)\nNone\n"
+    },
+    {
+      "name": "none",
+      "source": "def f(x=1,*,y=2): return x,y\nf.__defaults__=None\nf.__kwdefaults__=None\nprint(f.__defaults__,f.__kwdefaults__)\nprint(f(3,y=4))",
+      "expected": "None None\n(3, 4)\n"
+    },
+    {
+      "name": "dict-subclasses",
+      "source": "from collections import defaultdict,Counter\ndef f(*,x=1): return x\nd=defaultdict(lambda:99,x=7)\nf.__kwdefaults__=d\nprint(f(),f.__kwdefaults__ is d)\nc=Counter(x=8)\nf.__kwdefaults__=c\nprint(f(),f.__kwdefaults__ is c)\ndel c['x']\ntry: f()\nexcept TypeError: print('missing')",
+      "expected": "7 True\n8 True\nmissing\n"
+    },
+    {
+      "name": "tuple-subclass",
+      "source": "from collections import namedtuple\nDefaults=namedtuple('Defaults','value')\ndef f(x): return x\nd=Defaults(7)\nf.__defaults__=d\nprint(f(),f.__defaults__ is d)",
+      "expected": "7 True\n"
+    },
+    {
+      "name": "replace-during-lookup",
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        f.__kwdefaults__={'x':99,'y':100}\n        return other=='x'\ndef f(*,x,y): return x,y\nf.__kwdefaults__={Key():7,'y':8}\nprint(f())\nprint(f())",
+      "expected": "(7, 100)\n(99, 100)\n"
+    }
+  ]
+}

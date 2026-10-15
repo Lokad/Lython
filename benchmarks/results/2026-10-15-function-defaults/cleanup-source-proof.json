@@ -1,0 +1,72 @@
+{
+  "checks": [
+    {
+      "engine": "timing-baseline",
+      "pid": 2310638,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-candidate",
+      "pid": 2310659,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-CPython",
+      "pid": 2310675,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-verify-lythonIdentity",
+      "pid": 2310178,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-verify-pythonIdentity",
+      "pid": 2310199,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-verify-lythonIdentity",
+      "pid": 2310309,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-verify-pythonIdentity",
+      "pid": 2310330,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    }
+  ],
+  "productionDifferences": [
+    "src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Assignments.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Expressions.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.Expressions.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs",
+    "src/Lokad.Lython/Runtime/PyDataclass.GeneratedMethods.cs",
+    "src/Lokad.Lython/Runtime/PyDataclass.cs",
+    "src/Lokad.Lython/Runtime/PyDict.cs",
+    "src/Lokad.Lython/Runtime/PyFunctionBase.cs"
+  ],
+  "frozenSourceHashesMatch": true,
+  "comparisonSourcesIdentical": true,
+  "relevantUnits": "",
+  "leaseAcquired": true
+}

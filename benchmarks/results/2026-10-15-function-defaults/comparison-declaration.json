@@ -1,0 +1,31 @@
+{
+  "baselineRevision": "96596466349505f92fd0a689e2130f690a930dc6",
+  "candidateBaseRevision": "96596466349505f92fd0a689e2130f690a930dc6",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs": "da3f497d922b1fae20d6488a4574caec5e6b31e6203a48d30fa207091930f6b2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "711e591783a6607eaea34df51d54af60d90864905694789b17b601fd8a0e6d7a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Assignments.cs": "d467134d0a5b0afd75ae08ff7e08a3e86208072d8bf03a19bfaa2a4a1e30d801",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "9095c5e6924a9ab1a4ddd1c5e2e992074c4a5821844bf442c05b6556d4512ed6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Expressions.cs": "2127d66935d0f2ca8a07750f07c85c894da1e11b2832b87e246275ecade08a8d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "4efe3b546f4406a172277d8181589e17ee754e87997ac6ec933732add5a0569e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs": "22169eefe22d235aa682fc5c671d4b1f87c5f16d841c1790734f6165065ea08b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.Expressions.cs": "d64a269fe12a3b225821722ffdaa3e64915fd8b6e87f780a813a7ac7e1a2a69a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs": "dabb24b2baf4cf8aca889a2ca021b76e4955d6b00d78a5b1bdc9aaccbf578bbe",
+    "src/Lokad.Lython/Runtime/PyDataclass.GeneratedMethods.cs": "0f340da6ee56a3d1bd3404e0d6bd14f713bf43b8a45391a2afcee831342e6baf",
+    "src/Lokad.Lython/Runtime/PyDataclass.cs": "99ef41ee5d47cd497e2cb4a7743a5930a1c7a60dd0b010b9d84fb5bfd2c11f4a",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "58a597b5bc228399caa3693d2116a7dbbe2bb46b3ba15ec233d5f92879fd85e2",
+    "src/Lokad.Lython/Runtime/PyFunctionBase.cs": "185e65a0d2f08597d9f9001a2b967bad70b8ff70be6d519aa77fd0722089ebf3"
+  },
+  "sourceArchiveSha256": "8ddbe59e1fc462979e8168ca6b88f0ab28c9e96c7b16b6d4d0081e1d383fbd88",
+  "sharedCatalogSha256": "54ed1f75647a62266832a92b09d9a1be416ed01932003aa3462e7a664fb3fe49",
+  "productionChange": "live positional/keyword default containers; per-lookup async protocol support; conservative layout admission and temporary definition maps",
+  "case": "calls.defaults.large",
+  "lane": "warm-async",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "one defaults helper case added identically to both workers; no framework change",
+  "stop": "one affected default-call diagnostic; retain independently necessary metadata correctness even without speedup; no retuning"
+}

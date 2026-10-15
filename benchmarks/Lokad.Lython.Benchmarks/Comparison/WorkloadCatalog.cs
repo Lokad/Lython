@@ -155,6 +155,14 @@ for i in range(N):
     total += add(i, offset=5)
 print(total)
 """, n => Line((long)n * (n - 1) / 2 + 5L * n));
+        Add("calls.defaults", "calls", "core", CoreSizes, """
+def add(value, offset=3, *, scale=1):
+    return value + offset + scale
+total = 0
+for i in range(N):
+    total += add(i)
+print(total)
+""", n => Line((long)n * (n - 1) / 2 + 4L * n));
         Add("calls.closure", "calls", "core", CoreSizes, """
 def outer(offset):
     def add(value):

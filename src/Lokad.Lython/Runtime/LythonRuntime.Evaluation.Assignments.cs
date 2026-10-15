@@ -241,6 +241,7 @@ internal sealed partial class LythonRuntime
                 parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
                 parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue)))
             .ToArray();
+        using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
         var function = new LambdaFunction(
             loweredParameters,
             LoweredScript.LowerStandaloneExpression(lambda.Body),
@@ -248,7 +249,6 @@ internal sealed partial class LythonRuntime
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)),
             scopeFacts: ScopeDirectiveFactsCollector.ForLambda(lambda));
         ChargeFunctionValue(context, lambda.Span);
-        ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
         RetainLocalsForLambda(context.FunctionClosureContext);
         return function;

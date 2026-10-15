@@ -129,9 +129,11 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         Assert.Equal(new[] { "top", "bottom", "default", "argument", "result", "bottom-apply", "top-apply" }, fixture.Tape.Events);
         var expectedSnapshots = new[]
         {
-            "top:14,96,3,1", "bottom:20,96,3,1", "default:27,96,3,1",
-            "argument:34,96,3,1", "result:44,96,3,1",
-            "bottom-apply:47,96,2,1", "top-apply:47,96,2,1"
+            // Decorators own 96 bytes; the definition's one-default map
+            // owns another 128 until publication finishes. Steps/frames stay fixed.
+            "top:14,96,3,1", "bottom:20,96,3,1", "default:27,224,3,1",
+            "argument:34,224,3,1", "result:44,224,3,1",
+            "bottom-apply:47,224,2,1", "top-apply:47,224,2,1"
         };
         Assert.True(expectedSnapshots.SequenceEqual(fixture.Tape.Snapshots), string.Join("\n", fixture.Tape.Snapshots));
         var receiver = Assert.IsType<PyInstance>(inner.Invoke([], CallSpan, fixture.Context));

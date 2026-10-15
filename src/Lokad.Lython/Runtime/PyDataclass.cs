@@ -53,7 +53,7 @@ internal static partial class PyDataclass
 
         if (decorator.Init && !type.TryGetOwnMember("__init__", out _))
         {
-            type.TrySetMember("__init__", new DataclassInitMethod(type.Name, fields, moduleName));
+            type.TrySetMember("__init__", new DataclassInitMethod(type.Name, fields, moduleName, context));
         }
 
         if (decorator.Repr && !type.TryGetOwnMember("__repr__", out _))

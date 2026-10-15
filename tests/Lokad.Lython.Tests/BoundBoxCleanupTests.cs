@@ -91,7 +91,7 @@ public sealed class BoundBoxCleanupTests
             new("x", PyNone.Instance, DataclassFieldKind.Normal, false, PyNone.Instance, false, PyNone.Instance, true, true, true, null, false, PyNone.Instance, true),
             new("y", PyNone.Instance, DataclassFieldKind.Normal, false, PyNone.Instance, false, PyNone.Instance, true, true, true, null, false, PyNone.Instance, true),
         };
-        var init = new PyDataclass.DataclassInitMethod("P", fields, null);
+        var init = new PyDataclass.DataclassInitMethod("P", fields, null, context);
         var type = new PyType("P", [], new Dictionary<string, object>());
         var plan = new FunctionBindingPlan(
             "P.__init__",
