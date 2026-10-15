@@ -2,6 +2,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
+// Cancellation deadlines need a quiet scheduler, like the lifetime controls.
+[Collection("RuntimeStress")]
 public sealed class CooperativeCancellationTests
 {
     public static TheoryData<bool, string> PureLoops => new()
@@ -22,7 +24,7 @@ public sealed class CooperativeCancellationTests
     [MemberData(nameof(PureLoops))]
     public async Task ActiveCancellationStopsPureLoopsWithNormalLimits(bool asynchronous, string loop)
     {
-        var script = new LythonEngine().Compile("print('started')\n" + loop);
+        using var script = new LythonEngine().Compile("print('started')\n" + loop);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
         using var cancellation = new CancellationTokenSource();
         var entered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -33,14 +35,19 @@ public sealed class CooperativeCancellationTests
             CancellationToken = cancellation.Token,
             MaxExecutionMemoryBytes = memoryLimit,
         };
-        var pending = asynchronous ? script.RunAsync(host, options) : Task.Run(() => script.Run(host, options));
+        // The synchronous host caller must start independently of a busy test
+        // thread pool; its queue delay is not guest cancellation latency.
+        var pending = asynchronous ? script.RunAsync(host, options)
+            : Task.Factory.StartNew(() => script.Run(host, options), CancellationToken.None,
+                TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        LythonExecutionResult? result = null;
         try
         {
             await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             await Task.Delay(25);
             Assert.False(pending.IsCompleted, "The pure loop must still be running when the host cancels it.");
             cancellation.Cancel();
-            var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(result.Success);
             Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
             Assert.Contains("execution canceled", result.Failure?.Message ?? "", StringComparison.Ordinal);
@@ -50,6 +57,10 @@ public sealed class CooperativeCancellationTests
         finally
         {
             cancellation.Cancel();
+            // Even a failed startup/latency assertion must drain the active run
+            // before releasing its compilation and result ownership.
+            result ??= await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            result.Dispose();
         }
     }
 
@@ -58,11 +69,11 @@ public sealed class CooperativeCancellationTests
     [InlineData(true)]
     public async Task ExplicitFuelRemainsEnforcedWhenDefaultLimitsAreDisabled(bool asynchronous)
     {
-        var script = new LythonEngine().Compile("while True:\n    pass");
+        using var script = new LythonEngine().Compile("while True:\n    pass");
         var options = new LythonRunOptions { MaxExecutionSteps = 50, DisableDefaultLimits = true };
         var pending = asynchronous ? script.RunAsync(new MockLythonHost(), options)
             : Task.Run(() => script.Run(new MockLythonHost(), options));
-        var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.False(result.Success);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
         Assert.Contains("maximum execution step count exceeded", result.Failure?.Message ?? "", StringComparison.Ordinal);
@@ -73,11 +84,11 @@ public sealed class CooperativeCancellationTests
     [InlineData(true)]
     public async Task ExplicitFuelObservesPassOnlyForIterations(bool asynchronous)
     {
-        var script = new LythonEngine().Compile("for i in range(1000):\n    pass\nreturn 42");
+        using var script = new LythonEngine().Compile("for i in range(1000):\n    pass\nreturn 42");
         var options = new LythonRunOptions { MaxExecutionSteps = 50 };
         var pending = asynchronous ? script.RunAsync(new MockLythonHost(), options)
             : Task.Run(() => script.Run(new MockLythonHost(), options));
-        var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.False(result.Success);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
         Assert.Contains("maximum execution step count exceeded", result.Failure?.Message ?? "", StringComparison.Ordinal);
