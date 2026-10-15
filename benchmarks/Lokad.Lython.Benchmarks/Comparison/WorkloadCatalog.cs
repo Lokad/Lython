@@ -224,6 +224,18 @@ for i in range(N):
     total += values[0] + values[3] + len(values)
 print(total)
 """, n => Line((long)n * (n + 6)));
+        Add("tuples.starred-merge", "tuples", "core", CoreSizes, """
+def merge(left, right, marker):
+    before = marker + 1
+    return (before, *left, marker, *right)
+left = (1, 2)
+right = (3, 4)
+total = 0
+for i in range(N):
+    values = merge(left, right, i)
+    total += values[0] + values[3] + len(values)
+print(total)
+""", n => Line((long)n * (n + 6)));
         Add("lists.copy-slice", "lists", "core", CoreSizes, """
 original = [i % 97 for i in range(N)]
 copied = original[:]
