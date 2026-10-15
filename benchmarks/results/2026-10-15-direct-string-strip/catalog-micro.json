@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "strings.strip-lines.large",
+      "family": "strings",
+      "category": "core",
+      "scale": "large",
+      "size": 16384,
+      "source": "N = 16384\ntext = (' \\talpha caf\u00e9\ud83d\ude00\\u2003\\nbeta\\n') * N\ntotal = 0\nfor line in text.splitlines():\n    total += len(line.strip())\nprint(total)\n",
+      "fixtureJson": "{\"size\":16384,\"text\":null}",
+      "expectedOutput": "245760\n",
+      "sourceUtf8Bytes": 143,
+      "expectedOutputUtf8Bytes": 7,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "17a205bcd03e74de70776ead0a7666d533b1729dbb69de64f8ebb75dd80a72ce",
+      "fixtureSha256": "c1c16fa8a40dac165afc8c9915fab90012d9af6a9836b6a2e03812eb3f441155",
+      "expectedOutputSha256": "f0e10c85a28a10d8e8de8cb1a8fbc22e28268f46067f3992cf48f329714dccc0"
+    }
+  ]
+}

@@ -69,7 +69,9 @@ internal static partial class PyStringOps
             }
         }
 
-        return SliceUtf8(value, startByte, endByte, value.OwnerMemoryGovernor, value.AllocationSpan);
+        return startByte == 0 && endByte == source.Length
+            ? value
+            : SliceUtf8(value, startByte, endByte, value.OwnerMemoryGovernor, value.AllocationSpan);
     }
 
     private static PyString MapCase(PyString value, CaseMapping mapping)

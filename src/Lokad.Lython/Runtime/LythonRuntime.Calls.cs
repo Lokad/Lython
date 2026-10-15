@@ -150,6 +150,19 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    private static object InvokeStringStrip(PyString receiver, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            return StringMembers.StripWhitespace(receiver, span, context);
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private static object InvokeDictionaryGet(PyDict receiver, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);

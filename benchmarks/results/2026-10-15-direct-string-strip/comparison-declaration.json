@@ -1,0 +1,24 @@
+{
+  "baselineRevision": "88e0992b883a19d0e27cd1295f63e4190fe6bf8c",
+  "candidateBaseRevision": "88e0992b883a19d0e27cd1295f63e4190fe6bf8c",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "21e0ecef524a25bd8df8e0f7b0020c46c15c5025fba7d34c988ae543ad8f1ae8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "986151d6b8ca1c7f55859c83e5c0fe9a0152de76aca756f8b0fde6c0f352ae81",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "52c0a8409e0ee4f6072202afd810da5a8f118b5137b5286b4115dcb50a1993c4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "e57acdfe50423eb9e4ce604c73b6e544b6e5796b549754be61298fe06bb3ee4b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "4fa3f9d525503a85c88d65b5e3d5ea21c4824e836d2ca246ac5323be507ebb03",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs": "b3321faec389690d8dbcb259b41efbd387f42c4fc324ec76d8ea34d0e047c298",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "c5596ee5d2f2832039af1748a1d42a254c6c5450a747acdedbf2ab4de47f4d74"
+  },
+  "sourceArchiveSha256": "c8cdeaf2cee96f6b9ebaafcebc694f0e9704b7b3635cfabc4471aa699e3957e5",
+  "productionChange": "Direct no-argument str.strip receiver/operation dispatch; shared UTF-8 trimming/ownership; unchanged trim identity and positional-only chars signature",
+  "case": "strings.strip-lines.large",
+  "lane": "warm-async",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "one complete strip/splitlines/length reduction case shared identically; comparison/execution tooling unchanged",
+  "stop": "one affected short diagnostic; no retuning, sample replacement or Unicode algorithm project"
+}

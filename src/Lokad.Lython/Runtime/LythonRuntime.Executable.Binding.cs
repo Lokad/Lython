@@ -11,6 +11,7 @@ internal sealed partial class LythonRuntime
     // list-valued attribute can never be confused with this resolved method.
     private static readonly object DirectListAppend = new();
     private static readonly object DirectDictionaryGet = new();
+    private static readonly object DirectStringStrip = new();
 
     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
     {
@@ -544,6 +545,10 @@ internal sealed partial class LythonRuntime
             if (callSite.HasReceiver && ReferenceEquals(target, DirectListAppend))
             {
                 result = InvokeListAppend((PyList)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+            }
+            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringStrip))
+            {
+                result = InvokeStringStrip((PyString)stack[start], callSite.CallSpan, context);
             }
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectDictionaryGet))
             {

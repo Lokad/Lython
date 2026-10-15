@@ -223,6 +223,13 @@ print(values)
 values = tuple(range(N))
 print(values[::3])
 """, n => TupleList(Enumerable.Range(0, n).Where(i => i % 3 == 0)) + "\n");
+        Add("strings.strip-lines", "strings", "core", CoreSizes, """
+text = (' \talpha café😀\u2003\nbeta\n') * N
+total = 0
+for line in text.splitlines():
+    total += len(line.strip())
+print(total)
+""", n => Line(15L * n));
         Add("dicts.string-counts", "dictionaries", "core", CoreSizes, """
 words = ['alpha','beta','café','😀']
 counts = {}

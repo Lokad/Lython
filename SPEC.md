@@ -1601,6 +1601,11 @@ language-level path model defined by this specification.
 
 ### 11.6 Supported String, List, and Dictionary Surface
 
+Builtin `str.strip([chars])` takes positional arguments only; omitted or `None`
+chars use Python whitespace. Unchanged exact-string trim results retain their
+input identity, including an empty chars set. General/exposed/unbound calls share
+the same text/ownership rules; unsupported arguments fail explicitly.
+
 The supported subset must support the following string methods:
 
 - `split`

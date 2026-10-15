@@ -23,6 +23,7 @@ internal sealed partial class LythonRuntime
             {
                 PyList when name == "append" => DirectListAppend,
                 PyDict when name == "get" => DirectDictionaryGet,
+                Text.PyString when name == "strip" => DirectStringStrip,
                 _ => null
             };
             if (operation is null) return false;

@@ -1,0 +1,120 @@
+using System.Reflection;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
+
+namespace Lokad.Lython.Tests;
+
+public sealed class DirectStringStripTests
+{
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DistinctStringsDoNotConstructBoundMethodCaches(bool asynchronous)
+    {
+        var (code, context) = Prepare("for text in [left,right]:\n    result=text.strip()\n    record()\n");
+        var left = PyString.FromString("alpha", context.MemoryGovernor, null);
+        var right = PyString.FromString(" café😀 ", context.MemoryGovernor, null);
+        var record = new Record();
+        context.Variables["left"] = left;
+        context.Variables["right"] = right;
+        context.Variables["record"] = record;
+        Assert.Equal(0, Assert.Single(code.EntryPoint.CallSites, site => site.HasReceiver).ArgumentCount);
+        if (asynchronous)
+        {
+            var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
+            Assert.True(pending.IsCompleted);
+            await pending;
+        }
+        else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null);
+        Assert.Equal(2, record.Values.Count);
+        Assert.Same(left, record.Values[0]);
+        Assert.Equal("café😀", Assert.IsType<PyString>(record.Values[1]).AsString());
+        var caches = (Array)record.Frame!.GetType().GetField("_memberCaches", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(record.Frame)!;
+        Assert.All(caches.Cast<object?>(), value => Assert.Null(value));
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GuardFuelAndSourceSpansMatchTheOrdinaryCallBoundary(bool asynchronous)
+    {
+        for (var fuel = 1; fuel <= 8; fuel++)
+        {
+            var (code, context) = Prepare("return text.strip()\n", new LythonRunOptions { MaxExecutionSteps = fuel });
+            var text = PyString.FromString("word", context.MemoryGovernor, null);
+            context.Variables["text"] = text;
+            if (fuel == 8)
+                Assert.Same(text, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
+                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+            else
+            {
+                var error = asynchronous
+                    ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
+                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+                Assert.Equal("RuntimeError", error.ExceptionType);
+                Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
+                var instructions = code.EntryPoint.Blocks[code.EntryPoint.EntryBlockIndex].InstructionArray;
+                Assert.Same(instructions[fuel <= 3 ? fuel - 1 : fuel == 7 ? 3 : 2].Span, error.Span);
+            }
+            Assert.Null(context.CurrentExecutableFrame);
+            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UnchangedTextNeedsNoNewStorageAndChangedTextPreflights(bool asynchronous)
+    {
+        const long limit = 64 * 1024;
+        foreach (var changed in new[] { false, true })
+        {
+            var (code, context) = Prepare("return text.strip()\n", new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+            var text = PyString.FromString(changed ? " word " : "word", context.MemoryGovernor, null);
+            context.Variables["text"] = text;
+            var baseline = context.MemoryGovernor.CurrentAccountedBytes;
+            using (context.MemoryGovernor.ReserveTemporary(limit - baseline, null))
+            {
+                if (changed)
+                {
+                    var error = asynchronous
+                        ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
+                        : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+                    Assert.Equal("MemoryError", error.ExceptionType);
+                    Assert.Equal(" word ", text.AsString());
+                }
+                else Assert.Same(text, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
+                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+            }
+            Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
+            Assert.Null(context.CurrentExecutableFrame);
+            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+    }
+
+    private static (ExecutableScript, LythonRuntime.ExecutionContext) Prepare(string source, LythonRunOptions? options = null)
+    {
+        var frontend = LythonFrontend.Compile(source);
+        return (ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())), new(new MockLythonHost(), options ?? new()));
+    }
+
+    private sealed class Record : LythonRuntime.ICallable
+    {
+        internal List<object> Values { get; } = [];
+        internal LythonRuntime.ExecutableFrameState? Frame;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            Frame = context.CurrentExecutableFrame;
+            Assert.True(Frame!.TryResolveOwnLocal("result", out var value));
+            Values.Add(value);
+            return PyNone.Instance;
+        }
+    }
+}

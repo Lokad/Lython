@@ -1,0 +1,92 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "flags": [
+    "-I",
+    "-S",
+    "-X",
+    "utf8"
+  ],
+  "sourceSha256": "4b6b35124c6335c47c19753a71bcbb44d1c0c7f9011fb9419d941b22896dc956",
+  "cases": [
+    {
+      "source": "print(repr('  café😀 \\t'.strip()),repr(' \\t\\n'.strip()),repr(''.strip()))",
+      "expected": "'café😀' '' ''\n",
+      "observed": "'café😀' '' ''\n"
+    },
+    {
+      "source": "text='café😀'\nprint(text.strip() is text,text.strip('') is text)",
+      "expected": "True True\n",
+      "observed": "True True\n"
+    },
+    {
+      "source": "text='\\x1c\\x1f\\u00a0\\u2003café😀\\u2003\\u00a0\\x1f\\x1c'\nprint(repr(text.strip()))",
+      "expected": "'café😀'\n",
+      "observed": "'café😀'\n"
+    },
+    {
+      "source": "print(repr('\\u200bword\\u200b'.strip()))",
+      "expected": "'\\u200bword\\u200b'\n",
+      "observed": "'\\u200bword\\u200b'\n"
+    },
+    {
+      "source": "text=r' \\ud800 '\nprint(text.strip()==r'\\ud800')",
+      "expected": "True\n",
+      "observed": "True\n"
+    },
+    {
+      "source": "text='  café  '\nprint(text.strip(None),text.strip(' c'),text.strip(*(None,)))",
+      "expected": "café afé café\n",
+      "observed": "café afé café\n"
+    },
+    {
+      "source": "text=' x '\ndef argument():\n    print('argument')\n    return ' '\ntry: text.strip(chars=argument())\nexcept TypeError: print('keyword')\nprint(repr(text))",
+      "expected": "argument\nkeyword\n' x '\n",
+      "observed": "argument\nkeyword\n' x '\n"
+    },
+    {
+      "source": "text=' x '\nmethod=text.strip\nfor target in [method,str.strip.__get__(text,str)]:\n    try: target(**{'chars':' '})\n    except TypeError: print('keyword')\ntry: str.strip(text,chars=' ')\nexcept TypeError: print('keyword')\nprint(method(),str.strip(text))",
+      "expected": "keyword\nkeyword\nkeyword\nx x\n",
+      "observed": "keyword\nkeyword\nkeyword\nx x\n"
+    },
+    {
+      "source": "try: ' x '.strip(1)\nexcept TypeError: print('type')\ntry: ' x '.strip(' ','x')\nexcept TypeError: print('extra')\ntry: str.strip()\nexcept TypeError: print('receiver')",
+      "expected": "type\nextra\nreceiver\n",
+      "observed": "type\nextra\nreceiver\n"
+    },
+    {
+      "source": "text=' x '\nprint(text.strip is text.strip,text.strip.__self__ is text)\nmethod=text.strip\ntext=' y '\nprint(method(),text.strip())",
+      "expected": "False True\nx y\n",
+      "observed": "False True\nx y\n"
+    },
+    {
+      "source": "class C:\n    def __getattribute__(self,name):\n        print('lookup',name)\n        return lambda: 'ok'\nprint(C().strip())",
+      "expected": "lookup strip\nok\n",
+      "observed": "lookup strip\nok\n"
+    },
+    {
+      "source": "class C: strip='not-callable'\ntry: C().strip()\nexcept TypeError: print('not-callable')",
+      "expected": "not-callable\n",
+      "observed": "not-callable\n"
+    },
+    {
+      "source": "def f(): return 'ok'\nclass C: pass\nc=C()\nc.strip=f\nprint(c.strip())",
+      "expected": "ok\n",
+      "observed": "ok\n"
+    },
+    {
+      "source": "class C:\n    def strip(self,chars=None): return chars\nprint(C().strip(chars='x'))",
+      "expected": "x\n",
+      "observed": "x\n"
+    },
+    {
+      "source": "text=' x '\nprint([text.strip() for i in range(2)])\ndef produce():\n    yield text.strip()\nprint(list(produce()))",
+      "expected": "['x', 'x']\n['x']\n",
+      "observed": "['x', 'x']\n['x']\n"
+    },
+    {
+      "source": "class C:\n    @property\n    def strip(self):\n        print('property')\n        return lambda: 'ok'\nprint(C().strip())",
+      "expected": "property\nok\n",
+      "observed": "property\nok\n"
+    }
+  ]
+}

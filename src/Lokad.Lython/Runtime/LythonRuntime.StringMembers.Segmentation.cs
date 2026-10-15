@@ -6,10 +6,15 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
+        internal static PyString StripWhitespace(PyString text, LythonSourceSpan span, ExecutionContext context)
+            => OwnMethodResult(PyStringOps.Strip(text), text, context.MemoryGovernor, span);
+
         private sealed class StringSegmentationMemberProvider : IStringMemberProvider
         {
             // N17: hot fixed signatures hoisted per family.
-        private static readonly LythonCallableSignature StrStripSignature = LythonCallableSignature.Create("str.strip", ["chars"], 0);
+        private static readonly LythonCallableSignature StrStripSignature = LythonCallableSignature.Create(
+            "str.strip", ["chars"], requiredCount: 0, maximumPositionalArgumentCount: 1,
+            variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
         private static readonly LythonCallableSignature StrLstripSignature = LythonCallableSignature.Create("str.lstrip", ["chars"], 0);
         private static readonly LythonCallableSignature StrRstripSignature = LythonCallableSignature.Create("str.rstrip", ["chars"], 0);
             private static readonly LythonCallableSignature StrSplitSignature = LythonCallableSignature.Create("str.split", ["sep", "maxsplit"], 0);
@@ -128,6 +133,7 @@ internal sealed partial class LythonRuntime
                         PyString result;
                         if (arguments.Length == 0 || ReferenceEquals(arguments[0], PyNone.Instance))
                         {
+                            if (methodName == "strip") return StripWhitespace(target, span, context);
                             result = whitespaceOperation(target);
                         }
                         else if (!PyStringOps.TryAsString(arguments[0], out var chars))
