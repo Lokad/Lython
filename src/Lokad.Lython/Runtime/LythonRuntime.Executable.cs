@@ -269,6 +269,8 @@ internal sealed partial class LythonRuntime
 
         public object Peek() => _items[Count - 1].RequireNotNull();
 
+        public ReadOnlyMemory<object?> Slice(int start, int count) => _items.AsMemory(start, count);
+
         public void RemoveTail(int count)
         {
             if (count == 0)

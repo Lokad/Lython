@@ -115,6 +115,37 @@ internal sealed partial class LythonRuntime
         return BindProtocolDefaultsAsync(arguments, span, plan, context);
     }
 
+    // Eligible signatures contain only positional parameters. Read existing
+    // operands once into owned bound storage, before a body can suspend.
+    internal static BoundCallArguments BindPositionalFunctionArguments(
+        ReadOnlySpan<object?> arguments, LythonSourceSpan span, FunctionBindingPlan plan)
+    {
+        var values = plan.LayoutParameterNames.Count == 0 ? [] : RentBoundValues(plan.LayoutParameterNames.Count);
+        try
+        {
+            if (arguments.Length > plan.PositionalParameters.Count)
+                throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
+            var assigned = new ArgumentPresence(values.Length);
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                values[i] = arguments[i].RequireNotNull();
+                assigned[i] = true;
+            }
+            for (var i = arguments.Length; i < values.Length; i++)
+            {
+                if (!plan.TryGetPositionalDefault(i, out var value))
+                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.PositionalParameters[i].Name, span);
+                values[i] = value;
+            }
+            return new BoundCallArguments(values, assigned);
+        }
+        catch
+        {
+            ReturnBoundValues(values);
+            throw;
+        }
+    }
+
     private static async ValueTask<BoundCallArguments> BindProtocolDefaultsAsync(
         CallArgumentValue[] arguments, LythonSourceSpan span, FunctionBindingPlan plan,
         ExecutionContext context)

@@ -53,6 +53,11 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     {
         context.CheckExecution(span);
         var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
+        return InvokeBound(boundArguments, span);
+    }
+
+    protected object InvokeBound(BoundCallArguments boundArguments, LythonSourceSpan span)
+    {
         LythonRuntime.ExecutionContext frame;
         try
         {
@@ -86,10 +91,22 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         }
     }
 
-    public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecution(span);
-        var boundArguments = await LythonRuntime.BindFunctionArgumentsAsync(arguments, span, _bindingPlan, context).ConfigureAwait(false);
+        try
+        {
+            context.CheckExecution(span);
+            var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, _bindingPlan, context);
+            return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
+        }
+        catch (Exception error) { return ValueTask.FromException<object>(error); }
+    }
+
+    private async ValueTask<object> BindAndInvokeAsync(ValueTask<BoundCallArguments> binding, LythonSourceSpan span)
+        => await InvokeBoundAsync(await binding.ConfigureAwait(false), span).ConfigureAwait(false);
+
+    protected async ValueTask<object> InvokeBoundAsync(BoundCallArguments boundArguments, LythonSourceSpan span)
+    {
         LythonRuntime.ExecutionContext frame;
         try
         {

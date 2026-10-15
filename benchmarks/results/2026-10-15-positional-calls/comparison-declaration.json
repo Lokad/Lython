@@ -1,0 +1,25 @@
+{
+  "baselineRevision": "1f2ef306a704caadec419924dfe3737f366cb610",
+  "candidateBaseRevision": "1f2ef306a704caadec419924dfe3737f366cb610",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "ea76a8fcc86bb7f062b1f7b01c75d8539820a863e2399361e9cb4ceaa99a6a8a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "9a25bddc26fa5d0bb386b74de4eb32cf94ac293dae6ae7d7828030275de857a6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "15ef4c25438b28f14f4d98b95043e6d40f5f1846b38875060ac17476b1d24add",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "318dd5355fd23303800f6056d9bc5efef688c530291ec4ce6edda7162676cceb",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "3ac77ffb001e67df6b6c35a576da5814392ca489ff8cbac9ad7aad1a2bb0799a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "48d76565a561a812e9122d1087604a12b5f973e83fab6b52e12e715a1808a696",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "85e9a7a6d6b4da7b408ff0820234f55c146129c2f19572229d27b313a6ca6140",
+    "src/Lokad.Lython/Runtime/PyFunctionBase.cs": "4691a6845ff9d3e730bb4284e10823bcf66c289956f5b44aada6f39fc9ce334e"
+  },
+  "sourceArchiveSha256": "41e6a4950e970f252181bec0caac749a38dbf6afd3224c0fbd23368dc947a6c3",
+  "productionChange": "direct eligible compiled positional calls from operand memory; canonical bound invocation and completed-binding async prefix; no packaged arguments or factory closure on converted calls",
+  "case": "calls.positional.large",
+  "lane": "warm-async",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "none",
+  "stop": "one affected call diagnostic; reject added dispatch complexity without demonstrated benefit; no retuning"
+}

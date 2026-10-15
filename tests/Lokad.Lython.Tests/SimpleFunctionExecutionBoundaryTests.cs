@@ -20,25 +20,29 @@ public sealed class SimpleFunctionExecutionBoundaryTests
     [InlineData(7)]
     public void EachEntryAndInstructionKeepsItsFuelBoundary(int fuel)
     {
-        var (function, context, code) = Function("def f(value):\n    return value + 3\n", new LythonRunOptions { MaxExecutionSteps = fuel });
-        if (fuel == 7)
+        foreach (var driver in Enum.GetValues<Driver>())
         {
-            Assert.Equal(new BigInteger(8), function.Invoke([CallArgumentValue.Positional(new BigInteger(5))], CallSpan, context));
-            Assert.Equal(7, context.Limits.ExecutionStepCount);
+            var (function, context, code) = Function("def f(value):\n    return value + 3\n", new LythonRunOptions { MaxExecutionSteps = fuel });
+            if (fuel == 7)
+            {
+                Assert.Equal(new BigInteger(8), Invoke(function, [CallArgumentValue.Positional(new BigInteger(5))], context, driver));
+                Assert.Equal(7, context.Limits.ExecutionStepCount);
+            }
+            else
+            {
+                var error = Assert.Throws<LythonRuntimeException>(() => Invoke(function, [CallArgumentValue.Positional(new BigInteger(5))], context, driver));
+                Assert.Equal("RuntimeError", error.ExceptionType);
+                Assert.Equal($"maximum execution step count exceeded ({fuel})", error.Message);
+                var expected = fuel == 1 ? CallSpan : fuel == 2 ? null : code.Blocks[code.EntryBlockIndex].InstructionArray[fuel - 3].Span;
+                Assert.Same(expected, error.Span);
+                Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
+                if (fuel >= 2) Assert.Equal("/callee.py", error.SourcePath);
+            }
+            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Null(context.CurrentExecutableFrame);
+
         }
-        else
-        {
-            var error = Assert.Throws<LythonRuntimeException>(() => function.Invoke([CallArgumentValue.Positional(new BigInteger(5))], CallSpan, context));
-            Assert.Equal("RuntimeError", error.ExceptionType);
-            Assert.Equal($"maximum execution step count exceeded ({fuel})", error.Message);
-            var expected = fuel == 1 ? CallSpan : fuel == 2 ? null : code.Blocks[code.EntryBlockIndex].InstructionArray[fuel - 3].Span;
-            Assert.Same(expected, error.Span);
-            Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
-            if (fuel >= 2) Assert.Equal("/callee.py", error.SourcePath);
-        }
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Null(context.CurrentExecutableFrame);
     }
 
     [Theory]
@@ -46,33 +50,37 @@ public sealed class SimpleFunctionExecutionBoundaryTests
     [InlineData(true)]
     public void ConstantAndFreshResultDenialsKeepSpanAndActiveException(bool resultDenied)
     {
-        var source = resultDenied ? "def f(value, right):\n    return value + right\n" : "def f(value):\n    return value + 3\n";
-        var (function, context, code) = Function(source, new LythonRunOptions { MaxExecutionSteps = 1000, MaxExecutionMemoryBytes = 4096 });
-        var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
-        var governor = context.MemoryGovernor;
-        if (!resultDenied)
+        foreach (var driver in Enum.GetValues<Driver>())
         {
-            var pressure = 4096 - governor.CurrentAccountedBytes - 32;
-            governor.Reserve(pressure, CallSpan);
-            governor.Commit(pressure);
+            var source = resultDenied ? "def f(value, right):\n    return value + right\n" : "def f(value):\n    return value + 3\n";
+            var (function, context, code) = Function(source, new LythonRunOptions { MaxExecutionSteps = 1000, MaxExecutionMemoryBytes = 4096 });
+            var active = new PyException("ValueError", "outer", PyNone.Instance);
+            context.Services.SetCurrentException(active);
+            var governor = context.MemoryGovernor;
+            if (!resultDenied)
+            {
+                var pressure = 4096 - governor.CurrentAccountedBytes - 32;
+                governor.Reserve(pressure, CallSpan);
+                governor.Commit(pressure);
+            }
+            var large = BigInteger.One << 40000;
+            CallArgumentValue[] arguments = resultDenied
+                ? [CallArgumentValue.Positional(large), CallArgumentValue.Positional(BigInteger.One)]
+                : [CallArgumentValue.Positional(BigInteger.One)];
+            var error = Assert.Throws<LythonRuntimeException>(() => Invoke(function, arguments, context, driver));
+            Assert.Equal("MemoryError", error.ExceptionType);
+            Assert.Same(code.Blocks[code.EntryBlockIndex].InstructionArray[resultDenied ? 2 : 1].Span, error.Span);
+            Assert.Equal(resultDenied ? RuntimeMemoryEstimates.EstimateBigIntegerBytes(large + 1) : 33, governor.LastDeniedReservationBytes);
+            Assert.Same(active, error.PythonContext);
+            Assert.Same(active, context.Services.CurrentException);
+            Assert.Equal("/callee.py", error.SourcePath);
+            Assert.Equal("f", Assert.Single(error.Frames).FunctionName);
+            Assert.Equal(resultDenied ? 6 : 5, context.Limits.ExecutionStepCount);
+            Assert.Equal(0, governor.CurrentReservedBytes);
+            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+
         }
-        var large = BigInteger.One << 40000;
-        CallArgumentValue[] arguments = resultDenied
-            ? [CallArgumentValue.Positional(large), CallArgumentValue.Positional(BigInteger.One)]
-            : [CallArgumentValue.Positional(BigInteger.One)];
-        var error = Assert.Throws<LythonRuntimeException>(() => function.Invoke(arguments, CallSpan, context));
-        Assert.Equal("MemoryError", error.ExceptionType);
-        Assert.Same(code.Blocks[code.EntryBlockIndex].InstructionArray[resultDenied ? 2 : 1].Span, error.Span);
-        Assert.Equal(resultDenied ? RuntimeMemoryEstimates.EstimateBigIntegerBytes(large + 1) : 33, governor.LastDeniedReservationBytes);
-        Assert.Same(active, error.PythonContext);
-        Assert.Same(active, context.Services.CurrentException);
-        Assert.Equal("/callee.py", error.SourcePath);
-        Assert.Equal("f", Assert.Single(error.Frames).FunctionName);
-        Assert.Equal(resultDenied ? 6 : 5, context.Limits.ExecutionStepCount);
-        Assert.Equal(0, governor.CurrentReservedBytes);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
     }
 
     [Theory]
@@ -81,17 +89,21 @@ public sealed class SimpleFunctionExecutionBoundaryTests
     [InlineData(2)]
     public void PureReturnKeepsIdentityAndCallerException(int shape)
     {
-        var body = shape == 0 ? "return value" : shape == 1 ? "return 17" : "return";
-        var (function, context, code) = Function($"def f(value):\n    {body}\n", new LythonRunOptions { MaxExecutionSteps = 1000 });
-        var argument = new PyList([new BigInteger(5)], context.MemoryGovernor, CallSpan);
-        var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
-        var result = function.Invoke([CallArgumentValue.Positional(argument)], CallSpan, context);
-        Assert.Same(shape == 0 ? argument : shape == 1 ? code.Constants[0] : PyNone.Instance, result);
-        Assert.Same(active, context.Services.CurrentException);
-        Assert.Equal(shape == 2 ? 4 : 5, context.Limits.ExecutionStepCount);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        foreach (var driver in Enum.GetValues<Driver>())
+        {
+            var body = shape == 0 ? "return value" : shape == 1 ? "return 17" : "return";
+            var (function, context, code) = Function($"def f(value):\n    {body}\n", new LythonRunOptions { MaxExecutionSteps = 1000 });
+            var argument = new PyList([new BigInteger(5)], context.MemoryGovernor, CallSpan);
+            var active = new PyException("ValueError", "outer", PyNone.Instance);
+            context.Services.SetCurrentException(active);
+            var result = Invoke(function, [CallArgumentValue.Positional(argument)], context, driver);
+            Assert.Same(shape == 0 ? argument : shape == 1 ? code.Constants[0] : PyNone.Instance, result);
+            Assert.Same(active, context.Services.CurrentException);
+            Assert.Equal(shape == 2 ? 4 : 5, context.Limits.ExecutionStepCount);
+            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+
+        }
     }
 
     [Theory]
@@ -99,18 +111,22 @@ public sealed class SimpleFunctionExecutionBoundaryTests
     [InlineData(true)]
     public void FuelStillPrecedesCancellationAtInvocation(bool fuelDenied)
     {
-        using var cancellation = new CancellationTokenSource();
-        var (function, context, _) = Function("def f(value):\n    return value + 3\n", new LythonRunOptions
+        foreach (var driver in Enum.GetValues<Driver>())
         {
-            MaxExecutionSteps = fuelDenied ? 1 : 1000, CancellationToken = cancellation.Token
-        });
-        if (fuelDenied) context.Limits.ExecutionStepCount = 1;
-        cancellation.Cancel();
-        var error = Assert.Throws<LythonRuntimeException>(() => function.Invoke([CallArgumentValue.Positional(BigInteger.One)], CallSpan, context));
-        Assert.Equal(fuelDenied ? "maximum execution step count exceeded (1)" : "execution canceled", error.Message);
-        Assert.Same(CallSpan, error.Span);
-        Assert.Equal(fuelDenied ? 2 : 1, context.Limits.ExecutionStepCount);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            using var cancellation = new CancellationTokenSource();
+            var (function, context, _) = Function("def f(value):\n    return value + 3\n", new LythonRunOptions
+            {
+                MaxExecutionSteps = fuelDenied ? 1 : 1000, CancellationToken = cancellation.Token
+            });
+            if (fuelDenied) context.Limits.ExecutionStepCount = 1;
+            cancellation.Cancel();
+            var error = Assert.Throws<LythonRuntimeException>(() => Invoke(function, [CallArgumentValue.Positional(BigInteger.One)], context, driver));
+            Assert.Equal(fuelDenied ? "maximum execution step count exceeded (1)" : "execution canceled", error.Message);
+            Assert.Same(CallSpan, error.Span);
+            Assert.Equal(fuelDenied ? 2 : 1, context.Limits.ExecutionStepCount);
+            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+
+        }
     }
 
     [Theory]
@@ -126,6 +142,22 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         var result = new LythonEngine().Run(source, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message ?? string.Join("|", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(expected, Convert.ToString(result.ReturnValue, CultureInfo.InvariantCulture));
+    }
+
+    private enum Driver { General, Direct, GeneralAsync, DirectAsync }
+
+    private static object Invoke(PyExecutableFunction function, CallArgumentValue[] arguments,
+        LythonRuntime.ExecutionContext context, Driver driver)
+    {
+        Assert.True(function.SupportsDirectPositional);
+        var values = arguments.Select(argument => (object?)argument.Value).ToArray();
+        return driver switch
+        {
+            Driver.General => function.Invoke(arguments, CallSpan, context),
+            Driver.Direct => function.InvokePositional(values, CallSpan, context),
+            Driver.GeneralAsync => function.InvokeAsync(arguments, CallSpan, context).GetAwaiter().GetResult(),
+            _ => function.InvokePositionalAsync(values, CallSpan, context).GetAwaiter().GetResult(),
+        };
     }
 
     private static (PyExecutableFunction Function, LythonRuntime.ExecutionContext Context, ExecutableCodeObject Code) Function(string source, LythonRunOptions options)

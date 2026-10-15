@@ -23,6 +23,8 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     {
         _codeObject = codeObject;
         _closureCells = closureCells;
+        SupportsDirectPositional = !_codeObject.RequiresLocalVariableMirroring &&
+            BindingPlan.KeywordOnlyParameters.Count == 0 && BindingPlan.VariadicList is null && BindingPlan.VariadicDictionary is null;
         var layout = BindingPlan.LayoutParameterNames;
         _argumentSlotMap = new int[layout.Count];
         for (var i = 0; i < layout.Count; i++)
@@ -32,6 +34,21 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     }
 
     protected override bool RequiresArgumentMirroring => _codeObject.RequiresLocalVariableMirroring;
+
+    internal bool SupportsDirectPositional { get; }
+
+    internal object InvokePositional(ReadOnlySpan<object?> arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        context.CheckExecution(span);
+        return InvokeBound(LythonRuntime.BindPositionalFunctionArguments(arguments, span, BindingPlan), span);
+    }
+
+    internal ValueTask<object> InvokePositionalAsync(ReadOnlySpan<object?> arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        context.CheckExecution(span);
+        var bound = LythonRuntime.BindPositionalFunctionArguments(arguments, span, BindingPlan);
+        return InvokeBoundAsync(bound, span);
+    }
 
     protected override object ExecuteBody(
         LythonRuntime.ExecutionContext frame,

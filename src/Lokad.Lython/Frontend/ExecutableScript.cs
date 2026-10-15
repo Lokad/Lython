@@ -455,7 +455,10 @@ internal sealed record ExecutableCallSite(
     int ArgumentCount,
     IReadOnlyList<ExecutableCallArgumentSpec> Arguments,
     LythonSourceSpan TargetSpan,
-    LythonSourceSpan CallSpan);
+    LythonSourceSpan CallSpan)
+{
+    public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
+}
 
 internal sealed record ExecutableLoopTargetBinding(
     LoopTargetSyntax Target,

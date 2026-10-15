@@ -6,7 +6,7 @@
 | Tuple-key dictionary updates [D], warm `Run` | 16,384 updates | 30.573 ms | 2.418 ms | — | One method-identity diagnostic on 0eb587a9; difference from earlier Lython is within spread |
 | Integer reduction loop [I], warm `RunAsync` | 16,384 iterations; completed host operations | 2.660 ms | 0.579 ms | — | One diagnostic on 88f78106; 14.4% lower median than earlier async Lython; candidate spread 6.0% |
 | Integer helper calls [E], warm `Run` | 16,384 calls | 3.289 ms | 0.965 ms | — | One candidate diagnostic on 015184e6; sync change within spread |
-| Same helper calls [E], warm `RunAsync` | Same input; completed host operations | 6.618 ms | 0.989 ms | — | One diagnostic; 40.3% lower median than earlier async Lython; no qualified multiplier |
+| Same helper calls [R], warm `RunAsync` | Same input; completed host operations | 5.378 ms | 1.001 ms | — | One positional-transport diagnostic on 1f2ef306; 13.7% lower Lython median; baseline spread 9.4% |
 | Helper with nested filtered list comprehension [H] | 1,024 inputs / 1,364 results | 0.816–0.825 ms | 0.0793–0.0990 ms | — | Warm diagnostics at 3cad4157; both executable candidates rejected; CPython spread 23.7–38.2% |
 | File search with helper and protected early exit [P], warm | 2,049 lines / 42,010 UTF-8 bytes | 4.249 ms | 0.265 ms | — | One candidate diagnostic; inconclusive (56.4% spread) |
 | Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
@@ -40,7 +40,7 @@ including a loop whose cost grows with its iteration count. They support
 investigating interpreter dispatch and application workloads. **No workload
 multiplier qualified in either campaign. These timings do not describe today's
 HEAD:** subsequent interpreter and containment changes have been integrated.
-The newer V, D, I, E, H, P, F, T, J, C, G, A and M rows are separate short diagnostics at their named revisions; they do
+The newer R, V, D, I, E, H, P, F, T, J, C, G, A and M rows are separate short diagnostics at their named revisions; they do
 not qualify a current overall or complete-script multiplier.
 The F, T, J and C rows supply complete-script comparisons; their timing evidence
 remains inconclusive. F is a range of medians from two identical Lython control
@@ -50,6 +50,7 @@ processes, not two revisions. No complete-script multiplier or overall speedup i
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| R | 2026-10-15 | Working direct-positional candidate on 1f2ef306; eight production files frozen by hashes; comparison tooling unchanged | [Operand transport, boundary tests and short diagnostic](benchmarks/results/2026-10-15-positional-calls/README.md) |
 | V | 2026-10-15 | Working live-defaults candidate on 96596466; thirteen production files frozen by hashes; one catalog case shared by both roles | [Live defaults, ownership and CPython lifetime edge](benchmarks/results/2026-10-15-function-defaults/README.md) |
 | D | 2026-10-15 | Working method-exposure candidate on 0eb587a9; seven production files frozen by hashes | [Correct method identity and retained immediate-call cache](benchmarks/results/2026-10-15-method-exposure/README.md) |
 | I | 2026-10-15 | Working async integer-addition candidate on 88f78106; two production files frozen by hashes | [Async loop diagnostic and yielding-protocol correction](benchmarks/results/2026-10-15-async-integer-dispatch/README.md) |
@@ -67,7 +68,7 @@ processes, not two revisions. No complete-script multiplier or overall speedup i
 | L | 2026-10-09 | `56d4346d960b58f037da7d4590eb66c87ffec29e` | [Focused loop run](benchmarks/results/2026-10-09-core-loop/README.md), [all loop samples](benchmarks/results/2026-10-09-core-loop/warm.md) |
 | S | 2026-10-12 | `87c1a94c347a88bc94927ea603a138cec4376170` (correctness, no timings) | [Complete-script validation](benchmarks/results/2026-10-12-script-negative-cases/README.md), [fixture and host contract](benchmarks/results/2026-10-12-containment-scope/README.md) |
 
-V, D, I, E, H and P used the same VM and SDK/runtime/CPython versions described below.
+R, V, D, I, E, H and P used the same VM and SDK/runtime/CPython versions described below.
 I measures warm completed-host `RunAsync` against ordinary warm CPython code.
 E separates warm `Run` and completed-host `RunAsync`; CPython executes ordinary
 warm code in both rows. H preserves both rejected candidates and their existing
@@ -147,6 +148,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Positional operand transport, 2026-10-15 | 1f2ef306 → frozen candidate | 13.7%, 16,384 helper calls through `RunAsync`; baseline spread 9.4% | [One diagnostic and unchanged-tooling proof](benchmarks/results/2026-10-15-positional-calls/README.md) |
 | Async integer addition, 2026-10-15 | 88f78106 → frozen candidate | 14.4%, 16,384 loop iterations through `RunAsync`; candidate spread 6.0% | [One diagnostic and protocol regressions](benchmarks/results/2026-10-15-async-integer-dispatch/README.md) |
 | Async compiled functions, 2026-10-15 | 015184e6 → frozen candidate | 40.3%, 16,384 helper calls through `RunAsync`; sync inconclusive | [Both API boundaries and failed setup](benchmarks/results/2026-10-15-async-compiled-functions/README.md) |
 | Synchronous instruction dispatch, 2026-10-09 | `56d4346d` → `891798a6` | 13.4–14.0%, 16,384-iteration loop | [Both collections](benchmarks/results/2026-10-09-sync-dispatch/README.md) |

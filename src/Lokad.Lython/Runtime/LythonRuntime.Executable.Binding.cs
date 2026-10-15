@@ -468,7 +468,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static CallArgumentValue[] PrepareExecutableCallArguments(
+    private static int ReadExecutableCallTarget(
         ExecutableCallSite callSite,
         ref ExecutableValueStack stack,
         out object target)
@@ -481,6 +481,12 @@ internal sealed partial class LythonRuntime
 
         var start = stack.Count - valueCount;
         target = stack[start];
+        return start;
+    }
+
+    private static CallArgumentValue[] PrepareExecutableCallArguments(
+        ExecutableCallSite callSite, ref ExecutableValueStack stack, int start)
+    {
         var arguments = RentCallArguments(callSite.ArgumentCount);
         try
         {
@@ -526,34 +532,41 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         ref ExecutableCallCache? cache)
     {
-        var arguments = PrepareExecutableCallArguments(callSite, ref stack, out var target);
-        var start = stack.Count - callSite.ArgumentCount - 1;
+        var start = ReadExecutableCallTarget(callSite, ref stack, out var target);
 
         try
         {
             object result;
-            try
+            if (callSite.IsPositionalOnly && target is PyExecutableFunction { SupportsDirectPositional: true } function)
             {
-                if (cache is not null && ReferenceEquals(cache.Target, target))
-                {
-                    result = InvokeCallableTarget(cache.Callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
-                }
-                else if (target is ICallable callable)
-                {
-                    cache = new ExecutableCallCache(target, callable);
-                    result = InvokeCallableTarget(callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
-                }
-                else
-                {
-                    cache = null;
-                    result = RuntimeValue(InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments));
-                }
+                cache = null;
+                result = InvokePositionalFunction(function, stack.Slice(start + 1, callSite.ArgumentCount).Span, callSite.CallSpan, context);
             }
-            finally
+            else
             {
-                // Finished arguments must stop retaining dead inputs before
-                // result admission, including a re-entrant observation.
-                ReturnCallArguments(arguments);
+                var arguments = PrepareExecutableCallArguments(callSite, ref stack, start);
+                try
+                {
+                    if (cache is not null && ReferenceEquals(cache.Target, target))
+                    {
+                        result = InvokeCallableTarget(cache.Callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
+                    }
+                    else if (target is ICallable callable)
+                    {
+                        cache = new ExecutableCallCache(target, callable);
+                        result = InvokeCallableTarget(callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
+                    }
+                    else
+                    {
+                        cache = null;
+                        result = RuntimeValue(InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments));
+                    }
+                }
+                finally
+                {
+                    // Withdraw finished inputs before result admission.
+                    ReturnCallArguments(arguments);
+                }
             }
 
             CompleteExecutableValueTransfer(ref stack, start, result, context, callSite.CallSpan);

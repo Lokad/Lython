@@ -86,17 +86,25 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableOpCode.Call:
                     var call = _codeObject.CallSites[instruction.CallSiteIndex];
-                    var arguments = PrepareExecutableCallArguments(call, ref _stack, out var callable);
-                    var start = _stack.Count - call.ArgumentCount - 1;
+                    var start = ReadExecutableCallTarget(call, ref _stack, out var callable);
                     try
                     {
                         object result;
-                        try
+                        if (call.IsPositionalOnly && callable is PyExecutableFunction { SupportsDirectPositional: true } function)
                         {
-                            result = await InvokeCallableTargetAsync(callable, call.TargetSpan, call.CallSpan, _context,
-                                () => new ValueTask<CallArgumentValue[]>(arguments)).ConfigureAwait(false);
+                            result = await InvokePositionalFunctionAsync(function, _stack.Slice(start + 1, call.ArgumentCount),
+                                call.CallSpan, _context).ConfigureAwait(false);
                         }
-                        finally { ReturnCallArguments(arguments); }
+                        else
+                        {
+                            var arguments = PrepareExecutableCallArguments(call, ref _stack, start);
+                            try
+                            {
+                                result = await InvokeCallableTargetAsync(callable, call.TargetSpan, call.CallSpan, _context,
+                                    () => new ValueTask<CallArgumentValue[]>(arguments)).ConfigureAwait(false);
+                            }
+                            finally { ReturnCallArguments(arguments); }
+                        }
                         CompleteExecutableValueTransfer(ref _stack, start, result, _context, instruction.Span);
                     }
                     catch

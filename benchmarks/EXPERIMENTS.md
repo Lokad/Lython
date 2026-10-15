@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 positional-call delivery](results/2026-10-15-positional-calls/README.md)
+removes packaged arguments and argument-factory closures from eligible compiled
+calls while sharing canonical frame/body cleanup. One async helper diagnostic
+observes a 13.7% lower median; baseline spread is 9.4%, so no qualified multiplier.
+Bound-values/frame copying and receiver-independent method dispatch remain open.
+
 The [2026-10-15 live-defaults delivery](results/2026-10-15-function-defaults/README.md)
 removes disconnected binding metadata and persistent default-map fees, admits
 layout/default capacity and awaits custom-key lookup. One async default-call
