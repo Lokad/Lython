@@ -35,6 +35,7 @@ public sealed class ComparisonWorkerProtocolTests
 
     [Theory]
     [InlineData("warm")]
+    [InlineData("warm-async")]
     [InlineData("compile-run")]
     [InlineData("compile")]
     public async Task PersistentWorkerReusesCodeButResetsNamespaceAndChecksCompleteUnicodeOutput(string lane)

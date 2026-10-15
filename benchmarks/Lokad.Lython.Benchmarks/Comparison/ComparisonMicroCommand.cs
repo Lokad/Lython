@@ -20,7 +20,7 @@ internal static class ComparisonMicroCommand
             if (i + 1 == arguments.Length || (!required.Contains(arguments[i]) && arguments[i] is not ("--case" or "--lane"))
                 || !options.TryAdd(arguments[i], arguments[i + 1])) return Usage();
         if (required.Any(name => !options.ContainsKey(name))) return Usage();
-        if (options.GetValueOrDefault("--lane", "warm") is not ("warm" or "compile-run")) return Usage();
+        if (options.GetValueOrDefault("--lane", "warm") is not ("warm" or "warm-async" or "compile-run")) return Usage();
         using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(CollectionSeconds));
         ConsoleCancelEventHandler cancel = (_, e) => { e.Cancel = true; deadline.Cancel(); };
         Console.CancelKeyPress += cancel;
@@ -37,7 +37,7 @@ internal static class ComparisonMicroCommand
     {
         Console.Error.WriteLine("Usage: --compare micro --catalog <catalog.json> --dotnet <absolute executable> " +
             "--baseline-worker <old benchmark.dll> --python <absolute executable> --python-worker <cpython-worker.py> " +
-            "--out <new receipt.json> [--case <id; default loops.integer.large>] [--lane warm|compile-run]. " +
+            "--out <new receipt.json> [--case <id; default loops.integer.large>] [--lane warm|warm-async|compile-run]. " +
             "Diagnostic only; run in a 30-second owned service.");
         return 2;
     }

@@ -1,0 +1,29 @@
+{
+  "baselineRevision": "015184e60b95826a5b890f7d28ea63aaf4335348",
+  "candidateBaseRevision": "015184e60b95826a5b890f7d28ea63aaf4335348",
+  "productionChange": "shared executable function construction, real async bound-slot/cell execution, remove blanket module mirroring",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "fea024f783ba995182391685e1dc2f556e6ed01456c775a2a0ee6d9e299e892c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "7b92e7b6e01d2afa5220cd3e8c39ba319a21965e91355bf5b295309bb1f3f1c8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "b49f45b9df2ee05d0a6a5702626b3bcebac04a91656f87aa77811fb9ceec50be",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "313fc14f3ba6e9a203bc8af22911b503276c478bff61c9bd9e6b6e51026c2c7e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.cs": "6f2f74315b5ee69ced37ff6abbd93aa7416d0e7132592317ae09b1e8724e8d4c",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "28b5ca54c9abee0a6621ddd7a81d17c13323de416f46962d16c1b775b8f658ce",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonMicroCommand.cs": "c94517c052799b925bb203a2bf398f8c55ac80e01a7bd2b6652dffa196f4f497",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/LythonComparisonWorker.cs": "5fc6dc2d73eb9d10c59b2a4206edf5051ede67b5a94ba8fee76656693266ad89",
+    "benchmarks/cpython-worker.py": "0bdd716c1482c34879bf629c2d895f20f4e57e78806e221d929949a957eb2912"
+  },
+  "sourceArchiveSha256": "795cedd387584e7d181386fc4312eb31f6a2202c499077808106038a2752d7ea",
+  "case": "calls.positional.large",
+  "lanes": [
+    "warm",
+    "warm-async"
+  ],
+  "runtimeGCAndTiering": "ordinary unchanged",
+  "retries": false,
+  "hardDeadlineSecondsPerComparison": 30,
+  "sameUpdatedHarnessForBothRoles": true,
+  "referenceExecution": "ordinary CPython warm execution in both modes; async lane selects Lython RunAsync with completed host operations; no injected delay",
+  "compatibilityGapExcludedFromChange": "pre-existing live __defaults__ mutation discrepancy recorded separately",
+  "preTimingFinding": "Full ordinary gate found async import whole-namespace refresh erased nonmirrored locals; remove that refresh because import StoreName already updates bound slots. No timing preceded this correction."
+}

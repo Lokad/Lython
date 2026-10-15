@@ -1,0 +1,24 @@
+{
+  "configuration": "Release",
+  "platform": "Windows x64",
+  "gates": {
+    "ordinary-fixed": {
+      "passed": 10916,
+      "elapsedMillisecondsIncludingCleanup": 82708,
+      "trxSha256": "74812ab726aa21b3fa1de5e8744b6b00913c1dbdc605ed32e2a2c993bccda01c"
+    },
+    "stress-fixed": {
+      "passed": 377,
+      "elapsedMillisecondsIncludingCleanup": 280726,
+      "trxSha256": "656cf28856fda8163ec225b7d9faa06ce8f3a9dd64db2c834c2b89971e91a438"
+    },
+    "final-client-protocol": {
+      "passed": 64,
+      "elapsedMillisecondsIncludingCleanup": 5003,
+      "trxSha256": "db90276271c55094ebb673b97ea47ecc341344de9b207645f1cf3c2f67b81c02"
+    }
+  },
+  "memoryBudgetsOrTimeoutsIncreased": false,
+  "retainedCapturedDataRejectionPreserved": true,
+  "architectureOnlyAsyncDenialsReplacedWithParityAtSameAllowances": true
+}

@@ -2,6 +2,8 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Integer helper calls [E], warm `Run` | 16,384 calls | 3.289 ms | 0.965 ms | — | One candidate diagnostic on 015184e6; sync change within spread |
+| Same helper calls [E], warm `RunAsync` | Same input; completed host operations | 6.618 ms | 0.989 ms | — | One diagnostic; 40.3% lower median than earlier async Lython; no qualified multiplier |
 | Helper with nested filtered list comprehension [H] | 1,024 inputs / 1,364 results | 0.816–0.825 ms | 0.0793–0.0990 ms | — | Warm diagnostics at 3cad4157; both executable candidates rejected; CPython spread 23.7–38.2% |
 | File search with helper and protected early exit [P], warm | 2,049 lines / 42,010 UTF-8 bytes | 4.249 ms | 0.265 ms | — | One candidate diagnostic; inconclusive (56.4% spread) |
 | Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
@@ -45,6 +47,7 @@ processes, not two revisions. No complete-script multiplier or overall speedup i
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| E | 2026-10-15 | Working async-function candidate on 015184e6; six production files frozen by hashes | [Separate `Run` / `RunAsync` diagnostics and qualification](benchmarks/results/2026-10-15-async-compiled-functions/README.md) |
 | H | 2026-10-15 | 3cad4157 existing runtime; both uncommitted executable-list candidates rejected | [Helper comparison and retained prototypes](benchmarks/results/2026-10-15-list-comprehensions-rejected/README.md) |
 | P | 2026-10-15 | Working protected-loop candidate on b2235259; two frontend source changes frozen by hashes | [Separate warm and compile/run diagnostics](benchmarks/results/2026-10-15-protected-loop-jumps/README.md), [source declaration](benchmarks/results/2026-10-15-protected-loop-jumps/comparison-declaration.json) |
 | F | 2026-10-14 | ca432c22, two identical worker/binary controls; runtime tree matches7736b6c0 | [Complete file diagnostic](benchmarks/results/2026-10-14-representative-file/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-file/micro.json) |
@@ -58,12 +61,12 @@ processes, not two revisions. No complete-script multiplier or overall speedup i
 | L | 2026-10-09 | `56d4346d960b58f037da7d4590eb66c87ffec29e` | [Focused loop run](benchmarks/results/2026-10-09-core-loop/README.md), [all loop samples](benchmarks/results/2026-10-09-core-loop/warm.md) |
 | S | 2026-10-12 | `87c1a94c347a88bc94927ea603a138cec4376170` (correctness, no timings) | [Complete-script validation](benchmarks/results/2026-10-12-script-negative-cases/README.md), [fixture and host contract](benchmarks/results/2026-10-12-containment-scope/README.md) |
 
-P used the same VM and SDK/runtime/CPython versions described below for Q/L.
-H used that VM/toolchain too; both distinct candidate diagnostics and their
-existing-runtime controls remain visible. No candidate was promoted.
-Its fresh compile/run row compiles each source anew inside the running worker;
-the warm row reuses compiled code. Both include complete file staging/output
-checks. The candidate source is frozen by hashes, not a claim about later HEAD.
+E, H and P used the same VM and SDK/runtime/CPython versions described below.
+E separates warm `Run` and completed-host `RunAsync`; CPython executes ordinary
+warm code in both rows. H preserves both rejected candidates and their existing
+runtime controls. P separates fresh compile/run from warm reuse and includes
+complete file staging/output checks. Their candidate hashes identify measured
+source, rather than an arbitrary later HEAD.
 
 Q and L used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
 x86_64, four AMD EPYC 9V45 vCPUs, one thread per core, 16 GiB RAM, no swap.
@@ -137,6 +140,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Async compiled functions, 2026-10-15 | 015184e6 → frozen candidate | 40.3%, 16,384 helper calls through `RunAsync`; sync inconclusive | [Both API boundaries and failed setup](benchmarks/results/2026-10-15-async-compiled-functions/README.md) |
 | Synchronous instruction dispatch, 2026-10-09 | `56d4346d` → `891798a6` | 13.4–14.0%, 16,384-iteration loop | [Both collections](benchmarks/results/2026-10-09-sync-dispatch/README.md) |
 | Exact integer addition, 2026-10-09 | `891798a6` → `e97cd4da` | 10.7–14.1%, same loop | [Both collections and rejected alternative](benchmarks/results/2026-10-09-integer-addition/README.md) |
 | Function-scoped dispatch, 2026-10-11 | `1bf1e241` → `d10564e7` | 4.44% / 10.10%, complete method job | [Corrected producers, controls and safety evidence](benchmarks/results/2026-10-11-scoped-dispatch-corrected/README.md) |

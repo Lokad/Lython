@@ -1,0 +1,15 @@
+{
+  "source": "def f(x=5):\n    return x\nf.__defaults__=(7,)\nprint(f())",
+  "command": [
+    "dotnet",
+    "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+    "-c",
+    "def f(x=5):\n    return x\nf.__defaults__=(7,)\nprint(f())",
+    "--json",
+    "--compare-python"
+  ],
+  "exitCode": 1,
+  "stdout": "{\"Index\":0,\"Lython\":{\"Success\":true,\"StandardOutput\":\"5\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":1178,\"PeakProjectionMemoryBytes\":36,\"DeniedReservationBytes\":0,\"Failure\":null},\"CPython\":{\"Success\":true,\"StandardOutput\":\"7\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":null,\"PeakProjectionMemoryBytes\":null,\"DeniedReservationBytes\":null,\"Failure\":null},\"Matches\":false,\"Note\":null,\"Compared\":true,\"Options\":{\"MaxMemoryBytes\":null,\"Async\":false}}\n",
+  "stderr": "",
+  "loadedLythonSha256": "e15b7809b0c82e1143b014525a8214f8b26a10729eacc5bc7c0fe52b0661defa"
+}

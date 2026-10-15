@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 async-function delivery](results/2026-10-15-async-compiled-functions/README.md)
+shares compiled function construction and real async bound-slot/cell execution.
+One completed-host async diagnostic observes a 40.3% lower median; the sync
+control is inconclusive. The import refresh bug and an initial client-validator
+failure are preserved separately from the valid timing samples. Broader async
+dispatch and mutable function metadata remain open.
+
 The [2026-10-15 list-comprehension investigation](results/2026-10-15-list-comprehensions-rejected/README.md)
 rejects two executable-list producers despite passing semantic/containment gates.
 A direct iterator branch removes added boolean/dispatch work but does not show

@@ -100,7 +100,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
         CancellationToken cancellationToken)
     {
         if (!_verified.Contains(workload.Id) || iterations is < 1 or > ComparisonProtocol.MaximumBatchIterations
-            || lane is not ("warm" or "compile-run" or "compile"))
+            || lane is not ("warm" or "warm-async" or "compile-run" or "compile"))
             throw new InvalidDataException("A batch needs a verified case, supported lane and bounded positive count.");
         var completed = 0;
         string? actual = null;
@@ -129,7 +129,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
                 else
                 {
                     actual = null;
-                    actual = Invoke(_compiled[workload.Id], workload, files);
+                    actual = Invoke(_compiled[workload.Id], workload, files, asynchronous: lane == "warm-async");
                 }
             }
             var elapsedTicks = Stopwatch.GetTimestamp() - started;
@@ -172,7 +172,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
         return host;
     }
 
-    private string Invoke(LythonCompiledScript script, ComparisonWorkload workload, ComparisonFileHost? files)
+    private string Invoke(LythonCompiledScript script, ComparisonWorkload workload, ComparisonFileHost? files, bool asynchronous = false)
     {
         // Default per-invocation public options/context/capture/projection stay
         // inside timing. File cases expose only the declared fixture directory.
@@ -181,7 +181,8 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
         _lastResult = null;
         try { files?.Reset(); }
         catch (IOException error) { throw new WorkerJobException("Failure", "File fixture reset failed: " + error.Message); }
-        var result = script.Run((ILythonHost?)files ?? _host);
+        var host = (ILythonHost?)files ?? _host;
+        var result = asynchronous ? script.RunAsync(host).GetAwaiter().GetResult() : script.Run(host);
         _lastResult = result;
         if (!result.Success)
             throw new WorkerJobException(result.DeniedReservationBytes > 0 || result.Failure?.ExceptionType == "MemoryError"

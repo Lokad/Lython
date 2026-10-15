@@ -93,7 +93,7 @@ internal sealed class ComparisonWorkerClient : IAsyncDisposable
     public Task<WorkerResponse> BatchAsync(ComparisonWorkload workload, string lane, int iterations,
         CancellationToken cancellationToken = default, TimeSpan? deadline = null)
     {
-        if (lane is not ("warm" or "compile-run" or "compile") || iterations is < 1 or > ComparisonProtocol.MaximumBatchIterations)
+        if (lane is not ("warm" or "warm-async" or "compile-run" or "compile") || iterations is < 1 or > ComparisonProtocol.MaximumBatchIterations)
             throw new ArgumentException("Use a supported lane and bounded positive batch count.");
         return RequestAsync(workload, "batch", lane, iterations, cancellationToken, deadline ?? RequestDeadline);
     }

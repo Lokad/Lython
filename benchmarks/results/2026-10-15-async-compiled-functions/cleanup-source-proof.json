@@ -1,0 +1,107 @@
+{
+  "checks": [
+    {
+      "group": "import-fix/warm.json",
+      "engine": "baseline",
+      "pid": 2304504,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "group": "import-fix/warm.json",
+      "engine": "candidate",
+      "pid": 2304525,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "group": "import-fix/warm.json",
+      "engine": "CPython",
+      "pid": 2304540,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "group": "import-fix/warm-async.json",
+      "engine": "baseline",
+      "pid": 2304652,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "group": "import-fix/warm-async.json",
+      "engine": "candidate",
+      "pid": 2304673,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "group": "import-fix/warm-async.json",
+      "engine": "CPython",
+      "pid": 2304688,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "group": "async-harness/warm-async.json",
+      "engine": "baseline",
+      "pid": 2305717,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "group": "async-harness/warm-async.json",
+      "engine": "candidate",
+      "pid": 2305738,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "group": "async-harness/warm-async.json",
+      "engine": "CPython",
+      "pid": 2305754,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    }
+  ],
+  "sourceProof": [
+    {
+      "boundary": "import-fix",
+      "productionDifferences": [
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.cs",
+        "src/Lokad.Lython/Runtime/PyExecutableFunction.cs"
+      ],
+      "frozenSourceHashesMatch": true,
+      "comparisonSourcesIdenticalWithinBoundary": true
+    },
+    {
+      "boundary": "async-harness",
+      "productionDifferences": [
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.cs",
+        "src/Lokad.Lython/Runtime/PyExecutableFunction.cs"
+      ],
+      "frozenSourceHashesMatch": true,
+      "comparisonSourcesIdenticalWithinBoundary": true
+    }
+  ],
+  "productionIdenticalAcrossBoundaries": true,
+  "relevantUnits": "lython-ap02a-warm-async-20261015.service loaded failed failed /bin/bash /home/lokad/lython-bench-checks/ap02a-async-functions-import-fix-20261015/micro.sh warm-async\n",
+  "leaseAcquired": true
+}

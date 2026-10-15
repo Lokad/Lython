@@ -29,7 +29,8 @@ public sealed class ComparisonFileWorkerTests
     [Theory]
     [InlineData("compile")]
     [InlineData("compile-run")]
-    public async Task CompilationHasItsOwnBoundary(string lane)
+    [InlineData("warm-async")]
+    public async Task SelectedLaneKeepsCompilationAndFileExecutionBoundaries(string lane)
     {
         using var catalog = new Catalog(WorkloadCatalog.CreateRepresentative().First(c => c.Size == 16));
         var result = (await Run(catalog, lane))[1];
@@ -99,6 +100,7 @@ public sealed class ComparisonFileWorkerTests
         Assert.NotEqual(catalog.Directory, root);
         Assert.Equal("Equivalent", (await worker.VerifyAsync(catalog.Workload)).Status);
         Assert.Equal(catalog.Workload.ExpectedFilesSha256, (await worker.BatchAsync(catalog.Workload, "warm", 2)).ActualFilesSha256);
+        Assert.Equal(catalog.Workload.ExpectedFilesSha256, (await worker.BatchAsync(catalog.Workload, "warm-async", 2)).ActualFilesSha256);
         var identity = worker.Identity.Clone();
         await worker.CloseAsync();
         Assert.True(worker.CleanupCompleted);

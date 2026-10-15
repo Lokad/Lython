@@ -339,14 +339,14 @@ def serve(path, input_stream, output_stream):
                 lane, iterations = request['lane'], request['iterations']
                 if case['id'] not in verified or type(iterations) is not int or not 1 <= iterations <= MAX_BATCH_ITERATIONS:
                     raise ValueError('A batch needs a verified case and bounded positive count')
-                if lane not in ('warm', 'compile-run', 'compile'):
+                if lane not in ('warm', 'warm-async', 'compile-run', 'compile'):
                     raise ValueError('Unsupported comparison lane')
                 last_code = None
                 started = time.perf_counter_ns()
                 for _ in range(iterations):
                     if time.perf_counter_ns() - started >= MAX_BATCH_SECONDS * 1_000_000_000:
                         raise JobFailure('Timeout', 'Batch exceeded its internal 60-second ceiling')
-                    code = compiled[case['id']] if lane == 'warm' else compile_case(case)
+                    code = compiled[case['id']] if lane in ('warm', 'warm-async') else compile_case(case)
                     if lane == 'compile':
                         last_code = code
                     else:

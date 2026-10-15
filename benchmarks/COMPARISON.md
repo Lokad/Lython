@@ -35,11 +35,20 @@ the worker timer. Record these boundaries separately; never add unrelated median
 to infer first-result latency. Compile-only and process startup remain separate.
 The fresh compile-run mode does not use identical-script caching as its result.
 
+`--lane warm-async` is a short diagnostic of Lython's public `RunAsync` API with
+the comparison host's completed operations. It reuses code and includes invocation
+setup, dedicated startup-thread creation, execution, output checks and prior-result
+cleanup. CPython executes the same ordinary warm job; no guest async syntax or
+artificial I/O delay is introduced. Initial verification uses the ordinary path;
+every async warmup/calibration/measured invocation must also match the complete
+golden result. Keep this API boundary separate from `warm` (`Run`) and from real
+suspending-I/O correctness/throughput. Milestone collection lanes are unchanged.
+
 ```text
 <dotnet> <candidate-benchmark.dll> --compare micro --catalog <catalog.json>
   --dotnet <absolute-dotnet> --baseline-worker <old-benchmark.dll>
   --python <absolute-python> --python-worker <cpython-worker.py>
-  --out <new-micro.json> [--case <id>] [--lane warm|compile-run]
+  --out <new-micro.json> [--case <id>] [--lane warm|warm-async|compile-run]
 ```
 
 The default case is `loops.integer.large`. Select an existing case explicitly
