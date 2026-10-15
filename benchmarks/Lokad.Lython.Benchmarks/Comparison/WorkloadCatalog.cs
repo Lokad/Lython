@@ -236,6 +236,19 @@ for i in range(N):
     total += values[0] + values[3] + len(values)
 print(total)
 """, n => Line((long)n * (n + 6)));
+        Add("collections.expanded-merge", "collections", "core", CoreSizes, """
+def merge(left, right, marker):
+    before = marker + 1
+    mapping = {'before':before, **left, 'marker':marker, **right}
+    members = {before, *left.values(), marker, *right.values()}
+    return mapping['before'] + mapping['marker'] + len(members)
+left = {'left':1}
+right = {'right':2}
+total = 0
+for i in range(N):
+    total += merge(left, right, i)
+print(total)
+""", n => Line((long)n * n + Enumerable.Range(0, n).Sum(i => new[] { i + 1, 1, i, 2 }.Distinct().Count())));
         Add("lists.copy-slice", "lists", "core", CoreSizes, """
 original = [i % 97 for i in range(N)]
 copied = original[:]
