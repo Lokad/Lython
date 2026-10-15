@@ -12,8 +12,9 @@ internal sealed class PyFunction : PyFunctionBase
         IReadOnlyList<LoweredStatement> body,
         LythonRuntime.ExecutionContext closure,
         Dictionary<string, object> defaultValues,
-        ScopeDirectiveFacts scopeFacts)
-        : base(name, parameters, closure, defaultValues, scopeFacts)
+        ScopeDirectiveFacts scopeFacts,
+        PythonCallableKind callableKind = PythonCallableKind.Function)
+        : base(name, parameters, closure, defaultValues, scopeFacts, callableKind)
     {
         _body = body;
     }

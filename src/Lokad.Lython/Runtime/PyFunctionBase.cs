@@ -30,13 +30,14 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         IReadOnlyList<LoweredFunctionParameter> parameters,
         LythonRuntime.ExecutionContext closure,
         Dictionary<string, object> defaultValues,
-        ScopeDirectiveFacts scopeFacts)
+        ScopeDirectiveFacts scopeFacts,
+        PythonCallableKind callableKind = PythonCallableKind.Function)
     {
         Name = name;
         _closure = closure;
         _memoryGovernor = closure.MemoryGovernor;
         _nameValue = PyString.FromString(name, closure.MemoryGovernor, null);
-        _bindingPlan = new FunctionBindingPlan(name, PythonCallableKind.Function, parameters, defaultValues, closure);
+        _bindingPlan = new FunctionBindingPlan(name, callableKind, parameters, defaultValues, closure);
         _scopeFacts = scopeFacts;
     }
 

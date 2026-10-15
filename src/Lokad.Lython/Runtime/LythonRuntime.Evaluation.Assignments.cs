@@ -233,26 +233,7 @@ internal sealed partial class LythonRuntime
         => await IsTruthyAsync(await EvaluateBinaryOperatorAsync(op, left, right, context, span).ConfigureAwait(false), context, span).ConfigureAwait(false);
 
     private static object CreateLambda(LambdaExpressionSyntax lambda, ExecutionContext context)
-    {
-        var loweredParameters = lambda.Parameters
-            .Select(parameter => new LoweredFunctionParameter(
-                parameter.Name,
-                parameter.Kind,
-                parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
-                parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue)))
-            .ToArray();
-        using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
-        var function = new LambdaFunction(
-            loweredParameters,
-            LoweredScript.LowerStandaloneExpression(lambda.Body),
-            context.FunctionClosureContext,
-            BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)),
-            scopeFacts: ScopeDirectiveFactsCollector.ForLambda(lambda));
-        ChargeFunctionValue(context, lambda.Span);
-        ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
-        RetainLocalsForLambda(context.FunctionClosureContext);
-        return function;
-    }
+        => CreateLoweredLambda(new LoweredLambdaExpression(lambda, LoweredScript.LowerStandaloneExpression(lambda.Body)), context);
 
     private static void ExecuteAugmentedAssignment(AugmentedAssignmentStatementSyntax statement, ExecutionContext context)
     {

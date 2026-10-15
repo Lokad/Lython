@@ -287,17 +287,30 @@ internal sealed record LoweredAssignmentExpression(
     public override ExpressionSyntax Syntax => Assignment;
 }
 
-internal sealed record LoweredLambdaExpression(
-    LambdaExpressionSyntax Lambda,
-    LoweredExpression Body) : LoweredExpression
+internal sealed record LoweredLambdaExpression : LoweredExpression
 {
+    public LoweredLambdaExpression(LambdaExpressionSyntax lambda, LoweredExpression body)
+    {
+        Lambda = lambda;
+        Body = body;
+        Parameters = lambda.Parameters.Select(parameter => new LoweredFunctionParameter(
+            parameter.Name, parameter.Kind,
+            parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
+            parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue))).ToArray();
+        FunctionBody = [new LoweredReturnStatement(new ReturnStatementSyntax(lambda.Body, lambda.Span), body)];
+        ScopeFacts = ScopeDirectiveFactsCollector.ForLambda(lambda);
+        if (GeneratorSyntaxFacts.ContainsYield(lambda.Body))
+            GeneratorCode = ExecutableScript.CompileGenerator(Parameters, FunctionBody, ScopeFacts);
+    }
+
+    public LambdaExpressionSyntax Lambda { get; }
+    public LoweredExpression Body { get; }
+    public IReadOnlyList<LoweredFunctionParameter> Parameters { get; }
+    public IReadOnlyList<LoweredStatement> FunctionBody { get; }
+    public ScopeDirectiveFacts ScopeFacts { get; }
     public override ExpressionSyntax Syntax => Lambda;
     public IReadOnlyList<LoweredFunctionParameter>? PreparedParameters { get; init; }
-    public ExecutableCodeObject? GeneratorCode { get; } = GeneratorSyntaxFacts.ContainsYield(Lambda.Body)
-        ? ExecutableScript.CompileGenerator(Lambda.Parameters.Select(parameter => new LoweredFunctionParameter(
-            parameter.Name, parameter.Kind, null, null)).ToArray(),
-            new LoweredStatement[] { new LoweredReturnStatement(new ReturnStatementSyntax(Lambda.Body, Lambda.Span), Body) },
-            ScopeDirectiveFactsCollector.ForLambda(Lambda)) : null;
+    public ExecutableCodeObject? GeneratorCode { get; }
 }
 
 internal sealed record LoweredOtherExpression(

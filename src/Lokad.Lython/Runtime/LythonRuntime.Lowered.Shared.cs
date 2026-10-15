@@ -831,13 +831,21 @@ internal sealed partial class LythonRuntime
     }
 
     private static IReadOnlyList<LoweredFunctionParameter> LowerLambdaParameters(LoweredLambdaExpression lambda)
-        => lambda.PreparedParameters ?? lambda.Lambda.Parameters
-            .Select(parameter => new LoweredFunctionParameter(
-                parameter.Name,
-                parameter.Kind,
-                parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
-                parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue)))
-            .ToArray();
+        => lambda.PreparedParameters ?? lambda.Parameters;
+
+    private static PyFunctionBase CreateLambdaFunction(LoweredLambdaExpression lambda,
+        IReadOnlyList<LoweredFunctionParameter> parameters, Dictionary<string, object> defaults, ExecutionContext context)
+    {
+        ChargeFunctionValue(context, lambda.Span);
+        PyFunctionBase function = lambda.GeneratorCode is { } generator
+            ? new PyGeneratorFunction("<lambda>", parameters, generator, context.FunctionClosureContext,
+                defaults, lambda.ScopeFacts, callableKind: PythonCallableKind.Lambda)
+            : new PyFunction("<lambda>", parameters, lambda.FunctionBody, context.FunctionClosureContext,
+                defaults, lambda.ScopeFacts, PythonCallableKind.Lambda);
+        ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
+        RetainLocalsForLambda(context.FunctionClosureContext);
+        return function;
+    }
 
     private static object StoreLoweredAssignmentResult(
         LoweredAssignmentExpression assignment,
