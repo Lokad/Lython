@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resolve mutable function callable attributes again at reused call sites, so replacement and deletion take effect while retained callable aliases remain valid.
+
 - Support custom-attribute deletion on named, lambda and generator functions through their shared metadata table. Preserve missing-key errors, protected names, default binding and Python-shaped reserved-field resets; retain capacity and escaped-value funding. Remove an unused metadata-byte counter and its rollback branch.
 
 - Dispose native iterator temporaries when executable loops or comprehensions fail or exit early. Retained Python iterator and generator values remain usable; discarding an internal temporary uses the existing reverse cleanup path.

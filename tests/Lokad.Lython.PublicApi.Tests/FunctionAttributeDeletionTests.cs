@@ -6,6 +6,7 @@ public sealed class FunctionAttributeDeletionTests
 {
     public static TheoryData<string, string> Programs => new()
     {
+        { "def f(): pass\nf.tag=lambda:1\nsaved=f.tag\nfor phase in range(3):\n try: print(f.tag())\n except AttributeError: print('missing')\n if phase==0: f.tag=lambda:2\n elif phase==1: del f.tag\nprint(saved())", "1\n2\nmissing\n1\n" },
         { "def f(): return 1\nf.tag=[]\nsaved=f.tag\ndel f.tag\nprint(hasattr(f,'tag'),saved,f())\ntry: del f.tag\nexcept AttributeError: print('missing')", "False [] 1\nmissing\n" },
         { "f=lambda value=3:value\nsetattr(f,'tag',4)\ndelattr(f,'tag')\nf.tag=5\nprint(f.tag,f(),f.__defaults__)\ndel f.tag\ntry: print(f.tag)\nexcept AttributeError: print('missing')", "5 3 (3,)\nmissing\n" },
         { "def f(): yield 7\nf.__custom__=9\ndel f.__custom__\nprint(hasattr(f,'__custom__'),list(f()))", "False [7]\n" },
