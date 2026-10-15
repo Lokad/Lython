@@ -105,15 +105,21 @@ return value
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task ReflectedSubtractionCanSuspendAndCancelWithoutPublishing()
+    [Theory]
+    [InlineData("13")]
+    [InlineData("True")]
+    [InlineData("1.5")]
+    [InlineData("1+2j")]
+    [InlineData("decimal.Decimal('1.5')")]
+    public async Task ReflectedSubtractionCanSuspendAndCancelWithoutPublishing(string left)
     {
-        const string source = """
+        var source = $$"""
+import decimal
 class Right:
     def __rsub__(self,other):
         with open('events.txt','a') as target: target.write('changed')
         return 42
-value=13
+value={{left}}
 value-=Right()
 return value
 """;

@@ -111,9 +111,9 @@ internal sealed partial class LythonRuntime
         }
         result = default; return false;
     }
-    private static object EvaluateComplexBinary(BinaryOperatorSyntax op, object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluateComplexBinary(BinaryOperatorSyntax op, object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
-        var symbol = op switch { BinaryOperatorSyntax.Add => "+", BinaryOperatorSyntax.Subtract => "-", BinaryOperatorSyntax.Multiply => "*", BinaryOperatorSyntax.Divide => "/", BinaryOperatorSyntax.Power => "** or pow()", BinaryOperatorSyntax.FloorDivide => "//", BinaryOperatorSyntax.Modulo => "%", BinaryOperatorSyntax.BitwiseAnd => "&", BinaryOperatorSyntax.BitwiseOr => "|", BinaryOperatorSyntax.BitwiseXor => "^", BinaryOperatorSyntax.LeftShift => "<<", BinaryOperatorSyntax.RightShift => ">>", _ => op.ToString() };
+        var symbol = operation ?? (op switch { BinaryOperatorSyntax.Add => "+", BinaryOperatorSyntax.Subtract => "-", BinaryOperatorSyntax.Multiply => "*", BinaryOperatorSyntax.Divide => "/", BinaryOperatorSyntax.Power => "** or pow()", BinaryOperatorSyntax.FloorDivide => "//", BinaryOperatorSyntax.Modulo => "%", BinaryOperatorSyntax.BitwiseAnd => "&", BinaryOperatorSyntax.BitwiseOr => "|", BinaryOperatorSyntax.BitwiseXor => "^", BinaryOperatorSyntax.LeftShift => "<<", BinaryOperatorSyntax.RightShift => ">>", _ => op.ToString() });
         if (op is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or BinaryOperatorSyntax.Multiply or BinaryOperatorSyntax.Divide or BinaryOperatorSyntax.Power) ||
             !TryComplexOperand(left, span, out var lhs) || !TryComplexOperand(right, span, out var rhs)) throw RuntimeErrors.UnsupportedOperands(symbol, left, right, span);
         var result = op switch

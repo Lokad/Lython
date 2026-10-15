@@ -1002,7 +1002,10 @@ internal sealed partial class LythonRuntime
             return currentChain;
         }
 
-        if (right is PyInstance && (op == AugmentedAssignmentOperatorSyntax.Add || currentValue is BigInteger))
+        // Builtin numeric values have no native in-place container behavior.
+        // Their reflected user slot can suspend just like a user left slot.
+        if (right is PyInstance && (op == AugmentedAssignmentOperatorSyntax.Add ||
+            currentValue is PyComplex or PyDecimal || PyNumberOps.TryAsNumber(currentValue, out _)))
             return await EvaluateAugmentedProtocolFallbackAsync(currentValue, right, op, context, span).ConfigureAwait(false);
         return EvaluateAugmentedAssignment(currentValue, right, op, context, span);
     }
