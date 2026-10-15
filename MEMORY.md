@@ -74,6 +74,13 @@ before allocating the captured array; denied capture publishes no funding marks.
 Lowered bodies and dynamic namespace consumers retain their existing dictionary
 ownership. Lambda metadata now uses ordinary function storage, so small allowances
 can reject at different thresholds; pending users and escaping aliases stay funded.
+Executable eager comprehensions reuse the existing binding lifetime in the caller
+frame. Scope end restores lookup/capture state and does not refund collection or
+element storage retained by a result. Failed/cancelled nested scopes unwind in
+reverse order; unpublished partial storage can stay with the finite owner.
+Native enumeration working storage is disposed on loop/comprehension failure or
+early exit. This releases its temporary allowance without closing retained Python
+iterator/generator values or refunding their surviving storage.
 
 Host command requests carry the active budget in
 `LythonSubprocessRequest.MemoryBudget`. A cooperating dispatcher borrows it,

@@ -1,0 +1,68 @@
+{
+  "checks": [
+    {
+      "engine": "timing-baseline",
+      "pid": 2353641,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-candidate",
+      "pid": 2353663,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-CPython",
+      "pid": 2353678,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-lythonIdentity",
+      "pid": 2353367,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-pythonIdentity",
+      "pid": 2353388,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-lythonIdentity",
+      "pid": 2353501,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-pythonIdentity",
+      "pid": 2353522,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    }
+  ],
+  "productionDifferences": [
+    "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Comprehensions.cs",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingExpressions.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Comprehensions.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs"
+  ],
+  "frozenSourceHashesMatch": true,
+  "comparisonSourcesIdentical": true,
+  "relevantUnits": "",
+  "leaseAcquired": true
+}

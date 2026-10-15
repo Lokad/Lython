@@ -5,8 +5,10 @@ namespace Lokad.Lython.Frontend;
 internal abstract record ExecutableOperation;
 internal enum ExecutableDisplayKind { List, Tuple, Set, Dictionary }
 internal sealed record ExecutableStartDisplay(ExecutableDisplayKind Kind) : ExecutableOperation;
-internal sealed record ExecutableAppendDisplay(bool Unpacking) : ExecutableOperation;
-internal sealed record ExecutableStoreDictionaryItem(bool Unpacking) : ExecutableOperation;
+internal sealed record ExecutableAppendDisplay(bool Unpacking, int IteratorDepth = 0) : ExecutableOperation;
+internal sealed record ExecutableStoreDictionaryItem(bool Unpacking, int IteratorDepth = 0) : ExecutableOperation;
+internal sealed record ExecutableStartComprehension(ExecutableDisplayKind Kind, ScopeDirectiveFacts ScopeFacts) : ExecutableOperation;
+internal sealed record ExecutableFinishComprehension : ExecutableOperation;
 internal sealed record ExecutableFinishTuple : ExecutableOperation;
 internal sealed record ExecutableStartCall(int ArgumentCount, bool DeferSingleStar) : ExecutableOperation;
 internal sealed record ExecutableAppendCall(CallArgumentForm Form) : ExecutableOperation;
@@ -14,7 +16,7 @@ internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan) : Execu
 internal sealed record ExecutableConvertFormattedValue(char Conversion) : ExecutableOperation;
 internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier) : ExecutableOperation;
 internal sealed record ExecutableJoinFormattedParts(int Count) : ExecutableOperation;
-internal sealed record ExecutableCreateComprehension(LoweredExpression Expression) : ExecutableOperation;
+internal sealed record ExecutableCreateGeneratorExpression(LoweredGeneratorExpression Expression) : ExecutableOperation;
 
 internal sealed partial class ExecutableScript
 {
@@ -23,45 +25,11 @@ internal sealed partial class ExecutableScript
         private void EmitOperation(ExecutableOperation operation, LythonSourceSpan span, int block)
             => AddInstruction(block, ExecutableInstruction.ApplyOperation(InternConstant(operation), span));
 
-        private bool TryCompileSuspendingExpression(LoweredExpression expression, int block, out int result)
+        private int CompileSuspendingGeneratorExpression(LoweredGeneratorExpression expression, int block)
         {
-            result = block;
-            switch (expression)
-            {
-                case LoweredLambdaExpression lambda:
-                    result = CompileLambda(lambda, block);
-                    return true;
-                case LoweredFormattedStringExpression formatted:
-                    result = CompileFormattedParts(formatted.Parts, formatted.Span, block);
-                    return true;
-                case LoweredCallExpression call when call.Arguments.Any(a => a.Form.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary):
-                    result = CompileExpandedCall(call, block);
-                    return true;
-                case LoweredListLiteralExpression list when list.List.HasUnpacking:
-                    result = CompileDisplay(list.Items, ExecutableDisplayKind.List, list.Span, block);
-                    return true;
-                case LoweredTupleLiteralExpression tuple when tuple.Tuple.HasUnpacking:
-                    result = CompileDisplay(tuple.Items, ExecutableDisplayKind.Tuple, tuple.Span, block);
-                    return true;
-                case LoweredSetLiteralExpression set when set.Set.HasUnpacking:
-                    result = CompileDisplay(set.Items, ExecutableDisplayKind.Set, set.Span, block);
-                    return true;
-                case LoweredDictLiteralExpression dict when dict.Items.Any(i => i.IsUnpacking):
-                    result = CompileDictionaryDisplay(dict, result);
-                    return true;
-            }
-            var clauses = expression switch
-            {
-                LoweredListComprehensionExpression c => c.Clauses,
-                LoweredSetComprehensionExpression c => c.Clauses,
-                LoweredDictComprehensionExpression c => c.Clauses,
-                LoweredGeneratorExpression c => c.Clauses,
-                _ => null,
-            };
-            if (clauses is null) return false;
-            result = CompileExpression(clauses[0].Iterable, block);
-            EmitOperation(new ExecutableCreateComprehension(expression), expression.Span, result);
-            return true;
+            block = CompileExpression(expression.Clauses[0].Iterable, block);
+            EmitOperation(new ExecutableCreateGeneratorExpression(expression), expression.Span, block);
+            return block;
         }
 
         private int CompileExpandedCall(LoweredCallExpression call, int block)

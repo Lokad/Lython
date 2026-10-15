@@ -2,10 +2,9 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyIteration
 {
-    // Actual wrapper state replaces compiler-generated forwarding iterators.
-    // Upstream enumerators retain their own contract: unknown shapes still
-    // prevent complete walking. No collection or guest code runs during visits.
-    private sealed class CheckedEnumerator : IEnumerator<object>
+    // Explicit wrapper state disposes native upstream enumeration on completion,
+    // failure or abandonment without closing retained Python iterator values.
+    private sealed class CheckedEnumerator : IEnumerator<object>, IExecutableTemporaryValue
     {
         private IEnumerable<object>? _source;
         private LythonRuntime.ExecutionContext? _context;

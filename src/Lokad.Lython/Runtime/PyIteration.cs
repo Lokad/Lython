@@ -367,7 +367,7 @@ internal static partial class PyIteration
         };
     }
 
-    internal sealed class Cursor : IDisposable, IAsyncDisposable
+    internal sealed class Cursor : IExecutableTemporaryValue, IAsyncDisposable
     {
         private readonly object _value;
         private readonly LythonSourceSpan _span;

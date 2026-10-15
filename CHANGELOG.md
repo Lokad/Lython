@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Dispose native iterator temporaries when executable loops or comprehensions fail or exit early. Retained Python iterator and generator values remain usable; discarding an internal temporary uses the existing reverse cleanup path.
+
+- Compile eager list/set/dictionary comprehension loops and helper calls in the caller's executable frame using the existing binding scope. Restore nested scope temporaries in reverse order and preserve caller locals, closures, walrus, super, async protocols, cancellation and retained funding; no new invocation frame or owner.
+
+- Consolidate yielding and ordinary expression lowering, deleting the duplicate generator-family dispatcher and obsolete eager-comprehension adapter branches. Lazy generator expressions and lambdas created inside comprehension scopes retain their required dynamic routes.
+
 - Share lambda binding, metadata, invocation and generator handling with the existing function classes, deleting the separate lambda callable. Prepare parameters/scope facts once; preserve the shared immutable lambda-name label, while class lambdas keep their qualified name and support the shared function attribute writes.
 
 - Compile lambda bodies/defaults through the shared function compiler and closure cells, removing ordinary lambda fallbacks and prepared captured-expression/default clones. Preserve lowered body fallbacks where needed, actual suspension, alias funding and managed admission. Admit closure-array storage before allocating it.

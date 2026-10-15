@@ -1,0 +1,85 @@
+{
+  "groupsOverlap": true,
+  "groups": [
+    {
+      "stage": "inline-comprehension-cleanup-qualified-white",
+      "filter": "Category!=Stress",
+      "assemblySha256": "66474FE3602065DFD97A7C8D20E24490E09D7A92E1520368ED8BBCF3DC2395D4",
+      "counters": {
+        "total": "2347",
+        "executed": "2347",
+        "passed": "2347",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 11523
+    },
+    {
+      "stage": "inline-comprehension-cleanup-semantic-public",
+      "filter": "(FullyQualifiedName~EagerComprehensionExecutionTests|FullyQualifiedName~Comprehension|FullyQualifiedName~Locals|FullyQualifiedName~ScopeDirective|FullyQualifiedName~LambdaExecutionTests|FullyQualifiedName~Super|FullyQualifiedName~Generator|FullyQualifiedName~IterationProtocol)&Category!=Stress",
+      "assemblySha256": "4D66604BFE5832DD79027CA65B98B6C4B4D1549FF71FEB703FD6422980138406",
+      "counters": {
+        "total": "402",
+        "executed": "402",
+        "passed": "402",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 15612
+    },
+    {
+      "stage": "inline-comprehension-cleanup-governed-public",
+      "filter": "(FullyQualifiedName~Governed|FullyQualifiedName~Representative|FullyQualifiedName~ComparisonFileWorkerTests)&Category!=Stress",
+      "assemblySha256": "4D66604BFE5832DD79027CA65B98B6C4B4D1549FF71FEB703FD6422980138406",
+      "counters": {
+        "total": "284",
+        "executed": "284",
+        "passed": "284",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 14810
+    }
+  ],
+  "unmeasuredSourceHashes": {
+    "src/Lokad.Lython/Runtime/PyIteration.cs": "09e0aba02b3b97fc22a0d598771e4ce9ca2f5da28370b6b81b7e455d4a15b2ca",
+    "src/Lokad.Lython/Runtime/PyIteration.Sequences.cs": "fe21838a565b99c59b056e9d103c9ba2dcb17e0ff1041de5ea3925635b276ef4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "64447414095899505965bd0afbb7438d2bf4a992681fd3204edb58c7aad1d126"
+  },
+  "nativeCleanupFailuresBefore": 6,
+  "independentCPythonGoldens": 9,
+  "timingRepeated": false
+}

@@ -1,0 +1,23 @@
+{
+  "baselineRevision": "3bc463a8dfefdba4c05da603682f1d70bf6316d2",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs": "c03e13aed2fe6fc4cda54ba792aa2f16da40246bc7ff3070243b490d2a58abb4",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "1258d5cbae6cbed322c5f7cf0d86a8eb115fdb996b559c16ac6dd8b5d09e2cf5",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "55de7fcfde36258bc8be161dd6b50266e9ab1ad31959420d0e94aa1973adb135",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs": "eea315e2e461e7c27a2168d9a5fd7883edb9def987e921dfe95f7f6ab252b610",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingExpressions.cs": "fc868d4b287465c040bcec1de7e9fddfeb324e165845ff22d2e8d59baea18960",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Comprehensions.cs": "12a220faf38896e0560a15fb9a409f39da3d9446dd4c0af5ebf6b627aeb5fc7e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "2f8aaa6be2a2079347082e7a6317c84bc1228b1fd573cc7cbe93b650aad671b7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "73e0ee5e7496432c313f935ece4e335d66348f6769ec1957ac1c8c369180d93d",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Comprehensions.cs": "cd7326f9d33f555c18daa03b97df1ee253fb04c0d7eae0f8cf569f1bd44299a2"
+  },
+  "sourceArchiveSha256": "3eb03dec937ad1a89c042624b14981ae3c518bde140671eec171ddebc02ea6d4",
+  "caseId": "comprehensions.helper-call.medium",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Inline eager list/set/dict comprehension loops in the caller executable frame under the existing binding scope; direct per-item calls use positional transport. No new owner/invocation frame. Reverse temporary unwind; remove duplicate generator-family dispatcher. Nested lambda bodies retain dictionary capture.",
+  "normalGCAndTiering": true,
+  "boundary": "Warm compiled helper-call list comprehension,2048items, fresh run state, execution/projection and prior-result disposal; compilation/startup/transport/hash excluded.",
+  "stoppingRule": "One fixed per-item helper-call workload only after source/semantic gates; no retired arithmetic producer, repeat, retuning or second capture. Remove prototype if no justified benefit."
+}

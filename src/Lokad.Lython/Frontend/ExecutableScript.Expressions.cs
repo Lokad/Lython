@@ -12,8 +12,8 @@ internal sealed partial class ExecutableScript
     {
         private int CompileExpression(LoweredExpression expression, int currentBlock)
         {
-            if (_generator && GeneratorSyntaxFacts.ContainsYield(expression.Syntax) &&
-                TryCompileSuspendingExpression(expression, currentBlock, out var resumedBlock)) return resumedBlock;
+            if (_generator && expression is LoweredGeneratorExpression generator && GeneratorSyntaxFacts.ContainsYield(generator.Syntax))
+                return CompileSuspendingGeneratorExpression(generator, currentBlock);
             switch (expression)
             {
                 case LoweredYieldExpression yielded:
@@ -75,6 +75,19 @@ internal sealed partial class ExecutableScript
 
                 case LoweredCallExpression call:
                     return CompileCallExpression(call, currentBlock);
+
+                case LoweredListComprehensionExpression comprehension:
+                    return CompileComprehension(comprehension.ScopeFacts, comprehension.Clauses,
+                        comprehension.ItemExpression, null, ExecutableDisplayKind.List, comprehension.Span, currentBlock);
+
+                case LoweredSetComprehensionExpression comprehension:
+                    return CompileComprehension(comprehension.ScopeFacts, comprehension.Clauses,
+                        comprehension.ItemExpression, null, ExecutableDisplayKind.Set, comprehension.Span, currentBlock);
+
+                case LoweredDictComprehensionExpression comprehension:
+                    return CompileComprehension(comprehension.ScopeFacts, comprehension.Clauses,
+                        comprehension.KeyExpression, comprehension.ValueExpression, ExecutableDisplayKind.Dictionary,
+                        comprehension.Span, currentBlock);
 
                 case LoweredListLiteralExpression list:
                     if (list.List.HasUnpacking)

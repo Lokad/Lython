@@ -39,7 +39,7 @@ public sealed class ExecutableOperandStackBoundaryTests
     [InlineData(5)]
     [InlineData(9)]
     [InlineData(17)]
-    public void UnwindDisposesInOrderBeforeClearingLiveEntries(int size)
+    public void UnwindDisposesLastInFirstOutBeforeClearingLiveEntries(int size)
     {
         var stack = new StackView();
         var retained = new object();
@@ -55,12 +55,12 @@ public sealed class ExecutableOperandStackBoundaryTests
         stack.RemoveTail(0);
         Assert.Empty(disposed);
         stack.RemoveTail(size);
-        Assert.Equal(Enumerable.Range(1, size), disposed);
+        Assert.Equal(Enumerable.Range(1, size).Reverse(), disposed);
         Assert.Equal(1, stack.Count);
         Assert.Same(retained, stack.Peek());
         stack.Push(new object());
         stack.RemoveTail(1);
-        Assert.Equal(Enumerable.Range(1, size), disposed);
+        Assert.Equal(Enumerable.Range(1, size).Reverse(), disposed);
         Assert.Same(retained, stack.Pop());
     }
 
@@ -83,12 +83,12 @@ public sealed class ExecutableOperandStackBoundaryTests
         })).ToArray();
         foreach (var value in values) stack.Push(value);
         Assert.Same(denied, Assert.Throws<InvalidOperationException>(() => stack.RemoveTail(size)));
-        Assert.Equal(new[] { 0, 1 }, disposed);
+        Assert.Equal(Enumerable.Range(1, size - 1).Reverse(), disposed);
         Assert.Equal(size, stack.Count);
         for (var i = 0; i < size; i++) Assert.Same(values[i], stack.At(i));
         fail = false;
         stack.RemoveTail(size);
-        Assert.Equal(new[] { 0, 1 }.Concat(Enumerable.Range(0, size)), disposed);
+        Assert.Equal(Enumerable.Range(1, size - 1).Reverse().Concat(Enumerable.Range(0, size).Reverse()), disposed);
         Assert.Equal(0, stack.Count);
     }
 

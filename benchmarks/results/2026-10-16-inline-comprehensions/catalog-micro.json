@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "comprehensions.helper-call.medium",
+      "family": "comprehensions",
+      "category": "core",
+      "scale": "medium",
+      "size": 2048,
+      "source": "N = 2048\ndef convert(value):\n    return value + 1\nvalues = [convert(value) for value in range(N)]\nprint(len(values), sum(values))\n",
+      "fixtureJson": "{\"size\":2048,\"text\":null}",
+      "expectedOutput": "2048 2098176\n",
+      "sourceUtf8Bytes": 130,
+      "expectedOutputUtf8Bytes": 13,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "59bdf85cf630aa671f6d90022e52dc4dcac2ea67bb2713fb1e1aeaf3a39e92cf",
+      "fixtureSha256": "cc19526c1d9f59f92c233c4276c92e42e48bc1ecbbeec305f81a44877bd877d6",
+      "expectedOutputSha256": "641a2c895fb61e90c3ac17caba01b3b8047b582f9aa2ccb6516238312b4726e4"
+    }
+  ]
+}

@@ -263,6 +263,20 @@ attribute writes; arbitrary custom-attribute deletion remains unsupported by the
 shared function implementation. Added return/creation checkpoints can change
 explicit fuel thresholds; conservative metadata/capture admission can reject
 earlier. Compilation and runtime managed stack policies are unchanged.
+In executable enclosing code, eager list/set/dictionary comprehensions use
+ordinary loop/filter/item instructions in the caller frame under the existing
+inlined binding scope. Iteration targets remain isolated; scope cleanup restores
+the caller on success, failure and cancellation. The outer iterable precedes
+scope entry. Clause emission is iterative. Nested scope temporaries unwind in
+reverse order, retaining live stack entries if disposal fails. Lambdas created
+inside these scopes keep their established lowered-body/dictionary capture route;
+lazy generator bodies and required lowered/class suites remain separate.
+Prepared checkpoints may change explicit fuel/admission thresholds. Partial
+storage can stay charged to the finite execution/result owner after a caught
+failure; retained results and asynchronous users remain funded.
+Executable loop/comprehension abandonment disposes native enumeration temporaries,
+including on early break. This does not close retained Python iterator/generator
+values; they can continue from their current position.
 Guest-visible Python exception shells have a conservative160-byte estimate.
 Rebinding or rethrowing an alias does not allocate another shell. Execution owners
 retain admitted guest storage conservatively until their finite batch ends;

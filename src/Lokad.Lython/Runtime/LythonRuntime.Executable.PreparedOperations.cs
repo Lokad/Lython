@@ -15,6 +15,33 @@ internal sealed partial class LythonRuntime
         {
             switch (operation)
             {
+                case ExecutableStartComprehension start:
+                {
+                    var comprehensionOuter = Pop(ref _stack, span);
+                    var scope = _context.EnterComprehension(start.ScopeFacts);
+                    var onStack = false;
+                    try
+                    {
+                        object result = start.Kind switch
+                        {
+                            ExecutableDisplayKind.Set => new PySet(_context.MemoryGovernor, span),
+                            ExecutableDisplayKind.Dictionary => new PyDict(_context.MemoryGovernor, span),
+                            _ => new PyList([], _context.MemoryGovernor, span),
+                        };
+                        _context.ObserveValue(result, span);
+                        _stack.Push(scope);
+                        onStack = true;
+                        _stack.Push(result);
+                        _stack.Push(comprehensionOuter);
+                    }
+                    catch { if (!onStack) scope.Dispose(); throw; }
+                    break;
+                }
+                case ExecutableFinishComprehension:
+                    var completed = Pop(ref _stack, span);
+                    ((IExecutableTemporaryValue)Pop(ref _stack, span)).Dispose();
+                    _stack.Push(completed);
+                    break;
                 case ExecutableStartDisplay start:
                     object collection = start.Kind switch
                     {
@@ -27,7 +54,7 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableAppendDisplay append:
                     var value = Pop(ref _stack, span);
-                    var destination = Peek(ref _stack, span);
+                    var destination = _stack[_stack.Count - 1 - append.IteratorDepth];
                     if (!append.Unpacking) Add(value);
                     else if (asynchronous)
                     {
@@ -83,7 +110,7 @@ internal sealed partial class LythonRuntime
                     {
                         _context.CheckExecution(span);
                         using var ambient = PyStructuralGuard.PushAmbient(_context, span);
-                        var dictionary = (PyDict)Peek(ref _stack, span);
+                        var dictionary = (PyDict)_stack[_stack.Count - 1 - item.IteratorDepth];
                         dictionary.SetItem(ValidateDictionaryKey(key, span), itemValue);
                         _context.ObserveCollectionCount(dictionary.Count, span);
                         _context.ObserveValue(dictionary, span);
@@ -134,7 +161,7 @@ internal sealed partial class LythonRuntime
                     }
                     finally { builder.Release(); }
                     break;
-                case ExecutableCreateComprehension comprehension:
+                case ExecutableCreateGeneratorExpression comprehension:
                     var outer = Pop(ref _stack, span);
                     var expression = CaptureOutermostIterable(comprehension.Expression, outer, _context, span);
                     PushObserved(asynchronous ? await EvaluateLoweredExpressionAsync(expression, _context).ConfigureAwait(false)
@@ -159,7 +186,7 @@ internal sealed partial class LythonRuntime
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    private static LoweredExpression CaptureOutermostIterable(LoweredExpression expression, object value, ExecutionContext _context, LythonSourceSpan span)
+    private static LoweredGeneratorExpression CaptureOutermostIterable(LoweredGeneratorExpression expression, object value, ExecutionContext _context, LythonSourceSpan span)
     {
         IReadOnlyList<LoweredComprehensionClause> Capture(IReadOnlyList<LoweredComprehensionClause> clauses)
         {
@@ -172,14 +199,7 @@ internal sealed partial class LythonRuntime
                 clauses[0] with { Iterable = new LoweredCapturedExpression(clauses[0].Iterable.Syntax, value) });
             return overlay;
         }
-        return expression switch
-        {
-            LoweredListComprehensionExpression c => c with { Clauses = Capture(c.Clauses) },
-            LoweredSetComprehensionExpression c => c with { Clauses = Capture(c.Clauses) },
-            LoweredDictComprehensionExpression c => c with { Clauses = Capture(c.Clauses) },
-            LoweredGeneratorExpression c => c with { Clauses = Capture(c.Clauses) },
-            _ => throw new InvalidOperationException("Expected comprehension."),
-        };
+        return expression with { Clauses = Capture(expression.Clauses) };
     }
 
     private static async ValueTask<PyString> FormatSuspendedFieldAsync(object value, char? conversion, string? specifier,

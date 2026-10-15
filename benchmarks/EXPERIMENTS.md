@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 eager-comprehension delivery](results/2026-10-16-inline-comprehensions/README.md)
+uses ordinary instructions in the caller frame with the existing binding scope.
+One declared per-item helper-call diagnostic observed 0.6107 -> 0.5851 ms,
+CPython 0.1253 ms; Lython spread 1.1%/0.9%, CPython spread 38.3%. The 4.2%
+lower Lython median is unqualified and the external ratio is inconclusive. No
+retuning, repeat or retired arithmetic producer. Lazy bodies/nested lambda
+capture remain dynamic; duplicate generator-family dispatch was removed.
+
 The [2026-10-15 lambda delivery](results/2026-10-15-executable-lambdas/README.md)
 deletes the separate callable, reuses shared binding/metadata and then compiles
 eligible bodies through the named-function builder/cells. One unchanged stable-sort

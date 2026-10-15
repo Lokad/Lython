@@ -266,7 +266,11 @@ internal sealed partial class ExecutableScript
 
         private void CompileLoadIdentifier(string name, LythonSourceSpan span, int currentBlock)
         {
-            if (_scopeFacts.IsGlobal(name))
+            if (_comprehensionNames.Any(names => names.Contains(name)))
+            {
+                AddInstruction(currentBlock, ExecutableInstruction.LoadName(InternName(name), span));
+            }
+            else if (_scopeFacts.IsGlobal(name))
             {
                 AddInstruction(currentBlock, ExecutableInstruction.LoadGlobal(InternName(name), span));
             }

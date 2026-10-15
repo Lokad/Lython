@@ -331,7 +331,8 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.PopTop:
-                    _ = Pop(ref _stack, instruction.Span);
+                    _ = Peek(ref _stack, instruction.Span);
+                    _stack.RemoveTail(1);
                     break;
             }
         }

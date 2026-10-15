@@ -1,0 +1,50 @@
+{
+  "python": "CPython 3.13.2",
+  "checks": [
+    {
+      "source": "def convert(value): return value+1\nprint([convert(x) for x in range(5) if x%2])\nprint(sorted({convert(x) for x in range(3)}))\nprint({x:convert(x) for x in range(3)})",
+      "expected": "[2, 4]\n[1, 2, 3]\n{0: 1, 1: 2, 2: 3}\n",
+      "stdout": "[2, 4]\n[1, 2, 3]\n{0: 1, 1: 2, 2: 3}\n"
+    },
+    {
+      "source": "def run(values):\n value='outer'\n rows=[(value,locals()['value'],locals()['values']) for value in values]\n return rows,value,'value' in locals()\nprint(run([1,2]))",
+      "expected": "([(1, 1, [1, 2]), (2, 2, [1, 2])], 'outer', True)\n",
+      "stdout": "([(1, 1, [1, 2]), (2, 2, [1, 2])], 'outer', True)\n"
+    },
+    {
+      "source": "value='outer'\nother='outside'\ntry: rows=[[1//(value-other) for other in range(2)] for value in range(2)]\nexcept ZeroDivisionError: print(value,other)\nprint([value+1 for value in range(2)],value,other)",
+      "expected": "outer outside\n[1, 2] outer outside\n",
+      "stdout": "outer outside\n[1, 2] outer outside\n"
+    },
+    {
+      "source": "value=99\nlate=[lambda:value for value in range(3)]\nearly=[lambda saved=value:saved for value in range(3)]\nprint([f() for f in late],[f() for f in early],value)",
+      "expected": "[2, 2, 2] [0, 1, 2] 99\n",
+      "stdout": "[2, 2, 2] [0, 1, 2] 99\n"
+    },
+    {
+      "source": "def run():\n last=-1\n values=[(last:=x+y) for x in range(3) if x for y in range(2)]\n return values,last,'x' in locals(),'y' in locals()\nprint(run())",
+      "expected": "([1, 2, 2, 3], 3, False, False)\n",
+      "stdout": "([1, 2, 2, 3], 3, False, False)\n"
+    },
+    {
+      "source": "values=[1,2,3]\nprint([values for values in values],values)\nprint([(x,y) for x in range(3) if x for y in range(x) if y==0])",
+      "expected": "[1, 2, 3] [1, 2, 3]\n[(1, 0), (2, 0)]\n",
+      "stdout": "[1, 2, 3] [1, 2, 3]\n[(1, 0), (2, 0)]\n"
+    },
+    {
+      "source": "def run():\n yield [value+1 for value in (yield 'items')]\n yield 'value' in locals()\ng=run()\nprint(next(g),g.send([1,2]),next(g))",
+      "expected": "items [2, 3] False\n",
+      "stdout": "items [2, 3] False\n"
+    },
+    {
+      "source": "def run():\n yield (value+1 for value in (yield 'items'))\ng=run()\nprint(next(g),list(g.send([1,2])))",
+      "expected": "items [2, 3]\n",
+      "stdout": "items [2, 3]\n"
+    },
+    {
+      "source": "events=[]\ndef values():\n try:\n  yield 1\n  yield 2\n finally: events.append('closed')\ng=values()\ntry: result=[1//0 for value in g]\nexcept ZeroDivisionError: pass\nprint(events,next(g))",
+      "expected": "[] 2\n",
+      "stdout": "[] 2\n"
+    }
+  ]
+}
