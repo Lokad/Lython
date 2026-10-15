@@ -318,6 +318,12 @@ result = (values - excluded) | set(range(N, N + 16))
 print(sorted(result))
 """, n => IntList(Enumerable.Range(0, n).Where(i => i % 3 != 0)
             .Concat(Enumerable.Range(n, 16))) + "\n");
+        Add("comprehensions.helper-call", "comprehensions", "core", CoreSizes, """
+def convert(value):
+    return value + 1
+values = [convert(value) for value in range(N)]
+print(len(values), sum(values))
+""", n => $"{n} {(long)n * (n + 1) / 2}\n");
         Add("comprehensions.helper-list", "comprehensions", "core", RecordSizes, """
 def transform(n):
     return [x + y for x in range(n) if x % 3 for y in range(3) if y != 1]
