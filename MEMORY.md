@@ -77,6 +77,9 @@ memory, native library buffers and delayed physical collection. Estimate counter
 are neither live CLR heap size nor process RSS.
 
 Guest values can share storage and escape through closures or containers.
+Eligible compiled functions use captured cells under both `Run` and `RunAsync`;
+selecting the asynchronous API does not by itself require retaining a mirrored
+whole local namespace. Supported lowered fallbacks can still require mirroring.
 Numeric container slots can each retain a conservative payload estimate even
 when they refer to the same integer. Python identity is preserved; identity-based
 charge deduplication is not promised. Alias-heavy collections can therefore be

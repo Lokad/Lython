@@ -320,17 +320,19 @@ internal sealed partial class LythonRuntime
     private const long ExecutableCellsArrayBaseBytes = 32;
     private const long ExecutableCellsArraySlotBytes = 8;
 
-    private static void ExecuteExecutableFunctionDefinition(
+    private static async ValueTask ExecuteExecutableFunctionDefinitionAsync(
         ExecutableCodeObject codeObject,
         ExecutableFunctionBinding functionBinding,
         object[] locals,
         ExecutableCell?[]? localCells,
-        ExecutionContext context)
+        ExecutionContext context,
+        bool asynchronous)
     {
         if (functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context) ||
             functionBinding.Function.ReturnAnnotation is not null || functionBinding.Function.Parameters.Any(p => p.Annotation is not null))
         {
-            ExecuteLoweredFunctionDefinition(functionBinding.Function, context);
+            if (asynchronous) await ExecuteLoweredFunctionDefinitionAsync(functionBinding.Function, context).ConfigureAwait(false);
+            else ExecuteLoweredFunctionDefinition(functionBinding.Function, context);
             SyncExecutableLocalsFromContext(codeObject, locals, localCells, context);
             return;
         }
@@ -339,20 +341,26 @@ internal sealed partial class LythonRuntime
         try
         {
             using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionBinding.Function.Decorators.Count), functionBinding.Function.Span);
-            var decorators = EvaluateDecorators(functionBinding.Function.Decorators, context);
+            var decorators = asynchronous
+                ? await EvaluateDecoratorsAsync(functionBinding.Function.Decorators, context).ConfigureAwait(false)
+                : EvaluateDecorators(functionBinding.Function.Decorators, context);
             var closureCells = functionBinding.CodeObject is null
                 ? []
                 : CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Function.Span);
+            var defaults = asynchronous
+                ? await BuildDefaultArgumentMapAsync(functionBinding.Function.Parameters,
+                    expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false)
+                : MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context);
             var function = functionBinding.Function.GeneratorCode is not null
                 ? (object)new PyGeneratorFunction(functionBinding.Function, context.FunctionClosureContext,
-                    MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context), closureCells)
+                    defaults, closureCells)
                 : functionBinding.CodeObject is null
                 ? new PyFunction(
                     functionBinding.Function.Syntax.DeclaredName,
                     functionBinding.Function.Parameters,
                     functionBinding.Function.Body,
                     context.FunctionClosureContext,
-                    BuildDefaultArgumentMap(functionBinding.Function.Parameters, expression => EvaluateLoweredExpression(expression, context)),
+                    defaults,
                     ScopeDirectiveFactsCollector.ForFunction(functionBinding.Function.Syntax))
                 : new PyExecutableFunction(
                     functionBinding.Function.Syntax.DeclaredName,
@@ -360,7 +368,7 @@ internal sealed partial class LythonRuntime
                     functionBinding.CodeObject,
                     context.FunctionClosureContext,
                     closureCells,
-                    MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context),
+                    defaults,
                     functionBinding.CodeObject.ScopeFacts);
             ChargeFunctionValue(context, functionBinding.Function.Span);
             ChargeDefaultArguments(functionBinding.DefaultValues.Count, context.MemoryGovernor, functionBinding.Function.Span);
@@ -370,7 +378,9 @@ internal sealed partial class LythonRuntime
                 functionBinding.Function.Span);
             if (function is PyFunctionBase defined)
                 PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Function.Body, context, functionBinding.Function.Span);
-            var decorated = ApplyDecorators(function, decorators, functionBinding.Function.Span, context);
+            var decorated = asynchronous
+                ? await ApplyDecoratorsAsync(function, decorators, functionBinding.Function.Span, context).ConfigureAwait(false)
+                : ApplyDecorators(function, decorators, functionBinding.Function.Span, context);
             AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Function.Syntax.Name, decorated, context, functionBinding.Function.Span);
         }
         finally

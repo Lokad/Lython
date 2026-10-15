@@ -2,12 +2,10 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// MG11: invocation contexts retained through closures own their storage while
-// their closures are alive. The lowered path retains whole scopes (frame plus
-// variable tables); the executable path keeps locals in slots that vanish on
-// return and retains only captured cells. T1 pins that engine-appropriate
-// split; T1c and T2 are the flips (captured cells on the executable path,
-// intermediate chain levels on the lowered path).
+// Retained closures keep captured storage funded. Both execution APIs preserve
+// compiled definitions and their captured cells; uncaptured temporaries should
+// not impose the former async-only whole-scope charge. Captured-data rejection
+// remains the paired containment control at the same allowance.
 public sealed class ClosureContextAccountingScenarioTests
 {
     private const string MakerFew =
@@ -181,17 +179,17 @@ public sealed class ClosureContextAccountingScenarioTests
     }
 
     [Fact]
-    public async Task UncapturedTempsScopeVersusSlots()
+    public async Task UncapturedTempsFitBothExecutionAPIs()
     {
-        var script = new LythonEngine().Compile(MakerManyUncaptured);
+        using var script = new LythonEngine().Compile(MakerManyUncaptured);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 6291456 };
-        var sync = script.Run(new MockLythonHost(), options);
+        using var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.False(asyncResult.Success);
-        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(sync.ReturnValue, asyncResult.ReturnValue);
     }
 
     [Fact]
@@ -210,17 +208,17 @@ public sealed class ClosureContextAccountingScenarioTests
     }
 
     [Fact]
-    public async Task DeepChainTripsLoweredRetainsIntermediateLevels()
+    public async Task DeepUncapturedChainFitsBothExecutionAPIs()
     {
-        var script = new LythonEngine().Compile(DeepUncaptured);
+        using var script = new LythonEngine().Compile(DeepUncaptured);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 12582912 };
-        var sync = script.Run(new MockLythonHost(), options);
+        using var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.False(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(sync.ReturnValue, asyncResult.ReturnValue);
     }
 
     [Fact]

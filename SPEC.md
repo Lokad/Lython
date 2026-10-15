@@ -2757,11 +2757,15 @@ Ordinary execution has no implicit instruction allowance. The embedding applicat
 The published `MaxExecutionSteps` option remains an enforced opt-in allowance for embedders requiring deterministic fuel; null means no step ceiling, independently of `DisableDefaultLimits`. `DefaultMaxExecutionSteps` retains the historical 50,000,000 value for source compatibility and does not configure an ordinary run. The internal notion of a step is implementation-defined. Fuel accounting runs only when the embedder requests an allowance and must not replace cancellation or change explicit ownership lifetimes.
 
 When executable compilation succeeds, synchronous and asynchronous module runs
-use the same compiled code and frame representation. Async runs use the existing
-async opcode driver and still await supported guest and host effects; supported
-compiler fallbacks retain lowered execution. Consequently async instruction-fuel
-counts can differ from earlier versions that always traversed lowered module
-nodes. Counts remain enforced and reported only when explicitly requested.
+and eligible ordinary function bodies use the same compiled code, argument slots
+and captured cells. Defaults, decorators and body callbacks can suspend without
+replaying their effects. Annotated/type-parameter definitions and supported
+compiler fallbacks retain their existing lowered routes; generator semantics
+remain separate. Namespace mirroring follows code-object fallback requirements
+instead of being enabled solely by selecting `RunAsync`. Async runs use the existing
+async opcode driver and still await supported guest and host effects. Async
+instruction-fuel counts can differ from earlier versions that always traversed
+lowered module/function nodes. Counts remain enforced and reported only when explicitly requested.
 Managed stack admission, the synchronous startup stack and host mediation retain
 their existing policies. Compiled local-slot stores consume the popped operand
 in a completed transfer helper, rather than in the long-running dispatch loop.

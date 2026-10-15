@@ -587,9 +587,9 @@ internal sealed partial class LythonRuntime
         ExecutionContext? context = null;
         try
         {
-            // Async definitions and supported fallbacks resolve through the
-            // namespace; mirror compiled module slots for those shared closures.
-            context = new ExecutionContext(host, options) { MirrorLocalStores = executableEntry is not null };
+            // Compiled definitions share the synchronous slot/cell contract.
+            // Code-object fallback facts still request mirroring when needed.
+            context = new ExecutionContext(host, options);
             InitializeModuleAnnotations(script.Syntax.Statements, context);
             // MG25: no initial yield here. Yielding first would abandon the
             // calling thread (in particular the dedicated large stack the

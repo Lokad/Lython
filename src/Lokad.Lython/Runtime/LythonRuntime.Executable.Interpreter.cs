@@ -193,7 +193,8 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.DefineFunction:
-                    ExecuteExecutableFunctionDefinition(_codeObject, _codeObject.Functions[instruction.FunctionIndex], _locals, _localCells, _context);
+                    ExecuteExecutableFunctionDefinitionAsync(_codeObject, _codeObject.Functions[instruction.FunctionIndex],
+                        _locals, _localCells, _context, false).GetAwaiter().GetResult();
                     break;
 
                 case ExecutableOpCode.ExecuteFallbackStatement:

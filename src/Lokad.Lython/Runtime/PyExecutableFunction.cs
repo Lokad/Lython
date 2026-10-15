@@ -44,4 +44,18 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _argumentSlotMap, _closureCells)
             ?? PyNone.Instance;
     }
+
+    protected override async ValueTask<object> ExecuteBodyAsync(
+        LythonRuntime.ExecutionContext frame,
+        BoundCallArguments boundArguments,
+        LythonSourceSpan span)
+    {
+        _ = span;
+        // Only statically proven bodies without callbacks use this shared shortcut.
+        if (LythonRuntime.TryExecuteSimpleReturn(_codeObject, frame, boundArguments, _argumentSlotMap, out var result))
+            return result;
+        return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
+            _codeObject, frame, boundArguments, _argumentSlotMap, _closureCells).ConfigureAwait(false)
+            ?? PyNone.Instance;
+    }
 }

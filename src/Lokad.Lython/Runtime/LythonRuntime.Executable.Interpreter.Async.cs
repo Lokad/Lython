@@ -14,10 +14,13 @@ internal sealed partial class LythonRuntime
                     var import = _codeObject.Imports[instruction.ImportIndex];
                     await ExecuteImportAsync(new ImportStatementSyntax(import.ModuleName, import.BindingName,
                         import.BoundModuleName, import.ImportedMembers, import.Span), _context).ConfigureAwait(false);
-                    break;
+                    // Import stores update their bound slots directly. Copying
+                    // the whole namespace would erase unrelated unmirrored locals.
+                    return;
                 case ExecutableOpCode.DefineFunction:
-                    await ExecuteLoweredFunctionDefinitionAsync(_codeObject.Functions[instruction.FunctionIndex].Function, _context).ConfigureAwait(false);
-                    break;
+                    await ExecuteExecutableFunctionDefinitionAsync(_codeObject, _codeObject.Functions[instruction.FunctionIndex],
+                        _locals, _localCells, _context, true).ConfigureAwait(false);
+                    return;
                 default:
                     await DispatchLoweredStatementAsync(_codeObject.StatementFallbacks[instruction.StatementFallbackIndex].Statement,
                         _context, AsynchronousLoweredStatementExecution.Instance).ConfigureAwait(false);

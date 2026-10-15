@@ -384,13 +384,21 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static async ValueTask<object?> ExecuteExecutableCodeObjectAsync(ExecutableCodeObject codeObject, ExecutionContext context)
+    internal static ValueTask<object?> ExecuteExecutableCodeObjectAsync(ExecutableCodeObject codeObject, ExecutionContext context)
+        => ExecuteExecutableCodeObjectAsync(codeObject, context, default, [], null);
+
+    internal static async ValueTask<object?> ExecuteExecutableCodeObjectAsync(
+        ExecutableCodeObject codeObject,
+        ExecutionContext context,
+        BoundCallArguments boundArguments,
+        int[] argumentSlotMap,
+        IReadOnlyList<ExecutableCell>? closureCells)
     {
         var previousExecutableFrame = context.CurrentExecutableFrame;
         context.EnterInterpreterFrame(null);
         try
         {
-            var interpreter = CreateExecutableInterpreter(codeObject, context, default, [], null);
+            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells);
             context.EnterExecutableSlots(interpreter);
             await interpreter.ExecuteAsync().ConfigureAwait(false);
             return interpreter.HasFrameReturn ? interpreter.FrameReturnValue : null;
