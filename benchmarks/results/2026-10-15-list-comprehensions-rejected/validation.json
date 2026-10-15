@@ -1,0 +1,20 @@
+{
+  "platform": "Windows x64",
+  "configuration": "Release",
+  "productionBaseRevision": "3cad415789be6f294863eacd4c9f6002f105095e",
+  "productionChangesRetained": false,
+  "rejectedStructuralTestsRetained": false,
+  "timeoutsRelaxed": false,
+  "gates": {
+    "list-comprehension-restored-public": {
+      "passed": 168,
+      "elapsedMillisecondsIncludingCleanup": 13437,
+      "trxSha256": "42203746fbd6ddcc536aa14fa1ad6c379378b9351d525f1f74e2031a498b7c62"
+    },
+    "list-comprehension-retained-tests-focused": {
+      "passed": 11,
+      "elapsedMillisecondsIncludingCleanup": 2293,
+      "trxSha256": "50bcc4532961cdbbdc96989c90ae44d5dfdfe61155fe2dbbca8413af8fe943eb"
+    }
+  }
+}

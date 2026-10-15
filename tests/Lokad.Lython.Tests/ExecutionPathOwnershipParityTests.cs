@@ -4,17 +4,12 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// Investigation #5: ownership is identical on the instruction (executable)
-// and lowered paths. Native executable ops track their fresh values inline
-// while everything else funnels through shared lowered helpers via
-// per-expression fallback, so the same script reports exactly the same
-// accounted peak and value on both paths.
+// Native literal operations share conservative storage estimates with their
+// lowered counterparts. These shapes should report the same peak and value.
 public sealed class ExecutionPathOwnershipParityTests
 {
-    // Literal shapes only: these take native executable ops on one path
-    // and lowered evaluators on the other, so equal peaks prove identical
-    // ownership. Comprehensions always funnel through the shared lowered
-    // helpers (per-expression fallback), which cannot diverge by path.
+    // Literal shapes only. Comprehension scope/admission regressions verify
+    // observable guarantees without requiring identical execution machinery.
     public static TheoryData<string> Programs => new()
     {
         "x = [1, 2, 3] * 500\nreturn len(x)\n",

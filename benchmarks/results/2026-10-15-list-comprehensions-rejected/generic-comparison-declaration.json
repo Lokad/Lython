@@ -1,0 +1,25 @@
+{
+  "baselineRevision": "3cad415789be6f294863eacd4c9f6002f105095e",
+  "candidateBaseRevision": "3cad415789be6f294863eacd4c9f6002f105095e",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Comprehensions.cs": "d42589ceb14cf18e0ee006195d724a8cc6263f017a9c75f1ad7d2731812b8ee4",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "34d7a3198edefc6dcfb0336b626c1d36e50194f2bb36fbf8923b0c4030614843",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "58f4c810c10d019663cfc4d8f48f549db5ee079712f70e620a2672c7f14943cb",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "b9f051feb1864d725d17730e73689a0d83d80b4c45cfb4d89b1d180cdd6fe28c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "4ff170d43ae6ddbd7359f23ab8ec374db451d1fbca5750599c1d2b5a59cd6e19",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "fbbc774909e2f07c22f6d5b9222b8b195156103fe3a88d164e5b8aa93f488b6d"
+  },
+  "sourceArchiveSha256": "38d9bddae4c63e62f5124d6fbd24319d0495100ba6026593db7213b521ad5327",
+  "case": "comprehensions.helper-list.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "standaloneBudget": "shared unbounded; ordinary other public limits",
+  "excludedBoundaries": [
+    "compilation",
+    "startup",
+    "transport"
+  ]
+}

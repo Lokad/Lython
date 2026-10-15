@@ -211,6 +211,17 @@ result = (values - excluded) | set(range(N, N + 16))
 print(sorted(result))
 """, n => IntList(Enumerable.Range(0, n).Where(i => i % 3 != 0)
             .Concat(Enumerable.Range(n, 16))) + "\n");
+        Add("comprehensions.helper-list", "comprehensions", "core", RecordSizes, """
+def transform(n):
+    return [x + y for x in range(n) if x % 3 for y in range(3) if y != 1]
+values = transform(N)
+print(len(values), sum(values))
+""", n =>
+        {
+            var values = Enumerable.Range(0, n).Where(x => x % 3 != 0)
+                .SelectMany(x => new[] { x, x + 2 }).ToArray();
+            return $"{values.Length} {values.Sum()}\n";
+        });
         Add("generators.drain", "iterators", "core", CoreSizes, """
 def values():
     for i in range(N):

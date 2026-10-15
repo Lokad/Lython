@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "comprehensions.helper-list.large",
+      "family": "comprehensions",
+      "category": "core",
+      "scale": "large",
+      "size": 1024,
+      "source": "N = 1024\ndef transform(n):\n    return [x + y for x in range(n) if x % 3 for y in range(3) if y != 1]\nvalues = transform(N)\nprint(len(values), sum(values))\n",
+      "fixtureJson": "{\"size\":1024,\"text\":null}",
+      "expectedOutput": "1364 699050\n",
+      "sourceUtf8Bytes": 155,
+      "expectedOutputUtf8Bytes": 12,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "56451b1011a84efb05a02ddc25b48daee193b4d34c2081fa580470d7c587958d",
+      "fixtureSha256": "4a2f0badea089e1045a7a22309023d7e8e42ee22e06571d8bda00026bfc1a22f",
+      "expectedOutputSha256": "19f9d927dd5ed79396ec192fa2d2ebf495b25f456c4a47d4969c49eb52fdd1aa"
+    }
+  ]
+}

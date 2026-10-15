@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 list-comprehension investigation](results/2026-10-15-list-comprehensions-rejected/README.md)
+rejects two executable-list producers despite passing semantic/containment gates.
+A direct iterator branch removes added boolean/dispatch work but does not show
+a benefit over the existing evaluator. Public regressions and raw evidence remain;
+no dormant runtime implementation or architecture-specific tests are retained.
+
 The [2026-10-15 protected-loop checkpoint](results/2026-10-15-protected-loop-jumps/README.md)
 removes ordinary protected-loop compilation rejection and preserves abrupt-target
 regions during jump normalization. Separate fresh compile/run and warm file-search

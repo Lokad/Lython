@@ -1,0 +1,84 @@
+{
+  "checks": [
+    {
+      "producer": "generic",
+      "engine": "baseline",
+      "pid": 2301724,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "producer": "generic",
+      "engine": "candidate",
+      "pid": 2301744,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "producer": "generic",
+      "engine": "CPython",
+      "pid": 2301760,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "producer": "direct",
+      "engine": "baseline",
+      "pid": 2302755,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "producer": "direct",
+      "engine": "candidate",
+      "pid": 2302776,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "producer": "direct",
+      "engine": "CPython",
+      "pid": 2302792,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    }
+  ],
+  "sourceProof": [
+    {
+      "producer": "generic",
+      "productionDifferences": [
+        "src/Lokad.Lython/Frontend/ExecutableScript.Comprehensions.cs",
+        "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs",
+        "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs"
+      ],
+      "frozenSourceHashesMatch": true,
+      "comparisonSourcesIdentical": true
+    },
+    {
+      "producer": "direct",
+      "productionDifferences": [
+        "src/Lokad.Lython/Frontend/ExecutableScript.Comprehensions.cs",
+        "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs",
+        "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs",
+        "src/Lokad.Lython/Frontend/ExecutableScript.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs",
+        "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs"
+      ],
+      "frozenSourceHashesMatch": true,
+      "comparisonSourcesIdentical": true
+    }
+  ],
+  "relevantUnits": "",
+  "leaseAcquired": true
+}

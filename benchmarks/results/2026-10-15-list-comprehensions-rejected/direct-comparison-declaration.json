@@ -1,0 +1,31 @@
+{
+  "baselineRevision": "3cad415789be6f294863eacd4c9f6002f105095e",
+  "candidateBaseRevision": "3cad415789be6f294863eacd4c9f6002f105095e",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "34d7a3198edefc6dcfb0336b626c1d36e50194f2bb36fbf8923b0c4030614843",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "89b1fa17faf4821fe48a50488e0aa5f7130d9e57a43f5865149c1d34d0e82120",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "b123797af0cb0e0181813b15fb47c7ae1dd09e6967818e614dbf1364a745aab9",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "b9f051feb1864d725d17730e73689a0d83d80b4c45cfb4d89b1d180cdd6fe28c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "2a87c7f67ec53003c42cd8d8e33fb2b8e5293c092b676918e57c2aa175b6f24c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "fc864d598b4636e20c174a1ff8f75ba1f534eacee343f1d3327e40c07ff70101",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "05695029b0e1b8592a880707f787818bebc1aa3fd0ea35016243ebc812a7f953",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "bd05ef3c69cf789709ea08955ef67c5dd91f4b5c01c6513e842c17e0476a5ee3",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Comprehensions.cs": "a1e6448388168bb489d3da51a3f9ec9d3d3d9efa6b47f312f66544fcb211fd75",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "fbbc774909e2f07c22f6d5b9222b8b195156103fe3a88d164e5b8aa93f488b6d"
+  },
+  "sourceArchiveSha256": "38d9bddae4c63e62f5124d6fbd24319d0495100ba6026593db7213b521ad5327",
+  "case": "comprehensions.helper-list.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "standaloneBudget": "shared unbounded; ordinary other public limits",
+  "excludedBoundaries": [
+    "compilation",
+    "startup",
+    "transport"
+  ],
+  "reasonForDistinctProducer": "Replace boolean-producing prepared iterator operation with direct ForNextLocal branch; first slower producer retained and rejected.",
+  "stopping": "One corrected-producer comparison; reject inline-list prototype if it still adds complexity without benefit. No further timing/producer tuning in this investigation."
+}

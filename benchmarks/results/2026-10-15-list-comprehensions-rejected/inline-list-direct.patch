@@ -1,0 +1,219 @@
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+@@ -75,0 +76,3 @@
++
++                case LoweredListComprehensionExpression comprehension:
++                    return CompileListComprehension(comprehension, currentBlock);
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+@@ -175,0 +176 @@
++                        case ExecutableOpCode.ForNextLocal:
+@@ -225,0 +227 @@
++                ExecutableOpCode.ForNextLocal or
+@@ -269 +271,5 @@
+-            if (_scopeFacts.IsGlobal(name))
++            if (IsComprehensionBinding(name))
++            {
++                AddInstruction(currentBlock, ExecutableInstruction.LoadName(InternName(name), span));
++            }
++            else if (_scopeFacts.IsGlobal(name))
+@@ -288,0 +295,6 @@
++            if (IsComprehensionBinding(name))
++            {
++                AddInstruction(currentBlock, ExecutableInstruction.StoreName(InternName(name), span));
++                return;
++            }
++
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -41,0 +42 @@
++    ForNextLocal,
+@@ -205,0 +207 @@
++    public int IteratorSlot => ReadOperand(_secondaryOperand, OperandKind.LocalSlot);
+@@ -229,0 +232,4 @@
++    public static ExecutableInstruction ForNextLocal(int slot, int targetBlock, LythonSourceSpan span)
++        => CreateIndexed(ExecutableOpCode.ForNextLocal, new Operand(OperandKind.BlockIndex, targetBlock),
++            new Operand(OperandKind.LocalSlot, slot), span);
++
+@@ -384,0 +391 @@
++            ExecutableOpCode.ForNextLocal => ForNextLocal(IteratorSlot, targetBlockIndex, Span),
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -701,0 +702,6 @@
++        if (context.TryGetInlinedBinding(name, out _))
++        {
++            StoreName(name, value, context, span);
++            return;
++        }
++
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -74,0 +75,9 @@
++                    break;
++                case ExecutableOpCode.ForNextLocal:
++                    var localAdvanced = await ((PyIteration.Cursor)_locals[instruction.IteratorSlot]).TryMoveNextAsync().ConfigureAwait(false);
++                    if (!localAdvanced.HasValue)
++                    {
++                        _currentBlockIndex = instruction.TargetBlockIndex;
++                        return true;
++                    }
++                    _stack.Push(localAdvanced.Value);
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs
+@@ -51,0 +52,3 @@
++                                break;
++                            case ExecutableOpCode.ForNextLocal:
++                                jumped = ExecuteValueOperation(instruction);
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -409,0 +410,10 @@
++
++                case ExecutableOpCode.ForNextLocal:
++                    if (((PyIteration.Cursor)_locals[instruction.IteratorSlot]).TryMoveNext(out var item))
++                        _stack.Push(item);
++                    else
++                    {
++                        _currentBlockIndex = instruction.TargetBlockIndex;
++                        return true;
++                    }
++                    break;
+@@ -741,0 +752 @@
++                                 ExecutableOpCode.ForNextLocal or
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
+@@ -17,0 +18,32 @@
++                case ExecutableGetComprehensionIterator:
++                    var sourceSlot = _stack.Count - 1;
++                    _stack[sourceSlot] = asynchronous
++                        ? await PyIteration.Cursor.CreateAsync(_stack[sourceSlot], span, _context).ConfigureAwait(false)
++                        : PyIteration.Cursor.Create(_stack[sourceSlot], span, _context);
++                    break;
++                case ExecutableEnterComprehension enter:
++                    _locals[enter.ScopeSlot] = _context.EnterComprehension(enter.Facts);
++                    break;
++                case ExecutableAppendComprehension appendList:
++                    AddListDisplayValue((PyList)_locals[appendList.ListSlot], Pop(ref _stack, span), span, _context);
++                    break;
++                case ExecutableLeaveComprehension leave:
++                    var ownedCursor = _locals[leave.IteratorSlot] as PyIteration.Cursor;
++                    _locals[leave.IteratorSlot] = PyNone.Instance;
++                    try
++                    {
++                        if (ownedCursor is not null)
++                        {
++                            if (asynchronous) await ownedCursor.DisposeAsync().ConfigureAwait(false);
++                            else ownedCursor.Dispose();
++                        }
++                    }
++                    finally
++                    {
++                        if (leave.ScopeSlot >= 0)
++                        {
++                            (_locals[leave.ScopeSlot] as ExecutionContext.InlinedComprehensionScope)?.Dispose();
++                            _locals[leave.ScopeSlot] = PyNone.Instance;
++                        }
++                    }
++                    break;
+--- /dev/null
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Comprehensions.cs
+@@ -0,0 +1,100 @@
++namespace Lokad.Lython.Frontend;
++
++internal sealed record ExecutableEnterComprehension(int ScopeSlot, ScopeDirectiveFacts Facts) : ExecutableOperation;
++internal sealed record ExecutableGetComprehensionIterator : ExecutableOperation;
++internal sealed record ExecutableAppendComprehension(int ListSlot) : ExecutableOperation;
++internal sealed record ExecutableLeaveComprehension(int IteratorSlot, int ScopeSlot = -1) : ExecutableOperation;
++
++internal sealed partial class ExecutableScript
++{
++    private sealed partial class Builder
++    {
++        private readonly Stack<IReadOnlySet<string>> _comprehensionBindings = [];
++
++        private bool IsComprehensionBinding(string name)
++            => _comprehensionBindings.Any(bindings => bindings.Contains(name));
++
++        private int CompileListComprehension(LoweredListComprehensionExpression expression, int block)
++        {
++            var scopeSlot = InternSyntheticLocal("comprehension_scope");
++            var listSlot = InternSyntheticLocal("comprehension_list");
++            var iteratorSlot = InternSyntheticLocal("comprehension_iterator");
++            // The outer iterable and its __iter__ run before the lexical bindings.
++            block = CompileExpression(expression.Clauses[0].Iterable, block);
++            EmitOperation(new ExecutableGetComprehensionIterator(), expression.Clauses[0].Iterable.Span, block);
++            AddInstruction(block, ExecutableInstruction.StoreLocal(iteratorSlot, expression.Span));
++            var start = CreateBlock();
++            AddInstruction(block, ExecutableInstruction.Jump(start, expression.Span));
++            AddInstruction(start, ExecutableInstruction.MakeList(0, expression.Span));
++            AddInstruction(start, ExecutableInstruction.StoreLocal(listSlot, expression.Span));
++            EmitOperation(new ExecutableEnterComprehension(scopeSlot, expression.ScopeFacts), expression.Span, start);
++            _comprehensionBindings.Push(expression.ScopeFacts.LocalNames);
++            int exit;
++            try { exit = CompileComprehensionClause(expression, 0, iteratorSlot, listSlot, start); }
++            finally { _comprehensionBindings.Pop(); }
++            var after = FinishComprehensionRegion(start, exit, iteratorSlot, scopeSlot, expression.Span);
++            AddInstruction(after, ExecutableInstruction.LoadLocal(listSlot, expression.Span));
++            ClearSlot(listSlot, after);
++            return after;
++        }
++
++        private int CompileComprehensionClause(LoweredListComprehensionExpression expression,
++            int index, int iteratorSlot, int listSlot, int block)
++        {
++            var clause = expression.Clauses[index];
++            var head = CreateBlock();
++            var stop = CreateBlock();
++            var body = CreateBlock();
++            AddInstruction(block, ExecutableInstruction.Jump(head, clause.Span));
++            AddInstruction(head, ExecutableInstruction.ForNextLocal(iteratorSlot, stop, clause.Span));
++            if (clause.Target is LoopNameTargetSyntax name)
++                CompileStoreBoundName(name.Name, clause.Span, head);
++            else
++                AddInstruction(head, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(clause.Target, clause.Span), clause.Span));
++            AddInstruction(head, ExecutableInstruction.Jump(body, clause.Span));
++            if (clause.Condition is { } condition)
++            {
++                body = CompileExpression(condition, body);
++                AddInstruction(body, ExecutableInstruction.JumpIfFalse(head, condition.Span));
++            }
++            if (index + 1 == expression.Clauses.Count)
++            {
++                body = CompileExpression(expression.ItemExpression, body);
++                EmitOperation(new ExecutableAppendComprehension(listSlot), expression.Span, body);
++            }
++            else
++            {
++                var inner = expression.Clauses[index + 1];
++                var innerSlot = InternSyntheticLocal("comprehension_iterator");
++                body = CompileExpression(inner.Iterable, body);
++                EmitOperation(new ExecutableGetComprehensionIterator(), inner.Iterable.Span, body);
++                AddInstruction(body, ExecutableInstruction.StoreLocal(innerSlot, inner.Span));
++                var start = CreateBlock();
++                AddInstruction(body, ExecutableInstruction.Jump(start, inner.Span));
++                var exit = CompileComprehensionClause(expression, index + 1, innerSlot, listSlot, start);
++                body = FinishComprehensionRegion(start, exit, innerSlot, -1, inner.Span);
++            }
++            AddInstruction(body, ExecutableInstruction.Jump(head, clause.Span));
++            return stop;
++        }
++
++        private int FinishComprehensionRegion(int start, int exit, int iteratorSlot, int scopeSlot, LythonSourceSpan span)
++        {
++            var end = _blocks.Count - 1;
++            var cleanup = CreateBlock();
++            var after = CreateBlock();
++            _regions.Add(new ExecutableExceptionRegion(start, end, null, null, null,
++                cleanup, start, end, CleanupId: cleanup));
++            AddInstruction(exit, ExecutableInstruction.Jump(cleanup, span));
++            EmitOperation(new ExecutableLeaveComprehension(iteratorSlot, scopeSlot), span, cleanup);
++            AddInstruction(cleanup, ExecutableInstruction.EndFinally(after, span, cleanup));
++            return after;
++        }
++
++        private void ClearSlot(int slot, int block)
++        {
++            AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(Runtime.PyNone.Instance), EmptySpan));
++            AddInstruction(block, ExecutableInstruction.StoreLocal(slot, EmptySpan));
++        }
++    }
++}

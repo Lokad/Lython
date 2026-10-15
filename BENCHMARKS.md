@@ -2,6 +2,7 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Helper with nested filtered list comprehension [H] | 1,024 inputs / 1,364 results | 0.816–0.825 ms | 0.0793–0.0990 ms | — | Warm diagnostics at 3cad4157; both executable candidates rejected; CPython spread 23.7–38.2% |
 | File search with helper and protected early exit [P], warm | 2,049 lines / 42,010 UTF-8 bytes | 4.249 ms | 0.265 ms | — | One candidate diagnostic; inconclusive (56.4% spread) |
 | Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
 | Complete file copy/checksum manifest [F] | 2 files / 4,107 bytes | 6.103–6.254 ms | 0.442 ms | — | One warm diagnostic; two identical Lython controls, up to15.1% spread |
@@ -44,6 +45,7 @@ processes, not two revisions. No complete-script multiplier or overall speedup i
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| H | 2026-10-15 | 3cad4157 existing runtime; both uncommitted executable-list candidates rejected | [Helper comparison and retained prototypes](benchmarks/results/2026-10-15-list-comprehensions-rejected/README.md) |
 | P | 2026-10-15 | Working protected-loop candidate on b2235259; two frontend source changes frozen by hashes | [Separate warm and compile/run diagnostics](benchmarks/results/2026-10-15-protected-loop-jumps/README.md), [source declaration](benchmarks/results/2026-10-15-protected-loop-jumps/comparison-declaration.json) |
 | F | 2026-10-14 | ca432c22, two identical worker/binary controls; runtime tree matches7736b6c0 | [Complete file diagnostic](benchmarks/results/2026-10-14-representative-file/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-file/micro.json) |
 | T | 2026-10-14 | ca432c22, governed runtime and worker ownership; ASCII candidate rejected | [Complete text diagnostic](benchmarks/results/2026-10-14-representative-text/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-text/micro.json) |
@@ -57,6 +59,8 @@ processes, not two revisions. No complete-script multiplier or overall speedup i
 | S | 2026-10-12 | `87c1a94c347a88bc94927ea603a138cec4376170` (correctness, no timings) | [Complete-script validation](benchmarks/results/2026-10-12-script-negative-cases/README.md), [fixture and host contract](benchmarks/results/2026-10-12-containment-scope/README.md) |
 
 P used the same VM and SDK/runtime/CPython versions described below for Q/L.
+H used that VM/toolchain too; both distinct candidate diagnostics and their
+existing-runtime controls remain visible. No candidate was promoted.
 Its fresh compile/run row compiles each source anew inside the running worker;
 the warm row reuses compiled code. Both include complete file staging/output
 checks. The candidate source is frozen by hashes, not a claim about later HEAD.
