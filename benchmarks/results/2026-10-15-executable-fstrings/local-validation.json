@@ -1,0 +1,102 @@
+{
+  "groupsOverlap": true,
+  "groups": [
+    {
+      "stage": "fstring-full-white",
+      "filter": "Category!=Stress",
+      "assemblySha256": "242F027E159FC2CF090D9CA24F39227B4ACBAC464F1F0A648969B974E4057A11",
+      "counters": {
+        "total": "2325",
+        "executed": "2325",
+        "passed": "2325",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 12116
+    },
+    {
+      "stage": "fstring-candidate-white",
+      "filter": "FullyQualifiedName~FormattedStringExecutableTests",
+      "assemblySha256": "6735C005BBEDE346A20DBBCB7CE87A8A6D777CFBA5764D840297E61D72938304",
+      "counters": {
+        "total": "4",
+        "executed": "4",
+        "passed": "4",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 1043
+    },
+    {
+      "stage": "fstring-candidate-public",
+      "filter": "(FullyQualifiedName~FormattedStringExecutionTests|FullyQualifiedName~FormattedFieldLexical|FullyQualifiedName~FormattedStringQuote|FullyQualifiedName~RenderJoinLifetime|FullyQualifiedName~Generator)&Category!=Stress",
+      "assemblySha256": "03D5A244CACEB15F47FC188BB3CE6E5C7BC65C20B014F352587F0D6A1FAA2057",
+      "counters": {
+        "total": "237",
+        "executed": "237",
+        "passed": "237",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 4488
+    },
+    {
+      "stage": "fstring-governed-public",
+      "filter": "(FullyQualifiedName~Governed|FullyQualifiedName~Representative|FullyQualifiedName~ComparisonFileWorkerTests)&Category!=Stress",
+      "assemblySha256": "BD58A90FCB0CC8D3D9FE3EE9916AE2B2DCE9D39023346CE0EF9BD5FE6BD57FCA",
+      "counters": {
+        "total": "284",
+        "executed": "284",
+        "passed": "284",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 15465
+    }
+  ],
+  "note": "Four source-path cases fail before the compiler change and pass after it. Twelve new public cases pass before/after; final-join denial controls are included in the final full white-box group. No relaxed budget/timeout, full local public or fresh original Stress claim."
+}

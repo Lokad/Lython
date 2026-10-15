@@ -63,6 +63,11 @@ construction error until its execution/result owner ends. Admission can therefor
 refuse earlier than a lowered path that retires private constructor storage.
 Allocation preflights and deterministic owner cleanup remain; retaining a result
 or pending asynchronous user keeps the owner funded.
+Executable f-strings keep their formatted parts funded until the final join,
+admitting output capacity while those parts still exist. Intermediate estimates
+can remain with the finite execution/result owner after a caught formatting or
+join failure. Earlier denial than the incremental lowered builder is possible;
+pending protocol callbacks and escaping text retain the same ownership protection.
 
 Host command requests carry the active budget in
 `LythonSubprocessRequest.MemoryBudget`. A cooperating dispatcher borrows it,

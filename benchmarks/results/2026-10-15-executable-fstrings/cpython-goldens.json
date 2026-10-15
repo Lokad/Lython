@@ -1,0 +1,35 @@
+{
+  "python": "CPython 3.13.2",
+  "checks": [
+    {
+      "source": "events=[]\ndef mark(name,value):\n events.append(name)\n return value\nclass Value:\n def __str__(self):\n  events.append('convert')\n  return '\u00e9'\nprint(f\"a{mark('value',Value())!s:>{mark('width',3)}}b\",events)",
+      "expected": "a  \u00e9b ['value', 'convert', 'width']\n",
+      "stdout": "a  \u00e9b ['value', 'convert', 'width']\n"
+    },
+    {
+      "source": "events=[]\nclass Value:\n def __format__(self,spec):\n  events.append('format:'+spec)\n  return '\ud83d\ude00'\ndef spec():\n events.append('specifier')\n return 3\nprint(f'{Value():>{spec()}}',events)",
+      "expected": "\ud83d\ude00 ['specifier', 'format:>3']\n",
+      "stdout": "\ud83d\ude00 ['specifier', 'format:>3']\n"
+    },
+    {
+      "source": "def outer(value):\n def render(width):\n  local=value+1\n  text=f'{local:0{width}d}'\n  return text,locals()['local']\n return render\nprint(outer(6)(3))",
+      "expected": "('007', 7)\n",
+      "stdout": "('007', 7)\n"
+    },
+    {
+      "source": "target='before'\nevents=[]\ndef suffix():\n events.append('suffix')\n return 1\ntry: target=f'{1:bad}{suffix()}'\nexcept ValueError: print(target,events)",
+      "expected": "before []\n",
+      "stdout": "before []\n"
+    },
+    {
+      "source": "value='\u00e9\ud83d\ude00'\nprint(f'{value!s}|{value!r}|{value!a}')\nprint(f'{7=}',f'{f\"{3:02d}\"}')",
+      "expected": "\u00e9\ud83d\ude00|'\u00e9\ud83d\ude00'|'\\xe9\\U0001f600'\n7=7 03\n",
+      "stdout": "\u00e9\ud83d\ude00|'\u00e9\ud83d\ude00'|'\\xe9\\U0001f600'\n7=7 03\n"
+    },
+    {
+      "source": "def render():\n text=f'L{(yield 1)!s:>{(yield 2)}}R'\n yield text\ng=render()\nprint(next(g),g.send('x'),g.send(3))",
+      "expected": "1 2 L  xR\n",
+      "stdout": "1 2 L  xR\n"
+    }
+  ]
+}

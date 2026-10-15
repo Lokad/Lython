@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile ordinary f-strings through the existing executable field, format-specifier and join operations, removing their expression fallback and unnecessary local mirroring. Preserve formatting protocol suspension, evaluation order, cancellation and conservative intermediate/result admission.
+
 - Compile expanded set/dictionary displays through the existing generator display operations, removing their ordinary expression fallbacks and unnecessary local mirroring. Reuse one dictionary lowering helper; preserve mapping suspension, key/value order, cancellation and retained funding without new opcodes or storage machinery.
 
 - Evaluate a dictionary entry's value before validating its key in syntax and lowered execution. Preserve value-side host effects, cancellation and exception precedence when the key is unhashable.

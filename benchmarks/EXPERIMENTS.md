@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 f-string delivery](results/2026-10-15-executable-fstrings/README.md)
+reuses existing generator field/specifier/join operations. One fixed helper
+diagnostic observed 2.454 -> 2.125 ms, CPython 0.4201 ms, with 1.3%/2.5%/2.5%
+spread. The observed 13.4% lower median is unqualified. Shared async formatting
+helpers remain; this closes a syntax fallback without a new runtime subsystem.
+
 The [2026-10-15 expanded set/dictionary delivery](results/2026-10-15-expanded-set-dict-executable/README.md)
 shares existing generator operations and corrects own-value-before-key-validation
 order first. One helper diagnostic observed5.444 ->4.963ms, CPython0.6326ms;

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "strings.formatted-report.medium",
+      "family": "strings",
+      "category": "core",
+      "scale": "medium",
+      "size": 2048,
+      "source": "N = 2048\ndef render(value):\n    return f'row={value:06d};next={value+1}\\n'\ntotal = 0\nfor i in range(N):\n    total += len(render(i))\nprint(total)\n",
+      "fixtureJson": "{\"size\":2048,\"text\":null}",
+      "expectedOutput": "41901\n",
+      "sourceUtf8Bytes": 145,
+      "expectedOutputUtf8Bytes": 6,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "2503aad740b6e25ce380a9d1a1307fcee8aac8f288e197dd34b34a38495202fe",
+      "fixtureSha256": "cc19526c1d9f59f92c233c4276c92e42e48bc1ecbbeec305f81a44877bd877d6",
+      "expectedOutputSha256": "b7d42031b56263f9237b5bbd56c46028fbfa2aaef52d0b88b3516cb5572bb3f3"
+    }
+  ]
+}

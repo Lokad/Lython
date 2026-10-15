@@ -30,6 +30,9 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyString.FromString(text.Literal.Value)), text.Span));
                     return currentBlock;
 
+                case LoweredFormattedStringExpression formatted:
+                    return CompileFormattedParts(formatted.Parts, formatted.Span, currentBlock);
+
                 case LoweredBytesLiteralExpression bytes:
                     AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(new PyBytes(bytes.Literal.Value.ToArray())), bytes.Span));
                     return currentBlock;

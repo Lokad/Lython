@@ -1,0 +1,15 @@
+{
+  "baselineRevision": "0c367762230b7700ec00fd6ba24ba067f401f55b",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "e58ddb8f8cc62dd542a831da8b82db6d5b68311295fde824ccfcf36e8051e54e"
+  },
+  "sourceArchiveSha256": "a57a6e821aece1f7a71c6c2f5e75d5775dca1a34d000eb6e0b20f9852bcf3c46",
+  "caseId": "strings.formatted-report.medium",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Ordinary f-strings reuse existing executable field/specifier/join lowering; remove fallback-driven mirroring. No new opcode, handler or owner.",
+  "normalGCAndTiering": true,
+  "boundary": "Warm compiled report helper, fresh run state, execution/projection and prior-result disposal; compilation/startup/transport/hash excluded.",
+  "stoppingRule": "One fixed affected helper diagnostic after source and semantic gates; no repeat or retuning."
+}

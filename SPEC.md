@@ -237,6 +237,12 @@ before key validation/insertion. A value failure or cancellation therefore takes
 precedence over an unhashable key. Exact hash/equality callback counts and their
 batching across different entries are implementation details; Lython does not
 emulate CPython compiler thresholds or hash-table probe sequences.
+Ordinary f-strings share executable field, dynamic-specifier and final-join
+operations with yielding generators. Formatting protocols can suspend under
+`RunAsync` without replaying completed fields. Intermediate text and final output
+coexist during joining and remain conservatively funded. Allocation admission
+and explicit fuel can occur at different checkpoints than the lowered route;
+exact historical thresholds are not part of the contract.
 Guest-visible Python exception shells have a conservative160-byte estimate.
 Rebinding or rethrowing an alias does not allocate another shell. Execution owners
 retain admitted guest storage conservatively until their finite batch ends;
