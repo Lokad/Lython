@@ -7,7 +7,7 @@ public sealed class RepresentativeScriptTests
 {
     public static IEnumerable<object[]> Cases()
     {
-        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest" })
+        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search" })
             foreach (var repetitions in new[] { 0, 16, 1024 })
                 foreach (var asynchronous in new[] { false, true })
                     yield return [name, repetitions, asynchronous];
@@ -41,6 +41,12 @@ public sealed class RepresentativeScriptTests
                 inputs["/input.jsonl"] = Utf8(Repeat("{\"kind\":\"red\",\"amount\":3}\n{\"kind\":\"blue\",\"amount\":2}\n{\"kind\":\"red\",\"amount\":-1}\n{\"kind\":\"blue\",\"amount\":5}\n\n"));
                 outputs["/report.json"] = Utf8(repetitions == 0 ? "{}\n" : $"{{\"blue\":{7 * repetitions},\"red\":{3 * repetitions}}}\n");
                 stdout = $"{3 * repetitions}\n";
+                break;
+            case "file-search":
+                inputs["/input.txt"] = Utf8(repetitions == 0 ? "" : Repeat("ordinary café line\n")
+                    + "NEEDLE: chosen café 😀\n" + Repeat("unread trailing line\n"));
+                outputs["/matches.txt"] = Utf8(repetitions == 0 ? "" : "NEEDLE: chosen café 😀\n");
+                stdout = $"{(repetitions == 0 ? 0 : repetitions + 1)}\n";
                 break;
             default:
                 var bytes = Enumerable.Range(0, repetitions).SelectMany(_ => new byte[] { 0, 127, 128, 255 }).ToArray();

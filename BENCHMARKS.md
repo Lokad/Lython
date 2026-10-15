@@ -2,6 +2,8 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| File search with helper and protected early exit [P], warm | 2,049 lines / 42,010 UTF-8 bytes | 4.249 ms | 0.265 ms | — | One candidate diagnostic; inconclusive (56.4% spread) |
+| Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
 | Complete file copy/checksum manifest [F] | 2 files / 4,107 bytes | 6.103–6.254 ms | 0.442 ms | — | One warm diagnostic; two identical Lython controls, up to15.1% spread |
 | Complete Unicode text summary [T] | 6,144 words / 35,840 UTF-8 bytes | 8.018 ms | 1.258 ms | — | One warm diagnostic at ca432c22; noisy ASCII candidate rejected |
 | Complete JSON-lines summary [J] | 4,096 records / 110,592 UTF-8 bytes | 11.537 ms | 4.225 ms | — | One warm candidate diagnostic; timing inconclusive (11.8% spread), allocation reduction measured |
@@ -42,6 +44,7 @@ processes, not two revisions. No complete-script multiplier or overall speedup i
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| P | 2026-10-15 | Working protected-loop candidate on b2235259; two frontend source changes frozen by hashes | [Separate warm and compile/run diagnostics](benchmarks/results/2026-10-15-protected-loop-jumps/README.md), [source declaration](benchmarks/results/2026-10-15-protected-loop-jumps/comparison-declaration.json) |
 | F | 2026-10-14 | ca432c22, two identical worker/binary controls; runtime tree matches7736b6c0 | [Complete file diagnostic](benchmarks/results/2026-10-14-representative-file/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-file/micro.json) |
 | T | 2026-10-14 | ca432c22, governed runtime and worker ownership; ASCII candidate rejected | [Complete text diagnostic](benchmarks/results/2026-10-14-representative-text/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-text/micro.json) |
 | J | 2026-10-14 | Working direct-decoder candidate on 64ec1fd4, with identical f95fb734 worker | [Complete JSON diagnostic](benchmarks/results/2026-10-14-representative-json/README.md), [timing identities](benchmarks/results/2026-10-14-representative-json/micro.json) |
@@ -52,6 +55,11 @@ processes, not two revisions. No complete-script multiplier or overall speedup i
 | Q | 2026-10-09 | `9358c4e72f1a29e55703eee02b28ea404d01bc0a` | [Four-lane run](benchmarks/results/2026-10-09-quick/README.md), [warm medians and exclusions](benchmarks/results/2026-10-09-quick/warm.md) |
 | L | 2026-10-09 | `56d4346d960b58f037da7d4590eb66c87ffec29e` | [Focused loop run](benchmarks/results/2026-10-09-core-loop/README.md), [all loop samples](benchmarks/results/2026-10-09-core-loop/warm.md) |
 | S | 2026-10-12 | `87c1a94c347a88bc94927ea603a138cec4376170` (correctness, no timings) | [Complete-script validation](benchmarks/results/2026-10-12-script-negative-cases/README.md), [fixture and host contract](benchmarks/results/2026-10-12-containment-scope/README.md) |
+
+P used the same VM and SDK/runtime/CPython versions described below for Q/L.
+Its fresh compile/run row compiles each source anew inside the running worker;
+the warm row reuses compiled code. Both include complete file staging/output
+checks. The candidate source is frozen by hashes, not a claim about later HEAD.
 
 Q and L used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
 x86_64, four AMD EPYC 9V45 vCPUs, one thread per core, 16 GiB RAM, no swap.
@@ -87,7 +95,8 @@ diagnostic; later local-import changes are unmeasured.
 
 ## Execution, compilation and startup are separate
 
-The leading table uses **warm execution**: both engines reuse compiled code,
+Except for the explicitly marked fresh compile/run row P, the leading table uses
+**warm execution**: both engines reuse compiled code,
 create fresh invocation state, execute the complete module, capture/project
 output and perform the cheap golden check inside the worker timer. Compilation,
 worker launch, transport and full output hashing are outside it. For complete

@@ -2,7 +2,9 @@
 
 These ordinary Python jobs cover CSV conversion/filtering/aggregation, Unicode
 text counting, newline-delimited JSON aggregation, and mediated directory/file
-copying with a deterministic manifest. They publish complete output files.
+copying with a deterministic manifest. The file-search job adds a small predicate
+helper and an early break inside a file context, with independently checked scan
+count and retained matching line. They publish complete output files.
 Text reports explicitly use LF on Windows and Linux. Each run needs fresh input
 files and a writable working directory; the file job creates its output directory.
 

@@ -20,20 +20,26 @@ describe the current worker. Normal execution/projection limits still apply.
 ## Short improvement rounds
 
 Build the old and candidate benchmark workers in Release before timing. The
-short command reuses one identical precompiled case in old Lython, candidate
+short command uses one identical case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
 golden-output checks, one second of warmup per worker, a two-second settling
 pause and seven rotating-order batches calibrated to 25 ms. It records every
 response, loaded worker identity and before/after input hashes. Its table reports
 per-job medians and interpolated IQR/median; no confidence interval or certified
-multiplier is claimed. Compilation, transport and output hashing stay outside
-the worker timer, as in the warm lane.
+multiplier is claimed. The default `--lane warm` reuses compiled code and excludes
+compilation. `--lane compile-run` compiles a fresh code object and executes it once
+per timed job in the already-running worker, including Lython's temporary
+compilation disposal. Both modes include invocation setup, file reset/staging
+and complete output-byte checks. Transport and response hashing remain outside
+the worker timer. Record these boundaries separately; never add unrelated medians
+to infer first-result latency. Compile-only and process startup remain separate.
+The fresh compile-run mode does not use identical-script caching as its result.
 
 ```text
 <dotnet> <candidate-benchmark.dll> --compare micro --catalog <catalog.json>
   --dotnet <absolute-dotnet> --baseline-worker <old-benchmark.dll>
   --python <absolute-python> --python-worker <cpython-worker.py>
-  --out <new-micro.json> [--case <id>]
+  --out <new-micro.json> [--case <id>] [--lane warm|compile-run]
 ```
 
 The default case is `loops.integer.large`. Select an existing case explicitly

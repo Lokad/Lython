@@ -58,7 +58,7 @@ internal static class WorkloadCatalog
     {
         var cases = new List<ComparisonWorkload>();
         foreach (var n in new[] { 0, 16, 1024 })
-        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest" })
+        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search" })
         {
             var inputs = new Dictionary<string, byte[]>();
             var outputs = new Dictionary<string, byte[]>();
@@ -78,6 +78,11 @@ internal static class WorkloadCatalog
                     inputs["input.jsonl"] = Utf8(Repeat("{\"kind\":\"red\",\"amount\":3}\n{\"kind\":\"blue\",\"amount\":2}\n{\"kind\":\"red\",\"amount\":-1}\n{\"kind\":\"blue\",\"amount\":5}\n\n", n));
                     outputs["report.json"] = Utf8(n == 0 ? "{}\n" : $"{{\"blue\":{7 * n},\"red\":{3 * n}}}\n");
                     stdout = $"{3 * n}\n"; break;
+                case "file-search":
+                    inputs["input.txt"] = Utf8(n == 0 ? "" : Repeat("ordinary café line\n", n)
+                        + "NEEDLE: chosen café 😀\n" + Repeat("unread trailing line\n", n));
+                    outputs["matches.txt"] = Utf8(n == 0 ? "" : "NEEDLE: chosen café 😀\n");
+                    stdout = $"{(n == 0 ? 0 : n + 1)}\n"; break;
                 default:
                     inputs["inbox/a.bin"] = Enumerable.Range(0, n).SelectMany(_ => new byte[] { 0, 127, 128, 255 }).ToArray();
                     inputs["inbox/é.txt"] = Utf8("café 😀\n");

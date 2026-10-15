@@ -1,0 +1,109 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "flags": "-I -S -X utf8",
+  "cases": [
+    {
+      "name": "break_within_manager",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\nwith Manager('outer'):\n    for i in range(3):\n        print('body', i)\n        break\n    print('after-loop')\nprint('done')\n",
+      "output": "enter outer\nbody 0\nafter-loop\nexit outer -\ndone\n",
+      "cleanup": "start\nouter\n"
+    },
+    {
+      "name": "continue_within_manager",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\nwith Manager('outer'):\n    i = 0\n    while i < 3:\n        i += 1\n        if i < 3:\n            continue\n        print('body', i)\n    else:\n        print('else')\n    print('after-loop')\n",
+      "output": "enter outer\nbody 3\nelse\nafter-loop\nexit outer -\n",
+      "cleanup": "start\nouter\n"
+    },
+    {
+      "name": "break_leaves_manager",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\nfor i in range(3):\n    with Manager(str(i)):\n        print('body', i)\n        break\nelse:\n    print('wrong-else')\nprint('done')\n",
+      "output": "enter 0\nbody 0\nexit 0 -\ndone\n",
+      "cleanup": "start\n0\n"
+    },
+    {
+      "name": "continue_leaves_nested_managers",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\nfor i in range(2):\n    with Manager('a' + str(i)), Manager('b' + str(i)):\n        print('body', i)\n        continue\nelse:\n    print('else')\nprint('done')\n",
+      "output": "enter a0\nenter b0\nbody 0\nexit b0 -\nexit a0 -\nenter a1\nenter b1\nbody 1\nexit b1 -\nexit a1 -\nelse\ndone\n",
+      "cleanup": "start\nb0\na0\nb1\na1\n"
+    },
+    {
+      "name": "break_through_finally",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\nfor i in range(3):\n    try:\n        print('body', i)\n        break\n    finally:\n        print('finally', i)\n        record('finally')\nelse:\n    print('wrong-else')\nprint('done')\n",
+      "output": "body 0\nfinally 0\ndone\n",
+      "cleanup": "start\nfinally\n"
+    },
+    {
+      "name": "continue_through_finally",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\ni = 0\nwhile i < 2:\n    try:\n        i += 1\n        continue\n    finally:\n        print('finally', i)\n        record('finally')\nelse:\n    print('else')\n",
+      "output": "finally 1\nfinally 2\nelse\n",
+      "cleanup": "start\nfinally\nfinally\n"
+    },
+    {
+      "name": "break_from_handler",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\nfor i in range(2):\n    try:\n        raise ValueError('caught')\n    except ValueError as caught:\n        print(str(caught))\n        break\n    finally:\n        print('finally')\n        record('finally')\ntry:\n    caught\nexcept NameError:\n    print('cleared')\ntry:\n    raise\nexcept RuntimeError:\n    print('restored')\n",
+      "output": "caught\nfinally\ncleared\nrestored\n",
+      "cleanup": "start\nfinally\n"
+    },
+    {
+      "name": "finally_break_replaces_return",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\ndef exercise():\n    for i in range(2):\n        try:\n            return 'old'\n        finally:\n            print('finally')\n            record('finally')\n            break\n    return 'new'\nprint(exercise())\n",
+      "output": "finally\nnew\n",
+      "cleanup": "start\nfinally\n"
+    },
+    {
+      "name": "finally_continue_replaces_exception",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\nfor i in range(2):\n    try:\n        raise ValueError('discarded')\n    finally:\n        print('finally', i)\n        record('finally')\n        continue\nprint('done')\n",
+      "output": "finally 0\nfinally 1\ndone\n",
+      "cleanup": "start\nfinally\nfinally\n"
+    },
+    {
+      "name": "cleanup_exception_replaces_break",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\ntry:\n    for i in range(2):\n        with Manager('outer'):\n            try:\n                break\n            finally:\n                record('finally')\n                raise KeyError('replacement')\nexcept KeyError:\n    print('replacement')\n",
+      "output": "enter outer\nexit outer KeyError\nreplacement\n",
+      "cleanup": "start\nfinally\nouter\n"
+    },
+    {
+      "name": "suppression_then_continue",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\nfor i in range(2):\n    with Manager(str(i), True):\n        raise ValueError('suppressed')\n    print('after', i)\n    continue\nprint('done')\n",
+      "output": "enter 0\nexit 0 ValueError\nafter 0\nenter 1\nexit 1 ValueError\nafter 1\ndone\n",
+      "cleanup": "start\n0\n1\n"
+    },
+    {
+      "name": "inner_jump_preserves_return",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\ndef exercise():\n    try:\n        return 'kept'\n    finally:\n        for i in range(2):\n            with Manager('inner'):\n                break\n        print('after-loop')\nprint(exercise())\n",
+      "output": "enter inner\nexit inner -\nafter-loop\nkept\n",
+      "cleanup": "start\ninner\n"
+    },
+    {
+      "name": "inner_jump_preserves_exception",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\ntry:\n    try:\n        raise ValueError('kept')\n    finally:\n        for i in range(2):\n            with Manager('inner'):\n                break\n        print('after-loop')\nexcept ValueError as error:\n    print(str(error))\n",
+      "output": "enter inner\nexit inner -\nafter-loop\nkept\n",
+      "cleanup": "start\ninner\n"
+    },
+    {
+      "name": "nested_for_keeps_outer_iterator",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\nwith Manager('outer'):\n    for outer in range(2):\n        for inner in range(3):\n            try:\n                print('body', outer, inner)\n                break\n            finally:\n                print('finally')\n                record('finally')\n        print('after-inner', outer)\n",
+      "output": "enter outer\nbody 0 0\nfinally\nafter-inner 0\nbody 1 0\nfinally\nafter-inner 1\nexit outer -\n",
+      "cleanup": "start\nfinally\nfinally\nouter\n"
+    },
+    {
+      "name": "break_last_statement_of_manager",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\nwith Manager('outer'):\n    for i in range(2):\n        break\nprint('done')\n",
+      "output": "enter outer\nexit outer -\ndone\n",
+      "cleanup": "start\nouter\n"
+    },
+    {
+      "name": "while_break_last_statement_of_manager",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\nwith Manager('outer'):\n    while True:\n        break\nprint('done')\n",
+      "output": "enter outer\nexit outer -\ndone\n",
+      "cleanup": "start\nouter\n"
+    },
+    {
+      "name": "generator_break_last_statement_of_manager",
+      "source": "def record(name):\n    with open('cleanup.txt', 'a') as out:\n        out.write(name + '\\n')\nclass Manager:\n    def __init__(self, name, suppress=False):\n        self.name = name\n        self.suppress = suppress\n    def __enter__(self):\n        print('enter', self.name)\n        return self\n    def __exit__(self, kind, value, trace):\n        print('exit', self.name, kind.__name__ if kind else '-')\n        record(self.name)\n        return self.suppress\nrecord('start')\ndef values():\n    with Manager('outer'):\n        for i in range(2):\n            yield i\n            break\nprint(list(values()))\n",
+      "output": "enter outer\nexit outer -\n[0]\n",
+      "cleanup": "start\nouter\n"
+    }
+  ],
+  "normalization": "Public stdout is canonical LF; CPython Windows console CRLF normalized. Raw capture remains in cpython-goldens.json."
+}

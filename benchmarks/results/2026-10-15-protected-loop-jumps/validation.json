@@ -1,0 +1,18 @@
+{
+  "configuration": "Release",
+  "platform": "Windows x64",
+  "gates": {
+    "ordinary": {
+      "passed": 10881,
+      "elapsedMillisecondsIncludingCleanup": 86520,
+      "trxSha256": "12276699469e267ed4a20ff157189baf9517c3f7c153cad22fa9fba3674e163b"
+    },
+    "stress": {
+      "passed": 377,
+      "elapsedMillisecondsIncludingCleanup": 299394,
+      "trxSha256": "617b49bbe1f1009450ea1ffb4f06c2c5b4dd9705b408304195fe0283379c5fad"
+    }
+  },
+  "assertionsRelaxed": false,
+  "timingRetries": false
+}

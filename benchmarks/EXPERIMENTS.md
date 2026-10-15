@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 protected-loop checkpoint](results/2026-10-15-protected-loop-jumps/README.md)
+removes ordinary protected-loop compilation rejection and preserves abrupt-target
+regions during jump normalization. Separate fresh compile/run and warm file-search
+diagnostics remain inconclusive; structural and cleanup correctness justify the
+smaller compiler. Async function and comprehension parity remain separate work.
+
 The [2026-10-14 complete file comparison](results/2026-10-14-representative-file/README.md)
 records identical Lython controls against CPython. Background JIT and fixture
 costs limit CPU attribution; no speculative runtime branch or timing repeat.

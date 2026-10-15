@@ -1,0 +1,22 @@
+{
+  "baselineRevision": "b22352597231c50d1738ebf3f88107d6ba1f3fe0",
+  "candidateBaseRevision": "b22352597231c50d1738ebf3f88107d6ba1f3fe0",
+  "productionChange": "remove two protected non-generator loop rejections; preserve original abrupt destinations through reachability and target normalization",
+  "candidateSourceHashes": {
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonMicroCommand.cs": "018fb6da3658e72db01eeee24c01c1a9b7a55b51f5f34e550010e96c9a826334",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "418fdbd3b61c7c7d22d609e3035279b4a5e386d933f47ea45733d3781c4ec566",
+    "benchmarks/scripts/file-search.py": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "2e5918f41e241ff12ce2a80e2dbf39f2bbddfa69c997d9c70d54ddbb2d0f24a7",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "fcadf9548eb44a02071c548b1d334d4c197d1e2369f91bfbc1f295c7cd0fc208"
+  },
+  "sourceArchiveSha256": "02dc59bf476bb2bdbaec480ea93a4a4874fc7b3f276690a7ac23d5ed1457a2e5",
+  "executionBoundaries": [
+    "warm",
+    "compile-run"
+  ],
+  "retries": false,
+  "millisecondsBudgetPerOwnedComparison": 30000,
+  "runtimeGCAndTiering": "ordinary unchanged",
+  "sameUpdatedExecutionHarnessForBothRoles": true,
+  "preTimingFinding": "realistic terminal file-search break underflows iterator after cleanup; reduced for/while/generator controls added before any VM build or timing"
+}

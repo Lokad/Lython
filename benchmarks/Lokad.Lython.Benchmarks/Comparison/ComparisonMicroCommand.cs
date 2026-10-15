@@ -17,9 +17,10 @@ internal static class ComparisonMicroCommand
         var required = new[] { "--catalog", "--dotnet", "--baseline-worker", "--python", "--python-worker", "--out" };
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         for (var i = 0; i < arguments.Length; i += 2)
-            if (i + 1 == arguments.Length || (!required.Contains(arguments[i]) && arguments[i] != "--case")
+            if (i + 1 == arguments.Length || (!required.Contains(arguments[i]) && arguments[i] is not ("--case" or "--lane"))
                 || !options.TryAdd(arguments[i], arguments[i + 1])) return Usage();
         if (required.Any(name => !options.ContainsKey(name))) return Usage();
+        if (options.GetValueOrDefault("--lane", "warm") is not ("warm" or "compile-run")) return Usage();
         using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(CollectionSeconds));
         ConsoleCancelEventHandler cancel = (_, e) => { e.Cancel = true; deadline.Cancel(); };
         Console.CancelKeyPress += cancel;
@@ -36,7 +37,8 @@ internal static class ComparisonMicroCommand
     {
         Console.Error.WriteLine("Usage: --compare micro --catalog <catalog.json> --dotnet <absolute executable> " +
             "--baseline-worker <old benchmark.dll> --python <absolute executable> --python-worker <cpython-worker.py> " +
-            "--out <new receipt.json> [--case <id; default loops.integer.large>]. Diagnostic only; run in a 30-second owned service.");
+            "--out <new receipt.json> [--case <id; default loops.integer.large>] [--lane warm|compile-run]. " +
+            "Diagnostic only; run in a 30-second owned service.");
         return 2;
     }
 
@@ -51,6 +53,7 @@ internal static class ComparisonMicroCommand
         var pythonWorker = Path.GetFullPath(options["--python-worker"]);
         var dotnet = options["--dotnet"];
         var python = options["--python"];
+        var lane = options.GetValueOrDefault("--lane", "warm");
         if (!Path.IsPathFullyQualified(dotnet) || !Path.IsPathFullyQualified(python))
             throw new ArgumentException("Use explicit absolute executable paths.");
         if (File.Exists(output)) throw new IOException("Preserve existing microbenchmark receipts; choose a new output.");
@@ -75,6 +78,7 @@ internal static class ComparisonMicroCommand
         {
             schemaVersion = 1, protocolVersion = ComparisonProtocol.Version, performanceQualified = false,
             purpose = "short old/new Lython microbenchmark with CPython context; no noise or milestone qualification",
+            lane,
             state, started, updated = DateTimeOffset.UtcNow, collectionSeconds = CollectionSeconds,
             requiredExternalHardDeadlineSeconds = 30, rounds = Rounds, warmupSeconds = WarmupSeconds, batchSeconds = BatchSeconds,
             catalogSha256 = manifest.Sha256, workload, files, identities, attempts, summaries, error,
@@ -109,7 +113,7 @@ internal static class ComparisonMicroCommand
             var clients = new[] { baseline, candidate, reference };
             await SampleAsync(workload, async (engine, operation, count, ct) => operation == "verify"
                 ? await clients[engine].VerifyAsync(workload, ct).ConfigureAwait(false)
-                : await clients[engine].BatchAsync(workload, "warm", count, ct).ConfigureAwait(false), attempts, Save, token).ConfigureAwait(false);
+                : await clients[engine].BatchAsync(workload, lane, count, ct).ConfigureAwait(false), attempts, Save, token).ConfigureAwait(false);
             foreach (var client in clients) await client.CloseAsync(token).ConfigureAwait(false);
             if (!files.SequenceEqual(files.Select(file => ComparisonVerifyCommand.FileIdentity(file.Path))))
                 throw new InvalidDataException("An input changed during the microbenchmark.");
