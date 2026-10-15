@@ -28,7 +28,6 @@ internal sealed partial class LythonRuntime
             _currentBlockIndex = codeObject.EntryBlockIndex;
             _entryActiveException = context.Services.CurrentException;
             _memberCaches = codeObject.MemberCacheCount == 0 ? Array.Empty<ExecutableMemberCache?>() : new ExecutableMemberCache?[codeObject.MemberCacheCount];
-            _callCaches = codeObject.CallCacheCount == 0 ? Array.Empty<ExecutableCallCache?>() : new ExecutableCallCache?[codeObject.CallCacheCount];
             _blockEntryStackDepths = codeObject.ExceptionRegions.Count == 0 ? Array.Empty<int?>() : new int?[codeObject.Blocks.Count];
         }
 
@@ -135,7 +134,6 @@ internal sealed partial class LythonRuntime
         // Empty cache tables are shared: no instruction can name an index the
         // compiler never emitted (any such access already throws today).
         private readonly ExecutableMemberCache?[] _memberCaches;
-        private readonly ExecutableCallCache?[] _callCaches;
         // Depth entries are recorded per block visit but only read when a
         // region matches, so region-free frames share the empty table.
         private readonly int?[] _blockEntryStackDepths;
@@ -426,8 +424,7 @@ internal sealed partial class LythonRuntime
                     ExecuteExecutableCall(
                         _codeObject.CallSites[instruction.CallSiteIndex],
                         ref _stack,
-                        _context,
-                        ref _callCaches[instruction.CallCacheIndex]);
+                        _context);
                     break;
 
                 case ExecutableOpCode.Subscript:

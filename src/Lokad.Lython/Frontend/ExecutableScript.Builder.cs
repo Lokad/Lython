@@ -43,7 +43,6 @@ internal sealed partial class ExecutableScript
         private readonly List<ExecutableImportBinding> _imports = [];
         private readonly List<ExecutableCallSite> _callSites = [];
         private int _memberCacheCount;
-        private int _callCacheCount;
         private readonly List<ExecutableLoopTargetBinding> _loopTargets = [];
         private readonly List<ExecutableUnpackingTargetBinding> _unpackingTargets = [];
         private readonly List<ExecutableFunctionBinding> _functions = [];
@@ -139,7 +138,6 @@ internal sealed partial class ExecutableScript
                 _imports.ToArray(),
                 _callSites.ToArray(),
                 _memberCacheCount,
-                _callCacheCount,
                 _loopTargets.ToArray(),
                 _unpackingTargets.ToArray(),
                 _functions.ToArray(),

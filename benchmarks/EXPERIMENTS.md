@@ -7,6 +7,11 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 executable call-cache deletion](results/2026-10-15-call-cache-deletion/README.md)
+removes an identity-only record, unused async frame arrays and compiler cache
+metadata. One synchronous keyword-call diagnostic is within spread; no elapsed
+claim or retry. General invocation and member resolution remain intact.
+
 The [2026-10-15 positional-call delivery](results/2026-10-15-positional-calls/README.md)
 removes packaged arguments and argument-factory closures from eligible compiled
 calls while sharing canonical frame/body cleanup. One async helper diagnostic

@@ -6,6 +6,8 @@ public sealed class PositionalCallSemanticsTests
 {
     public static TheoryData<string, string> Programs => new()
     {
+        { "def f(value): return value+10\ndef argument():\n    print('argument')\n    return -3\nfor target in [abs,f,None,abs]:\n    try: print(target(argument()))\n    except TypeError: print('not-callable')", "argument\n3\nargument\n7\nargument\nnot-callable\nargument\n3\n" },
+        { "class C:\n    def __call__(self,value): return value+1\ntarget=C()\nfor i in range(2):\n    print(target(3))\n    C.__call__=lambda self,value: value+100", "4\n103\n" },
         { "def f(): return 7\nprint(f())", "7\n" },
         { "def f(a,b,c,d): return a,b,c,d\nprint(f(1,2,3,4))", "(1, 2, 3, 4)\n" },
         { "def f(a,b=2): return a,b\nf.__defaults__=(9,)\nprint(f(1),f(1,3))", "(1, 9) (1, 3)\n" },

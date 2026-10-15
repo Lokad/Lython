@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Remove the redundant executable call cache, its frame arrays and compiler operands/counters. Preserve dynamic call resolution and update generator admission for the removed storage.
+
 - Pass eligible compiled positional calls from existing operand storage without packaged call-argument arrays or async argument-factory closures. Share frame entry/body cleanup with ordinary invocation, preserving live defaults, cancellation, admission and owned arguments across suspension.
 
 - Make def/lambda positional and keyword-default metadata live for argument binding, including mutation, deletion, type checks and supported container subclasses. Await custom-key default lookup, preserve its owner through suspension, and admit parameter-layout/default storage before allocation. Return temporary definition-map allowance after construction instead of retaining its old per-default fee.

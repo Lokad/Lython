@@ -323,7 +323,7 @@ internal sealed partial class ExecutableScript
                 exitBlock = CompileExpression(argument.Expression, exitBlock);
             }
 
-            AddInstruction(exitBlock, ExecutableInstruction.Call(InternCallSite(call), AllocateCallCache(), call.Span));
+            AddInstruction(exitBlock, ExecutableInstruction.Call(InternCallSite(call), call.Span));
             return true;
         }
 

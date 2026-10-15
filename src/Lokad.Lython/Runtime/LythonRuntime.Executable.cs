@@ -226,10 +226,6 @@ internal sealed partial class LythonRuntime
     {
     }
 
-    private sealed record ExecutableCallCache(object Target, ICallable Callable)
-    {
-    }
-
     private struct ExecutableValueStack
     {
         private object?[] _items;

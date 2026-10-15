@@ -557,7 +557,7 @@ return math.sqrt(9)
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         Assert.True(executable.EntryPoint.MemberCacheCount > 0);
-        Assert.True(executable.EntryPoint.CallCacheCount > 0);
+        Assert.Single(executable.EntryPoint.CallSites);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
         Assert.True(result.Success, result.Failure?.Message);

@@ -9,10 +9,9 @@ public sealed class ExecutableInstructionTests
     [Fact]
     public void OperandProjections_RejectMismatchedDomains()
     {
-        var call = ExecutableInstruction.Call(3, 4, Span);
+        var call = ExecutableInstruction.Call(3, Span);
 
         Assert.Equal(3, call.CallSiteIndex);
-        Assert.Equal(4, call.CallCacheIndex);
         Assert.Throws<InvalidOperationException>(() => call.NameIndex);
         Assert.Throws<InvalidOperationException>(() => call.MemberCacheIndex);
     }

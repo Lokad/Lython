@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
             // Fund locals, cells, operand stack including resize overlap, caches
             // and handler/delegation state before constructing retained storage.
             var bytes = checked(512L + 96L * (code.Blocks.Sum(block => block.Instructions.Count) +
-                code.LocalNames.Count + code.MemberCacheCount + code.CallCacheCount + code.Blocks.Count));
+                code.LocalNames.Count + code.MemberCacheCount + code.Blocks.Count));
             frame.MemoryGovernor.Reserve(bytes, span);
             frame.MemoryGovernor.Commit(bytes);
             PyGenerator generator;

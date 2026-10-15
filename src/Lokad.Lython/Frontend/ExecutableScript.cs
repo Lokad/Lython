@@ -148,7 +148,6 @@ internal readonly record struct ExecutableInstruction
         LoopTargetIndex,
         UnpackingTargetIndex,
         CallSiteIndex,
-        CallCacheIndex,
         ExceptionNameIndex,
         CleanupId,
     }
@@ -208,7 +207,6 @@ internal readonly record struct ExecutableInstruction
     public int LoopTargetIndex => ReadOperand(_primaryOperand, OperandKind.LoopTargetIndex);
     public int UnpackingTargetIndex => ReadOperand(_primaryOperand, OperandKind.UnpackingTargetIndex);
     public int CallSiteIndex => ReadOperand(_primaryOperand, OperandKind.CallSiteIndex);
-    public int CallCacheIndex => ReadOperand(_secondaryOperand, OperandKind.CallCacheIndex);
     public int CleanupId => ReadOperand(OpCode == ExecutableOpCode.EndFinally ? _secondaryOperand : _primaryOperand, OperandKind.CleanupId);
     public int ExceptionNameIndex => ReadOperand(_primaryOperand, OperandKind.ExceptionNameIndex);
     public ExecutableSliceParts SliceParts => _sliceParts;
@@ -321,11 +319,10 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction AssignUnpackingTargets(int unpackingTargetIndex, LythonSourceSpan span)
         => CreateIndexed(ExecutableOpCode.AssignUnpackingTargets, new Operand(OperandKind.UnpackingTargetIndex, unpackingTargetIndex), span);
 
-    public static ExecutableInstruction Call(int callSiteIndex, int cacheIndex, LythonSourceSpan span)
+    public static ExecutableInstruction Call(int callSiteIndex, LythonSourceSpan span)
         => CreateIndexed(
             ExecutableOpCode.Call,
             new Operand(OperandKind.CallSiteIndex, callSiteIndex),
-            new Operand(OperandKind.CallCacheIndex, cacheIndex),
             span);
 
     public static ExecutableInstruction Subscript(LythonSourceSpan span)
@@ -512,7 +509,6 @@ internal sealed class ExecutableCodeObject
         IReadOnlyList<ExecutableImportBinding> imports,
         IReadOnlyList<ExecutableCallSite> callSites,
         int memberCacheCount,
-        int callCacheCount,
         IReadOnlyList<ExecutableLoopTargetBinding> loopTargets,
         IReadOnlyList<ExecutableUnpackingTargetBinding> unpackingTargets,
         IReadOnlyList<ExecutableFunctionBinding> functions,
@@ -537,7 +533,6 @@ internal sealed class ExecutableCodeObject
         Imports = imports;
         CallSites = callSites;
         MemberCacheCount = memberCacheCount;
-        CallCacheCount = callCacheCount;
         LoopTargets = loopTargets;
         UnpackingTargets = unpackingTargets;
         Functions = functions;
@@ -578,8 +573,6 @@ internal sealed class ExecutableCodeObject
     public IReadOnlyList<ExecutableCallSite> CallSites { get; }
 
     public int MemberCacheCount { get; }
-
-    public int CallCacheCount { get; }
 
     public IReadOnlyList<ExecutableLoopTargetBinding> LoopTargets { get; }
 

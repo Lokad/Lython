@@ -529,8 +529,7 @@ internal sealed partial class LythonRuntime
     private static void ExecuteExecutableCall(
         ExecutableCallSite callSite,
         ref ExecutableValueStack stack,
-        ExecutionContext context,
-        ref ExecutableCallCache? cache)
+        ExecutionContext context)
     {
         var start = ReadExecutableCallTarget(callSite, ref stack, out var target);
 
@@ -539,7 +538,6 @@ internal sealed partial class LythonRuntime
             object result;
             if (callSite.IsPositionalOnly && target is PyExecutableFunction { SupportsDirectPositional: true } function)
             {
-                cache = null;
                 result = InvokePositionalFunction(function, stack.Slice(start + 1, callSite.ArgumentCount).Span, callSite.CallSpan, context);
             }
             else
@@ -547,20 +545,7 @@ internal sealed partial class LythonRuntime
                 var arguments = PrepareExecutableCallArguments(callSite, ref stack, start);
                 try
                 {
-                    if (cache is not null && ReferenceEquals(cache.Target, target))
-                    {
-                        result = InvokeCallableTarget(cache.Callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
-                    }
-                    else if (target is ICallable callable)
-                    {
-                        cache = new ExecutableCallCache(target, callable);
-                        result = InvokeCallableTarget(callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
-                    }
-                    else
-                    {
-                        cache = null;
-                        result = RuntimeValue(InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments));
-                    }
+                    result = InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments);
                 }
                 finally
                 {

@@ -1,0 +1,25 @@
+{
+  "baselineRevision": "6262ea9437952ac46dc4d3ea8a448bcec348eed0",
+  "candidateBaseRevision": "6262ea9437952ac46dc4d3ea8a448bcec348eed0",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs": "a116d052a27798b3eb70667e179478d930c9842f021049d6be69993121ca16b9",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "ed03487ea087ce80bf74a2728d1c0c7830059f6c4f2372d484ce49bf40679b3f",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "c33bd5585a2f20c0e167d19d5f3638792b6b78929840d01130e5ef83ed3d8c55",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "b51a64f73f178d14cd8519a697e4cc8cf0925b36ef12cafb7695450f26b8ff58",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "b6736ec98563331f4c91a87dd04ac6b9a32b0c216d46be9f06d3f6f1ff00b386",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "6c5d3620f4acc899041c6fb2f209071b053388e4ca242d4a6e865d30c2138b05",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "a5540e5fbecc4c3739608c987e1fca02c2be2e7c4f0596e1606ce906442a1c1c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs": "0c5e976af14fe40fe93dd2607ee9aa219e00c46414b3cc40bbe98b11a939dc0b"
+  },
+  "sourceArchiveSha256": "c6bd8c70ef65e2bbfeeeeaf0f367ac97bd0591a6b4abb2db3b650bdfe6608678",
+  "productionChange": "delete identity-only call-cache record/frame arrays and all IR allocator/counter/operand metadata; generator admission reflects absent storage",
+  "case": "calls.keyword.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "none",
+  "stop": "one short diagnostic on former synchronous cache-hit path; keep structural deletion/resource benefit without timing claim; no replacement cache or retune"
+}
