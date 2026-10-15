@@ -57,6 +57,12 @@ during conversion. Their estimates may remain charged until the execution/result
 owner ends, so narrow allowances can reject earlier than with the former lowered
 temporary-list path. Empty results reuse the existing immutable empty tuple;
 no new cache or identity tracking is introduced.
+The same finite-owner policy applies to incremental set/dictionary display
+construction: unpublished partial storage can remain charged after a caught
+construction error until its execution/result owner ends. Admission can therefore
+refuse earlier than a lowered path that retires private constructor storage.
+Allocation preflights and deterministic owner cleanup remain; retaining a result
+or pending asynchronous user keeps the owner funded.
 
 Host command requests carry the active budget in
 `LythonSubprocessRequest.MemoryBudget`. A cooperating dispatcher borrows it,

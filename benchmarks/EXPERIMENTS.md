@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 expanded set/dictionary delivery](results/2026-10-15-expanded-set-dict-executable/README.md)
+shares existing generator operations and corrects own-value-before-key-validation
+order first. One helper diagnostic observed5.444 ->4.963ms, CPython0.6326ms;
+spread0.7%/1.3%/1.4%, without a qualified multiplier or retuning. Small hash-trace
+differences were reclassified using primary compiler source and a16-entry probe;
+no CPython-threshold staging system was added.
+
 The [2026-10-15 ordinary starred-tuple lowering](results/2026-10-15-starred-tuple-executable/README.md)
 shares existing generator display/immutable-finish operations. Qualification fixed
 empty tuple identity in both roles first. One helper diagnostic gave2.659 ->2.629ms,

@@ -1,0 +1,126 @@
+{
+  "groupsOverlap": true,
+  "groups": [
+    {
+      "stage": "expanded-set-dict-full-white",
+      "filter": "Category!=Stress",
+      "assemblySha256": "2A601E7941740C43C6FED0979470FC61DA54ACED0533949AD5FFCB4778BA27E9",
+      "counters": {
+        "total": "2319",
+        "executed": "2319",
+        "passed": "2319",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 11948
+    },
+    {
+      "stage": "expanded-set-dict-lowering-white",
+      "filter": "FullyQualifiedName~StarredDisplayExecutableTests|FullyQualifiedName~DictionaryEntryEvaluationTests",
+      "assemblySha256": "2A601E7941740C43C6FED0979470FC61DA54ACED0533949AD5FFCB4778BA27E9",
+      "counters": {
+        "total": "13",
+        "executed": "13",
+        "passed": "13",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 1087
+    },
+    {
+      "stage": "expanded-set-dict-final-focused-public",
+      "filter": "FullyQualifiedName~ExpandedSetDictionaryExecutionTests|FullyQualifiedName~DictionaryEntryEvaluationTests",
+      "assemblySha256": "E013253B9CA89678274E37706A3816CDE0CA04E43BF61E6A8DC05B52899B7F01",
+      "counters": {
+        "total": "24",
+        "executed": "24",
+        "passed": "24",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 2536
+    },
+    {
+      "stage": "expanded-set-dict-semantic-public",
+      "filter": "(FullyQualifiedName~ExpandedSetDictionary|FullyQualifiedName~DictionaryEntryEvaluation|FullyQualifiedName~StarredDisplay|FullyQualifiedName~Generator|FullyQualifiedName~CollectionDisplay|FullyQualifiedName~ScopeDirective|FullyQualifiedName~Unpacking|FullyQualifiedName~Locals)&Category!=Stress",
+      "assemblySha256": "E013253B9CA89678274E37706A3816CDE0CA04E43BF61E6A8DC05B52899B7F01",
+      "counters": {
+        "total": "376",
+        "executed": "376",
+        "passed": "376",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 4625
+    },
+    {
+      "stage": "expanded-set-dict-governed-public",
+      "filter": "(FullyQualifiedName~Governed|FullyQualifiedName~Representative|FullyQualifiedName~ComparisonFileWorkerTests)&Category!=Stress",
+      "assemblySha256": "E013253B9CA89678274E37706A3816CDE0CA04E43BF61E6A8DC05B52899B7F01",
+      "counters": {
+        "total": "284",
+        "executed": "284",
+        "passed": "284",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 15011
+    }
+  ],
+  "note": "Syntax/lowered own-value ordering regressions failed before5a8a2b16 and pass after it. Small-group hash traces were reclassified using primary CPython compiler source plus16-entry probe; no grouping staging machinery added. No timeout/budget relaxation or local full-public/original Stress rerun."
+}

@@ -224,7 +224,7 @@ rejection, failed runtime admission and manually constructed public-factory
 results have no snapshot. This adds no always-on instruction counting, resource
 ledger or deadline watchdog; cooperative cancellation and separate execution/
 projection memory accounting keep their existing contracts.
-Ordinary starred-list and starred-tuple displays use the same incremental executable display
+Ordinary expanded list, tuple, set and dictionary displays use the same incremental executable display
 operations as yielding generators. Expressions and starred iteration interleave
 in source order. The existing per-item checkpoints remain active; explicit fuel
 consumption can therefore differ from the previous lowered-expression route.
@@ -232,6 +232,11 @@ Tuple expansion funds its mutable working list while constructing the immutable
 result. Both coexist during conversion, so admission can reject earlier than the
 previous lowered route. These estimates remain conservatively owned by the finite
 execution/result lifetime; no CLR collection or guest-reference tracing is needed.
+Each dictionary entry evaluates its key expression, then its value expression,
+before key validation/insertion. A value failure or cancellation therefore takes
+precedence over an unhashable key. Exact hash/equality callback counts and their
+batching across different entries are implementation details; Lython does not
+emulate CPython compiler thresholds or hash-table probe sequences.
 Guest-visible Python exception shells have a conservative160-byte estimate.
 Rebinding or rethrowing an alias does not allocate another shell. Execution owners
 retain admitted guest storage conservatively until their finite batch ends;

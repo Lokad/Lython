@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "collections.expanded-merge.medium",
+      "family": "collections",
+      "category": "core",
+      "scale": "medium",
+      "size": 2048,
+      "source": "N = 2048\ndef merge(left, right, marker):\n    before = marker + 1\n    mapping = {'before':before, **left, 'marker':marker, **right}\n    members = {before, *left.values(), marker, *right.values()}\n    return mapping['before'] + mapping['marker'] + len(members)\nleft = {'left':1}\nright = {'right':2}\ntotal = 0\nfor i in range(N):\n    total += merge(left, right, i)\nprint(total)\n",
+      "fixtureJson": "{\"size\":2048,\"text\":null}",
+      "expectedOutput": "4202492\n",
+      "sourceUtf8Bytes": 374,
+      "expectedOutputUtf8Bytes": 8,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "65f0a06418e8ed7d5dc617ba8fe3a4e3be422e03c51a0cd9a132c3501197e8cf",
+      "fixtureSha256": "cc19526c1d9f59f92c233c4276c92e42e48bc1ecbbeec305f81a44877bd877d6",
+      "expectedOutputSha256": "1939ec3afc8a83ef734c5b2b8902136433d1c89bc02405973f834b3a64a83b5e"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "source": "external\\cpython\\Python\\compile.c",
+  "sha256": "5da7d0e651d57fbedc19b5063caec55ae22dad6da341019b1bada1a6d0c73f5d",
+  "sourceManifestSha256": "a0a32b5cf0a067ee5af0c8b6f095f513de6dc326ca7d8bf419b65064f16bc684",
+  "evidence": [
+    {
+      "line": 56,
+      "text": "#define STACK_USE_GUIDELINE 30"
+    },
+    {
+      "line": 4600,
+      "text": "int big = n*2 > STACK_USE_GUIDELINE;"
+    },
+    {
+      "line": 5179,
+      "text": "int big = n*2 > STACK_USE_GUIDELINE;"
+    }
+  ],
+  "conclusion": "Small and16-entry probes show different CPython hash batching; not a portable expression-order rule. Own key/value evaluation before validation is preserved independently."
+}

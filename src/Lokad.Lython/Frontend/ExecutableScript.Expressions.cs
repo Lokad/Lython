@@ -103,8 +103,7 @@ internal sealed partial class ExecutableScript
                 case LoweredSetLiteralExpression set:
                     if (set.Set.HasUnpacking)
                     {
-                        AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(set), set.Span));
-                        return currentBlock;
+                        return CompileDisplay(set.Items, ExecutableDisplayKind.Set, set.Span, currentBlock);
                     }
 
                     foreach (var item in set.Items)
@@ -117,8 +116,7 @@ internal sealed partial class ExecutableScript
                 case LoweredDictLiteralExpression dict:
                     if (dict.Items.Any(item => item.IsUnpacking))
                     {
-                        AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(dict), dict.Span));
-                        return currentBlock;
+                        return CompileDictionaryDisplay(dict, currentBlock);
                     }
 
                     foreach (var item in dict.Items)

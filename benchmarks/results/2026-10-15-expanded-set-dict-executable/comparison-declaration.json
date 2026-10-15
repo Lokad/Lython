@@ -1,0 +1,16 @@
+{
+  "baselineRevision": "28c41f1de7f5df3cfdbf7fddb6a5eee426a2c631",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "3d04ab847ec8374d38ce060a1532c16f06d28dbded32dfe6df8b72fa30383bbe",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingExpressions.cs": "012ebcf0be317476f6439bdc84d8362c964535c348ad2bb48d0e47fa71f12262"
+  },
+  "sourceArchiveSha256": "07b795c869ce1730478ed825bbdd4c9e691aa3f755fe8a33fb2916e719b806cf",
+  "caseId": "collections.expanded-merge.medium",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Reuse generator display lowering for ordinary expanded set/dictionary displays; remove their expression fallback and resulting local mirroring; both roles include own-value-before-key-validation fix; no new runtime handler or opcode.",
+  "normalGCAndTiering": true,
+  "boundary": "Already compiled helper/list merge job, fresh per-run state, execution/projection and prior-result disposal; compilation/startup/transport/hash excluded.",
+  "stoppingRule": "One fixed affected helper job after source gates/focused checks. Preserve all samples; no retuning or repeat of rejected comprehension producers."
+}

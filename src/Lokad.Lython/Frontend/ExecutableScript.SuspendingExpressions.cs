@@ -54,13 +54,7 @@ internal sealed partial class ExecutableScript
                     result = CompileDisplay(set.Items, ExecutableDisplayKind.Set, set.Span, block);
                     return true;
                 case LoweredDictLiteralExpression dict when dict.Items.Any(i => i.IsUnpacking):
-                    EmitOperation(new ExecutableStartDisplay(ExecutableDisplayKind.Dictionary), dict.Span, result);
-                    foreach (var item in dict.Items)
-                    {
-                        result = CompileExpression(item.Key, result);
-                        if (!item.IsUnpacking) result = CompileExpression(item.Value, result);
-                        EmitOperation(new ExecutableStoreDictionaryItem(item.IsUnpacking), item.Syntax.Span, result);
-                    }
+                    result = CompileDictionaryDisplay(dict, result);
                     return true;
             }
             var clauses = expression switch
@@ -94,6 +88,19 @@ internal sealed partial class ExecutableScript
                 }
             }
             EmitOperation(new ExecutableJoinFormattedParts(parts.Count), span, block);
+            return block;
+        }
+
+        private int CompileDictionaryDisplay(LoweredDictLiteralExpression dict, int block)
+        {
+            EmitOperation(new ExecutableStartDisplay(ExecutableDisplayKind.Dictionary), dict.Span, block);
+            foreach (var item in dict.Items)
+            {
+                block = CompileExpression(item.Key, block);
+                if (!item.IsUnpacking) block = CompileExpression(item.Value, block);
+                EmitOperation(new ExecutableStoreDictionaryItem(item.IsUnpacking),
+                    item.IsUnpacking ? item.Syntax.Span : item.Key.Span, block);
+            }
             return block;
         }
 

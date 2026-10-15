@@ -9,6 +9,21 @@ namespace Lokad.Lython.Tests;
 public sealed class StarredDisplayExecutableTests
 {
     [Theory]
+    [InlineData("{before,*left,marker,*right}")]
+    [InlineData("{'before':before,**left,'marker':marker,**right}")]
+    public void SetAndDictionaryExpansionDoNotForceFallbackOrMirroring(string expression)
+    {
+        var syntax = LythonFrontend.Compile($"def combine(left,right,marker):\n    before=marker+1\n    return {expression}").Script!;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax));
+        var body = Assert.Single(code.EntryPoint.Functions).CodeObject;
+        Assert.NotNull(body);
+        Assert.Empty(body.ExpressionFallbacks);
+        Assert.Empty(body.StatementFallbacks);
+        Assert.False(body.RequiresLocalVariableMirroring);
+        Assert.False(code.EntryPoint.RequiresLocalVariableMirroring);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void TupleFinalConversionRefusesBeforeAssignment(bool asynchronous)

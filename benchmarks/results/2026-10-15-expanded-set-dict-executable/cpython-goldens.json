@@ -1,0 +1,60 @@
+{
+  "python": "Python 3.13.2",
+  "checks": [
+    {
+      "source": "print({0,*range(3)}=={0,1,2},len({*'\u00e9\ud83d\ude00'}))",
+      "expected": "True 2\n",
+      "stdout": "True 2\n"
+    },
+    {
+      "source": "d={**{'a':1,'same':0},'z':4,**{'same':2,'b':3}}\nprint(list(d),list(d.values()))",
+      "expected": "['a', 'same', 'z', 'b'] [1, 2, 4, 3]\n",
+      "stdout": "['a', 'same', 'z', 'b'] [1, 2, 4, 3]\n"
+    },
+    {
+      "source": "events=[]\nclass Mapping:\n def keys(self):\n  events.append('keys')\n  def produce():\n   for key in ['a','b']:\n    events.append('key:'+key)\n    yield key\n  return produce()\n def __getitem__(self,key):\n  events.append('get:'+key)\n  return key.upper()\nd={**Mapping()}\nprint(d,events)",
+      "expected": "{'a': 'A', 'b': 'B'} ['keys', 'key:a', 'key:b', 'get:a', 'get:b']\n",
+      "stdout": "{'a': 'A', 'b': 'B'} ['keys', 'key:a', 'key:b', 'get:a', 'get:b']\n"
+    },
+    {
+      "source": "events=[]\ndef mark():\n events.append('suffix')\n return 1\ntarget={'old':1}\ntry: target={**[('a',1)],'x':mark()}\nexcept TypeError: print(target,events)",
+      "expected": "{'old': 1} []\n",
+      "stdout": "{'old': 1} []\n"
+    },
+    {
+      "source": "events=[]\ndef mark():\n events.append('suffix')\n return 1\ntarget={17}\ntry: target={*[[1]],mark()}\nexcept TypeError: print(target,events)",
+      "expected": "{17} []\n",
+      "stdout": "{17} []\n"
+    },
+    {
+      "source": "class Key:\n def __hash__(self): return 1\n def __eq__(self,other): return isinstance(other,Key)\noriginal=Key()\nreplacement=Key()\nd={original:1,**{replacement:2}}\ns={original,*[replacement]}\nprint(len(d),next(iter(d)) is original,d[replacement],len(s))",
+      "expected": "1 True 2 1\n",
+      "stdout": "1 True 2 1\n"
+    },
+    {
+      "source": "def combine(base):\n prefix=3\n result={**base,'marker':prefix}\n return result,locals()['prefix']\nprint(combine({'a':1}))",
+      "expected": "({'a': 1, 'marker': 3}, 3)\n",
+      "stdout": "({'a': 1, 'marker': 3}, 3)\n"
+    },
+    {
+      "source": "def g():\n result={**(yield {'a':1}),'x':2}\n yield result\niterator=g()\nprint(next(iterator))\nprint(iterator.send({'b':3}))\ndef h():\n result={0,*(yield [1]),2}\n yield result\niterator=h()\nprint(next(iterator))\nprint(sorted(iterator.send((3,4))))",
+      "expected": "{'a': 1}\n{'b': 3, 'x': 2}\n[1]\n[0, 2, 3, 4]\n",
+      "stdout": "{'a': 1}\n{'b': 3, 'x': 2}\n[1]\n[0, 2, 3, 4]\n"
+    },
+    {
+      "source": "events=[]\ndef mark(name,value):\n    events.append(name)\n    return value\ntry:\n    result={mark('key',[]):mark('value',1),**{}}\nexcept TypeError:\n    print(events)\n",
+      "expected": "['key', 'value']\n",
+      "stdout": "['key', 'value']\n"
+    },
+    {
+      "source": "events=[]\ndef mark(name,value):\n    events.append(name)\n    return value\ntry:\n    class Holder:\n        result={mark('key',[]):mark('value',1),**{}}\nexcept TypeError:\n    print(events)\n",
+      "expected": "['key', 'value']\n",
+      "stdout": "['key', 'value']\n"
+    },
+    {
+      "source": "events=[]\ndef mark(name,value):\n    events.append(name)\n    return value\ntry:\n    build=lambda:{mark('key',[]):mark('value',1),**{}}\n    build()\nexcept TypeError:\n    print(events)\n",
+      "expected": "['key', 'value']\n",
+      "stdout": "['key', 'value']\n"
+    }
+  ]
+}
