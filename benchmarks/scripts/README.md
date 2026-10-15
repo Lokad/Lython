@@ -5,6 +5,9 @@ text counting, newline-delimited JSON aggregation, and mediated directory/file
 copying with a deterministic manifest. The file-search job adds a small predicate
 helper and an early break inside a file context, with independently checked scan
 count and retained matching line. They publish complete output files.
+The uppercase-report job reads one bounded UTF-8 text file and publishes its
+uppercase form, including full-case expansions. It reports the output's Python
+character count; fixtures check exact report bytes independently.
 Text reports explicitly use LF on Windows and Linux. Each run needs fresh input
 files and a writable working directory; the file job creates its output directory.
 

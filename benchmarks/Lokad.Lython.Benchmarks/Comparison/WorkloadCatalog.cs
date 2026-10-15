@@ -58,7 +58,7 @@ internal static class WorkloadCatalog
     {
         var cases = new List<ComparisonWorkload>();
         foreach (var n in new[] { 0, 16, 1024 })
-        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search" })
+        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase" })
         {
             var inputs = new Dictionary<string, byte[]>();
             var outputs = new Dictionary<string, byte[]>();
@@ -74,6 +74,10 @@ internal static class WorkloadCatalog
                     inputs["input.txt"] = Utf8(Repeat("Alpha café 😀\nalpha BETA café\n\n", n));
                     outputs["report.txt"] = Utf8(n == 0 ? "" : $"alpha={2 * n}\nbeta={n}\ncafé={2 * n}\n😀={n}\n");
                     stdout = $"{6 * n}\n"; break;
+                case "text-uppercase":
+                    inputs["input.txt"] = Utf8(Repeat("café Straße ﬃ 😀\n", n));
+                    outputs["report.txt"] = Utf8(Repeat("CAFÉ STRASSE FFI 😀\n", n));
+                    stdout = $"{19 * n}\n"; break;
                 case "json-summary":
                     inputs["input.jsonl"] = Utf8(Repeat("{\"kind\":\"red\",\"amount\":3}\n{\"kind\":\"blue\",\"amount\":2}\n{\"kind\":\"red\",\"amount\":-1}\n{\"kind\":\"blue\",\"amount\":5}\n\n", n));
                     outputs["report.json"] = Utf8(n == 0 ? "{}\n" : $"{{\"blue\":{7 * n},\"red\":{3 * n}}}\n");

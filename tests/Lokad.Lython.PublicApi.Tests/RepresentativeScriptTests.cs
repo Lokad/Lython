@@ -7,7 +7,7 @@ public sealed class RepresentativeScriptTests
 {
     public static IEnumerable<object[]> Cases()
     {
-        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search" })
+        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase" })
             foreach (var repetitions in new[] { 0, 16, 1024 })
                 foreach (var asynchronous in new[] { false, true })
                     yield return [name, repetitions, asynchronous];
@@ -36,6 +36,11 @@ public sealed class RepresentativeScriptTests
                 inputs["/input.txt"] = Utf8(Repeat("Alpha café 😀\nalpha BETA café\n\n"));
                 outputs["/report.txt"] = Utf8(repetitions == 0 ? "" : $"alpha={2 * repetitions}\nbeta={repetitions}\ncafé={2 * repetitions}\n😀={repetitions}\n");
                 stdout = $"{6 * repetitions}\n";
+                break;
+            case "text-uppercase":
+                inputs["/input.txt"] = Utf8(Repeat("café Straße ﬃ 😀\n"));
+                outputs["/report.txt"] = Utf8(Repeat("CAFÉ STRASSE FFI 😀\n"));
+                stdout = $"{19 * repetitions}\n";
                 break;
             case "json-summary":
                 inputs["/input.jsonl"] = Utf8(Repeat("{\"kind\":\"red\",\"amount\":3}\n{\"kind\":\"blue\",\"amount\":2}\n{\"kind\":\"red\",\"amount\":-1}\n{\"kind\":\"blue\",\"amount\":5}\n\n"));
