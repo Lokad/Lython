@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse the existing immutable empty tuple for empty literals and completed tuple expansions across executable and lowered execution. Preserve identity with `tuple()` without a new cache or identity ledger.
+
 - Compile ordinary starred-list displays with the existing generator display operations, removing their expression fallback and unnecessary local mirroring. Preserve interleaved evaluation, async iteration, cancellation, admission and alias funding. Explicit fuel now uses those existing per-item checkpoints.
 
 - Await reflected augmented methods for builtin Boolean, integer, float, complex and decimal values, including host integer representations. Preserve cancellation and complex/matrix augmented error tokens when reflected methods decline.

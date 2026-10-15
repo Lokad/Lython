@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
                     }
                 case ExecutableFinishTuple:
                     var expanded = (PyList)Pop(ref _stack, span);
-                    var tuple = new PyTuple(expanded, _context.MemoryGovernor, span);
+                    var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, _context.MemoryGovernor, span);
                     PushObserved(tuple, span);
                     break;
                 case ExecutableStartCall call:

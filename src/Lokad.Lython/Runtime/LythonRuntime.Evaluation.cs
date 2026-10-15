@@ -122,7 +122,7 @@ internal sealed partial class LythonRuntime
             }
 
             context.ObserveCollectionCount(expanded.Count, tuple.Span);
-            var expandedTuple = new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
+            var expandedTuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
             return expandedTuple;
         }
     }

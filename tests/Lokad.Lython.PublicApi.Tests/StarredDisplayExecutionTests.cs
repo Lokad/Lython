@@ -3,7 +3,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class StarredListExecutionTests
+public sealed class StarredDisplayExecutionTests
 {
     public static TheoryData<string, string> Programs => new()
     {
@@ -16,6 +16,24 @@ public sealed class StarredListExecutionTests
         { "def g():\n values=[0,*(yield [1]),2]\n yield values\niterator=g()\nprint(next(iterator))\nprint(iterator.send((3,4)))", "[1]\n[0, 3, 4, 2]\n" },
         { "events=[]\ndef items():\n try:\n  yield 1\n  raise ValueError('bad')\n finally: events.append('closed')\ntarget=['old']\ntry: target=[0,*items(),2]\nexcept ValueError: print(target,events)", "['old'] ['closed']\n" },
     };
+
+    public static TheoryData<string, string> TuplePrograms => new()
+    {
+        { "print((0,*range(3),3,*'é😀'))", "(0, 0, 1, 2, 3, 'é', '😀')\n" },
+        { "def combine(left,right):\n marker=7\n return (*left,marker,*right)\nprint(combine([1,2],(3,4)))", "(1, 2, 7, 3, 4)\n" },
+        { "events=[]\ndef mark(name,value):\n events.append(name)\n return value\ndef items():\n events.append('pull1')\n yield 1\n events.append('pull2')\n yield 2\nresult=(mark('a',0),*mark('iterable',items()),mark('b',3),*[4,5])\nprint(result)\nprint(','.join(events))", "(0, 1, 2, 3, 4, 5)\na,iterable,pull1,pull2,b\n" },
+        { "events=[]\ntarget=('old',)\ntry: target=(1,*None,events.append('suffix'))\nexcept TypeError: print(target,events)", "('old',) []\n" },
+        { "marker=[]\nresult=(*([marker]*2),marker)\nresult[0].append(9)\nprint(result,result[0] is result[2])", "([9], [9], [9]) True\n" },
+        { "def make():\n x=7\n def inner(): return x\n result=(*range(2),x,inner())\n x=9\n return result,inner(),locals()['x']\nprint(make())", "((0, 1, 7, 7), 9, 9)\n" },
+        { "def g():\n values=(0,*(yield [1]),2)\n yield values\niterator=g()\nprint(next(iterator))\nprint(iterator.send((3,4)))", "[1]\n(0, 3, 4, 2)\n" },
+        { "print((*[],),(*[1],),(*[],*()))", "() (1,) ()\n" },
+        { "empty=tuple()\nliteral=()\nprint(literal is empty,(*[],) is empty,(*[],*()) is empty)\nclass Holder: empty=(*[],)\nprint(Holder.empty is empty)", "True True True\nTrue\n" },
+    };
+
+    [Theory]
+    [MemberData(nameof(TuplePrograms))]
+    public Task TupleResultsAndCleanupSurviveBothDrivers(string source, string expected)
+        => PythonResultsAndCleanupSurviveBothDrivers(source, expected);
 
     [Theory]
     [MemberData(nameof(Programs))]
@@ -37,11 +55,13 @@ public sealed class StarredListExecutionTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task UserIterationCanActuallySuspendAndCancel(bool cancel)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task UserIterationCanActuallySuspendAndCancel(bool cancel, bool tuple)
     {
-        const string source = """
+        var source = $$"""
 class Items:
     def __init__(self): self.index=0
     def __iter__(self): return self
@@ -50,7 +70,7 @@ class Items:
         with open('events.txt','a') as target: target.write(str(self.index))
         self.index+=1
         return self.index
-result=[-1,*Items(),99]
+result={{(tuple ? "(-1,*Items(),99)" : "[-1,*Items(),99]")}}
 print(result)
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
@@ -82,7 +102,7 @@ print(result)
             else
             {
                 Assert.True(result.Success, result.Failure?.Message);
-                Assert.Equal("[-1, 1, 2, 99]\n", result.StandardOutput);
+                Assert.Equal(tuple ? "(-1, 1, 2, 99)\n" : "[-1, 1, 2, 99]\n", result.StandardOutput);
                 Assert.Equal("before01", host.ReadText("/events.txt"));
             }
             Assert.True(host.CompletedAsynchronously > 0);
@@ -95,10 +115,12 @@ print(result)
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task RefusedGrowthDoesNotPublishThePartialList()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RefusedGrowthDoesNotPublishThePartialDisplay(bool tuple)
     {
-        const string source = "target=[17]\ntarget=[1,*range(10000),2]\nwith open('result.txt','w') as output: output.write(str(target))";
+        var source = "target=[17]\ntarget=" + (tuple ? "(1,*range(10000),2)" : "[1,*range(10000),2]") + "\nwith open('result.txt','w') as output: output.write(str(target))";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
         var baseline = budget.ReservedBytes;
@@ -118,11 +140,13 @@ print(result)
         }
     }
 
-    [Fact]
-    public async Task EscapingListsKeepTheirMagnitudeAliasesFunded()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EscapingDisplaysKeepTheirMagnitudeAliasesFunded(bool tuple)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("return [*source,source[0]]", budget);
+        using var script = new LythonEngine().Compile(tuple ? "return (*source,source[0])" : "return [*source,source[0]]", budget);
         var baseline = budget.ReservedBytes;
         var seed = BigInteger.One << 10000;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["source"] = new object[] { seed } } };
@@ -131,7 +155,8 @@ print(result)
         foreach (var result in new[] { first, second })
         {
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(new object?[] { seed, seed }, Assert.IsType<List<object?>>(result.ReturnValue));
+            if (tuple) Assert.Equal(new object?[] { seed, seed }, Assert.IsType<object?[]>(result.ReturnValue));
+            else Assert.Equal(new object?[] { seed, seed }, Assert.IsType<List<object?>>(result.ReturnValue));
         }
         first.Dispose();
         Assert.True(budget.ReservedBytes > baseline);

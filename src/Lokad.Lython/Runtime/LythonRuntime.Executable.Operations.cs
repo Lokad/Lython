@@ -188,6 +188,8 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Runtime("executable stack underflow", span);
         }
 
+        if (count == 0) return PyTuple.Empty;
+
         var start = stack.Count - count;
         context.MemoryGovernor.EnsureCanReserve(PyTuple.EstimateApproximateBytes(count), span);
         var items = new object[count];

@@ -97,7 +97,7 @@ internal sealed partial class LythonRuntime
         }
 
         context.ObserveCollectionCount(expanded.Count, tuple.Span);
-        return new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
+        return expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
     }
 
     private static async ValueTask<object> EvaluateLoweredDictLiteralAsync(LoweredDictLiteralExpression dict, ExecutionContext context)
