@@ -212,6 +212,18 @@ for i in range(N):
     item.add(i)
 print(item.value)
 """, n => Line((long)n * (n - 1) / 2 + 3L * n));
+        Add("calls.expanded-helper", "calls", "core", CoreSizes, """
+def combine(left, right, marker=0):
+    return left + right + marker
+def forward(values, keywords):
+    return combine(*values, **keywords)
+values = (1, 2)
+keywords = {'marker':4}
+total = 0
+for i in range(N):
+    total += forward(values, keywords)
+print(total)
+""", n => Line(7L * n));
         Add("lists.starred-merge", "lists", "core", CoreSizes, """
 def merge(left, right, marker):
     before = marker + 1
