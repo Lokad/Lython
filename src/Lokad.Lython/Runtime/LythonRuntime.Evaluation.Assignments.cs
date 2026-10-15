@@ -522,7 +522,9 @@ internal sealed partial class LythonRuntime
             return GetUserItem(instance, index, context, span);
         }
 
-        return PyIndexing.ReadIndex(target, CoerceIndexProtocol(index, context, span), span, context);
+        if ((target is IPyIndexableValue or PyRange) && index is PyInstance)
+            index = CoerceTypeIndexAsync(index, context, span, false).GetAwaiter().GetResult() ?? PyNone.Instance;
+        return PyIndexing.ReadIndex(target, index, span, context);
     }
 
     private static void ExecuteSliceAssignment(

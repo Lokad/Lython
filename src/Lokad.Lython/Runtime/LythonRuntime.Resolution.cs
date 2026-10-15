@@ -348,6 +348,25 @@ internal sealed partial class LythonRuntime
         return await CallableInvocation.InvokeUnaryAsync(callable, index, span, context).ConfigureAwait(false);
     }
 
+    // Shared native sequence/XML conversion: implicit index hooks come from the
+    // type, and may suspend during descriptor binding or the call itself.
+    private static async ValueTask<object?> CoerceTypeIndexAsync(object? index, ExecutionContext context,
+        LythonSourceSpan span, bool asynchronous)
+    {
+        if (index is not PyInstance instance) return index;
+        if (!instance.Type.TryLookupInMro("__index__", 0, out var raw, out _)) return index;
+        var callable = asynchronous
+            ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false)
+            : PyAttributeLookup.BindForInstance(instance, raw, context, span);
+        var result = asynchronous
+            ? await InvokeCallableTargetAsync(callable, span, span, context,
+                () => ValueTask.FromResult(Array.Empty<CallArgumentValue>())).ConfigureAwait(false)
+            : InvokeCallableTarget(callable, span, span, context, Array.Empty<CallArgumentValue>());
+        if (!PyNumberOps.TryAsInteger(result, out var integer))
+            throw RuntimeErrors.Type("__index__ returned non-int", span);
+        return integer;
+    }
+
     internal static object CoerceIndexProtocol(object index, ExecutionContext context, LythonSourceSpan span)
     {
         if (index is not PyInstance instance)

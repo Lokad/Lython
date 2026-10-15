@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Use type-level __index__ conversion for native sequence reads in both execution APIs, awaiting descriptor binding and callbacks under RunAsync. Preserve arbitrary-size range indices and raw dictionary keys; share XML's existing converter and remove the duplicate lowered synchronous read body.
+
 - Route exact integer unary instructions under RunAsync through the existing synchronous arithmetic and value-transfer handler. Other operands retain asynchronous unary/truth protocols, including real host suspension and cancellation.
 
 - Resolve mutable function callable attributes again at reused call sites, so replacement and deletion take effect while retained callable aliases remain valid.

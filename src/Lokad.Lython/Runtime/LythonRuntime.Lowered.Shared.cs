@@ -699,19 +699,7 @@ internal sealed partial class LythonRuntime
         object index,
         LythonSourceSpan span,
         ExecutionContext context)
-    {
-        if (target is PyInstance instance)
-        {
-            return GetUserItem(instance, index, context, span);
-        }
-
-        if (target is PyDefaultDict defaultDict)
-        {
-            return defaultDict.GetOrCreate(ValidateDictionaryKey(index, span), context, span);
-        }
-
-        return PyIndexing.ReadIndex(target, index, span, context);
-    }
+        => ReadSubscriptValue(target, index, span, context);
 
     private static async ValueTask<object> ReadLoweredSubscriptAsync(object target, object index, LythonSourceSpan span, ExecutionContext context)
     {
@@ -729,6 +717,8 @@ internal sealed partial class LythonRuntime
         {
             return await CreateGenericSubscriptAsync(target, index, context, span, true).ConfigureAwait(false);
         }
+        if ((target is IPyIndexableValue or PyRange) && index is PyInstance)
+            index = await CoerceTypeIndexAsync(index, context, span, true).ConfigureAwait(false) ?? PyNone.Instance;
         return ReadLoweredSubscript(target, index, span, context);
     }
 

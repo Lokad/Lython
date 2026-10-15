@@ -259,35 +259,18 @@ internal sealed partial class LythonRuntime
             if (index is PySlice slice)
                 return await ReadSliceAsync(target, slice.StartBound, slice.StopBound, slice.StepBound,
                     context, span, asynchronous).ConfigureAwait(false);
-            index = (await IndexBound(index, context, span, asynchronous).ConfigureAwait(false)) ?? PyNone.Instance;
+            index = (await CoerceTypeIndexAsync(index, context, span, asynchronous).ConfigureAwait(false)) ?? PyNone.Instance;
             return target.GetIndex(PyIndexing.NormalizeIndex(index, target.Length, span));
         }
 
         internal static async ValueTask<object> ReadSliceAsync(Element target, object? start, object? end,
             object? step, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            start = await IndexBound(start, context, span, asynchronous).ConfigureAwait(false);
-            end = await IndexBound(end, context, span, asynchronous).ConfigureAwait(false);
-            step = await IndexBound(step, context, span, asynchronous).ConfigureAwait(false);
+            start = await CoerceTypeIndexAsync(start, context, span, asynchronous).ConfigureAwait(false);
+            end = await CoerceTypeIndexAsync(end, context, span, asynchronous).ConfigureAwait(false);
+            step = await CoerceTypeIndexAsync(step, context, span, asynchronous).ConfigureAwait(false);
             var result = (PyList)target.GetSlice(PyIndexing.SliceIndices(target.Length, start, end, step, span));
             return result;
-        }
-
-        private static async ValueTask<object?> IndexBound(object? index, ExecutionContext context,
-            LythonSourceSpan span, bool asynchronous)
-        {
-            if (index is not PyInstance instance) return index;
-            if (!instance.Type.TryLookupInMro("__index__", 0, out var raw, out _)) return index;
-            var callable = asynchronous
-                ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false)
-                : PyAttributeLookup.BindForInstance(instance, raw, context, span);
-            var result = asynchronous
-                ? await InvokeCallableTargetAsync(callable, span, span, context,
-                    () => ValueTask.FromResult(Array.Empty<CallArgumentValue>())).ConfigureAwait(false)
-                : InvokeCallableTarget(callable, span, span, context, Array.Empty<CallArgumentValue>());
-            if (!Lokad.Lython.Runtime.Numbers.PyNumberOps.TryAsInteger(result, out var integer))
-                throw RuntimeErrors.Type("__index__ returned non-int", span);
-            return integer;
         }
 
         private static PyString DecodeInput(PyBytes input, GraphConstruction graph, ExecutionContext context, LythonSourceSpan span)

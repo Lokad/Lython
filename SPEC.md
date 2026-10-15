@@ -893,6 +893,12 @@ The supported subset must support indexing with Python semantics:
 
 Negative indices for strings, lists, and tuples must behave as in Python.
 
+Native sequence and range reads accept type-level `__index__` hooks. Instance-only
+attributes do not supply that implicit protocol. `RunAsync` awaits descriptor
+binding and the call, preserving cancellation and effects exactly once. Invalid
+hook results raise TypeError; range conversion retains arbitrary-size integers.
+Mapping keys are looked up as keys without invoking `__index__`.
+
 The supported subset must support Python-style slicing for strings, lists, and tuples. Mutable list slices must also support assignment and deletion as described in section 11.6.
 
 Colon slices delivered to a user object's item methods retain the original
