@@ -44,6 +44,9 @@ internal sealed partial class LythonRuntime
     {
         if (target is not ICallable callable)
         {
+            // Python evaluates arguments (and their failures) before rejecting
+            // the target. Keep callable frame admission on its existing path.
+            _ = expandArguments();
             throw RuntimeErrors.NotCallable(targetSpan);
         }
 
@@ -86,6 +89,7 @@ internal sealed partial class LythonRuntime
     {
         if (target is not ICallable callable)
         {
+            _ = await expandArguments().ConfigureAwait(false);
             throw RuntimeErrors.NotCallable(targetSpan);
         }
 
