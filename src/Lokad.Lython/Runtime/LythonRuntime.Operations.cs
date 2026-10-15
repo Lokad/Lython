@@ -941,9 +941,9 @@ internal sealed partial class LythonRuntime
             }
 
             var keyValue = (DictionaryKeyValueItemSyntax)item;
-            result.SetItem(
-                ValidateDictionaryKey(EvaluateExpression(keyValue.Key, context), keyValue.Key.Span),
-                RuntimeValue(EvaluateExpression(keyValue.Value, context)));
+            var key = RuntimeValue(EvaluateExpression(keyValue.Key, context));
+            var value = RuntimeValue(EvaluateExpression(keyValue.Value, context));
+            result.SetItem(ValidateDictionaryKey(key, keyValue.Key.Span), value);
             context.ObserveCollectionCount(result.Count, dict.Span);
         }
         return result;

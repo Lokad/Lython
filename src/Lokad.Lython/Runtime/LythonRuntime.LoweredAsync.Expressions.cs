@@ -119,9 +119,9 @@ internal sealed partial class LythonRuntime
             }
 
             var keyValue = (LoweredDictionaryKeyValueItem)item;
-            var key = ValidateDictionaryKey(await EvaluateLoweredExpressionAsync(keyValue.Key, context).ConfigureAwait(false), keyValue.Key.Span);
+            var key = RuntimeValue(await EvaluateLoweredExpressionAsync(keyValue.Key, context).ConfigureAwait(false));
             var value = RuntimeValue(await EvaluateLoweredExpressionAsync(keyValue.Value, context).ConfigureAwait(false));
-            using (PyStructuralGuard.PushAmbient(context, dict.Span)) result.SetItem(key, value);
+            using (PyStructuralGuard.PushAmbient(context, dict.Span)) result.SetItem(ValidateDictionaryKey(key, keyValue.Key.Span), value);
             context.ObserveCollectionCount(result.Count, dict.Span);
         }
         return result;
