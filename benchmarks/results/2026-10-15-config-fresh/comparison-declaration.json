@@ -1,0 +1,12 @@
+{
+  "revision": "654b4f5ade359d776b306a7229d273d883ccf27b",
+  "caseId": "scripts.config-edit.small",
+  "lane": "compile-run",
+  "roles": "Two identical Lython controls and CPython; no old/new optimization comparison",
+  "sourceArchiveSha256": "aecf09df8ed8c97facb65cd4d9b899ae236679f9bc3209e1f5335c087d945881",
+  "normalGCAndTiering": true,
+  "comparisons": 1,
+  "retries": false,
+  "boundary": "Fresh compilation and one synchronous execution in already-running workers; includes file reset/staging, result projection, output file read/byte checks, script and prior-result disposal. Excludes process startup, transport and full response hashing.",
+  "stoppingRule": "One short fixed small configuration job; retain both controls/all samples, no retry or full lanes"
+}

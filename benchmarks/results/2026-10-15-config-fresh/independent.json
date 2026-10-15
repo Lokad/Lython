@@ -1,0 +1,84 @@
+{
+  "python": "Python 3.13.2",
+  "complexErrors": [
+    {
+      "token": "+",
+      "source": "class Right:\n def __radd__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value+=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for +=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for +=: 'complex' and 'Right'\n"
+    },
+    {
+      "token": "-",
+      "source": "class Right:\n def __rsub__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value-=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for -=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for -=: 'complex' and 'Right'\n"
+    },
+    {
+      "token": "*",
+      "source": "class Right:\n def __rmul__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value*=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for *=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for *=: 'complex' and 'Right'\n"
+    },
+    {
+      "token": "/",
+      "source": "class Right:\n def __rtruediv__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value/=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for /=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for /=: 'complex' and 'Right'\n"
+    },
+    {
+      "token": "//",
+      "source": "class Right:\n def __rfloordiv__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value//=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for //=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for //=: 'complex' and 'Right'\n"
+    },
+    {
+      "token": "%",
+      "source": "class Right:\n def __rmod__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value%=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for %=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for %=: 'complex' and 'Right'\n"
+    },
+    {
+      "token": "**",
+      "source": "class Right:\n def __rpow__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value**=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for **=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for **=: 'complex' and 'Right'\n"
+    },
+    {
+      "token": "|",
+      "source": "class Right:\n def __ror__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value|=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for |=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for |=: 'complex' and 'Right'\n"
+    },
+    {
+      "token": "^",
+      "source": "class Right:\n def __rxor__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value^=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for ^=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for ^=: 'complex' and 'Right'\n"
+    },
+    {
+      "token": "&",
+      "source": "class Right:\n def __rand__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value&=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for &=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for &=: 'complex' and 'Right'\n"
+    },
+    {
+      "token": "<<",
+      "source": "class Right:\n def __rlshift__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value<<=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for <<=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for <<=: 'complex' and 'Right'\n"
+    },
+    {
+      "token": ">>",
+      "source": "class Right:\n def __rrshift__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value>>=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for >>=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for >>=: 'complex' and 'Right'\n"
+    },
+    {
+      "token": "@",
+      "source": "class Right:\n def __rmatmul__(self,other): return NotImplemented\nvalue=1+2j\ntry:\n value@=Right()\nexcept TypeError as error:\n print(str(error))\n",
+      "expected": "unsupported operand type(s) for @=: 'complex' and 'Right'\n",
+      "stdout": "unsupported operand type(s) for @=: 'complex' and 'Right'\n"
+    }
+  ],
+  "pythonFixturePathsVerified": true
+}

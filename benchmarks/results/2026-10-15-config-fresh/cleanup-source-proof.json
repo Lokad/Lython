@@ -1,0 +1,41 @@
+{
+  "revision": "654b4f5ade359d776b306a7229d273d883ccf27b",
+  "archiveMatches": true,
+  "sourceFilesChecked": 627,
+  "identicalLythonBinaries": true,
+  "workers": [
+    {
+      "label": "baseline",
+      "pid": 2344676,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "label": "candidate",
+      "pid": 2344697,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "label": "CPython",
+      "pid": 2344712,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "label": "lythonIdentity",
+      "pid": 2344546,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "label": "pythonIdentity",
+      "pid": 2344566,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    }
+  ],
+  "allProcessesAndFixturesGone": true,
+  "units": "",
+  "leaseAcquired": true
+}

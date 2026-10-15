@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-15 fresh configuration job](results/2026-10-15-config-fresh/README.md)
+compiles once and edits/publishes one JSON file per invocation in an already-running
+host. Two identical654b4f5a Lython controls gave2.817-3.142ms, CPython1.572ms;
+their11.5% discrepancy and4.7%/5.7%/9.5% spread remain visible. No qualified ratio,
+earlier/later optimization claim or retuning. Same-path fixture replay preserves
+fresh inputs and independently checked output bytes.
+
 The [2026-10-15 async exact-integer operator family](results/2026-10-15-async-integer-operators/README.md)
 extends the existing synchronous handler gate beyond addition. Yielding controls
 first exposed and fixed synchronous invocation of other augmented user slots.

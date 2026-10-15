@@ -1,0 +1,251 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "executable": "C:\\Python313\\python.exe",
+  "checks": [
+    {
+      "script": "config-edit",
+      "repetitions": 0,
+      "passed": true,
+      "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+      "inputSha256": {
+        "config.json": "87f16938d770a758867e67c759af51985bfe519cfef9657be15b03dcd8c7997c"
+      },
+      "outputSha256": {
+        "config.json": "dcff0190cdcf96d37b9de2ef15f7454a1a9b4fd5b52961726fc52d1e27bec8e1"
+      }
+    },
+    {
+      "script": "csv-summary",
+      "repetitions": 0,
+      "passed": true,
+      "sourceSha256": "2e83f4a6b80d1eb3e326fe6eba8e4ef37a31ae4ec19a7d59c848a1736f098f2c",
+      "inputSha256": {
+        "input.csv": "a2112092d67df9aa54ae9c57acf204e023b6520282fe4bb5b8d8b688c9227a31"
+      },
+      "outputSha256": {
+        "report.csv": "86b32b9dccbad92a30958ffb87edde5b51f2dd343568a44256fe15e1f2298cf7"
+      }
+    },
+    {
+      "script": "text-summary",
+      "repetitions": 0,
+      "passed": true,
+      "sourceSha256": "d34b08e1864b76f5be1bea22d8aef6b43be63262aed98e2ac5c0bc76e168253f",
+      "inputSha256": {
+        "input.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "outputSha256": {
+        "report.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "script": "json-summary",
+      "repetitions": 0,
+      "passed": true,
+      "sourceSha256": "bf9671d8d7154730f41e13dde8aa295b520894f41439dbe8f2ff1c145cfa23e7",
+      "inputSha256": {
+        "input.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "outputSha256": {
+        "report.json": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+      }
+    },
+    {
+      "script": "file-manifest",
+      "repetitions": 0,
+      "passed": true,
+      "sourceSha256": "04853279aebba6f963432860f5f820503d0de77fa8f4600c1efad035d7c7d747",
+      "inputSha256": {
+        "inbox/a.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "inbox/\u00e9.txt": "b2c137d874d77bc5faffc017c29a89cb8d15b027d5afe794c513b0c0b51a72fb"
+      },
+      "outputSha256": {
+        "outbox/a.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "outbox/\u00e9.txt": "b2c137d874d77bc5faffc017c29a89cb8d15b027d5afe794c513b0c0b51a72fb",
+        "manifest.json": "c6bc1d32e8759fb33e6b63e18b21122dfc3461d069bb437d3f23c5de5e0179eb"
+      }
+    },
+    {
+      "script": "config-edit",
+      "repetitions": 16,
+      "passed": true,
+      "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+      "inputSha256": {
+        "config.json": "008c2534722107d8e8fdbd41beaa74032fdf010c777a596bed23e4f7688dd5c0"
+      },
+      "outputSha256": {
+        "config.json": "0e83649b07b0708ec80ea9ebf2b79219a7d353bb651e8057c11c9a36d0c6ba8e"
+      }
+    },
+    {
+      "script": "csv-summary",
+      "repetitions": 16,
+      "passed": true,
+      "sourceSha256": "2e83f4a6b80d1eb3e326fe6eba8e4ef37a31ae4ec19a7d59c848a1736f098f2c",
+      "inputSha256": {
+        "input.csv": "1a56145e4a43b686815228cd623cbf1741c9deb34350790b4d1d0086ef027b83"
+      },
+      "outputSha256": {
+        "report.csv": "0ca4eef6bf2d8844fd96594d62b45dcc3c0bec2054dbe553435278d1293fe9e6"
+      }
+    },
+    {
+      "script": "text-summary",
+      "repetitions": 16,
+      "passed": true,
+      "sourceSha256": "d34b08e1864b76f5be1bea22d8aef6b43be63262aed98e2ac5c0bc76e168253f",
+      "inputSha256": {
+        "input.txt": "f020229249325d7456ee4a49baf6de927beacd111a476c30fd02e46df2ded42e"
+      },
+      "outputSha256": {
+        "report.txt": "697d1640c4caced4d680a2df01c45721d2f10b03685409c0cbe713f8303ecd4f"
+      }
+    },
+    {
+      "script": "json-summary",
+      "repetitions": 16,
+      "passed": true,
+      "sourceSha256": "bf9671d8d7154730f41e13dde8aa295b520894f41439dbe8f2ff1c145cfa23e7",
+      "inputSha256": {
+        "input.jsonl": "385d3bcd2456f73174c6cc9cf5a9b01c506d428df9b45abb61d3272167fe4fbf"
+      },
+      "outputSha256": {
+        "report.json": "c12de9f0daace333db777aeba20b27dae5defdc57b572ba5414a4246fd10d8d6"
+      }
+    },
+    {
+      "script": "file-manifest",
+      "repetitions": 16,
+      "passed": true,
+      "sourceSha256": "04853279aebba6f963432860f5f820503d0de77fa8f4600c1efad035d7c7d747",
+      "inputSha256": {
+        "inbox/a.bin": "e8f0a3b2f740bae5577086468b5f89c13e864220da9ba2eb52dd9dc68c8ffb36",
+        "inbox/\u00e9.txt": "b2c137d874d77bc5faffc017c29a89cb8d15b027d5afe794c513b0c0b51a72fb"
+      },
+      "outputSha256": {
+        "outbox/a.bin": "e8f0a3b2f740bae5577086468b5f89c13e864220da9ba2eb52dd9dc68c8ffb36",
+        "outbox/\u00e9.txt": "b2c137d874d77bc5faffc017c29a89cb8d15b027d5afe794c513b0c0b51a72fb",
+        "manifest.json": "11ad79b0d1ce2d802522a907fb0cd09b71640c910d4a1c636a5bdb2267acfb1b"
+      }
+    },
+    {
+      "script": "config-edit",
+      "repetitions": 1024,
+      "passed": true,
+      "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+      "inputSha256": {
+        "config.json": "1c76863246d49b87c66b69e32fd2945a19a27de1654952c8f14103a4126d7961"
+      },
+      "outputSha256": {
+        "config.json": "24e8d45b8912bf0708d5589aa91931e65d44cb827059c9e6c800f13bf9f543fa"
+      }
+    },
+    {
+      "script": "csv-summary",
+      "repetitions": 1024,
+      "passed": true,
+      "sourceSha256": "2e83f4a6b80d1eb3e326fe6eba8e4ef37a31ae4ec19a7d59c848a1736f098f2c",
+      "inputSha256": {
+        "input.csv": "8e97e17c87a723ca4d87e0ef4b35b13143542ba36a9faa3097e68036480fc07b"
+      },
+      "outputSha256": {
+        "report.csv": "17cf3e77ac206eef4a3d542be7df50632af604ea548921540cdb83bc52d0ab76"
+      }
+    },
+    {
+      "script": "text-summary",
+      "repetitions": 1024,
+      "passed": true,
+      "sourceSha256": "d34b08e1864b76f5be1bea22d8aef6b43be63262aed98e2ac5c0bc76e168253f",
+      "inputSha256": {
+        "input.txt": "0a79ba23b9833a5d7c8e901f044b329be91f4e1a5deea7f39f5dfcc7de9c6783"
+      },
+      "outputSha256": {
+        "report.txt": "a95b63596cabd48fb586b731f558811ece02ab9b76694c5cac7bc0c9bbad2e20"
+      }
+    },
+    {
+      "script": "json-summary",
+      "repetitions": 1024,
+      "passed": true,
+      "sourceSha256": "bf9671d8d7154730f41e13dde8aa295b520894f41439dbe8f2ff1c145cfa23e7",
+      "inputSha256": {
+        "input.jsonl": "d26f64bb57fe996b5850c5dc352284967a997e59593434c953fa6407b5f8ba3f"
+      },
+      "outputSha256": {
+        "report.json": "9efa1d3e163c11dce3412445a85150acfff0045eb26a16eaf1fa3f6a9ec568b7"
+      }
+    },
+    {
+      "script": "file-manifest",
+      "repetitions": 1024,
+      "passed": true,
+      "sourceSha256": "04853279aebba6f963432860f5f820503d0de77fa8f4600c1efad035d7c7d747",
+      "inputSha256": {
+        "inbox/a.bin": "8d606401e851bf5de5589a9f4bb5e8e331e29d0986ca05b34bddb1a7cf8b4848",
+        "inbox/\u00e9.txt": "b2c137d874d77bc5faffc017c29a89cb8d15b027d5afe794c513b0c0b51a72fb"
+      },
+      "outputSha256": {
+        "outbox/a.bin": "8d606401e851bf5de5589a9f4bb5e8e331e29d0986ca05b34bddb1a7cf8b4848",
+        "outbox/\u00e9.txt": "b2c137d874d77bc5faffc017c29a89cb8d15b027d5afe794c513b0c0b51a72fb",
+        "manifest.json": "52c5ea5e452e8e27ba8fbf4e758149f6a588852b1b7f8de565f4980ac1daca93"
+      }
+    },
+    {
+      "script": "csv-summary",
+      "variant": "negative",
+      "passed": true,
+      "expectedException": "ValueError",
+      "failure": {
+        "type": "ValueError",
+        "message": "invalid literal for int() with base 10: 'nope'"
+      },
+      "publishedFiles": [],
+      "sourceSha256": "2e83f4a6b80d1eb3e326fe6eba8e4ef37a31ae4ec19a7d59c848a1736f098f2c",
+      "inputSha256": {
+        "input.csv": "fa1ac2f65a1dcb4df33246549a895b23b3029c457f77e224f27e2233996ad6bd"
+      }
+    },
+    {
+      "script": "json-summary",
+      "variant": "negative",
+      "passed": true,
+      "expectedException": "JSONDecodeError",
+      "failure": {
+        "type": "JSONDecodeError",
+        "message": "Expecting value: line 1 column 24 (char 23)"
+      },
+      "publishedFiles": [],
+      "sourceSha256": "bf9671d8d7154730f41e13dde8aa295b520894f41439dbe8f2ff1c145cfa23e7",
+      "inputSha256": {
+        "input.jsonl": "55ceccfeb9951581f53de7af6860c938e809769ad17478f41cb138e5ec338552"
+      }
+    },
+    {
+      "script": "text-summary",
+      "variant": "negative",
+      "passed": true,
+      "expectedException": "FileNotFoundError",
+      "failure": {
+        "type": "FileNotFoundError",
+        "message": "[Errno 2] No such file or directory: 'input.txt'"
+      },
+      "publishedFiles": [],
+      "sourceSha256": "d34b08e1864b76f5be1bea22d8aef6b43be63262aed98e2ac5c0bc76e168253f",
+      "inputSha256": {}
+    },
+    {
+      "script": "file-manifest",
+      "variant": "negative",
+      "passed": true,
+      "expectedException": "FileNotFoundError",
+      "failure": {
+        "type": "FileNotFoundError",
+        "message": "[WinError 3] The system cannot find the path specified: 'inbox'"
+      },
+      "publishedFiles": [],
+      "sourceSha256": "04853279aebba6f963432860f5f820503d0de77fa8f4600c1efad035d7c7d747",
+      "inputSha256": {}
+    }
+  ]
+}
