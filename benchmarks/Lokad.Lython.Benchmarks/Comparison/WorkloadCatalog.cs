@@ -276,6 +276,14 @@ for line in text.splitlines():
     total += len(line.strip())
 print(total)
 """, n => Line(15L * n));
+        Add("strings.formatted-report", "strings", "core", CoreSizes, """
+def render(value):
+    return f'row={value:06d};next={value+1}\n'
+total = 0
+for i in range(N):
+    total += len(render(i))
+print(total)
+""", n => Line(Enumerable.Range(0, n).Sum(i => 17 + (i + 1).ToString(CultureInfo.InvariantCulture).Length)));
         Add("dicts.string-counts", "dictionaries", "core", CoreSizes, """
 words = ['alpha','beta','café','😀']
 counts = {}
