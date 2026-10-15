@@ -1925,7 +1925,9 @@ internal sealed partial class LythonRuntime
     internal static class DictMembers
     {
         // N17: hot fixed signatures hoisted per family (see ListMembers).
-        private static readonly LythonCallableSignature DictGetSignature = LythonCallableSignature.Create("dict.get", ["key", "default"], 1);
+        private static readonly LythonCallableSignature DictGetSignature = LythonCallableSignature.Create(
+            "dict.get", ["key", "default"], requiredCount: 1, maximumPositionalArgumentCount: 2,
+            variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 2);
         private static readonly LythonCallableSignature DictPopSignature = LythonCallableSignature.Create("dict.pop", ["key", "default"], 1);
         private static readonly LythonCallableSignature DictSetDefaultSignature = LythonCallableSignature.Create("dict.setdefault", ["key", "default"], 1);
         private static readonly LythonCallableSignature DictContainsSignature = LythonCallableSignature.Create("dict.__contains__", ["item"]);
@@ -1942,23 +1944,31 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature DictGtSignature = LythonCallableSignature.Create("dict.__gt__", ["value"]);
         private static readonly LythonCallableSignature DictGeSignature = LythonCallableSignature.Create("dict.__ge__", ["value"]);
         private static readonly LythonCallableSignature DictReversedSignature = LythonCallableSignature.Create("dict.__reversed__");
+        internal static object Get(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var ambientScope = PyStructuralGuard.PushAmbient(context, span);
+            return dict.TryGetValue(ValidateDictionaryKey(key, span), out var found) ? found : fallback;
+        }
+
+        internal static ValueTask<object> GetAsync(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
+            => key is PyString text && dict.HasProtocolKeys
+                ? GetStringAsync(dict, text, fallback, span, context)
+                : new(Get(dict, key, fallback, span, context));
+
+        private static async ValueTask<object> GetStringAsync(PyDict dict, PyString key, object fallback, LythonSourceSpan span, ExecutionContext context)
+        {
+            var found = await dict.TryGetBuiltinStringAsync(key, context, span).ConfigureAwait(false);
+            return found.Found ? found.Value : fallback;
+        }
+
         public static bool TryGetMember(PyDict dict, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
-                "get" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-                    if (arguments.Length is < 1 or > 2)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict.get(key[, default]) expects one key and an optional default.", span);
-                    }
-
-                    var key = ValidateDictionaryKey(arguments[0], span);
-                    return dict.TryGetValue(key, out var found)
-                        ? found
-                        : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
-                }, DictGetSignature),
+                "get" => BoundCallable.Create(
+                    (arguments, span, context) => Get(dict, arguments[0], arguments.Length == 2 ? arguments[1] : PyNone.Instance, span, context),
+                    DictGetSignature,
+                    (arguments, span, context) => GetAsync(dict, arguments[0], arguments.Length == 2 ? arguments[1] : PyNone.Instance, span, context)),
                 "keys" => BoundCallable.CreateNoArguments(dict, "dict.keys", static (receiver, span, context) =>
                 {
                     context.MemoryGovernor.Reserve(64L, span);

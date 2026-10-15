@@ -1,0 +1,24 @@
+{
+  "baselineRevision": "7e2c1f27b5d6c16b1374f677205790d801d51ae1",
+  "candidateBaseRevision": "7e2c1f27b5d6c16b1374f677205790d801d51ae1",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "dd95f0df7176f7a1b17afee70ddced3de5e4bc0113c394503bb24e7e73eb702c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "e984be6203bdd2cba1ef63aaacea2c9b6edc4d4b993196ad1c7bb1ce0664d11a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "a59b9dc26e3e816dcf1abfe6f322a599a48bad858968c640c052ff686b79b4ee",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "18d43aa1bfb1c6df63dc4c68a0a1de4583cebf4548e645be84c0450b1777f286",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "ab8414b941b098ae35bc593b08e87f9f24761b05ab9c87b7ce2ed1302c7cd56b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs": "4214f99372dfb045e12e14e41459c454132f58314804595396a9351d55d02341",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "b0bccbcf680e76261fbdbee0900d1be61def2852001053e9fc308e980163d365"
+  },
+  "sourceArchiveSha256": "bea9dc8075629e896e878d68c7612d6ceaa74d8e48d0d9b93eb2c993bf18d6d4",
+  "productionChange": "Direct dict.get receiver/operation transport, shared native lookup, existing awaited string-key collision helper, positional-only signature and async unbound forwarding",
+  "case": "dicts.string-counts.large",
+  "lane": "warm-async",
+  "comparisons": 1,
+  "retries": false,
+  "hardDeadlineSeconds": 30,
+  "GCAndTiering": "ordinary unchanged",
+  "sameComparisonSourcesForBothRoles": true,
+  "harnessChange": "one string-key word-count case shared identically; comparison/execution tooling unchanged",
+  "stop": "one affected diagnostic; no retuning/replacement samples or broad key-protocol audit"
+}

@@ -309,8 +309,11 @@ internal sealed partial class ExecutableScript
             var callTarget = call.Target;
             while (callTarget is LoweredParenthesizedExpression parenthesized)
                 callTarget = parenthesized.Inner;
-            var hasReceiver = callTarget is LoweredMemberExpression { Member.MemberName: "append" }
-                && call.Arguments.Count == 1 && call.Arguments[0].Kind == CallArgumentKind.Positional;
+            var hasReceiver = call.Arguments.Count is 1 or 2
+                && call.Arguments.All(argument => argument.Kind == CallArgumentKind.Positional)
+                && callTarget is LoweredMemberExpression receiverMember
+                && (receiverMember.Member.MemberName == "get"
+                    || receiverMember.Member.MemberName == "append" && call.Arguments.Count == 1);
             if (callTarget is LoweredMemberExpression member)
             {
                 exitBlock = CompileExpression(member.Target, exitBlock);

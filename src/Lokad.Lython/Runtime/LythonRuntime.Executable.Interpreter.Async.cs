@@ -94,6 +94,17 @@ internal sealed partial class LythonRuntime
                         {
                             result = InvokeListAppend((PyList)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context);
                         }
+                        else if (call.HasReceiver && ReferenceEquals(callable, DirectDictionaryGet))
+                        {
+                            var receiver = (PyDict)_stack[start];
+                            var key = _stack[start + call.ArgumentOffset];
+                            var fallback = call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : PyNone.Instance;
+                            // Only stored protocol keys can suspend a builtin-string lookup.
+                            // Other keys keep the existing general dictionary protocol route.
+                            result = key is Text.PyString && receiver.HasProtocolKeys
+                                ? await InvokeDictionaryGetAsync(receiver, key, fallback, call.CallSpan, _context).ConfigureAwait(false)
+                                : InvokeDictionaryGet(receiver, key, fallback, call.CallSpan, _context);
+                        }
                         else if (call.IsPositionalOnly && callable is PyExecutableFunction { SupportsDirectPositional: true } function)
                         {
                             result = await InvokePositionalFunctionAsync(function, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),

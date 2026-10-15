@@ -1,0 +1,92 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "flags": [
+    "-I",
+    "-S",
+    "-X",
+    "utf8"
+  ],
+  "sourceSha256": "2811041fbfac208094516ceda0c230e2d78b615601aea8d76990b381a2b2ff66",
+  "cases": [
+    {
+      "source": "d={'zero':0,'false':False,'none':None}\nprint(d.get('zero',9),d.get('false',9),d.get('none',9),d.get('missing'),d.get('missing',7))",
+      "expected": "0 False None None 7\n",
+      "observed": "0 False None None 7\n"
+    },
+    {
+      "source": "d={1:'number',(2,3):'tuple'}\nprint(d.get(True),d.get((2,3)),d.get(4,9))",
+      "expected": "number tuple 9\n",
+      "observed": "number tuple 9\n"
+    },
+    {
+      "source": "d={}\ndef fallback():\n    print('default')\n    return 7\ntry: d.get([],fallback())\nexcept TypeError: print('unhashable')\nprint(d)",
+      "expected": "default\nunhashable\n{}\n",
+      "observed": "default\nunhashable\n{}\n"
+    },
+    {
+      "source": "d={}\ndef argument():\n    print('argument')\n    return 'x'\ntry: d.get(key=argument())\nexcept TypeError: print('keyword')\ntry: d.get('x',default=7)\nexcept TypeError: print('keyword')\nprint(d)",
+      "expected": "argument\nkeyword\nkeyword\n{}\n",
+      "observed": "argument\nkeyword\nkeyword\n{}\n"
+    },
+    {
+      "source": "d={'x':7}\nmethod=d.get\nfor target in [method,dict.get.__get__(d,dict)]:\n    try: target(**{'key':'x'})\n    except TypeError: print('keyword')\ntry: dict.get(d,'x',default=9)\nexcept TypeError: print('keyword')\nprint(method('x'),dict.get(d,'x'))",
+      "expected": "keyword\nkeyword\nkeyword\n7 7\n",
+      "observed": "keyword\nkeyword\nkeyword\n7 7\n"
+    },
+    {
+      "source": "d={}\ntry: [d.get(key='x') for i in range(1)]\nexcept TypeError: print('keyword')\ntry: d.get()\nexcept TypeError: print('missing')\ntry: d.get(1,2,3)\nexcept TypeError: print('extra')",
+      "expected": "keyword\nmissing\nextra\n",
+      "observed": "keyword\nmissing\nextra\n"
+    },
+    {
+      "source": "d={'x':1}\ndef fallback():\n    d['x']=9\n    return 7\nprint(d.get('x',fallback()))",
+      "expected": "9\n",
+      "observed": "9\n"
+    },
+    {
+      "source": "d={'x':7}\nold=d\ndef argument():\n    global d\n    d={'x':99}\n    return 'x'\nprint(d.get(argument(),0),d.get('x'),old)",
+      "expected": "7 99 {'x': 7}\n",
+      "observed": "7 99 {'x': 7}\n"
+    },
+    {
+      "source": "class C:\n    def __getattribute__(self,name):\n        print('lookup',name)\n        return lambda key,default: (key,default)\ndef argument(value):\n    print('argument',value)\n    return value\nprint(C().get(argument(1),argument(2)))",
+      "expected": "lookup get\nargument 1\nargument 2\n(1, 2)\n",
+      "observed": "lookup get\nargument 1\nargument 2\n(1, 2)\n"
+    },
+    {
+      "source": "class C: get={}\ndef argument():\n    print('argument')\n    return 'x'\ntry: C().get(argument(),7)\nexcept TypeError: print('not-callable')",
+      "expected": "argument\nnot-callable\n",
+      "observed": "argument\nnot-callable\n"
+    },
+    {
+      "source": "def f(key,default): return key,default\nclass C: pass\nc=C()\nc.get=f\nprint(c.get(1,2))",
+      "expected": "(1, 2)\n",
+      "observed": "(1, 2)\n"
+    },
+    {
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        print('eq')\n        return other=='x'\nkey=Key()\nd={key:7}\nprint(d.get('x',9))",
+      "expected": "eq\n7\n",
+      "observed": "eq\n7\n"
+    },
+    {
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        d[key]=9\n        return other=='x'\nkey=Key()\nd={key:7}\nprint(d.get('x',0))",
+      "expected": "9\n",
+      "observed": "9\n"
+    },
+    {
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        d.clear()\n        return True\nkey=Key()\nd={key:7}\nprint(d.get('x','missing'),d)",
+      "expected": "missing {}\n",
+      "observed": "missing {}\n"
+    },
+    {
+      "source": "d={}\nfallback=[]\nvalue=d.get('x',fallback)\nfallback.append(7)\nprint(value is fallback,value)\nd={'x':9}\nprint(d.get is d.get,d.get.__self__ is d)",
+      "expected": "True [7]\nFalse True\n",
+      "observed": "True [7]\nFalse True\n"
+    },
+    {
+      "source": "def produce(d):\n    yield d.get('x')\n    yield d.get('y',7)\nprint(list(produce({'x':3})))",
+      "expected": "[3, 7]\n",
+      "observed": "[3, 7]\n"
+    }
+  ]
+}

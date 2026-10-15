@@ -1663,6 +1663,15 @@ The supported subset must support the following dictionary methods:
 
 `dict.items()` must return an iterable view of `(key, value)` tuples.
 
+Builtin `dict.get(key[, default])` takes positional arguments only. Missing keys
+return the evaluated default, or `None` when omitted; stored false or `None`
+values remain present. It does not invoke a missing-key factory. Lookup of the
+method precedes argument evaluation; dictionary contents are read afterwards.
+`RunAsync` awaits stored-key equality for builtin-string lookups, including
+exposed, unbound and expanded call forms. Other key shapes keep the existing
+general key-protocol behavior; arbitrary asynchronous hashing is not added here.
+The evaluated receiver and default remain owned through suspension and cancellation.
+
 `str.format(...)` supports automatic and explicit positional fields, named
 fields, item and attribute traversal, and the supported format-spec
 mini-language. `str.format_map(...)` supports the corresponding mapping-based

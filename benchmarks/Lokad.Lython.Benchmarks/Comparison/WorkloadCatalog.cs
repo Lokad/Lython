@@ -223,6 +223,14 @@ print(values)
 values = tuple(range(N))
 print(values[::3])
 """, n => TupleList(Enumerable.Range(0, n).Where(i => i % 3 == 0)) + "\n");
+        Add("dicts.string-counts", "dictionaries", "core", CoreSizes, """
+words = ['alpha','beta','café','😀']
+counts = {}
+for i in range(N):
+    word = words[i % 4]
+    counts[word] = counts.get(word, 0) + 1
+print(counts['alpha'],counts['beta'],counts['café'],counts['😀'])
+""", n => $"{n / 4} {n / 4} {n / 4} {n / 4}\n");
         Add("dicts.tuple-key-update", "dictionaries", "core", CoreSizes, """
 values = {}
 for i in range(N):

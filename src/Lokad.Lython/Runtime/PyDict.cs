@@ -200,7 +200,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         return false;
     }
 
-    // Function keyword defaults use builtin string keys. Table probing itself
+    // Keyword defaults and dict.get use builtin string keys. Table probing itself
     // never invokes guest code; only a protocol-key collision can suspend.
     internal ValueTask<(bool Found, object Value)> TryGetBuiltinStringAsync(
         PyString key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)

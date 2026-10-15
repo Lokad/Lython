@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "dicts.string-counts.large",
+      "family": "dictionaries",
+      "category": "core",
+      "scale": "large",
+      "size": 16384,
+      "source": "N = 16384\nwords = ['alpha','beta','caf\u00e9','\ud83d\ude00']\ncounts = {}\nfor i in range(N):\n    word = words[i % 4]\n    counts[word] = counts.get(word, 0) + 1\nprint(counts['alpha'],counts['beta'],counts['caf\u00e9'],counts['\ud83d\ude00'])\n",
+      "fixtureJson": "{\"size\":16384,\"text\":null}",
+      "expectedOutput": "4096 4096 4096 4096\n",
+      "sourceUtf8Bytes": 217,
+      "expectedOutputUtf8Bytes": 20,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "31bf5e8f8ad39799af62049bfd3219a5db8aa1b25880d3f3e7941d487732dbb0",
+      "fixtureSha256": "c1c16fa8a40dac165afc8c9915fab90012d9af6a9836b6a2e03812eb3f441155",
+      "expectedOutputSha256": "7311eeda558b647a107df357a6bbda2a0ac392f506d29f3dfee6e6917634a5cc"
+    }
+  ]
+}

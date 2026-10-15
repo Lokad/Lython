@@ -150,6 +150,32 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    private static object InvokeDictionaryGet(PyDict receiver, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            return DictMembers.Get(receiver, key, fallback, span, context);
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
+    private static async ValueTask<object> InvokeDictionaryGetAsync(PyDict receiver, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            return await DictMembers.GetAsync(receiver, key, fallback, span, context).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private static bool TryTranslateCallableException(
         Exception exception,
         LythonSourceSpan callSpan,
@@ -829,6 +855,19 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
+            var bound = BindCall(arguments, span, context);
+            return bound.Callable.Invoke(bound.Arguments, span, context);
+        }
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var bound = BindCall(arguments, span, context);
+            return bound.Callable.InvokeAsync(bound.Arguments, span, context);
+        }
+
+        private (ICallable Callable, CallArgumentValue[] Arguments) BindCall(
+            CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
             context.CheckExecution(span);
             var receiverIndex = -1;
             for (var i = 0; i < arguments.Length; i++)
@@ -851,7 +890,7 @@ internal sealed partial class LythonRuntime
             var rest = new CallArgumentValue[arguments.Length - 1];
             Array.Copy(arguments, 0, rest, 0, receiverIndex);
             Array.Copy(arguments, receiverIndex + 1, rest, receiverIndex, rest.Length - receiverIndex);
-            return boundCallable.Invoke(rest, span, context);
+            return (boundCallable, rest);
         }
 
         internal object BindReceiver(object? receiver, LythonSourceSpan span, ExecutionContext context)

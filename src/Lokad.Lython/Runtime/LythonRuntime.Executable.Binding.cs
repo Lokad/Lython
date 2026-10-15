@@ -10,6 +10,7 @@ internal sealed partial class LythonRuntime
     // Internal operand only: its receiver occupies a separate slot. A guest
     // list-valued attribute can never be confused with this resolved method.
     private static readonly object DirectListAppend = new();
+    private static readonly object DirectDictionaryGet = new();
 
     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
     {
@@ -543,6 +544,12 @@ internal sealed partial class LythonRuntime
             if (callSite.HasReceiver && ReferenceEquals(target, DirectListAppend))
             {
                 result = InvokeListAppend((PyList)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+            }
+            else if (callSite.HasReceiver && ReferenceEquals(target, DirectDictionaryGet))
+            {
+                result = InvokeDictionaryGet((PyDict)stack[start], stack[start + callSite.ArgumentOffset],
+                    callSite.ArgumentCount == 2 ? stack[start + callSite.ArgumentOffset + 1] : PyNone.Instance,
+                    callSite.CallSpan, context);
             }
             else if (callSite.IsPositionalOnly && target is PyExecutableFunction { SupportsDirectPositional: true } function)
             {

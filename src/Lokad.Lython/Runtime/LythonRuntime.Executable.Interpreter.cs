@@ -17,12 +17,18 @@ internal sealed partial class LythonRuntime
 
         private bool TryLoadDirectCallReceiver(ExecutableInstruction instruction)
         {
-            if (instruction.OpCode != ExecutableOpCode.LoadCallReceiver
-                || _stack[_stack.Count - 1] is not PyList
-                || _codeObject.Names[instruction.NameIndex] != "append") return false;
+            if (instruction.OpCode != ExecutableOpCode.LoadCallReceiver) return false;
+            var name = _codeObject.Names[instruction.NameIndex];
+            var operation = _stack[_stack.Count - 1] switch
+            {
+                PyList when name == "append" => DirectListAppend,
+                PyDict when name == "get" => DirectDictionaryGet,
+                _ => null
+            };
+            if (operation is null) return false;
             // Keep the evaluated receiver, then append the immutable operation.
             // Arguments are evaluated afterwards and can rebind the source name.
-            _stack.Push(DirectListAppend);
+            _stack.Push(operation);
             return true;
         }
 

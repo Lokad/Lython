@@ -1,0 +1,153 @@
+{
+  "checks": [
+    {
+      "stage": "direct-dict-get-controls-white",
+      "receipt": {
+        "source": "7e2c1f27 plus direct get and async unbound forwarding",
+        "production": "controls Release solution build",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "A7DE5B7A915B0B8A09122E49114B54EAFEE93EEDB8514C1CCB9944C7CD720651",
+        "filter": "Category!=Stress&(FullyQualifiedName~DirectDictionaryGetTests|FullyQualifiedName~DirectAppendExecutionTests|FullyQualifiedName~MemberCacheAliasTests|FullyQualifiedName~ExecutableCallTransferTests|FullyQualifiedName~ClassMethodExecutionBoundaryTests|FullyQualifiedName~BoundMethodInvocationBoundaryTests)",
+        "pid": 52056,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1195,
+        "stdoutSha256": "E609B1289B72CA6A417D56EC9ECAFB1E1AE37300355EB1E3A9A8B9F87EB9DD3D",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counters": {
+        "total": "97",
+        "executed": "97",
+        "passed": "97",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "trxSha256": "9e2619359b6d2b3e2ad11d6aab552b075ab9d6a2258c82498182a6a024068d4c"
+    },
+    {
+      "stage": "direct-dict-get-final-public",
+      "receipt": {
+        "source": "7e2c1f27 plus direct get; retained suspended defaults",
+        "production": "final controls Release public build",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "D3CC53018A546C5407F462348A64CC185025D4A04F6CEDDB83F0EA6C45ABFE87",
+        "filter": "Category!=Stress&(FullyQualifiedName~DictionaryGetCallTests|FullyQualifiedName~FunctionDefaultMetadataTests|FullyQualifiedName~ListAppendCallTests|FullyQualifiedName~MethodExposureTests|FullyQualifiedName~SharedFixedLabelBehaviorTests)",
+        "pid": 57844,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3734,
+        "stdoutSha256": "16C47BFC537BC7863FFEA25D302D8705C09755CF3E7A1CE12D1726D1FBCB9191",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counters": {
+        "total": "190",
+        "executed": "190",
+        "passed": "190",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "trxSha256": "41b7dfc65ccb90e56d2b809693ffb9da03d9cf8eba5f6a0c5c631776aa6ec005"
+    },
+    {
+      "stage": "direct-dict-get-governed-public",
+      "receipt": {
+        "source": "7e2c1f27 plus direct get; retained suspended defaults",
+        "production": "final controls Release public build",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "D3CC53018A546C5407F462348A64CC185025D4A04F6CEDDB83F0EA6C45ABFE87",
+        "filter": "(FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedCursorAdmissionTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~NativeConsumerStreamingTests|FullyQualifiedName~RepresentativeScriptTests|FullyQualifiedName~GeneratorCleanupCompositionTests)&Category!=Stress",
+        "pid": 49440,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 13380,
+        "stdoutSha256": "CC26FBD06B195408B038B057494F8FC064DD7571D71D36096241A2F5F1C3C8B2",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counters": {
+        "total": "103",
+        "executed": "103",
+        "passed": "103",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "trxSha256": "0600ca78a8c3f578156941e53d829f313a925d4e91b5ce7233bc42c455326493"
+    },
+    {
+      "stage": "direct-dict-get-full-white",
+      "receipt": {
+        "source": "7e2c1f27 plus direct get and async unbound forwarding",
+        "production": "controls Release solution build",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "A7DE5B7A915B0B8A09122E49114B54EAFEE93EEDB8514C1CCB9944C7CD720651",
+        "filter": "Category!=Stress",
+        "pid": 62000,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 15884,
+        "stdoutSha256": "89FC80BD52001681DF646EE7E1222F21DE4197076B319280B06026E928FC6BD7",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counters": {
+        "total": "2190",
+        "executed": "2190",
+        "passed": "2190",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "trxSha256": "09fd50ab9cedc806e0c6d926cbd168ea37d32ad965158967b09aeb7067c00eb0"
+    }
+  ],
+  "groupsOverlap": true,
+  "fullStressRerun": false,
+  "source": "7e2c1f27 plus declared seven-file production change",
+  "initialFailure": "62/63 public cases: unbound dict.get entered synchronous hosting; shared binding and async forwarding fix the failure",
+  "runtimeLimitsOrTimeoutsRelaxed": false
+}

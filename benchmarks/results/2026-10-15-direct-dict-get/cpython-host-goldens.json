@@ -1,0 +1,47 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "flags": [
+    "-I",
+    "-S",
+    "-X",
+    "utf8"
+  ],
+  "sourceSha256": "2811041fbfac208094516ceda0c230e2d78b615601aea8d76990b381a2b2ff66",
+  "cases": [
+    {
+      "call": "d.get('x',fallback)",
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        global d\n        d={'x':99}\n        with open('events.txt','a') as target: target.write('eq\\n')\n        return other=='x'\nkey=Key()\nd={key:7}\nold=d\nmethod=d.get\nfallback=[]\nprint(d.get('x',fallback))\nprint(old is d)",
+      "stdout": "7\nFalse\n",
+      "fileText": "eq\n",
+      "fileTextNewlinesNormalized": true
+    },
+    {
+      "call": "method('x',fallback)",
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        global d\n        d={'x':99}\n        with open('events.txt','a') as target: target.write('eq\\n')\n        return other=='x'\nkey=Key()\nd={key:7}\nold=d\nmethod=d.get\nfallback=[]\nprint(method('x',fallback))\nprint(old is d)",
+      "stdout": "7\nFalse\n",
+      "fileText": "eq\n",
+      "fileTextNewlinesNormalized": true
+    },
+    {
+      "call": "dict.get(d,'x',fallback)",
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        global d\n        d={'x':99}\n        with open('events.txt','a') as target: target.write('eq\\n')\n        return other=='x'\nkey=Key()\nd={key:7}\nold=d\nmethod=d.get\nfallback=[]\nprint(dict.get(d,'x',fallback))\nprint(old is d)",
+      "stdout": "7\nFalse\n",
+      "fileText": "eq\n",
+      "fileTextNewlinesNormalized": true
+    },
+    {
+      "call": "d.get(*('x',fallback))",
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        global d\n        d={'x':99}\n        with open('events.txt','a') as target: target.write('eq\\n')\n        return other=='x'\nkey=Key()\nd={key:7}\nold=d\nmethod=d.get\nfallback=[]\nprint(d.get(*('x',fallback)))\nprint(old is d)",
+      "stdout": "7\nFalse\n",
+      "fileText": "eq\n",
+      "fileTextNewlinesNormalized": true
+    },
+    {
+      "call": "[d.get('x',fallback) for i in range(1)][0]",
+      "source": "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        global d\n        d={'x':99}\n        with open('events.txt','a') as target: target.write('eq\\n')\n        return other=='x'\nkey=Key()\nd={key:7}\nold=d\nmethod=d.get\nfallback=[]\nprint([d.get('x',fallback) for i in range(1)][0])\nprint(old is d)",
+      "stdout": "7\nFalse\n",
+      "fileText": "eq\n",
+      "fileTextNewlinesNormalized": true
+    }
+  ]
+}
