@@ -1,0 +1,26 @@
+{
+  "baselineRevision": "b7fd485a9683f918ac0690578744f2b364688f4d",
+  "candidateRevision": "5ed2b2038025e6746785857b3cea1910d4889786",
+  "caseId": "scripts.json-summary.large",
+  "expectedCaseSize": 1024,
+  "expectedRecordCount": 4096,
+  "lane": "warm",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm synchronous public Run of unchanged complete JSON-lines aggregation job; fresh invocation state, file staging, exact output checks and prior-result cleanup timed. Compilation/startup/transport excluded.",
+  "stoppingRule": "One unchanged existing complete job micro; no retry, retune, producer or long lane.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "eb3a63bbd29de30fbe11cc0d36639b1a84a51189efa3435f7bb8682bfd47a306",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "0bd539f022206f36b0ee1386a728692032ceba135fb39c809d38962fccab869e"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "6e0b110b9813308216daa9a73f869533a808cb66aac5315dcb2e94919a2e51db",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "f10149adaca2f63a80df137ca0c4b996d0078495b4071c25e9eb78c56ed3021e"
+  }
+}

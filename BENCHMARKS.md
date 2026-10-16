@@ -6,7 +6,7 @@
 | Same JSON configuration job [AQ], warm `Run` | 16 existing paths / 181 UTF-8 input bytes | 3.309 ms | 1.695 ms | — | Short diagnostic at 4846928c; 0.9% change within spread; no improvement established |
 | Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
 | Complete text-summary file job [AY], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.405 ms | 1.3426 ms | — | Short diagnostic at 8b0f32fb; direct split; 8.7% lower median within 10.7% baseline spread, inconclusive |
-| Complete JSON-lines aggregation [AT], warm | 4,096 records / 110,592 UTF-8 bytes | 9.587 ms | 4.401 ms | — | Short diagnostic at dc950cde; 2.3% lower median within 17.6% baseline spread; inconclusive |
+| Complete JSON-lines aggregation [BA], warm | 4,096 records / 110,592 UTF-8 bytes | 9.010 ms | 4.2146 ms | — | Short diagnostic at 5ed2b203; direct string-token dispatch; 8.1% lower median within 10.2% baseline spread, inconclusive |
 | Same JSON aggregation [AU], fresh compile/run | Same 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
 | File search with helper and protected early exit [AR], warm | 2,049 lines / 42,010 UTF-8 bytes | 3.223 ms | 0.2845 ms | — | Short diagnostic at 473aa396; inconclusive (57%/64% Lython spread); no improvement established |
@@ -43,6 +43,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BA | 2026-10-16 | 5ed2b203; direct synchronous JSON string-token dispatch | [Complete JSON job, guard matrices and inconclusive timing](benchmarks/results/2026-10-16-json-string-dispatch/README.md) |
 | AZ | 2026-10-16 | c3db3ca2; rejected prepared-method prototype, fresh compile/run | [Slower diagnostic, actual input and setup erratum](benchmarks/results/2026-10-16-compiled-class-methods/README.md) |
 | AY | 2026-10-16 | 8b0f32fb; direct zero-argument exact-string split | [Complete text job, lifecycle and inconclusive timing](benchmarks/results/2026-10-16-direct-string-split/README.md) |
 | AX | 2026-10-16 | 44199dd3; direct synchronous executable-generator advancement | [Shared frame guards, lifecycle and short diagnostic](benchmarks/results/2026-10-16-generator-sync-advance/README.md) |
@@ -113,6 +114,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Direct JSON string-token dispatch, 2026-10-16 | b7fd485a → 5ed2b203; unchanged complete JSON job | No improvement established: 9.806 → 9.010 ms; 8.1% change within 10.2% baseline spread | [Shared decoder, admission and checkpoint controls](benchmarks/results/2026-10-16-json-string-dispatch/README.md) |
 | Prepared ordinary class methods, 2026-10-16 | 4484f64a → c3db3ca2; fresh compile/run with 16,384 calls | Rejected for Linux containment failure: 9.325 → 11.494 ms; 23.3% higher median, unqualified | [Executable coverage, conservative stack policy and setup erratum](benchmarks/results/2026-10-16-compiled-class-methods/README.md) |
 | Direct zero-argument string split, 2026-10-16 | 4717904d → 8b0f32fb; unchanged complete text-summary job | No speedup established: 7.018 → 6.405 ms; 8.7% change within 10.7% baseline spread | [Direct calls, shared kernel and ownership checks](benchmarks/results/2026-10-16-direct-string-split/README.md) |
 | Direct synchronous generator advancement, 2026-10-16 | b52be7e4 → 44199dd3; unchanged numeric reduction | 4.118 → 3.912 ms; 5.0% lower median, one unqualified diagnostic | [Direct pull, shared frame guards and lifecycle controls](benchmarks/results/2026-10-16-generator-sync-advance/README.md) |

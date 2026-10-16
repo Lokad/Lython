@@ -845,6 +845,8 @@ preserve the distinct CPython and earlier-Lython comparisons.
 
 ## Diagnostic comparisons by revision
 
+- [Direct JSON string-token dispatch](results/2026-10-16-json-string-dispatch/README.md): unchanged complete JSON aggregation job; 8.1% lower median within 10.2% baseline spread, inconclusive. Same decoder, managed admission, ownership and frozen checkpoints; one short capture with declared case/source/size/lane verification.
+
 - [Prepared ordinary class methods](results/2026-10-16-compiled-class-methods/README.md): fresh compile/run; candidate median 23.3% higher, unqualified. Actual 16,384-call input differs from the original medium-case declaration; mismatch and original receipt retained, no repeated capture. The prototype is rejected after an Ubuntu public-test-host stack overflow; its compiler and admission-policy changes are withdrawn. Independent fixes survive.
 
 Preserved from BENCHMARKS.md before reducing its leading table. Revision and
