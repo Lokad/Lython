@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 synchronous advancement change](results/2026-10-16-generator-sync-advance/README.md)
+removes the async advancement wrapper from ordinary synchronous generator pulls,
+sharing managed admissions, frame entry/exit and result reading. One unchanged
+warm reduction observed 4.118 → 3.912 ms (5.0% lower median), CPython 0.5586 ms;
+spreads 3.67%/1.55%/0.39%. This remains one unqualified diagnostic. Both roles
+pass three-size goldens; frozen sources match, seven workers/fixtures are gone,
+services inactive and lease free. AX refreshes the leading snapshot; AW and AV
+remain separate historical source pairs. No repeat/tuning/new producer/full lane.
+
 The [2026-10-16 executable generator migration](results/2026-10-16-executable-generators/README.md)
 uses genuine child instructions and existing frames/cells; ordinary lowered
 creation/overlay and fallback-only parent mirroring are removed. One unchanged
@@ -14,7 +23,7 @@ warm numeric reduction observed 4.330 → 4.252 ms, CPython 0.5611 ms; spread
 1.45%/3.83%/0.26%. The 1.8% change is inconclusive: no established speedup or
 qualified ratio. One 7.219 s capture, no repeat/tuning/new producer. Both roles
 pass three-size independent goldens, frozen manifests match, seven workers and
-fixtures are gone, services inactive and lease free. AW refreshes the leading
+fixtures are gone, services inactive and lease free. AW preserved that revision’s
 numeric snapshot; AV and its earlier binding result remain historical evidence.
 
 The [2026-10-16 generator-binding correction](results/2026-10-16-generator-bindings/README.md)

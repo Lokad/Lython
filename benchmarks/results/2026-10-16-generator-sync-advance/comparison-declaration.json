@@ -1,0 +1,24 @@
+{
+  "baselineRevision": "b52be7e493c2594202658169eb36d33975d8f55f",
+  "candidateRevision": "44199dd36bc394100e9b055094514575eb83f59a",
+  "caseId": "math.dyadic-fsum.large",
+  "lane": "warm",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm public Run over unchanged math.fsum generator expression; fresh state/output checks and prior-result cleanup. Compilation/startup excluded. Direct synchronous generator advancement with shared managed frame entry/exit.",
+  "stoppingRule": "One existing seconds-long micro; no retuning, repeat, new producer or full lane.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "46850c08960b909feb7ea1751e74688c8374cec4d04c436d6b61eb51a35bbdfb",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "8cf5a5ae62d986e618f5c74384d43830bfdeb9f024806c31b51ce4b15ffd04e5"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "badafda155ca006f9c8eac82e80b1a6805a355956447705cd51b08cb9dbd5ff8",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "8f5e9dfd59174b8c707e4c8a4b8c199146119af8d2ee2d1e22a1f39fd072d900"
+  }
+}

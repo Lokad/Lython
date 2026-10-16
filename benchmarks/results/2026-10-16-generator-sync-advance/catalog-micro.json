@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "math.dyadic-fsum.small",
+      "family": "math",
+      "category": "library",
+      "scale": "small",
+      "size": 256,
+      "source": "N = 256\nimport math\nprint(math.fsum((i % 16) / 8.0 for i in range(N)))\n",
+      "fixtureJson": "{\"size\":256,\"text\":null}",
+      "expectedOutput": "240.0\n",
+      "sourceUtf8Bytes": 71,
+      "expectedOutputUtf8Bytes": 6,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "519eaf5bec5bfaaa8766118821049d2790a6bc321da82a0a700c9a5ab89ed2ef",
+      "fixtureSha256": "014e3e36d9dda0eeafbc9f34005088e5e5bba7a7d2e87f1fa56dc2a3be77740e",
+      "expectedOutputSha256": "bebc77e475db08a3a977e1ca5a82bde08d0b6ded6843cf4bc0865524f3f0cc28"
+    },
+    {
+      "id": "math.dyadic-fsum.medium",
+      "family": "math",
+      "category": "library",
+      "scale": "medium",
+      "size": 2048,
+      "source": "N = 2048\nimport math\nprint(math.fsum((i % 16) / 8.0 for i in range(N)))\n",
+      "fixtureJson": "{\"size\":2048,\"text\":null}",
+      "expectedOutput": "1920.0\n",
+      "sourceUtf8Bytes": 72,
+      "expectedOutputUtf8Bytes": 7,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "e88797bcabfb9e4048845900043c9ba37e5462961abc847fbfcb48b52b36ecea",
+      "fixtureSha256": "cc19526c1d9f59f92c233c4276c92e42e48bc1ecbbeec305f81a44877bd877d6",
+      "expectedOutputSha256": "dc976e4f997f0a9c73f87f8382251620ae47444ce5984d6fa61e3cf3050fd8fc"
+    },
+    {
+      "id": "math.dyadic-fsum.large",
+      "family": "math",
+      "category": "library",
+      "scale": "large",
+      "size": 16384,
+      "source": "N = 16384\nimport math\nprint(math.fsum((i % 16) / 8.0 for i in range(N)))\n",
+      "fixtureJson": "{\"size\":16384,\"text\":null}",
+      "expectedOutput": "15360.0\n",
+      "sourceUtf8Bytes": 73,
+      "expectedOutputUtf8Bytes": 8,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "4800ebd51557e8b7c665d8c8979acc22739cfedfb7f4864819c9dd284e5ad178",
+      "fixtureSha256": "c1c16fa8a40dac165afc8c9915fab90012d9af6a9836b6a2e03812eb3f441155",
+      "expectedOutputSha256": "a2b1ee961d82a32741f4a1b67365ab21cd1ffa8333b2a7bcd3c39380770fa6ff"
+    }
+  ]
+}
