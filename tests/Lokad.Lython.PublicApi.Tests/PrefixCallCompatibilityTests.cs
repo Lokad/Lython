@@ -6,6 +6,7 @@ public sealed class PrefixCallCompatibilityTests
 {
     public static TheoryData<string, string, string> Programs => new()
     {
+        { "custom-method", "class C:\n def startswith(self,prefix): return prefix\nprint(C().startswith(7),C().startswith(prefix=8))", "7 8\n" },
         { "arity", "def run(text,args): return text.startswith(*args)\nfor args in [(),('a',),('b',1),('b',1,2),('a',0,3,4)]:\n try: print(run('abc',args))\n except TypeError: print('rejected')", "rejected\nTrue\nTrue\nTrue\nrejected\n" },
         { "unknown-first", "def run(prefix): return 'abc'.startswith((prefix,None))\nprint(run('a'))\ntry: run('x')\nexcept TypeError: print('rejected')", "True\nrejected\n" },
         { "bound-keywords", "for options in [{'start':0},{'end':3}]:\n try: print('abc'.startswith('a',**options))\n except TypeError: print('rejected')", "rejected\nrejected\n" },

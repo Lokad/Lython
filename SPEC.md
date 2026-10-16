@@ -1782,6 +1782,11 @@ stop at the first match; an invalid later entry is not examined after a match.
 Static diagnostics reject a tuple entry only when its validation is certain;
 an earlier string or unknown value defers later validation to runtime. Argument
 expressions, including awaited host calls, complete before keyword rejection.
+Eligible one-positional-argument calls to exact-string `startswith` use the
+existing receiver and argument frame slots with a shared method implementation.
+The evaluated receiver stays retained through suspended argument evaluation.
+Exposed methods, custom objects and other call shapes retain normal binding;
+all paths share the same Unicode/tuple kernel and call admission checks.
 
 The supported subset must support the following string methods:
 

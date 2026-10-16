@@ -323,7 +323,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static bool StartsOrEndsWith(
+        internal static bool StartsOrEndsWith(
             PyString text,
             object prefixOrTuple,
             int start,

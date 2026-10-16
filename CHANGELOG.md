@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Invoke ordinary one-argument exact-string startswith calls directly from existing frame storage, avoiding per-receiver bound methods and argument repackaging. Reuse the Unicode/tuple kernel and call guards; preserve fuel/spans, suspended arguments, custom-object lookup, exposed receivers and retained funding.
+
 - Reject keyword arguments to builtin str.startswith/endswith through the existing positional binder. Preserve argument evaluation, exposed/unbound/expanded calls and cancellation. Stop static tuple validation after a possible earlier match, allowing valid Python short-circuit behavior while retaining definite invalid-first diagnostics.
 
 - Compile ordinary and yielding slice augmented assignments with retained frame operands and the shared value-last slice store. Preserve the exact user slice key, native bound re-conversion after the RHS, in-place aliases, async callbacks and admission. Share yielding ordinary member/slice stores; delete the obsolete prepared read/store records, compiler methods, handlers, helpers and user-slice wrapper. Keep required deletion paths.
