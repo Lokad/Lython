@@ -919,6 +919,12 @@ provide these slots. `RunAsync` awaits binding and the actual mutation call.
 
 The supported subset must support Python-style slicing for strings, lists, and tuples. Mutable list slices must also support assignment and deletion as described in section 11.6.
 
+Native sequence slicing and `slice.indices()` validate the step, start and stop
+in that order. Each invalid bound fails before the next bound's `__index__`
+callback; a zero step fails before start/stop conversion or list-replacement
+iteration. `slice.indices()` validates its length before those bounds. Specialized
+non-sequence protocols, including worksheet cell ranges, retain their own keys.
+
 Colon slices delivered to a user object's item methods retain the original
 start, stop and step objects without `__index__` coercion. A fresh guest-visible
 key admits a conservative64-byte shell before a user getter, setter or deleter

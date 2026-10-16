@@ -119,8 +119,8 @@ internal static class PyIndexing
     }
 
     // Guest-visible colon keys keep raw bounds, like explicit slice() calls.
-    // Fund and register the actual key before exposing it to a user or mapping;
-    // temporary lookups and escaped keys then follow their own weak lifetime.
+    // Fund the actual key before exposing it to a user or mapping; its storage
+    // remains charged to the execution owner, including escaped aliases.
     internal static PySlice CreateMappingSliceKey(object? start, object? end, object? step, LythonRuntime.ExecutionContext? context, LythonSourceSpan span)
     {
         context?.MemoryGovernor.Reserve(64L, span);
@@ -174,13 +174,11 @@ internal static class PyIndexing
             throw RuntimeErrors.MissingKey(key, span);
         }
 
-        if (context is not null)
+        // Native sequences validate integer bounds. Other slice protocols
+        // (for example worksheet cell ranges) receive their own raw keys.
+        if (context is not null && (target is IPyIndexableValue || target is PyRange || PyStringOps.TryAsString(target, out _)))
         {
-            // Subscript bounds coerce through __index__ like CPython; bad
-            // __index__ results propagate while other rejections name the slice.
-            start = CoerceSliceBound(start, context, span);
-            end = CoerceSliceBound(end, context, span);
-            step = CoerceSliceBound(step, context, span);
+            (start, end, step) = CoerceSliceBounds(start, end, step, context, span);
         }
 
         var result = target switch
@@ -197,28 +195,22 @@ internal static class PyIndexing
             result = LythonRuntime.OwnMethodResult(textResult,receiver,context.MemoryGovernor,span);
         }
 
-        if (context is not null)
-        {
-            TrackSliceResult(result, context);
-        }
-
         return result;
     }
 
-    private static void TrackSliceResult(object result, LythonRuntime.ExecutionContext context)
+    internal static (object? Start, object? End, object? Step) CoerceSliceBounds(
+        object? start, object? end, object? step, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var pool = context.Services.State.MemoryGovernor;
-        switch (result)
-        {
-            case PyString text:
-                break;
-            case PyList list when list.OwnerMemoryGovernor is not null:
-                break;
-            case PyTuple tuple when tuple.OwnerMemoryGovernor is not null:
-                break;
-            case PyDeque deque when deque.OwnerMemoryGovernor is not null:
-                break;
-        }
+        // Python validates the step first, then each remaining bound before
+        // invoking the next callback or consuming an assignment's replacement.
+        step = CoerceSliceBound(step, context, span);
+        if (NormalizeSliceBound(step, span) is { IsZero: true })
+            throw RuntimeErrors.Value("slice step cannot be zero", span);
+        start = CoerceSliceBound(start, context, span);
+        _ = NormalizeSliceBound(start, span);
+        end = CoerceSliceBound(end, context, span);
+        _ = NormalizeSliceBound(end, span);
+        return (start, end, step);
     }
 
     internal static object? CoerceSliceBound(object? bound, LythonRuntime.ExecutionContext context, LythonSourceSpan span)

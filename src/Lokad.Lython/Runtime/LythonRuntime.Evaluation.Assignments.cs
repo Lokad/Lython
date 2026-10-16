@@ -552,12 +552,8 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        // Subscript bounds coerce through __index__ like CPython; bad
-        // __index__ results propagate while other rejections name the slice.
-        // Coercion runs before the value drain so bound failures keep priority.
-        start = PyIndexing.CoerceSliceBound(start, context, span);
-        end = PyIndexing.CoerceSliceBound(end, context, span);
-        step = PyIndexing.CoerceSliceBound(step, context, span);
+        // Complete bound validation before draining replacement values.
+        (start, end, step) = PyIndexing.CoerceSliceBounds(start, end, step, context, span);
 
         if (target is PyList list)
         {
@@ -650,11 +646,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        // Subscript bounds coerce through __index__ like CPython; bad
-        // __index__ results propagate while other rejections name the slice.
-        start = PyIndexing.CoerceSliceBound(start, context, span);
-        end = PyIndexing.CoerceSliceBound(end, context, span);
-        step = PyIndexing.CoerceSliceBound(step, context, span);
+        (start, end, step) = PyIndexing.CoerceSliceBounds(start, end, step, context, span);
 
         if (target is PyList list)
         {

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Validate native slice bounds in Python's step/start/stop order, including reads, list assignment/deletion and slice.indices(). Reject invalid or zero steps before later callbacks and replacement iteration; preserve raw user/mapping and worksheet keys. Remove the empty legacy slice-result tracking hook.
+
 - Compile eligible ordinary for-loop and eager-comprehension targets through the shared unpack/member/subscript/name operations. Keep comprehension names in their existing binding scope, preserve directives and closures, and remove their general target-dispatch path without a new opcode or runtime owner.
 
 - Compile ordinary and chained unpacking groups with the existing executable unpack operations and child stores. Delete the separate opcode, operand kind, target binding table, builder plumbing and interpreter handlers. Preserve Python effects, cells, diagnostics, suspension and retained funding; starred-rest admission now precedes prefix stores.

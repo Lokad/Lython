@@ -111,12 +111,9 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHas
             // Huge lengths clamp to the addressable range like the other
             // bounded helpers; int-range behaviour stays exact.
             var intLength = bigLength > int.MaxValue ? int.MaxValue : (int)bigLength;
-            var bounds = PyIndexing.NormalizeSliceBounds(
-                intLength,
-                PyIndexing.CoerceSliceBound(owner.StartBound, context, span),
-                PyIndexing.CoerceSliceBound(owner.StopBound, context, span),
-                PyIndexing.CoerceSliceBound(owner.StepBound, context, span),
-                span);
+            var (start, stop, step) = PyIndexing.CoerceSliceBounds(
+                owner.StartBound, owner.StopBound, owner.StepBound, context, span);
+            var bounds = PyIndexing.NormalizeSliceBounds(intLength, start, stop, step, span);
             return new PyTuple(
                 [(object)new BigInteger(bounds.Start), new BigInteger(bounds.End), new BigInteger(bounds.Step)],
                 context.MemoryGovernor,
