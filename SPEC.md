@@ -967,6 +967,14 @@ contain at most one starred target. Receivers and indices are evaluated at the
 corresponding store, in source order. Loop, comprehension and context-manager
 binding use the same target forms as described in section 8.7.
 
+For an unpacking level with `N` nonstarred targets, read at most `N+1` values.
+The first excess value raises `ValueError` without requesting another value or
+running any target store at that level. Preserve the retained iterator's position
+and later exceptions. Nested unpacking may retain stores completed at an earlier
+level. Starred unpacking still consumes the remaining input. These rules apply
+to ordinary, loop, comprehension, header and explicitly yielding targets in both
+execution APIs; protocol callbacks may suspend and remain cancellable.
+
 Annotated assignment supports simple names and the supported attribute,
 subscript and slice targets. Only a simple module name stores an entry in
 `__annotations__`; annotations do not extend the ordinary target grammar.

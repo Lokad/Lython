@@ -39,9 +39,9 @@ internal sealed partial class LythonRuntime
             {
                 // Receivers and setters can allocate or suspend while this
                 // snapshot stays live; retain its reservation through all stores.
-                using var materialized = await MaterializeHeaderSequenceAsync(value, group.Span, context).ConfigureAwait(false);
-                var values = materialized.Items;
                 var layout = UnpackingLayout.FromTargets(group.Targets);
+                using var materialized = await MaterializeHeaderSequenceAsync(value, group.Span, context, layout.MaximumReadCount).ConfigureAwait(false);
+                var values = materialized.Items;
                 if (!layout.AcceptsValueCount(values.Count))
                     throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(values.Count), group.Span);
                 for (var i = 0; i < group.Targets.Count; i++)
@@ -76,9 +76,9 @@ internal sealed partial class LythonRuntime
         else SetSubscriptValue(receiver, index, value, span, context);
     }
 
-    private static async ValueTask<PyIteration.DrainLease> MaterializeHeaderSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<PyIteration.DrainLease> MaterializeHeaderSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context, int? maximumItems = null)
     {
-        try { return await PyIteration.MaterializeLeasedAsync(value, span, context).ConfigureAwait(false); }
+        try { return await PyIteration.MaterializeLeasedAsync(value, span, context, maximumItems).ConfigureAwait(false); }
         catch (PyNotIterableException)
         {
             throw new LythonRuntimeException("TypeError", $"cannot unpack non-iterable {UnboundTypeMethod.PythonTypeName(value, context)} object", span);

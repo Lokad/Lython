@@ -228,7 +228,7 @@ internal static partial class PyIteration
         }
     }
 
-    internal static DrainLease DrainLeased(IEnumerable<object> items, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    internal static DrainLease DrainLeased(IEnumerable<object> items, LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? maximumItems = null)
     {
         var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
         var result = new List<object>();
@@ -259,6 +259,7 @@ internal static partial class PyIteration
                 {
                     context.CheckExecution(span);
                 }
+                if (result.Count == maximumItems) break;
             }
         }
         catch
@@ -270,7 +271,7 @@ internal static partial class PyIteration
         return new DrainLease(result, reservation);
     }
 
-    internal static async ValueTask<DrainLease> DrainLeasedAsync(IAsyncEnumerable<object> items, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    internal static async ValueTask<DrainLease> DrainLeasedAsync(IAsyncEnumerable<object> items, LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? maximumItems = null)
     {
         var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
         var result = new List<object>();
@@ -301,6 +302,7 @@ internal static partial class PyIteration
                 {
                     context.CheckExecution(span);
                 }
+                if (result.Count == maximumItems) break;
             }
         }
         catch
@@ -312,11 +314,11 @@ internal static partial class PyIteration
         return new DrainLease(result, reservation);
     }
 
-    public static DrainLease MaterializeLeased(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => DrainLeased(ToSequence(value, span, context), span, context);
+    public static DrainLease MaterializeLeased(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? maximumItems = null)
+        => DrainLeased(ToSequence(value, span, context), span, context, maximumItems);
 
-    public static async ValueTask<DrainLease> MaterializeLeasedAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => await DrainLeasedAsync(ToSequenceAsync(value, span, context), span, context).ConfigureAwait(false);
+    public static async ValueTask<DrainLease> MaterializeLeasedAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? maximumItems = null)
+        => await DrainLeasedAsync(ToSequenceAsync(value, span, context), span, context, maximumItems).ConfigureAwait(false);
 
     internal static async ValueTask<IAsyncEnumerable<object>> AcquireComprehensionSequenceAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => value is PyInstance or IPyProtocolIterator

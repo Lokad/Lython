@@ -204,6 +204,8 @@ internal readonly struct UnpackingLayout
 
     public int RequiredValueCount => TargetCount - (HasStarredTarget ? 1 : 0);
 
+    public int? MaximumReadCount => HasStarredTarget ? null : checked(TargetCount + 1);
+
     public static UnpackingLayout FromTargets(IReadOnlyList<UnpackingTargetSyntax> targets)
     {
         for (var index = 0; index < targets.Count; index++)

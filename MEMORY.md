@@ -85,6 +85,14 @@ Native enumeration working storage is disposed on loop/comprehension failure or
 early exit. This releases its temporary allowance without closing retained Python
 iterator/generator values or refunding their surviving storage.
 
+Fixed-arity unpacking admits capacity for at most one excess value beyond its
+target count, using the existing temporary lease and capacity-growth preflights.
+The input's full length does not determine that scratch storage. Starred unpacking
+and general materialization keep their complete-drain behavior. A next callback
+can run before subsequent buffer growth is refused; target stores wait for arity
+validation. Lease cleanup releases scratch capacity while values retained by
+guest containers, iterators or public results keep their owners and funding.
+
 Executable member/subscript stores retain RHS/receiver and optional key under the existing
 execution owner until the awaited mutation ends, then clear them even on failure.
 They introduce no per-store read dictionary, scratch owner or reservation fee.

@@ -554,8 +554,6 @@ internal sealed partial class LythonRuntime
                 return;
             case LoopTupleTargetSyntax tuple:
             {
-                using var materialized = asynchronous ? await MaterializeHeaderSequenceAsync(value, span, context).ConfigureAwait(false) : MaterializeUnpackingSequence(value, span, context);
-                var values = materialized.Items;
                 var starIndex = -1;
                 for (var i = 0; i < tuple.Items.Count; i++)
                 {
@@ -570,6 +568,11 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
+                var layout = new UnpackingLayout(tuple.Items.Count, starIndex);
+                using var materialized = asynchronous
+                    ? await MaterializeHeaderSequenceAsync(value, span, context, layout.MaximumReadCount).ConfigureAwait(false)
+                    : MaterializeUnpackingSequence(value, span, context, layout.MaximumReadCount);
+                var values = materialized.Items;
                 if (starIndex < 0)
                 {
                     if (values.Count != tuple.Items.Count)
@@ -665,9 +668,9 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
-        using var materialized = MaterializeUnpackingSequence(value, span, context);
-        var values = materialized.Items;
         var layout = UnpackingLayout.FromTargets(targets);
+        using var materialized = MaterializeUnpackingSequence(value, span, context, layout.MaximumReadCount);
+        var values = materialized.Items;
         if (!layout.AcceptsValueCount(values.Count))
         {
             throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(values.Count), span);
@@ -741,11 +744,11 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static PyIteration.DrainLease MaterializeUnpackingSequence(object value, LythonSourceSpan span, ExecutionContext context)
+    private static PyIteration.DrainLease MaterializeUnpackingSequence(object value, LythonSourceSpan span, ExecutionContext context, int? maximumItems = null)
     {
         try
         {
-            return PyIteration.MaterializeLeased(value, span, context);
+            return PyIteration.MaterializeLeased(value, span, context, maximumItems);
         }
         catch (PyNotIterableException)
         {

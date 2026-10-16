@@ -59,8 +59,8 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableUnpackValues unpack:
                     using (var materialized = asynchronous
-                        ? await MaterializeHeaderSequenceAsync(Pop(ref _stack, span), span, _context).ConfigureAwait(false)
-                        : MaterializeUnpackingSequence(Pop(ref _stack, span), span, _context))
+                        ? await MaterializeHeaderSequenceAsync(Pop(ref _stack, span), span, _context, unpack.Layout.MaximumReadCount).ConfigureAwait(false)
+                        : MaterializeUnpackingSequence(Pop(ref _stack, span), span, _context, unpack.Layout.MaximumReadCount))
                     {
                         var values = materialized.Items;
                         var layout = unpack.Layout;
