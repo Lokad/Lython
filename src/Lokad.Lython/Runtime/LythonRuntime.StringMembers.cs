@@ -285,6 +285,42 @@ internal sealed partial class LythonRuntime
         private static int ParseStringOptionalInt(object value, string name, string signature, LythonSourceSpan span, ExecutionContext context)
             => RuntimeArgumentValidation.ParseIndexInt32(value, name, signature, span, context);
 
+        private static ValueTask<object> InvokeStringAffix(
+            PyString text, object[] arguments, LythonSourceSpan span, ExecutionContext context,
+            bool isStart, bool asynchronous)
+        {
+            if (arguments.Length is < 1 or > 3)
+                throw RuntimeErrors.Type(isStart
+                    ? "str.startswith(prefix[, start[, end]]) expects a string or tuple of strings, plus optional integer bounds."
+                    : "str.endswith(suffix[, start[, end]]) expects a string or tuple of strings, plus optional integer bounds.", span);
+
+            // Ordinary bounds never enter an async state machine. Only guest
+            // hooks can suspend; retain the same receiver/arguments through them.
+            if ((arguments.Length >= 2 && arguments[1] is PyInstance) ||
+                (arguments.Length == 3 && arguments[2] is PyInstance))
+                return InvokeStringAffixWithGuestBoundsAsync(text, arguments, span, context, isStart, asynchronous);
+
+            var bounds = NormalizeStringBounds(text.Length,
+                arguments.Length >= 2 ? arguments[1] : null,
+                arguments.Length == 3 ? arguments[2] : null, span);
+            return new(StartsOrEndsWith(text, arguments[0], bounds.Start, bounds.End, bounds.StartBeyondLength, isStart, span));
+        }
+
+        private static async ValueTask<object> InvokeStringAffixWithGuestBoundsAsync(
+            PyString text, object[] arguments, LythonSourceSpan span, ExecutionContext context,
+            bool isStart, bool asynchronous)
+        {
+            var start = await CoerceTypeIndexAsync(arguments[1], context, span, asynchronous).ConfigureAwait(false);
+            // A rejected start must prevent the end hook, including descriptor
+            // binding, rather than validating only after both conversions.
+            _ = NormalizeStringBounds(text.Length, start, null, span);
+            var end = arguments.Length == 3
+                ? await CoerceTypeIndexAsync(arguments[2], context, span, asynchronous).ConfigureAwait(false)
+                : null;
+            var bounds = NormalizeStringBounds(text.Length, start, end, span);
+            return StartsOrEndsWith(text, arguments[0], bounds.Start, bounds.End, bounds.StartBeyondLength, isStart, span);
+        }
+
         private static StringSearchBounds ParseStringBounds(
             int textLength,
             object[] arguments,
@@ -306,6 +342,11 @@ internal sealed partial class LythonRuntime
                 end = CoerceIndexProtocol(end, context, span);
             }
 
+            return NormalizeStringBounds(textLength, start, end, span);
+        }
+
+        private static StringSearchBounds NormalizeStringBounds(int textLength, object? start, object? end, LythonSourceSpan span)
+        {
             try
             {
                 var normalized = PyStringOps.NormalizeRange(textLength, start, end);
@@ -313,6 +354,7 @@ internal sealed partial class LythonRuntime
                 {
                     BigInteger integer => integer > textLength,
                     int integer => integer > textLength,
+                    bool flag => flag && textLength == 0,
                     _ => false
                 };
                 return new StringSearchBounds(normalized.Start, normalized.End, startBeyondLength);
@@ -332,14 +374,12 @@ internal sealed partial class LythonRuntime
             bool isStart,
             LythonSourceSpan span)
         {
-            if (end < start)
-            {
-                return false;
-            }
-
+            // An impossible range still validates the affix and tuple entries.
+            // Only a real earlier match can skip a later invalid tuple item.
+            var canMatch = end >= start && !startBeyondLength;
             if (PyStringOps.TryAsString(prefixOrTuple, out var single))
             {
-                return !startBeyondLength &&
+                return canMatch &&
                     (isStart ? PyStringOps.StartsWith(text, single, start, end) : PyStringOps.EndsWith(text, single, start, end));
             }
 
@@ -363,7 +403,7 @@ internal sealed partial class LythonRuntime
                         span);
                 }
 
-                if (!startBeyondLength &&
+                if (canMatch &&
                     (isStart ? PyStringOps.StartsWith(text, textItem, start, end) : PyStringOps.EndsWith(text, textItem, start, end)))
                 {
                     return true;

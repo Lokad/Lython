@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Await type-level __index__ binding and calls for optional str.startswith/endswith bounds under RunAsync. Validate the start before invoking the end callback, ignore instance shadows, and preserve ordinary native-bound completion, cancellation, retained receivers and terminal admission refusal. Validate invalid affixes even for impossible ranges and honor Boolean bounds on empty text. Consolidate the two method handlers and report Python-shaped noncallable index-slot errors.
+
 - Make refused memory admission terminal for the command. Preserve the first structured failure through guest catches, context-manager suppression and finally returns; stop subsequent guest/host work while native cleanup returns relinquished allowance. Keep explicitly raised MemoryError catchable, earlier side effects intact and later commands usable. Remove optional regex-cache admission fallback and same-command budget-retry contracts.
 
 - Write capitalize/title/swapcase output directly as UTF-8, sharing full expansions and contextual Greek sigma handling with lower/upper. Preserve titlecase digraphs and swapcase behavior, remove per-scalar CLR strings/comparisons, and release builder scratch on refusal or cancellation.

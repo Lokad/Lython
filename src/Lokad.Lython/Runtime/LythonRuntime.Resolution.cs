@@ -363,6 +363,7 @@ internal sealed partial class LythonRuntime
         var callable = asynchronous
             ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false)
             : PyAttributeLookup.BindForInstance(instance, raw, context, span);
+        if (callable is not ICallable) throw NotCallableError(callable, context, span);
         var result = asynchronous
             ? await InvokeCallableTargetAsync(callable, span, span, context,
                 () => ValueTask.FromResult(Array.Empty<CallArgumentValue>())).ConfigureAwait(false)

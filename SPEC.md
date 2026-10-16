@@ -1795,9 +1795,16 @@ the same text/ownership rules; unsupported arguments fail explicitly.
 Builtin `str.startswith(prefix[, start[, end]])` and `str.endswith(suffix[, start[, end]])`
 take positional arguments only. Prefix/suffix tuples are examined in order and
 stop at the first match; an invalid later entry is not examined after a match.
+An empty/impossible range still validates the affix and visited tuple entries.
 Static diagnostics reject a tuple entry only when its validation is certain;
 an earlier string or unknown value defers later validation to runtime. Argument
 expressions, including awaited host calls, complete before keyword rejection.
+Optional bounds use the type's `__index__` slot, ignoring instance shadows and
+instance-only hooks. Start conversion/validation precedes end conversion; both
+precede prefix/suffix validation. `RunAsync` awaits descriptor binding and index
+callbacks without replay, retaining receiver/arguments and their existing
+funding until completion. Ordinary native bounds complete synchronously; pending
+callbacks preserve cancellation and terminal memory-admission failure.
 Eligible one-positional-argument calls to exact-string `startswith` use the
 existing receiver and argument frame slots with a shared method implementation.
 The evaluated receiver stays retained through suspended argument evaluation.

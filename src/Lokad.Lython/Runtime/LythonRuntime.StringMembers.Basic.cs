@@ -60,26 +60,14 @@ internal sealed partial class LythonRuntime
                         var count = arguments.Length == 3 ? ParseStringOptionalInt(arguments[2], "count", "str.replace(old, new[, count])", span, context) : -1;
                         return OwnMethodResult(PyStringOps.Replace(text, oldValue, newValue, count),text,context.MemoryGovernor,span);
                     }, StrReplaceSignature),
-                    "startswith" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        if (arguments.Length is < 1 or > 3)
-                        {
-                            throw new LythonRuntimeException("TypeError", "str.startswith(prefix[, start[, end]]) expects a string or tuple of strings, plus optional integer bounds.", span);
-                        }
-
-                        var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, context, "str.startswith(prefix[, start[, end]])");
-                        return StartsOrEndsWith(text, arguments[0], start, end, startBeyondLength, isStart: true, span);
-                    }, StrStartsWithSignature),
-                    "endswith" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        if (arguments.Length is < 1 or > 3)
-                        {
-                            throw new LythonRuntimeException("TypeError", "str.endswith(suffix[, start[, end]]) expects a string or tuple of strings, plus optional integer bounds.", span);
-                        }
-
-                        var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, context, "str.endswith(suffix[, start[, end]])");
-                        return StartsOrEndsWith(text, arguments[0], start, end, startBeyondLength, isStart: false, span);
-                    }, StrEndsWithSignature),
+                    "startswith" => BoundCallable.Create(
+                        (arguments, span, context) => InvokeStringAffix(text, arguments, span, context, isStart: true, asynchronous: false).GetAwaiter().GetResult(),
+                        StrStartsWithSignature,
+                        (arguments, span, context) => InvokeStringAffix(text, arguments, span, context, isStart: true, asynchronous: true)),
+                    "endswith" => BoundCallable.Create(
+                        (arguments, span, context) => InvokeStringAffix(text, arguments, span, context, isStart: false, asynchronous: false).GetAwaiter().GetResult(),
+                        StrEndsWithSignature,
+                        (arguments, span, context) => InvokeStringAffix(text, arguments, span, context, isStart: false, asynchronous: true)),
                     "lower" => BoundCallable.CreateNoArguments(text, "str.lower", static (receiver, span, context) => OwnMethodResult(receiver.ToLowerInvariant(),receiver,context.MemoryGovernor,span)),
                     "capitalize" => BoundCallable.CreateNoArguments(text, "str.capitalize", static (receiver, span, context) => OwnMethodResult(PyStringOps.Capitalize(receiver),receiver,context.MemoryGovernor,span)),
                     "islower" => BoundCallable.CreateNoArguments(text, "str.islower", static (receiver, _, _) => PyStringOps.IsLower(receiver)),
