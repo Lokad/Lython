@@ -1,4 +1,3 @@
-using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -10,7 +9,7 @@ public sealed class GovernedCursorAdmissionTests
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public async Task RefusalPreservesZipSourcesAndConsumedEnumerateAlignment(bool zip, bool asynchronous)
+    public async Task RefusalAbortsBeforeGuestCursorRetry(bool zip, bool asynchronous)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
         using var pressureOwner = budget.CreateScope();
@@ -51,10 +50,12 @@ public sealed class GovernedCursorAdmissionTests
         }
         using (result)
         {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(new List<object?> { true, new BigInteger(zip ? 20 : 2), new BigInteger(zip ? 2 : 30) }, result.ReturnValue);
-            Assert.Equal(2, timing.Reads);
+            Assert.False(result.Success);
+            Assert.NotEqual(0, result.ExitCode);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.Equal(1, timing.Reads);
         }
+        timing.Dispose();
         Assert.Equal(baseline, budget.ReservedBytes);
         script.Dispose();
         Assert.Equal(0, budget.ReservedBytes);

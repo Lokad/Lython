@@ -29,7 +29,11 @@ deletion, cleared container or CLR collection does not promise an immediate
 refund; see [MEMORY.md](MEMORY.md). Remove tests enforcing the discarded collector
 architecture while preserving Python results, aliases, cursor state, rollback,
 physical reachability and cancellation. Do not replace these with loose timing
-or peak-ratio assertions.
+or peak-ratio assertions. Refused memory admission must fail the command even
+through guest catches, context-manager suppression and finally returns. Preserve
+before-mutation, cursor and native-cleanup witnesses; replace successful
+same-command budget-retry expectations with failure plus a separate funded command.
+Keep ordinary guest-raised MemoryError catchability and retained-owner checks.
 
 At a coherent containment or dependency checkpoint, batch the complete checks:
 

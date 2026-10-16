@@ -10,7 +10,7 @@ namespace Lokad.Lython.Tests;
 public sealed class LambdaExecutableTests
 {
     [Fact]
-    public void DeniedClosureCaptureDoesNotPublishFundingMarksAndCanRetry()
+    public void DeniedClosureCaptureDoesNotPublishFundingMarks()
     {
         var syntax = LythonFrontend.Compile("def outer(value):\n    return lambda:value").Script!;
         var module = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
@@ -35,9 +35,9 @@ public sealed class LambdaExecutableTests
             Assert.False(cell.RetentionCharged);
             Assert.Equal(1024 * 1024, context.MemoryGovernor.CurrentAccountedBytes);
             context.MemoryGovernor.Release(padding);
-            Assert.Same(cell, Assert.Single(capture(lambda, context, syntax.Statements[0].Span)));
-            Assert.True(cell.RetentionCharged);
-            Assert.True(context.MemoryGovernor.CurrentAccountedBytes > baseline);
+            Assert.Same(failure, Assert.Throws<LythonRuntimeException>(() => capture(lambda, context, syntax.Statements[0].Span)));
+            Assert.False(cell.RetentionCharged);
+            Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
         finally { context.LeaveExecutableSlots(null); }

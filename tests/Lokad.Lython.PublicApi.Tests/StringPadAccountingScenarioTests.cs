@@ -75,15 +75,17 @@ public sealed class StringPadAccountingScenarioTests
         var beforeSync = GC.GetAllocatedBytesForCurrentThread();
         var sync = script.Run(new MockLythonHost(), options);
         var syncAllocated = GC.GetAllocatedBytesForCurrentThread() - beforeSync;
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal("memory", Assert.IsType<string>(sync.ReturnValue));
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
         Assert.True(syncAllocated < 1048576, $"format padding allocated {syncAllocated} bytes before failing");
 
         // The asynchronous path shares the padding implementation; only the
         // outcome is asserted here.
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal("memory", Assert.IsType<string>(asyncResult.ReturnValue));
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+
     }
 
     [Fact]
@@ -159,15 +161,17 @@ public sealed class StringPadAccountingScenarioTests
         var beforeSync = GC.GetAllocatedBytesForCurrentThread();
         var sync = script.Run(new MockLythonHost(), options);
         var syncAllocated = GC.GetAllocatedBytesForCurrentThread() - beforeSync;
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal("memory", Assert.IsType<string>(sync.ReturnValue));
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
         Assert.True(syncAllocated < 1048576, $"float precision allocated {syncAllocated} bytes before failing");
 
         // The asynchronous path shares the formatting implementation; only the
         // outcome is asserted here.
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal("memory", Assert.IsType<string>(asyncResult.ReturnValue));
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+
     }
 
     [Fact]
@@ -194,13 +198,15 @@ public sealed class StringPadAccountingScenarioTests
         var beforeSync = GC.GetAllocatedBytesForCurrentThread();
         var sync = script.Run(new MockLythonHost(), options);
         var syncAllocated = GC.GetAllocatedBytesForCurrentThread() - beforeSync;
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal("memory", Assert.IsType<string>(sync.ReturnValue));
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
         Assert.True(syncAllocated < 1048576, $"decimal precision allocated {syncAllocated} bytes before failing");
 
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal("memory", Assert.IsType<string>(asyncResult.ReturnValue));
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+
     }
 
     [Fact]

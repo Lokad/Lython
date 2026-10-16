@@ -70,6 +70,10 @@ surviving result/cache owners before allocation; await all users before disposal
 Use rough major-capacity and replacement estimates, with deliberate headroom for
 minor uninstrumented storage. See [MEMORY.md](MEMORY.md). Initial long streaming
 integration uses bounded host-driven executions, not guest-reference tracing.
+Refused admission fails the command: preserve its first structured origin and stop
+guest work, even through exception suppression or finally returns. Keep native
+cleanup/refunds available and awaited; never retry admission or skip optional
+storage to recover. Explicit guest-raised MemoryError remains catchable.
 
 Lython is intended to be host-mediated and safe-by-design. Runtime file, directory, subprocess, stdin, stdout, and stderr access must remain mediated through the public host abstractions.
 

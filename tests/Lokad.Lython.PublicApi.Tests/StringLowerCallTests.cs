@@ -47,8 +47,9 @@ public sealed class StringLowerCallTests
         {
             using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
             {
-                Assert.True(result.Success, result.Failure?.Message);
-                Assert.Equal("ready\nbefore 32768\n", result.StandardOutput);
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                Assert.Equal("ready\n", result.StandardOutput);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
         }

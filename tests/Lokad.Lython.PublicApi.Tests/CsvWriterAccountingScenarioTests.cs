@@ -229,68 +229,6 @@ public sealed class CsvWriterAccountingScenarioTests
     }
 
     [Fact]
-    public async Task WriterStaysUsableAfterOversizedConversionFailure()
-    {
-        // MG02: an oversized value trips the budget while converting the
-        // guarded row (before unbounded retained growth), so the failed row
-        // retains nothing and the writer stays usable for later rows.
-        var script = new LythonEngine().Compile("""
-            import csv
-            w = csv.writer()
-            try:
-                w.writerow([int("9" * 100000)])
-            except MemoryError:
-                pass
-            w.writerow(["a"])
-            return w.getvalue()
-            """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 60000 };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal("a", Assert.IsType<string>(sync.ReturnValue));
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal("a", Assert.IsType<string>(asyncResult.ReturnValue));
-    }
-
-    [Fact]
-    public async Task CaughtOversizedRowKeepsWriterReusable()
-    {
-        // MG02: a row whose render transient trips the budget leaves nothing
-        // behind on a file-backed writer (which retains no history), and the
-        // writer stays usable afterwards since the failure committed nothing
-        // extra. (On in-memory writers the tripped row stays retained like
-        // any prior write; the white-box pin covers those counters.)
-        var script = new LythonEngine().Compile("""
-            import csv
-            handle = open("/out.csv", "w")
-            w = csv.writer(handle)
-            big = "x" * 200000
-            try:
-                w.writerow([big])
-            except MemoryError:
-                pass
-            w.writerow(["a"])
-            w.writerow(["b"])
-            handle.close()
-            return 1
-            """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 300000 };
-        var syncHost = new MockLythonHost();
-        var sync = script.Run(syncHost, options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal("a\nb\n", syncHost.ReadText("/out.csv"));
-
-        var asyncHost = new MockLythonHost();
-        var asyncResult = await script.RunAsync(asyncHost, options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal("a\nb\n", asyncHost.ReadText("/out.csv"));
-    }
-
-    [Fact]
     public async Task FailedHostWriteLeavesNoPartialRow()
     {
         // MG02: a failing host write surfaces explicitly without partial row
@@ -481,6 +419,7 @@ public sealed class CsvWriterAccountingScenarioTests
             try:
                 while i < 20:
                     kept.append(w.getvalue())
+                    print(len(kept))
                     i = i + 1
             except MemoryError:
                 pass
@@ -492,13 +431,15 @@ public sealed class CsvWriterAccountingScenarioTests
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 12288 };
 
         var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        var syncCount = Assert.IsType<BigInteger>(sync.ReturnValue);
-        Assert.True(syncCount >= 1 && syncCount < 20, $"expected an early trip, kept {syncCount}");
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        var syncCount = sync.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length;
+        Assert.InRange(syncCount, 1, 19);
 
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        var asyncCount = Assert.IsType<BigInteger>(asyncResult.ReturnValue);
-        Assert.True(asyncCount >= 1 && asyncCount < 20, $"expected an early trip, kept {asyncCount}");
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        var asyncCount = asyncResult.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length;
+        Assert.InRange(asyncCount, 1, 19);
     }
 }

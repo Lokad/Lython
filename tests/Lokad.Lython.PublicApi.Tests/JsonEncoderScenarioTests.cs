@@ -455,7 +455,7 @@ public sealed class JsonEncoderScenarioTests
     }
 
     [Fact]
-    public async Task DeniedAdvanceFinishesIteratorButRetryRecovers()
+    public async Task DeniedAdvanceFailsTheCommandAndFundedCommandWorks()
     {
         var script = new LythonEngine().Compile(
             """
@@ -480,11 +480,11 @@ public sealed class JsonEncoderScenarioTests
         // ~4KB document itself fits; the failed iterator is finished.
         var tiny = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
         var deniedSync = script.Run(new MockLythonHost(), tiny);
-        Assert.True(deniedSync.Success, deniedSync.Failure?.Message);
-        Assert.Equal("True|True", deniedSync.ReturnValue);
+        Assert.False(deniedSync.Success);
+        Assert.Equal("MemoryError", deniedSync.Failure?.ExceptionType);
         var deniedAsync = await script.RunAsync(new MockLythonHost(), tiny);
-        Assert.True(deniedAsync.Success, deniedAsync.Failure?.Message);
-        Assert.Equal("True|True", deniedAsync.ReturnValue);
+        Assert.False(deniedAsync.Success);
+        Assert.Equal("MemoryError", deniedAsync.Failure?.ExceptionType);
 
         var funded = new LythonEngine().Compile(
             """

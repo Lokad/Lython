@@ -138,19 +138,21 @@ public sealed class HeaderAssignmentScenarioTests
         foreach (var budget in new[] { 262144L, 2097152L })
         {
             var expected = budget == 262144
-                ? "entered\ndenied\n2048\n"
+                ? "entered\n"
                 : "entered\nstored\n" + boundCount + "\n2048\n";
             var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
             var host = new MockLythonHost();
             host.SeedFile("/data.txt", "!");
             using var sync = script.Run(host, options);
-            Assert.True(sync.Success, sync.Failure?.Message + "\nstdout:\n" + sync.StandardOutput);
+            Assert.Equal(budget != 262144, sync.Success);
+            if (!sync.Success) Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
             Assert.Equal(expected, sync.StandardOutput);
             Assert.True(sync.PeakExecutionMemoryBytes <= budget);
             var delayed = new DelayedLythonHost();
             delayed.SeedFile("/data.txt", "!");
             using var result = await script.RunAsync(delayed, options);
-            Assert.True(result.Success, result.Failure?.Message + "\nstdout:\n" + result.StandardOutput);
+            Assert.Equal(budget != 262144, result.Success);
+            if (!result.Success) Assert.Equal("MemoryError", result.Failure?.ExceptionType);
             Assert.Equal(expected, result.StandardOutput);
             Assert.True(result.PeakExecutionMemoryBytes <= budget);
             Assert.True(delayed.CompletedAsynchronously > 0);

@@ -30,7 +30,7 @@ public sealed class ZipStatePreflightTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeniedRowPreflightDoesNotConsumeAndCanResume(bool asynchronous)
+    public async Task DeniedRowPreflightDoesNotConsumeAndStopsFurtherPulls(bool asynchronous)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         var source = new CountingSource();
@@ -52,8 +52,11 @@ public sealed class ZipStatePreflightTests
             Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
         }
         finally { context.MemoryGovernor.ReleaseReserved(funding); }
-        Assert.True(asynchronous ? (await zip.TryMoveNextAsync()).HasValue : zip.TryMoveNext(out _));
-        Assert.Equal(1, source.Pulls);
+        var denied = asynchronous
+            ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await zip.TryMoveNextAsync())
+            : Assert.Throws<LythonRuntimeException>(() => zip.TryMoveNext(out _));
+        Assert.Same(context.MemoryGovernor.AdmissionFailure, denied);
+        Assert.Equal(0, source.Pulls);
     }
 
     [Theory]
@@ -85,9 +88,12 @@ public sealed class ZipStatePreflightTests
             Assert.Equal(BigInteger.One, held[0]);
         }
         finally { context.MemoryGovernor.ReleaseReserved(funding); }
-        var next = Assert.IsType<PyTuple>(asynchronous ? (await zip.TryMoveNextAsync()).Value : Pull(zip));
-        Assert.NotSame(held, next);
-        Assert.Equal(3, source.Pulls);
+        var denied = asynchronous
+            ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await zip.TryMoveNextAsync())
+            : Assert.Throws<LythonRuntimeException>(() => zip.TryMoveNext(out _));
+        Assert.Same(context.MemoryGovernor.AdmissionFailure, denied);
+        Assert.Equal(2, source.Pulls);
+        Assert.Equal(BigInteger.One, held[0]);
     }
 
     private sealed class CountingSource : IPyAsyncIteratorValue

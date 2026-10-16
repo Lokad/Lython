@@ -61,11 +61,12 @@ public sealed class TextReadEmissionOwnershipTests
         Assert.Equal(reserved + pressure, governor.CurrentReservedBytes);
         Assert.Equal(committed, governor.CurrentCommittedBytes);
         governor.ReleaseReserved(pressure);
-        var next = asynchronous ? await state.ReadLineAsync(-1) : state.ReadLine(-1);
-        Assert.Equal(readSize == 4 ? "xyz\n" : "abc\n", next.AsString());
+        var denied = asynchronous
+            ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await state.ReadLineAsync(-1))
+            : Assert.Throws<LythonRuntimeException>(() => state.ReadLine(-1));
+        Assert.Same(error, denied);
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(state);
-        GC.KeepAlive(next);
     }
 
     [Theory]

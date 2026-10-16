@@ -67,15 +67,15 @@ public sealed class PrimitiveStorageTests
             list.SetIndex(0, incoming);
             Assert.Same(incoming, list[0]);
             Assert.Equal(before, governor.CurrentCommittedBytes);
-            var error = Assert.Throws<LythonRuntimeException>(() => list.Add(false));
-            Assert.Equal("MemoryError", error.ExceptionType);
-            Assert.Single(list);
             for (var i = 0; i < 2048; i++)
             {
                 list.RemoveAt(0);
                 list.Add((byte)1);
             }
             Assert.Equal(before, governor.CurrentCommittedBytes);
+            var error = Assert.Throws<LythonRuntimeException>(() => list.Add(false));
+            Assert.Equal("MemoryError", error.ExceptionType);
+            Assert.Single(list);
         }
         Assert.Equal(0, governor.CurrentReservedBytes);
     }

@@ -27,17 +27,19 @@ public sealed class ExecutionConsumptionTests
     }
 
     [Theory]
-    [InlineData("return 7", true)]
-    [InlineData("raise RuntimeError('later')", false)]
-    [InlineData("raise SystemExit(0)", false)]
-    public async Task CaughtDenialsAndTerminalErrorsKeepCounters(string ending, bool success)
+    [InlineData("return 7")]
+    [InlineData("raise RuntimeError('later')")]
+    [InlineData("raise SystemExit(0)")]
+    public async Task TerminalAdmissionDenialKeepsCounters(string ending)
     {
         var script = new LythonEngine().Compile("print('é')\ntry:\n    x = 'x' * 1000000\nexcept MemoryError:\n    pass\n" + ending);
         foreach (var asynchronous in new[] { false, true })
         {
             var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536, MaxExecutionSteps = 1000 };
             var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
-            Assert.Equal(success, result.Success);
+            Assert.False(result.Success);
+            Assert.NotEqual(0, result.ExitCode);
+            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
             Assert.True(result.DeniedReservationBytes > 0);
             Assert.Equal(3, result.Consumption?.StandardOutputBytes);
             Assert.Equal(2, result.Consumption?.HostCalls);

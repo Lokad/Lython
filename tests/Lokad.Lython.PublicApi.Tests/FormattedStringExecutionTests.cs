@@ -109,7 +109,7 @@ print(f'A{Value()!s:>{width()}}{Value():yes}B')
     }
 
     [Fact]
-    public async Task DeniedFormattingPreservesThePreviousTarget()
+    public async Task DeniedFormattingFailsBeforePublishingOrCatchOutput()
     {
         const string source = "target='before'\ntry: target=f'{1:200000}'\nexcept MemoryError: print(target)";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
@@ -120,9 +120,14 @@ print(f'A{Value()!s:>{width()}}{Value():yes}B')
             var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
             using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
             {
-                Assert.True(result.Success, result.Failure?.Message);
-                Assert.Equal("before\n", result.StandardOutput);
-                Assert.InRange(result.PeakExecutionMemoryBytes, 1, 131072);
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                Assert.Empty(result.StandardOutput);
+                // The rejected first allocation need not produce an accepted charge.
+                // Previously the catch's print supplied that charge after refusal.
+                Assert.InRange(result.PeakExecutionMemoryBytes, 0, 131072);
+                Assert.True(result.DeniedReservationBytes > 131072);
+                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
         }

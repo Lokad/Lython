@@ -92,21 +92,6 @@ public sealed class SetShellAccountingScenarioTests
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
     [Fact]
-    public async Task CaughtSetFailureAllowsReuse()
-    {
-        await AssertBatchCompletes("""
-            values = {1}
-            denied = False
-            try:
-                values.add('x' * 1000000)
-            except MemoryError:
-                denied = True
-            values.add(2)
-            return denied and values == {1, 2}
-            """, true, 65536);
-    }
-
-    [Fact]
     public async Task DroppedEmptySetsRelease()
     {
         await AssertBatchCompletes("x = None\n"

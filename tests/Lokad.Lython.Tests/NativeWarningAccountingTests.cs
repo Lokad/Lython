@@ -22,7 +22,7 @@ public sealed class NativeWarningAccountingTests
     }
 
     [Fact]
-    public void DeniedRegistryGrowthPreservesPriorNoticesAndDoesNotSuppressAFundedRetry()
+    public void DeniedRegistryGrowthPreservesPriorNoticesAndFunding()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
@@ -38,12 +38,9 @@ public sealed class NativeWarningAccountingTests
             Assert.Equal(384, context.MemoryGovernor.CurrentReservedBytes);
             Assert.False(context.State.MarkDefaultWarning("/file.py", 1, "FutureWarning", "notice", Span));
         }
-        // A later budget-funded location must be registered, whereas each
-        // denied attempt above must leave that location absent.
         pressure.Dispose();
-        Assert.True(context.State.MarkDefaultWarning("/file.py", 3, "FutureWarning", "notice", Span));
-        Assert.False(context.State.MarkDefaultWarning("/file.py", 3, "FutureWarning", "notice", Span));
-        Assert.Equal(896, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Throws<LythonRuntimeException>(() => context.State.MarkDefaultWarning("/file.py", 3, "FutureWarning", "notice", Span));
+        Assert.Equal(640, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

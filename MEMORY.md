@@ -184,8 +184,28 @@ owners. Repeated batches return temporary accounting to baseline immediately.
 One uninterrupted script is not promised a row-count-independent allowance;
 arbitrary reference withdrawal does not promise immediate accounting recovery.
 
-Admission failure is an ordinary resource-limit outcome. It occurs before
-tracked allocation or mutation; failed construction refunds unused admission.
-Earlier output and side effects remain. Refusal implies neither transaction
-rollback nor permission to replay a command. Lython does not force collection,
-wait for allowance, or retry after collection.
+Refused admission fails the command. Compilation refusal produces `LA0008`;
+execution refusal produces an unsuccessful result with a nonzero exit code and
+the first admission's structured attribution. Projection refusal also prevents
+a successful outcome, including `SystemExit(0)`. An already failed command keeps
+its original nonzero failure when diagnostic projection cannot fit.
+
+An execution's first refusal is terminal even if guest code catches `MemoryError`,
+suppresses it in `__exit__`, or returns/raises from `finally`. Further guest work
+and host calls stop. Guest cleanup is not an emergency allocation budget and can
+be interrupted; rely on Lython's native ownership cleanup for contained resources.
+Explicit guest `raise MemoryError(...)` remains an ordinary catchable Python error.
+Cancellation and actual CLR memory exhaustion retain their separate meanings.
+
+Admission precedes the tracked allocation or mutation; failed private construction
+refunds unused admission. Native cleanup awaits outstanding users and relinquishes
+its own storage without publishing buffered writes after admission refusal. Earlier
+output, completed iterator effects and file changes remain; refusal grants neither
+transaction rollback nor permission to replay a command. Lython does not recover
+by skipping optional cache storage, evicting after refusal, switching to streaming
+or disk, waiting, or retrying a smaller allocation. Normal bounded cache replacement
+and host-selected streaming before any refusal remain supported.
+
+Cleanup returns relinquished allowance independently of CLR collection. Retained
+results and caches remain charged. The borrowed host root is still usable by later,
+separate commands; a refused command cannot resume merely because pressure ends.

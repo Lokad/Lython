@@ -295,7 +295,9 @@ public sealed class CsvTextStreamTests : LifetimeScenario
             chunks = []
             class Writer:
                 def write(self, text):
+                    if chunks:assert chunks[0] == 'x' * 4096 + '\n'
                     chunks.append(text)
+                    print('row')
             writer = csv.writer(Writer(), lineterminator='\n')
             for i in range(1000):
                 try:
@@ -309,13 +311,16 @@ public sealed class CsvTextStreamTests : LifetimeScenario
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("denied True True\n", result.StandardOutput);
+            Assert.False(result.Success);
+            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            var published = result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            Assert.InRange(published.Length, 2, 999);
+            Assert.All(published, line => Assert.Equal("row", line));
         }
     }
 
     [Fact]
-    public async Task WideGeneratedRowsAreDeniedBeforeTheCallbackAndAllowLaterWrites()
+    public async Task WideGeneratedRowsRefuseBeforeGuestCallbacksAndContinuation()
     {
         var script = Compile("""
             import csv
@@ -324,6 +329,7 @@ public sealed class CsvTextStreamTests : LifetimeScenario
                     self.count = 0
                 def write(self, text):
                     self.count += 1
+                    print('callback')
             stream = Writer()
             writer = csv.writer(stream)
             def cells():
@@ -339,8 +345,9 @@ public sealed class CsvTextStreamTests : LifetimeScenario
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("denied 0\nlater 1\n", result.StandardOutput);
+            Assert.False(result.Success);
+            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            Assert.Empty(result.StandardOutput);
         }
     }
 

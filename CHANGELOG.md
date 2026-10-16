@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Make refused memory admission terminal for the command. Preserve the first structured failure through guest catches, context-manager suppression and finally returns; stop subsequent guest/host work while native cleanup returns relinquished allowance. Keep explicitly raised MemoryError catchable, earlier side effects intact and later commands usable. Remove optional regex-cache admission fallback and same-command budget-retry contracts.
+
 - Write capitalize/title/swapcase output directly as UTF-8, sharing full expansions and contextual Greek sigma handling with lower/upper. Preserve titlecase digraphs and swapcase behavior, remove per-scalar CLR strings/comparisons, and release builder scratch on refusal or cancellation.
 
 - Reuse the fixed len/repr/ascii builtin definitions across executions, removing repeated wrappers, parameter-name arrays and signature-catalog lookups. Keep mutable type graphs, builtin dictionaries and contextual module lookup isolated per run; retain ordinary binding, host/cancellation behavior and result ownership.

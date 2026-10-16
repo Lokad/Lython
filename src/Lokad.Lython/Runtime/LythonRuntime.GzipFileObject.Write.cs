@@ -160,7 +160,7 @@ internal sealed partial class LythonRuntime
             var stream = _stream;
             try
             {
-                if (!_reading)
+                if (!_reading && _services.MemoryGovernor.AdmissionFailure is null)
                 {
                     await DrainPendingAsync(span, asynchronous).ConfigureAwait(false);
                     _services.CheckExecution(span);

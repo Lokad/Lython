@@ -106,7 +106,7 @@ public sealed class FunctionDefaultMetadataTests
     }
 
     [Fact]
-    public async Task DeniedReplacementPreservesTheOriginalDefaults()
+    public async Task DeniedDefaultReplacementFailsBeforeGuestContinuation()
     {
         var budget = new LythonMemoryBudget(128 * 1024);
         using var script = new LythonEngine().Compile("def f(x=1): return x\nold=f.__defaults__\ntry: f.__defaults__=(0,)*10000\nexcept MemoryError: print('denied')\nprint(f(),f.__defaults__ is old)", budget);
@@ -115,8 +115,9 @@ public sealed class FunctionDefaultMetadataTests
         {
             using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
             {
-                Assert.True(result.Success, result.Failure?.Message);
-                Assert.Equal("denied\n1 True\n", result.StandardOutput);
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                Assert.Empty(result.StandardOutput);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
         }

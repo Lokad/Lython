@@ -37,18 +37,28 @@ internal sealed class MemoryGovernor
 
     public long PeakAccountedBytes { get; private set; }
 
-    // MG24: the most recent denied reservation size, for failure attribution.
-    // Stays zero when nothing was ever denied; a later denial overwrites it.
+    // The first denied reservation size, preserved for terminal attribution.
+    // Stays zero when no tracked reservation was denied.
     public long LastDeniedReservationBytes { get; private set; }
+
+    // A command cannot recover from refused admission. Keep the first origin
+    // even if guest exception handling or cleanup replaces the thrown error.
+    internal LythonRuntimeException? AdmissionFailure { get; private set; }
+
+    internal void ThrowIfAdmissionFailed()
+    {
+        if (AdmissionFailure is { } failure) throw failure;
+    }
 
     public void EnsureCanReserve(long bytes, LythonSourceSpan? span)
     {
+        ThrowIfAdmissionFailed();
         if (bytes <= 0) return;
         var next = AddChecked(CurrentAccountedBytes, bytes, span);
         if (MaxAccountedBytes is { } limit && next > limit)
         {
             LastDeniedReservationBytes = bytes;
-            throw RuntimeErrors.Attributed("MemoryError", $"execution memory budget exceeded ({limit})", span,
+            throw AdmissionFailure = RuntimeErrors.Attributed("MemoryError", $"execution memory budget exceeded ({limit})", span,
                 LythonFailureReason.ExecutionMemoryLimit, limit, CurrentAccountedBytes, bytes);
         }
     }
@@ -62,6 +72,7 @@ internal sealed class MemoryGovernor
 
     public void Reserve(long bytes, LythonSourceSpan? span)
     {
+        ThrowIfAdmissionFailed();
         if (bytes <= 0)
         {
             return;
@@ -72,7 +83,7 @@ internal sealed class MemoryGovernor
         if (_ownership is not null && !_ownership.TryResize(checked(CurrentAccountedBytes + bytes)))
         {
             LastDeniedReservationBytes = bytes;
-            throw RuntimeErrors.Attributed("MemoryError", "shared memory budget exceeded", span,
+            throw AdmissionFailure = RuntimeErrors.Attributed("MemoryError", "shared memory budget exceeded", span,
                 LythonFailureReason.SharedMemoryAllowance, observed: CurrentAccountedBytes, requested: bytes);
         }
 
@@ -160,7 +171,8 @@ internal sealed class MemoryGovernor
     {
         if (right > 0 && left > long.MaxValue - right)
         {
-            throw RuntimeErrors.Attributed("MemoryError", "execution memory budget exceeded", span,
+            LastDeniedReservationBytes = right;
+            throw AdmissionFailure = RuntimeErrors.Attributed("MemoryError", "execution memory budget exceeded", span,
                 LythonFailureReason.ExecutionMemoryLimit, MaxAccountedBytes, CurrentAccountedBytes, right);
         }
 

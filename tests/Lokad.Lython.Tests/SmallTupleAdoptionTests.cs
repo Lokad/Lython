@@ -39,7 +39,7 @@ public sealed class SmallTupleAdoptionTests
     [InlineData(1, 1)]
     [InlineData(2, 0)]
     [InlineData(2, 1)]
-    public void DeniedStorageRefundsConstructionAndAllowsRecovery(int construction, int fundedCoupons)
+    public void DeniedStorageRefundsConstructionWithoutAdmittingFurtherWork(int construction, int fundedCoupons)
     {
         object[] items = [new BigInteger(1), new BigInteger(2)];
         var budget = PyTuple.EstimateApproximateBytes(2) + (fundedCoupons + 1) * RuntimeMemoryEstimates.ScalarStorageBytes - 1;
@@ -48,11 +48,9 @@ public sealed class SmallTupleAdoptionTests
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(0, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
-        var recovered = new PyTuple(new object[] { items[0] }, governor);
-        Assert.Equal(PyTuple.EstimateApproximateBytes(1) + RuntimeMemoryEstimates.ScalarStorageBytes, governor.CurrentCommittedBytes);
-        Assert.Same(items[0], recovered[0]);
+        Assert.Same(failure, Assert.Throws<LythonRuntimeException>(() => new PyTuple(new object[] { items[0] }, governor)));
+        Assert.Equal(0, governor.CurrentAccountedBytes);
         GC.KeepAlive(items);
-        GC.KeepAlive(recovered);
     }
 
     [Theory]

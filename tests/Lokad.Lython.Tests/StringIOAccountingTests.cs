@@ -29,7 +29,10 @@ public sealed class StringIOAccountingTests
         }
         Assert.True(stream.TryGetMember("newlines", out var newlines));
         Assert.Same(PyNone.Instance, newlines);
-        Assert.Equal("a😀bc", stream.GetValue(Span).AsString());
+        // Inspect existing storage: a new guest snapshot is forbidden after refusal.
+        var buffer = (int[])typeof(LythonRuntime.StringIOObject).GetField("_buffer",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(stream)!;
+        Assert.Equal(new[] { 97, 0x1F600, 98, 99 }, buffer[..stream.Length]);
     }
 
     [Fact]

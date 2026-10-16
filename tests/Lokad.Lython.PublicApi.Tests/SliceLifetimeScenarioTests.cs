@@ -48,35 +48,31 @@ public class SliceLifetimeScenarioTests : LifetimeScenario
         var budget = new LythonMemoryBudget(Math.Max(512 * 1024, StreamingBudget + 256 * 1024));
         using var script = new LythonEngine().Compile($$"""
             b = 'a' * {{SliceLength}}
-            result = [False, False, b[1:]]
             objs = []
-            for i in range({{Iterations(100000)}}):
-                try:
-                    objs.append(b[1:])
-                except MemoryError:
-                    result[0] = True
-                    break
-            result[1] = len(objs) > 0
-            kept = objs[-1]
-            try:
-                objs.clear()
-            except MemoryError:
-                pass
-            assert len(kept) == {{SliceLength - 1}}
-            result[2] = kept
-            return result
+            for i in range(count):
+                objs.append(b[1:])
+            return objs[-1]
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = StreamingBudget };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = StreamingBudget, Globals = new Dictionary<string, object?> { ["count"] = 2 } };
         foreach (var asynchronous in new[] { false, true })
         {
             using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
                 : script.Run(new MockLythonHost(), options);
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(new List<object?> { true, true, new string('a', SliceLength - 1) }, result.ReturnValue);
+            Assert.Equal(new string('a', SliceLength - 1), result.ReturnValue);
             var retained = budget.ReservedBytes;
             Assert.True(retained > baseline);
+            var refusalOptions = new LythonRunOptions { MaxExecutionMemoryBytes = StreamingBudget,
+                Globals = new Dictionary<string, object?> { ["count"] = Iterations(100000) } };
+            using (var denied = asynchronous ? await script.RunAsync(new MockLythonHost(), refusalOptions) : script.Run(new MockLythonHost(), refusalOptions))
+            {
+                Assert.False(denied.Success);
+                Assert.Equal("MemoryError", denied.Failure?.ExceptionType);
+                Assert.Equal(new string('a', SliceLength - 1), result.ReturnValue);
+            }
+            Assert.Equal(retained, budget.ReservedBytes);
             using var resumed = new LythonEngine().Run($"return len('a' * {SliceLength - 1})", new MockLythonHost(),
                 new LythonRunOptions { MemoryBudget = budget, MaxExecutionMemoryBytes = StreamingBudget });
             Assert.True(resumed.Success, resumed.Failure?.Message);

@@ -92,19 +92,5 @@ public class GrowthStorageScenarioTests : LifetimeScenario
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
 
-    [Fact]
-    public async Task DeniedAppendKeepsListUsable()
-    {
-        // A denied append adds nothing: the list stays usable afterwards.
-        var script = new LythonEngine().Compile(
-            "x = []\ndenied = False\ntry:\n    for j in range(" + AppendIterations + "):\n        x.append(j)\nexcept MemoryError:\n    denied = True\nreturn (denied, len(x) > 1000)\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = AppendBudget });
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new List<object?> { true, true }, sync.ReturnValue);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = AppendBudget });
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new List<object?> { true, true }, asyncResult.ReturnValue);
-    }
 }

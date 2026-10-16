@@ -13,12 +13,10 @@ public sealed class ProjectionBudgetTests
         var budget = new ProjectionBudget(100);
         budget.Reserve(60);
         Assert.Equal(60, budget.CurrentBytes);
-        Assert.Throws<ProjectionException>(() => budget.Reserve(50));
+        var failure = Assert.Throws<ProjectionException>(() => budget.Reserve(50));
         Assert.Equal(60, budget.CurrentBytes);
-        budget.Reserve(40);
-        Assert.Equal(100, budget.CurrentBytes);
-        Assert.Throws<ProjectionException>(() => budget.Reserve(1));
-        Assert.Equal(100, budget.CurrentBytes);
+        Assert.Same(failure, Assert.Throws<ProjectionException>(() => budget.Reserve(40)));
+        Assert.Equal(60, budget.CurrentBytes);
     }
 
     [Fact]

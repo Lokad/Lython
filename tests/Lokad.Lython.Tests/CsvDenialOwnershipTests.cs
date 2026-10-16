@@ -35,9 +35,8 @@ public sealed class CsvDenialOwnershipTests
         Assert.Equal(pressure, context.MemoryGovernor.CurrentReservedBytes);
         context.MemoryGovernor.ReleaseReserved(pressure);
         parser.ResetRecord();
-        parser.Feed("ok\n");
-        Assert.True(parser.TryTakeReady(out var row));
-        Assert.Equal("ok", ((PyString)row[0]).AsString());
+        Assert.Same(error, Assert.Throws<LythonRuntimeException>(() => parser.Feed("ok\n")));
+        parser.ReleaseScratch();
     }
 
     [Fact]
@@ -66,9 +65,8 @@ public sealed class CsvDenialOwnershipTests
         Assert.Equal(pressure, context.MemoryGovernor.CurrentReservedBytes);
         context.MemoryGovernor.ReleaseReserved(pressure);
         parser.ResetRecord();
-        parser.Feed("ok\n");
-        Assert.True(parser.TryTakeReady(out var row));
-        Assert.Equal("ok", ((PyString)row[0]).AsString());
+        Assert.Same(error, Assert.Throws<LythonRuntimeException>(() => parser.Feed("ok\n")));
+        parser.ReleaseScratch();
     }
 
     [Fact]
@@ -102,9 +100,9 @@ public sealed class CsvDenialOwnershipTests
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(pressure, context.MemoryGovernor.CurrentReservedBytes);
         context.MemoryGovernor.ReleaseReserved(pressure);
-        var source = new LythonRuntime.CsvRecordSource(new PyList([]), Options(), Span, context);
-        Assert.False(source.TryMoveNext(out _));
-        Assert.Equal(LythonRuntime.CsvRecordSource.ShellBytes, source.OwnedBytes);
+        Assert.Same(error, Assert.Throws<LythonRuntimeException>(() =>
+            new LythonRuntime.CsvRecordSource(new PyList([]), Options(), Span, context)));
+        Assert.Equal(0, context.MemoryGovernor.CurrentAccountedBytes);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -136,13 +134,10 @@ public sealed class CsvDenialOwnershipTests
         Assert.True(governor.PeakAccountedBytes <= Cap);
         governor.ReleaseReserved(pressure);
         parser.ResetRecord();
-        parser.Feed("ok\n");
-        Assert.True(parser.TryTakeReady(out var row));
-        Assert.Equal("ok", ((PyString)row[0]).AsString());
+        Assert.Same(error, Assert.Throws<LythonRuntimeException>(() => parser.Feed("ok\n")));
         parser.ReleaseScratch();
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(owner);
-        GC.KeepAlive(row);
     }
 
     [Fact]
@@ -168,13 +163,10 @@ public sealed class CsvDenialOwnershipTests
         Assert.True(governor.PeakAccountedBytes <= Cap);
         governor.ReleaseReserved(pressure);
         parser.ResetRecord();
-        parser.Feed("ok\n");
-        Assert.True(parser.TryTakeReady(out var row));
-        Assert.Equal("ok", ((PyString)row[0]).AsString());
+        Assert.Same(error, Assert.Throws<LythonRuntimeException>(() => parser.Feed("ok\n")));
         parser.ReleaseScratch();
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(owner);
-        GC.KeepAlive(row);
     }
 
     [Theory]
@@ -230,7 +222,7 @@ public sealed class CsvDenialOwnershipTests
     }
 
     [Fact]
-    public void DeniedScratchGrowthKeepsEarlierFundingAndCanRetry()
+    public void DeniedScratchGrowthKeepsEarlierFundingUntilCleanup()
     {
         var context = Context();
         var governor = context.MemoryGovernor;
@@ -248,14 +240,11 @@ public sealed class CsvDenialOwnershipTests
         Assert.False(parser.TryTakeReady(out _));
         governor.ReleaseReserved(pressure);
         parser.ResetRecord();
-        parser.Feed("a,b,c,d,e\n");
-        Assert.True(parser.TryTakeReady(out var row));
-        Assert.Equal(new[] { "a", "b", "c", "d", "e" }, row.Select(value => ((PyString)value).AsString()));
+        Assert.Same(error, Assert.Throws<LythonRuntimeException>(() => parser.Feed("a,b,c,d,e\n")));
         parser.ReleaseScratch();
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.True(governor.PeakAccountedBytes <= Cap);
         GC.KeepAlive(owner);
-        GC.KeepAlive(row);
     }
 
     [Fact]

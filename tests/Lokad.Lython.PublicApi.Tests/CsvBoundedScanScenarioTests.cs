@@ -45,7 +45,7 @@ public class CsvBoundedScanScenarioTests
         => await ScanBatches(SmallRows, file: true);
 
     [Fact]
-    public async Task CaughtScanFailureAllowsCleanupAndReuse()
+    public async Task RefusedScanFailsButLaterCommandsReuseTheBudget()
     {
         var budget = new LythonMemoryBudget(Math.Max(512 * 1024, MemoryLimit + 65536));
         using var script = new LythonEngine().Compile(
@@ -57,8 +57,8 @@ public class CsvBoundedScanScenarioTests
         {
             using var result = attempt == 0 ? script.Run(new MockLythonHost(), options)
                 : await script.RunAsync(new MockLythonHost(), options);
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(true, result.ReturnValue);
+            Assert.False(result.Success);
+            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
             result.Dispose();
             Assert.Equal(baseline, budget.ReservedBytes);
         }

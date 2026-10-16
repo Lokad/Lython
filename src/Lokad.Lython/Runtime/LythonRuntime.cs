@@ -352,14 +352,17 @@ internal sealed partial class LythonRuntime
 
     private static LythonExecutionResult CreateSuccessfulResult(ExecutionContext context, object? returnValue, LythonRunOptions? options)
     {
+        if (context.MemoryGovernor.AdmissionFailure is { } admissionFailure)
+            return CreateRuntimeFailureResult(admissionFailure, context, options);
         // One projection budget covers the return value and both captures.
         // Captures run first so partial output survives a return-value overrun
         // without further allocation past the budget.
-        var budget = CreateProjectionBudget(options);
+        ProjectionBudget? budget = null;
         string standardOutput = string.Empty;
         string standardError = string.Empty;
         try
         {
+            budget = CreateProjectionBudget(options);
             standardOutput = CaptureStandardOutput(context, budget);
             standardError = CaptureStandardError(context, budget);
             return AttachAccounting(LythonExecutionResult.Succeeded(
@@ -370,23 +373,20 @@ internal sealed partial class LythonRuntime
         }
         catch (ProjectionException ex)
         {
-            return AttachAccounting(LythonExecutionResult.RuntimeFailed(
-                exitCode: 1,
-                failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath)
-                    { Attribution = ex.Attribution },
-                standardOutput: standardOutput,
-                standardError: standardError,
-                diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
+            return CreateProjectionFailureResult(ex, context, budget, standardOutput, standardError);
         }
     }
 
     private static LythonExecutionResult CreateReturnedResult(ReturnSignal signal, ExecutionContext? context, LythonRunOptions? options)
     {
-        var budget = CreateProjectionBudget(options);
+        if (context?.MemoryGovernor.AdmissionFailure is { } admissionFailure)
+            return CreateRuntimeFailureResult(admissionFailure, context, options);
+        ProjectionBudget? budget = null;
         string standardOutput = string.Empty;
         string standardError = string.Empty;
         try
         {
+            budget = CreateProjectionBudget(options);
             standardOutput = CaptureStandardOutput(context, budget);
             standardError = CaptureStandardError(context, budget);
             return AttachAccounting(LythonExecutionResult.Succeeded(
@@ -397,23 +397,41 @@ internal sealed partial class LythonRuntime
         }
         catch (ProjectionException ex)
         {
-            return AttachAccounting(LythonExecutionResult.RuntimeFailed(
-                exitCode: 1,
-                failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath)
-                    { Attribution = ex.Attribution },
-                standardOutput: standardOutput,
-                standardError: standardError,
-                diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
+            return CreateProjectionFailureResult(ex, context, budget, standardOutput, standardError);
         }
+    }
+
+    private static LythonExecutionResult CreateProjectionFailureResult(
+        ProjectionException exception, ExecutionContext? context, ProjectionBudget? budget,
+        string standardOutput, string standardError)
+    {
+        var refusal = context?.MemoryGovernor.AdmissionFailure;
+        var failure = refusal is null
+            ? new LythonRuntimeFailure("ProjectionError", exception.Message, null, [], context?.SourcePath)
+                { Attribution = exception.Attribution }
+            : new LythonRuntimeFailure(refusal.ExceptionType, refusal.Message, refusal.Span, [], context?.SourcePath)
+                { Attribution = refusal.Attribution };
+        return AttachAccounting(LythonExecutionResult.RuntimeFailed(
+            exitCode: 1,
+            failure: failure,
+            standardOutput: standardOutput,
+            standardError: standardError,
+            diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
     }
 
     private static LythonExecutionResult CreateRuntimeFailureResult(LythonRuntimeException exception, ExecutionContext? context, LythonRunOptions? options)
     {
+        exception = context?.MemoryGovernor.AdmissionFailure ?? exception;
         exception.SetSourcePathIfMissing(context?.SourcePath);
         // Failure details share the run budget with the retained output copies
         // below (MG23): oversized messages truncate with an explicit marker and
         // keep their type, while captures keep whatever partial output fits.
-        var budget = CreateProjectionBudget(options);
+        ProjectionBudget? budget;
+        try { budget = CreateProjectionBudget(options); }
+        catch (ProjectionException error)
+        {
+            return CreateProjectionFailureResult(error, context, null, string.Empty, string.Empty);
+        }
         string standardOutput = string.Empty;
         string standardError = string.Empty;
         try
@@ -424,6 +442,9 @@ internal sealed partial class LythonRuntime
         catch (ProjectionException)
         {
         }
+
+        if (budget?.AdmissionFailure is { } captureRefusal && GetExitCode(exception) == 0)
+            return CreateProjectionFailureResult(captureRefusal, context, budget, standardOutput, standardError);
 
         LythonRuntimeFailure failure;
         try
@@ -438,6 +459,9 @@ internal sealed partial class LythonRuntime
             failure = new LythonRuntimeFailure(exception.ExceptionType, string.Empty, exception.Span, [], exception.SourcePath)
                 { Attribution = exception.Attribution };
         }
+
+        if (budget?.AdmissionFailure is { } detailRefusal && GetExitCode(exception) == 0)
+            return CreateProjectionFailureResult(detailRefusal, context, budget, standardOutput, standardError);
 
         return AttachAccounting(
             LythonExecutionResult.RuntimeFailed(

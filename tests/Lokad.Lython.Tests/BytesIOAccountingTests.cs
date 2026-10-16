@@ -26,7 +26,10 @@ public sealed class BytesIOAccountingTests
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
-        Assert.Equal(new byte[] { 255, 0, 1, 2 }, stream.GetValue(Span).Bytes.ToArray());
+        // Inspect existing storage without admitting a new guest snapshot.
+        var buffer = (byte[])typeof(LythonRuntime.BytesIOObject).GetField("_buffer",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(stream)!;
+        Assert.Equal(new byte[] { 255, 0, 1, 2 }, buffer[..stream.Length]);
     }
 
     [Theory]

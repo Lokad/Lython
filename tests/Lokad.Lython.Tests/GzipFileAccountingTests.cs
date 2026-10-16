@@ -97,21 +97,21 @@ public sealed class GzipFileAccountingTests
     [InlineData(140000)]
     public async Task RepeatedInflationDenialsLeaveNoReservationsAndCloseReleasesOwnership(long cap)
     {
-        var context = Context(cap);
-        var raw = Raw(context, Member);
         for (var attempt = 0; attempt < 10; attempt++)
         {
+            var context = Context(cap);
+            var raw = Raw(context, Member);
             raw.Seek(0, 0, Span);
             var reader = await Construct(context, raw, "rb", false);
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
                 await Call(reader, "read", context, false));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            await Call(reader, "close", context, false);
+            await ((IExecutionFileWriter)reader).ExitAsync(context);
             Assert.Equal(512, Snapshot(reader));
             GC.KeepAlive(reader);
+            GC.KeepAlive(raw);
         }
-        GC.KeepAlive(raw);
     }
 
     [Theory]

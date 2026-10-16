@@ -264,13 +264,20 @@ public sealed class SmallCollectionAccountingScenarioTests
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
-        using var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, Assert.IsType<string>(sync.ReturnValue));
-
-        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, Assert.IsType<string>(asyncResult.ReturnValue));
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
+            if (expected == "memory")
+            {
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(expected, result.ReturnValue);
+            }
+        }
     }
 
     [Fact]

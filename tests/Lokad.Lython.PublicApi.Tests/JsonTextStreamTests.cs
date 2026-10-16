@@ -284,9 +284,9 @@ public sealed class JsonTextStreamTests : LifetimeScenario
     }
 
     [Fact]
-    public async Task DiscardingWriterAvoidsMaterializingTheCompleteDocument()
+    public async Task EagerRefusalFailsAndAnIndependentStreamingCommandWorks()
     {
-        var script = Compile("""
+        const string setup = """
             import json
             class Writer:
                 def __init__(self):
@@ -294,20 +294,18 @@ public sealed class JsonTextStreamTests : LifetimeScenario
                 def write(self, text):
                     self.count += len(text)
             values = ['x' * 10000] * 20
-            try:
-                json.dumps(values)
-                print('eager unexpectedly fit')
-            except MemoryError:
-                print('eager denied')
-            writer = Writer()
-            json.dump(values, writer)
-            print(writer.count)
-            """);
+            """;
+        using var eager = Compile(setup + "\njson.dumps(values)\n");
+        using var streaming = Compile(setup + "\nwriter=Writer()\njson.dump(values,writer)\nprint(writer.count)\n");
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
-        foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
+        foreach (var asynchronous in new[] { false, true })
         {
+            using var denied = asynchronous ? await eager.RunAsync(new MockLythonHost(), options) : eager.Run(new MockLythonHost(), options);
+            Assert.False(denied.Success);
+            Assert.Equal("MemoryError", denied.Failure?.ExceptionType);
+            using var result = asynchronous ? await streaming.RunAsync(new MockLythonHost(), options) : streaming.Run(new MockLythonHost(), options);
             Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal("eager denied\n200080\n", result.StandardOutput);
+            Assert.Equal("200080\n", result.StandardOutput);
         }
     }
 

@@ -306,22 +306,17 @@ internal sealed partial class LythonRuntime
                     return false;
                 }
 
-                if (_state is TextFileWriteState writer)
+                try
                 {
-                    writer.Flush(null);
-                    writer.Release();
+                    if (_state is TextFileWriteState writer && _services.MemoryGovernor.AdmissionFailure is null)
+                        writer.Flush(null);
                 }
-
-                if (_state is ChunkedTextFileReadState reader)
+                catch
                 {
-                    reader.Release();
+                    if (_services.MemoryGovernor.AdmissionFailure is not null) CompleteClose();
+                    throw;
                 }
-
-                // Only reached after a successful flush: a failed close keeps its
-                // registration so end-of-run publication can retry it.
-                _services.State.UntrackOpenFileWriter(this);
-                IsClosed = true;
-                return false;
+                return CompleteClose();
             }
 
             public async ValueTask<object> ExitAsync()
@@ -331,19 +326,23 @@ internal sealed partial class LythonRuntime
                     return false;
                 }
 
-                if (_state is TextFileWriteState writer)
+                try
                 {
-                    await writer.FlushAsync(null).ConfigureAwait(false);
-                    writer.Release();
+                    if (_state is TextFileWriteState writer && _services.MemoryGovernor.AdmissionFailure is null)
+                        await writer.FlushAsync(null).ConfigureAwait(false);
                 }
-
-                if (_state is ChunkedTextFileReadState reader)
+                catch
                 {
-                    reader.Release();
+                    if (_services.MemoryGovernor.AdmissionFailure is not null) CompleteClose();
+                    throw;
                 }
+                return CompleteClose();
+            }
 
-                // Only reached after a successful flush: a failed close keeps its
-                // registration so end-of-run publication can retry it.
+            private object CompleteClose()
+            {
+                if (_state is TextFileWriteState writer) writer.Release();
+                if (_state is ChunkedTextFileReadState reader) reader.Release();
                 _services.State.UntrackOpenFileWriter(this);
                 IsClosed = true;
                 return false;

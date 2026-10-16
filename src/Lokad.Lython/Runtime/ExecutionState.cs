@@ -239,8 +239,8 @@ internal sealed class ExecutionState
     // closed. Successful execution publishes them (flush + close) instead of
     // silently discarding accepted writes; the registry lives on the shared
     // run state so handles opened under any child scope are covered. Handles
-    // unregister on explicit close; a failed close keeps its registration so
-    // end-of-run publication can retry it.
+    // unregister on explicit close. Ordinary host failures keep registration for
+    // end-of-run publication; terminal admission refusal only releases storage.
     private readonly List<IExecutionFileWriter> _openFileWriters = new();
 
     internal void TrackOpenFileWriter(IExecutionFileWriter handle)

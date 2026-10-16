@@ -151,8 +151,7 @@ public sealed class DequeStorageSimplificationTests
             new PyDeque(new object[] { new BigInteger(1), new BigInteger(2) }, null, governor, null));
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Equal(0, governor.CurrentAccountedBytes);
-        var recovery = new PyDeque(null, governor, null);
-        recovery.Append(new BigInteger(3));
-        Assert.Equal(256, governor.CurrentCommittedBytes);
+        Assert.Same(error, Assert.Throws<LythonRuntimeException>(() => new PyDeque(null, governor, null)));
+        Assert.Equal(0, governor.CurrentAccountedBytes);
     }
 }

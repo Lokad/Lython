@@ -41,7 +41,7 @@ public sealed class ExceptionShellStorageTests
     }
 
     [Fact]
-    public void PartialChainAdmissionRetriesWithoutChargingTheRootAgain()
+    public void PartialChainAdmissionKeepsOnlyPublishedRootFunding()
     {
         var context = Root();
         var warm = PyException.CreateOwned(PythonExceptionIdentity.FromRuntimeTypeName("ValueError"), "", PyNone.Instance, context, Span);
@@ -55,11 +55,9 @@ public sealed class ExceptionShellStorageTests
             Assert.Null(child.OwnerMemoryGovernor);
         }
         var rootFunding = context.MemoryGovernor.CurrentCommittedBytes;
-        value.Adopt(context, Span);
-        Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= rootFunding + PyException.ShellBytes);
-        var complete = context.MemoryGovernor.CurrentCommittedBytes;
-        value.Adopt(context, Span);
-        Assert.Equal(complete, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Throws<LythonRuntimeException>(() => value.Adopt(context, Span));
+        Assert.Equal(rootFunding, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Null(child.OwnerMemoryGovernor);
         GC.KeepAlive(warm);
     }
 

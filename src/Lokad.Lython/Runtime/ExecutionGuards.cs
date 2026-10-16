@@ -18,6 +18,7 @@ internal sealed class ExecutionGuards
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CheckExecution(LythonSourceSpan? span)
     {
+        State.MemoryGovernor.ThrowIfAdmissionFailed();
         var limits = Limits;
         if (limits.MaxExecutionSteps is { } maxExecutionSteps &&
             ++limits.ExecutionStepCount > maxExecutionSteps)

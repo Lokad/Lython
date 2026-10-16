@@ -113,7 +113,7 @@ public sealed class StructAccountingTests
     }
 
     [Fact]
-    public void LazyRecordDenialLeavesTheCursorRetryable()
+    public void LazyRecordDenialLeavesNoFreshReservationsOrGuestContinuation()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
         var iterator = Assert.IsAssignableFrom<IPyIteratorValue>(Callable("iter_unpack").Invoke(
@@ -129,6 +129,8 @@ public sealed class StructAccountingTests
         }
         var hint = Assert.IsAssignableFrom<IPyDynamicAttributes>(iterator);
         Assert.True(hint.TryGetMember("__length_hint__", out var member));
-        Assert.Equal(BigInteger.One, Assert.IsAssignableFrom<LythonRuntime.ICallable>(member).Invoke([], Span, context));
+        Assert.Same(context.MemoryGovernor.AdmissionFailure,
+            Assert.Throws<LythonRuntimeException>(() => Assert.IsAssignableFrom<LythonRuntime.ICallable>(member).Invoke([], Span, context)));
+        Assert.Equal(1, Assert.IsType<LythonRuntime.StructModule.RecordIterator>(iterator).Remaining);
     }
 }

@@ -3,12 +3,12 @@ namespace Lokad.Lython.Runtime;
 // Bounded per-execution regex compilation cache (N19): module-level calls with the
 // same pattern text and flags share one compiled pattern instead of recompiling,
 // mirroring CPython's 512-entry re cache without going global (per-run isolation).
-// Cached patterns keep the ownership they were built with (TrackFreshMutable at
-// creation): the cache holds references without additional charges, so eviction and
+// Cached patterns keep their existing execution ownership: the cache holds
+// references without additional pattern charges, so eviction and
 // purge never disturb retained patterns/matches, which keep independent lifetimes.
 // The decoded key text is bounded transient scratch per lookup; retained key copies
 // stay under the entry cap. Cache slots charge a flat per-entry rate once: eviction
-// retains it (capacity, like tier backing) while explicit purge releases it (like
+// retains its capacity charge while explicit purge releases it (like
 // Clear). Structures die with the run governor. Single-threaded like the rest of
 // the runtime.
 internal sealed class RegexPatternCache
@@ -42,9 +42,8 @@ internal sealed class RegexPatternCache
         return false;
     }
 
-    // Caches a freshly compiled pattern under its exact key. Slot denial skips
-    // caching silently: the caller still returns its (already owned) result, so a
-    // tight budget keeps patterns working while the cache stays small.
+    // Caches a freshly compiled pattern under its exact key. Slot refusal is a
+    // command failure, never a reason to fall back to uncached execution.
     public void Add(
         string patternText,
         int flags,
@@ -57,16 +56,8 @@ internal sealed class RegexPatternCache
         // and can prevent a full cache from replacing its least-recent entry.
         if (governor is not null && _entries.Count < MaxEntries)
         {
-            try
-            {
-                governor.Reserve(SlotBytesPerEntry, span);
-                governor.Commit(SlotBytesPerEntry);
-            }
-            catch (LythonRuntimeException)
-            {
-                return;
-            }
-
+            governor.Reserve(SlotBytesPerEntry, span);
+            governor.Commit(SlotBytesPerEntry);
             _committedSlotBytes += SlotBytesPerEntry;
         }
 

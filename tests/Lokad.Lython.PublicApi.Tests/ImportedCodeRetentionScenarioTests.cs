@@ -208,32 +208,6 @@ public class ImportedCodeRetentionScenarioTests
     }
 
     [Fact]
-    public async Task CaughtImportFailureAllowsReuse()
-    {
-        var host = new MockLythonHost();
-        host.SeedFile("/big.py", BigFunction("f", LargeStatements));
-        host.SeedFile("/small.py", "value = 1\n");
-        var allowed = new HashSet<string>(StringComparer.Ordinal) { "big", "small" };
-        var source = "state = []\ntry:\n    import big\n    state.append(\"first-ok\")\nexcept MemoryError:\n    state.append(\"first-denied\")\n"
-            + "try:\n    import big\n    state.append(\"second-ok\")\nexcept MemoryError:\n    state.append(\"second-denied\")\n"
-            + "import small\nstate.append(small.value)\nreturn state\n";
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new List<object?> { "first-denied", "second-denied", new BigInteger(1) };
-        var sync = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget, AllowedLocalModules = allowed });
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var host2 = new MockLythonHost();
-        host2.SeedFile("/big.py", BigFunction("f", LargeStatements));
-        host2.SeedFile("/small.py", "value = 1\n");
-        var allowed2 = new HashSet<string>(StringComparer.Ordinal) { "big", "small" };
-        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget, AllowedLocalModules = allowed2 });
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
-    }
-
-    [Fact]
     public async Task WideUncalledBodiesStayCharged()
     {
         // One wide return expression retains tens of thousands of constant

@@ -3,6 +3,11 @@ using System.Diagnostics.CodeAnalysis;
 namespace Lokad.Lython;
 
 /// <summary>A borrowed shared allowance for estimated owned Lython storage.</summary>
+/// <remarks>
+/// When Lython receives a refused admission, that command fails after cleanup;
+/// guest exception handling cannot resume it. The borrowed allowance remains
+/// usable by later commands. See MEMORY.md for ownership and headroom requirements.
+/// </remarks>
 public interface ILythonMemoryBudget
 {
     /// <summary>Creates an empty owner sharing the same root allowance and no independent cap.</summary>

@@ -96,8 +96,9 @@ public sealed class MetadataStringOwnershipTests
     {
         var code = "class C:\n def " + LongName.Replace("x", "y") + "(self):\n  pass\nf = C." + LongName.Replace("x", "y") + "\ntry:\n f.__qualname__\n return \"first-ok\"\nexcept MemoryError:\n try:\n  f.__qualname__\n  return \"second-ok\"\n except MemoryError:\n  return \"denied-twice\"\n";
         var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 15000 });
-        Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("denied-twice", result.ReturnValue);
+        Assert.False(result.Success);
+        Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
         // Nothing extra retained by the failed publications.
         Assert.True(result.PeakExecutionMemoryBytes < 13000, $"peak was {result.PeakExecutionMemoryBytes}");
     }

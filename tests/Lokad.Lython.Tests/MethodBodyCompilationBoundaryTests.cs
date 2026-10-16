@@ -315,7 +315,11 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
                 output.WriteLine($"budget async={asynchronous}, allowance={allowance}, error={error?.Message ?? "success"}, span={error?.Span}, phases={string.Join(',', fixture.Tape.Events)}");
             }
             finally { governor.Release(padding); }
-            Assert.Same(fixture.Receiver, await Invoke(Bind(fixture.Receiver, "identity"), fixture.Context, asynchronous));
+            if (governor.AdmissionFailure is null)
+                Assert.Same(fixture.Receiver, await Invoke(Bind(fixture.Receiver, "identity"), fixture.Context, asynchronous));
+            else
+                Assert.Same(governor.AdmissionFailure, await Assert.ThrowsAsync<LythonRuntimeException>(
+                    async () => await Invoke(Bind(fixture.Receiver, "identity"), fixture.Context, asynchronous)));
             AssertUnwound(fixture.Context);
         }
     }

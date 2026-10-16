@@ -80,9 +80,9 @@ public sealed class FailureAttributionTests
     }
 
     [Theory]
-    [InlineData("return 7", true)]
-    [InlineData("raise RuntimeError('later')", false)]
-    public async Task CaughtMemoryDenialDoesNotAttributeLaterOutcome(string ending, bool success)
+    [InlineData("return 7")]
+    [InlineData("raise RuntimeError('later')")]
+    public async Task MemoryDenialRetainsItsOriginalTerminalAttribution(string ending)
     {
         var source = "try:\n    x = 'x' * 1000000\nexcept MemoryError:\n    pass\n" + ending;
         var script = new LythonEngine().Compile(source);
@@ -90,10 +90,9 @@ public sealed class FailureAttributionTests
         foreach (var asynchronous in new[] { false, true })
         {
             var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
-            Assert.Equal(success, result.Success);
+            Assert.False(result.Success);
             Assert.True(result.DeniedReservationBytes > 0);
-            if (success) Assert.Null(result.FailureAttribution);
-            else Assert.Equal(LythonFailureReason.GuestException, result.FailureAttribution?.Reason);
+            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
         }
     }
 

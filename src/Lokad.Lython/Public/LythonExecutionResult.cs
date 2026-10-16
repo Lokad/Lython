@@ -141,10 +141,10 @@ public sealed class LythonExecutionResult : IDisposable
     public long PeakProjectionMemoryBytes { get; internal set; }
 
     /// <summary>
-    /// Gets the requested size in bytes of the most recent denied execution
-    /// memory reservation, including a denial caught by guest code. This is
-    /// denial history, not the terminal failure's cause; use
-    /// <see cref="FailureAttribution"/> for that. Zero when nothing was denied.
+    /// Gets the requested size in bytes of the first refused execution memory
+    /// reservation. Refusal is terminal even through guest exception handling.
+    /// Use <see cref="FailureAttribution"/> to identify its origin. Zero when
+    /// no execution reservation was refused (including projection-only failures).
     /// </summary>
     public long DeniedReservationBytes { get; internal set; }
 

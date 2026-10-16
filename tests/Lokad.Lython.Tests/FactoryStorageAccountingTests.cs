@@ -41,12 +41,13 @@ public sealed class FactoryStorageAccountingTests
         var list = new PyList(Enumerable.Range(0, 20).Cast<object>().ToArray(), governor, null);
         var before = budget.ReservedBytes;
         Assert.True(owner.TryReserve(4096 - before, out var pressure));
-        Assert.Throws<LythonRuntimeException>(list.Clear);
+        var failure = Assert.Throws<LythonRuntimeException>(list.Clear);
         Assert.Equal(20, list.Count);
         Assert.Equal(4096, budget.ReservedBytes);
         pressure.Dispose();
         Assert.Equal(before, budget.ReservedBytes);
-        list.Clear();
-        Assert.Empty(list);
+        Assert.Same(failure, Assert.Throws<LythonRuntimeException>(list.Clear));
+        Assert.Equal(20, list.Count);
+        Assert.Equal(before, budget.ReservedBytes);
     }
 }

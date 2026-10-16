@@ -37,13 +37,13 @@ public sealed class GzipPathScopeLifetimeTests
         GC.Collect();
         Assert.False(frame.TryGetTarget(out _));
         Assert.False(payload.TryGetTarget(out _));
-        Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(16000, null));
         if (!close && mode.StartsWith('r'))
         {
             var value = Call(handle, "read", context);
             if (mode == "rt") Assert.Equal("alpha\nbeta\n", Assert.IsType<PyString>(value).AsString());
             else Assert.Equal("alpha\nbeta\n"u8.ToArray(), Assert.IsType<PyBytes>(value).Bytes.ToArray());
         }
+        Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(16000, null));
         if (!close) ((IPyContextManager)handle).Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         GC.KeepAlive(handle);

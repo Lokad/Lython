@@ -373,8 +373,8 @@ internal sealed partial class LythonRuntime
         /// <summary>
         /// Finalizes staged writes: validation failures must
         /// go through <see cref="AbortClose"/> instead; unrelated body errors still
-        /// publish valid writes while propagating; host or budget failures propagate
-        /// with the handle left open and staged output retained for retry. Idempotent.
+        /// publish valid writes while propagating. Host failures leave staged output
+        /// available for retry; terminal admission refusal discards it. Idempotent.
         /// </summary>
         private void Close(LythonSourceSpan? span)
         {
@@ -383,7 +383,15 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
-            Flush(span);
+            try
+            {
+                if (_services.MemoryGovernor.AdmissionFailure is null) Flush(span);
+            }
+            catch
+            {
+                if (_services.MemoryGovernor.AdmissionFailure is not null) AbortClose();
+                throw;
+            }
             IsClosed = true;
             ReleaseWriteBuffers();
         }
@@ -396,15 +404,22 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
-            await FlushAsync(span).ConfigureAwait(false);
+            try
+            {
+                if (_services.MemoryGovernor.AdmissionFailure is null) await FlushAsync(span).ConfigureAwait(false);
+            }
+            catch
+            {
+                if (_services.MemoryGovernor.AdmissionFailure is not null) AbortClose();
+                throw;
+            }
             IsClosed = true;
             ReleaseWriteBuffers();
         }
 
         /// <summary>
-        /// Discards staged output after a validation failure without publishing.
-        /// Only validation failures abort; host or budget failures keep the staged
-        /// output for an explicit retry instead.
+        /// Discards staged output after validation failure or terminal admission
+        /// refusal without publishing. Ordinary host failures retain staged output.
         /// </summary>
         private void AbortClose()
         {
