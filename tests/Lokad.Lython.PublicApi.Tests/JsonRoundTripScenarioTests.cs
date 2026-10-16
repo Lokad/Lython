@@ -439,7 +439,7 @@ except json.JSONDecodeError as exc:
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("JSONDecodeError|True|{|1|1|2|3", host.ReadText("/out.txt"));
+        Assert.Equal("JSONDecodeError|True|{|1|1|2|1", host.ReadText("/out.txt"));
     }
 
     [Fact]

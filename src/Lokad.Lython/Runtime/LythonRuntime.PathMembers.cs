@@ -232,15 +232,6 @@ internal sealed partial class LythonRuntime
                     : PyTuple.FromOwnedArray([exception.Value]);
             }
 
-            if (string.Equals(exception.TypeName, "JSONDecodeError", StringComparison.Ordinal) &&
-                exception.Value is PyDict payload &&
-                payload.TryGetValue(PyString.FromString("msg"), out var msg) &&
-                payload.TryGetValue(PyString.FromString("doc"), out var doc) &&
-                payload.TryGetValue(PyString.FromString("pos"), out var pos))
-            {
-                return PyTuple.FromOwnedArray([msg, doc, pos]);
-            }
-
             if (string.Equals(exception.TypeName, "CalledProcessError", StringComparison.Ordinal) &&
                 exception.Value is PyDict subprocessPayload &&
                 subprocessPayload.TryGetValue(PyString.FromString("returncode"), out var returnCode) &&
@@ -265,7 +256,8 @@ internal sealed partial class LythonRuntime
             return exception.Value switch
             {
                 PyNone when string.IsNullOrEmpty(exception.Message) => PyTuple.Empty,
-                PyNone => PyTuple.FromOwnedArray([PyString.FromString(exception.Message)]),
+                _ when exception.Value is PyNone || exception.Identity == ModuleException("json", "JSONDecodeError")
+                    => PyTuple.FromOwnedArray([PyString.FromString(exception.Message)]),
                 _ => PyTuple.FromOwnedArray([exception.Value])
             };
         }

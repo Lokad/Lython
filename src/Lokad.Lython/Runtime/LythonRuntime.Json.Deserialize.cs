@@ -289,8 +289,7 @@ internal sealed partial class LythonRuntime
                 var originalPosition = position + relative;
                 if (strict && originalPosition < original.Length && original[originalPosition] < 0x20)
                 {
-                    var location = ComputeJsonErrorLocation(input.Document, originalPosition);
-                    message = "Invalid control character at: line " + location.Line + " column " + location.Column + " (char " + input.Document.ByteIndexToRuneIndex(originalPosition) + ")";
+                    message = "Invalid control character at";
                 }
                 throw NewJsonDecodeFailure(input, message, originalPosition, ex, span, context);
             }
@@ -733,17 +732,9 @@ internal sealed partial class LythonRuntime
             return NewJsonDecodeFailure(input, message, bytePosition, innerException: null, span, context);
         }
 
-        // Reports trailing data with the previous whole-document backend wording:
-        // the first trailing character quoted, with absolute coordinates.
+        // Whole-document decoding rejects the suffix; raw_decode leaves it alone.
         private static LythonRuntimeException CreateJsonTrailingDataError(JsonParseInput input, int bytePosition, LythonSourceSpan span, ExecutionContext context)
-        {
-            var trailing = input.Source.Span[bytePosition..];
-            var display = Rune.DecodeFromUtf8(trailing, out var rune, out _) == OperationStatus.Done
-                ? rune.ToString()
-                : "?";
-
-            return NewJsonDecodeFailure(input, "'" + display + "' is invalid after a single JSON value. Expected end of data.", bytePosition, innerException: null, span, context);
-        }
+            => NewJsonDecodeFailure(input, "Extra data", bytePosition, innerException: null, span, context);
 
         // Requires a comma as the first non-whitespace byte at or after valueEnd:
         // missing separators surface exactly where CPython reports them.

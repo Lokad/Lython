@@ -61,7 +61,9 @@ internal sealed partial class LythonRuntime
             payload.SetItem(PyString.FromString("pos"), new BigInteger(position));
             payload.SetItem(PyString.FromString("lineno"), new BigInteger(location.Line));
             payload.SetItem(PyString.FromString("colno"), new BigInteger(location.Column));
-            return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), message, span, innerException, payload);
+            var summary = string.Create(CultureInfo.InvariantCulture,
+                $"{message}: line {location.Line} column {location.Column} (char {position})");
+            return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), summary, span, innerException, payload);
         }
 
         // Builds the catchable JSONDecodeError for an explicit Python string
@@ -77,7 +79,9 @@ internal sealed partial class LythonRuntime
             payload.SetItem(PyString.FromString("pos"), new BigInteger(runePosition));
             payload.SetItem(PyString.FromString("lineno"), new BigInteger(location.Line));
             payload.SetItem(PyString.FromString("colno"), new BigInteger(location.Column));
-            return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), message, span, innerException: null, payload);
+            var summary = string.Create(CultureInfo.InvariantCulture,
+                $"{message}: line {location.Line} column {location.Column} (char {runePosition})");
+            return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), summary, span, innerException: null, payload);
         }
 
         // Reports a prefix index past the end with CPython coordinates: every
