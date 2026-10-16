@@ -717,6 +717,7 @@ internal sealed partial class LythonRuntime
             LythonRuntime.ReMatchObject => PyType.RegexMatchType,
             PyStaticMethod => TryGetBuiltinOrNull(context, "staticmethod"),
             PyClassMethod => TryGetBuiltinOrNull(context, "classmethod"),
+            PyProperty => TryGetBuiltinOrNull(context, "property"),
             PyType type => type.MetaType ?? TryGetBuiltinOrNull(context, "type"),
             PyFunctionBase => PyType.FunctionType,
             PyGenerator or PyGeneratorExpression => PyType.GeneratorType,

@@ -192,8 +192,8 @@ internal static class PyAttributeLookup
         if (rawValue is IPyDescriptor descriptor)
             return await descriptor.GetAsync(instance, instance.Type, context, span).ConfigureAwait(false);
         if (rawValue is PyInstance descriptorInstance &&
-            await LookupDescriptorMethodAsync(descriptorInstance, "__get__", context, span).ConfigureAwait(false) is { } callable)
-            return await CallableInvocation.InvokeBinaryAsync(callable, instance, instance.Type, span, context).ConfigureAwait(false);
+            TryLookupRawDescriptorGetter(descriptorInstance, context, span, out var callable))
+            return await CallableInvocation.InvokeTernaryAsync(callable, descriptorInstance, instance, instance.Type, span, context).ConfigureAwait(false);
         return rawValue;
     }
 
@@ -598,10 +598,11 @@ internal static class PyAttributeLookup
                 return false;
             }
 
-            if (TryLookupDescriptorMethod(descriptorInstance, "__get__", context, span, out var callable))
+            if (TryLookupRawDescriptorGetter(descriptorInstance, context, span, out var callable))
             {
-                value = CallableInvocation.InvokeBinary(
+                value = CallableInvocation.InvokeTernary(
                     callable,
+                    descriptorInstance,
                     instance ?? PyNone.Instance,
                     owner,
                     span,
@@ -612,6 +613,22 @@ internal static class PyAttributeLookup
 
         value = rawValue;
         return false;
+    }
+
+    private static bool TryLookupRawDescriptorGetter(PyInstance descriptorInstance, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span, [MaybeNullWhen(false)] out LythonRuntime.ICallable callable)
+    {
+        if (!descriptorInstance.Type.TryLookupInMro("__get__", 0, out var raw, out _))
+        {
+            callable = null;
+            return false;
+        }
+        // Unlike setter/deleter method lookup, Python calls this slot raw.
+        // Classmethod wrappers are bindable but cannot be raw getter callables.
+        if (raw is PyClassMethod || raw is not LythonRuntime.ICallable resolved)
+            throw LythonRuntime.NotCallableError(raw, context, span);
+        callable = resolved;
+        return true;
     }
 
     private static async ValueTask<LythonRuntime.ICallable?> LookupDescriptorMethodAsync(

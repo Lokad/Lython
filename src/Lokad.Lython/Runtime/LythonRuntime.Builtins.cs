@@ -838,7 +838,7 @@ internal sealed partial class LythonRuntime
         throw IntegerConversionError(instance, context, span);
     }
 
-    private static LythonRuntimeException NotCallableError(object member, ExecutionContext context, LythonSourceSpan span)
+    internal static LythonRuntimeException NotCallableError(object member, ExecutionContext context, LythonSourceSpan span)
         => new("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
 
     private static LythonRuntimeException IntegerConversionError(PyInstance instance, ExecutionContext context, LythonSourceSpan span)

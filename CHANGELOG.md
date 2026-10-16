@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Call user descriptor getter slots raw with descriptor, instance and owner, matching Python's staticmethod/callable behavior and rejecting property/classmethod slots before side effects. Reuse ternary invocation and preserve valid setter/deleter binding, async instance callbacks, cancellation and retained results. Recognize property objects in builtin type reporting.
+
 - Resolve implicit user __getitem__ through type-level slots, preserving ordinary explicit attribute access and callable/non-callable error distinctions. Share synchronous/asynchronous binding and existing unary invocation, await valid descriptors under RunAsync, and preserve raw keys, aliases, cancellation and diagnostics.
 
 - Convert native mutation indices through type-level __index__, awaiting target callbacks under RunAsync and re-coercing retained augmented keys after the RHS. Preserve raw mapping/custom keys and Python's read-only rejection order. Delete the duplicate synchronous item-deletion dispatcher while retaining ambient structural guards, admission and cleanup.
@@ -22,7 +24,7 @@
 
 - Compile ordinary member-store receivers in the caller frame and remove their general target-read evaluation. Keep RHS and receiver in two existing operand slots through awaited mutation, then clear them in finally; preserve chained effects, target spans and retained aliases.
 
-- Await user-descriptor method binding for reads, writes and deletion under RunAsync. A descriptor slot implemented by an async-capable descriptor can suspend before its resulting callable runs; synchronous execution and absent/noncallable errors keep their existing paths.
+- Await supported user-descriptor reads and setter/deleter binding under RunAsync. Valid descriptor callbacks can suspend without replay; synchronous execution and absent/noncallable errors retain their own behavior. Getter slots use the raw-call rule described above.
 
 - Forget pre-try dictionary key facts before computed exception headers and handlers. Accept valid reads after partial protected-body mutations, including aliases and nested mappings; retain definite diagnostics for fresh missing keys and normal runtime key checks.
 

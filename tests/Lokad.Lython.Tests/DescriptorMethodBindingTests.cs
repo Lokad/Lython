@@ -9,10 +9,9 @@ public sealed class DescriptorMethodBindingTests
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
     [Theory]
-    [InlineData("__get__", "return box.value", 2)]
     [InlineData("__set__", "box.value=payload", 2)]
     [InlineData("__delete__", "del box.value", 1)]
-    public async Task AsyncDescriptorSlotBindingNeverUsesItsSyncEntry(string slot, string source, int arity)
+    public async Task AsyncSetterAndDeleterSlotBindingNeverUsesItsSyncEntry(string slot, string source, int arity)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         var getter = new AsyncGetter();
@@ -35,9 +34,8 @@ public sealed class DescriptorMethodBindingTests
             Assert.Equal(1, getter.Calls);
             Assert.NotNull(context.CurrentExecutableFrame);
             getter.Result.SetResult(method);
-            var returned = await pending;
+            await pending;
             Assert.Equal(1, method.Calls);
-            if (slot == "__get__") Assert.Same(payload, returned);
         }
         finally
         {

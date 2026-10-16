@@ -979,10 +979,18 @@ fuel thresholds; native allocation admission still precedes mutation.
 
 Assignment behavior for supported target forms must follow Python semantics.
 
-Under `RunAsync`, binding a user descriptor's `__get__`, `__set__` or `__delete__`
-method must use asynchronous descriptor access before invoking the resulting
-callable. Binding and invocation may each suspend without replaying earlier
-effects. Synchronous execution retains synchronous descriptor access.
+For a user descriptor, implicit reads look up the raw `__get__` slot on its type
+and call it with the descriptor, instance (or `None` for class access) and owner
+type. The slot itself is not descriptor-bound: staticmethod and callable-object
+slots receive all three arguments; property and classmethod slots raise
+`TypeError` before their bodies run. Ordinary explicit attribute access keeps its
+normal binding behavior.
+
+Setter and deleter slots use method binding instead. Under `RunAsync`, supported
+instance reads and setter/deleter binding and invocation can suspend without
+replaying earlier effects. Synchronous execution retains synchronous dispatch.
+Class and `super` attribute resolution retain their synchronous dispatch path;
+async-capable host callbacks through those paths are not yet qualified.
 
 The supported ordinary assignment targets are:
 
