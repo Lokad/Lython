@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Construct slice objects for tuple subscription keys through the existing synchronous handler under asynchronous hosting, removing redundant async delegation and its unused synchronous fallback. Preserve raw bounds, deferred index protocols, admission and source-order effects.
+
 - Reuse synchronous cursor pulls under asynchronous hosting and forward existing user/async iterator tasks directly, removing their redundant async forwarding paths. Preserve protocol precedence, fuel/cancellation checkpoints, ownership and awaited iterator cleanup.
 
 - Admit major integer Counter count additions before computation or replacement, reusing ordinary integer-addition admission for updates, totals and binary addition. Fund new magnitudes under the existing owner; preserve retained aliases, decimal/float behavior and terminal refusal. Conservative estimates can reject earlier under tight budgets.

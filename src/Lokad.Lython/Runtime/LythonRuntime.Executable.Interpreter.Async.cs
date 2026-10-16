@@ -148,7 +148,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.Unary:
                     await ExecuteObservedValueOperationAsync(instruction).ConfigureAwait(false);
                     break;
-                default: return ExecuteValueOperation(instruction);
+                default: throw new InvalidOperationException($"Unexpected asynchronous value-operation opcode: {instruction.OpCode}");
             }
             return false;
         }

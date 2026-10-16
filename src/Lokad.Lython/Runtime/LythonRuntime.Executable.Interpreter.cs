@@ -839,9 +839,12 @@ internal sealed partial class LythonRuntime
                                 case ExecutableOpCode.GetIter or
                                      ExecutableOpCode.ForNext or
                                      ExecutableOpCode.Call or
-                                     ExecutableOpCode.Slice or
-                                     ExecutableOpCode.MakeSlice:
+                                     ExecutableOpCode.Slice:
                                     jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+                                    break;
+
+                                case ExecutableOpCode.MakeSlice:
+                                    jumped = ExecuteValueOperation(instruction);
                                     break;
 
                                 case ExecutableOpCode.JumpIfFalse:
