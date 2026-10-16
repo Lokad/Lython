@@ -1,0 +1,24 @@
+{
+  "baselineRevision": "66420bd6910be2e6edc39485ab3c083c22f61b40",
+  "candidateRevision": "a2653a619229076e93fa891aa27770b96c4f1c69",
+  "caseId": "control.empty.control",
+  "lane": "warm",
+  "captures": 1,
+  "retries": false,
+  "normalGCAndTiering": true,
+  "boundary": "Existing empty pass execution in a warm host; compilation and process startup excluded. Measures per-invocation setup/cleanup, not a useful workload or a full gap attribution.",
+  "stoppingRule": "One unchanged micro warm lane only; no repeat, retuning, second lane or new producer. Inconclusive timing stays inconclusive.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "d918d66b5b0585a40f3f0c4dc310cf525c26183fe326bd7d9299dc1e2993fa74",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "5b99e6fe5bbaccaf2f854937434e1a610b716ddeff7251d0fcd10657d7496e29"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "19e145118e6aa3aebf573195f1aef98c2201fc0982eb4ea254d923094f4bb581",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "4823c84e9a624494f02f86deacdc037ae1b47a90f43acf4565cc8beea8f9c492"
+  },
+  "setupCorrection": "Initial catalog filter omitted .control suffix; stopped before verification/timing. Retain completed baseline build; continue candidate build without restarting old service."
+}

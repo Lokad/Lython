@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/lokad/lython-bench-checks/ap04-builtin-setup-20261016/proof.py", line 20, in <module>
+    assert len(production)==d[role]['productionSourceCount'] and digest(production)==d[role]['productionManifestSha256'] and digest(comparison)==d[role]['comparisonManifestSha256']
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

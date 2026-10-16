@@ -1,0 +1,68 @@
+{
+  "checks": [
+    {
+      "engine": "timing-baseline",
+      "pid": 2373705,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-candidate",
+      "pid": 2373725,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-CPython",
+      "pid": 2373741,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-lythonIdentity",
+      "pid": 2373439,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-pythonIdentity",
+      "pid": 2373460,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-lythonIdentity",
+      "pid": 2373569,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-pythonIdentity",
+      "pid": 2373590,
+      "fixture": null,
+      "processAbsent": true,
+      "fixtureAbsent": true
+    }
+  ],
+  "sources": {
+    "baseline": {
+      "productionSourceCount": 524,
+      "productionManifestSha256": "85e5a2a535a53b589e39e9ea060e3b9f735f72861f8d3f272dec5f68e5c63705",
+      "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57"
+    },
+    "candidate": {
+      "productionSourceCount": 524,
+      "productionManifestSha256": "02ace9da444abc9efe9d4e5ac5901c5b296bfc6222e965e5f3a09de98f22f700",
+      "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57"
+    }
+  },
+  "frozenSourcesMatch": true,
+  "relevantUnits": "",
+  "leaseAcquired": true
+}

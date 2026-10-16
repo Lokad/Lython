@@ -106,6 +106,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Fixed plain builtin definitions, 2026-10-16 | 66420bd6 → a2653a61; empty warm invocation control | No improvement established: 23.318 → 23.445 µs; 0.5% higher median within spread | [Bounded metadata reuse, isolation and control limits](benchmarks/results/2026-10-16-builtin-setup/README.md) |
 | UTF-8 JSON numeric tokens, 2026-10-16 | 09f44e94 → dc950cde; unchanged complete aggregation | No improvement established: 9.814 → 9.587 ms; 2.3% change within baseline spread | [Shared conversion/preflight and retained hook text](benchmarks/results/2026-10-16-json-utf8-numbers/README.md) |
 | Direct UTF-8 JSON tokens, 2026-10-16 | f3e05ad9 → b85fdde9; unchanged complete aggregation job | No improvement established: 10.250 → 10.548 ms; 2.9% higher median within baseline spread | [Intermediate removal and storage/decoding controls](benchmarks/results/2026-10-16-json-utf8-tokens/README.md) |
 | Direct string prefix calls, 2026-10-16 | cdf95961 → 473aa396; unchanged complete file search | No improvement established: 5.667 → 3.223 ms; 43.1% change below 57%/64% spreads | [Shared call storage and preserved diagnostics](benchmarks/results/2026-10-16-string-prefix-calls/README.md) |

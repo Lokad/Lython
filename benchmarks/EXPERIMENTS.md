@@ -7,6 +7,17 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 builtin setup change](results/2026-10-16-builtin-setup/README.md)
+shares three fixed plain definitions, retaining private type graphs and current
+caller module resolution. One existing empty warm invocation control observed
+23.318 -> 23.445 µs, CPython 1.506 µs; spread 3.7%/2.9%/1.0%. The 0.5% higher
+median is inconclusive. No improvement, useful-workload ratio or gap attribution
+is established. Source removes three wrappers, two temporary parameter arrays
+and three catalog lock/lookups per root execution. One 7.186 s owned capture;
+no repeat/tuning/new producer. All frozen sources match, seven workers exited,
+services inactive and lease free. Catalog selection and line-ending proof
+corrections preserve their original evidence; no measured input changed.
+
 The [2026-10-16 fresh JSON boundary](results/2026-10-16-json-fresh/README.md)
 measures fresh compile/run of the unchanged complete aggregation job inside warm
 hosts. Two identical Lython binaries at 1ad18b79 observed 9.8803/10.0244 ms,

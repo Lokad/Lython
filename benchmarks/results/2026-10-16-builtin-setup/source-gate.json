@@ -1,0 +1,19 @@
+{
+  "baselineRevision": "66420bd6910be2e6edc39485ab3c083c22f61b40",
+  "candidateRevision": "a2653a619229076e93fa891aa27770b96c4f1c69",
+  "scope": ["len", "repr", "ascii"],
+  "removedPerRootExecution": "Three callable wrappers, two temporary parameter-name arrays and three signature catalog lock/lookups. Signatures were already interned; mutable builtin dictionaries and object/type/exception graphs remain private.",
+  "isolationEvidence": [
+    "DelegateBoundArgumentsCallable holds readonly signature/delegates. Len/Repr/Ascii are static methods taking the current ExecutionContext; no captured run state.",
+    "BuiltinCallable hierarchy cache writes require BuildBuiltinTypeHierarchy success, which requires BuiltinTypeBaseNames membership. These three names are absent.",
+    "NewSlot writes in TryGetTypeNewSlot require BuiltinTypeBaseNames membership. Inherited __new__ resolves through the existing shared builtin-function type, not this slot.",
+    "Unbound method cache writes require builtin type membership; scalar descriptor cache is limited to int/float/range. Type-method switch has only dict/bytes/str/int/bool/float entries.",
+    "__self__ resolves the current caller's imported module. __class__ uses the existing shared builtin-function type. Neither stores the current context on the callable.",
+    "No IPyMutableAttributes implementation was added; attempted callable mutation is rejected. No new cache, callable class, binder route, scope or dependency."
+  ],
+  "contract": "Fixed trusted metadata lives in host/control headroom. Cross-execution callable identity can become stable; in-run identity, per-run state isolation and retained-result funding stay unchanged.",
+  "limitations": "This does not add asynchronous protocol dispatch inside len/rendering, remove other per-run metadata, change scalar representation or establish a runtime speedup.",
+  "validation": "Five public controls pass on the unchanged baseline and candidate: sequential sync/async metadata/type/module/state isolation and retained results; overlapping suspended/cancelled host execution under a shared budget; sync/async name shadowing isolation. Reuse full ordinary white-box, focused public and governed regressions.",
+  "fixtureCorrections": "Initial test used an invalid mutable object builtin, expected inherited __new__ absent and expected a new cancelled output file. Corrected against Python behavior/host semantics before production change; all failed receipts preserved. Initial enum name compile error corrected; no tests used that failed build.",
+  "timingGate": "One existing control.empty.control warm diagnostic only. Initial catalog selection typo stopped setup before any timing. No new producer or repeat, no speedup claim from inconclusive samples."
+}

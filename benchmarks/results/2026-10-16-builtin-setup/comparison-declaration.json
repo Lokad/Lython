@@ -1,0 +1,29 @@
+{
+  "baselineRevision": "66420bd6910be2e6edc39485ab3c083c22f61b40",
+  "candidateRevision": "a2653a619229076e93fa891aa27770b96c4f1c69",
+  "caseId": "control.empty.control",
+  "lane": "warm",
+  "captures": 1,
+  "retries": false,
+  "normalGCAndTiering": true,
+  "boundary": "Existing empty pass execution in a warm host; compilation and process startup excluded. Measures per-invocation setup/cleanup, not a useful workload or a full gap attribution.",
+  "stoppingRule": "One unchanged micro warm lane only; no repeat, retuning, second lane or new producer. Inconclusive timing stays inconclusive.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "85e5a2a535a53b589e39e9ea060e3b9f735f72861f8d3f272dec5f68e5c63705",
+    "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+    "sourceArchiveSha256": "5b99e6fe5bbaccaf2f854937434e1a610b716ddeff7251d0fcd10657d7496e29",
+    "canonicalBlobProductionManifestSha256": "d918d66b5b0585a40f3f0c4dc310cf525c26183fe326bd7d9299dc1e2993fa74",
+    "canonicalBlobComparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "02ace9da444abc9efe9d4e5ac5901c5b296bfc6222e965e5f3a09de98f22f700",
+    "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+    "sourceArchiveSha256": "4823c84e9a624494f02f86deacdc037ae1b47a90f43acf4565cc8beea8f9c492",
+    "canonicalBlobProductionManifestSha256": "19e145118e6aa3aebf573195f1aef98c2201fc0982eb4ea254d923094f4bb581",
+    "canonicalBlobComparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c"
+  },
+  "setupCorrection": "Initial catalog filter omitted .control suffix; stopped before verification/timing. Retain completed baseline build; continue candidate build without restarting old service.",
+  "proofCorrection": "Initial manifests hashed canonical Git LF blobs, while the predeclared immutable git archives use configured CRLF for C# files. Preserve initial declarations; derive physical manifests from the original frozen archives. LF-normalized archive manifests match the original Git-blob manifests exactly. No measured source/binary changed; no timing repeat."
+}
