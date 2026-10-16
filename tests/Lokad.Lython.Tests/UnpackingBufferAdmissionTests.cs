@@ -42,7 +42,7 @@ public sealed class UnpackingBufferAdmissionTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MaxExecutionMemoryBytes = limit });
         var source = new CountingSequence(5);
-        using (context.MemoryGovernor.ReserveTemporary(limit - context.MemoryGovernor.CurrentAccountedBytes - 32, Span))
+        using (context.MemoryGovernor.ReserveTemporary(limit - context.MemoryGovernor.CurrentAccountedBytes, Span))
         {
             var reserved = context.MemoryGovernor.CurrentReservedBytes;
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>

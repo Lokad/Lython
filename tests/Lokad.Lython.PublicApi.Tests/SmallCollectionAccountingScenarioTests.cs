@@ -53,16 +53,12 @@ public sealed class SmallCollectionAccountingScenarioTests
     }
 
     [Fact]
-    public async Task SetGrowthChargesAdoptedCoupons()
+    public async Task SetGrowthChargesStorage()
     {
-        // MG05: set growth stays charged as it scales, so later insertions
-        // cannot ride enlarged uncharged capacity. N06: 3000 distinct ints
-        // adopt one 64 B coupon each beside table and shell (peak 273636 in
-        // both modes); the floor below fails if coupons ever stop committing,
-        // while catch-and-continue denial choreography lives in the white-box
-        // exact-denial test (a coupon-scale denial leaves too little slack to
-        // even construct its own catchable exception, so tiny-budget denial
-        // scripts cannot observe recovery).
+        // Set growth and retained entries stay conservatively charged, so
+        // successful insertion cannot retain substantial storage outside the
+        // execution allowance. The floor detects loss of that storage funding;
+        // deterministic before-mutation denial is covered by native controls.
         var script = new LythonEngine().Compile(
             """
             s = set()
@@ -247,18 +243,19 @@ public sealed class SmallCollectionAccountingScenarioTests
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
 
-    [Fact]
-    public async Task FixedArityUnpackingMeetsBudgetBeforeCounting()
+    [Theory]
+    [InlineData("a, b", "value")]
+    [InlineData("a, *b", "memory")]
+    public async Task UnpackingReadRequirementsPreserveArityAndBudgetErrors(string target, string expected)
     {
-        // MG05: fixed-arity unpacking drains the whole iterable before
-        // checking the arity. With an uncharged drain the 500,000 pulls
-        // complete and the count check reports ValueError; with a governed
-        // drain the budget fails first with MemoryError.
-        var script = new LythonEngine().Compile(
-            """
+        // Fixed arity needs only one excess value. Starred unpacking must
+        // retain the remainder and still meet its allocation budget. Even
+        // reference storage alone for 4,096 values exceeds this allowance.
+        using var script = new LythonEngine().Compile(
+            $"""
             try:
                 try:
-                    a, b = range(500000)
+                    {target} = range(4096)
                 except ValueError:
                     return "value"
             except MemoryError:
@@ -267,13 +264,13 @@ public sealed class SmallCollectionAccountingScenarioTests
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
-        var sync = script.Run(new MockLythonHost(), options);
+        using var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal("memory", Assert.IsType<string>(sync.ReturnValue));
+        Assert.Equal(expected, Assert.IsType<string>(sync.ReturnValue));
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal("memory", Assert.IsType<string>(asyncResult.ReturnValue));
+        Assert.Equal(expected, Assert.IsType<string>(asyncResult.ReturnValue));
     }
 
     [Fact]
