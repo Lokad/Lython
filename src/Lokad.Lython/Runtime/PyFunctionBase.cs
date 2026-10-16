@@ -40,6 +40,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         _nameValue = callableKind == PythonCallableKind.Lambda
             ? LambdaName : PyString.FromString(name, closure.MemoryGovernor, null);
         _bindingPlan = new FunctionBindingPlan(name, callableKind, parameters, defaultValues, closure);
+        SupportsPositionalBinding = _bindingPlan.KeywordOnlyParameters.Count == 0 &&
+            _bindingPlan.VariadicList is null && _bindingPlan.VariadicDictionary is null;
         _scopeFacts = scopeFacts;
     }
 
@@ -48,6 +50,25 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
     protected FunctionBindingPlan BindingPlan => _bindingPlan;
+
+    internal bool SupportsPositionalBinding { get; }
+
+    // Copy operands (and an optional bound receiver) straight into the existing
+    // invocation-owned values. Frame entry, mirroring and body dispatch stay shared.
+    internal object InvokePositional(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, object? receiver = null)
+    {
+        context.CheckExecution(span);
+        return InvokeBound(LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver), span);
+    }
+
+    internal ValueTask<object> InvokePositionalAsync(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, object? receiver = null)
+    {
+        context.CheckExecution(span);
+        var bound = LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver);
+        return InvokeBoundAsync(bound, span);
+    }
 
     public PyType? OwnerType { get; private set; }
 

@@ -28,6 +28,8 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
     // method-wrapper and bound-builtin types like CPython.
     internal LythonRuntime.ICallable Function => _function;
 
+    internal object Receiver => _self;
+
     public int GetPyHashCode() => HashCode.Combine(RuntimeHelpers.GetHashCode(_self), RuntimeHelpers.GetHashCode(_function));
 
     // Bound methods mirror the wrapped callable.__name__/__qualname__/__module__/__objclass__

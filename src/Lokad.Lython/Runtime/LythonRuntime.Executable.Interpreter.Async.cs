@@ -114,6 +114,11 @@ internal sealed partial class LythonRuntime
                             result = await InvokePositionalFunctionAsync(function, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
                                 call.CallSpan, _context).ConfigureAwait(false);
                         }
+                        else if (call.IsPositionalOnly && callable is PyBoundMethod { Function: PyFunction { SupportsPositionalBinding: true } method } bound)
+                        {
+                            result = await InvokePositionalFunctionAsync(method, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
+                                call.CallSpan, _context, bound.Receiver).ConfigureAwait(false);
+                        }
                         else
                         {
                             var arguments = PrepareExecutableCallArguments(call, ref _stack, start);

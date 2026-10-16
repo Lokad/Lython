@@ -570,6 +570,11 @@ internal sealed partial class LythonRuntime
             {
                 result = InvokePositionalFunction(function, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span, callSite.CallSpan, context);
             }
+            else if (callSite.IsPositionalOnly && target is PyBoundMethod { Function: PyFunction { SupportsPositionalBinding: true } method } bound)
+            {
+                result = InvokePositionalFunction(method, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span,
+                    callSite.CallSpan, context, bound.Receiver);
+            }
             else
             {
                 var arguments = PrepareExecutableCallArguments(callSite, ref stack, start);

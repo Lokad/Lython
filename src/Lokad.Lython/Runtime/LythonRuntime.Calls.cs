@@ -111,20 +111,22 @@ internal sealed partial class LythonRuntime
     }
 
     private static object InvokePositionalFunction(
-        PyExecutableFunction function, ReadOnlySpan<object?> arguments, LythonSourceSpan span, ExecutionContext context)
+        PyFunctionBase function, ReadOnlySpan<object?> arguments, LythonSourceSpan span, ExecutionContext context,
+        object? receiver = null)
     {
         context.EnterInterpreterFrame(span);
         try
         {
             context.CheckExecution(span);
-            return RuntimeValue(function.InvokePositional(arguments, span, context));
+            return RuntimeValue(function.InvokePositional(arguments, span, context, receiver));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
     }
 
     private static async ValueTask<object> InvokePositionalFunctionAsync(
-        PyExecutableFunction function, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context)
+        PyFunctionBase function, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
+        object? receiver = null)
     {
         context.EnterInterpreterFrame(span);
         try
@@ -132,7 +134,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             // The span is consumed synchronously into owned bound values.
             // The caller keeps its operand array alive until this call finishes.
-            var pending = function.InvokePositionalAsync(arguments.Span, span, context);
+            var pending = function.InvokePositionalAsync(arguments.Span, span, context, receiver);
             return RuntimeValue(await pending.ConfigureAwait(false));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
