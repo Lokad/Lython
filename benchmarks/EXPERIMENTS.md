@@ -845,6 +845,8 @@ preserve the distinct CPython and earlier-Lython comparisons.
 
 ## Diagnostic comparisons by revision
 
+- [Prepared ordinary class methods](results/2026-10-16-compiled-class-methods/README.md): fresh compile/run; candidate median 23.3% higher, unqualified. Actual 16,384-call input differs from the original medium-case declaration; mismatch and original receipt retained, no repeated capture. Executable coverage and stack-policy corrections are distinct from an unproved speedup.
+
 Preserved from BENCHMARKS.md before reducing its leading table. Revision and
 measurement-status labels retain their original meaning; see the
 [measurement identities](../BENCHMARKS.md#which-code-and-machine-were-measured).

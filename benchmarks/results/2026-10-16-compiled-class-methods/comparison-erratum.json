@@ -1,0 +1,9 @@
+{
+  "recordedAfterCapture": true,
+  "declaredCase": "calls.method.medium",
+  "executedCase": "calls.method.large",
+  "cause": "Copied micro.sh retained the existing .large suffix while the new declaration requested .medium; proof checked lane and source identities but missed case identity.",
+  "decision": "Preserve original declaration and receipt. Report only the actual large input. Do not repeat or select another result.",
+  "unaffected": "One capture, compile-run boundary, frozen baseline/candidate source revisions, same workload in all engines, independent three-size goldens, source/worker cleanup proof.",
+  "receiptSha256": "3e76f06df3c1cf497be20a4bd524e148cb77fcafd13891d759d0d781513019de"
+}

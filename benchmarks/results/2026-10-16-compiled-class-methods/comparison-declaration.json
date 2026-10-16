@@ -1,0 +1,24 @@
+{
+  "baselineRevision": "4484f64ab4166ea74e9ac46572448d7efa2934d7",
+  "candidateRevision": "c3db3ca26694a100af163b863856de13932fc77a",
+  "caseId": "calls.method.medium",
+  "lane": "compile-run",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Fresh compilation plus synchronous public Run in a warm persistent host; fresh execution state, output validation and disposal included; worker startup/transport excluded.",
+  "stoppingRule": "One unchanged existing method-accumulator micro; no retry, retune, new producer or long lane.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "858bc4e0ae938f9c23b0d87c9d7467b0604c31d64e6ee245686ba5c881a57692",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "87e9f08a00af74e9b954eacc4c582f2cc351451f03dbcaaa2c8b8591e077d694"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "cbd1b667aff9cacd9d0b6e3b57b5c802d8a3f1099f566303832b4c57e4940ac9",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "9560085655765461e9134f8895834027b20032a8cc7c4dd19eb595e1c26acac2"
+  }
+}

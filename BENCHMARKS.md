@@ -13,6 +13,7 @@
 | Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
 | Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | Historical warm diagnostic; elapsed change within spread |
 | Branch/integer loop [AE], warm `RunAsync` | 16,384 iterations; modulo/comparison/add/subtract | 6.321 ms | 0.9599 ms | — | One warm async diagnostic; completed host operations; unqualified |
+| Instance-method accumulator [AZ], fresh compile/run | 16,384 calls / 208 UTF-8 source bytes | 11.494 ms | 0.9783 ms | — | Short diagnostic at c3db3ca2; 23.3% higher Lython median; unqualified; case-selection discrepancy documented |
 | Instance-method accumulator [AP], warm `Run` | 2,048 calls; construct, update field and print | 1.144 ms | 0.11515 ms | — | Short diagnostic at 58aece73; no improvement established; candidate median 2.8% higher |
 | Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
 
@@ -42,6 +43,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| AZ | 2026-10-16 | c3db3ca2; prepared ordinary class methods, fresh compile/run | [Slower diagnostic, actual input and setup erratum](benchmarks/results/2026-10-16-compiled-class-methods/README.md) |
 | AY | 2026-10-16 | 8b0f32fb; direct zero-argument exact-string split | [Complete text job, lifecycle and inconclusive timing](benchmarks/results/2026-10-16-direct-string-split/README.md) |
 | AX | 2026-10-16 | 44199dd3; direct synchronous executable-generator advancement | [Shared frame guards, lifecycle and short diagnostic](benchmarks/results/2026-10-16-generator-sync-advance/README.md) |
 | AW | 2026-10-16 | fa2b72af; genuine executable generator-expression bodies | [Lifecycle, ownership and inconclusive timing](benchmarks/results/2026-10-16-executable-generators/README.md) |
@@ -73,7 +75,7 @@ remain available behind the detailed diagnostic history.
 
 ## Execution, compilation and startup are separate
 
-Except for the explicitly marked fresh compile/run rows AF, AU and P, the leading table uses
+Except for the explicitly marked fresh compile/run rows AF, AU, AZ and P, the leading table uses
 **warm execution**: both engines reuse compiled code,
 create fresh invocation state, execute the complete module, capture/project
 output and perform the cheap golden check inside the worker timer. Compilation,
@@ -111,6 +113,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Prepared ordinary class methods, 2026-10-16 | 4484f64a → c3db3ca2; fresh compile/run with 16,384 calls | No improvement established: 9.325 → 11.494 ms; 23.3% higher median, unqualified | [Executable coverage, conservative stack policy and setup erratum](benchmarks/results/2026-10-16-compiled-class-methods/README.md) |
 | Direct zero-argument string split, 2026-10-16 | 4717904d → 8b0f32fb; unchanged complete text-summary job | No speedup established: 7.018 → 6.405 ms; 8.7% change within 10.7% baseline spread | [Direct calls, shared kernel and ownership checks](benchmarks/results/2026-10-16-direct-string-split/README.md) |
 | Direct synchronous generator advancement, 2026-10-16 | b52be7e4 → 44199dd3; unchanged numeric reduction | 4.118 → 3.912 ms; 5.0% lower median, one unqualified diagnostic | [Direct pull, shared frame guards and lifecycle controls](benchmarks/results/2026-10-16-generator-sync-advance/README.md) |
 | Executable generator-expression bodies, 2026-10-16 | c74f53c9 → fa2b72af; unchanged numeric reduction | No speedup established: 4.330 → 4.252 ms; 1.8% change within 3.8% candidate spread | [Real instructions, shared frames and lifecycle checks](benchmarks/results/2026-10-16-executable-generators/README.md) |

@@ -1,0 +1,95 @@
+{
+  "reference": "Python 3.13.2",
+  "cases": [
+    {
+      "name": "accumulator",
+      "source": "class Accumulator:\n def __init__(self):self.value=0\n def add(self,x):\n  self.value+=x\n  return self.value\na=Accumulator()\nprint([a.add(i) for i in range(5)],a.value)",
+      "stdout": "[0, 1, 3, 6, 10] 10\n"
+    },
+    {
+      "name": "skip-class-namespace",
+      "source": "value=10\nclass Box:\n value=20\n def read(self,default=value):return value,default\nprint(Box().read())",
+      "stdout": "(10, 20)\n"
+    },
+    {
+      "name": "enclosing-late-value",
+      "source": "def make():\n value=1\n class Box:\n  def read(self):return value\n value=7\n return Box\nprint(make()().read())",
+      "stdout": "7\n"
+    },
+    {
+      "name": "unbound-enclosing",
+      "source": "def make():\n class Box:\n  def read(self):return value\n return Box\n value=7\ntry:make()().read()\nexcept NameError:print('unbound')",
+      "stdout": "unbound\n"
+    },
+    {
+      "name": "nonlocal-writes",
+      "source": "def make():\n value=2\n class Box:\n  def add(self,n):\n   nonlocal value\n   value+=n\n   return value\n return Box(),lambda:value\nbox,read=make()\nprint(box.add(1),box.add(4),read())",
+      "stdout": "3 7 7\n"
+    },
+    {
+      "name": "nonlocal-nested-lambda",
+      "source": "def make():\n value=2\n class Box:\n  def read(self):\n   nonlocal value\n   return lambda:value\n  def write(self,n):\n   nonlocal value\n   value=n\n return Box()\nbox=make()\nread=box.read()\nbox.write(9)\nprint(read())",
+      "stdout": "9\n"
+    },
+    {
+      "name": "method-local-capture",
+      "source": "class Box:\n def make(self):\n  return [lambda:i for i in range(3)]\nprint([f() for f in Box().make()])",
+      "stdout": "[2, 2, 2]\n"
+    },
+    {
+      "name": "lexical-class-super",
+      "source": "class Base:\n value=4\nclass Box(Base):\n def read(self,n):return super().value+n,__class__.__name__\nprint(Box().read(3))",
+      "stdout": "(7, 'Box')\n"
+    },
+    {
+      "name": "method-wrappers",
+      "source": "class Box:\n def __init__(self,n):self._value=n\n @classmethod\n def make(cls):return cls(7)\n @staticmethod\n def twice(n):return 2*n\n @property\n def value(self):return self._value\n @value.setter\n def value(self,n):self._value=n\na=Box.make()\na.value=8\nprint(a.value,Box.twice(3))",
+      "stdout": "8 6\n"
+    },
+    {
+      "name": "annotation-order",
+      "source": "events=[]\ndef mark(name):\n events.append(name)\n return name\ndef decorate(fn):\n events.append(('decorate',fn.__annotations__))\n return fn\nclass Box:\n @decorate\n def run(self,a:mark('annotation')=mark('default'))->mark('return'):return a\nprint(Box().run(),events)",
+      "stdout": "default ['default', 'annotation', 'return', ('decorate', {'a': 'annotation', 'return': 'return'})]\n"
+    },
+    {
+      "name": "live-defaults",
+      "source": "class Box:\n def run(self,x=[]):\n  x.append(1)\n  return x\nbox=Box()\nprint(box.run(),box.run())\nmethod=box.run\nBox.run.__defaults__=([9],)\nprint(method())",
+      "stdout": "[1, 1] [1, 1]\n[9, 1]\n"
+    },
+    {
+      "name": "method-replacement",
+      "source": "class Box:\n def run(self):return 2\nbox=Box()\nold=box.run\ndef replacement(self):return 9\nBox.run=replacement\nprint(old(),box.run())\ndel Box.run\ntry:box.run()\nexcept AttributeError:print('missing')",
+      "stdout": "2 9\nmissing\n"
+    },
+    {
+      "name": "locals-and-class-cell",
+      "source": "class Box:\n def run(self,a):\n  owner=__class__\n  b=7\n  return sorted(k for k in locals() if k!='self')\nprint(Box().run(2))",
+      "stdout": "['__class__', 'a', 'b', 'owner']\n"
+    },
+    {
+      "name": "returned-generator-methods",
+      "source": "class Box:\n def run(self):return (i for i in range(3))\ng=Box().run()\nprint(next(g),g.send(None))\ng.close()\nprint(next(g,'end'))",
+      "stdout": "0 1\nend\n"
+    },
+    {
+      "name": "method-error-cleanup",
+      "source": "events=[]\nclass Box:\n def run(self):\n  try:raise ValueError('leaf')\n  finally:events.append('finally')\ntry:Box().run()\nexcept ValueError as error:print(str(error),events)",
+      "stdout": "leaf ['finally']\n"
+    },
+    {
+      "name": "per-definition-defaults",
+      "source": "def make(n):\n class Box:\n  def read(self,value=n):return value\n return Box\nfirst=make(2)\nsecond=make(9)\nfirst.read.__defaults__=(7,)\nprint(first().read(),second().read())",
+      "stdout": "7 9\n"
+    },
+    {
+      "name": "unbound-declared-nonlocal",
+      "source": "def make():\n class Box:\n  def read(self):\n   nonlocal value\n   return value\n return Box\n value=7\ntry:make()().read()\nexcept NameError:print('unbound')",
+      "stdout": "unbound\n"
+    },
+    {
+      "name": "nonlocal-active-parent",
+      "source": "def make():\n value=1\n class Box:\n  def write(self):\n   nonlocal value\n   value=9\n Box().write()\n return value\nprint(make())",
+      "stdout": "9\n"
+    }
+  ]
+}

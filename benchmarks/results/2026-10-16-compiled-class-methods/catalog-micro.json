@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "calls.method.small",
+      "family": "calls",
+      "category": "core",
+      "scale": "small",
+      "size": 256,
+      "source": "N = 256\nclass Accumulator:\n    def __init__(self):\n        self.value = 0\n    def add(self, value):\n        self.value += value + 3\nitem = Accumulator()\nfor i in range(N):\n    item.add(i)\nprint(item.value)\n",
+      "fixtureJson": "{\"size\":256,\"text\":null}",
+      "expectedOutput": "33408\n",
+      "sourceUtf8Bytes": 206,
+      "expectedOutputUtf8Bytes": 6,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "ad98c19b78d76796d1404531f8379a4503d8676a9e33c6df19cb00279b5434c4",
+      "fixtureSha256": "014e3e36d9dda0eeafbc9f34005088e5e5bba7a7d2e87f1fa56dc2a3be77740e",
+      "expectedOutputSha256": "e84dcbad78945f35d369d74d760ae33cb5d4062f789374d6573df9826c9097f8"
+    },
+    {
+      "id": "calls.method.medium",
+      "family": "calls",
+      "category": "core",
+      "scale": "medium",
+      "size": 2048,
+      "source": "N = 2048\nclass Accumulator:\n    def __init__(self):\n        self.value = 0\n    def add(self, value):\n        self.value += value + 3\nitem = Accumulator()\nfor i in range(N):\n    item.add(i)\nprint(item.value)\n",
+      "fixtureJson": "{\"size\":2048,\"text\":null}",
+      "expectedOutput": "2102272\n",
+      "sourceUtf8Bytes": 207,
+      "expectedOutputUtf8Bytes": 8,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "929c4a6812769f502caa6865737fe71029c68313e1c93b9903aa19736f60ad58",
+      "fixtureSha256": "cc19526c1d9f59f92c233c4276c92e42e48bc1ecbbeec305f81a44877bd877d6",
+      "expectedOutputSha256": "55b4e5d1cbe5e87fd4a0b82aadd92e106d4d49091af50e82b79c0df5474836a5"
+    },
+    {
+      "id": "calls.method.large",
+      "family": "calls",
+      "category": "core",
+      "scale": "large",
+      "size": 16384,
+      "source": "N = 16384\nclass Accumulator:\n    def __init__(self):\n        self.value = 0\n    def add(self, value):\n        self.value += value + 3\nitem = Accumulator()\nfor i in range(N):\n    item.add(i)\nprint(item.value)\n",
+      "fixtureJson": "{\"size\":16384,\"text\":null}",
+      "expectedOutput": "134258688\n",
+      "sourceUtf8Bytes": 208,
+      "expectedOutputUtf8Bytes": 10,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "14a03b2054780bfba0eae94fa2ab851e4cbc93dae981748176d1facf7271f23a",
+      "fixtureSha256": "c1c16fa8a40dac165afc8c9915fab90012d9af6a9836b6a2e03812eb3f441155",
+      "expectedOutputSha256": "1310669b2dc1bba73ea5f34c4fde690bd99830c58ccccdefd5bfc7657c90f3bf"
+    }
+  ]
+}
