@@ -85,19 +85,7 @@ internal static partial class PyStringOps
             {
                 PyStructuralGuard.NoteWork();
                 _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
-                if (mapping == CaseMapping.Lower && rune.Value != 0x0130)
-                {
-                    var mapped = rune.Value == 0x03A3
-                        ? new Rune(precedingCased && !HasFollowingSigmaCasedRune(source[(offset + consumed)..]) ? 0x03C2 : 0x03C3)
-                        : Rune.ToLowerInvariant(rune);
-                    builder.Append(mapped);
-                }
-                else if (mapping == CaseMapping.Upper)
-                {
-                    if (GetCaseExpansion(rune, mapping) is { } expansion) builder.AppendString(expansion);
-                    else builder.Append(Rune.ToUpperInvariant(rune));
-                }
-                else builder.AppendString(MapCase(rune, mapping));
+                AppendMappedRune(builder, rune, mapping, precedingCased, source[(offset + consumed)..]);
                 if (mapping == CaseMapping.Lower && !SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
                     precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
                 offset += consumed;
@@ -107,17 +95,28 @@ internal static partial class PyStringOps
         finally { builder.Release(); }
     }
 
-    private static string MapCase(Rune rune, CaseMapping mapping)
+    private static void AppendMappedRune(
+        GovernedByteBuilder builder, Rune rune, CaseMapping mapping,
+        bool precedingCased, ReadOnlySpan<byte> following)
     {
-        if (GetCaseExpansion(rune, mapping) is { } expansion) return expansion;
-        var text = rune.ToString();
-        return mapping switch
+        if (mapping == CaseMapping.Lower)
         {
-            CaseMapping.Lower => text.ToLowerInvariant(),
-            CaseMapping.Upper => text.ToUpperInvariant(),
-            CaseMapping.Title => text.ToUpperInvariant(),
-            _ => text
-        };
+            if (rune.Value == 0x0130) builder.AppendString("i\u0307");
+            else builder.Append(rune.Value == 0x03A3
+                ? new Rune(precedingCased && !HasFollowingSigmaCasedRune(following) ? 0x03C2 : 0x03C3)
+                : Rune.ToLowerInvariant(rune));
+        }
+        else if (GetCaseExpansion(rune, mapping) is { } expansion) builder.AppendString(expansion);
+        else builder.Append(mapping == CaseMapping.Title ? new Rune(rune.Value switch
+        {
+            // Unicode's four titlecase digraph triples have distinct title and
+            // uppercase scalars. Full multi-scalar mappings stay in the table.
+            0x01C4 or 0x01C5 or 0x01C6 => 0x01C5,
+            0x01C7 or 0x01C8 or 0x01C9 => 0x01C8,
+            0x01CA or 0x01CB or 0x01CC => 0x01CB,
+            0x01F1 or 0x01F2 or 0x01F3 => 0x01F2,
+            _ => Rune.ToUpperInvariant(rune).Value,
+        }) : Rune.ToUpperInvariant(rune));
     }
 
     private static string? GetCaseExpansion(Rune rune, CaseMapping mapping)

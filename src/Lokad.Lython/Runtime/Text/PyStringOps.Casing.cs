@@ -83,63 +83,71 @@ internal static partial class PyStringOps
         }
 
         var builder = CreateBuilder(value, source.Length);
-        var byteIndex = 0;
-        var first = true;
-        while (byteIndex < source.Length)
+        try
         {
-            Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-            builder.AppendString(MapCase(rune, first ? CaseMapping.Title : CaseMapping.Lower));
-            first = false;
-            byteIndex += runeLength;
+            var precedingCased = false;
+            for (var offset = 0; offset < source.Length;)
+            {
+                PyStructuralGuard.NoteWork();
+                Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+                AppendMappedRune(builder, rune, offset == 0 ? CaseMapping.Title : CaseMapping.Lower,
+                    precedingCased, source[(offset + consumed)..]);
+                if (!SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
+                    precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
+                offset += consumed;
+            }
+            return builder.ToPyStringAndRelease();
         }
-
-        return builder.ToPyStringAndRelease();
+        finally { builder.Release(); }
     }
 
     public static PyString SwapCase(PyString value)
     {
         var builder = CreateBuilder(value, value.Utf8Bytes.Length);
-        var source = value.Utf8Bytes.Span;
-        for (var byteIndex = 0; byteIndex < source.Length;)
+        try
         {
-            Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-            var text = rune.ToString();
-            var lower = MapCase(rune, CaseMapping.Lower);
-            var upper = MapCase(rune, CaseMapping.Upper);
-            builder.AppendString(text == lower && lower != upper ? upper : text == upper && lower != upper ? lower : text);
-            byteIndex += runeLength;
+            var source = value.Utf8Bytes.Span;
+            var precedingCased = false;
+            for (var offset = 0; offset < source.Length;)
+            {
+                PyStructuralGuard.NoteWork();
+                Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+                var kind = GetRuneCase(rune);
+                if (kind is RuneCase.Upper or RuneCase.Lower)
+                    AppendMappedRune(builder, rune, kind == RuneCase.Upper ? CaseMapping.Lower : CaseMapping.Upper,
+                        precedingCased, source[(offset + consumed)..]);
+                else builder.Append(rune);
+                if (!SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
+                    precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
+                offset += consumed;
+            }
+            return builder.ToPyStringAndRelease();
         }
-
-        return builder.ToPyStringAndRelease();
+        finally { builder.Release(); }
     }
 
     public static PyString Title(PyString value)
     {
         var builder = CreateBuilder(value, value.Utf8Bytes.Length);
-        var previousWasCased = false;
-        var source = value.Utf8Bytes.Span;
-        for (var byteIndex = 0; byteIndex < source.Length;)
+        try
         {
-            Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-            var text = rune.ToString();
-            var lower = MapCase(rune, CaseMapping.Lower);
-            var upper = MapCase(rune, CaseMapping.Upper);
-            var isCased = lower != upper;
-            if (!isCased)
+            var previousWasCased = false;
+            var precedingCased = false;
+            var source = value.Utf8Bytes.Span;
+            for (var offset = 0; offset < source.Length;)
             {
-                builder.AppendString(text);
-                previousWasCased = false;
+                PyStructuralGuard.NoteWork();
+                Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+                AppendMappedRune(builder, rune, previousWasCased ? CaseMapping.Lower : CaseMapping.Title,
+                    precedingCased, source[(offset + consumed)..]);
+                previousWasCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
+                if (!SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
+                    precedingCased = previousWasCased;
+                offset += consumed;
             }
-            else
-            {
-                builder.AppendString(previousWasCased ? lower : MapCase(rune, CaseMapping.Title));
-                previousWasCased = true;
-            }
-
-            byteIndex += runeLength;
+            return builder.ToPyStringAndRelease();
         }
-
-        return builder.ToPyStringAndRelease();
+        finally { builder.Release(); }
     }
 
     public static PyString Replace(PyString value, PyString oldValue, PyString newValue, int count)

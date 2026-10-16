@@ -1215,6 +1215,12 @@ The `collections` module supports the common contained container helpers:
 
 Strings must behave as Python Unicode strings, not as byte arrays.
 
+`capitalize`, `title` and `swapcase` preserve contextual final Greek sigma,
+titlecase digraphs and supported full case expansions. Capitalization title-cases
+the first scalar and lower-cases the rest; title casing uses input cased boundaries;
+swapcase leaves titlecase letters unchanged. Native casing scans check cancellation
+and execution budgets and release temporary storage on failure.
+
 For the supported old-style interpolation surface, `str % value` follows Python's scalar, tuple, and mapping argument selection; supports escaped percent signs, flags, width, precision, and the ordinary `s`, `r`, `a`, integer, floating-point, and character conversions; and raises Python-shaped errors for malformed formats and incompatible values. Generated text is charged to the execution memory governor. Bytes interpolation is not part of this surface.
 
 ### 9.8 Iteration

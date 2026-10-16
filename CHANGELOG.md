@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Write capitalize/title/swapcase output directly as UTF-8, sharing full expansions and contextual Greek sigma handling with lower/upper. Preserve titlecase digraphs and swapcase behavior, remove per-scalar CLR strings/comparisons, and release builder scratch on refusal or cancellation.
+
 - Reuse the fixed len/repr/ascii builtin definitions across executions, removing repeated wrappers, parameter-name arrays and signature-catalog lookups. Keep mutable type graphs, builtin dictionaries and contextual module lookup isolated per run; retain ordinary binding, host/cancellation behavior and result ownership.
 
 - Parse default JSON long/float tokens from UTF-8 and share raw numeric-hook preparation through the existing governed text factory. Remove unconditional CLR token decoding and duplicate hook branches; preserve exact large-integer fallback, shared magnitude preflights, signed zero/overflow, hook lifetimes and cancellation.
