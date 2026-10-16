@@ -287,7 +287,10 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (!instance.TryGetAttribute(methodName, context, span, out var member) || member is not ICallable callable)
+        if (!instance.Type.TryLookupInMro(methodName, 0, out var raw, out _))
+            throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object does not support item mutation", span);
+        var member = PyAttributeLookup.BindForInstance(instance, raw, context, span);
+        if (member is not ICallable callable)
         {
             throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object does not support item mutation", span);
         }

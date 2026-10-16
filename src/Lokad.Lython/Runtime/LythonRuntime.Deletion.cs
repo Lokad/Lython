@@ -9,7 +9,10 @@ internal sealed partial class LythonRuntime
             ExecuteResolvedSubscriptDeletion(target, index, span, context);
             return;
         }
-        if (!instance.TryGetAttribute("__delitem__", context, span, out var member) || member is not ICallable callable)
+        if (!instance.Type.TryLookupInMro("__delitem__", 0, out var raw, out _))
+            throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object does not support item mutation", span);
+        var member = await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false);
+        if (member is not ICallable callable)
             throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object does not support item mutation", span);
         _ = await callable.InvokeAsync([CallArgumentValue.Positional(index)], span, context).ConfigureAwait(false);
     }

@@ -899,6 +899,10 @@ binding and the call, preserving cancellation and effects exactly once. Invalid
 hook results raise TypeError; range conversion retains arbitrary-size integers.
 Mapping keys are looked up as keys without invoking `__index__`.
 
+Implicit item assignment/deletion resolves `__setitem__`/`__delitem__` on the type,
+including descriptor binding; instance-only attributes and `__getattr__` do not
+provide these slots. `RunAsync` awaits binding and the actual mutation call.
+
 The supported subset must support Python-style slicing for strings, lists, and tuples. Mutable list slices must also support assignment and deletion as described in section 11.6.
 
 Colon slices delivered to a user object's item methods retain the original
