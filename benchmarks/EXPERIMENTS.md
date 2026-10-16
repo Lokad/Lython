@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 invocation-owned locals change](results/2026-10-16-owned-function-locals/README.md)
+consolidates executable parameter/local storage and admits unpooled capacity
+before binding. One unchanged starred-list helper observed26.602 →27.550ms,
+CPython2.9739ms; spreads2.29%/2.36%/2.13%. The3.6%higher median demonstrates no
+performance benefit. One8.503s unqualified capture, no retry or retuning. Both
+roles pass three-size goldens, frozen manifests match, seven workers/fixtures are
+gone and the lease is free. BJ preserves this source pair; no HEAD timing claim.
+
 The [2026-10-16 direct split change](results/2026-10-16-direct-string-split/README.md)
 removes per-receiver callable/binder work from ordinary zero-argument exact-string
 split and reuses the governed kernel. One unchanged complete text job observed

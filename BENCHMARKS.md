@@ -12,6 +12,7 @@
 | File search with helper and protected early exit [AR], warm | 2,049 lines / 42,010 UTF-8 bytes | 3.223 ms | 0.2845 ms | — | Short diagnostic at 473aa396; inconclusive (57%/64% Lython spread); no improvement established |
 | Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
 | Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | Historical warm diagnostic; elapsed change within spread |
+| Starred-list helper loop [BJ], warm `RunAsync` | 16,384 calls / 264 UTF-8 source bytes | 27.550 ms | 2.9739 ms | — | Short diagnostic at 527ff833; admitted local buffers; 3.6% higher median, unqualified; no benefit established |
 | Keyword helper-call loop [BI], warm `RunAsync` | 16,384 calls / 134 UTF-8 source bytes | 6.680 ms | 1.0849 ms | — | Short diagnostic at 60961196; direct function transport; 1.8% lower median within 13.3% baseline spread, inconclusive |
 | Constructed-text strip/length loop [BH], warm `RunAsync` | 32,768 lines / 425,984 UTF-8 bytes constructed in execution | 17.832 ms | 3.1868 ms | — | Short diagnostic at d4ac39db; direct len transport; 26.4% lower median with 18.8% baseline spread, unqualified |
 | Branch/integer loop [BG], warm `RunAsync` | 16,384 iterations; modulo/comparison/add/subtract | 5.980 ms | 1.0136 ms | — | Short diagnostic at f8d87288; direct ordinary control flow; 8.2% lower Lython median, unqualified |
@@ -45,6 +46,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BJ | 2026-10-16 UTC | 527ff833; invocation-owned admitted local-capacity buffers | [Lifetime consolidation, earlier denial and short diagnostic](benchmarks/results/2026-10-16-owned-function-locals/README.md) |
 | BI | 2026-10-16 | 60961196; ordinary Python functions bind existing operands and compiled names | [Keyword calls, live defaults and unchanged guard/owner contracts](benchmarks/results/2026-10-16-ordinary-function-transport/README.md) |
 | BH | 2026-10-16 | d4ac39db; builtin len consumes existing operand storage | [Strip/length loop, unchanged guards and retained inputs](benchmarks/results/2026-10-16-direct-length-call/README.md) |
 | BG | 2026-10-16 | f8d87288; ordinary control flow uses the existing synchronous handler under RunAsync | [Branch loop, unchanged guards and actual suspension](benchmarks/results/2026-10-16-async-control-flow/README.md) |
@@ -129,6 +131,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Invocation-owned function locals, 2026-10-16 UTC | cd32a964 → 527ff833; unchanged starred-list helper | No benefit established: 26.602 → 27.550 ms; 3.6% higher median, one unqualified diagnostic | [Capacity admission, cleanup and semantic controls](benchmarks/results/2026-10-16-owned-function-locals/README.md) |
 | Ordinary function operand transport, 2026-10-16 | e9dbb7ac → 60961196; unchanged keyword helper loop | No speedup established: 6.800 → 6.680 ms; 1.8% change within 13.3% baseline spread | [Shared binder, live defaults and suspension](benchmarks/results/2026-10-16-ordinary-function-transport/README.md) |
 | Direct ordinary builtin len, 2026-10-16 | 17eac376 → d4ac39db; unchanged constructed-text strip/length loop | 24.213 → 17.832 ms; 26.4% lower median in one noisy, unqualified diagnostic | [Argument transport removal and shared guard](benchmarks/results/2026-10-16-direct-length-call/README.md) |
 | Ordinary async-host control flow, 2026-10-16 | 6a4a236b → f8d87288; unchanged branch/integer loop | 6.514 → 5.980 ms; 8.2% lower median in one unqualified diagnostic | [Shared handlers, awaited protocols and cleanup](benchmarks/results/2026-10-16-async-control-flow/README.md) |

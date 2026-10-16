@@ -1,0 +1,28 @@
+{
+  "baselineRevision": "cd32a96404e4bb3214aacc0148f4e0bfd806771f",
+  "candidateRevision": "527ff833f972a940dc9f4314162ea1a8ec11fc66",
+  "caseId": "lists.starred-merge.large",
+  "expectedCaseSize": 16384,
+  "expectedCalls": 16384,
+  "lane": "warm-async",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm public RunAsync of the unchanged starred-list helper loop; execution/projection and prior-result cleanup timed. Compilation/startup/transport excluded; no files.",
+  "stoppingRule": "One unchanged starred-list helper capture; no retry, retune, new producer or long lane.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "3a2036071b00e9650fd72966e9ce682f647883e1815860359ca59fcca76a678c",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "e7421e50bb13ecc4148bdd33c45c6630336ca209a95341bd724dcae2930261d5"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "b90061c63a9398d08e972704b5d9494ddb5cb699d1d78646e04dc39d6575fff1",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "78815829c742342b12b2b20986d79091766212f195c72e5c1cc9f0e587000d77"
+  },
+  "expectedSourceUtf8Bytes": 264,
+  "expectedSourceSha256": "3b93768de4502a6dc62ead9da0bb6f55745b7a27f980b4d2934662a161d5310c"
+}

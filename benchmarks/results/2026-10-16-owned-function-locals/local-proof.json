@@ -1,0 +1,44 @@
+{
+  "runtimeRevision": "527ff833f972a940dc9f4314162ea1a8ec11fc66",
+  "checks": [
+    {
+      "stage": "owned-locals-focused-1",
+      "passed": 127,
+      "elapsedMillisecondsIncludingCleanup": 1184,
+      "assemblySha256": "8E3BDB030820DAB71AFB3FB4C9BC6D1973711204DFF8A754CFD17866A225ED57"
+    },
+    {
+      "stage": "owned-locals-full-white",
+      "passed": 2791,
+      "elapsedMillisecondsIncludingCleanup": 18107,
+      "assemblySha256": "DB61D0AD17F926B30B6FB9D85F65F7138FF6ED5F2C584DA0A8080D6EB100C5E8"
+    },
+    {
+      "stage": "owned-locals-public-functions",
+      "passed": 204,
+      "elapsedMillisecondsIncludingCleanup": 5757,
+      "assemblySha256": "BE8BAF858873F42FF2788B472A49F9DA1BB51DDD999C8374F1A6660163B0329F"
+    },
+    {
+      "stage": "owned-locals-stack-public-1",
+      "passed": 59,
+      "elapsedMillisecondsIncludingCleanup": 9561,
+      "assemblySha256": "BE8BAF858873F42FF2788B472A49F9DA1BB51DDD999C8374F1A6660163B0329F"
+    },
+    {
+      "stage": "owned-locals-representative",
+      "passed": 93,
+      "elapsedMillisecondsIncludingCleanup": 15584,
+      "assemblySha256": "BE8BAF858873F42FF2788B472A49F9DA1BB51DDD999C8374F1A6660163B0329F"
+    }
+  ],
+  "guardMatricesIdentical": 16,
+  "protectedHistorySha256": "F496A90B1D68A0B314367907D1967579230DB81BF40B6CC1D8A127325AC69E20",
+  "excluded": "owned-locals-stack-1 selected zero tests in the white assembly; excluded. Correct public assembly selected all59. No containment policy/fixture/timeouts changed.",
+  "limitations": "Earlier major-buffer denial before binding errors/default callbacks is documented. Small cleared pools remain bounded control storage. Required module/mirrored/lowered/generator routes remain. Timing and platform/package qualification pending.",
+  "sourceAcceptance": {
+    "removed": "Eligible functions no longer allocate/fill a separate locals array or copy the parameter prefix. Logical arity no longer follows storage capacity. Function cleanup now clears large storage and releases its committed capacity.",
+    "preserved": "Existing small pools, cells/snapshots/values and real module/mirrored/lowered/generator routes; no memory infrastructure, tracing or stack-policy changes.",
+    "semanticTradeoff": "Major capacity may be denied before a binding error or effectful keyword-default lookup; first refusal remains terminal."
+  }
+}
