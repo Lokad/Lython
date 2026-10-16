@@ -36,12 +36,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      # Two suites shell out to LythonProbe.dll, which no test project
-      # references, so plain `dotnet test` never builds it: build the probe
-      # explicitly first (same rule as local development).
-      - name: Build probe
+      # The solution includes the probe, which dotnet test does not build.
+      # Finish all compilation before suspension/cancellation checks start.
+      - name: Build Release solution
         shell: pwsh
-        run: dotnet build tools/LythonProbe/LythonProbe.csproj -c Release
+        run: dotnet build Lokad.Lython.slnx -c Release
       - name: Test Release
         shell: pwsh
         env:
@@ -50,7 +49,7 @@ jobs:
           DOTNET_DbgMiniDumpType: Mini
           DOTNET_DbgMiniDumpName: ${{ github.workspace }}/crash-%p.dmp
         run: |
-          try { dotnet test Lokad.Lython.slnx -c Release --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+          try { dotnet test Lokad.Lython.slnx -c Release --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
           if ($LASTEXITCODE -ne 0) { exit 1 }
       - name: Verify Release package consumer
         shell: pwsh

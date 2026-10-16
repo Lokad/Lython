@@ -56,7 +56,11 @@ qualification can also be selected in one invocation with
 sustained correctness, not performance measurements or embedding-latency proofs.
 
 Push a reviewed batch at that checkpoint. Windows and Ubuntu CI run all ordinary
-Release regressions and the explicit Release package consumer. Dispatch the same
+Release regressions and the explicit Release package consumer. CI completes the
+solution build, including the probe, before tests with `--no-build`, so solution
+compilation does not overlap suspension/cancellation checks. This sequencing
+removes that source of contention without changing assertions or deadlines;
+passing it does not establish the cause of an earlier timeout. Dispatch the same
 `ci` workflow with `stress=true` to include the original stress scales on both
 platforms. Keep existing cancellation and hang limits; do not extend timeouts to
 hide interference. CI status checks should remain minutes apart.
