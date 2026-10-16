@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Invoke ordinary zero-argument exact-string split directly from executable frame storage, removing per-receiver bound callables and general binding. Reuse the governed whitespace-split kernel and call guards; preserve fresh owned results, Unicode whitespace, receiver suspension, terminal refusal and general/exposed calls.
+
 - Reuse the compiled generator function’s scope facts when its definition executes, removing repeated syntax traversal, parameter scratch and directive/local-name sets. Keep defaults, mutable namespaces and captured cells per invocation.
 
 - Advance synchronous executable generators directly without an async advancement state machine on ordinary pulls. Share admission, frame entry/exit and result handling with asynchronous advancement, preserving awaited native cleanup, caller exceptions and managed stack guards. Fix non-None sends to generators closed before starting to report exhaustion, matching Python.

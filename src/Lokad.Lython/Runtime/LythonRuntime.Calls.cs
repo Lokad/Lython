@@ -167,6 +167,19 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    private static object InvokeStringSplit(PyString receiver, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            return PyStringOps.SplitWhitespace(receiver, context.MemoryGovernor, span);
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private static object InvokeStringStartsWith(PyString receiver, object prefix, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);

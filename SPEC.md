@@ -226,6 +226,11 @@ rejection, failed runtime admission and manually constructed public-factory
 results have no snapshot. This adds no always-on instruction counting, resource
 ledger or deadline watchdog; cooperative cancellation and separate execution/
 projection memory accounting keep their existing contracts.
+Ordinary zero-argument exact-string `split()` calls reuse the governed whitespace
+kernel directly from executable storage under both Run and RunAsync. General,
+exposed, keyword, expanded and custom-receiver calls retain normal Python binding.
+Receiver evaluation completes once before splitting; resulting lists and strings
+retain their owners, and rejected result admission leaves the receiver unchanged.
 Ordinary expanded list, tuple, set and dictionary displays use the same incremental executable display
 operations as yielding generators. Expressions and starred iteration interleave
 in source order. The existing per-item checkpoints remain active; explicit fuel

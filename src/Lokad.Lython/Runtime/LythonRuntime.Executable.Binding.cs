@@ -12,6 +12,7 @@ internal sealed partial class LythonRuntime
     private static readonly object DirectListAppend = new();
     private static readonly object DirectDictionaryGet = new();
     private static readonly object DirectStringStrip = new();
+    private static readonly object DirectStringSplit = new();
     private static readonly object DirectStringStartsWith = new();
 
     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
@@ -550,6 +551,10 @@ internal sealed partial class LythonRuntime
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringStrip))
             {
                 result = InvokeStringStrip((PyString)stack[start], callSite.CallSpan, context);
+            }
+            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringSplit))
+            {
+                result = InvokeStringSplit((PyString)stack[start], callSite.CallSpan, context);
             }
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringStartsWith))
             {
