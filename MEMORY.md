@@ -80,6 +80,20 @@ shared; this can change narrow admission thresholds. No registry or extra owner
 is introduced, and the caller's full namespace need not be mirrored for these
 bodies. Ordinary dynamic/generator routes can still require that mirroring.
 
+Prepared class-method code belongs to the compilation owner; runtime definitions
+keep private function values, defaults and invocation state. Declared nonlocals
+without an executable parent cell use the existing live namespace-backed cells,
+skipping class namespaces. Capture admits array capacity and new cell estimates
+before allocation/publication; aliases keep their owners and actual lexical class
+cells remain shared within that class. No registry, tracing or new owner layer is
+introduced. Executable invocation buffers retain their existing capacity admission
+and deterministic cleanup, including across host suspension.
+Function bodies keep entry checks without double-counting logical invocations.
+Structural guest callbacks use a conservative combined depth budget of 64 from
+existing call/interpreter/traversal state, preserving managed unwind headroom
+after host I/O. Pure data traversal keeps its existing limit. This may reject
+deep callbacks earlier; it introduces no owner, tracing or native stack mechanism.
+
 Generator-expression assignment targets use prepared global/nonlocal metadata
 and the existing name-storage owners. Nonlocal target-map capacity is admitted
 before constructing the retained iteration scope; failed construction returns
@@ -94,7 +108,9 @@ outer acquisition. Existing closure capture/retention admission funds escaping
 cells and their defining namespace; no new memory owner is introduced. The
 retained frame starts with the already acquired outer cursor. Early close/throw
 and entry refusal/cancellation await its native cleanup before returning; failed
-construction refunds its frame estimate only after cleanup finishes. Surviving
+construction refunds its frame estimate only after cleanup finishes. Failed outer
+acquisition avoids the separate defining-namespace retention charge; successful
+acquisition funds retention before publication. Surviving
 cell/namespace charges can remain conservatively with the finite owner. Larger
 frame estimates can cause earlier denial than the former lowered iterator.
 Operand buffers admit their actual initial capacity, then reserve full new

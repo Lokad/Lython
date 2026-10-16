@@ -30,7 +30,7 @@ public sealed class BoundMethodInvocationBoundaryTests
                 var error = Assert.Throws<LythonRuntimeException>(() => method.Invoke(Arguments(width), Span, context));
                 Assert.Equal("RuntimeError", error.ExceptionType);
                 Assert.Equal($"maximum execution step count exceeded ({fuel})", error.Message);
-                var expected = fuel == 1 ? Span : fuel == 2 ? null : code.Blocks[code.EntryBlockIndex].InstructionArray[fuel - 3].Span;
+                var expected = fuel <= 2 ? Span : code.Blocks[code.EntryBlockIndex].InstructionArray[fuel - 3].Span;
                 Assert.Same(expected, error.Span);
                 Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
             }

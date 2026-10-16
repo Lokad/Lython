@@ -1227,6 +1227,19 @@ variable raises `NameError`. Module and class namespace lookup retain their
 Python behavior. Existing static diagnostics still reject statically certain
 reads before assignment.
 
+Eligible non-generic functions defined directly in a class suite prepare their
+executable bodies once during compilation. Both execution APIs construct fresh
+function values with per-definition defaults and live captures, sharing only the
+code. Defaults, decorators, annotations and owner binding keep their Python order;
+method free reads skip the class namespace and retain lexical class/nonlocal cells.
+This does not compile every class-suite statement: generic, conditional and other
+required lowered definition routes remain. Public locals()/dir(), aliases, errors
+and host suspension keep their Python behavior; completed internal frames need
+not keep dictionary copies of local slots. Managed function/interpreter admission
+remains active, with entry failures attributed to the call span. Function bodies check managed admission without counting an already admitted
+invocation a second time. Executable instruction layout can change explicit fuel
+counts and conservative storage estimates can cause earlier admission rejection.
+
 Function features not specified here remain unsupported. Any future additions must be implemented faithfully or rejected explicitly.
 
 Repeated reads of a builtin instance method, such as `items.append`, expose
@@ -3074,8 +3087,15 @@ The runtime must therefore enforce an explicit recursion budget before host stac
 If internal implementation strategies introduce additional recursive paths, those paths must be bounded or rewritten so they cannot bypass the script-level recursion limit.
 
 Function and interpreter nesting keep independent logical counters, with a fixed
-512-level interpreter ceiling even when default limits are disabled. Structural
-traversal and recursive copying share that ceiling and retain cycle detection.
+512-level interpreter ceiling even when default limits are disabled. A compiled
+function body retains entry checks without adding a second logical call level.
+Guest callbacks during structural work, including copy-hook lookup and invocation,
+share a conservative 64-unit combined function/interpreter/traversal budget. This
+can reject these callbacks earlier than ordinary recursion; it leaves room for
+managed exception routing and cleanup after host suspension. It reuses existing
+execution-local depth state and does not treat repeated hook receivers as cycles.
+Pure structural traversal and recursive copying retain their existing 512-level
+ceiling and cycle detection.
 Each nesting entry also checks the current thread's stack through the managed
 runtime's `TryEnsureSufficientExecutionStack` result before descending or
 publishing traversal state. This includes host continuations after genuine async

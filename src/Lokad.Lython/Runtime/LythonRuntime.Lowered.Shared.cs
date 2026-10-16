@@ -454,8 +454,13 @@ internal sealed partial class LythonRuntime
     {
         var generatorCells = functionDefinition.GeneratorCode is { ClosureNames.Count: > 0 } generatorCode && context.CurrentExecutableFrame is not null
             ? CaptureExecutableClosures(generatorCode, context, functionDefinition.Span) : [];
+        var code = HasTypeParameterScope(context) ? null : functionDefinition.PreparedCode;
+        var cells = code is null ? [] : CaptureExecutableClosures(code, context.FunctionClosureContext, functionDefinition.Span);
         PyFunctionBase function = functionDefinition.GeneratorCode is not null
             ? new PyGeneratorFunction(functionDefinition, context.FunctionClosureContext, defaults, generatorCells)
+            : code is not null
+            ? new PyExecutableFunction(functionDefinition.Syntax.DeclaredName, functionDefinition.Parameters,
+                code, context.FunctionClosureContext, cells, defaults, code.ScopeFacts)
             : new PyFunction(
             functionDefinition.Syntax.DeclaredName,
             functionDefinition.Parameters,

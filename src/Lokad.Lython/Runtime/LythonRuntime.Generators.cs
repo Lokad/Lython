@@ -44,8 +44,6 @@ internal sealed partial class LythonRuntime
             try
             {
                 var cells = CaptureExecutableClosures(code, context, span);
-                ChargeClosureRetention(context.FunctionClosureContext, governor, span);
-                if (code.RequiresLocalVariableMirroring) RetainLocalsForLambda(context.FunctionClosureContext);
                 var frame = new ExecutionContext(context.FunctionClosureContext, code.ScopeFacts)
                 { FunctionName = "<genexpr>", FirstPositionalParameterName = ".0" };
                 generator = new PyGenerator(code, frame, span, bytes, cells);
@@ -53,6 +51,10 @@ internal sealed partial class LythonRuntime
                     ? await PyIteration.AcquireGeneratorOuterAsync(outerValue, outerSpan, context).ConfigureAwait(false)
                     : PyIteration.AcquireGeneratorOuter(outerValue, outerSpan, context);
                 cursor = PyIteration.Cursor.FromGeneratorOuter(outer, outerValue, asynchronous, outerSpan, context);
+                // Invalid outer acquisition creates no escaping closure. Admit
+                // retention before publication, after the cursor can be cleaned up.
+                ChargeClosureRetention(context.FunctionClosureContext, governor, span);
+                if (code.RequiresLocalVariableMirroring) RetainLocalsForLambda(context.FunctionClosureContext);
                 frame.Variables[".0"] = outer.Iterator;
                 generator._interpreter!.SeedGeneratorOuter(outer.Iterator, cursor);
                 cursor = null; // ownership transferred to the retained frame

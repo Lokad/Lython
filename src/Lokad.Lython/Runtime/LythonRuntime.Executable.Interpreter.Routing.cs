@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        private void RouteRuntimeException(LythonRuntimeException ex, LythonSourceSpan span)
+        private bool TryRouteRuntimeException(LythonRuntimeException ex, LythonSourceSpan span)
         {
             var previousActive = _context.Services.CurrentException;
             if (previousActive is not null && !ReferenceEquals(ex.OriginalPythonException, previousActive))
@@ -35,12 +35,21 @@ internal sealed partial class LythonRuntime
             var previousPending = _pendingAbrupt;
             _delegation = null;
             _injectedException = null;
+            // Most functions have no handlers. Avoid the large abrupt-routing
+            // path while unwinding a stack-admission failure, and let the catch
+            // rethrow the original CLR exception instead of throwing it anew.
+            if (_codeObject.ExceptionRegions.Count == 0)
+            {
+                AbandonFrame(span);
+                return false;
+            }
             if (!TryHandleAbrupt(_codeObject, _context, ref _stack, _blockEntryStackDepths, _currentBlockIndex,
                 new PendingException(ex), span, ref _pendingAbrupt, ref _currentBlockIndex, out var matchedRegion))
             {
                 var failure = _pendingAbrupt is PendingException unhandled ? unhandled.Exception : ex;
                 AbandonFrame(span);
-                throw failure;
+                if (!ReferenceEquals(failure, ex)) throw failure;
+                return false;
             }
 
             var routedToHandler = _pendingAbrupt is null;
@@ -63,6 +72,7 @@ internal sealed partial class LythonRuntime
                 _context.Services.SetCurrentException(
                     routedToHandler ? installed : CreatePythonExceptionInstance(routedException, _context));
             }
+            return true;
         }
     }
 }

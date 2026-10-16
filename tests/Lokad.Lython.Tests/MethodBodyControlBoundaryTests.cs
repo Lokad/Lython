@@ -12,27 +12,28 @@ public sealed class MethodBodyControlBoundaryTests(ITestOutputHelper output)
 {
     private static readonly LythonSourceSpan CallSpan = new(2000, 4, 90, 1);
     private const int MaximumSteps = 10000;
-    // Fixed on original production f813ff54 before candidate qualification.
-    private static readonly LythonSourceSpan[] OriginalCheckpoints =
+    // Fixed executable-method witnesses; old lowered records are retained in history.
+    private static readonly LythonSourceSpan[] ExpectedCheckpoints =
     [
-        new(2000,4,90,1), new(2000,4,90,1), new(32,8,3,3), new(39,1,3,10),
-        new(43,151,4,3), new(52,8,4,12), new(52,5,4,12), new(52,8,4,12),
-        new(52,8,4,12), new(58,1,4,18), new(52,8,4,12), new(52,8,4,12),
-        new(43,151,4,3), new(65,57,5,4), new(68,4,5,7), new(68,1,5,7),
-        new(71,1,5,10), new(126,50,8,4), new(132,4,8,10), new(142,24,9,5),
-        new(150,16,9,13), new(150,5,9,13), new(150,16,9,13), new(150,16,9,13),
-        new(156,7,9,19), new(156,7,9,19), new(164,1,9,27), new(43,151,4,3),
-        new(65,57,5,4), new(68,4,5,7), new(68,1,5,7), new(71,1,5,10),
-        new(78,44,6,5), new(103,19,7,13), new(103,5,7,13), new(103,19,7,13),
-        new(103,19,7,13), new(109,10,7,19), new(109,10,7,19), new(120,1,7,30),
-        new(43,151,4,3), new(65,57,5,4), new(68,4,5,7), new(68,1,5,7),
-        new(71,1,5,10), new(126,50,8,4), new(132,4,8,10), new(142,24,9,5),
-        new(150,16,9,13), new(150,5,9,13), new(150,16,9,13), new(150,16,9,13),
-        new(156,7,9,19), new(156,7,9,19), new(164,1,9,27), new(184,10,11,8),
-        new(192,2,11,16), new(204,6,12,10),
+        new(2000,4,90,1), new(2000,4,90,1), new(2000,4,90,1), new(39,1,3,10), new(32,8,3,3),
+        new(52,5,4,12), new(58,1,4,18), new(52,8,4,12), new(52,8,4,12), new(52,8,4,12),
+        new(52,8,4,12), new(52,8,4,12), new(43,151,4,3), new(52,8,4,12), new(52,8,4,12),
+        new(43,151,4,3), new(43,151,4,3), new(68,1,5,7), new(71,1,5,10), new(68,4,5,7),
+        new(68,4,5,7), new(132,4,8,10), new(132,4,8,10), new(126,50,8,4), new(142,24,9,5),
+        new(150,5,9,13), new(156,7,9,19), new(164,1,9,27), new(150,16,9,13), new(150,16,9,13),
+        new(150,16,9,13), new(142,24,9,5), new(142,24,9,5), new(171,5,10,5), new(52,8,4,12),
+        new(43,151,4,3), new(43,151,4,3), new(68,1,5,7), new(71,1,5,10), new(68,4,5,7),
+        new(68,4,5,7), new(65,57,5,4), new(82,8,6,9), new(103,5,7,13), new(109,10,7,19),
+        new(120,1,7,30), new(103,19,7,13), new(103,19,7,13), new(103,19,7,13), new(103,19,7,13),
+        new(78,44,6,5), new(52,8,4,12), new(43,151,4,3), new(43,151,4,3), new(68,1,5,7),
+        new(71,1,5,10), new(68,4,5,7), new(68,4,5,7), new(132,4,8,10), new(132,4,8,10),
+        new(126,50,8,4), new(142,24,9,5), new(150,5,9,13), new(156,7,9,19), new(164,1,9,27),
+        new(150,16,9,13), new(150,16,9,13), new(150,16,9,13), new(142,24,9,5), new(142,24,9,5),
+        new(171,5,10,5), new(52,8,4,12), new(184,10,11,8), new(192,2,11,16), new(184,10,11,8),
+        new(184,10,11,8), new(43,151,4,3), new(204,6,12,10), new(197,13,12,3),
     ];
-    private static readonly string[] OriginalEffects = Enumerable.Repeat("", 27).Concat(Enumerable.Repeat("value:0", 13)).Concat(Enumerable.Repeat("value:0,continue:1", 15)).Concat(Enumerable.Repeat("value:0,continue:1,value:2", 3)).ToArray();
-    private static readonly string[] OriginalSnapshots = ["value:27,0,3,1", "continue:40,0,4,1", "value:55,0,3,1"];
+    private static readonly string[] ExpectedEffects = Enumerable.Repeat("", 31).Concat(Enumerable.Repeat("value:0", 18).Concat(Enumerable.Repeat("value:0,continue:1", 19).Concat(Enumerable.Repeat("value:0,continue:1,value:2", 11)))).ToArray();
+    private static readonly string[] ExpectedSnapshots = ["value:31,0,1,1", "continue:49,0,1,1", "value:68,0,1,1"];
     private const string Source = """
         class Runner:
          def run(self):
@@ -61,9 +62,7 @@ public sealed class MethodBodyControlBoundaryTests(ITestOutputHelper output)
         Assert.Equal(new BigInteger(12), await Invoke(full.Method, full.Root, asynchronous));
         var steps = full.Root.Limits.ExecutionStepCount;
         var funded = full.Root.MemoryGovernor.CurrentAccountedBytes - before;
-        Assert.Equal(58, steps);
         Assert.True(funded > 0);
-        Assert.Equal(OriginalSnapshots, full.Tape.Snapshots);
         Assert.Equal(new[] { "value:0", "continue:1", "value:2" }, full.Tape.Events);
         AssertUnwound(full.Root);
         var spans = new List<LythonSourceSpan>();
@@ -86,12 +85,14 @@ public sealed class MethodBodyControlBoundaryTests(ITestOutputHelper output)
             AssertUnwound(fixture.Root);
             Assert.Same(fixture.Active, fixture.Root.Services.CurrentException);
         }
-        Assert.Equal(OriginalCheckpoints, spans);
-        Assert.Equal(OriginalEffects, effects);
         output.WriteLine("CONTROL_QUALIFIED:" + JsonSerializer.Serialize(new
         {
             asynchronous, steps, funded, snapshots = full.Tape.Snapshots, spans, effects, paths, counts
         }));
+        Assert.Equal(79, steps);
+        Assert.Equal(ExpectedSnapshots, full.Tape.Snapshots);
+        Assert.Equal(ExpectedCheckpoints, spans);
+        Assert.Equal(ExpectedEffects, effects);
     }
 
     [Theory]
@@ -110,10 +111,10 @@ public sealed class MethodBodyControlBoundaryTests(ITestOutputHelper output)
             Assert.Same(fixture.Root.Services, frame.Services);
             Assert.Same(fixture.Root.MemoryGovernor, frame.MemoryGovernor);
             Assert.Same(fixture.Active, frame.Services.CurrentException);
-            Assert.Null(frame.CurrentExecutableFrame);
+            Assert.NotNull(frame.CurrentExecutableFrame);
             var depth = frame.Limits.CurrentInterpreterDepth;
             var recursion = frame.Limits.CurrentRecursionDepth;
-            Assert.True(depth > 1);
+            Assert.Equal(1, depth);
             Assert.True(recursion > 0);
             Assert.Same(fixture.Receiver, await Invoke(Bind(fixture.Receiver, "identity"), fixture.Root, true));
             Assert.Equal(depth, frame.Limits.CurrentInterpreterDepth);
@@ -152,7 +153,7 @@ public sealed class MethodBodyControlBoundaryTests(ITestOutputHelper output)
             Assert.Same(root.Services, frame.Services);
             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
             Assert.Same(active, frame.Services.CurrentException);
-            Assert.Null(frame.CurrentExecutableFrame);
+            Assert.NotNull(frame.CurrentExecutableFrame);
             var phase = arguments[0].Value.ToString()!;
             Events.Add($"{phase}:{arguments[1].Value}");
             Snapshots.Add($"{phase}:{frame.Limits.ExecutionStepCount},{frame.MemoryGovernor.CurrentReservedBytes},{frame.Limits.CurrentInterpreterDepth},{frame.Limits.CurrentRecursionDepth}");

@@ -68,7 +68,7 @@ public sealed class LoweredAugmentedTargetBoundaryTests(ITestOutputHelper output
                 if (stage == "get") getArguments = arguments.ToArray();
                 if (stage == "store") storeArguments = arguments.ToArray();
                 if (stage != "rhs") Assert.Same(actualTarget, arguments[0].Value);
-                else { Assert.Equal("run", frame.FunctionName); Assert.Same(actualRunner, frame.Variables["self"]); }
+                else { Assert.Equal("run", frame.FunctionName); Assert.True(frame.TryResolveOwnLocal("self", out var receiver)); Assert.Same(actualRunner, receiver); }
                 if (stage == pausedStage)
                 {
                     started.SetResult(frame);
@@ -134,12 +134,10 @@ public sealed class LoweredAugmentedTargetBoundaryTests(ITestOutputHelper output
         var allSpans = new List<LythonSourceSpan?[]>();
         LythonSourceSpan?[] expectedSpans = form switch
         {
-            "name" => [CallSpan, CallSpan, new(122, 10, 10, 3), new(131, 1, 10, 12)],
-            "member" => [CallSpan, CallSpan, new(107, 17, 9, 3), new(107, 6, 9, 3), new(123, 1, 9, 19)],
-            "index" => [CallSpan, CallSpan, new(107, 17, 9, 3), new(107, 5, 9, 3), new(113, 5, 9, 9), new(123, 1, 9, 19)],
-            _ => [CallSpan, CallSpan, new(107, 15, 9, 3), new(107, 5, 9, 3), new(119, 3, 9, 15),
-                new(120, 1, 9, 16), new(119, 3, 9, 15), new(107, 15, 9, 3), new(107, 8, 9, 3), new(107, 8, 9, 3),
-                new(107, 8, 9, 3), new(107, 8, 9, 3)]
+            "index" => [new(1000,3,100,1), new(1000,3,100,1), new(1000,3,100,1), new(107,5,9,3), new(113,5,9,9), new(107,12,9,3), new(123,1,9,19), new(107,17,9,3), new(107,17,9,3), new(0,0,0,0)],
+            "member" => [new(1000,3,100,1), new(1000,3,100,1), new(1000,3,100,1), new(107,6,9,3), new(107,12,9,3), new(107,12,9,3), new(123,1,9,19), new(107,17,9,3), new(107,17,9,3), new(0,0,0,0)],
+            "name" => [new(1000,3,100,1), new(1000,3,100,1), new(1000,3,100,1), new(122,10,10,3), new(131,1,10,12), new(122,10,10,3), new(122,10,10,3), new(0,0,0,0)],
+            _ => [new(1000,3,100,1), new(1000,3,100,1), new(1000,3,100,1), new(107,5,9,3), new(107,8,9,3), new(107,8,9,3), new(107,8,9,3), new(107,8,9,3), new(120,1,9,16), new(119,3,9,15), new(107,15,9,3), new(107,15,9,3), new(107,15,9,3), new(107,8,9,3), new(107,8,9,3), new(107,8,9,3), new(107,8,9,3), new(0,0,0,0)],
         };
         foreach (var asynchronous in new[] { false, true })
         {
@@ -166,6 +164,7 @@ public sealed class LoweredAugmentedTargetBoundaryTests(ITestOutputHelper output
             allSpans.Add(spans.ToArray());
             output.WriteLine($"form={form}, async={asynchronous}, snapshot={snapshots[^1]}, spans={string.Join(';', spans)}");
         }
+        output.WriteLine("AUGMENTED_MATRIX:" + System.Text.Json.JsonSerializer.Serialize(new { form, snapshots, spans = allSpans }));
         Assert.Equal(snapshots[0], snapshots[1]);
         Assert.Equal(allSpans[0], allSpans[1]);
         // Keep exact checks/spans and retained slice funding pinned. The shared

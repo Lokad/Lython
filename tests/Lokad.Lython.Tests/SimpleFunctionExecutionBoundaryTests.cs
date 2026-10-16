@@ -33,7 +33,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 var error = Assert.Throws<LythonRuntimeException>(() => Invoke(function, [CallArgumentValue.Positional(new BigInteger(5))], context, driver));
                 Assert.Equal("RuntimeError", error.ExceptionType);
                 Assert.Equal($"maximum execution step count exceeded ({fuel})", error.Message);
-                var expected = fuel == 1 ? CallSpan : fuel == 2 ? null : code.Blocks[code.EntryBlockIndex].InstructionArray[fuel - 3].Span;
+                var expected = fuel <= 2 ? CallSpan : code.Blocks[code.EntryBlockIndex].InstructionArray[fuel - 3].Span;
                 Assert.Same(expected, error.Span);
                 Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
                 if (fuel >= 2) Assert.Equal("/callee.py", error.SourcePath);

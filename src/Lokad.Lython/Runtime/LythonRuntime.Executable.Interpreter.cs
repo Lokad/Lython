@@ -874,7 +874,7 @@ internal sealed partial class LythonRuntime
                         }
                         catch (LythonRuntimeException ex)
                         {
-                            RouteRuntimeException(ex, instruction.Span);
+                            if (!TryRouteRuntimeException(ex, instruction.Span)) throw;
                             jumped = true;
                         }
 

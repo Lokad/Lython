@@ -41,12 +41,21 @@ internal sealed class LoweredScript
         return LowerExpression(expression);
     }
 
-    private static IReadOnlyList<LoweredStatement> LowerStatements(IReadOnlyList<StatementSyntax> statements)
+    private static IReadOnlyList<LoweredStatement> LowerStatements(IReadOnlyList<StatementSyntax> statements, bool prepareDirectFunctions = false)
     {
         var lowered = new List<LoweredStatement>(statements.Count);
         foreach (var statement in statements)
         {
-            lowered.Add(LowerStatement(statement));
+            var item = LowerStatement(statement);
+            if (prepareDirectFunctions && item is LoweredFunctionDefinitionStatement { GeneratorCode: null, TypeParameters: null } function)
+            {
+                item = function with
+                {
+                    PreparedCode = ExecutableScript.CompileFunctionCode(function.Syntax.DeclaredName,
+                        function.Parameters, function.Body, ScopeDirectiveFactsCollector.ForFunction(function.Syntax), null, null)
+                };
+            }
+            lowered.Add(item);
         }
 
         return lowered;
@@ -78,7 +87,7 @@ internal sealed class LoweredScript
                 classDefinition.Decorators.Select(LowerExpression).ToArray(),
                 classDefinition.Bases.Select(LowerExpression).ToArray(),
                 classDefinition.KeywordArguments.Select(argument => new LoweredCallArgument(CallArgumentForm.Keyword(argument.Name), LowerExpression(argument.Value))).ToArray(),
-                LowerStatements(classDefinition.Body)),
+                LowerStatements(classDefinition.Body, prepareDirectFunctions: classDefinition.TypeParameters is null)),
             AssignmentStatementSyntax assignment
                 => new LoweredNameAssignmentStatement(
                     assignment,

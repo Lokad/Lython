@@ -431,10 +431,14 @@ internal sealed partial class LythonRuntime
         BoundCallArguments boundArguments,
         int[] argumentSlotMap,
         IReadOnlyList<ExecutableCell>? closureCells,
-        bool argumentsAreLocals = false)
+        bool argumentsAreLocals = false,
+        LythonSourceSpan? entrySpan = null)
     {
         var previousExecutableFrame = context.CurrentExecutableFrame;
-        context.EnterInterpreterFrame(null);
+        // A function call span comes from PyExecutableFunction after its
+        // invocation admission. Module/standalone entries own their depth.
+        if (entrySpan is null) context.EnterInterpreterFrame(null);
+        else context.Services.Guards.CheckFunctionBody(entrySpan);
         try
         {
             var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells, argumentsAreLocals);
@@ -448,7 +452,7 @@ internal sealed partial class LythonRuntime
         finally
         {
             context.LeaveExecutableSlots(previousExecutableFrame);
-            context.LeaveInterpreterFrame();
+            if (entrySpan is null) context.LeaveInterpreterFrame();
         }
     }
 
@@ -461,10 +465,14 @@ internal sealed partial class LythonRuntime
         BoundCallArguments boundArguments,
         int[] argumentSlotMap,
         IReadOnlyList<ExecutableCell>? closureCells,
-        bool argumentsAreLocals = false)
+        bool argumentsAreLocals = false,
+        LythonSourceSpan? entrySpan = null)
     {
         var previousExecutableFrame = context.CurrentExecutableFrame;
-        context.EnterInterpreterFrame(null);
+        // A function call span comes from PyExecutableFunction after its
+        // invocation admission. Module/standalone entries own their depth.
+        if (entrySpan is null) context.EnterInterpreterFrame(null);
+        else context.Services.Guards.CheckFunctionBody(entrySpan);
         try
         {
             var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells, argumentsAreLocals);
@@ -475,7 +483,7 @@ internal sealed partial class LythonRuntime
         finally
         {
             context.LeaveExecutableSlots(previousExecutableFrame);
-            context.LeaveInterpreterFrame();
+            if (entrySpan is null) context.LeaveInterpreterFrame();
         }
     }
 

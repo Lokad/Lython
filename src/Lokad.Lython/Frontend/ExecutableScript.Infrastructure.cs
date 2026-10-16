@@ -389,7 +389,7 @@ internal sealed partial class ExecutableScript
                 throw new GeneratorLoweringException("Suspension in nested definition decorators, defaults or annotations is not supported.", functionDefinition.Span);
             var codeObject = CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
                 functionDefinition.Parameters, functionDefinition.Body,
-                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax), functionDefinition.GeneratorCode);
+                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax), functionDefinition.GeneratorCode, ChildClosureCandidates());
 
             var defaultValues = functionDefinition.Parameters
                 .Where(parameter => parameter.DefaultValue is not null)
@@ -400,25 +400,6 @@ internal sealed partial class ExecutableScript
 
             _functions.Add(new ExecutableFunctionBinding(functionDefinition, codeObject, defaultValues));
             return _functions.Count - 1;
-        }
-
-        private ExecutableCodeObject? CompileFunctionCode(string name,
-            IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body,
-            ScopeDirectiveFacts scopeFacts, ExecutableCodeObject? generatorCode)
-        {
-            try
-            {
-                if (generatorCode is not null) return generatorCode;
-                // Forward transitive free names as before. Comprehension names
-                // are inner bindings, even at module scope or when the caller
-                // declares a same-named global; add them after that exclusion.
-                return new Builder(parameters, ChildClosureCandidates(), scopeFacts)
-                    .CompileCodeObject(name, body);
-            }
-            catch (ExecutableLoweringFallbackException)
-            {
-                return null;
-            }
         }
 
         private IEnumerable<string>? ChildClosureCandidates()

@@ -13,6 +13,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         BoundCallArguments arguments,
         int[] argumentSlotMap,
+        LythonSourceSpan entrySpan,
         out object result)
     {
         result = PyNone.Instance;
@@ -32,7 +33,7 @@ internal sealed partial class LythonRuntime
             return false;
 
         var previousFrame = context.CurrentExecutableFrame;
-        context.EnterInterpreterFrame(null);
+        context.Services.Guards.CheckFunctionBody(entrySpan);
         try
         {
             var entryException = context.Services.CurrentException;
@@ -71,7 +72,6 @@ internal sealed partial class LythonRuntime
         finally
         {
             context.LeaveExecutableSlots(previousFrame);
-            context.LeaveInterpreterFrame();
         }
     }
 
