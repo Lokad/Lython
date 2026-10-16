@@ -16,6 +16,13 @@ public sealed class JsonTokenExecutionTests
         { "lenient", "import json\nprint(json.dumps(json.loads('\"a'+chr(1)+'b\"',strict=False)))", "\"a\\u0001b\"\n" },
         { "errors", "import json\nfor source in ['\"café😀\" trailing','{\"café\":\"😀\",\"x\":}','\"unterminated',r'\"bad\\q\"']:\n try:json.loads(source)\n except json.JSONDecodeError as e:print(e.pos,e.doc==source)", "8 True\n16 True\n0 True\n4 True\n" },
         { "roundtrip", "import json\nvalue=['café😀','',{'a':'b','note':'line\\nquoted\\\"'}]\nprint(json.dumps(json.loads(json.dumps(value,ensure_ascii=False)),sort_keys=True))", "[\"caf\\u00e9\\ud83d\\ude00\", \"\", {\"a\": \"b\", \"note\": \"line\\nquoted\\\"\"}]\n" },
+        { "literal-values", "import json\nprint(json.loads('[true,false,null]'))", "[True, False, None]\n" },
+        { "literal-prefix", "import json\nd=json.JSONDecoder()\nfor text in ['truetrash','falsex','nullx']:print(d.raw_decode(text))", "(True, 4)\n(False, 5)\n(None, 4)\n" },
+        { "literal-unicode-prefix", "import json\nd=json.JSONDecoder()\nfor text in ['😀true','éfalse','λnull']:print(d.raw_decode(text,1))", "(True, 5)\n(False, 6)\n(None, 5)\n" },
+        { "literal-errors", "import json\nfor text in ['tru','fals','nul','True','FALSE','NULL','true false','[true,false,nullx]']:\n try:json.loads(text)\n except json.JSONDecodeError as error:print(error.msg,error.pos,error.lineno,error.colno)", "Expecting value 0 1 1\nExpecting value 0 1 1\nExpecting value 0 1 1\nExpecting value 0 1 1\nExpecting value 0 1 1\nExpecting value 0 1 1\nExtra data 5 1 6\nExpecting ',' delimiter 16 1 17\n" },
+        { "literal-ignored-hooks", "import json\nevents=[]\ndef hook(value):\n events.append(value)\n return value\nprint(json.loads('[true,false,null]',parse_int=hook,parse_float=hook,parse_constant=hook))\nprint(events)", "[True, False, None]\n[]\n" },
+        { "literal-constant-hooks", "import json\nevents=[]\ndef hook(value):\n events.append(value)\n return value\nprint(json.loads('[NaN,Infinity,-Infinity]',parse_constant=hook))\nprint(events)", "['NaN', 'Infinity', '-Infinity']\n['NaN', 'Infinity', '-Infinity']\n" },
+        { "literal-object-hooks", "import json\nevents=[]\ndef hook(pairs):\n events.append(pairs)\n return dict(pairs)\nprint(json.loads('{\"café\":[true,false,null],\"z\":null}',object_pairs_hook=hook))\nprint(events)", "{'café': [True, False, None], 'z': None}\n[[('café', [True, False, None]), ('z', None)]]\n" },
     };
 
     [Theory]

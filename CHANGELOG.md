@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Dispatch JSON true/false/null synchronously alongside strings through both execution APIs, removing their generic async-token route. Preserve scalar-frame admission, Python prefix/error rules, hooks, cancellation, retained ownership and exact fuel/spans.
+
 - Report Python `Extra data` for trailing JSON input and include character coordinates in parser-produced JSON errors. Return the ordinary single formatted exception argument, removing the special three-argument reconstruction and trailing-character conversion. Preserve payload fields, callbacks, ownership and raw-decode suffixes.
 
 - Bind eligible executable functions into their final local-capacity buffer, removing the separate local array and parameter copy. Admit unpooled capacity before binding and release it after all users finish, including suspended defaults and bodies; retain independent funding for escaping cells, snapshots and values. Tight budgets can now refuse before binding errors or default callbacks.

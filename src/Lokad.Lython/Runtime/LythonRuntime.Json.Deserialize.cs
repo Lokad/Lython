@@ -121,12 +121,32 @@ internal sealed partial class LythonRuntime
                 throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
             }
 
-            // Keys and string values cannot suspend. Keep the same scalar-frame
-            // admission and decoder, without constructing an async state machine.
-            if (bytes.Span[position] == (byte)'"')
+            // Strings and true/false/null cannot suspend. Keep the same scalar
+            // admission and prefix rules without entering the async token helper.
+            var first = bytes.Span[position];
+            if (first is (byte)'"' or (byte)'t' or (byte)'f' or (byte)'n')
             {
                 context.EnterInterpreterFrame(span);
-                try { return new(ReadJsonString(input, options.Strict, position, context, span)); }
+                try
+                {
+                    if (first == (byte)'"') return new(ReadJsonString(input, options.Strict, position, context, span));
+                    if (TryMatchJsonLiteral(bytes.Span, position, "true", out var trueEnd))
+                    {
+                        return new(((object)true, trueEnd));
+                    }
+
+                    if (TryMatchJsonLiteral(bytes.Span, position, "false", out var falseEnd))
+                    {
+                        return new(((object)false, falseEnd));
+                    }
+
+                    if (TryMatchJsonLiteral(bytes.Span, position, "null", out var nullEnd))
+                    {
+                        return new((PyNone.Instance, nullEnd));
+                    }
+
+                    throw CreateJsonExpectingError(input, position, JsonIncompleteExpectation.Value, span, context);
+                }
                 finally { context.LeaveInterpreterFrame(); }
             }
 
@@ -157,25 +177,8 @@ internal sealed partial class LythonRuntime
             context.EnterInterpreterFrame(span);
             try
             {
-                // CPython prefix rules: literals match case-sensitive prefixes
-                // with no terminator check, and numbers match NUMBER_RE, so
-                // adjacent values end exactly where CPython ends them (whole
-                // document callers then report the remainder as trailing data).
-                if (TryMatchJsonLiteral(bytes.Span, position, "true", out var trueEnd))
-                {
-                    return ((object)true, trueEnd);
-                }
-
-                if (TryMatchJsonLiteral(bytes.Span, position, "false", out var falseEnd))
-                {
-                    return ((object)false, falseEnd);
-                }
-
-                if (TryMatchJsonLiteral(bytes.Span, position, "null", out var nullEnd))
-                {
-                    return (PyNone.Instance, nullEnd);
-                }
-
+                // Numbers match Python's prefix grammar; a trailing suffix
+                // belongs to whole-document validation, not this token.
                 if (TryMatchJsonNumber(bytes.Span, position, context, span, out var numberEnd))
                 {
                     using var numberScratch = context.MemoryGovernor.ReserveTemporary(checked(4L * (numberEnd - position)), span);

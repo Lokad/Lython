@@ -40,6 +40,8 @@ public sealed class JsonSuspendingCallbackTests
     [InlineData("json.JSONEncoder(default=read).encode([{1}])", "[\"v\"]")]
     [InlineData("''.join(json.JSONEncoder(default=read).iterencode([{1}]))", "[\"v\"]")]
     [InlineData("json.dumps({1}, cls=E)", "\"v\"")]
+    [InlineData("json.loads('{\"x\":[true,false,null]}', object_hook=read)", "v")]
+    [InlineData("json.loads('{\"x\":[true,false,null]}', object_pairs_hook=read)", "v")]
     public async Task HooksAndSelectedClassesAwaitHostEffects(string expression, string expected)
     {
         var compiled = new LythonEngine().Compile(Definitions + "\nreturn str(" + expression + ")");
@@ -80,6 +82,7 @@ public sealed class JsonSuspendingCallbackTests
     [Theory]
     [InlineData("json.loads('7', parse_int=read)")]
     [InlineData("''.join(json.JSONEncoder(default=read).iterencode([{1}]))")]
+    [InlineData("json.loads('{\"x\":[true,false,null]}', object_hook=read)")]
     public async Task SuspendedCallbacksCancelAndCompiledScriptsRemainReusable(string expression)
     {
         var compiled = new LythonEngine().Compile(Definitions + "\nreturn str(" + expression + ")");
