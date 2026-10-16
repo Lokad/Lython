@@ -977,8 +977,14 @@ operator. The shared three-slot store consumes the result last. Receiver/key
 expressions run once; native indices are converted again at store time, after the
 RHS, while mappings and user handlers keep the original key. Ordinary and yielding
 forms share this path without prepared read dictionaries or fallback-only mirroring.
-In-place mutations remain visible if the subsequent store fails. Required slice
-and other lowered routes retain their existing behavior.
+In-place mutations remain visible if the subsequent store fails.
+Slice augmented assignments retain receiver/start/stop/step in four frame slots
+through the read and RHS, then use the shared five-slot slice store. Native bounds
+are converted again after the RHS. User handlers receive one slice-key object for
+both get and store, retained in an existing operand slot. Ordinary and yielding
+forms use this path; yielding ordinary member/slice stores also use the shared
+store operations. Prepared read/store dictionaries and their wrappers are removed.
+Required deletion, lazy and other lowered routes retain their existing behavior.
 Chained assignments still store left to right and retain earlier mutations if a
 later target fails. Statement checkpoints and target diagnostics retain their own
 spans. Augmented and explicitly yielding target routes retain

@@ -17,7 +17,6 @@ public sealed class ExecutableAugmentedMemberTests
         Assert.False(code.RequiresLocalVariableMirroring);
         Assert.Single(code.Constants.OfType<ExecutableStoreMember>());
         Assert.Single(code.Blocks.SelectMany(b => b.Instructions), i => i.OpCode == ExecutableOpCode.LoadMember);
-        Assert.Empty(code.Constants.OfType<ExecutableReadPreparedTarget>());
     }
 
     [Theory]

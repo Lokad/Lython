@@ -20,8 +20,6 @@ public sealed class ExecutableAugmentedSubscriptTests
         Assert.Equal(generator, code.RequiresLocalVariableMirroring);
         Assert.Single(code.Constants.OfType<ExecutableStoreSubscript>());
         Assert.Single(code.Constants.OfType<ExecutableReadRetainedSubscript>());
-        Assert.Empty(code.Constants.OfType<ExecutableReadPreparedTarget>());
-        Assert.Empty(code.Constants.OfType<ExecutableStorePreparedTarget>());
     }
 
     [Fact]
@@ -32,7 +30,6 @@ public sealed class ExecutableAugmentedSubscriptTests
         Assert.Empty(code.StatementFallbacks);
         Assert.Empty(code.ExpressionFallbacks);
         Assert.Single(code.Constants.OfType<ExecutableStoreSubscript>());
-        Assert.Empty(code.Constants.OfType<ExecutableStorePreparedTarget>());
     }
 
     [Theory]

@@ -1,25 +1,16 @@
 namespace Lokad.Lython.Frontend;
 
 internal sealed record ExecutableUnpackValues(UnpackingLayout Layout) : ExecutableOperation;
-internal sealed record ExecutableStorePreparedTarget(AssignmentTargetSyntax Target, bool ValueLast) : ExecutableOperation;
 internal sealed record ExecutableReadRetainedSubscript : ExecutableOperation;
 internal sealed record ExecutableStoreSubscript(LythonSourceSpan TargetSpan, bool ValueLast = false) : ExecutableOperation;
 internal sealed record ExecutableStoreMember(string MemberName, LythonSourceSpan TargetSpan, bool ValueLast = false) : ExecutableOperation;
-internal sealed record ExecutableStoreSlice(LythonSourceSpan TargetSpan) : ExecutableOperation;
-internal sealed record ExecutableReadPreparedTarget(AssignmentTargetSyntax Target) : ExecutableOperation;
+internal sealed record ExecutableReadRetainedSlice : ExecutableOperation;
+internal sealed record ExecutableStoreSlice(LythonSourceSpan TargetSpan, bool ValueLast = false) : ExecutableOperation;
 
 internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
     {
-        private int CompileSuspendingStoreTarget(AssignmentTargetSyntax target, LythonSourceSpan span, int block)
-        {
-            foreach (var read in AssignmentTargetFacts.Reads(target))
-                block = CompileExpression(LoweredScript.LowerExpression(read), block);
-            EmitOperation(new ExecutableStorePreparedTarget(target, ValueLast: false), span, block);
-            return block;
-        }
-
         private int CompileLoopTarget(LoopTargetSyntax target, LythonSourceSpan span, int block)
         {
             switch (target)
@@ -46,17 +37,6 @@ internal sealed partial class ExecutableScript
                 AddInstruction(block, ExecutableInstruction.StoreGlobal(InternName(name), span));
             }
             else CompileStoreBoundName(name, span, block);
-        }
-
-        private int CompileSuspendingAugmentedAssignment(LoweredAugmentedAssignmentStatement statement, int block)
-        {
-            foreach (var read in AssignmentTargetFacts.Reads(statement.Target.Syntax))
-                block = CompileExpression(LoweredScript.LowerExpression(read), block);
-            EmitOperation(new ExecutableReadPreparedTarget(statement.Target.Syntax), statement.Span, block);
-            block = CompileExpression(statement.Expression, block);
-            AddInstruction(block, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(statement.Assignment.Operator), statement.Span));
-            EmitOperation(new ExecutableStorePreparedTarget(statement.Target.Syntax, ValueLast: true), statement.Span, block);
-            return block;
         }
     }
 }

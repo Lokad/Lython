@@ -4,8 +4,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed record PreparedUserSliceTarget(PyInstance Receiver, PySlice Key);
-
     private sealed partial class ExecutableFrameInterpreter
     {
         private async ValueTask ExecutePreparedTargetOperationAsync(ExecutableOperation operation, LythonSourceSpan span, bool asynchronous)
@@ -59,18 +57,53 @@ internal sealed partial class LythonRuntime
                     finally { _stack.RemoveTail(3); }
                     break;
                 }
+                case ExecutableReadRetainedSlice:
+                {
+                    var first = _stack.Count - 4;
+                    try
+                    {
+                        var receiver = _stack[first];
+                        var start = _stack[first + 1];
+                        var stop = _stack[first + 2];
+                        var step = _stack[first + 3];
+                        object value;
+                        if (receiver is PyInstance instance)
+                        {
+                            var key = CreateSliceValue(start, stop, step, span, _context);
+                            // The existing start slot retains the exact key for the store.
+                            _stack[first + 1] = key;
+                            value = asynchronous
+                                ? await GetUserItemAsync(instance, key, _context, span).ConfigureAwait(false)
+                                : GetUserItem(instance, key, _context, span);
+                        }
+                        else value = asynchronous
+                            ? await ReadSliceValueAsync(receiver, start, stop, step, span, _context).ConfigureAwait(false)
+                            : ReadSliceValue(receiver, start, stop, step, span, _context);
+                        PushObserved(value, span);
+                    }
+                    catch { _stack.RemoveTail(_stack.Count - first); throw; }
+                    break;
+                }
                 case ExecutableStoreSlice slice:
                 {
                     var first = _stack.Count - 5;
                     try
                     {
-                        var receiver = _stack[first + 1];
-                        var start = _stack[first + 2];
-                        var stop = _stack[first + 3];
-                        var step = _stack[first + 4];
-                        if (asynchronous)
-                            await ExecuteSliceAssignmentAsync(receiver, start, stop, step, _stack[first], slice.TargetSpan, _context).ConfigureAwait(false);
-                        else ExecuteSliceAssignment(receiver, start, stop, step, _stack[first], slice.TargetSpan, _context);
+                        var receiverIndex = first + (slice.ValueLast ? 0 : 1);
+                        var receiver = _stack[receiverIndex];
+                        var start = _stack[receiverIndex + 1];
+                        var stop = _stack[receiverIndex + 2];
+                        var step = _stack[receiverIndex + 3];
+                        var value = _stack[first + (slice.ValueLast ? 4 : 0)];
+                        if (slice.ValueLast && receiver is PyInstance)
+                        {
+                            if (asynchronous)
+                                await SetHeaderSubscriptAsync(receiver, (PySlice)start, value, slice.TargetSpan, _context).ConfigureAwait(false);
+                            else SetSubscriptValue(receiver, (PySlice)start, value, slice.TargetSpan, _context);
+                        }
+                        else if (asynchronous)
+                            await ExecuteSliceAssignmentAsync(receiver, start, stop, step, value, slice.TargetSpan, _context).ConfigureAwait(false);
+                        else ExecuteSliceAssignment(receiver, start, stop, step, value, slice.TargetSpan, _context);
                     }
                     finally { _stack.RemoveTail(5); }
                     break;
@@ -113,37 +146,6 @@ internal sealed partial class LythonRuntime
                         }
                     }
                     break;
-                case ExecutableReadPreparedTarget read:
-                    using (var storage = _context.MemoryGovernor.ReserveTemporary(1024, span))
-                    {
-                        var reads = AssignmentTargetFacts.Reads(read.Target).ToArray();
-                        var first = _stack.Count - reads.Length;
-                        var values = CaptureTargetReads(reads, first);
-                        if (read.Target is SliceAssignmentTargetSyntax slice && values[slice.Target] is PyInstance receiver)
-                        {
-                            var key = CreateSliceValue(slice.Start is null ? null : values[slice.Start],
-                                slice.End is null ? null : values[slice.End],
-                                slice.Step is null ? null : values[slice.Step], span, _context);
-                            var prepared = new PreparedUserSliceTarget(receiver, key);
-                            // The receiver is the first captured operand. Retain its evaluated key
-                            // in the same slot until the store or the frame's normal cleanup.
-                            _stack[first] = prepared;
-                            values[slice.Target] = prepared;
-                        }
-                        PushObserved(await ReadPreparedTargetAsync(read.Target, values, _context, span, asynchronous).ConfigureAwait(false), span);
-                    }
-                    break;
-                case ExecutableStorePreparedTarget store:
-                    using (var storage = _context.MemoryGovernor.ReserveTemporary(1024, span))
-                    {
-                        var result = store.ValueLast ? Pop(ref _stack, span) : null;
-                        var reads = AssignmentTargetFacts.Reads(store.Target).ToArray();
-                        var values = CaptureTargetReads(reads, _stack.Count - reads.Length);
-                        _stack.RemoveTail(reads.Length);
-                        result ??= Pop(ref _stack, span);
-                        await StorePreparedTargetAsync(store.Target, values, result, _context, span, asynchronous).ConfigureAwait(false);
-                    }
-                    break;
                 default: throw new InvalidOperationException("Unknown prepared target operation.");
             }
         }
@@ -184,62 +186,6 @@ internal sealed partial class LythonRuntime
                 else ExecuteSliceDeletion(sequence, start, end, step, span, _context);
                 break;
             default: throw new InvalidOperationException("Invalid prepared delete target.");
-        }
-    }
-
-    private static async ValueTask<object> ReadPreparedTargetAsync(AssignmentTargetSyntax target,
-        IReadOnlyDictionary<ExpressionSyntax, object> reads, ExecutionContext _context, LythonSourceSpan span, bool asynchronous)
-    {
-        switch (target)
-        {
-            case SliceAssignmentTargetSyntax slice:
-                var sequence = reads[slice.Target];
-                var start = slice.Start is null ? PyNone.Instance : reads[slice.Start];
-                var end = slice.End is null ? PyNone.Instance : reads[slice.End];
-                var step = slice.Step is null ? PyNone.Instance : reads[slice.Step];
-                if (sequence is PreparedUserSliceTarget prepared)
-                {
-                    return asynchronous ? await GetUserItemAsync(prepared.Receiver, prepared.Key, _context, span).ConfigureAwait(false)
-                        : GetUserItem(prepared.Receiver, prepared.Key, _context, span);
-                }
-                return asynchronous
-                    ? await ReadSliceValueAsync(sequence, start, end, step, span, _context).ConfigureAwait(false)
-                    : ReadSliceValue(sequence, start, end, step, span, _context);
-            default: throw new InvalidOperationException("Prepared reads require an attribute or item target.");
-        }
-    }
-
-    private static async ValueTask StorePreparedTargetAsync(AssignmentTargetSyntax target,
-        IReadOnlyDictionary<ExpressionSyntax, object> reads, object value, ExecutionContext _context, LythonSourceSpan span, bool asynchronous)
-    {
-        switch (target)
-        {
-            case MemberAssignmentTargetSyntax member:
-                var receiver = reads[member.Target];
-                var assigned = asynchronous ? await PyMemberAccess.TryAssignAsync(receiver, member.MemberName, value, _context, span).ConfigureAwait(false)
-                    : PyMemberAccess.TryAssign(receiver, member.MemberName, value, _context, span);
-                if (!assigned) throw RuntimeErrors.Type("Object does not support attribute assignment", span);
-                break;
-            case SliceAssignmentTargetSyntax slice:
-                var sequence = reads[slice.Target];
-                var start = slice.Start is null ? PyNone.Instance : reads[slice.Start];
-                var end = slice.End is null ? PyNone.Instance : reads[slice.End];
-                var step = slice.Step is null ? PyNone.Instance : reads[slice.Step];
-                if (sequence is PreparedUserSliceTarget prepared)
-                {
-                    if (asynchronous) await SetHeaderSubscriptAsync(prepared.Receiver, prepared.Key, value, span, _context).ConfigureAwait(false);
-                    else SetSubscriptValue(prepared.Receiver, prepared.Key, value, span, _context);
-                }
-                else if (sequence is PyInstance)
-                {
-                    var key = CreateSliceValue(start, end, step, span, _context);
-                    if (asynchronous) await SetHeaderSubscriptAsync(sequence, key, value, span, _context).ConfigureAwait(false);
-                    else SetSubscriptValue(sequence, key, value, span, _context);
-                }
-                else if (asynchronous) await ExecuteSliceAssignmentAsync(sequence, start, end, step, value, span, _context).ConfigureAwait(false);
-                else ExecuteSliceAssignment(sequence, start, end, step, value, span, _context);
-                break;
-            default: throw new InvalidOperationException("Prepared stores require an attribute or item target.");
         }
     }
 }

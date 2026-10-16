@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile ordinary and yielding slice augmented assignments with retained frame operands and the shared value-last slice store. Preserve the exact user slice key, native bound re-conversion after the RHS, in-place aliases, async callbacks and admission. Share yielding ordinary member/slice stores; delete the obsolete prepared read/store records, compiler methods, handlers, helpers and user-slice wrapper. Keep required deletion paths.
+
 - Compile ordinary and yielding subscript augmented assignments using captured receiver/key frame slots and the shared value-last store. Remove their statement fallback and prepared read/store branches; route yielding ordinary subscript stores through the same helper. Preserve key identity, native re-conversion after the RHS, in-place aliases, awaited callbacks, admission and cleanup.
 
 - Call user descriptor getter slots raw with descriptor, instance and owner, matching Python's staticmethod/callable behavior and rejecting property/classmethod slots before side effects. Reuse ternary invocation and preserve valid setter/deleter binding, async instance callbacks, cancellation and retained results. Recognize property objects in builtin type reporting.

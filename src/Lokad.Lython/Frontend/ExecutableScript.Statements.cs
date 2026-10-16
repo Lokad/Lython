@@ -153,6 +153,20 @@ internal sealed partial class ExecutableScript
                     return currentBlock;
 
                 case LoweredAugmentedAssignmentStatement augmented:
+                    if (augmented.Target is LoweredSliceAugmentedAssignmentTarget augmentedSlice)
+                    {
+                        currentBlock = CompileExpression(augmentedSlice.Receiver, currentBlock);
+                        foreach (var bound in new[] { augmentedSlice.Start, augmentedSlice.End, augmentedSlice.Step })
+                        {
+                            if (bound is null) AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), augmentedSlice.Span));
+                            else currentBlock = CompileExpression(bound, currentBlock);
+                        }
+                        EmitOperation(new ExecutableReadRetainedSlice(), augmentedSlice.Span, currentBlock);
+                        currentBlock = CompileExpression(augmented.Expression, currentBlock);
+                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
+                        EmitOperation(new ExecutableStoreSlice(augmentedSlice.Span, ValueLast: true), augmented.Span, currentBlock);
+                        return currentBlock;
+                    }
                     if (augmented.Target is LoweredSubscriptAugmentedAssignmentTarget augmentedItem)
                     {
                         currentBlock = CompileExpression(augmentedItem.Receiver, currentBlock);
@@ -175,13 +189,7 @@ internal sealed partial class ExecutableScript
                         return currentBlock;
                     }
                     if (augmented.Target is not LoweredNameAugmentedAssignmentTarget augmentedName)
-                    {
-                        if (_generator && (GeneratorSyntaxFacts.ContainsYield(augmented.Expression.Syntax) ||
-                            AssignmentTargetFacts.Reads(augmented.Target.Syntax).Any(GeneratorSyntaxFacts.ContainsYield)))
-                            return CompileSuspendingAugmentedAssignment(augmented, currentBlock);
-                        AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(assignment), assignment.Span));
-                        return currentBlock;
-                    }
+                        throw new InvalidOperationException("Unknown augmented assignment target.");
 
                     CompileLoadIdentifier(augmentedName.Target.Name, augmented.Span, currentBlock);
                     currentBlock = CompileExpression(augmented.Expression, currentBlock);
@@ -245,8 +253,6 @@ internal sealed partial class ExecutableScript
                 EmitOperation(new ExecutableStoreSubscript(item.Span), span, block);
                 return block;
             }
-            if (_generator && AssignmentTargetFacts.Reads(target).Any(GeneratorSyntaxFacts.ContainsYield))
-                return CompileSuspendingStoreTarget(target, span, block);
             if (target is MemberAssignmentTargetSyntax member)
             {
                 block = CompileExpression(LoweredScript.LowerExpression(member.Target), block);
