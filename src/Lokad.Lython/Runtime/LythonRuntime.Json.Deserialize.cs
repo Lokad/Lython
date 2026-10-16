@@ -27,8 +27,8 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                var decoded = await DecodeJsonPrefixAsync(input, options, context, span, startByte: 0, asynchronous).ConfigureAwait(false);
-                var end = SkipJsonWhitespace(input.Source.Span, decoded.EndByte, context, span);
+                var decoded = await ReadJsonValueAsync(input, options, context, span, 0, 0, asynchronous).ConfigureAwait(false);
+                var end = SkipJsonWhitespace(input.Source.Span, decoded.End, context, span);
                 if (end < input.Source.Length)
                 {
                     throw CreateJsonTrailingDataError(input, end, span, context);
@@ -41,8 +41,6 @@ internal sealed partial class LythonRuntime
                 throw CreateJsonDecodeError(input, ex, span, context);
             }
         }
-
-        private readonly record struct JsonPrefixDecode(object Value, int EndByte);
 
         // Parsing coordinates always refer to the original document. Lenient
         // control escaping is confined to the current string token.
@@ -77,24 +75,6 @@ internal sealed partial class LythonRuntime
             {
                 throw CreateJsonDecodeError(input, ex, span, context);
             }
-        }
-
-        // Reads exactly one JSON value starting at startByte (after insignificant
-        // whitespace) without parsing or copying the rest of the input, so prefixes
-        // never materialize the suffix. Whole-document callers then require
-        // end-of-input; prefix callers take the value end offset. All offsets are
-        // absolute byte positions in the original text.
-        private async ValueTask<JsonPrefixDecode> DecodeJsonPrefixAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int startByte, bool asynchronous)
-        {
-            var bytes = input.Source;
-            var position = SkipJsonWhitespace(bytes.Span, startByte, context, span);
-            if (position >= bytes.Length)
-            {
-                throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
-            }
-
-            var (value, end) = await ReadJsonValueAsync(input, options, context, span, 0, position, asynchronous).ConfigureAwait(false);
-            return new JsonPrefixDecode(value, end);
         }
 
         private ValueTask<(object Value, int End)> ReadJsonValueAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position, bool asynchronous)

@@ -75,12 +75,36 @@ public sealed class JsonLiteralDispatchBoundaryTests(ITestOutputHelper output)
         "12,48,2,1:hook:3,0",
     ];
 
+    // Captured on df1ab51f before removing the prefix wrapper.
+    private static readonly string[] WhitespaceCheckpoints =
+    [
+        "-:",
+        "0,11,1,1:",
+        "-:",
+        "19,4,2,8:",
+        "19,10,2,8:",
+        "30,6,2,19:",
+        "19,18,2,8:",
+        "19,18,2,8:",
+        "19,18,2,8:",
+        "19,18,2,8:",
+        "19,18,2,8:",
+        "19,18,2,8:",
+        "19,18,2,8:",
+        "19,18,2,8:",
+        "19,18,2,8:",
+        "19,18,2,8:",
+        "12,25,2,1:",
+    ];
+
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task LiteralCheckpointsPreserveEffectsAndUnwind(bool asynchronous, bool pairs)
+    [InlineData(false, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(true, false, true)]
+    public async Task LiteralCheckpointsPreserveEffectsAndUnwind(bool asynchronous, bool pairs, bool padded)
     {
         var source = "import json\nreturn json.loads(source" + (pairs ? ",object_pairs_hook=hook)" : ")");
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
@@ -89,7 +113,7 @@ public sealed class JsonLiteralDispatchBoundaryTests(ITestOutputHelper output)
         string[] fullEffects;
         using (var owner = budget.CreateScope())
         {
-            var (context, hook) = Prepare(owner, pairs);
+            var (context, hook) = Prepare(owner, pairs, padded);
             var result = await Run(code, context, asynchronous);
             if (pairs)
             {
@@ -111,7 +135,7 @@ public sealed class JsonLiteralDispatchBoundaryTests(ITestOutputHelper output)
         {
             using (var owner = budget.CreateScope())
             {
-                var (context, hook) = Prepare(owner, pairs);
+                var (context, hook) = Prepare(owner, pairs, padded);
                 context.Limits.ExecutionStepCount = MaximumSteps - remaining;
                 var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
                 Assert.Equal(LythonFailureReason.ExecutionStepLimit, error.Attribution?.Reason);
@@ -122,17 +146,18 @@ public sealed class JsonLiteralDispatchBoundaryTests(ITestOutputHelper output)
             }
             Assert.Equal(0, budget.ReservedBytes);
         }
-        Assert.Equal(pairs ? 40 : 15, steps);
-        Assert.Equal(pairs ? PairsCheckpoints : ScalarCheckpoints, checkpoints);
+        Assert.Equal(padded ? 17 : pairs ? 40 : 15, steps);
+        Assert.Equal(padded ? WhitespaceCheckpoints : pairs ? PairsCheckpoints : ScalarCheckpoints, checkpoints);
         Assert.Equal(pairs ? ["hook:3,0"] : Array.Empty<string>(), fullEffects);
-        output.WriteLine("JSON_LITERAL_MATRIX:" + JsonSerializer.Serialize(new { asynchronous, pairs, steps, fullEffects, checkpoints }));
+        output.WriteLine((padded ? "JSON_WHITESPACE_MATRIX:" : "JSON_LITERAL_MATRIX:") + JsonSerializer.Serialize(new { asynchronous, pairs, steps, fullEffects, checkpoints }));
     }
 
-    private static (Context Context, Hook Hook) Prepare(ILythonMemoryBudget owner, bool pairs)
+    private static (Context Context, Hook Hook) Prepare(ILythonMemoryBudget owner, bool pairs, bool padded)
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         { MemoryBudget = owner, MaxExecutionSteps = MaximumSteps });
         var document = pairs ? "{\"café\":[true,false,null],\"z\":null}" : "true";
+        if (padded) document = new string(' ', 1025) + document;
         context.Variables["source"] = PyString.FromString(document, context.MemoryGovernor, null);
         var hook = new Hook();
         context.Variables["hook"] = hook;
