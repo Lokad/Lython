@@ -1,0 +1,51 @@
+{
+  "revision": "60961196b8f1c70c2e43163bd9e4df2b637b32c4",
+  "baselineRevision": "e9dbb7acb7e9c17950442a28fe3d586af8b9ea0f",
+  "tests": [
+    {
+      "stage": "final-white",
+      "passed": 112,
+      "milliseconds": 1239,
+      "assemblySha256": "76DA7DFAD65E95435D602FD972BEB92773691386F6BF9C008F9183F740C80660"
+    },
+    {
+      "stage": "public",
+      "passed": 158,
+      "milliseconds": 3296,
+      "assemblySha256": "A8E16B654E3A98DA372485B7CA99B547BFE99E315F0CE64BF53EE5C318E2F00B"
+    },
+    {
+      "stage": "full-white",
+      "passed": 2768,
+      "milliseconds": 20108,
+      "assemblySha256": "76DA7DFAD65E95435D602FD972BEB92773691386F6BF9C008F9183F740C80660"
+    },
+    {
+      "stage": "stack",
+      "passed": 59,
+      "milliseconds": 8830,
+      "assemblySha256": "A8E16B654E3A98DA372485B7CA99B547BFE99E315F0CE64BF53EE5C318E2F00B"
+    },
+    {
+      "stage": "representative",
+      "passed": 93,
+      "milliseconds": 15079,
+      "assemblySha256": "A8E16B654E3A98DA372485B7CA99B547BFE99E315F0CE64BF53EE5C318E2F00B"
+    }
+  ],
+  "guardMatricesMatch": 16,
+  "cpythonControls": {
+    "version": "3.13.2",
+    "cases": 9,
+    "apis": [
+      "Run",
+      "RunAsync"
+    ]
+  },
+  "removal": "Ordinary Python function and bound-method calls skip prepared CallArgumentValue transport and the async argument-expansion closure. One binder reads prepared arguments or existing operands/specifications; protocol-default completion retains owned bound slots, not caller arguments.",
+  "preserved": "Fast positional eligibility, current binder/errors/live defaults/variadic/receiver rules, required lowered bodies, native/wrapped callable arrays, stack policy, funding, terminal refusal and original 300-frame/100&600-copy controls.",
+  "limits": "Small call buffers were pooled; rental removal does not prove a heap allocation saved for each ordinary synchronous call. Larger local copies, keyword mapping caches and general builtin transport remain.",
+  "regressions": "Eight fuel/effect cases plus six actual asynchronous default-protocol success/cancel/refusal cases. Public controls include dynamically attached executable functions.",
+  "initialTestAdjustment": "Two existing keyword-method assertions expected the call pool to be rented/cleared; it now remains untouched. Semantic/cleanup assertions remain.",
+  "timing": "One existing calls.keyword warm-async capture planned; no predicted speedup or new producer."
+}

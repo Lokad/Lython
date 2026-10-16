@@ -1,0 +1,28 @@
+{
+  "baselineRevision": "e9dbb7acb7e9c17950442a28fe3d586af8b9ea0f",
+  "candidateRevision": "60961196b8f1c70c2e43163bd9e4df2b637b32c4",
+  "caseId": "calls.keyword.large",
+  "expectedCaseSize": 16384,
+  "expectedCalls": 16384,
+  "expectedSourceUtf8Bytes": 134,
+  "expectedSourceSha256": "7f1630d2c6daf703fbf2bf275bc9a36434578af206faf56c9d002070ddd5294c",
+  "lane": "warm-async",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm public RunAsync of unchanged keyword helper loop; completed host operations, fresh invocation state, execution/projection and prior-result cleanup timed. Compilation/startup/transport excluded; no files.",
+  "stoppingRule": "One existing keyword-call warm-async capture after ordinary function transport removal; no retry, retune, new producer or long lane.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "105b0b2823f5dbfd5ce7a955a18bf1efa518284ef59b1b6e91a8785b0fd4abd0",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "3171f8570c0f3383061cba34a859e6872e7d04df66a7d750c16479f1e3bc6443"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "aadece5ae6a3fed0caa05f346a0fde656487b0a70a58f0751b118a6ce4ad64e8",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "368ef78ef93d59878c5350582cf6a96ef32ad216a912616996cd098c06f136fa"
+  }
+}

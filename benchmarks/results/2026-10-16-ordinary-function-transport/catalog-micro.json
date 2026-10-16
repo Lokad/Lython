@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "calls.keyword.small",
+      "family": "calls",
+      "category": "core",
+      "scale": "small",
+      "size": 256,
+      "source": "N = 256\ndef add(value, offset=1):\n    return value + offset\ntotal = 0\nfor i in range(N):\n    total += add(i, offset=5)\nprint(total)\n",
+      "fixtureJson": "{\"size\":256,\"text\":null}",
+      "expectedOutput": "33920\n",
+      "sourceUtf8Bytes": 132,
+      "expectedOutputUtf8Bytes": 6,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "48183c5fe4735de5b694a220ad0208cc6b0cf76f91ca40e465d4dba335e0a956",
+      "fixtureSha256": "014e3e36d9dda0eeafbc9f34005088e5e5bba7a7d2e87f1fa56dc2a3be77740e",
+      "expectedOutputSha256": "79018dc50d5e3b21e2e874a9ae29d6c7c5bac3878e5275a1c7d0fbdb80d8672c"
+    },
+    {
+      "id": "calls.keyword.medium",
+      "family": "calls",
+      "category": "core",
+      "scale": "medium",
+      "size": 2048,
+      "source": "N = 2048\ndef add(value, offset=1):\n    return value + offset\ntotal = 0\nfor i in range(N):\n    total += add(i, offset=5)\nprint(total)\n",
+      "fixtureJson": "{\"size\":2048,\"text\":null}",
+      "expectedOutput": "2106368\n",
+      "sourceUtf8Bytes": 133,
+      "expectedOutputUtf8Bytes": 8,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "6f61fb51f65b559a38f0762e888b301f647301af6d201612bd9ea5034fa56090",
+      "fixtureSha256": "cc19526c1d9f59f92c233c4276c92e42e48bc1ecbbeec305f81a44877bd877d6",
+      "expectedOutputSha256": "057da101c2d76ccc49383042c493ab2879d16695d245a4b74860b610f543e329"
+    },
+    {
+      "id": "calls.keyword.large",
+      "family": "calls",
+      "category": "core",
+      "scale": "large",
+      "size": 16384,
+      "source": "N = 16384\ndef add(value, offset=1):\n    return value + offset\ntotal = 0\nfor i in range(N):\n    total += add(i, offset=5)\nprint(total)\n",
+      "fixtureJson": "{\"size\":16384,\"text\":null}",
+      "expectedOutput": "134291456\n",
+      "sourceUtf8Bytes": 134,
+      "expectedOutputUtf8Bytes": 10,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "7f1630d2c6daf703fbf2bf275bc9a36434578af206faf56c9d002070ddd5294c",
+      "fixtureSha256": "c1c16fa8a40dac165afc8c9915fab90012d9af6a9836b6a2e03812eb3f441155",
+      "expectedOutputSha256": "e3192fb4610edfce643f6bcadbf4ca479df05a8197ff8430c5399354693375ed"
+    }
+  ]
+}

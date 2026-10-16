@@ -845,6 +845,8 @@ preserve the distinct CPython and earlier-Lython comparisons.
 
 ## Diagnostic comparisons by revision
 
+- [Ordinary function operand transport](results/2026-10-16-ordinary-function-transport/README.md): keyword/variadic Python calls consume existing operands through the shared binder, removing temporary transport and the async preparation closure. Mutable defaults and actual protocol suspension keep invocation-owned slots. Sixteen frozen guard/effect matrices match. One unchanged keyword loop has a 1.8% lower median within 13.3% baseline spread; inconclusive, no speedup established.
+
 - [Direct ordinary builtin len](results/2026-10-16-direct-length-call/README.md): existing operand storage bypasses pooled transport and a copied parameter array, sharing the string-entry guard. One existing constructed-text strip/length loop has a 26.4% lower median with 18.8% baseline spread; noisy and unqualified. Seven CPython controls, frozen guards, suspended input owners and terminal refusal pass. No timing repeat or complete-file-job claim.
 
 - [Ordinary async-host control flow](results/2026-10-16-async-control-flow/README.md): synchronous handlers replace generic async forwarding for ordinary jumps/returns/exception routing and non-instance conditions. Existing branch loop median is 8.2% lower in one unqualified capture; original guard matrices, real truth-slot suspension and cleanup before finally are covered. Initial catalog-profile setup correction occurred before any timing.
