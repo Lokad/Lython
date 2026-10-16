@@ -1578,6 +1578,14 @@ hashes are implementation details: they may differ from CPython and change acros
 processes or Lython versions. Do not persist these values as stable identifiers;
 use an appropriate `hashlib` digest when a stable content digest is required.
 
+`len(instance)` resolves `__len__` on the instance's type and its MRO, then binds
+the descriptor. Instance attributes and ordinary `__getattribute__`/`__getattr__`
+hooks do not replace that implicit lookup; explicit `instance.__len__` access
+remains ordinary attribute access. Missing and non-callable slots fail with
+`TypeError`, while descriptor errors propagate. `RunAsync` awaits descriptor
+binding and the length callback without replay; exact builtin lengths keep their
+synchronous kernels. The existing integer and nonnegative result checks apply.
+
 `property(fget=None, fset=None, fdel=None, doc=None)` supports all four positional
 or keyword arguments. Its readonly `fget`, `fset` and `fdel` metadata retains the
 original accessor objects, including `None`. Construction accepts non-callable

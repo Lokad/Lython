@@ -28,6 +28,11 @@ internal sealed partial class LythonRuntime
         };
     }
 
+    private static ValueTask<object> LenAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => arguments.Length == 1 && arguments[0] is PyInstance instance
+            ? GetInstanceLengthAsync(instance, context, span)
+            : ValueTask.FromResult(Len(arguments, span, context));
+
     // len() builds only the throwaway dedup set; reuse the merge estimate
     // conservatively since duplicates collapse in the set but pay in visits.
     internal static BigInteger LenChainMap(PyChainMap chainMap, LythonSourceSpan span, ExecutionContext context)
@@ -38,12 +43,25 @@ internal sealed partial class LythonRuntime
 
     private static BigInteger GetInstanceLength(PyInstance instance, ExecutionContext context, LythonSourceSpan span)
     {
-        if (!instance.TryGetAttribute("__len__", context, span, out var member) || member is not ICallable callable)
-        {
-            throw new LythonRuntimeException("TypeError", $"object of type '{instance.Type.Name}' has no len()", span);
-        }
+        var member = PyAttributeLookup.BindForInstance(instance, GetLengthSlot(instance, span), context, span);
+        if (member is not ICallable callable) throw NotCallableError(member, context, span);
+        return ValidateInstanceLength(callable.Invoke([], span, context), span);
+    }
 
-        var value = callable.Invoke([], span, context);
+    private static async ValueTask<object> GetInstanceLengthAsync(PyInstance instance, ExecutionContext context, LythonSourceSpan span)
+    {
+        var member = await PyAttributeLookup.BindForInstanceAsync(instance, GetLengthSlot(instance, span), context, span).ConfigureAwait(false);
+        if (member is not ICallable callable) throw NotCallableError(member, context, span);
+        return ValidateInstanceLength(await callable.InvokeAsync([], span, context).ConfigureAwait(false), span);
+    }
+
+    private static object GetLengthSlot(PyInstance instance, LythonSourceSpan span)
+        => instance.Type.TryLookupInMro("__len__", 0, out var rawMember, out _)
+            ? rawMember
+            : throw new LythonRuntimeException("TypeError", $"object of type '{instance.Type.Name}' has no len()", span);
+
+    private static BigInteger ValidateInstanceLength(object value, LythonSourceSpan span)
+    {
         if (!PyNumberOps.TryAsInteger(value, out var length))
         {
             throw new LythonRuntimeException("TypeError", "__len__() should return an integer", span);

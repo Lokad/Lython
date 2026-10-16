@@ -7,7 +7,7 @@ internal sealed partial class LythonRuntime
         // These fixed plain functions have no receiver, run state or type caches:
         // BuiltinCallable's mutable slots are gated on builtin type names. Their
         // __self__ is resolved from the caller context, not stored on the callable.
-        private static readonly BuiltinCallable SharedLen = BuiltinCallable.Create("len", Len);
+        private static readonly BuiltinCallable SharedLen = BuiltinCallable.Create("len", Len, LenAsync);
         private static readonly BuiltinCallable SharedRepr = BuiltinCallable.Create("repr", Repr, ["value"]);
         private static readonly BuiltinCallable SharedAscii = BuiltinCallable.Create("ascii", Ascii, ["value"]);
 

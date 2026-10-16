@@ -26,6 +26,8 @@ internal static class StackGuardFixture
             "copyhook-helper" => "import copy\nclass Loop:\n def __deepcopy__(self,memo):return self.again(memo)\n def again(self,memo):return copy.deepcopy(self,memo)\nfailures=0\nfor _ in range(3):\n try:copy.deepcopy(Loop())\n except (RuntimeError,RecursionError):failures+=1\n assert copy.deepcopy([1])==[1]\nreturn failures\n",
             "copyhook-catch" => "import copy\nclass Loop:\n def __deepcopy__(self,memo):\n  try:return copy.deepcopy(self,memo)\n  except (RuntimeError,RecursionError):return 7\ncompleted=0\nfor _ in range(3):\n assert copy.deepcopy(Loop())==7\n assert copy.deepcopy([1])==[1]\n completed+=1\nreturn completed\n",
             "callback-finally" => "cleanup=0\nclass Loop:\n def __bool__(self):\n  global cleanup\n  try:return bool(self)\n  finally:cleanup+=1\nfailures=0\nfor _ in range(3):\n try:bool(Loop())\n except (RuntimeError,RecursionError):failures+=1\n assert bool([1])\nassert cleanup>0\nreturn failures\n",
+            "length" => "class Loop:\n def __len__(self):return len(self)\nfailures=0\nfor _ in range(3):\n try:len(Loop())\n except (RuntimeError,RecursionError):failures+=1\n assert len([1])==1\nreturn failures\n",
+            "length-finally" => "cleanup=0\nclass Loop:\n def __len__(self):\n  global cleanup\n  try:return len(self)\n  finally:cleanup+=1\nfailures=0\nfor _ in range(3):\n try:len(Loop())\n except (RuntimeError,RecursionError):failures+=1\n assert len([1])==1\nassert cleanup>0\nreturn failures\n",
             "cancellation" => lists + "while True:\n try:\n  equal = x == y\n except RecursionError:\n  pass\n",
             _ => throw new ArgumentOutOfRangeException(nameof(scenario))
         };

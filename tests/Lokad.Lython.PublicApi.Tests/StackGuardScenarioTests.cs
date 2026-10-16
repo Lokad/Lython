@@ -16,6 +16,8 @@ public sealed class StackGuardScenarioTests
     [InlineData("copyhook-helper")]
     [InlineData("copyhook-catch")]
     [InlineData("callback-finally")]
+    [InlineData("length")]
+    [InlineData("length-finally")]
     [InlineData("cancellation")]
     public void YieldedDeepWorkUnwindsAndRecoversInAnIsolatedProcess(string scenario)
     {

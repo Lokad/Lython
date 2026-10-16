@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resolve implicit `len()` through type slots and descriptor binding, ignoring instance shadows and ordinary attribute hooks. Await length descriptors and callbacks under `RunAsync`, preserving cancellation, terminal admission refusal and retained ownership; keep exact builtin lengths synchronous.
+
 - Dispatch ordinary zero-argument str.lower calls directly from executable receiver storage, sharing the existing casing and result-ownership operation with exposed methods. Remove per-receiver bound callables and synchronous cache traffic; preserve Unicode, guards, allocation preflights, cancellation and retained owners.
 
 - Bind ordinary Python method receivers through the existing general binder, removing the prepended-self argument array for keyword, variadic and lowered-body calls. Preserve live defaults, suspended inputs, cancellation, frame guards and fresh retainable arrays for other wrapped callables.
