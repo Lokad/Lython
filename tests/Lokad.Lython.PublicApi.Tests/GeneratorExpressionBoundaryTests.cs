@@ -49,6 +49,11 @@ public sealed class GeneratorExpressionBoundaryTests
         { "suspended-owner-walrus", "def outer():\n total=0\n g=(i for i in range(3) if (total:=total+1)<0)\n yield g\n yield total\nsource=outer()\ng=next(source)\nprint(list(g),next(source))", "[] 3\n" },
         { "suspended-owner-nonlocal-helper", "def outer():\n total=0\n def change():\n  nonlocal total\n  total=9\n yield change\n yield str(total)\nsource=outer()\nchange=next(source)\nchange()\nprint(next(source))", "9\n" },
         { "escaped-owner-observer", "def make():\n total=0\n g=(i for i in range(3) if (total:=total+1)<0)\n observe=lambda:total\n return g,observe\ng,observe=make()\nprint(list(g),observe())", "[] 3\n" },
+        { "outer-identity", "outer=iter([1,2])\ng=(locals()['.0'] is outer for i in outer)\nprint(list(g))", "[True, True]\n" },
+        { "unstarted-close", "events=[]\nclass Source:\n def __iter__(self):events.append('iter');return self\n def __next__(self):events.append('next');return 1\ng=(i for i in Source())\ng.close()\nprint(events,next(g,'end'))", "['iter'] end\n" },
+        { "send-discards-resumed-value", "g=(i*2 for i in range(3))\nprint(next(g),g.send(99),g.send(None),next(g,'end'))", "0 2 4 end\n" },
+        { "throw-before-start", "events=[]\ndef source():\n events.append('started')\n yield 1\ng=(i for i in source())\ntry:g.throw(ValueError('before'))\nexcept ValueError as error:print(str(error))\nprint(events,next(g,'end'))", "before\n[] end\n" },
+        { "close-preserves-outer-alias", "events=[]\ndef source():\n try:\n  yield 1\n  yield 2\n finally:events.append('closed')\nouter=source()\ng=(i for i in outer)\nprint(next(g))\ng.close()\nprint(events,next(outer))\nouter.close()\nprint(events)", "1\n[] 2\n['closed']\n" },
     };
 
     [Theory]

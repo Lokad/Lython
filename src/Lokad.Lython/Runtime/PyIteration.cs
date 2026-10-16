@@ -369,7 +369,7 @@ internal static partial class PyIteration
         };
     }
 
-    internal sealed class Cursor : IExecutableTemporaryValue, IAsyncDisposable
+    internal sealed class Cursor : IExecutableTemporaryValue, IAsyncDisposable, IEnumerator<object>
     {
         private readonly object _value;
         private readonly LythonSourceSpan _span;
@@ -378,12 +378,39 @@ internal static partial class PyIteration
         private int _movesUntilCheckpoint;
         private IEnumerator<object>? _syncEnumerator;
         private IAsyncEnumerator<object>? _asyncEnumerator;
+        private object _current = PyNone.Instance;
         // Intrusive link used only after this temporary leaves an async VM
         // stack. Awaiting cleanup needs no extra list or per-removal allocation.
         internal Cursor? NextPendingDisposal;
 
         internal static Cursor FromAcquired(PyUserIterator iterator, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
             => new(iterator.Iterator, span, iterator, context);
+
+        internal static Cursor FromGeneratorOuter(GeneratorOuter outer, object source, bool asynchronous,
+            LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            var cursor = new Cursor(outer.Iterator, span, context: context);
+            try
+            {
+                cursor._syncEnumerator = outer.Sequence.GetEnumerator();
+                if (asynchronous && source is IPyAsyncIterableValue iterable)
+                    cursor._asyncEnumerator = iterable.IterateAsync().GetAsyncEnumerator();
+                else if (outer.AsyncSequence is not null)
+                    cursor._asyncEnumerator = outer.AsyncSequence.GetAsyncEnumerator();
+                return cursor;
+            }
+            catch { cursor.Dispose(); throw; }
+        }
+
+        object IEnumerator<object>.Current => _current;
+        object System.Collections.IEnumerator.Current => _current;
+        void System.Collections.IEnumerator.Reset() => throw new NotSupportedException();
+        bool System.Collections.IEnumerator.MoveNext()
+        {
+            if (TryMoveNext(out var value)) { _current = value; return true; }
+            Dispose();
+            return false;
+        }
 
         private Cursor(object value, LythonSourceSpan span, PyUserIterator? userIterator = null,
             LythonRuntime.ExecutionContext? context = null)
@@ -480,6 +507,9 @@ internal static partial class PyIteration
         public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
             CheckExecution();
+            if (_asyncEnumerator is not null)
+                return await _asyncEnumerator.MoveNextAsync().ConfigureAwait(false)
+                    ? PyIterationResult.Yield(_asyncEnumerator.Current) : PyIterationResult.End;
             if (_userIterator is not null)
             {
                 return await _userIterator.TryMoveNextAsync().ConfigureAwait(false);
@@ -526,6 +556,7 @@ internal static partial class PyIteration
         {
             var enumerator = _syncEnumerator;
             _syncEnumerator = null;
+            _current = PyNone.Instance;
             enumerator?.Dispose();
         }
 

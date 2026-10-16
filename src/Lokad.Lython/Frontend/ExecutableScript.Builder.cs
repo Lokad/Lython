@@ -76,15 +76,16 @@ internal sealed partial class ExecutableScript
                 : new HashSet<string>(parentClosureCandidates, StringComparer.Ordinal);
         }
 
-        public ExecutableCodeObject CompileCodeObject(string name, IReadOnlyList<LoweredStatement> statements)
+        public ExecutableCodeObject CompileCodeObject(string name, IReadOnlyList<LoweredStatement> statements,
+            LoweredGeneratorExpression? generatorExpression = null)
         {
             _scopeFacts = _declaredScopeFacts ?? ScopeDirectiveFactsCollector.ForLoweredStatements(_functionParameters, statements);
             // A lexical super read also requests the hidden free __class__ cell.
             // Ordinary enclosing locals must be retained like explicit reads.
-            // Generator bodies retain their invocation context and resolve this
-            // hidden name through its live lexical chain. Their separately built
-            // code has no parent closure candidates or captured-cell array.
-            if (!_generator && _scopeFacts.RequiresClassCell && (_declaredScopeFacts is not null || _parentClosureCandidates.Contains("__class__")))
+            // Separately built generator functions resolve this hidden name
+            // through their retained lexical chain. Generator expressions have
+            // the defining builder's candidates and capture the existing cell.
+            if ((!_generator || generatorExpression is not null) && _scopeFacts.RequiresClassCell && (_declaredScopeFacts is not null || _parentClosureCandidates.Contains("__class__")))
                 InternClosure("__class__");
             CollectLocals(statements);
             if (_functionParameters is not null)
@@ -97,7 +98,9 @@ internal sealed partial class ExecutableScript
             }
 
             var entryBlock = CreateBlock();
-            var exitBlock = CompileStatements(statements, entryBlock);
+            var exitBlock = generatorExpression is null ? CompileStatements(statements, entryBlock)
+                : CompileComprehensionBody(generatorExpression.Clauses, generatorExpression.ItemExpression,
+                    null, generatorExpression.Span, entryBlock, yielding: true);
             if (exitBlock is int finalBlock && !IsTerminated(finalBlock))
             {
                 AddInstruction(finalBlock, ExecutableInstruction.ReturnNone(EmptySpan));
@@ -114,12 +117,13 @@ internal sealed partial class ExecutableScript
             var normalizedBlocks = NormalizeBlocks(ordered, indexMap);
             var normalizedRegions = NormalizeRegions(ordered, indexMap);
             var requiresLocalVariableMirroring =
-                _generator || _expressionFallbacks.Count != 0 ||
+                (_generator && generatorExpression is null) || _expressionFallbacks.Count != 0 ||
                 _statementFallbacks.Count != 0 ||
                 _functions.Any(function => function.CodeObject is null || function.Function.ReturnAnnotation is not null ||
                     function.Function.Parameters.Any(p => p.Annotation is not null)) ||
                 _functions.Any(function => function.CodeObject?.RequiresLocalVariableMirroring == true) ||
-                _constants.OfType<ExecutableCreateLambda>().Any(lambda => lambda.CodeObject is null || lambda.CodeObject.RequiresLocalVariableMirroring);
+                _constants.OfType<ExecutableCreateLambda>().Any(lambda => lambda.CodeObject is null || lambda.CodeObject.RequiresLocalVariableMirroring) ||
+                _constants.OfType<ExecutableCreateGeneratorExpression>().Any(generator => generator.CodeObject.RequiresLocalVariableMirroring);
             var capturedLocalSlots = CollectCapturedLocalSlots();
 
             return new ExecutableCodeObject(
@@ -155,7 +159,8 @@ internal sealed partial class ExecutableScript
 
                 var captured = new HashSet<int>();
                 foreach (var code in _functions.Select(function => function.CodeObject)
-                    .Concat(_constants.OfType<ExecutableCreateLambda>().Select(lambda => lambda.CodeObject)))
+                    .Concat(_constants.OfType<ExecutableCreateLambda>().Select(lambda => lambda.CodeObject))
+                    .Concat(_constants.OfType<ExecutableCreateGeneratorExpression>().Select(generator => generator.CodeObject)))
                 {
                     if (code is null)
                     {
@@ -167,10 +172,6 @@ internal sealed partial class ExecutableScript
                         CaptureName(closureName);
                     }
                 }
-
-                foreach (var generator in _expressionFallbacks.Select(fallback => fallback.Expression).OfType<LoweredGeneratorExpression>()
-                    .Concat(_constants.OfType<ExecutableCreateGeneratorExpression>().Select(operation => operation.Expression)))
-                    foreach (var capturedName in generator.ScopeFacts.NonlocalNames) CaptureName(capturedName);
 
                 if (captured.Count == 0)
                 {

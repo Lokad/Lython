@@ -412,18 +412,22 @@ internal sealed partial class ExecutableScript
                 // Forward transitive free names as before. Comprehension names
                 // are inner bindings, even at module scope or when the caller
                 // declares a same-named global; add them after that exclusion.
-                IEnumerable<string>? candidates = _functionParameters is null ? null
-                    : _locals.Concat(_closures).Concat(_parentClosureCandidates)
-                        .Except(_scopeFacts.GlobalNames, StringComparer.Ordinal);
-                if (_comprehensionNames.Count != 0)
-                    candidates = (candidates ?? []).Concat(_comprehensionNames.SelectMany(static names => names));
-                return new Builder(parameters, candidates, scopeFacts)
+                return new Builder(parameters, ChildClosureCandidates(), scopeFacts)
                     .CompileCodeObject(name, body);
             }
             catch (ExecutableLoweringFallbackException)
             {
                 return null;
             }
+        }
+
+        private IEnumerable<string>? ChildClosureCandidates()
+        {
+            IEnumerable<string>? candidates = _functionParameters is null ? null
+                : _locals.Concat(_closures).Concat(_parentClosureCandidates)
+                    .Except(_scopeFacts.GlobalNames, StringComparer.Ordinal);
+            return _comprehensionNames.Count == 0 ? candidates
+                : (candidates ?? []).Concat(_comprehensionNames.SelectMany(static names => names));
         }
 
         private int InternMatchCase(MatchCaseSyntax matchCase)

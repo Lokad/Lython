@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Lower eligible lazy generator-expression bodies into real resumable child instructions with local slots and shared capture cells, reusing the eager comprehension loop compiler and existing generator methods. Remove the lowered creator overlay and ordinary fallback-only caller mirroring. Preserve eager outer acquisition, deferred inner work, walrus writes, locals and Python iterator aliases; await native cleanup on unstarted close/throw and refused/cancelled entry.
+
 - Await native async cursor cleanup when executable loops and generators exit through break, return, close, exceptions, cancellation or refused admission. Preserve nested handler continuation and retained Python iterator aliases; release abandoned cursors in order even when an inner disposal fails. Reuse stack/cursor storage for pending cleanup without per-removal allocations or new ownership scopes.
 
 - Bind generator-expression walrus targets directly through prepared global/nonlocal metadata, preserving writes in rejected filters and before errors. Remove per-yield namespace propagation and target-name scratch. Share StopIteration-to-RuntimeError conversion with generator functions, retain the original cause/context, exhaust failed generators and await async cleanup. Preserve captured writes across suspended generator frames and expose current nonlocal snapshots.

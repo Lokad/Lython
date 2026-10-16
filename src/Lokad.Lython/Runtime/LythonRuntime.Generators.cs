@@ -27,12 +27,47 @@ internal sealed partial class LythonRuntime
         bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes)
             => OwnershipSnapshot.Owned(OwnerMemoryGovernor, _bytes, out bytes);
 
+        private static long EstimateStorage(ExecutableCodeObject code)
+            => checked(512L + 96L * (code.Blocks.Sum(block => block.Instructions.Count) +
+                code.LocalNames.Count + code.MemberCacheCount + code.Blocks.Count));
+
+        internal static async ValueTask<PyGenerator> CreateExpressionAsync(ExecutableCodeObject code,
+            ExecutionContext context, object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, bool asynchronous)
+        {
+            // Fund the retained frame, namespace/nonlocal map and native cursor
+            // before their allocation or the effectful outer __iter__ call.
+            var bytes = checked(EstimateStorage(code) + 256L + 96L * code.ScopeFacts.NonlocalNames.Count);
+            var governor = context.MemoryGovernor;
+            governor.Reserve(bytes, span);
+            governor.Commit(bytes);
+            PyIteration.Cursor? cursor = null;
+            try
+            {
+                var cells = CaptureExecutableClosures(code, context, span);
+                ChargeClosureRetention(context.FunctionClosureContext, governor, span);
+                if (code.RequiresLocalVariableMirroring) RetainLocalsForLambda(context.FunctionClosureContext);
+                var frame = new ExecutionContext(context.FunctionClosureContext, code.ScopeFacts)
+                { FunctionName = "<genexpr>", FirstPositionalParameterName = ".0" };
+                var outer = asynchronous
+                    ? await PyIteration.AcquireGeneratorOuterAsync(outerValue, outerSpan, context).ConfigureAwait(false)
+                    : PyIteration.AcquireGeneratorOuter(outerValue, outerSpan, context);
+                cursor = PyIteration.Cursor.FromGeneratorOuter(outer, outerValue, asynchronous, outerSpan, context);
+                frame.Variables[".0"] = outer.Iterator;
+                return new PyGenerator(code, frame, span, bytes, cells, cursor);
+            }
+            catch
+            {
+                try { if (cursor is not null) await cursor.DisposeAsync().ConfigureAwait(false); }
+                finally { governor.Release(bytes); }
+                throw;
+            }
+        }
+
         internal static PyGenerator Create(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span, IReadOnlyList<ExecutableCell>? closureCells = null)
         {
             // Fund locals, cells, operand stack including resize overlap, caches
             // and handler/delegation state before constructing retained storage.
-            var bytes = checked(512L + 96L * (code.Blocks.Sum(block => block.Instructions.Count) +
-                code.LocalNames.Count + code.MemberCacheCount + code.Blocks.Count));
+            var bytes = EstimateStorage(code);
             frame.MemoryGovernor.Reserve(bytes, span);
             frame.MemoryGovernor.Commit(bytes);
             PyGenerator generator;
@@ -41,7 +76,8 @@ internal sealed partial class LythonRuntime
             return generator;
         }
 
-        private PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span, long bytes, IReadOnlyList<ExecutableCell>? closureCells)
+        private PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span, long bytes,
+            IReadOnlyList<ExecutableCell>? closureCells, PyIteration.Cursor? acquiredOuter = null)
         {
             _frame = frame;
             // Mirrored namespaces remain authoritative for retained cells while
@@ -60,7 +96,7 @@ internal sealed partial class LythonRuntime
                 cells = new ExecutableCell[locals.Length];
                 foreach (var slot in code.CapturedLocalSlots) cells[slot] = new ExecutableCell(locals[slot], frame, code.LocalNames[slot]);
             }
-            _interpreter = new ExecutableFrameInterpreter(code, frame, locals, cells, closureCells);
+            _interpreter = new ExecutableFrameInterpreter(code, frame, locals, cells, closureCells, acquiredOuter);
         }
 
         public bool IsTruthy() => true;
@@ -88,49 +124,63 @@ internal sealed partial class LythonRuntime
             if (!_started && sent is not PyNone)
                 throw new LythonRuntimeException("TypeError", "can't send non-None value to a just-started generator", _span);
             if (_completed) { ReturnValue = PyNone.Instance; if (injected is not null) throw injected; return PyIterationResult.End; }
-            if (!_started && injected is not null) { Complete(); throw injected; }
+            if (!_started && injected is not null) { await CompleteAsync(asynchronous).ConfigureAwait(false); throw injected; }
             var frame = _frame!;
             var interpreter = _interpreter!;
             var previousSlots = frame.CurrentExecutableFrame;
             var previousException = frame.Services.CurrentException;
-            frame.EnterFunctionCall(_span);
+            var functionEntered = false;
+            var interpreterEntered = false;
             try
             {
+                frame.EnterFunctionCall(_span);
+                functionEntered = true;
                 frame.EnterInterpreterFrame(_span);
-                try
+                interpreterEntered = true;
+                _running = true;
+                frame.EnterExecutableSlots(interpreter);
+                interpreter.SetCallerException(previousException);
+                frame.Services.SetCurrentException(interpreter.HasActiveHandler ? _suspendedException : previousException);
+                _started = true;
+                interpreter.Resume(sent, injected);
+                if (asynchronous) await interpreter.ExecuteAsync().ConfigureAwait(false);
+                else interpreter.Execute();
+                _suspendedException = frame.Services.CurrentException;
+                if (interpreter.HasYield) return PyIterationResult.Yield(interpreter.YieldValue);
+                ReturnValue = interpreter.HasFrameReturn ? interpreter.FrameReturnValue : PyNone.Instance;
+                await CompleteAsync(asynchronous).ConfigureAwait(false);
+                return PyIterationResult.End;
+            }
+            catch (LythonRuntimeException exception)
+            {
+                await CompleteAsync(asynchronous).ConfigureAwait(false);
+                PyFunctionBinding.AnnotateException(exception, frame, frame.FunctionName ?? "<generator>", _span);
+                if (exception.Identity == PythonExceptionIdentity.Builtin("StopIteration"))
+                    throw GeneratorRaisedStopIteration(exception, frame, _span);
+                throw;
+            }
+            catch { await CompleteAsync(asynchronous).ConfigureAwait(false); throw; }
+            finally
+            {
+                _running = false;
+                if (interpreterEntered)
                 {
-                    _running = true;
-                    frame.EnterExecutableSlots(interpreter);
-                    interpreter.SetCallerException(previousException);
-                    frame.Services.SetCurrentException(interpreter.HasActiveHandler ? _suspendedException : previousException);
-                    _started = true;
-                    interpreter.Resume(sent, injected);
-                    if (asynchronous) await interpreter.ExecuteAsync().ConfigureAwait(false);
-                    else interpreter.Execute();
-                    _suspendedException = frame.Services.CurrentException;
-                    if (interpreter.HasYield) return PyIterationResult.Yield(interpreter.YieldValue);
-                    ReturnValue = interpreter.HasFrameReturn ? interpreter.FrameReturnValue : PyNone.Instance;
-                    Complete();
-                    return PyIterationResult.End;
-                }
-                catch (LythonRuntimeException exception)
-                {
-                    Complete();
-                    PyFunctionBinding.AnnotateException(exception, frame, frame.FunctionName ?? "<generator>", _span);
-                    if (exception.Identity == PythonExceptionIdentity.Builtin("StopIteration"))
-                        throw GeneratorRaisedStopIteration(exception, frame, _span);
-                    throw;
-                }
-                catch { Complete(); throw; }
-                finally
-                {
-                    _running = false;
                     frame.Services.SetCurrentException(previousException);
                     frame.LeaveExecutableSlots(previousSlots);
                     frame.LeaveInterpreterFrame();
                 }
+                if (functionEntered) frame.LeaveFunctionCall();
             }
-            finally { frame.LeaveFunctionCall(); }
+        }
+
+        private async ValueTask CompleteAsync(bool asynchronous)
+        {
+            try
+            {
+                if (_interpreter is not null)
+                    await _interpreter.ReleaseGeneratorTemporariesAsync(asynchronous).ConfigureAwait(false);
+            }
+            finally { Complete(); }
         }
 
         private void Complete()
@@ -165,7 +215,8 @@ internal sealed partial class LythonRuntime
                 if (name == "close")
                 {
                     if (arguments.Length != 0) throw new LythonRuntimeException("TypeError", "close() takes no arguments", span);
-                    if (!generator._started || generator._completed) { generator.Complete(); return PyNone.Instance; }
+                    if (!generator._started || generator._completed)
+                    { await generator.CompleteAsync(asynchronous).ConfigureAwait(false); return PyNone.Instance; }
                     try
                     {
                         var closed = await generator.AdvanceAsync(PyNone.Instance, new LythonRuntimeException("GeneratorExit", "", span), asynchronous).ConfigureAwait(false);

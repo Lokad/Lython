@@ -88,6 +88,17 @@ charged for the execution/result lifetime, so narrow allowances may refuse
 earlier. No bindings are copied back at yield or during cleanup. Mirrored generator
 namespaces stay authoritative for retained cells while suspended; only captured
 slots are refreshed on resume. Existing frame admission funds those cells.
+Eligible executable generator expressions reserve conservative frame/stack/cache,
+namespace, cursor and nonlocal-map estimates before construction or effectful
+outer acquisition. Existing closure capture/retention admission funds escaping
+cells and their defining namespace; no new memory owner is introduced. The
+retained frame starts with the already acquired outer cursor. Early close/throw
+and entry refusal/cancellation await its native cleanup before returning; failed
+construction refunds its frame estimate only after cleanup finishes. Surviving
+cell/namespace charges can remain conservatively with the finite owner. Larger
+frame estimates can cause earlier denial than the former lowered iterator.
+Ordinary bodies no longer retain clauses through a creator overlay or mirror the
+caller just to evaluate a lowered body. Required dynamic/lowered routes remain.
 Lowered bodies and dynamic namespace consumers retain their existing dictionary
 ownership. Lambda metadata now uses ordinary function storage, so small allowances
 can reject at different thresholds; pending users and escaping aliases stay funded.

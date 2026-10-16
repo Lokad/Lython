@@ -12,8 +12,6 @@ internal sealed partial class ExecutableScript
     {
         private int CompileExpression(LoweredExpression expression, int currentBlock)
         {
-            if (_generator && expression is LoweredGeneratorExpression generator && GeneratorSyntaxFacts.ContainsYield(generator.Syntax))
-                return CompileSuspendingGeneratorExpression(generator, currentBlock);
             switch (expression)
             {
                 case LoweredYieldExpression yielded:
@@ -79,6 +77,9 @@ internal sealed partial class ExecutableScript
                 case LoweredListComprehensionExpression comprehension:
                     return CompileComprehension(comprehension.ScopeFacts, comprehension.Clauses,
                         comprehension.ItemExpression, null, ExecutableDisplayKind.List, comprehension.Span, currentBlock);
+
+                case LoweredGeneratorExpression generator:
+                    return CompileGeneratorExpression(generator, currentBlock);
 
                 case LoweredSetComprehensionExpression comprehension:
                     return CompileComprehension(comprehension.ScopeFacts, comprehension.Clauses,

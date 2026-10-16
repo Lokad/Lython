@@ -40,11 +40,13 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             object[] locals,
             ExecutableCell?[]? localCells,
-            IReadOnlyList<ExecutableCell>? closureCells)
+            IReadOnlyList<ExecutableCell>? closureCells,
+            PyIteration.Cursor? acquiredOuter = null)
             : base(codeObject, locals, localCells, closureCells)
         {
             _context = context;
             _stack = new(Math.Max(8, codeObject.LocalNames.Count));
+            if (acquiredOuter is not null) _stack.Push(acquiredOuter);
             _currentBlockIndex = codeObject.EntryBlockIndex;
             _entryActiveException = context.Services.CurrentException;
             _memberCaches = codeObject.MemberCacheCount == 0 ? Array.Empty<ExecutableMemberCache?>() : new ExecutableMemberCache?[codeObject.MemberCacheCount];
@@ -63,6 +65,17 @@ internal sealed partial class LythonRuntime
         private GeneratorDelegation? _delegation;
         internal bool HasYield { get; private set; }
         internal object YieldValue { get; private set; } = PyNone.Instance;
+
+        internal async ValueTask ReleaseGeneratorTemporariesAsync(bool asynchronous)
+        {
+            _stack.DeferAsyncDisposal = asynchronous;
+            try
+            {
+                _stack.RemoveTail(_stack.Count);
+                if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
+            }
+            finally { _stack.DeferAsyncDisposal = false; }
+        }
 
         internal void Resume(object sent, LythonRuntimeException? injected)
         {

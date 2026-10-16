@@ -5,6 +5,48 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class GeneratorExpressionBoundaryLifetimeTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecutableFilterAwaitsTruthProtocolWithoutReplay(bool cancel)
+    {
+        const string source = "class Truth:\n def __bool__(self):\n  with open('/events.txt','a') as output:output.write('truth')\n  return True\ng=(i for i in (7,) if Truth())\nprint(list(g))";
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/events.txt", "before:");
+        var entered = cancel ? host.PauseWriteUntilCancellation("/events.txt") : null;
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            if (entered is not null)
+            {
+                var first = await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.Same(entered, first);
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                cancellation.Cancel();
+            }
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            else Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(cancel ? "" : "[7]\n", result.StandardOutput);
+            Assert.Equal(cancel ? "before:" : "before:truth", host.ReadText("/events.txt"));
+            Assert.True(host.CompletedAsynchronously > 0);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]

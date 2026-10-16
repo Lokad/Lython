@@ -16,7 +16,7 @@ internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan) : Execu
 internal sealed record ExecutableConvertFormattedValue(char Conversion) : ExecutableOperation;
 internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier) : ExecutableOperation;
 internal sealed record ExecutableJoinFormattedParts(int Count) : ExecutableOperation;
-internal sealed record ExecutableCreateGeneratorExpression(LoweredGeneratorExpression Expression) : ExecutableOperation;
+internal sealed record ExecutableCreateGeneratorExpression(ExecutableCodeObject CodeObject, LythonSourceSpan OuterSpan) : ExecutableOperation;
 
 internal sealed partial class ExecutableScript
 {
@@ -24,13 +24,6 @@ internal sealed partial class ExecutableScript
     {
         private void EmitOperation(ExecutableOperation operation, LythonSourceSpan span, int block)
             => AddInstruction(block, ExecutableInstruction.ApplyOperation(InternConstant(operation), span));
-
-        private int CompileSuspendingGeneratorExpression(LoweredGeneratorExpression expression, int block)
-        {
-            block = CompileExpression(expression.Clauses[0].Iterable, block);
-            EmitOperation(new ExecutableCreateGeneratorExpression(expression), expression.Span, block);
-            return block;
-        }
 
         private int CompileExpandedCall(LoweredCallExpression call, int block)
         {

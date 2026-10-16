@@ -163,43 +163,12 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableCreateGeneratorExpression comprehension:
                     var outer = Pop(ref _stack, span);
-                    var expression = CaptureOutermostIterable(comprehension.Expression, outer, _context, span);
-                    PushObserved(asynchronous ? await EvaluateLoweredExpressionAsync(expression, _context).ConfigureAwait(false)
-                        : EvaluateLoweredExpression(expression, _context), span);
-                    SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, _context);
+                    PushObserved(await PyGenerator.CreateExpressionAsync(comprehension.CodeObject, _context,
+                        outer, comprehension.OuterSpan, span, asynchronous).ConfigureAwait(false), span);
                     break;
                 default: await ExecutePreparedDefinitionOperationAsync(operation, span, asynchronous).ConfigureAwait(false); break;
             }
         }
-    }
-
-    private sealed class CapturedComprehensionClauses(
-        IReadOnlyList<LoweredComprehensionClause> source, LoweredComprehensionClause first) : IReadOnlyList<LoweredComprehensionClause>
-    {
-
-        public int Count => source.Count;
-        public LoweredComprehensionClause this[int index] => index == 0 ? first : source[index];
-        public IEnumerator<LoweredComprehensionClause> GetEnumerator()
-        {
-            for (var i = 0; i < Count; i++) yield return this[i];
-        }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-
-    private static LoweredGeneratorExpression CaptureOutermostIterable(LoweredGeneratorExpression expression, object value, ExecutionContext _context, LythonSourceSpan span)
-    {
-        IReadOnlyList<LoweredComprehensionClause> Capture(IReadOnlyList<LoweredComprehensionClause> clauses)
-        {
-            // One small overlay retains the computed iterable; clause metadata
-            // stays shared with the compiled script regardless of clause count.
-            const long bytes = 256;
-            _context.MemoryGovernor.Reserve(bytes, span);
-            _context.MemoryGovernor.Commit(bytes);
-            var overlay = new CapturedComprehensionClauses(clauses,
-                clauses[0] with { Iterable = new LoweredCapturedExpression(clauses[0].Iterable.Syntax, value) });
-            return overlay;
-        }
-        return expression with { Clauses = Capture(expression.Clauses) };
     }
 
     private static async ValueTask<PyString> FormatSuspendedFieldAsync(object value, char? conversion, string? specifier,

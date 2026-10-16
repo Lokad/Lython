@@ -658,6 +658,21 @@ advancement errors exhaust the generator, with asynchronous iterator cleanup
 awaited. Captured writes made while a generator function is suspended become
 visible when it resumes, including direct call arguments.
 
+Eligible generator expressions at executable sites use child code objects with
+local slots, shared captured cells and resumable loop/yield instructions. Their
+ordinary clauses and items do not use lowered expression evaluation or force
+caller namespace mirroring. They share generator-function send/throw/close
+behavior: a non-None send before the first pull fails, later sent values are
+discarded, and close/throw before starting do not advance the outer iterator.
+The `.0` local retains that iterator's identity. Closing the expression does not
+close a separately retained Python outer iterator. Native outer resources still
+receive awaited cleanup, including entry refusal/cancellation before first pull.
+Actual suspension in filters, targets, inner iterables and items uses the async
+instruction path without replay. Required class/lowered routes remain separate;
+this is not retirement of every generator-expression execution route.
+Generator-expression send/throw/close currently require an executable creation
+site; required lowered/class routes retain their earlier iterator-only interface.
+
 Suspension is supported in formatted-string fields and dynamic specifiers,
 including unparenthesized field yields and tuple/starred yielded expression lists,
 starred calls/displays, outermost comprehension iterables, match guards and
