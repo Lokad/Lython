@@ -1,0 +1,18 @@
+{
+  "baselineRevision": "a5a96af2612afa23eeafb5fbc59a8b4e7de7a74d",
+  "candidateRevision": "7caf483372a2f941e0eeacb85cb3470d29683cca",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "e70a4fd31291eafdcf541938426c639729e61036a0ae59064ca9ae089c33b89b",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingTargets.cs": "91e15be6f167aabeda7fb409491bbedf324db783659db3f4a566370e9925f417",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedTargets.cs": "7a197ef6de6d9fc071023c83abd59ec65f174f408743ea6b5adb60ed95142e21"
+  },
+  "sourceArchiveSha256": "6dc365c831e2699d4feaecd3d6f769c6392938f0830955c63108869db078aa49",
+  "caseId": "scripts.text-summary.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Compile ordinary subscript-store receiver/key expressions in existing frame, with fixed three-operand mutation and cleanup. Remove ordinary syntax/lowered target evaluation; no read-array/dictionary packing. Both roles include type-only setter/deleter correctness prerequisite; its effect is unmeasured.",
+  "normalGCAndTiering": true,
+  "boundary": "Warm synchronous Run for unchanged complete text-summary file job with matched input/output staging, exact file checks, fresh state, execution/projection and cleanup; ordinary warm CPython. Compile/startup/transport/full hashing excluded.",
+  "stoppingRule": "One fixed existing complete text job only; no repeat, retuning, new workload/framework or 600-second lane. Preserve evidence and reject an unjustified prototype."
+}

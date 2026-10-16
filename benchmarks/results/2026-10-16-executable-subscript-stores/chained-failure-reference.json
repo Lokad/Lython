@@ -1,0 +1,17 @@
+{
+  "python": "CPython 3.13.2",
+  "checks": [
+    {
+      "source": "box={}\nclass Bad:\n def __setitem__(self,key,value): raise ValueError('bad')\ntry: box['ok']=Bad()['bad']=[]\nexcept ValueError: print('ok' in box,box['ok'])",
+      "stdout": "True []\n"
+    },
+    {
+      "source": "left={}\nright={}\nbox=left\nkey='old'\ndef rhs():\n global box,key\n box=right\n key='new'\n return 1\nbox[key]=rhs()\nprint(left,right)",
+      "stdout": "{} {'new': 1}\n"
+    },
+    {
+      "source": "left={}\nright={}\nbox=left\ndef receiver(): return box\ndef key():\n global box\n box=right\n return 'kept'\nreceiver()[key()]=7\nprint(left,right)",
+      "stdout": "{'kept': 7} {}\n"
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "groups": [
+    {
+      "stage": "subscript-store-prototype-white",
+      "filter": "FullyQualifiedName~ExecutableSubscriptStoreTests|FullyQualifiedName~SubscriptSetterBindingTests",
+      "assemblySha256": "3C4D2B9424FEDFC33797B0FB122016B81B98C1910D640EE0C5C71F19A695CE24",
+      "counters": {
+        "total": "4",
+        "executed": "4",
+        "passed": "4",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 1090
+    },
+    {
+      "stage": "subscript-store-qualified-white",
+      "filter": "Category!=Stress",
+      "assemblySha256": "3C4D2B9424FEDFC33797B0FB122016B81B98C1910D640EE0C5C71F19A695CE24",
+      "counters": {
+        "total": "2358",
+        "executed": "2358",
+        "passed": "2358",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 11475
+    },
+    {
+      "stage": "subscript-store-qualified-public",
+      "filter": "(FullyQualifiedName~SubscriptStoreExecutionTests|FullyQualifiedName~MixedSubscriptSyntaxTests|FullyQualifiedName~Generator|FullyQualifiedName~Assignment|FullyQualifiedName~SubscriptIndexProtocolTests|FullyQualifiedName~OperatorModuleFunctionTests)&Category!=Stress",
+      "assemblySha256": "536F532D4907C3633924A79B0A24A89B6C543252354392AA6645B3E62E35E738",
+      "counters": {
+        "total": "416",
+        "executed": "416",
+        "passed": "416",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 8250
+    },
+    {
+      "stage": "subscript-store-governed-public",
+      "filter": "(FullyQualifiedName~Governed|FullyQualifiedName~Representative|FullyQualifiedName~ComparisonFileWorkerTests)&Category!=Stress",
+      "assemblySha256": "536F532D4907C3633924A79B0A24A89B6C543252354392AA6645B3E62E35E738",
+      "counters": {
+        "total": "284",
+        "executed": "284",
+        "passed": "284",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 14824
+    }
+  ],
+  "groupsOverlap": true,
+  "independentCPythonGoldens": 16,
+  "prototypeRetained": true,
+  "originalStressRerun": false,
+  "fullLocalPublicRerun": false,
+  "excludedEvidence": [
+    {
+      "stage": "subscript-store-slot-fix-build",
+      "reason": "CS8625: missing required property diagnostic span; subsequently fixed"
+    },
+    {
+      "stage": "subscript-store-slot-fix-white/subscript-store-slot-fix-public",
+      "reason": "Invalid qualification: invoked after failed build against stale assemblies; zero white-box matches, two public failures. Superseded after successful build."
+    },
+    {
+      "stage": "subscript-store-prototype-public",
+      "reason": "21/22 pass: existing LA3157 false positive after partial chained mutation. Independent original source retained; runtime control now prints complete mutated mapping, without removing partial-write assertion."
+    }
+  ]
+}

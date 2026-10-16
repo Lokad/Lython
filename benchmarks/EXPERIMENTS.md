@@ -7,11 +7,27 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 executable subscript-store delivery](results/2026-10-16-executable-subscript-stores/README.md)
+compiles ordinary target reads in the existing frame and removes their general
+syntax/lowered-evaluation binding. One complete text job observed 6.7951 ->
+6.4143 ms, CPython 1.2393 ms, spread 12.4%/4.8%/1.9%. The timing improvement is
+inconclusive; source consolidation remains. Both roles include the type-slot
+mutation correctness prerequisite, which is unmeasured. No repeat or retuning.
+The leading text snapshot AN replaces AM; AM's original row and identity remain:
+
+| Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
+| --- | --- | ---: | ---: | ---: | --- |
+| Complete text-summary file job [AM], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.831 ms | 1.322 ms | — | Short baseline diagnostic at 72856c8c; 5.7% spread; wrapper candidate inconclusive and removed |
+
+| Label | Date | Measured Lython revision | Evidence |
+| --- | --- | --- | --- |
+| AM | 2026-10-16 | Baseline 72856c8c; final production sources restored exactly; rejected lower-call candidate excluded from the leading time | [Complete text job, unchanged fixtures and rejected prototype](results/2026-10-16-string-lower-call/README.md) |
+
 The [2026-10-16 lower-call wrapper experiment](results/2026-10-16-string-lower-call/README.md)
 was rejected and all production changes removed. One complete text job observed
 6.8308 -> 6.7464 ms, CPython 1.3224 ms, spread 5.7%/4.8%/0.9%: a 1.2% change
-within variability. No repeat/retuning. The leading representative text row AM
-uses the newer 72856c8c **baseline**; historical AA stays archived below. Twelve
+within variability. No repeat/retuning. The historical representative text row AM
+uses the 72856c8c **baseline**; historical AA stays archived below. Twelve
 useful public regressions remain, with no required discarded implementation.
 
 The [2026-10-16 native-index candidate](results/2026-10-16-async-native-index/README.md)

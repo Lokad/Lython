@@ -4,7 +4,7 @@
 | --- | --- | ---: | ---: | ---: | --- |
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
-| Complete text-summary file job [AM], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.831 ms | 1.322 ms | — | Short baseline diagnostic at 72856c8c; 5.7% spread; wrapper candidate inconclusive and removed |
+| Complete text-summary file job [AN], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.414 ms | 1.239 ms | — | Short diagnostic at 7caf4833; target-read consolidation retained; timing change inconclusive (baseline spread 12.4%) |
 | Complete JSON-lines aggregation [AC], warm | 4,096 records / 110,592 UTF-8 bytes | 9.692 ms | 4.260 ms | — | Historical warm diagnostic; elapsed change within spread |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
 | File search with helper and protected early exit [P], warm | 2,049 lines / 42,010 UTF-8 bytes | 4.249 ms | 0.265 ms | — | One candidate diagnostic; inconclusive (56.4% spread) |
@@ -41,7 +41,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 | --- | --- | --- | --- |
 | AF | 2026-10-15 | 654b4f5a; two identical Lython controls, freshly compiled configuration job | [Compile-to-result boundary, controls and independent file goldens](benchmarks/results/2026-10-15-config-fresh/README.md) |
 | C | 2026-10-14 | f95fb734, governed runtime and worker ownership; parser candidate rejected | [Complete CSV diagnostic](benchmarks/results/2026-10-14-representative-csv/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-csv/micro.json) |
-| AM | 2026-10-16 | Baseline 72856c8c; final production sources restored exactly; rejected lower-call candidate is excluded from the leading time | [Complete text job, unchanged fixtures and rejected prototype](benchmarks/results/2026-10-16-string-lower-call/README.md) |
+| AN | 2026-10-16 | 7caf4833; three frozen compiler/runtime files on a5a96af2; both roles include the type-slot mutation prerequisite | [Executable subscript headers, correctness and inconclusive complete-job timing](benchmarks/results/2026-10-16-executable-subscript-stores/README.md) |
 | AC | 2026-10-15 | Working JSON value-forwarding candidate on 50583327; one frozen production source; unchanged script/tooling | [Complete JSON file job and callback/ownership checks](benchmarks/results/2026-10-15-json-value-dispatch/README.md) |
 | AD | 2026-10-15 | Working exact-bytes sum candidate on 64fecd53; one frozen source; unchanged script/tooling | [Complete manifest job, exact sums and ownership/preflight checks](benchmarks/results/2026-10-15-bytes-sum/README.md) |
 | P | 2026-10-15 | Working protected-loop candidate on b2235259; two frontend source changes frozen by hashes | [Separate warm and compile/run diagnostics](benchmarks/results/2026-10-15-protected-loop-jumps/README.md), [source declaration](benchmarks/results/2026-10-15-protected-loop-jumps/comparison-declaration.json) |
@@ -101,6 +101,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Executable ordinary subscript stores, 2026-10-16 | a5a96af2 → 7caf4833; unchanged complete text job | Inconclusive: 6.795 →6.414 ms; baseline spread12.4% | [Executable coverage, type slots and operand cleanup](benchmarks/results/2026-10-16-executable-subscript-stores/README.md) |
 | Async native integer-index reads, 2026-10-16 | 06e7f2df → 917d8bb9; identical existing ASCII text job | 10.7% lower median, one 512-read diagnostic | [Shared index correctness and guarded dispatch](benchmarks/results/2026-10-16-async-native-index/README.md) |
 | Async exact-integer unary dispatch, 2026-10-16 | 66addead → f2fb4e07; identical fixture 5d298b6f | 23.6% lower median, one 2,048-value dynamic unary loop | [One diagnostic and protocol/ownership controls](benchmarks/results/2026-10-16-async-integer-unary/README.md) |
 | Eager helper-call comprehension, 2026-10-16 | 3bc463a8 → frozen inlined candidate | 4.2% lower median in one short run; external CPython timing inconclusive (38.3% spread) | [Caller-frame scope/transport evidence](benchmarks/results/2026-10-16-inline-comprehensions/README.md) |
