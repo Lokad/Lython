@@ -1032,3 +1032,5 @@ collections per completed job versus one for unbound catches. These cases
 complete 12–14 jobs per nominal four-second window versus 1,250–1,267 for unbound catches;
 each window finishes its last complete job.
 The report also records failed memory recovery after reference withdrawal.
+
+- [Shared zero-argument string entry](results/2026-10-16-noarg-string-consolidation/README.md): three marker/helper families replaced by one guarded entry and cached static operations. Source shrinks by 30 lines; existing semantic/guard/ownership controls pass. The one complete-text diagnostic is inconclusive (1.6% higher median within 9.0% spread); no speedup or regression established.

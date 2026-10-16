@@ -1,0 +1,52 @@
+{
+  "tests": [
+    {
+      "stage": "focused-white",
+      "passed": 138,
+      "milliseconds": 1193
+    },
+    {
+      "stage": "public-casing",
+      "passed": 205,
+      "milliseconds": 2517
+    },
+    {
+      "stage": "public-stack",
+      "passed": 57,
+      "milliseconds": 8161
+    },
+    {
+      "stage": "full-white",
+      "passed": 2734,
+      "milliseconds": 18101
+    }
+  ],
+  "probes": [
+    {
+      "mode": "sync",
+      "matchingCases": 5,
+      "explicitUnsupportedCases": 1
+    },
+    {
+      "mode": "async",
+      "matchingCases": 5,
+      "explicitUnsupportedCases": 1
+    }
+  ],
+  "frozenGuardSequenceUnchanged": true,
+  "removed": [
+    "DirectStringStrip",
+    "DirectStringSplit",
+    "DirectStringLower",
+    "InvokeStringStrip",
+    "InvokeStringSplit",
+    "InvokeStringLower"
+  ],
+  "staticOperations": "Three fixed static readonly Func instances; no receiver/context capture or per-lookup construction. Split operation uses a static lambda.",
+  "productionDiff": {
+    "files": 5,
+    "insertions": 24,
+    "deletions": 54
+  },
+  "publicContractChange": false
+}
