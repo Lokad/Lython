@@ -26,7 +26,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
         {
             if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         });
         Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
         Assert.Equal(1, iterable.Disposals);

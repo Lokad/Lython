@@ -195,7 +195,7 @@ public sealed class LoweredAugmentedTargetBoundaryTests(ITestOutputHelper output
             SourcePath = "/augmented-target.py", CancellationToken = cancellation
         });
         if (asynchronous) await LythonRuntime.ExecuteStatementsAsync(lowered.Statements, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, context, default, null);
         AssertUnwound(context);
         return context;
     }

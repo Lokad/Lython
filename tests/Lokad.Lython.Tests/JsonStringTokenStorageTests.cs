@@ -17,7 +17,7 @@ public sealed class JsonStringTokenStorageTests
         context.Variables["source"] = PyString.FromOwnedUtf8([(byte)'"', 255, (byte)'"'], context.MemoryGovernor, null);
         var error = asynchronous
             ? await Assert.ThrowsAnyAsync<Exception>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
-            : Assert.ThrowsAny<Exception>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+            : Assert.ThrowsAny<Exception>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
         Assert.Contains("UTF", error.Message, StringComparison.OrdinalIgnoreCase);
         AssertUnwound(context);
     }
@@ -38,7 +38,7 @@ public sealed class JsonStringTokenStorageTests
         context.Variables["source"] = PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, null);
         var decoded = Assert.IsType<PyString>(asynchronous
             ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
-            : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+            : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
         if (bytes.Length > 2) bytes[1] = (byte)'z';
         Assert.Equal(expected, decoded.AsString());
         if (expected.Length == 0) Assert.Same(PyString.Empty, decoded);
@@ -64,14 +64,14 @@ public sealed class JsonStringTokenStorageTests
             {
                 var error = asynchronous
                     ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
-                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
                 Assert.Equal("MemoryError", error.ExceptionType);
                 Assert.Equal(PyString.EstimateApproximateBytes(length), context.MemoryGovernor.LastDeniedReservationBytes);
             }
             else
             {
                 var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
-                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null);
+                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
                 Assert.Equal(new string('a', length), Assert.IsType<PyString>(result).AsString());
             }
             Assert.Equal(1, arm.Calls);

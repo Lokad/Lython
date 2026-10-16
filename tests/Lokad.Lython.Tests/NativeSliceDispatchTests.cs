@@ -46,7 +46,7 @@ public sealed class NativeSliceDispatchTests
         var syntax = LythonFrontend.Compile(source).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var calls = operation is "augmented" or "augmented-key" ? 2 : 1;
         Assert.Equal(asynchronous ? 0 : calls, checkpoint.SyncCalls);
         Assert.Equal(asynchronous ? calls : 0, checkpoint.AsyncCalls);
@@ -68,7 +68,7 @@ public sealed class NativeSliceDispatchTests
         LythonRuntimeException error;
         if (asynchronous)
             error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context));
-        else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null));
+        else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
         Assert.Equal("maximum collection size exceeded (2)", error.Message);
         Assert.Equal(BigInteger.Zero, Assert.Single(target.Iterate()));
         Assert.Null(context.CurrentExecutableFrame);

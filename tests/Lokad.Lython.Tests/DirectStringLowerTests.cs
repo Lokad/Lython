@@ -164,7 +164,7 @@ public sealed class DirectStringLowerTests(ITestOutputHelper output)
 
     private static async ValueTask<object?> Execute(ExecutableCodeObject code, Context context, bool asynchronous)
         => asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
-            : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
 
     private static void AssertUnwound(Context context)
     {

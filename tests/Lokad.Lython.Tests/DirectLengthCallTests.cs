@@ -136,7 +136,7 @@ public sealed class DirectLengthCallTests(ITestOutputHelper output)
         }
         async ValueTask<object?> Run(Context context) => asynchronous
             ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
-            : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         static void Check(Context context)
         {
             Assert.Null(context.CurrentExecutableFrame);

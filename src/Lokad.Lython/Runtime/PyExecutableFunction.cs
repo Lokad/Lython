@@ -6,10 +6,6 @@ internal sealed class PyExecutableFunction : PyFunctionBase
 
     private readonly ExecutableCodeObject _codeObject;
     private readonly IReadOnlyList<LythonRuntime.ExecutableCell> _closureCells;
-    // Layout-to-slot map shared across invocations: layout index to frame
-    // slot, or -1 when the name is not a frame local (like a name-lookup
-    // miss today). Built once per function value.
-    private readonly int[] _argumentSlotMap;
     private readonly bool _argumentsAreLocals;
 
     public PyExecutableFunction(
@@ -26,17 +22,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         _codeObject = codeObject;
         _closureCells = closureCells;
         SupportsDirectPositional = !_codeObject.RequiresLocalVariableMirroring && SupportsPositionalBinding;
-        var layout = BindingPlan.LayoutParameterNames;
-        _argumentSlotMap = new int[layout.Count];
-        for (var i = 0; i < layout.Count; i++)
-        {
-            _argumentSlotMap[i] = codeObject.LocalNameToSlot.TryGetValue(layout[i], out var slot) ? slot : -1;
-        }
-        // The invocation already owns this exact-size array through completion.
+        // Compiler parameter slots are the binding-layout prefix. The invocation
+        // already owns this exact-size array through completion.
         // Captures use separate cells; exposed locals copy values, never the array.
-        _argumentsAreLocals = !codeObject.RequiresLocalVariableMirroring && layout.Count == codeObject.LocalNames.Count;
-        for (var i = 0; _argumentsAreLocals && i < _argumentSlotMap.Length; i++)
-            _argumentsAreLocals = _argumentSlotMap[i] == i;
+        _argumentsAreLocals = !codeObject.RequiresLocalVariableMirroring &&
+            BindingPlan.LayoutParameterNames.Count == codeObject.LocalNames.Count;
     }
 
     protected override bool RequiresArgumentMirroring => _codeObject.RequiresLocalVariableMirroring;
@@ -48,9 +38,9 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         BoundCallArguments boundArguments,
         LythonSourceSpan span)
     {
-        if (LythonRuntime.TryExecuteSimpleReturn(_codeObject, frame, boundArguments, _argumentSlotMap, span, out var result))
+        if (LythonRuntime.TryExecuteSimpleReturn(_codeObject, frame, boundArguments, span, out var result))
             return result;
-        return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _argumentSlotMap, _closureCells, _argumentsAreLocals, span)
+        return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, _argumentsAreLocals, span)
             ?? PyNone.Instance;
     }
 
@@ -60,10 +50,10 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         LythonSourceSpan span)
     {
         // Only statically proven bodies without callbacks use this shared shortcut.
-        if (LythonRuntime.TryExecuteSimpleReturn(_codeObject, frame, boundArguments, _argumentSlotMap, span, out var result))
+        if (LythonRuntime.TryExecuteSimpleReturn(_codeObject, frame, boundArguments, span, out var result))
             return result;
         return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
-            _codeObject, frame, boundArguments, _argumentSlotMap, _closureCells, _argumentsAreLocals, span).ConfigureAwait(false)
+            _codeObject, frame, boundArguments, _closureCells, _argumentsAreLocals, span).ConfigureAwait(false)
             ?? PyNone.Instance;
     }
 }

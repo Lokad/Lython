@@ -41,7 +41,7 @@ public sealed class ExecutableSliceStoreTests
             LythonRuntimeException error;
             if (asynchronous)
                 error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context));
-            else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null));
+            else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(1, deny.Calls);
             Assert.Equal(BigInteger.Zero, Assert.Single(target.Iterate()));

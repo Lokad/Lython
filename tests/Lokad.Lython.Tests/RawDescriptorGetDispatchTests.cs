@@ -46,7 +46,7 @@ public sealed class RawDescriptorGetDispatchTests
                 await pending.WaitAsync(TimeSpan.FromSeconds(10));
             }
         }
-        else Assert.Same(payload, LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null));
+        else Assert.Same(payload, LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
         Assert.Equal(asynchronous ? 0 : 1, getter.SyncCalls);
         Assert.Equal(asynchronous ? 1 : 0, getter.AsyncCalls);
         Assert.Null(context.CurrentExecutableFrame);
@@ -74,7 +74,7 @@ public sealed class RawDescriptorGetDispatchTests
         LythonRuntimeException error;
         if (asynchronous)
             error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context));
-        else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null));
+        else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
         Assert.Equal("TypeError", error.ExceptionType);
         Assert.Equal($"'{(classMethod ? "classmethod" : "property")}' object is not callable", error.Message);
         Assert.Equal(0, body.Calls);

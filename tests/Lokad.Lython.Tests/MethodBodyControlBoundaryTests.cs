@@ -190,7 +190,7 @@ public sealed class MethodBodyControlBoundaryTests(ITestOutputHelper output)
         var tape = new Tape(root, active, cancellation);
         root.Variables["stamp"] = tape;
         if (asynchronous) await LythonRuntime.ExecuteStatementsAsync(lowered.Statements, root);
-        else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, root, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, root, default, null);
         var receiver = Assert.IsType<PyInstance>(root.Variables["runner"]);
         AssertUnwound(root);
         return new(root, receiver, Bind(receiver, "run"), tape, active);

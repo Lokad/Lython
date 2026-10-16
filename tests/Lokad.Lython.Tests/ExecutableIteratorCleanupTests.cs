@@ -25,7 +25,7 @@ public sealed class ExecutableIteratorCleanupTests
         void Run()
         {
             if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).GetAwaiter().GetResult();
-            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         }
         if (fails) Assert.Equal("ZeroDivisionError", Assert.Throws<LythonRuntimeException>(Run).ExceptionType);
         else Run();

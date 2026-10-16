@@ -42,7 +42,7 @@ public sealed class ComprehensionLambdaExecutableTests
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var functions = Assert.IsType<PyList>(context.Variables["result"]);
         Assert.Equal(3, functions.Count);
         foreach (var value in functions)
@@ -144,7 +144,7 @@ public sealed class ComprehensionLambdaExecutableTests
         var failure = Assert.Throws<LythonRuntimeException>(() =>
         {
             if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).GetAwaiter().GetResult();
-            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         });
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Same(original, context.Variables["target"]);

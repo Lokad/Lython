@@ -35,7 +35,7 @@ public sealed class ExecutableAugmentedMemberTests
             LythonRuntimeException error;
             if (asynchronous)
                 error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context));
-            else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null));
+            else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(1, rhs.Calls);
             Assert.Equal(0, Assert.IsType<PyInstance>(context.Variables["box"]).OwnAttributeCount);
@@ -57,7 +57,7 @@ public sealed class ExecutableAugmentedMemberTests
         var syntax = LythonFrontend.Compile("class Box:\n @property\n def value(self): return checkpoint()\n @value.setter\n def value(self,value): checkpoint()\nbox=Box()\nbox.value+=checkpoint()").Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         Assert.Equal(asynchronous ? 0 : 3, checkpoint.SyncCalls);
         Assert.Equal(asynchronous ? 3 : 0, checkpoint.AsyncCalls);
         Assert.Null(context.CurrentExecutableFrame);

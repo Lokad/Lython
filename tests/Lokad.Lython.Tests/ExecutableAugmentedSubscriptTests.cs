@@ -43,7 +43,7 @@ public sealed class ExecutableAugmentedSubscriptTests
         var syntax = LythonFrontend.Compile("class Box:\n def __getitem__(self,key): return checkpoint(key)\n def __setitem__(self,key,value): checkpoint(key,value)\nbox=Box()\nkey=[]\nbox[key]+=checkpoint()").Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         Assert.Equal(asynchronous ? 0 : 3, checkpoint.SyncCalls);
         Assert.Equal(asynchronous ? 3 : 0, checkpoint.AsyncCalls);
         Assert.Same(context.Variables["key"], checkpoint.Key);
@@ -71,11 +71,11 @@ public sealed class ExecutableAugmentedSubscriptTests
                 LythonRuntimeException error;
                 if (asynchronous)
                     error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context));
-                else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null));
+                else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
                 Assert.Equal("MemoryError", error.ExceptionType);
             }
             else if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
             Assert.Equal(1, rhs.Calls);
             var alias = Assert.IsType<PyList>(rhs.Alias);
             Assert.Equal(deny ? 1 : 1025, alias.Count);

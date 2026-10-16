@@ -154,7 +154,7 @@ public sealed class NativeAggregateStateTests
     }
 
     private static object? Run(ExecutableScript code, LythonRuntime.ExecutionContext context)
-        => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null);
+        => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
 
     private static ExecutableScript Compile(string source)
     {

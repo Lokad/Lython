@@ -18,7 +18,7 @@ public sealed class EagerComprehensionExecutableTests
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
         Assert.Empty(code.ExpressionFallbacks);
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 4 * 1024 * 1024 });
-        LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+        LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         Assert.Equal(new BigInteger(511), Assert.Single(Assert.IsType<PyList>(context.Variables["result"])));
         Assert.False(context.TryGetInlinedBinding("value", out _));
     }
@@ -54,7 +54,7 @@ public sealed class EagerComprehensionExecutableTests
         var error = Assert.Throws<LythonRuntimeException>(() =>
         {
             if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).GetAwaiter().GetResult();
-            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         });
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Same(original, context.Variables["target"]);

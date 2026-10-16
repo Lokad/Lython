@@ -25,7 +25,7 @@ public sealed class UserItemGetDispatchTests
         var syntax = LythonFrontend.Compile(source).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var calls = descriptor ? 2 : 1;
         Assert.Equal(asynchronous ? 0 : calls, checkpoint.SyncCalls);
         Assert.Equal(asynchronous ? calls : 0, checkpoint.AsyncCalls);

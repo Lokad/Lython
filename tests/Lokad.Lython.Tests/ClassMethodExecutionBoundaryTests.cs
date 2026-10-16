@@ -595,7 +595,7 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
             SourcePath = "/class-method.py", CancellationToken = cancellation
         });
         if (asynchronous) await LythonRuntime.ExecuteStatementsAsync(lowered.Statements, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, context, default, null);
         var type = Assert.IsType<PyType>(context.Variables["C"]);
         Assert.True(type.TryGetOwnMember("f", out var value));
         var function = Assert.IsAssignableFrom<PyFunctionBase>(value);

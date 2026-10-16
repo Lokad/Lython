@@ -17,7 +17,7 @@ public sealed class AsyncExecutableFunctionTests
     {
         var (code, context, capture) = Prepare("def outer(seed):\n    def add(amount=seed,*,scale=2):\n        marker=amount+seed\n        return marker*scale\n    return add\nrecord(outer)\nrecord(outer(3))");
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         Assert.Equal(2, capture.Functions.Count);
         Assert.All(capture.Functions, f => Assert.IsType<PyExecutableFunction>(f));
         var function = capture.Functions[1];
@@ -101,7 +101,7 @@ public sealed class AsyncExecutableFunctionTests
         var (code, context, capture) = Prepare("marker=9\nimport math\ndef f(value):\n    preserved=value+1\n    import operator\n    return operator.add(preserved,9)\nrecord(f)");
         Assert.False(code.RequiresLocalVariableMirroring);
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var function = Assert.Single(capture.Functions);
         var arguments = new[] { CallArgumentValue.Positional(new BigInteger(2)) };
         Assert.Equal(new BigInteger(12), asynchronous ? await function.InvokeAsync(arguments, Span, context) : function.Invoke(arguments, Span, context));

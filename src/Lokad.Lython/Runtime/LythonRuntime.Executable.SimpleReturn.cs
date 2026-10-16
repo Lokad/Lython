@@ -12,7 +12,6 @@ internal sealed partial class LythonRuntime
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         BoundCallArguments arguments,
-        int[] argumentSlotMap,
         LythonSourceSpan entrySpan,
         out object result)
     {
@@ -25,10 +24,10 @@ internal sealed partial class LythonRuntime
         var instructions = codeObject.Blocks[codeObject.EntryBlockIndex].InstructionArray;
         object? left = null, right = null;
         if (kind != ExecutableSimpleReturn.ReturnNone
-            && !TryReadSimpleOperand(codeObject, instructions[0], arguments, argumentSlotMap, out left))
+            && !TryReadSimpleOperand(codeObject, instructions[0], arguments, out left))
             return false;
         if (kind == ExecutableSimpleReturn.IntegerAdd
-            && (!TryReadSimpleOperand(codeObject, instructions[1], arguments, argumentSlotMap, out right)
+            && (!TryReadSimpleOperand(codeObject, instructions[1], arguments, out right)
                 || left is not BigInteger || right is not BigInteger))
             return false;
 
@@ -77,17 +76,18 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool TryReadSimpleOperand(ExecutableCodeObject codeObject, ExecutableInstruction instruction,
-        BoundCallArguments arguments, int[] argumentSlotMap, out object? value)
+        BoundCallArguments arguments, out object? value)
     {
         if (instruction.OpCode == ExecutableOpCode.LoadConst)
         {
             value = codeObject.Constants[instruction.ConstantIndex];
             return true;
         }
-        var index = Array.IndexOf(argumentSlotMap, instruction.LocalSlot);
-        value = index >= 0 ? arguments.Values[index] : null;
+        var index = instruction.LocalSlot;
+        var bound = (uint)index < (uint)arguments.Values.Length;
+        value = bound ? arguments.Values[index] : null;
         // Unbound locals must fail through the original LoadLocal operation.
-        return index >= 0;
+        return bound;
     }
 
     private static object LoadSimpleOperand(ExecutableInstruction instruction, object? value,

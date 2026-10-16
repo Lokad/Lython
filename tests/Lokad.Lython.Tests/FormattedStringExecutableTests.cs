@@ -26,7 +26,7 @@ public sealed class FormattedStringExecutableTests
         void Run(Context context)
         {
             if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).GetAwaiter().GetResult();
-            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         }
         var complete = Create();
         Run(complete);

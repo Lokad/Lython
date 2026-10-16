@@ -226,7 +226,7 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
         if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context).GetAwaiter().GetResult();
-        else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
     }
 
     private static void AssertUnwound(Context context)

@@ -29,7 +29,7 @@ public sealed class DirectStringStartsWithTests
                 Assert.True(pending.IsCompleted);
                 Assert.Equal(true, await pending);
             }
-            else Assert.Equal(true, LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+            else Assert.Equal(true, LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
             Assert.Same(sentinel, pool.GetValue(null));
             Assert.Same(marker, sentinel[0].Value);
             Assert.Null(context.CurrentExecutableFrame);
@@ -58,7 +58,7 @@ public sealed class DirectStringStartsWithTests
             Assert.True(pending.IsCompleted);
             await pending;
         }
-        else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
         Assert.Equal(2, record.Values.Count);
         Assert.True(Assert.IsType<bool>(record.Values[0]));
         Assert.False(Assert.IsType<bool>(record.Values[1]));
@@ -82,12 +82,12 @@ public sealed class DirectStringStartsWithTests
             context.Variables["prefix"] = PyString.FromString("w", context.MemoryGovernor, null);
             if (fuel == 9)
                 Assert.Equal(true, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
-                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
             else
             {
                 var error = asynchronous
                     ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
-                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
                 Assert.Equal("RuntimeError", error.ExceptionType);
                 Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
                 var instructions = code.EntryPoint.Blocks[code.EntryPoint.EntryBlockIndex].InstructionArray;

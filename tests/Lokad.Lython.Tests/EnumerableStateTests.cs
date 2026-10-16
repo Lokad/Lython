@@ -23,7 +23,7 @@ public sealed class EnumerableStateTests
         var parsed = LythonFrontend.Compile("class Source:\n    def __iter__(self):\n        probe()\n        return iter([1])\nreturn Source()\n");
         Assert.Empty(parsed.Diagnostics);
         var code = ExecutableScript.Compile(LoweredScript.Lower(parsed.Script!));
-        var source = LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null);
+        var source = LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
         Assert.NotNull(source);
         if (asynchronous)
         {

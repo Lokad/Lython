@@ -27,7 +27,7 @@ public sealed class DirectStringStripTests
             Assert.True(pending.IsCompleted);
             await pending;
         }
-        else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
         Assert.Equal(2, record.Values.Count);
         Assert.Same(left, record.Values[0]);
         Assert.Equal("café😀", Assert.IsType<PyString>(record.Values[1]).AsString());
@@ -50,12 +50,12 @@ public sealed class DirectStringStripTests
             context.Variables["text"] = text;
             if (fuel == 8)
                 Assert.Same(text, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
-                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
             else
             {
                 var error = asynchronous
                     ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
-                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
                 Assert.Equal("RuntimeError", error.ExceptionType);
                 Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
                 var instructions = code.EntryPoint.Blocks[code.EntryPoint.EntryBlockIndex].InstructionArray;
@@ -86,12 +86,12 @@ public sealed class DirectStringStripTests
                 {
                     var error = asynchronous
                         ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
-                        : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+                        : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
                     Assert.Equal("MemoryError", error.ExceptionType);
                     Assert.Equal(" word ", text.AsString());
                 }
                 else Assert.Same(text, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
-                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
             }
             Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
             Assert.Null(context.CurrentExecutableFrame);

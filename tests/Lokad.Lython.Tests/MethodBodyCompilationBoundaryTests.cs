@@ -422,7 +422,7 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         context.Variables["stamp"] = new Tape.Callback(tape, false);
         context.Variables["decorate"] = new Tape.Callback(tape, true);
         if (asynchronous) await LythonRuntime.ExecuteStatementsAsync(lowered.Statements, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, context, default, null);
         var type = Assert.IsType<PyType>(context.Variables["Runner"]);
         var receiver = Assert.IsType<PyInstance>(context.Variables["runner"]);
         AssertUnwound(context);

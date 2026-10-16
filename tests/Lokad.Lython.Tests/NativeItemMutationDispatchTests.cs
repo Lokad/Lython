@@ -36,11 +36,11 @@ public sealed class NativeItemMutationDispatchTests
             LythonRuntimeException error;
             if (asynchronous)
                 error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context));
-            else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null));
+            else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
             Assert.Equal("TypeError", error.ExceptionType);
         }
         else if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var calls = operation == "augmented" ? 2 : 1;
         Assert.Equal(asynchronous ? 0 : calls, checkpoint.SyncCalls);
         Assert.Equal(asynchronous ? calls : 0, checkpoint.AsyncCalls);
@@ -73,11 +73,11 @@ public sealed class NativeItemMutationDispatchTests
                 LythonRuntimeException error;
                 if (asynchronous)
                     error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context));
-                else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null));
+                else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
                 Assert.Equal("MemoryError", error.ExceptionType);
             }
             else if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
             Assert.Equal(1, fund.Calls);
             Assert.Equal(denied || asynchronous ? 0 : 1, ready.SyncCalls);
             Assert.Equal(!denied && asynchronous ? 1 : 0, ready.AsyncCalls);

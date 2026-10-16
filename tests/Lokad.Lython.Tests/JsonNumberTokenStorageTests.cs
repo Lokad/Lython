@@ -286,7 +286,7 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
 
     private static ValueTask<object?> Run(ExecutableScript code, LythonRuntime.ExecutionContext context, bool asynchronous)
         => asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
-            : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+            : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
 
     private static void AssertUnwound(LythonRuntime.ExecutionContext context)
     {

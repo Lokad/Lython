@@ -52,7 +52,7 @@ public sealed class ExecutableLoopTargetTests
             LythonRuntimeException error;
             if (asynchronous)
                 error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context));
-            else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null));
+            else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.True(values.LimitedAllowance);
             Assert.Equal(1, values.DisposedEnumerations);

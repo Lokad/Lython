@@ -40,7 +40,7 @@ public sealed class StarredDisplayExecutableTests
         void Run(Context context)
         {
             if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).GetAwaiter().GetResult();
-            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         }
         var complete = Create();
         Run(complete);
@@ -73,7 +73,7 @@ public sealed class StarredDisplayExecutableTests
         var failure = Assert.Throws<LythonRuntimeException>(() =>
         {
             if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).GetAwaiter().GetResult();
-            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         });
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Same(original, context.Variables["target"]);
@@ -93,7 +93,7 @@ public sealed class StarredDisplayExecutableTests
         void Run(Context context, bool asynchronous)
         {
             if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).GetAwaiter().GetResult();
-            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         }
         var completed = Context();
         Run(completed, false);

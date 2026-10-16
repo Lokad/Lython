@@ -110,7 +110,7 @@ public sealed class ChainedComparisonObservationTests
         var source = chained ? "return left < 1 < tail()" : "return left < 1";
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
     }
 
     private static void CheckCleanup(Context context)

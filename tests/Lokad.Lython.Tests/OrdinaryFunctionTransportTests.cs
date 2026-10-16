@@ -81,7 +81,7 @@ public sealed class OrdinaryFunctionTransportTests(ITestOutputHelper output)
         }
         async ValueTask<object?> Run(ExecutableCodeObject code, Context context) => asynchronous
             ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
-            : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
     }
 
     private static ExecutableCodeObject Compile(string source)

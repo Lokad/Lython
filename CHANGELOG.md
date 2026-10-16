@@ -4,6 +4,8 @@
 
 - Use Python parameter order in compiled function locals()/vars() snapshots and collect the parameter prefix once per code-object compilation. Preserve values, snapshot aliases, closure cells, live defaults and required lowered routes.
 
+- Remove executable functions’ argument-slot maps, identity scans and simple-return parameter searches. Bind the compiler’s aligned parameter prefix directly, preserving captured-cell writes, exact-size local borrowing and completion-time cleanup; larger frames retain separate locals.
+
 - Bind ordinary Python function and method keyword/variadic calls directly from executable operands and compiled argument names, removing temporary argument transport and the async preparation closure. Share the existing binder and live-default completion; preserve receiver aliases, guards, cancellation, terminal refusal and invocation-owned inputs through suspension.
 
 - Validate intermediate asynchronous chained-comparison results before testing truth or evaluating later operands, matching synchronous string/collection limits and terminal memory admission. Preserve suspended native callbacks, cancellation and result ownership.

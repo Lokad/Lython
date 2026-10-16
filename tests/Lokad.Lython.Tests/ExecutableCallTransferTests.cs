@@ -109,7 +109,7 @@ public sealed class ExecutableCallTransferTests
     }
 
     private static object? Run(ExecutableScript code, LythonRuntime.ExecutionContext context)
-        => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null);
+        => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
 
     private static void CheckResult(object? result)
     {

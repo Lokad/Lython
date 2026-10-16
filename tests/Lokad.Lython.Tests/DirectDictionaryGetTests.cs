@@ -34,7 +34,7 @@ public sealed class DirectDictionaryGetTests
         {
             var pending = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context) : default;
             if (asynchronous) Assert.True(pending.IsCompleted);
-            var result = asynchronous ? await pending : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null);
+            var result = asynchronous ? await pending : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
             Assert.Same(width == 1 ? PyNone.Instance : marker, result);
             Assert.Equal(2, key.Calls);
             Assert.Same(sentinel, field.GetValue(null));
@@ -66,12 +66,12 @@ public sealed class DirectDictionaryGetTests
             context.Variables["key"] = key;
             if (fuel == 9)
                 Assert.Same(marker, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
-                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
             else
             {
                 var error = asynchronous
                     ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
-                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
                 Assert.Equal("RuntimeError", error.ExceptionType);
                 Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
                 var instructions = code.EntryPoint.Blocks[code.EntryPoint.EntryBlockIndex].InstructionArray;
@@ -93,7 +93,7 @@ public sealed class DirectDictionaryGetTests
         var (initial, context) = Prepare("class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        equality()\n        return True\nd={Key():7}\n", new LythonRunOptions { MaxExecutionMemoryBytes = limit });
         var equality = new KeyProbe(PyNone.Instance);
         context.Variables["equality"] = equality;
-        LythonRuntime.ExecuteExecutableCodeObject(initial.EntryPoint, context, default, [], null);
+        LythonRuntime.ExecuteExecutableCodeObject(initial.EntryPoint, context, default, null);
         context.Variables["key"] = PyString.FromString("x", context.MemoryGovernor, null);
         var source = LythonFrontend.Compile("return d.get(key)\n");
         var code = ExecutableScript.Compile(LoweredScript.Lower(source.Script.RequireNotNull()));
@@ -103,7 +103,7 @@ public sealed class DirectDictionaryGetTests
         {
             var error = asynchronous
                 ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
-                : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null));
+                : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(0, equality.Calls);
             Assert.Single(dictionary);

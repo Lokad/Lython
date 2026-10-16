@@ -76,7 +76,7 @@ public sealed class GeneralBoundMethodTransportTests(ITestOutputHelper output)
 
         async ValueTask<object?> Execute(ExecutableCodeObject code, LythonRuntime.ExecutionContext context)
             => asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
-                : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+                : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
 
         static void Unwound(LythonRuntime.ExecutionContext context)
         {

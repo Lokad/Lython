@@ -83,7 +83,7 @@ public sealed class PartialNativeListStateTests
         Assert.Empty(parsed.Diagnostics);
         var code = ExecutableScript.Compile(LoweredScript.Lower(parsed.Script!));
         var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
-            : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null);
+            : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
         var produced = Assert.IsType<PyList>(result);
         Assert.Equal(count + 1, produced.Count);
         Assert.Equal(16000, Assert.IsType<PyString>(produced[0]).Utf8Bytes.Length);

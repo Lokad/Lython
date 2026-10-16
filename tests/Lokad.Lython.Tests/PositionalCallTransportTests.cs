@@ -43,7 +43,7 @@ public sealed class PositionalCallTransportTests(ITestOutputHelper output)
         {
             var result = asynchronous
                 ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(script.EntryPoint, context)
-                : LythonRuntime.ExecuteExecutableCodeObject(script.EntryPoint, context, default, [], null);
+                : LythonRuntime.ExecuteExecutableCodeObject(script.EntryPoint, context, default, null);
             Assert.Same(marker, result);
             Assert.True(tap.Invoked);
             Assert.All(storage, value => Assert.Null(value));
@@ -166,7 +166,7 @@ public sealed class PositionalCallTransportTests(ITestOutputHelper output)
                 Assert.True(pending.IsCompleted);
                 result = await pending;
             }
-            else result = LythonRuntime.ExecuteExecutableCodeObject(script.EntryPoint, context, default, [], null);
+            else result = LythonRuntime.ExecuteExecutableCodeObject(script.EntryPoint, context, default, null);
             Assert.Same(marker, result);
             Assert.Same(sentinel, field.GetValue(null));
             foreach (var argument in sentinel) Assert.Same(marker, argument.Value);
@@ -195,7 +195,7 @@ public sealed class PositionalCallTransportTests(ITestOutputHelper output)
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         _ = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
-            : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var method = Assert.IsType<PyBoundMethod>(context.Variables["method"]);
         Assert.IsType<PyFunction>(method.Function); // Actual class body stays lowered.
         var marker = new object();
@@ -211,7 +211,7 @@ public sealed class PositionalCallTransportTests(ITestOutputHelper output)
         try
         {
             var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
-                : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+                : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
             Assert.Same(marker, result);
             Assert.Same(sentinel, field.GetValue(null));
             foreach (var argument in sentinel)
@@ -380,7 +380,7 @@ public sealed class PositionalCallTransportTests(ITestOutputHelper output)
 
         async ValueTask<object?> Execute(ExecutableCodeObject code, LythonRuntime.ExecutionContext context)
             => asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
-                : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+                : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
 
         static void Unwound(LythonRuntime.ExecutionContext context)
         {

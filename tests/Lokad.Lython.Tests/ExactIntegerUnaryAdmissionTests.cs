@@ -31,7 +31,7 @@ public sealed class ExactIntegerUnaryAdmissionTests
         var error = Assert.Throws<LythonRuntimeException>(() =>
         {
             if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).GetAwaiter().GetResult();
-            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         });
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.True(Assert.IsType<bool>(context.Variables["entered"]));

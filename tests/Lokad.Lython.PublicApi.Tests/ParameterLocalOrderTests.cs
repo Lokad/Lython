@@ -20,6 +20,7 @@ public sealed class ParameterLocalOrderTests
         { "def f(a,*args,**kw):return list(locals()),locals()\nprint(f(1,2,z=3))", "(['a', 'args', 'kw'], {'a': 1, 'args': (2,), 'kw': {'z': 3}})\n" },
         { "def f(*,x,y=2):return list(vars()),vars()\nprint(f(x=1))", "(['x', 'y'], {'x': 1, 'y': 2})\n" },
         { "def f(a,*args,b,**kw):return list(locals()),(a,args,b,kw)\nclass Box:pass\nBox.f=f\nprint(Box().f(2,b=3,z=4)[0])", "['a', 'b', 'args', 'kw']\n" },
+        { "functions=[lambda a,*args,b,**kw:a,lambda a,*args,b,**kw:b,lambda a,*args,b,**kw:args,lambda a,*args,b,**kw:kw]\nfor f in functions:print(f(1,2,b=3,z=4))", "1\n3\n(2,)\n{'z': 4}\n" },
     };
 
     [Theory]
@@ -40,6 +41,31 @@ public sealed class ParameterLocalOrderTests
             Assert.Equal(baseline, budget.ReservedBytes);
         }
         script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EscapingSnapshotRemainsFundedAfterInvocationAndCompilationCleanup(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(
+            "def f(a,*args,b,**kw):return locals()\nshared=[7]\nreturn f(shared,shared,b=shared,tag=shared)", budget);
+        Assert.True(script.IsValid);
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        script.Dispose();
+        Assert.True(budget.ReservedBytes > 0);
+        var snapshot = Assert.IsType<Dictionary<object, object?>>(result.ReturnValue);
+        Assert.Equal(new object[] { "a", "b", "args", "kw" }, snapshot.Keys);
+        var expected = new List<object?> { new System.Numerics.BigInteger(7) };
+        Assert.Equal(expected, Assert.IsType<List<object?>>(snapshot["a"]));
+        Assert.Equal(expected, Assert.IsType<List<object?>>(snapshot["b"]));
+        Assert.Equal(expected, Assert.IsType<List<object?>>(Assert.Single(Assert.IsType<object?[]>(snapshot["args"]))));
+        Assert.Equal(expected, Assert.IsType<List<object?>>(Assert.IsType<Dictionary<object, object?>>(snapshot["kw"])["tag"]));
+        // All projected values have had their final use before ownership ends.
+        result.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
     }
 }

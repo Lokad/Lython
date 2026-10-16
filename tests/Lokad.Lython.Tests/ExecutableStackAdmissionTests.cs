@@ -26,7 +26,7 @@ public sealed class ExecutableStackAdmissionTests
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
         {
             if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
-            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         });
         Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
         Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
@@ -68,7 +68,7 @@ public sealed class ExecutableStackAdmissionTests
                 _ = await pending.WaitAsync(TimeSpan.FromSeconds(5));
             }
         }
-        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, [], null);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         Assert.Equal(1, sink.Calls);
         Assert.Equal(0, context.MemoryGovernor.CurrentAccountedBytes);
         Assert.Equal(baseline, budget.ReservedBytes);

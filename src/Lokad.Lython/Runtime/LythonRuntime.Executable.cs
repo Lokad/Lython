@@ -414,22 +414,19 @@ internal sealed partial class LythonRuntime
         // Module top-level keeps the historical contract: an explicit frame
         // return surfaces once as a signal for Run to project (sync function
         // bodies consume the value directly instead).
-        if (ExecuteExecutableCodeObject(codeObject, context, default, Array.Empty<int>(), null) is { } returnValue)
+        if (ExecuteExecutableCodeObject(codeObject, context, default, null) is { } returnValue)
         {
             throw new ReturnSignal(returnValue);
         }
     }
 
-    // Bound arguments arrive in plan layout order with a precomputed
-    // layout-to-slot map (or -1 for names that are not frame locals).
-    // Indexed stores replace the previous per-local name lookups.
+    // Bound arguments occupy the compiler's parameter prefix in plan layout order.
     // Returns the frame's explicit return value, or null when the body fell
     // through (an explicit guest return is never raw null).
     internal static object? ExecuteExecutableCodeObject(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         BoundCallArguments boundArguments,
-        int[] argumentSlotMap,
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals = false,
         LythonSourceSpan? entrySpan = null)
@@ -438,7 +435,7 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(entrySpan);
         try
         {
-            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells, argumentsAreLocals);
+            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
             // Even a zero-local module has live operands during calls. Publish
             // the same existing frame that the async entry publishes; local
             // slot counts do not determine whether an invocation is active.
@@ -454,13 +451,12 @@ internal sealed partial class LythonRuntime
     }
 
     internal static ValueTask<object?> ExecuteExecutableCodeObjectAsync(ExecutableCodeObject codeObject, ExecutionContext context)
-        => ExecuteExecutableCodeObjectAsync(codeObject, context, default, [], null);
+        => ExecuteExecutableCodeObjectAsync(codeObject, context, default, null);
 
     internal static async ValueTask<object?> ExecuteExecutableCodeObjectAsync(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         BoundCallArguments boundArguments,
-        int[] argumentSlotMap,
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals = false,
         LythonSourceSpan? entrySpan = null)
@@ -469,7 +465,7 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(entrySpan);
         try
         {
-            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells, argumentsAreLocals);
+            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
             context.EnterExecutableSlots(interpreter);
             await interpreter.ExecuteAsync().ConfigureAwait(false);
             return interpreter.HasFrameReturn ? interpreter.FrameReturnValue : null;
@@ -485,7 +481,6 @@ internal sealed partial class LythonRuntime
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         BoundCallArguments boundArguments,
-        int[] argumentSlotMap,
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals)
     {
@@ -506,17 +501,12 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        for (var i = 0; !argumentsAreLocals && i < argumentSlotMap.Length; i++)
+        var argumentValues = boundArguments.Values ?? Array.Empty<object>();
+        for (var i = 0; !argumentsAreLocals && i < argumentValues.Length; i++)
         {
-            var slot = argumentSlotMap[i];
-            if (slot < 0)
-            {
-                continue;
-            }
-
-            var value = boundArguments.Values[i];
-            locals[slot] = value;
-            if (localCells?[slot] is ExecutableCell localCell)
+            var value = argumentValues[i];
+            locals[i] = value;
+            if (localCells?[i] is ExecutableCell localCell)
             {
                 localCell.Value = value;
             }
