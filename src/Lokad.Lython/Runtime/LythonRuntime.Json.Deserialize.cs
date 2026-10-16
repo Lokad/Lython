@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Text.Encodings.Web;
 using System.Text;
 using System.Text.Json;
+using System.Text.Unicode;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Utf8Regex.PythonRe;
@@ -244,7 +245,11 @@ internal sealed partial class LythonRuntime
             {
                 var reader = new Utf8JsonReader(token.Span, new JsonReaderOptions());
                 if (!reader.Read()) throw CreateJsonExpectingError(input, end, JsonIncompleteExpectation.Value, span, context);
-                return (ConvertJsonReaderString(ref reader, context, span), end);
+                // Keep invalid UTF-8 on the backend's established error path.
+                var value = !reader.ValueIsEscaped && Utf8.IsValid(reader.ValueSpan)
+                    ? CreateUtf8String(token.Slice(1, reader.ValueSpan.Length), context, span)
+                    : CreateString(reader.GetString() ?? string.Empty, context, span);
+                return (value, end);
             }
             catch (JsonException ex)
             {
@@ -699,12 +704,6 @@ internal sealed partial class LythonRuntime
             }
 
             return double.Parse(raw, NumberStyles.Float, CultureInfo.InvariantCulture);
-        }
-
-        private static PyString ConvertJsonReaderString(ref Utf8JsonReader reader, ExecutionContext context, LythonSourceSpan span)
-        {
-            var value = CreateString(reader.GetString() ?? string.Empty, context, span);
-            return value;
         }
 
         private enum JsonIncompleteExpectation

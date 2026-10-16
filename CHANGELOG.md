@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Copy well-formed unescaped JSON strings and keys directly from validated UTF-8 tokens into existing governed storage. Remove their temporary CLR string and UTF-8 re-encoding plus the single-use conversion helper. Preserve escaped/error paths, token scratch overlap, before-copy admission, hook cancellation and retained aliases.
+
 - Invoke ordinary one-argument exact-string startswith calls directly from existing frame storage, avoiding per-receiver bound methods and argument repackaging. Reuse the Unicode/tuple kernel and call guards; preserve fuel/spans, suspended arguments, custom-object lookup, exposed receivers and retained funding.
 
 - Reject keyword arguments to builtin str.startswith/endswith through the existing positional binder. Preserve argument evaluation, exposed/unbound/expanded calls and cancellation. Stop static tuple validation after a possible earlier match, allowing valid Python short-circuit behavior while retaining definite invalid-first diagnostics.
