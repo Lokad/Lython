@@ -43,7 +43,6 @@ internal sealed partial class ExecutableScript
         private readonly List<ExecutableImportBinding> _imports = [];
         private readonly List<ExecutableCallSite> _callSites = [];
         private int _memberCacheCount;
-        private readonly List<ExecutableLoopTargetBinding> _loopTargets = [];
         private readonly List<ExecutableFunctionBinding> _functions = [];
         private readonly List<ExecutableMatchCaseBinding> _matchCases = [];
         private readonly List<ExecutableStatementFallback> _statementFallbacks = [];
@@ -139,7 +138,6 @@ internal sealed partial class ExecutableScript
                 _imports.ToArray(),
                 _callSites.ToArray(),
                 _memberCacheCount,
-                _loopTargets.ToArray(),
                 _functions.ToArray(),
                 _matchCases.ToArray(),
                 _statementFallbacks.ToArray(),

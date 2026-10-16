@@ -109,6 +109,11 @@ execution owner until the awaited mutation ends, then clear them even on failure
 They introduce no per-store read dictionary, scratch owner or reservation fee.
 Stored aliases retain their existing funding; clearing operands does not refund
 data still retained by containers or results.
+Ordinary slice stores follow the same policy with five existing operand slots:
+RHS, receiver, start, stop and step. Native list replacement keeps its existing
+temporary-capacity and destination-overlap preflights; user/mapping slice keys
+keep their shell admission. No per-store owner or read dictionary is added.
+Additional header instructions can change narrow memory/fuel failure thresholds.
 
 Host command requests carry the active budget in
 `LythonSubprocessRequest.MemoryBudget`. A cooperating dispatcher borrows it,

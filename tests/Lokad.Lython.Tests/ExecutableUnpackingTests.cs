@@ -15,7 +15,6 @@ public sealed class ExecutableUnpackingTests
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
-        Assert.Empty(code.LoopTargets);
         Assert.Equal(2, code.Constants.OfType<ExecutableUnpackValues>().Count());
         Assert.Single(code.Constants.OfType<ExecutableStoreMember>());
     }

@@ -383,14 +383,6 @@ internal sealed partial class ExecutableScript
             return _callSites.Count - 1;
         }
 
-        private int InternLoopTarget(LoopTargetSyntax target, LythonSourceSpan span)
-        {
-            if (_generator && AssignmentTargetFacts.Reads(target).Any(GeneratorSyntaxFacts.ContainsYield))
-                throw new GeneratorLoweringException("Suspension in assignment target receivers or indices is not supported.", span);
-            _loopTargets.Add(new ExecutableLoopTargetBinding(target, span));
-            return _loopTargets.Count - 1;
-        }
-
         private int InternFunction(LoweredFunctionDefinitionStatement functionDefinition)
         {
             if (_generator && StatementSyntaxTraversal.EnumerateDirectExpressions(functionDefinition.Syntax).Any(GeneratorSyntaxFacts.ContainsYield))

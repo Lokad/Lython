@@ -4,6 +4,7 @@ internal sealed record ExecutableUnpackValues(UnpackingLayout Layout) : Executab
 internal sealed record ExecutableStorePreparedTarget(AssignmentTargetSyntax Target, bool ValueLast) : ExecutableOperation;
 internal sealed record ExecutableStoreSubscript(LythonSourceSpan TargetSpan) : ExecutableOperation;
 internal sealed record ExecutableStoreMember(string MemberName, LythonSourceSpan TargetSpan) : ExecutableOperation;
+internal sealed record ExecutableStoreSlice(LythonSourceSpan TargetSpan) : ExecutableOperation;
 internal sealed record ExecutableReadPreparedTarget(AssignmentTargetSyntax Target) : ExecutableOperation;
 
 internal sealed partial class ExecutableScript

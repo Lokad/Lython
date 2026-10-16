@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile ordinary slice-store receivers and bounds into the current frame. Hold five operands through the existing mutation helpers and awaited user setters; remove the final general target opcode, operand kind, binding table, builder plumbing and VM handlers. Preserve raw bounds, aliases, cancellation, diagnostics and native storage preflights.
+
 - Validate native slice bounds in Python's step/start/stop order, including reads, list assignment/deletion and slice.indices(). Reject invalid or zero steps before later callbacks and replacement iteration; preserve raw user/mapping and worksheet keys. Remove the empty legacy slice-result tracking hook.
 
 - Compile eligible ordinary for-loop and eager-comprehension targets through the shared unpack/member/subscript/name operations. Keep comprehension names in their existing binding scope, preserve directives and closures, and remove their general target-dispatch path without a new opcode or runtime owner.

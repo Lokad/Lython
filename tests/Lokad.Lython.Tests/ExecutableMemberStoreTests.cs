@@ -13,7 +13,6 @@ public sealed class ExecutableMemberStoreTests
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
-        Assert.Empty(code.LoopTargets);
         Assert.Equal("value", Assert.Single(code.Constants.OfType<ExecutableStoreMember>()).MemberName);
     }
 

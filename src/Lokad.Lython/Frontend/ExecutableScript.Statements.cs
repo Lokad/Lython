@@ -232,8 +232,18 @@ internal sealed partial class ExecutableScript
                 EmitOperation(new ExecutableStoreMember(member.MemberName, member.Span), span, block);
                 return block;
             }
-            AddInstruction(block, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(AssignmentTargetFacts.ToLoop(target), span), span));
-            return block;
+            if (target is SliceAssignmentTargetSyntax slice)
+            {
+                block = CompileExpression(LoweredScript.LowerExpression(slice.Target), block);
+                foreach (var bound in new[] { slice.Start, slice.End, slice.Step })
+                {
+                    if (bound is null) AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), span));
+                    else block = CompileExpression(LoweredScript.LowerExpression(bound), block);
+                }
+                EmitOperation(new ExecutableStoreSlice(slice.Span), span, block);
+                return block;
+            }
+            throw new InvalidOperationException("Unknown assignment target.");
         }
 
         private int CompileForStatement(LoweredForStatement statement, int currentBlock)

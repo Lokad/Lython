@@ -40,6 +40,23 @@ internal sealed partial class LythonRuntime
                     finally { _stack.RemoveTail(3); }
                     break;
                 }
+                case ExecutableStoreSlice slice:
+                {
+                    var first = _stack.Count - 5;
+                    try
+                    {
+                        var receiver = _stack[first + 1];
+                        var start = _stack[first + 2];
+                        var stop = _stack[first + 3];
+                        var step = _stack[first + 4];
+                        if (asynchronous && receiver is PyInstance)
+                            await SetHeaderSubscriptAsync(receiver, CreateSliceValue(start, stop, step, slice.TargetSpan, _context),
+                                _stack[first], slice.TargetSpan, _context).ConfigureAwait(false);
+                        else ExecuteSliceAssignment(receiver, start, stop, step, _stack[first], slice.TargetSpan, _context);
+                    }
+                    finally { _stack.RemoveTail(5); }
+                    break;
+                }
                 case ExecutableFailAssertion assertion:
                     ThrowAssertionError(assertion.HasMessage ? Pop(ref _stack, span) : null, _context, span);
                     break;

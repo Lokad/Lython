@@ -76,10 +76,6 @@ internal sealed partial class LythonRuntime
                     }
                     _stack.Push(advanced.Value);
                     break;
-                case ExecutableOpCode.AssignLoopTarget:
-                    var loop = _codeObject.LoopTargets[instruction.LoopTargetIndex];
-                    await AssignLoopTargetAsync(loop.Target, Pop(ref _stack, instruction.Span), loop.Span, _context).ConfigureAwait(false);
-                    break;
                 case ExecutableOpCode.Call:
                     var call = _codeObject.CallSites[instruction.CallSiteIndex];
                     var start = ReadExecutableCallTarget(call, ref _stack, out var callable);

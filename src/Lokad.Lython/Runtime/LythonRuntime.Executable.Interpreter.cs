@@ -434,11 +434,6 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.ForNext:
                     return ExecuteForNext(instruction);
 
-                case ExecutableOpCode.AssignLoopTarget:
-                    var loopBinding = _codeObject.LoopTargets[instruction.LoopTargetIndex];
-                    AssignLoopTarget(loopBinding.Target, Pop(ref _stack, instruction.Span), loopBinding.Span, _context);
-                    break;
-
 
                 case ExecutableOpCode.Call:
                     ExecuteExecutableCall(
@@ -790,7 +785,6 @@ internal sealed partial class LythonRuntime
 
                             case ExecutableOpCode.GetIter or
                                  ExecutableOpCode.ForNext or
-                                 ExecutableOpCode.AssignLoopTarget or
                                  ExecutableOpCode.Call or
                                  ExecutableOpCode.Slice or
                                  ExecutableOpCode.MakeSlice:

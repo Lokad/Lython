@@ -41,7 +41,6 @@ internal enum ExecutableOpCode
     MatchCase,
     GetIter,
     ForNext,
-    AssignLoopTarget,
     Call,
     Subscript,
     Slice,
@@ -145,7 +144,6 @@ internal readonly record struct ExecutableInstruction
         PairCount,
         MatchCaseIndex,
         BlockIndex,
-        LoopTargetIndex,
         CallSiteIndex,
         ExceptionNameIndex,
         CleanupId,
@@ -203,7 +201,6 @@ internal readonly record struct ExecutableInstruction
     public int FailureBlockIndex => ReadOperand(_secondaryOperand, OperandKind.BlockIndex);
     public int TargetBlockIndex => ReadOperand(_primaryOperand, OperandKind.BlockIndex);
     public int ChainSlot => ReadOperand(_primaryOperand, OperandKind.LocalSlot);
-    public int LoopTargetIndex => ReadOperand(_primaryOperand, OperandKind.LoopTargetIndex);
     public int CallSiteIndex => ReadOperand(_primaryOperand, OperandKind.CallSiteIndex);
     public int CleanupId => ReadOperand(OpCode == ExecutableOpCode.EndFinally ? _secondaryOperand : _primaryOperand, OperandKind.CleanupId);
     public int ExceptionNameIndex => ReadOperand(_primaryOperand, OperandKind.ExceptionNameIndex);
@@ -318,8 +315,6 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction ForNext(int targetBlockIndex, LythonSourceSpan span)
         => CreateIndexed(ExecutableOpCode.ForNext, new Operand(OperandKind.BlockIndex, targetBlockIndex), span);
 
-    public static ExecutableInstruction AssignLoopTarget(int loopTargetIndex, LythonSourceSpan span)
-        => CreateIndexed(ExecutableOpCode.AssignLoopTarget, new Operand(OperandKind.LoopTargetIndex, loopTargetIndex), span);
 
     public static ExecutableInstruction Call(int callSiteIndex, LythonSourceSpan span)
         => CreateIndexed(
@@ -462,10 +457,6 @@ internal sealed record ExecutableCallSite(
     public int ArgumentOffset => TargetOffset + 1;
 }
 
-internal sealed record ExecutableLoopTargetBinding(
-    LoopTargetSyntax Target,
-    LythonSourceSpan Span);
-
 internal sealed record ExecutableFunctionBinding(
     LoweredFunctionDefinitionStatement Function,
     ExecutableCodeObject? CodeObject,
@@ -507,7 +498,6 @@ internal sealed class ExecutableCodeObject
         IReadOnlyList<ExecutableImportBinding> imports,
         IReadOnlyList<ExecutableCallSite> callSites,
         int memberCacheCount,
-        IReadOnlyList<ExecutableLoopTargetBinding> loopTargets,
         IReadOnlyList<ExecutableFunctionBinding> functions,
         IReadOnlyList<ExecutableMatchCaseBinding> matchCases,
         IReadOnlyList<ExecutableStatementFallback> statementFallbacks,
@@ -530,7 +520,6 @@ internal sealed class ExecutableCodeObject
         Imports = imports;
         CallSites = callSites;
         MemberCacheCount = memberCacheCount;
-        LoopTargets = loopTargets;
         Functions = functions;
         MatchCases = matchCases;
         StatementFallbacks = statementFallbacks;
@@ -569,8 +558,6 @@ internal sealed class ExecutableCodeObject
     public IReadOnlyList<ExecutableCallSite> CallSites { get; }
 
     public int MemberCacheCount { get; }
-
-    public IReadOnlyList<ExecutableLoopTargetBinding> LoopTargets { get; }
 
     public IReadOnlyList<ExecutableFunctionBinding> Functions { get; }
 

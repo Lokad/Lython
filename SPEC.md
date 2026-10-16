@@ -732,7 +732,11 @@ Eligible ordinary `for` targets and eager-comprehension targets share executable
 unpack and child-store operations. Comprehension names resolve to the active
 inlined binding scope before enclosing global/nonlocal directives or caller slots;
 scope end restores lookup without invalidating retained closures or values.
-General slice and required lowered/generator-expression routes remain separate.
+Ordinary slice headers use the same caller frame: RHS, receiver, start, stop and
+step remain in five operand slots through mutation and actual setter suspension,
+then clear on success or failure. Omitted bounds load None. The general target
+opcode and binding table are removed; required lowered/generator-expression and
+explicitly yielding prepared-target routes remain separate.
 With headers accept parenthesized item lists, optional grouped trailing commas
 and full assignment targets. Target binding is protected by the entered manager:
 failures unwind or suppress through __exit__ like failures in the body.

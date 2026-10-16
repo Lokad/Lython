@@ -15,7 +15,6 @@ public sealed class ExecutableSubscriptStoreTests
         var code = Assert.Single(module.EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
-        Assert.Empty(code.LoopTargets);
         Assert.Single(code.Constants.OfType<ExecutableStoreSubscript>());
     }
 

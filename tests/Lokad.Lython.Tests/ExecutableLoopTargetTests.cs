@@ -17,7 +17,6 @@ public sealed class ExecutableLoopTargetTests
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
-        Assert.Empty(code.LoopTargets);
         Assert.Single(code.Constants.OfType<ExecutableUnpackValues>());
     }
 

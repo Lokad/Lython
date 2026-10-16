@@ -113,7 +113,6 @@ internal sealed partial class LythonRuntime
                                 break;
 
                             case ExecutableOpCode.GetIter or
-                                 ExecutableOpCode.AssignLoopTarget or
                                  ExecutableOpCode.Call or
                                  ExecutableOpCode.Subscript or
                                  ExecutableOpCode.Slice or
