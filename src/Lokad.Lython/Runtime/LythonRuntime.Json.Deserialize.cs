@@ -669,41 +669,35 @@ internal sealed partial class LythonRuntime
         }
 
         // Converts an already-matched NUMBER_RE token: hooks receive the raw
-        // token text, otherwise integers narrow to long where possible and
-        // floats parse invariantly. Shared by whole-text and nested positions.
+        // token text, otherwise defaults parse invariant UTF-8. Large integers
+        // retain their existing text fallback. Shared by whole-text/nested values.
         private static async ValueTask<object> ConvertJsonNumberTextAsync(ReadOnlyMemory<byte> bytes, int start, int end, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            var raw = Encoding.UTF8.GetString(bytes.Span.Slice(start, end - start));
-            var isFloat = raw.Contains('.', StringComparison.Ordinal) ||
-                raw.Contains('e', StringComparison.OrdinalIgnoreCase);
-            if (isFloat && options.ParseFloat is not null)
+            var raw = bytes.Slice(start, end - start);
+            var isFloat = raw.Span.IndexOfAny((byte)'.', (byte)'e', (byte)'E') >= 0;
+            var callback = isFloat ? options.ParseFloat : options.ParseInt;
+            if (callback is not null)
             {
                 // Fund callback text before invocation. It stays batch-owned
                 // because the callback may retain it even when invocation fails.
-                var floatText = CreateString(raw, context, span);
-                return await InvokeJsonCallbackCoreAsync(options.ParseFloat, floatText, context, span, asynchronous).ConfigureAwait(false);
-            }
-
-            if (!isFloat && options.ParseInt is not null)
-            {
-                var intText = CreateString(raw, context, span);
-                return await InvokeJsonCallbackCoreAsync(options.ParseInt, intText, context, span, asynchronous).ConfigureAwait(false);
+                var text = CreateUtf8String(raw, context, span);
+                return await InvokeJsonCallbackCoreAsync(callback, text, context, span, asynchronous).ConfigureAwait(false);
             }
 
             if (!isFloat)
             {
                 // Deny on digit scale before parsing allocates the limbs; each
                 // parse yields a fresh magnitude that owns its payload below.
-                using var integerAdmission = GuardIntegerParseBytes(raw, 4, context.MemoryGovernor, span);
-                if (long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer))
+                using var integerAdmission = GuardIntegerParseBytes(raw.Length, 4, context.MemoryGovernor, span);
+                if (long.TryParse(raw.Span, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer))
                 {
                     return new BigInteger(integer);
                 }
 
-                return OwnFreshInteger(BigInteger.Parse(raw, CultureInfo.InvariantCulture), context.MemoryGovernor, span);
+                return OwnFreshInteger(BigInteger.Parse(Encoding.UTF8.GetString(raw.Span), CultureInfo.InvariantCulture), context.MemoryGovernor, span);
             }
 
-            return double.Parse(raw, NumberStyles.Float, CultureInfo.InvariantCulture);
+            return double.Parse(raw.Span, NumberStyles.Float, CultureInfo.InvariantCulture);
         }
 
         private enum JsonIncompleteExpectation

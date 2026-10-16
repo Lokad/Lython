@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Parse default JSON long/float tokens from UTF-8 and share raw numeric-hook preparation through the existing governed text factory. Remove unconditional CLR token decoding and duplicate hook branches; preserve exact large-integer fallback, shared magnitude preflights, signed zero/overflow, hook lifetimes and cancellation.
+
 - Copy well-formed unescaped JSON strings and keys directly from validated UTF-8 tokens into existing governed storage. Remove their temporary CLR string and UTF-8 re-encoding plus the single-use conversion helper. Preserve escaped/error paths, token scratch overlap, before-copy admission, hook cancellation and retained aliases.
 
 - Invoke ordinary one-argument exact-string startswith calls directly from existing frame storage, avoiding per-receiver bound methods and argument repackaging. Reuse the Unicode/tuple kernel and call guards; preserve fuel/spans, suspended arguments, custom-object lookup, exposed receivers and retained funding.

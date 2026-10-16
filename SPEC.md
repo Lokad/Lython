@@ -2046,6 +2046,11 @@ admitted beside the existing token scratch before allocation. The runtime checks
 well-formed UTF-8 before copying the validated payload; escaped strings and invalid
 UTF-8 retain the established decoding/error path. Decoded aliases remain funded
 through callbacks and retained results, independently of the input document.
+Matched numeric tokens use managed UTF-8 parsing for default fixed-width integers
+and floats. Integers retain Lython's Python-integer representation; larger values
+keep the existing exact parser. Magnitude admission uses the same conservative
+token-length estimate before parsing. Numeric hooks receive funded original token
+spellings through the existing callback path, including real asynchronous effects.
 
 If a script requests JSON behavior outside the supported subset, the runtime must fail explicitly.
 

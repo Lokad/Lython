@@ -76,10 +76,13 @@ internal sealed partial class LythonRuntime
     // Preflight for text-parsed magnitudes: deny on digit scale before the
     // conversion allocates the limbs. Bits-per-digit upper-bounds the base.
     internal static MemoryGovernor.TemporaryMemoryReservation? GuardIntegerParseBytes(string text, int bitsPerDigit, MemoryGovernor governor, LythonSourceSpan? span)
+        => GuardIntegerParseBytes(text.Length, bitsPerDigit, governor, span);
+
+    internal static MemoryGovernor.TemporaryMemoryReservation? GuardIntegerParseBytes(int textLength, int bitsPerDigit, MemoryGovernor governor, LythonSourceSpan? span)
     {
         return GuardIntegerResultBytes(
             RuntimeMemoryEstimates.SaturatingMultiply(2, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
-                RuntimeMemoryEstimates.SaturatingMultiply(text.Length, bitsPerDigit))),
+                RuntimeMemoryEstimates.SaturatingMultiply(textLength, bitsPerDigit))),
             governor,
             span);
     }
