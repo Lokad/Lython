@@ -845,6 +845,10 @@ preserve the distinct CPython and earlier-Lython comparisons.
 
 ## Diagnostic comparisons by revision
 
+- [Bulk string/bytes hashing](results/2026-10-16-bulk-byte-hash/README.md): two per-byte loops replaced with the safe managed bulk API. Equal-key, custom-key and retained ownership controls pass. One complete-text diagnostic has a 30.5% lower median alongside 30.0% baseline spread; inconclusive, no speedup established.
+
+- [Shared zero-argument string entry](results/2026-10-16-noarg-string-consolidation/README.md): three marker/helper families replaced by one guarded entry and cached static operations. Source shrinks by 30 lines; existing semantic/guard/ownership controls pass. The one complete-text diagnostic is inconclusive (1.6% higher median within 9.0% spread); no speedup or regression established.
+
 - [Direct immediate string lower](results/2026-10-16-direct-string-lower/README.md): existing receiver dispatch and shared casing/ownership operation remove per-receiver callables. The unchanged complete text job has a 7.6% lower median within 10.5% baseline spread, inconclusive. One declared capture; frozen guards, rejection-origin controls and retained/cancelled users preserved.
 
 - [General method receiver binding](results/2026-10-16-general-method-binding/README.md): existing binder consumes the receiver separately for ordinary Python methods, including keywords/variadics/lowered callers. One short allocation diagnostic shows 72 excess bytes per entry become zero; no elapsed or CPython performance claim. Original guards, live defaults and suspended ownership remain.
@@ -1032,5 +1036,3 @@ collections per completed job versus one for unbound catches. These cases
 complete 12–14 jobs per nominal four-second window versus 1,250–1,267 for unbound catches;
 each window finishes its last complete job.
 The report also records failed memory recovery after reference withdrawal.
-
-- [Shared zero-argument string entry](results/2026-10-16-noarg-string-consolidation/README.md): three marker/helper families replaced by one guarded entry and cached static operations. Source shrinks by 30 lines; existing semantic/guard/ownership controls pass. The one complete-text diagnostic is inconclusive (1.6% higher median within 9.0% spread); no speedup or regression established.

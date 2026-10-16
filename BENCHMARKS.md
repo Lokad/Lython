@@ -5,7 +5,7 @@
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Same JSON configuration job [AQ], warm `Run` | 16 existing paths / 181 UTF-8 input bytes | 3.309 ms | 1.695 ms | — | Short diagnostic at 4846928c; 0.9% change within spread; no improvement established |
 | Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
-| Complete text-summary file job [BE], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.293 ms | 1.3010 ms | — | Short diagnostic at ffdac05d; shared call entry; 1.6% higher median within 9.0% spread, inconclusive |
+| Complete text-summary file job [BF], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.118 ms | 1.2864 ms | — | Short diagnostic at c487cb70; bulk hashing; 30.5% lower median alongside 30.0% baseline spread, inconclusive |
 | Complete JSON-lines aggregation [BB], warm | 4,096 records / 110,592 UTF-8 bytes | 9.475 ms | 4.1751 ms | — | Short diagnostic at 5d5fd2e7; numeric forwarding; 6.1% higher median within 14.2% baseline spread; no benefit established |
 | Same JSON aggregation [AU], fresh compile/run | Same 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
@@ -43,6 +43,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BF | 2026-10-16 | c487cb70; bulk hashing of existing string/bytes storage | [Two loops removed, key/owner controls and noisy timing](benchmarks/results/2026-10-16-bulk-byte-hash/README.md) |
 | BE | 2026-10-16 | ffdac05d; shared guarded entry for immediate strip/split/lower | [Source deletion, unchanged guards and inconclusive timing](benchmarks/results/2026-10-16-noarg-string-consolidation/README.md) |
 | BD | 2026-10-16 | 18942340; direct immediate exact-string lower calls | [Complete text job, shared casing/ownership and inconclusive timing](benchmarks/results/2026-10-16-direct-string-lower/README.md) |
 | BC | 2026-10-16 | d88d6440; direct positional transport, ordinary lowered method bodies | [Method job, unchanged guards and short diagnostic](benchmarks/results/2026-10-16-lowered-method-transport/README.md) |
@@ -123,6 +124,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Bulk string/bytes hashing, 2026-10-16 | cd4c8b27 → c487cb70; unchanged complete text-summary job | No speedup established: 8.807 → 6.118 ms; 30.5% lower median alongside 30.0% baseline spread | [Safe bulk API, equal-key consistency and ownership](benchmarks/results/2026-10-16-bulk-byte-hash/README.md) |
 | Shared zero-argument string entry, 2026-10-16 | df9093cf → ffdac05d; unchanged complete text-summary job | Source simplification; no elapsed improvement established: 6.193 → 6.293 ms, within spread | [Deleted duplicate entries and preserved boundaries](benchmarks/results/2026-10-16-noarg-string-consolidation/README.md) |
 | Direct immediate string lower, 2026-10-16 | b41a0345 → 18942340; unchanged complete text-summary job | No speedup established: 6.168 → 5.699 ms; 7.6% lower median within 10.5% baseline spread | [Shared operation, guards and existing ownership](benchmarks/results/2026-10-16-direct-string-lower/README.md) |
 | Direct ordinary method transport, 2026-10-16 | ba6086f3 → d88d6440; unchanged 2,048-call method job | 1.145 → 1.060 ms; 7.4% lower median, one unqualified diagnostic | [Argument packaging removed, lowered bodies and guards preserved](benchmarks/results/2026-10-16-lowered-method-transport/README.md) |

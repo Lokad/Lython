@@ -1,0 +1,67 @@
+{
+  "baselineRevision": "cd4c8b27aa55b425788b868be4f7660236eb1f37",
+  "productionFiles": [
+    {
+      "path": "src/Lokad.Lython/Runtime/Text/PyString.cs",
+      "beforeSha256": "50f41c3e0fe7c751cbf2900be31cc6fc61dd415774124f7f6d33d3fac805d042",
+      "afterSha256": "3c6ee8d085ca099aecd2d82c634f51dddfd7cb551f245b60f6223ec88a747b65",
+      "change": "Only the per-byte loop becomes one safe HashCode.AddBytes call."
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/PyBytes.cs",
+      "beforeSha256": "66936813319f8113a7fd43874984b9905bb68a3404611168803ed7fc36bb3d0c",
+      "afterSha256": "093fc5c3184253b83b9cc62976eb2816ffd51c5fdff8aab47ef17319fe94ffcc",
+      "change": "Only the per-byte loop becomes one safe HashCode.AddBytes call."
+    }
+  ],
+  "tests": [
+    {
+      "stage": "focused-white",
+      "passed": 25,
+      "milliseconds": 1179
+    },
+    {
+      "stage": "public-keys",
+      "passed": 171,
+      "milliseconds": 3254
+    },
+    {
+      "stage": "full-white",
+      "passed": 2735,
+      "milliseconds": 18532
+    }
+  ],
+  "probes": [
+    {
+      "role": "baseline",
+      "mode": "sync",
+      "shapes": 30,
+      "matchingCases": 1,
+      "peakExecutionMemoryBytes": 384329
+    },
+    {
+      "role": "baseline",
+      "mode": "async",
+      "shapes": 30,
+      "matchingCases": 1,
+      "peakExecutionMemoryBytes": 384329
+    },
+    {
+      "role": "candidate",
+      "mode": "sync",
+      "shapes": 30,
+      "matchingCases": 1,
+      "peakExecutionMemoryBytes": 384329
+    },
+    {
+      "role": "candidate",
+      "mode": "async",
+      "shapes": 30,
+      "matchingCases": 1,
+      "peakExecutionMemoryBytes": 384329
+    }
+  ],
+  "protectedHistorySha256": "F496A90B1D68A0B314367907D1967579230DB81BF40B6CC1D8A127325AC69E20",
+  "contract": "Numeric str/bytes hashes may change across processes or versions; equal-key/builtin/member/custom/tuple/dict/set consistency is preserved. SPEC11.1 documents this.",
+  "removal": "Two per-byte loops; net six production lines. No cache/publication/owner/guard changes, new dependency/helper/configuration, or unsafe API."
+}
