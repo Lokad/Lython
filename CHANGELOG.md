@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Avoid receiver-bound wrappers for immediate zero-argument str.lower calls through the existing direct receiver transport. Share the existing lowercase/ownership body with exposed methods and the frame/checkpoint handler with strip; dynamic methods, malformed/expanded calls and retained aliases keep their ordinary behavior.
+
 - Share the synchronous observed-value handler for exact integer reads on native list, tuple, bytes, text and range values under RunAsync; custom containers/indices, mappings and slices retain asynchronous dispatch.
 
 - Use type-level __index__ conversion for native sequence reads in both execution APIs, awaiting descriptor binding and callbacks under RunAsync. Preserve arbitrary-size range indices and raw dictionary keys; share XML's existing converter and remove the duplicate lowered synchronous read body.
