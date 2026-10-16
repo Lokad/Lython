@@ -256,6 +256,9 @@ retained argument aliases keep their surviving execution/result ownership.
 Lambdas share ordinary function binding, metadata and invocation, including the
 existing generator function representation. Their lambda-specific argument error
 labels and the existing shared immutable `<lambda>` name label remain.
+Function objects use identity hashing, unaffected by mutable names or custom
+metadata. Compiled `locals()` and `dir()` expose current captured free variables
+alongside local cells, omitting unbound values.
 In executable enclosing code, defaults and eligible bodies use compiled
 instructions and shared closure cells; remaining expression fallbacks
 still require namespace mirroring. Required lowered/class-suite routes remain.
@@ -276,9 +279,11 @@ ordinary loop/filter/item instructions in the caller frame under the existing
 inlined binding scope. Iteration targets remain isolated; scope cleanup restores
 the caller on success, failure and cancellation. The outer iterable precedes
 scope entry. Clause emission is iterative. Nested scope temporaries unwind in
-reverse order, retaining live stack entries if disposal fails. Lambdas created
-inside these scopes keep their established lowered-body/dictionary capture route;
-lazy generator bodies and required lowered/class suites remain separate.
+reverse order, retaining live stack entries if disposal fails. Eligible lambdas
+created inside these scopes use executable bodies and capture the existing live
+iteration bindings without forcing caller namespace mirroring. Late binding and
+early defaults remain distinct; capture admission precedes cell/array allocation.
+Lazy generator bodies and required lowered/class suites remain separate.
 Prepared checkpoints may change explicit fuel/admission thresholds. Partial
 storage can stay charged to the finite execution/result owner after a caught
 failure; retained results and asynchronous users remain funded.

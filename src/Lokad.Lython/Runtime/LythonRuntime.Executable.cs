@@ -119,6 +119,23 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        // Introspection sees current local cells and the free variables actually
+        // captured by this frame. Keep raw local enumeration for namespace seeding:
+        // it must not copy closure snapshots into a live parent lookup chain.
+        public IEnumerable<KeyValuePair<string, object>> EnumerateVisibleLocals()
+        {
+            foreach (var name in _codeObject.LocalNames)
+                if (!name.StartsWith('<') && TryResolveOwnLocal(name, out var value))
+                    yield return new(name, value);
+            if (_closureCells is null) yield break;
+            for (var i = 0; i < _codeObject.ClosureNames.Count; i++)
+            {
+                var value = _closureCells[i].Value;
+                if (!ReferenceEquals(value, UninitializedLocal))
+                    yield return new(_codeObject.ClosureNames[i], value);
+            }
+        }
+
         public bool TryGetCell(string name, [MaybeNullWhen(false)] out ExecutableCell cell)
         {
             if (_localCells is not null && _codeObject.LocalNameToSlot.TryGetValue(name, out var localSlot))

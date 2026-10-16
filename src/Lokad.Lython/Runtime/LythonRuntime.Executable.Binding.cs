@@ -613,14 +613,13 @@ internal sealed partial class LythonRuntime
             return cell.RequireNotNull();
         }
 
-        // MG11: captured cells outlive the invocation frame through the new
-        // function value, so the cells array plus each newly retained cell is
-        // owned here. Marks commit after the charge, so a tripped attempt pays
-        // nothing and a retry fails closed again instead of slipping through.
+        // Captured cells outlive the invocation frame through the function.
+        // A comprehension already owns a live binding namespace. Identify that
+        // owner without allocating cells before the array/cell preflight.
         var uncharged = 0;
         foreach (var name in codeObject.ClosureNames)
         {
-            if (!Resolve(name).RetentionCharged)
+            if (context.TryGetInlinedBinding(name, out _) || !Resolve(name).RetentionCharged)
             {
                 uncharged++;
             }
@@ -635,10 +634,21 @@ internal sealed partial class LythonRuntime
         try
         {
             var cells = new ExecutableCell[codeObject.ClosureNames.Count];
-            for (var i = 0; i < cells.Length; i++) cells[i] = Resolve(codeObject.ClosureNames[i]);
-            // Resolve has no callbacks or mutation, so admission precedes the
-            // array allocation and these marks publish only a completed capture.
-            foreach (var cell in cells) cell.RetentionCharged = true;
+            for (var i = 0; i < cells.Length; i++)
+            {
+                var name = codeObject.ClosureNames[i];
+                cells[i] = context.TryGetInlinedBinding(name, out var binding)
+                    ? new ExecutableCell(UninitializedLocal, binding, name) : Resolve(name);
+            }
+            // Lookups above have no callbacks or mutation. Publish only after
+            // every allocation succeeds. Namespace-backed cells observe later
+            // loop stores without mirroring the enclosing caller or a registry.
+            for (var i = 0; i < cells.Length; i++)
+            {
+                cells[i].RetentionCharged = true;
+                if (context.TryGetInlinedBinding(codeObject.ClosureNames[i], out var binding))
+                    binding.MirrorLocalStores = true;
+            }
             return cells;
         }
         catch

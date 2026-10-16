@@ -71,6 +71,14 @@ pending protocol callbacks and escaping text retain the same ownership protectio
 Executable lambdas retain shared closure cells rather than forcing complete local
 namespace mirroring. Cell-array capacity and newly retained cells are admitted
 before allocating the captured array; denied capture publishes no funding marks.
+Eligible lambdas in eager comprehensions use cells backed by the existing live
+binding namespace. Capture preflights cover the array and new cells together;
+the namespace's live-store state is published after allocation. Ending its
+binding lifetime restores lookup without refunding retained cells or values.
+Cell metadata can be conservatively charged per capture even when bindings are
+shared; this can change narrow admission thresholds. No registry or extra owner
+is introduced, and the caller's full namespace need not be mirrored for these
+bodies. Ordinary dynamic/generator routes can still require that mirroring.
 Lowered bodies and dynamic namespace consumers retain their existing dictionary
 ownership. Lambda metadata now uses ordinary function storage, so small allowances
 can reject at different thresholds; pending users and escaping aliases stay funded.

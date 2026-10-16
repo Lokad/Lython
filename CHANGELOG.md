@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile eligible lambdas created inside eager comprehensions, capturing live iteration bindings without forcing caller namespace mirroring. Preserve late/default/transitive captures, admission preflights, retained aliases and asynchronous cleanup. Give Python functions identity hashing and include current captured free variables in compiled locals()/dir() snapshots.
+
 - Await type-level __index__ binding and calls for optional str.startswith/endswith bounds under RunAsync. Validate the start before invoking the end callback, ignore instance shadows, and preserve ordinary native-bound completion, cancellation, retained receivers and terminal admission refusal. Validate invalid affixes even for impossible ranges and honor Boolean bounds on empty text. Consolidate the two method handlers and report Python-shaped noncallable index-slot errors.
 
 - Make refused memory admission terminal for the command. Preserve the first structured failure through guest catches, context-manager suppression and finally returns; stop subsequent guest/host work while native cleanup returns relinquished allowance. Keep explicitly raised MemoryError catchable, earlier side effects intact and later commands usable. Remove optional regex-cache admission fallback and same-command budget-retry contracts.

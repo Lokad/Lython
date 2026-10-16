@@ -962,7 +962,7 @@ internal sealed partial class LythonRuntime
 
         if (includeFrameLocals && context.IncludeCallerLocals && context.CurrentExecutableFrame is not null)
         {
-            foreach (var pair in context.CurrentExecutableFrame.EnumerateLocals())
+            foreach (var pair in context.CurrentExecutableFrame.EnumerateVisibleLocals())
             {
                 scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
             }

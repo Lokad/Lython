@@ -1,9 +1,10 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
+using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes
+internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyHashableValue
 {
     private static readonly PyString LambdaName = PyString.FromString("<lambda>");
 
@@ -43,6 +44,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     }
 
     public string Name { get; }
+
+    public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
     protected FunctionBindingPlan BindingPlan => _bindingPlan;
 

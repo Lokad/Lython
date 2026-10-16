@@ -408,14 +408,16 @@ internal sealed partial class ExecutableScript
         {
             try
             {
-                return generatorCode ?? new Builder(
-                    parameters,
-                    // Forward our own candidates downward: a nested def only sees the names its
-                    // parent captured or owns at build time, so without our candidates a
-                    // transitively free name falls back to a global load and dies once the
-                    // definers return. Module functions keep null (globals resolve correctly).
-                    _functionParameters is null ? null : _locals.Concat(_closures).Concat(_parentClosureCandidates).Except(_scopeFacts.GlobalNames, StringComparer.Ordinal),
-                    scopeFacts)
+                if (generatorCode is not null) return generatorCode;
+                // Forward transitive free names as before. Comprehension names
+                // are inner bindings, even at module scope or when the caller
+                // declares a same-named global; add them after that exclusion.
+                IEnumerable<string>? candidates = _functionParameters is null ? null
+                    : _locals.Concat(_closures).Concat(_parentClosureCandidates)
+                        .Except(_scopeFacts.GlobalNames, StringComparer.Ordinal);
+                if (_comprehensionNames.Count != 0)
+                    candidates = (candidates ?? []).Concat(_comprehensionNames.SelectMany(static names => names));
+                return new Builder(parameters, candidates, scopeFacts)
                     .CompileCodeObject(name, body);
             }
             catch (ExecutableLoweringFallbackException)

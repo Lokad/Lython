@@ -86,7 +86,7 @@ internal sealed partial class LythonRuntime
 
         if (context.CurrentExecutableFrame is not null)
         {
-            foreach (var pair in context.CurrentExecutableFrame.EnumerateLocals())
+            foreach (var pair in context.CurrentExecutableFrame.EnumerateVisibleLocals())
             {
                 yield return pair.Key;
             }
