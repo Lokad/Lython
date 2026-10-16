@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Return completed numeric JSON conversions and forward optional JSON callbacks directly, removing two forwarding state machines. Preserve exact parsing, magnitude/text admission, original token spellings and caller-owned frame/scratch cleanup through actual callback suspension.
+
 - Dispatch JSON property names and string values synchronously through the existing token decoder under both execution APIs, avoiding the generic async parser for those tokens. Preserve managed admission, exact checkpoints, storage preflights, Python errors, hooks and retained aliases.
 
 - Include an initialized captured `__class__` in lowered-method locals()/vars() snapshots using the existing lexical-cell resolver and governed dictionary; preserve local/global shadowing and unbound cells.

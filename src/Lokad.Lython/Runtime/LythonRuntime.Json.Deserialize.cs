@@ -681,7 +681,7 @@ internal sealed partial class LythonRuntime
         // Converts an already-matched NUMBER_RE token: hooks receive the raw
         // token text, otherwise defaults parse invariant UTF-8. Large integers
         // retain their existing text fallback. Shared by whole-text/nested values.
-        private static async ValueTask<object> ConvertJsonNumberTextAsync(ReadOnlyMemory<byte> bytes, int start, int end, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        private static ValueTask<object> ConvertJsonNumberTextAsync(ReadOnlyMemory<byte> bytes, int start, int end, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             var raw = bytes.Slice(start, end - start);
             var isFloat = raw.Span.IndexOfAny((byte)'.', (byte)'e', (byte)'E') >= 0;
@@ -691,7 +691,7 @@ internal sealed partial class LythonRuntime
                 // Fund callback text before invocation. It stays batch-owned
                 // because the callback may retain it even when invocation fails.
                 var text = CreateUtf8String(raw, context, span);
-                return await InvokeJsonCallbackCoreAsync(callback, text, context, span, asynchronous).ConfigureAwait(false);
+                return InvokeJsonCallbackCoreAsync(callback, text, context, span, asynchronous);
             }
 
             if (!isFloat)
@@ -701,13 +701,13 @@ internal sealed partial class LythonRuntime
                 using var integerAdmission = GuardIntegerParseBytes(raw.Length, 4, context.MemoryGovernor, span);
                 if (long.TryParse(raw.Span, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer))
                 {
-                    return new BigInteger(integer);
+                    return new(new BigInteger(integer));
                 }
 
-                return OwnFreshInteger(BigInteger.Parse(Encoding.UTF8.GetString(raw.Span), CultureInfo.InvariantCulture), context.MemoryGovernor, span);
+                return new(OwnFreshInteger(BigInteger.Parse(Encoding.UTF8.GetString(raw.Span), CultureInfo.InvariantCulture), context.MemoryGovernor, span));
             }
 
-            return double.Parse(raw.Span, NumberStyles.Float, CultureInfo.InvariantCulture);
+            return new(double.Parse(raw.Span, NumberStyles.Float, CultureInfo.InvariantCulture));
         }
 
         private enum JsonIncompleteExpectation

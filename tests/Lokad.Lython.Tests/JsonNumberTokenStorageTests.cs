@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.Numerics;
+using System.Text.Json;
+using Xunit.Abstractions;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -7,7 +9,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class JsonNumberTokenStorageTests
+public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
 {
     [Theory]
     [InlineData(false)]
@@ -108,6 +110,177 @@ public sealed class JsonNumberTokenStorageTests
         AssertUnwound(context);
     }
 
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, true)]
+    public async Task NumericCheckpointAndScratchLifetimesRemainStable(bool asynchronous, bool floating, bool callback)
+    {
+        var text = floating ? (callback ? "1.2300e+04" : "-0.0") : (callback ? "-0" : "9223372036854775808");
+        var source = "import json\nreturn json.loads(source" + (callback ? "," + (floating ? "parse_float" : "parse_int") + "=capture)" : ")");
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        long steps;
+        string[] effects;
+        using (var owner = budget.CreateScope())
+        {
+            var (context, capture) = Boundary(owner, text);
+            var result = await Run(code, context, asynchronous);
+            if (callback)
+            {
+                Assert.Equal(text, Assert.IsType<PyString>(result).AsString());
+                Assert.Same(capture.Value, result);
+            }
+            else if (floating) Assert.Equal(long.MinValue, BitConverter.DoubleToInt64Bits(Assert.IsType<double>(result)));
+            else Assert.Equal(BigInteger.Parse(text, CultureInfo.InvariantCulture), Assert.IsType<BigInteger>(result));
+            steps = context.Limits.ExecutionStepCount;
+            effects = capture.Events.ToArray();
+            Assert.Equal(callback ? 1 : 0, capture.Calls);
+            AssertUnwound(context);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+        var checkpoints = new List<string>();
+        for (var remaining = 0; remaining < steps; remaining++)
+        {
+            using (var owner = budget.CreateScope())
+            {
+                var (context, capture) = Boundary(owner, text);
+                context.Limits.ExecutionStepCount = 10000 - remaining;
+                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
+                Assert.Equal(LythonFailureReason.ExecutionStepLimit, failure.Attribution?.Reason);
+                Assert.Equal(10001, context.Limits.ExecutionStepCount);
+                var location = failure.Span is { } span ? $"{span.Start},{span.Length},{span.Line},{span.Column}" : "-";
+                checkpoints.Add(location + ":" + string.Join(';', capture.Events));
+                AssertUnwound(context);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        // Frozen on537f8903 before removing either forwarding state machine.
+        var expected = (floating, callback) switch
+        {
+            (false, false) => (16, Array.Empty<string>(), new[]
+            {
+                "-:", "0,11,1,1:", "-:", "19,4,2,8:",
+                "19,10,2,8:", "30,6,2,19:", "19,18,2,8:", "19,18,2,8:",
+                "19,18,2,8:", "19,18,2,8:", "19,18,2,8:", "19,18,2,8:",
+                "19,18,2,8:", "19,18,2,8:", "19,18,2,8:", "12,25,2,1:",
+            }),
+            (false, true) => (18, new[] { "4,0,8:-0" }, new[]
+            {
+                "-:", "0,11,1,1:", "-:", "19,4,2,8:",
+                "19,10,2,8:", "30,6,2,19:", "47,7,2,36:", "19,36,2,8:",
+                "19,36,2,8:", "19,36,2,8:", "19,36,2,8:", "19,36,2,8:",
+                "19,36,2,8:", "19,36,2,8:", "19,36,2,8:", "19,36,2,8:",
+                "19,36,2,8:", "12,43,2,1:4,0,8:-0",
+            }),
+            (true, false) => (15, Array.Empty<string>(), new[]
+            {
+                "-:", "0,11,1,1:", "-:", "19,4,2,8:",
+                "19,10,2,8:", "30,6,2,19:", "19,18,2,8:", "19,18,2,8:",
+                "19,18,2,8:", "19,18,2,8:", "19,18,2,8:", "19,18,2,8:",
+                "19,18,2,8:", "19,18,2,8:", "12,25,2,1:",
+            }),
+            (true, true) => (19, new[] { "4,0,40:1.2300e+04" }, new[]
+            {
+                "-:", "0,11,1,1:", "-:", "19,4,2,8:",
+                "19,10,2,8:", "30,6,2,19:", "49,7,2,38:", "19,38,2,8:",
+                "19,38,2,8:", "19,38,2,8:", "19,38,2,8:", "19,38,2,8:",
+                "19,38,2,8:", "19,38,2,8:", "19,38,2,8:", "19,38,2,8:",
+                "19,38,2,8:", "19,38,2,8:", "12,45,2,1:4,0,40:1.2300e+04",
+            }),
+        };
+        Assert.Equal(expected.Item1, steps);
+        Assert.Equal(expected.Item2, effects);
+        Assert.Equal(expected.Item3, checkpoints);
+        output.WriteLine("JSON_NUMBER_MATRIX:" + JsonSerializer.Serialize(new { asynchronous, floating, callback, steps, effects, checkpoints }));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task PendingNativeHookKeepsCallerScratchUntilCompletion(bool floating, bool cancel)
+    {
+        var text = floating ? "1.2300e+04" : "-0";
+        var source = "import json\nreturn json.loads(source," + (floating ? "parse_float" : "parse_int") + "=capture)";
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var (context, _) = Boundary(owner, text);
+        var capture = new HeldCapture();
+        context.Variables["capture"] = capture;
+        var pending = Run(code, context, true).AsTask();
+        try
+        {
+            await capture.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(pending.IsCompleted);
+            Assert.Equal(1, capture.Calls);
+            Assert.Equal(text, capture.Value!.AsString());
+            Assert.True(capture.Reserved >= 4L * text.Length);
+            Assert.Equal(capture.Reserved, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(capture.Depth, context.Limits.CurrentInterpreterDepth);
+            Assert.True(budget.ReservedBytes > 0);
+            if (cancel)
+            {
+                capture.Release.TrySetCanceled();
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
+            }
+            else
+            {
+                capture.Release.TrySetResult();
+                Assert.Same(capture.Value, await pending.WaitAsync(TimeSpan.FromSeconds(5)));
+            }
+        }
+        finally
+        {
+            capture.Release.TrySetCanceled();
+            try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
+            catch (OperationCanceledException) { }
+        }
+        AssertUnwound(context);
+        Assert.True(budget.ReservedBytes > 0); // The execution owner remains live while the capture is retained.
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private static (LythonRuntime.ExecutionContext Context, Capture Capture) Boundary(ILythonMemoryBudget owner, string text)
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
+        { MemoryBudget = owner, MaxExecutionSteps = 10000 });
+        context.Variables["source"] = PyString.FromString(text, context.MemoryGovernor, null);
+        var capture = new Capture();
+        context.Variables["capture"] = capture;
+        return (context, capture);
+    }
+
+    private sealed class HeldCapture : LythonRuntime.ICallable
+    {
+        public int Calls;
+        public PyString? Value;
+        public long Reserved;
+        public long Depth;
+        public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            => throw new InvalidOperationException("Expected an asynchronous native hook.");
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            Calls++;
+            Value = Assert.IsType<PyString>(Assert.Single(arguments).Value);
+            Reserved = context.MemoryGovernor.CurrentReservedBytes;
+            Depth = context.Limits.CurrentInterpreterDepth;
+            Started.TrySetResult();
+            await Release.Task.ConfigureAwait(false);
+            return Value;
+        }
+    }
+
     private static (ExecutableScript, LythonRuntime.ExecutionContext) Prepare(string source, long? limit = null)
         => (ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)), new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = limit }));
 
@@ -119,6 +292,7 @@ public sealed class JsonNumberTokenStorageTests
     {
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -126,10 +300,14 @@ public sealed class JsonNumberTokenStorageTests
     {
         public int Calls { get; private set; }
         public object? Value { get; private set; }
+        public List<string> Events { get; } = [];
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Calls++;
-            return Value = Assert.Single(arguments).Value;
+            Value = Assert.Single(arguments).Value;
+            var text = Assert.IsType<PyString>(Value);
+            Events.Add($"{context.Limits.CurrentInterpreterDepth},{context.Limits.CurrentRecursionDepth},{context.MemoryGovernor.CurrentReservedBytes}:{text.AsString()}");
+            return Value;
         }
     }
 

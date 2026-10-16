@@ -2153,6 +2153,9 @@ and floats. Integers retain Lython's Python-integer representation; larger value
 keep the existing exact parser. Magnitude admission uses the same conservative
 token-length estimate before parsing. Numeric hooks receive funded original token
 spellings through the existing callback path, including real asynchronous effects.
+Default numeric conversion completes synchronously, and callback dispatch forwards
+the existing operation. Parser/encoder callers retain frame, token scratch and
+cleanup ownership until callback completion; retained hook values remain funded.
 
 If a script requests JSON behavior outside the supported subset, the runtime must fail explicitly.
 
