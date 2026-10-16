@@ -110,23 +110,23 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object InvokePositionalFunction(
+    private static object InvokeFunctionFromOperands(
         PyFunctionBase function, ReadOnlySpan<object?> arguments, LythonSourceSpan span, ExecutionContext context,
-        object? receiver = null)
+        object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.EnterInterpreterFrame(span);
         try
         {
             context.CheckExecution(span);
-            return RuntimeValue(function.InvokePositional(arguments, span, context, receiver));
+            return RuntimeValue(function.InvokeFromOperands(arguments, span, context, receiver, callSite));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private static async ValueTask<object> InvokePositionalFunctionAsync(
+    private static async ValueTask<object> InvokeFunctionFromOperandsAsync(
         PyFunctionBase function, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
-        object? receiver = null)
+        object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.EnterInterpreterFrame(span);
         try
@@ -134,7 +134,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             // The span is consumed synchronously into owned bound values.
             // The caller keeps its operand array alive until this call finishes.
-            var pending = function.InvokePositionalAsync(arguments.Span, span, context, receiver);
+            var pending = function.InvokeFromOperandsAsync(arguments.Span, span, context, receiver, callSite);
             return RuntimeValue(await pending.ConfigureAwait(false));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }

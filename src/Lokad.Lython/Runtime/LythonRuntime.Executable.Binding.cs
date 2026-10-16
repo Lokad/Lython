@@ -498,15 +498,7 @@ internal sealed partial class LythonRuntime
         {
             for (var i = 0; i < callSite.ArgumentCount; i++)
             {
-                var spec = callSite.Arguments[i];
-                if (spec.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary)
-                {
-                    throw new InvalidOperationException($"Executable call site contains unsupported argument kind {spec.Kind}.");
-                }
-
-                arguments[i] = spec.Kind == CallArgumentKind.Keyword
-                    ? CallArgumentValue.Keyword(spec.KeywordName, stack[start + i + callSite.ArgumentOffset])
-                    : CallArgumentValue.Positional(stack[start + i + callSite.ArgumentOffset]);
+                arguments[i] = CreateExecutableCallArgument(callSite.Arguments[i], stack[start + i + callSite.ArgumentOffset]);
             }
             return arguments;
         }
@@ -516,6 +508,14 @@ internal sealed partial class LythonRuntime
             throw;
         }
     }
+
+    private static CallArgumentValue CreateExecutableCallArgument(ExecutableCallArgumentSpec spec, object value)
+        => spec.Kind switch
+        {
+            CallArgumentKind.Positional => CallArgumentValue.Positional(value),
+            CallArgumentKind.Keyword => CallArgumentValue.Keyword(spec.KeywordName, value),
+            _ => throw new InvalidOperationException($"Executable call site contains unsupported argument kind {spec.Kind}.")
+        };
 
     private static void CompleteExecutableValueTransfer(
         ref ExecutableValueStack stack,
@@ -566,14 +566,17 @@ internal sealed partial class LythonRuntime
             {
                 result = InvokeSingleInput(stack[start + callSite.ArgumentOffset], LengthOperation, callSite.CallSpan, context);
             }
-            else if (callSite.IsPositionalOnly && target is PyExecutableFunction { SupportsDirectPositional: true } function)
+            else if (target is PyFunctionBase function)
             {
-                result = InvokePositionalFunction(function, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span, callSite.CallSpan, context);
+                result = InvokeFunctionFromOperands(function, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span,
+                    callSite.CallSpan, context, callSite: callSite.IsPositionalOnly && function is PyExecutableFunction { SupportsDirectPositional: true }
+                        ? null : callSite);
             }
-            else if (callSite.IsPositionalOnly && target is PyBoundMethod { Function: PyFunction { SupportsPositionalBinding: true } method } bound)
+            else if (target is PyBoundMethod { Function: PyFunctionBase method } bound)
             {
-                result = InvokePositionalFunction(method, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span,
-                    callSite.CallSpan, context, bound.Receiver);
+                result = InvokeFunctionFromOperands(method, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span,
+                    callSite.CallSpan, context, bound.Receiver,
+                    callSite.IsPositionalOnly && method is PyFunction { SupportsPositionalBinding: true } ? null : callSite);
             }
             else
             {

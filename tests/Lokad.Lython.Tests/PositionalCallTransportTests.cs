@@ -186,7 +186,7 @@ public sealed class PositionalCallTransportTests(ITestOutputHelper output)
     [InlineData(3, true, false)]
     [InlineData(1, false, true)]
     [InlineData(1, true, true)]
-    public async Task RealLoweredMethodsPreserveValuesWithoutPositionalPackaging(int width, bool asynchronous, bool keywords)
+    public async Task RealLoweredMethodsPreserveValuesWithoutArgumentPackaging(int width, bool asynchronous, bool keywords)
     {
         var parameters = string.Join(",", Enumerable.Range(0, width).Select(i => "a" + i));
         var definition = LythonFrontend.Compile($"class Box:\n def method(self,{parameters}):return a0\nbox=Box()\nmethod=box.method");
@@ -215,7 +215,7 @@ public sealed class PositionalCallTransportTests(ITestOutputHelper output)
             Assert.Same(marker, result);
             Assert.Same(sentinel, field.GetValue(null));
             foreach (var argument in sentinel)
-                Assert.Same(keywords ? PyNone.Instance : marker, argument.Value);
+                Assert.Same(marker, argument.Value);
             Assert.Same(method, context.Variables["method"]);
             Assert.Null(context.CurrentExecutableFrame);
             Assert.Equal(0, context.Limits.CurrentInterpreterDepth);

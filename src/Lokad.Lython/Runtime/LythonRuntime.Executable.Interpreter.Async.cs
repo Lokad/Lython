@@ -111,15 +111,17 @@ internal sealed partial class LythonRuntime
                         {
                             result = InvokeSingleInput(_stack[start + call.ArgumentOffset], LengthOperation, call.CallSpan, _context);
                         }
-                        else if (call.IsPositionalOnly && callable is PyExecutableFunction { SupportsDirectPositional: true } function)
+                        else if (callable is PyFunctionBase function)
                         {
-                            result = await InvokePositionalFunctionAsync(function, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
-                                call.CallSpan, _context).ConfigureAwait(false);
+                            result = await InvokeFunctionFromOperandsAsync(function, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
+                                call.CallSpan, _context, callSite: call.IsPositionalOnly && function is PyExecutableFunction { SupportsDirectPositional: true }
+                                    ? null : call).ConfigureAwait(false);
                         }
-                        else if (call.IsPositionalOnly && callable is PyBoundMethod { Function: PyFunction { SupportsPositionalBinding: true } method } bound)
+                        else if (callable is PyBoundMethod { Function: PyFunctionBase method } bound)
                         {
-                            result = await InvokePositionalFunctionAsync(method, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
-                                call.CallSpan, _context, bound.Receiver).ConfigureAwait(false);
+                            result = await InvokeFunctionFromOperandsAsync(method, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
+                                call.CallSpan, _context, bound.Receiver,
+                                call.IsPositionalOnly && method is PyFunction { SupportsPositionalBinding: true } ? null : call).ConfigureAwait(false);
                         }
                         else
                         {

@@ -55,19 +55,24 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     // Copy operands (and an optional bound receiver) straight into the existing
     // invocation-owned values. Frame entry, mirroring and body dispatch stay shared.
-    internal object InvokePositional(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context, object? receiver = null)
+    internal object InvokeFromOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.CheckExecution(span);
-        return InvokeBound(LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver), span);
+        var bound = callSite is null
+            ? LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver)
+            : LythonRuntime.BindFunctionArguments([], span, _bindingPlan, context, receiver, callSite, arguments);
+        return InvokeBound(bound, span);
     }
 
-    internal ValueTask<object> InvokePositionalAsync(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context, object? receiver = null)
+    internal ValueTask<object> InvokeFromOperandsAsync(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.CheckExecution(span);
-        var bound = LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver);
-        return InvokeBoundAsync(bound, span);
+        var binding = callSite is null
+            ? new ValueTask<BoundCallArguments>(LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver))
+            : LythonRuntime.BindFunctionArgumentsAsync([], span, _bindingPlan, context, receiver, callSite, arguments);
+        return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
     }
 
     public PyType? OwnerType { get; private set; }

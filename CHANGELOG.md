@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Bind ordinary Python function and method keyword/variadic calls directly from executable operands and compiled argument names, removing temporary argument transport and the async preparation closure. Share the existing binder and live-default completion; preserve receiver aliases, guards, cancellation, terminal refusal and invocation-owned inputs through suspension.
+
 - Validate intermediate asynchronous chained-comparison results before testing truth or evaluating later operands, matching synchronous string/collection limits and terminal memory admission. Preserve suspended native callbacks, cancellation and result ownership.
 
 - Call ordinary one-argument builtin `len` directly from executable storage, bypassing pooled argument transport and the copied parameter array. Share the existing single-input guard with string methods; preserve Python-instance protocols, aliases, argument effects, cancellation and retained ownership.
