@@ -1,0 +1,32 @@
+{
+  "baselineRevision": "6a4a236b4bbe7c5283d6a6cb313a37e57e42c3ed",
+  "tests": [
+    {
+      "stage": "cleanup-white",
+      "passed": 96,
+      "milliseconds": 1275
+    },
+    {
+      "stage": "statement-public",
+      "passed": 122,
+      "milliseconds": 4919
+    },
+    {
+      "stage": "candidate-stack",
+      "passed": 57,
+      "milliseconds": 8035
+    },
+    {
+      "stage": "full-white",
+      "passed": 2738,
+      "milliseconds": 18447
+    }
+  ],
+  "frozenBoundaryOutputsMatch": 11,
+  "pureRouting": "Nine previously forwarded synchronous opcodes plus non-PyInstance JumpIfFalse reuse ExecuteControlFlow directly. Only PyInstance truth/ChainLink retain async helper.",
+  "protocolHelperUnchangedExceptRemovedForwarding": true,
+  "newCoverage": "Actual if-instance descriptor/body suspension and cancellation; paused native iterator disposal precedes outer-finally stamp for return/break/fault.",
+  "fixtureCleanup": "Original20s truth cancellation deadline retained; all started tasks are cancelled/drained and scripts/results disposed. No deadline relaxation.",
+  "protectedHistorySha256": "F496A90B1D68A0B314367907D1967579230DB81BF40B6CC1D8A127325AC69E20",
+  "chainLinkObservation": "Unchanged; separately tracked source-only asymmetry, impact unproven."
+}

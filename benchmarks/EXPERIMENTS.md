@@ -845,6 +845,8 @@ preserve the distinct CPython and earlier-Lython comparisons.
 
 ## Diagnostic comparisons by revision
 
+- [Ordinary async-host control flow](results/2026-10-16-async-control-flow/README.md): synchronous handlers replace generic async forwarding for ordinary jumps/returns/exception routing and non-instance conditions. Existing branch loop median is 8.2% lower in one unqualified capture; original guard matrices, real truth-slot suspension and cleanup before finally are covered. Initial catalog-profile setup correction occurred before any timing.
+
 - [Bulk string/bytes hashing](results/2026-10-16-bulk-byte-hash/README.md): two per-byte loops replaced with the safe managed bulk API. Equal-key, custom-key and retained ownership controls pass. One complete-text diagnostic has a 30.5% lower median alongside 30.0% baseline spread; inconclusive, no speedup established.
 
 - [Shared zero-argument string entry](results/2026-10-16-noarg-string-consolidation/README.md): three marker/helper families replaced by one guarded entry and cached static operations. Source shrinks by 30 lines; existing semantic/guard/ownership controls pass. The one complete-text diagnostic is inconclusive (1.6% higher median within 9.0% spread); no speedup or regression established.

@@ -1,0 +1,10 @@
+{
+  "initialPreparationExitCode": 1,
+  "phase": "Catalog selection assertion, before timing",
+  "reason": "Representative profile contains file jobs, not loops.branch cases.",
+  "correction": "Use existing full profile filtered to the same declared branch family at256/2048/16384. Reuse the successful baseline build; build candidate and run correctness gates before timing.",
+  "resumedPreparationExitCode": 0,
+  "timingCaptures": 1,
+  "timingRetries": 0,
+  "producerOrSamplingChanges": false
+}
