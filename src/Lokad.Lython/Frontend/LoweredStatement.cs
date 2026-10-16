@@ -53,9 +53,6 @@ internal sealed record LoweredFunctionDefinitionStatement(
     public IReadOnlyList<LoweredTypeParameter>? TypeParameters { get; } = LoweredScript.LowerTypeParameters(Syntax.TypeParameters);
     public ExecutableCodeObject? GeneratorCode { get; } = GeneratorSyntaxFacts.IsGenerator(Syntax.Body)
         ? ExecutableScript.CompileGenerator(Parameters, Body, ScopeDirectiveFactsCollector.ForFunction(Syntax)) : null;
-    // Prepared only by class-body lowering; ordinary executable definitions
-    // retain their lexical parent builder and do not compile a second body.
-    public ExecutableCodeObject? PreparedCode { get; init; }
 }
 
 internal sealed record LoweredClassDefinitionStatement(

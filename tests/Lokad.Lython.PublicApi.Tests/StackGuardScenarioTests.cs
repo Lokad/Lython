@@ -7,6 +7,8 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class StackGuardScenarioTests
 {
     [Theory]
+    [InlineData("function")]
+    [InlineData("function-finally")]
     [InlineData("comparison")]
     [InlineData("callback")]
     [InlineData("copyhook")]

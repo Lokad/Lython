@@ -2,7 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class CompiledClassMethodExecutionTests
+public sealed class ClassMethodCompatibilityTests
 {
     public static TheoryData<string, string, string> Cases => new()
     {
@@ -19,16 +19,27 @@ public sealed class CompiledClassMethodExecutionTests
         { "live-defaults", "class Box:\n def run(self,x=[]):\n  x.append(1)\n  return x\nbox=Box()\nprint(box.run(),box.run())\nmethod=box.run\nBox.run.__defaults__=([9],)\nprint(method())", "[1, 1] [1, 1]\n[9, 1]\n" },
         { "method-replacement", "class Box:\n def run(self):return 2\nbox=Box()\nold=box.run\ndef replacement(self):return 9\nBox.run=replacement\nprint(old(),box.run())\ndel Box.run\ntry:box.run()\nexcept AttributeError:print('missing')", "2 9\nmissing\n" },
         { "locals-and-class-cell", "class Box:\n def run(self,a):\n  owner=__class__\n  b=7\n  return sorted(k for k in locals() if k!='self')\nprint(Box().run(2))", "['__class__', 'a', 'b', 'owner']\n" },
-        { "returned-generator-methods", "class Box:\n def run(self):return (i for i in range(3))\ng=Box().run()\nprint(next(g),g.send(None))\ng.close()\nprint(next(g,'end'))", "0 1\nend\n" },
         { "method-error-cleanup", "events=[]\nclass Box:\n def run(self):\n  try:raise ValueError('leaf')\n  finally:events.append('finally')\ntry:Box().run()\nexcept ValueError as error:print(str(error),events)", "leaf ['finally']\n" },
         { "per-definition-defaults", "def make(n):\n class Box:\n  def read(self,value=n):return value\n return Box\nfirst=make(2)\nsecond=make(9)\nfirst.read.__defaults__=(7,)\nprint(first().read(),second().read())", "7 9\n" },
         { "unbound-declared-nonlocal", "def make():\n class Box:\n  def read(self):\n   nonlocal value\n   return value\n return Box\n value=7\ntry:make()().read()\nexcept NameError:print('unbound')", "unbound\n" },
         { "nonlocal-active-parent", "def make():\n value=1\n class Box:\n  def write(self):\n   nonlocal value\n   value=9\n Box().write()\n return value\nprint(make())", "9\n" },
+        { "transport-empty-formals", "class Box:\n def bad():return 'bad'\ntry:Box().bad()\nexcept TypeError:print('arity')", "arity\n" },
+        { "transport-default-self", "class Box:\n def method(self='fallback',value=7):return self.__class__.__name__,value\nbox=Box()\nmethod=box.method\nprint(method())\nBox.method.__defaults__=('ignored',11)\nprint(method())", "('Box', 7)\n('Box', 11)\n" },
+        { "transport-arity-effects", "events=[]\ndef mark(n):\n events.append(n)\n return n\nclass Box:\n def method(self,x):\n  events.append('body')\n  return x\nbox=Box()\ntry:box.method(mark(1),mark(2))\nexcept TypeError:print('many',events)\ntry:box.method()\nexcept TypeError:print('missing',events)\nprint(box.method(3),events)", "many [1, 2]\nmissing [1, 2]\n3 [1, 2, 'body']\n" },
+        { "transport-wrappers", "class Box:\n @classmethod\n def who(cls,value=3):return cls.__name__,value\n @staticmethod\n def twice(value=4):return 2*value\nprint(Box.who(7),Box().who(),Box.twice(),Box().twice(5))", "('Box', 7) ('Box', 3) 8 10\n" },
+        { "transport-general", "class Box:\n def method(self,x,*,y=4):return x+y\n def other(self,*items):return items\nbox=Box()\nprint(box.method(1,y=2),box.other(*[3,4]))", "3 (3, 4)\n" },
+        { "transport-stored-alias-patch", "class Box:\n def method(self,x=1):return 'old',x\nbox=Box()\nold=box.method\noriginal=Box.method\ndef replacement(self,x=2):return 'new',x\nBox.method=replacement\nprint(old.__self__ is box,old.__func__ is original,old(7),box.method())\ndel Box.method\nprint(old())", "True True ('old', 7) ('new', 2)\n('old', 1)\n" },
+        { "method-returned-generator-iteration", "class Box:\n def run(self):return (i for i in range(3))\ng=Box().run()\nprint(next(g),next(g),list(g))", "0 1 [2]\n" },
+        { "class-cell-static-locals", "class Box:\n @staticmethod\n def read():\n  owner=__class__\n  return locals()['__class__'] is Box,vars()['__class__'] is Box\nprint(Box.read())", "(True, True)\n" },
+        { "class-cell-local-shadow", "class Box:\n def read(self):\n  __class__='local'\n  return locals()['__class__']\nprint(Box().read())", "local\n" },
+        { "class-cell-global-shadow", "__class__='global'\nclass Box:\n def read(self):\n  global __class__\n  value=__class__\n  return '__class__' in locals(),value\nprint(Box().read())", "(False, 'global')\n" },
+        { "class-cell-not-captured", "class Box:\n def read(self):return '__class__' in locals()\nprint(Box().read())", "False\n" },
+        { "class-cell-deleted-local", "class Box:\n def read(self):\n  __class__='local'\n  del __class__\n  return '__class__' in locals()\nprint(Box().read())", "False\n" },
     };
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public async Task PreparedMethodsFollowPython(string name, string source, string expected)
+    public async Task MethodsFollowPython(string name, string source, string expected)
     {
         using var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));

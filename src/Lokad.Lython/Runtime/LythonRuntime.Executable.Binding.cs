@@ -618,33 +618,13 @@ internal sealed partial class LythonRuntime
             return cell.RequireNotNull();
         }
 
-        bool TryGetNamespace(string name, [MaybeNullWhen(false)] out ExecutionContext binding)
-        {
-            if (context.TryGetInlinedBinding(name, out binding)) return true;
-            // Class methods can declare nonlocals in an enclosing namespace
-            // without a parent executable cell. Reuse that live namespace;
-            // class namespaces themselves are never lexical method bindings.
-            if (codeObject.ScopeFacts.IsNonlocal(name) && frame?.TryGetCell(name, out _) != true &&
-                !(name == "__class__" && context.TryGetLexicalClassCell(out _)))
-            {
-                for (var current = context; current.ParentContext is not null; current = current.ParentContext)
-                {
-                    if (current.IsClassBody) continue;
-                    if (current.ScopeFacts.IsGlobal(name)) break;
-                    if (current.ScopeFacts.LocalNames.Contains(name)) { binding = current; return true; }
-                }
-            }
-            binding = null;
-            return false;
-        }
-
         // Captured cells outlive the invocation frame through the function.
         // A comprehension already owns a live binding namespace. Identify that
         // owner without allocating cells before the array/cell preflight.
         var uncharged = 0;
         foreach (var name in codeObject.ClosureNames)
         {
-            if (TryGetNamespace(name, out _) || !Resolve(name).RetentionCharged)
+            if (context.TryGetInlinedBinding(name, out _) || !Resolve(name).RetentionCharged)
             {
                 uncharged++;
             }
@@ -662,7 +642,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < cells.Length; i++)
             {
                 var name = codeObject.ClosureNames[i];
-                cells[i] = TryGetNamespace(name, out var binding)
+                cells[i] = context.TryGetInlinedBinding(name, out var binding)
                     ? new ExecutableCell(UninitializedLocal, binding, name) : Resolve(name);
             }
             // Lookups above have no callbacks or mutation. Publish only after
@@ -671,7 +651,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < cells.Length; i++)
             {
                 cells[i].RetentionCharged = true;
-                if (TryGetNamespace(codeObject.ClosureNames[i], out var binding))
+                if (context.TryGetInlinedBinding(codeObject.ClosureNames[i], out var binding))
                     binding.MirrorLocalStores = true;
             }
             return cells;

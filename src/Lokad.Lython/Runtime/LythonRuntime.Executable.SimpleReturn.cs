@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
             return false;
 
         var previousFrame = context.CurrentExecutableFrame;
-        context.Services.Guards.CheckFunctionBody(entrySpan);
+        context.EnterInterpreterFrame(entrySpan);
         try
         {
             var entryException = context.Services.CurrentException;
@@ -72,6 +72,7 @@ internal sealed partial class LythonRuntime
         finally
         {
             context.LeaveExecutableSlots(previousFrame);
+            context.LeaveInterpreterFrame();
         }
     }
 

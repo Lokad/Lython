@@ -40,7 +40,7 @@ internal sealed partial class ExecutableScript
             foreach (var parameter in lambda.Parameters)
                 if (parameter.DefaultValue is not null) block = CompileExpression(parameter.DefaultValue, block);
             var code = CompileFunctionCode("<lambda>", lambda.Parameters, lambda.FunctionBody,
-                lambda.ScopeFacts, lambda.GeneratorCode, ChildClosureCandidates());
+                lambda.ScopeFacts, lambda.GeneratorCode);
             EmitOperation(new ExecutableCreateLambda(lambda, code), lambda.Span, block);
             return block;
         }

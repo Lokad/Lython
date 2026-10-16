@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-- Preserve managed unwind headroom for structural guest callbacks after host I/O with a conservative combined depth budget using existing execution-local state. Keep pure data limits, remove duplicate compiled-body nesting counts, and rethrow unhandled exceptions without handler routing in handler-free frames.
+- Include an initialized captured `__class__` in lowered-method locals()/vars() snapshots using the existing lexical-cell resolver and governed dictionary; preserve local/global shadowing and unbound cells.
 
-- Prepare eligible direct class-method bodies once during compilation and construct executable functions in the existing factory. Share the function compiler and live lexical/class-cell capture; keep per-definition functions/defaults, Python lookup, wrappers and async host effects. Preserve required generic/conditional routes. Give compiled entry guards the call span and defer abandoned-generator namespace retention until outer acquisition succeeds.
+- Attribute executable function entry failures to the call span, rethrow unhandled exceptions through handler-free frames without abrupt routing, and defer abandoned-generator namespace retention until outer acquisition succeeds. Keep the validated managed nesting policy; withdraw the prepared-class-method prototype after its Linux stack regression.
 
 - Invoke ordinary zero-argument exact-string split directly from executable frame storage, removing per-receiver bound callables and general binding. Reuse the governed whitespace-split kernel and call guards; preserve fresh owned results, Unicode whitespace, receiver suspension, terminal refusal and general/exposed calls.
 

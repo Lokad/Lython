@@ -83,8 +83,7 @@ public sealed class PostfixCallAssignmentHostTests
                 object value;
                 if (stage == "rhs")
                 {
-                    Assert.True(frame.TryResolveOwnLocal("self", out var receiver));
-                    Assert.Same(runner, receiver);
+                    Assert.Same(runner, frame.Variables["self"]);
                     produced = new PyList([], frame.MemoryGovernor, span);
                     value = produced;
                 }
@@ -121,7 +120,7 @@ public sealed class PostfixCallAssignmentHostTests
         {
             var paused = await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(pending.IsCompleted);
-            Assert.NotNull(paused.CurrentExecutableFrame);
+            Assert.Null(paused.CurrentExecutableFrame);
             var depth = root.Limits.CurrentInterpreterDepth;
             var recursion = root.Limits.CurrentRecursionDepth;
             Assert.True(depth > 0);

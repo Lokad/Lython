@@ -110,10 +110,6 @@ internal sealed partial class LythonRuntime
     // (MG20 pin: 512-deep copies succeed, 600-deep fail).
     public const int MaxInterpreterDepth = 512;
 
-    // A structural guest callback keeps native traversal and interpreter frames
-    // alive simultaneously; reserve a larger managed unwind margin for it.
-    internal const int MaxStructuralCallbackDepth = 64;
-
         // Counts only an explicitly requested allowance. Ordinary execution
         // uses cancellation and the guard's independent housekeeping cadence.
         public long ExecutionStepCount { get; set; }

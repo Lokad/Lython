@@ -92,17 +92,6 @@ internal sealed class ExecutionGuards
 
     public void EnterInterpreterFrame(LythonSourceSpan? span)
     {
-        CheckInterpreterAdmission(span);
-        Limits.CurrentInterpreterDepth++;
-    }
-
-    // PyFunctionBase has already admitted the Python invocation. Its executable
-    // body still checks physical managed stack/fuel/cancellation at entry, but
-    // is not a second logical Python nesting level.
-    internal void CheckFunctionBody(LythonSourceSpan span) => CheckInterpreterAdmission(span);
-
-    private void CheckInterpreterAdmission(LythonSourceSpan? span)
-    {
         CheckExecution(span);
         if (Limits.CurrentInterpreterDepth >= LythonRuntime.ExecutionLimits.MaxInterpreterDepth)
         {
@@ -111,22 +100,8 @@ internal sealed class ExecutionGuards
                 Limits.CurrentInterpreterDepth, Limits.CurrentInterpreterDepth + 1L);
         }
 
-        if (State.StructuralTraversal.Depth != 0) CheckStructuralCallback(span);
         EnsureInterpreterStack(span);
-    }
-
-    // Guest callbacks retain traversal, call and function frames together.
-    // Keep conservative headroom for managed exception handling/cleanup after
-    // a host suspension, without changing ordinary call or data-graph limits.
-    internal void CheckStructuralCallback(LythonSourceSpan? span)
-    {
-        var combined = (long)Limits.CurrentRecursionDepth + Limits.CurrentInterpreterDepth + State.StructuralTraversal.Depth;
-        if (combined >= LythonRuntime.ExecutionLimits.MaxStructuralCallbackDepth)
-        {
-            throw RuntimeErrors.Attributed("RuntimeError", "maximum interpreter stack depth exceeded", span,
-                LythonFailureReason.InterpreterStackLimit, LythonRuntime.ExecutionLimits.MaxStructuralCallbackDepth,
-                combined, combined + 1);
-        }
+        Limits.CurrentInterpreterDepth++;
     }
 
     public void LeaveInterpreterFrame()

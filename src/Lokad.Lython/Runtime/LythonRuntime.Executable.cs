@@ -435,10 +435,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan? entrySpan = null)
     {
         var previousExecutableFrame = context.CurrentExecutableFrame;
-        // A function call span comes from PyExecutableFunction after its
-        // invocation admission. Module/standalone entries own their depth.
-        if (entrySpan is null) context.EnterInterpreterFrame(null);
-        else context.Services.Guards.CheckFunctionBody(entrySpan);
+        context.EnterInterpreterFrame(entrySpan);
         try
         {
             var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells, argumentsAreLocals);
@@ -452,7 +449,7 @@ internal sealed partial class LythonRuntime
         finally
         {
             context.LeaveExecutableSlots(previousExecutableFrame);
-            if (entrySpan is null) context.LeaveInterpreterFrame();
+            context.LeaveInterpreterFrame();
         }
     }
 
@@ -469,10 +466,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan? entrySpan = null)
     {
         var previousExecutableFrame = context.CurrentExecutableFrame;
-        // A function call span comes from PyExecutableFunction after its
-        // invocation admission. Module/standalone entries own their depth.
-        if (entrySpan is null) context.EnterInterpreterFrame(null);
-        else context.Services.Guards.CheckFunctionBody(entrySpan);
+        context.EnterInterpreterFrame(entrySpan);
         try
         {
             var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells, argumentsAreLocals);
@@ -483,7 +477,7 @@ internal sealed partial class LythonRuntime
         finally
         {
             context.LeaveExecutableSlots(previousExecutableFrame);
-            if (entrySpan is null) context.LeaveInterpreterFrame();
+            context.LeaveInterpreterFrame();
         }
     }
 

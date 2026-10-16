@@ -505,7 +505,6 @@ internal sealed partial class LythonRuntime
         CopyMemo memo,
         [MaybeNullWhen(false)] out object value)
     {
-        using var callbackDepth = PyStructuralGuard.EnterCallbackDepth(context, span);
         var hookName = depth == CopyDepth.Deep ? "__deepcopy__" : "__copy__";
         if (!PyMemberAccess.TryResolve(instance, hookName, context, span, out var member))
         {

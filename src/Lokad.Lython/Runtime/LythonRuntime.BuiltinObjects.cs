@@ -965,6 +965,15 @@ internal sealed partial class LythonRuntime
                 if (context.TryReadNonlocalValue(name, out var value))
                     scope.SetItem(PyString.FromString(name, context.MemoryGovernor, span), value);
 
+        // Lowered methods keep the lexical class cell outside their local
+        // dictionary. Expose a captured cell just as executable snapshots do,
+        // while respecting local/global shadowing and an unbound cell.
+        if (includeFrameLocals && context.CurrentExecutableFrame is null && !context.IsClassBody &&
+            context.ScopeFacts.RequiresClassCell && !context.ScopeFacts.IsGlobal("__class__") &&
+            !context.ScopeFacts.LocalNames.Contains("__class__") &&
+            context.TryResolveImplicitClassValue(out var owner) && !ReferenceEquals(owner, UninitializedLocal))
+            scope.SetItem(PyString.FromString("__class__", context.MemoryGovernor, span), owner);
+
         if (includeFrameLocals && context.IncludeCallerLocals && context.CurrentExecutableFrame is not null)
         {
             foreach (var pair in context.CurrentExecutableFrame.EnumerateVisibleLocals())

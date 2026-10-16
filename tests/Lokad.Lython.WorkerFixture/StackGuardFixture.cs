@@ -17,6 +17,8 @@ internal static class StackGuardFixture
         const string lists = "x = 7\ny = 7\nfor _ in range(512):\n x = [x]\n y = [y]\n";
         var body = scenario switch
         {
+            "function" => "def loop():return loop()\nfailures=0\nfor _ in range(3):\n try:loop()\n except RuntimeError:failures+=1\n assert len([1])==1\nreturn failures\n",
+            "function-finally" => "cleanup=0\ndef loop():\n global cleanup\n try:return loop()\n finally:cleanup+=1\nfailures=0\nfor _ in range(3):\n try:loop()\n except RuntimeError:failures+=1\n assert len([1])==1\nassert cleanup>0\nreturn failures\n",
             "comparison" => lists + "failures = 0\nfor _ in range(3):\n try:\n  assert x == y\n except RecursionError:\n  failures += 1\n assert [[1, 2]] == [[1, 2]]\nreturn failures\n",
             "callback" => "class Loop:\n def __bool__(self): return bool(self)\nfailures = 0\nfor _ in range(3):\n try:\n  bool(Loop())\n except (RuntimeError, RecursionError):\n  failures += 1\n assert bool([1])\nreturn failures\n",
             "copyhook" => "import copy\nclass Loop:\n def __deepcopy__(self, memo): return copy.deepcopy(self, memo)\nfailures = 0\nfor _ in range(3):\n try:\n  copy.deepcopy(Loop())\n except (RuntimeError, RecursionError):\n  failures += 1\n assert copy.deepcopy([1]) == [1]\nreturn failures\n",

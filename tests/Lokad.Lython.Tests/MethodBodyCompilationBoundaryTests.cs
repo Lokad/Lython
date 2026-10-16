@@ -38,31 +38,34 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
          def identity(self):return self
         runner=Runner()
         """;
-    // Fixed executable-method witnesses; old lowered records are retained in history.
+    // Recorded on production f006f62c before any method-body compiler change.
     private static readonly LythonSourceSpan[] ClosureCheckpoints =
     [
-        new(4000,4,99,3), new(4000,4,99,3), new(4000,4,99,3), new(39,5,3,9), new(45,7,3,15),
-        new(54,2,3,24), new(53,4,3,23), new(39,19,3,9), new(39,19,3,9), new(39,19,3,9),
-        new(33,25,3,3), new(84,113,5,3), new(84,113,5,3), new(62,19,4,4), new(62,8,4,4),
-        new(62,19,4,4), new(62,19,4,4), new(71,9,4,13), new(71,9,4,13), new(101,22,5,20),
-        new(101,5,5,20), new(101,22,5,20), new(101,22,5,20), new(107,9,5,26), new(107,9,5,26),
-        new(117,5,5,36), new(207,6,8,10), new(207,8,8,10), new(207,8,8,10), new(207,8,8,10),
-        new(207,8,8,10), new(207,8,8,10), new(207,8,8,10), new(129,39,6,4), new(129,39,6,4),
-        new(179,5,7,11), new(185,6,7,17), new(192,4,7,24), new(179,18,7,11), new(179,18,7,11),
-        new(179,18,7,11), new(172,25,7,4), new(200,15,8,3),
+        CallSpan, CallSpan, new(33,25,3,3), new(39,19,3,9), new(39,5,3,9),
+        new(39,19,3,9), new(39,19,3,9), new(45,7,3,15), new(45,7,3,15),
+        new(53,4,3,23), new(54,2,3,24), new(53,4,3,23), new(84,113,5,3),
+        new(62,19,4,4), new(62,8,4,4), new(62,19,4,4), new(62,19,4,4),
+        new(71,9,4,13), new(71,9,4,13), new(101,22,5,20), new(101,5,5,20),
+        new(101,22,5,20), new(101,22,5,20), new(107,9,5,26), new(107,9,5,26),
+        new(117,5,5,36), new(207,8,8,10), new(207,6,8,10), new(207,8,8,10),
+        new(207,8,8,10), new(207,8,8,10), new(207,8,8,10), new(129,39,6,4),
+        new(179,18,7,11), new(179,5,7,11), new(179,18,7,11), new(179,18,7,11),
+        new(185,6,7,17), new(185,6,7,17), new(192,4,7,24)
     ];
     private static readonly LythonSourceSpan[] GenericCheckpoints =
     [
-        new(4000,4,99,3), new(4000,4,99,3), new(4000,4,99,3), new(43,2,3,13), new(42,4,3,12),
-        new(33,13,3,3), new(49,254,4,3), new(49,254,4,3), new(111,192,7,4), new(69,15,5,5),
-        new(69,8,5,5), new(69,15,5,5), new(69,15,5,5), new(78,5,5,14), new(78,5,5,14),
-        new(89,18,6,5), new(89,8,6,5), new(89,18,6,5), new(89,18,6,5), new(98,8,6,14),
-        new(98,8,6,14), new(153,25,7,46), new(153,5,7,46), new(153,25,7,46), new(153,25,7,46),
-        new(159,9,7,52), new(159,9,7,52), new(169,8,7,62), new(133,19,7,26), new(133,5,7,26),
-        new(133,19,7,26), new(133,19,7,26), new(139,10,7,32), new(139,10,7,32), new(150,1,7,43),
-        new(133,19,7,26), new(133,19,7,26), new(133,19,7,26), new(181,17,7,74), new(181,5,7,74),
-        new(181,17,7,74), new(181,17,7,74), new(187,8,7,80), new(187,8,7,80), new(196,1,7,89),
-        new(181,17,7,74), new(181,17,7,74), new(181,17,7,74), new(313,5,11,10), new(306,12,11,3),
+        CallSpan, CallSpan, new(33,13,3,3), new(42,4,3,12), new(43,2,3,13),
+        new(42,4,3,12), new(49,254,4,3), new(111,192,7,4), new(69,15,5,5),
+        new(69,8,5,5), new(69,15,5,5), new(69,15,5,5), new(78,5,5,14),
+        new(78,5,5,14), new(89,18,6,5), new(89,8,6,5), new(89,18,6,5),
+        new(89,18,6,5), new(98,8,6,14), new(98,8,6,14), new(153,25,7,46),
+        new(153,5,7,46), new(153,25,7,46), new(153,25,7,46), new(159,9,7,52),
+        new(159,9,7,52), new(169,8,7,62), new(133,19,7,26), new(133,5,7,26),
+        new(133,19,7,26), new(133,19,7,26), new(139,10,7,32), new(139,10,7,32),
+        new(150,1,7,43), new(133,19,7,26), new(133,19,7,26), new(133,19,7,26),
+        new(181,17,7,74), new(181,5,7,74), new(181,17,7,74), new(181,17,7,74),
+        new(187,8,7,80), new(187,8,7,80), new(196,1,7,89), new(181,17,7,74),
+        new(181,17,7,74), new(181,17,7,74), new(313,5,11,10)
     ];
 
     [Theory]
@@ -76,6 +79,7 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         var leaf = Assert.IsAssignableFrom<PyFunctionBase>(await Invoke(fixture.Method, fixture.Context, asynchronous));
         var steps = fixture.Context.Limits.ExecutionStepCount;
         var funded = fixture.Context.MemoryGovernor.CurrentAccountedBytes - before;
+        Assert.Equal(40, steps);
         Assert.True(funded > 0);
         Assert.Equal(new[] { "saved", "factory", "default", "factory-apply", "leaf" }, fixture.Tape.Events);
         AssertUnwound(fixture.Context);
@@ -103,10 +107,10 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         output.WriteLine($"async={asynchronous}, steps={steps}, funded={funded}");
         output.WriteLine("spans=" + string.Join(';', spans.Select(s => s is null ? "null" : $"{s.Start},{s.Length},{s.Line},{s.Column}")));
         output.WriteLine("effects=" + string.Join(';', effects));
-        output.WriteLine("CLOSURE_MATRIX:" + System.Text.Json.JsonSerializer.Serialize(new { asynchronous, steps, spans, effects }));
-        Assert.Equal(43, steps);
         Assert.Equal(ClosureCheckpoints, spans);
-        Assert.Equal(Enumerable.Repeat("", 10).Concat(Enumerable.Repeat("saved", 9).Concat(Enumerable.Repeat("saved,factory", 7).Concat(Enumerable.Repeat("saved,factory,default,factory-apply", 15).Concat(Enumerable.Repeat("saved,factory,default,factory-apply,leaf", 2))))), effects);
+        Assert.Equal(Enumerable.Repeat("", 12).Concat(Enumerable.Repeat("saved", 7))
+            .Concat(Enumerable.Repeat("saved,factory", 7))
+            .Concat(Enumerable.Repeat("saved,factory,default,factory-apply", 14)), effects);
     }
 
     [Theory]
@@ -120,20 +124,18 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         var inner = Assert.IsType<PyType>(await Invoke(fixture.Method, fixture.Context, asynchronous));
         var steps = fixture.Context.Limits.ExecutionStepCount;
         var funded = fixture.Context.MemoryGovernor.CurrentAccountedBytes - before;
+        Assert.Equal(48, steps);
         Assert.True(funded > 0);
         Assert.Equal(new[] { "top", "bottom", "default", "argument", "result", "bottom-apply", "top-apply" }, fixture.Tape.Events);
-        var actualSnapshots = fixture.Tape.Snapshots.ToArray();
         var expectedSnapshots = new[]
         {
-            // Existing decorator/default reservations remain live through publication.
-            "top:15,96,3,1",
-            "bottom:21,96,3,1",
-            "default:28,224,3,1",
-            "argument:35,224,3,1",
-            "result:45,224,3,1",
-            "bottom-apply:48,224,2,1",
-            "top-apply:48,224,2,1",
+            // Decorators own 96 bytes; the definition's one-default map
+            // owns another 128 until publication finishes. Steps/frames stay fixed.
+            "top:14,96,3,1", "bottom:20,96,3,1", "default:27,224,3,1",
+            "argument:34,224,3,1", "result:44,224,3,1",
+            "bottom-apply:47,224,2,1", "top-apply:47,224,2,1"
         };
+        Assert.True(expectedSnapshots.SequenceEqual(fixture.Tape.Snapshots), string.Join("\n", fixture.Tape.Snapshots));
         var receiver = Assert.IsType<PyInstance>(inner.Invoke([], CallSpan, fixture.Context));
         var method = Bind(receiver, "run");
         var function = Assert.IsAssignableFrom<PyFunctionBase>(method.Function);
@@ -173,11 +175,13 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         }
         output.WriteLine("generic spans=" + string.Join(';', spans.Select(s => s is null ? "null" : $"{s.Start},{s.Length},{s.Line},{s.Column}")));
         output.WriteLine("generic effects=" + string.Join(';', effects));
-        output.WriteLine("GENERIC_MATRIX:" + System.Text.Json.JsonSerializer.Serialize(new { asynchronous, steps, spans, effects, snapshots = actualSnapshots }));
-        Assert.Equal(50, steps);
-        Assert.True(expectedSnapshots.SequenceEqual(actualSnapshots), string.Join("\n", actualSnapshots));
         Assert.Equal(GenericCheckpoints, spans);
-        Assert.Equal(Enumerable.Repeat("", 15).Concat(Enumerable.Repeat("top", 6).Concat(Enumerable.Repeat("top,bottom", 7).Concat(Enumerable.Repeat("top,bottom,default", 7).Concat(Enumerable.Repeat("top,bottom,default,argument", 10).Concat(Enumerable.Repeat("top,bottom,default,argument,result", 3).Concat(Enumerable.Repeat("top,bottom,default,argument,result,bottom-apply,top-apply", 2))))))), effects);
+        Assert.Equal(Enumerable.Repeat("", 14).Concat(Enumerable.Repeat("top", 6))
+            .Concat(Enumerable.Repeat("top,bottom", 7))
+            .Concat(Enumerable.Repeat("top,bottom,default", 7))
+            .Concat(Enumerable.Repeat("top,bottom,default,argument", 10))
+            .Concat(Enumerable.Repeat("top,bottom,default,argument,result", 3))
+            .Concat(["top,bottom,default,argument,result,bottom-apply,top-apply"]), effects);
     }
 
     [Theory]
@@ -203,50 +207,37 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         var fixture = await Define(GenericSource, true, cancellation.Token);
         fixture.Tape.PausedPhase = pausedPhase;
         fixture.Tape.RequireAsync = true;
-        var pending = Invoke(fixture.Method, fixture.Context, true).AsTask();
-        try
+        var pending = Invoke(fixture.Method, fixture.Context, true);
+        PyInstance? innerReceiver = null;
+        if (pausedPhase == "body")
         {
-            PyInstance? innerReceiver = null;
-            if (pausedPhase == "body")
-            {
-                var inner = Assert.IsType<PyType>(await pending);
-                innerReceiver = Assert.IsType<PyInstance>(inner.Invoke([], CallSpan, fixture.Context));
-                pending = Invoke(Bind(innerReceiver, "run"), fixture.Context, true).AsTask();
-            }
-            var frame = await fixture.Tape.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
-            Assert.False(pending.IsCompleted);
-            Assert.NotSame(fixture.Context, frame);
-            Assert.Same(fixture.Context.Services, frame.Services);
-            Assert.Equal("/method-body.py", frame.SourcePath);
-            // Frame storage may be executable slots or a required lowered namespace.
-            Assert.True(frame.Limits.CurrentRecursionDepth > 0);
-            var depth = frame.Limits.CurrentRecursionDepth;
-            var phaseCount = fixture.Tape.Events.Count;
-            Assert.Same(fixture.Receiver, await Invoke(Bind(fixture.Receiver, "identity"), fixture.Context, true));
-            Assert.Equal(depth, frame.Limits.CurrentRecursionDepth);
-            Assert.Equal(phaseCount, fixture.Tape.Events.Count);
-            if (innerReceiver is not null)
-            {
-                Assert.True(frame.TryResolveOwnLocal("self", out var receiver));
-                Assert.Same(innerReceiver, receiver);
-            }
-            if (cancel)
-            {
-                cancellation.Cancel();
-                await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await pending);
-                Assert.Equal(phaseCount, fixture.Tape.Events.Count);
-            }
-            else
-            {
-                fixture.Tape.Release.SetResult();
-                Assert.NotNull(await pending);
-            }
+            var inner = Assert.IsType<PyType>(await pending);
+            innerReceiver = Assert.IsType<PyInstance>(inner.Invoke([], CallSpan, fixture.Context));
+            pending = Invoke(Bind(innerReceiver, "run"), fixture.Context, true);
         }
-        finally
+        var frame = await fixture.Tape.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.False(pending.IsCompleted);
+        Assert.NotSame(fixture.Context, frame);
+        Assert.Same(fixture.Context.Services, frame.Services);
+        Assert.Equal("/method-body.py", frame.SourcePath);
+        Assert.Null(frame.CurrentExecutableFrame);
+        Assert.True(frame.Limits.CurrentRecursionDepth > 0);
+        var depth = frame.Limits.CurrentRecursionDepth;
+        var phaseCount = fixture.Tape.Events.Count;
+        Assert.Same(fixture.Receiver, await Invoke(Bind(fixture.Receiver, "identity"), fixture.Context, true));
+        Assert.Equal(depth, frame.Limits.CurrentRecursionDepth);
+        Assert.Equal(phaseCount, fixture.Tape.Events.Count);
+        if (innerReceiver is not null) Assert.Same(innerReceiver, frame.Variables["self"]);
+        if (cancel)
         {
-            fixture.Tape.Release.TrySetResult();
-            try { await pending; }
-            catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
+            cancellation.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await pending);
+            Assert.Equal(phaseCount, fixture.Tape.Events.Count);
+        }
+        else
+        {
+            fixture.Tape.Release.SetResult();
+            Assert.NotNull(await pending);
         }
         AssertUnwound(fixture.Context);
         Assert.Same(fixture.Active, fixture.Context.Services.CurrentException);
@@ -264,6 +255,7 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         var generator = Assert.IsType<LythonRuntime.PyGenerator>(await Invoke(fixture.Method, fixture.Context, asynchronous));
         var steps = fixture.Context.Limits.ExecutionStepCount;
         var funded = fixture.Context.MemoryGovernor.CurrentAccountedBytes - before;
+        Assert.Equal(26, steps);
         Assert.True(funded > 0);
         Assert.Same(fixture.Context.MemoryGovernor, generator.OwnerMemoryGovernor);
         Assert.Equal(new[] { "saved", "default" }, fixture.Tape.Events);
@@ -283,7 +275,6 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         AssertUnwound(fixture.Context);
         Assert.Same(fixture.Active, fixture.Context.Services.CurrentException);
         output.WriteLine($"generator async={asynchronous}, steps={steps}, funded={funded}");
-        Assert.Equal(27, steps);
     }
 
     [Theory]
@@ -347,7 +338,7 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(fixture.Method, fixture.Context, asynchronous));
             Assert.Equal("RuntimeError", error.ExceptionType);
             Assert.Equal("maximum interpreter stack depth exceeded", error.Message);
-            Assert.Same(CallSpan, error.Span);
+            Assert.Equal(new LythonSourceSpan(33, 35, 3, 3), error.Span);
             Assert.Empty(fixture.Tape.Events);
             Assert.Equal(LythonRuntime.ExecutionLimits.MaxInterpreterDepth, fixture.Context.Limits.CurrentInterpreterDepth);
             Assert.Equal(0, fixture.Context.Limits.CurrentRecursionDepth);
@@ -374,7 +365,7 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
             Assert.Same(root.Services, frame.Services);
             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
             Assert.Same(active, frame.Services.CurrentException);
-            // Frame storage may be executable slots or a required lowered namespace.
+            Assert.Null(frame.CurrentExecutableFrame);
             Events.Add(phase);
             Values[phase] = value;
             Snapshots.Add($"{phase}:{frame.Limits.ExecutionStepCount},{frame.MemoryGovernor.CurrentReservedBytes},{frame.Limits.CurrentInterpreterDepth},{frame.Limits.CurrentRecursionDepth}");

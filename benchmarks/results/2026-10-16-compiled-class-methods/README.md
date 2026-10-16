@@ -1,11 +1,19 @@
 # Prepared ordinary class methods — 2026-10-16
 
-Eligible direct class-suite functions now share executable bodies prepared once
+**Rejected after cross-platform qualification.** [CI38922855547](https://github.com/Lokad/Lython/actions/runs/38922855547)
+passed all 2,691 Ubuntu white-box tests, then the public test host fatally overflowed
+during ordinary recursion. Removing duplicate executable-body depth counts had
+not preserved Linux unwind safety. The prototype and its added callback policy
+are withdrawn; the validated admission counts and lowered class routes are
+restored. Independent retention, call-span and safe rethrow fixes are retained.
+No later HEAD performance or containment claim follows from this candidate.
+
+The rejected prototype made eligible direct class-suite functions share executable bodies prepared once
 at compilation, using the existing function compiler/factory. Definitions retain
 private function values/defaults and live lexical/class cells. Selected methods
-no longer execute lowered bodies or repeat method scope analysis. Generic,
+no longer executed lowered bodies or repeated method scope analysis. Generic,
 conditional and other required lowered routes remain. General bound-method
-argument repackaging is still present; this change establishes executable-body
+argument repackaging is still present; the prototype established executable-body
 coverage, not a direct method calling convention.
 
 | Engine | Measured revision | Fresh compile/run median | IQR / median |

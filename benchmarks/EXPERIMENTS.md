@@ -845,7 +845,7 @@ preserve the distinct CPython and earlier-Lython comparisons.
 
 ## Diagnostic comparisons by revision
 
-- [Prepared ordinary class methods](results/2026-10-16-compiled-class-methods/README.md): fresh compile/run; candidate median 23.3% higher, unqualified. Actual 16,384-call input differs from the original medium-case declaration; mismatch and original receipt retained, no repeated capture. Executable coverage and stack-policy corrections are distinct from an unproved speedup.
+- [Prepared ordinary class methods](results/2026-10-16-compiled-class-methods/README.md): fresh compile/run; candidate median 23.3% higher, unqualified. Actual 16,384-call input differs from the original medium-case declaration; mismatch and original receipt retained, no repeated capture. The prototype is rejected after an Ubuntu public-test-host stack overflow; its compiler and admission-policy changes are withdrawn. Independent fixes survive.
 
 Preserved from BENCHMARKS.md before reducing its leading table. Revision and
 measurement-status labels retain their original meaning; see the

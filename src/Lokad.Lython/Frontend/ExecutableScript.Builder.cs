@@ -25,18 +25,6 @@ internal sealed partial class ExecutableScript
         ScopeDirectiveFacts? scopeFacts = null)
         => new Builder(parameters, true, scopeFacts).CompileCodeObject("<generator>", body);
 
-    internal static ExecutableCodeObject? CompileFunctionCode(string name,
-        IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body,
-        ScopeDirectiveFacts scopeFacts, ExecutableCodeObject? generatorCode, IEnumerable<string>? parentClosureCandidates)
-    {
-        try
-        {
-            if (generatorCode is not null) return generatorCode;
-            return new Builder(parameters, parentClosureCandidates, scopeFacts).CompileCodeObject(name, body);
-        }
-        catch (ExecutableLoweringFallbackException) { return null; }
-    }
-
     private sealed partial class Builder
     {
         private static readonly LythonSourceSpan EmptySpan = new(0, 0, 0, 0);
