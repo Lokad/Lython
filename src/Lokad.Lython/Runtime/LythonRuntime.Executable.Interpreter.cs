@@ -844,9 +844,18 @@ internal sealed partial class LythonRuntime
                                     jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                     break;
 
-                                case ExecutableOpCode.AbruptJump or ExecutableOpCode.JumpIfFalse or
-                                     ExecutableOpCode.ChainLink or
-                                     ExecutableOpCode.Jump or
+                                case ExecutableOpCode.JumpIfFalse:
+                                    if (_stack[_stack.Count - 1] is not PyInstance)
+                                        jumped = ExecuteControlFlow(instruction);
+                                    else
+                                        jumped = await ExecuteControlFlowAsync(instruction).ConfigureAwait(false);
+                                    break;
+
+                                case ExecutableOpCode.ChainLink:
+                                    jumped = await ExecuteControlFlowAsync(instruction).ConfigureAwait(false);
+                                    break;
+
+                                case ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or
                                      ExecutableOpCode.MatchException or
                                      ExecutableOpCode.BindException or
                                      ExecutableOpCode.ReraiseException or
@@ -854,7 +863,7 @@ internal sealed partial class LythonRuntime
                                      ExecutableOpCode.EndFinally or
                                      ExecutableOpCode.Return or
                                      ExecutableOpCode.ReturnNone:
-                                    jumped = await ExecuteControlFlowAsync(instruction).ConfigureAwait(false);
+                                    jumped = ExecuteControlFlow(instruction);
                                     break;
 
                                 default:

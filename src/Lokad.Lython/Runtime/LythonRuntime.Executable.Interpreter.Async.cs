@@ -197,7 +197,7 @@ internal sealed partial class LythonRuntime
                 _currentBlockIndex = instruction.FailureBlockIndex;
                 return true;
             }
-            return ExecuteControlFlow(instruction);
+            throw new InvalidOperationException($"Unexpected asynchronous control-flow opcode: {instruction.OpCode}");
         }
     }
 }

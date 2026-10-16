@@ -185,6 +185,57 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData("return")]
+    [InlineData("break")]
+    [InlineData("fault")]
+    public async Task LeavingLoopAwaitsDisposalBeforeOuterFinally(string route)
+    {
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var source = new PausedSource();
+        var stamp = new Stamp();
+        context.Variables["stamp"] = stamp;
+        var statement = route == "fault" ? "1//0" : route;
+        var generator = Create(" if False:yield 0\n try:\n  for item in source:" + statement + "\n finally:stamp()", context, source);
+        var pending = generator.TryMoveNextAsync().AsTask();
+        try
+        {
+            var first = await Task.WhenAny(source.Disposing.Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Same(source.Disposing.Task, first);
+            Assert.False(pending.IsCompleted);
+            Assert.Equal(0, stamp.Calls);
+            Assert.Equal(1, source.Disposals);
+            Assert.True(budget.ReservedBytes > 0);
+        }
+        finally
+        {
+            source.Release.TrySetResult();
+            try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
+            catch (LythonRuntimeException) when (route == "fault") { }
+        }
+        if (route == "fault")
+            Assert.Equal("ZeroDivisionError", (await Assert.ThrowsAsync<LythonRuntimeException>(() => pending)).ExceptionType);
+        else Assert.False((await pending).HasValue);
+        Assert.Equal(1, stamp.Calls);
+        Assert.Equal(1, source.Disposals);
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class Stamp : ICallable
+    {
+        public int Calls;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+        {
+            Calls++;
+            return PyNone.Instance;
+        }
+    }
+
     private static LythonRuntime.PyGenerator Create(string body, Context context, params object[] sources)
     {
         var frontend = LythonFrontend.Compile("def scan(source):\n" + body);
