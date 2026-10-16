@@ -11,9 +11,6 @@ internal sealed partial class LythonRuntime
     // list-valued attribute can never be confused with this resolved method.
     private static readonly object DirectListAppend = new();
     private static readonly object DirectDictionaryGet = new();
-    private static readonly object DirectStringStrip = new();
-    private static readonly object DirectStringSplit = new();
-    private static readonly object DirectStringLower = new();
     private static readonly object DirectStringStartsWith = new();
 
     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
@@ -549,17 +546,10 @@ internal sealed partial class LythonRuntime
             {
                 result = InvokeListAppend((PyList)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
             }
-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringStrip))
+            else if (callSite.HasReceiver && stack[start] is PyString stringReceiver &&
+                target is Func<PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
             {
-                result = InvokeStringStrip((PyString)stack[start], callSite.CallSpan, context);
-            }
-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringSplit))
-            {
-                result = InvokeStringSplit((PyString)stack[start], callSite.CallSpan, context);
-            }
-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringLower))
-            {
-                result = InvokeStringLower((PyString)stack[start], callSite.CallSpan, context);
+                result = InvokeStringNoArguments(stringReceiver, stringOperation, callSite.CallSpan, context);
             }
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringStartsWith))
             {

@@ -6,6 +6,20 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
+        private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> StripWhitespaceOperation = StripWhitespace;
+        private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> SplitWhitespaceOperation =
+            static (receiver, span, context) => PyStringOps.SplitWhitespace(receiver, context.MemoryGovernor, span);
+        private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> LowerOperation = Lower;
+
+        internal static Func<PyString, LythonSourceSpan, ExecutionContext, object>? GetNoArgumentsOperation(string name)
+            => name switch
+            {
+                "strip" => StripWhitespaceOperation,
+                "split" => SplitWhitespaceOperation,
+                "lower" => LowerOperation,
+                _ => null
+            };
+
         internal static PyString Lower(PyString receiver, LythonSourceSpan span, ExecutionContext context)
             => OwnMethodResult(receiver.ToLowerInvariant(), receiver, context.MemoryGovernor, span);
 

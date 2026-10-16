@@ -24,10 +24,8 @@ internal sealed partial class LythonRuntime
             {
                 PyList when name == "append" => DirectListAppend,
                 PyDict when name == "get" => DirectDictionaryGet,
-                Text.PyString when name == "strip" => DirectStringStrip,
-                Text.PyString when name == "split" => DirectStringSplit,
-                Text.PyString when name == "lower" => DirectStringLower,
                 Text.PyString when name == "startswith" => DirectStringStartsWith,
+                Text.PyString => StringMembers.GetNoArgumentsOperation(name),
                 _ => null
             };
             if (operation is null) return false;
