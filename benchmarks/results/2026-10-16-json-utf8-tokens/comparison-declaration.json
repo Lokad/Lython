@@ -1,0 +1,16 @@
+{
+  "baselineRevision": "f3e05ad96d5c4aad61f208c38db621b777a4ee41",
+  "candidateRevision": "b85fdde92aae2b300863a7f9c84350ce233685d5",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "6c5e9c236bd671e50e804a8eafaba1464d01e1f252c9d16e8f560093ac7cd602"
+  },
+  "sourceArchiveSha256": "601ee2e26639a7e74012ca3cd0b70d631934d404cd0116279798e04c966dd574",
+  "caseId": "scripts.json-summary.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Copy well-formed unescaped JSON string/key payloads into existing governed UTF-8 storage; preserve escaped/invalid paths and scratch; delete single-use conversion helper.",
+  "normalGCAndTiering": true,
+  "boundary": "Unchanged complete JSON-lines aggregation: 4096 records / 110592 UTF-8 bytes. Warm synchronous Run and ordinary warm CPython, including disk reset/staging, complete job, output/byte checks, projection and prior-result cleanup. Compile/startup/transport/full hash excluded.",
+  "stoppingRule": "One existing affected complete workload; no repeat, tuning, new producer/framework or long lane. No milestone qualification."
+}

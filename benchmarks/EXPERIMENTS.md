@@ -7,6 +7,24 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 JSON token delivery](results/2026-10-16-json-utf8-tokens/README.md)
+removes the CLR string/re-encoding round trip for well-formed unescaped values
+and keys, reuses governed copied storage and deletes the single-use helper.
+Escaped/invalid paths and scratch charges stay. One unchanged complete JSON job
+observed 10.2500 -> 10.5481 ms, CPython 4.6510 ms, spread 17.2%/3.9%/0.5%.
+The 2.9% higher candidate median is inconclusive; no improvement or slowdown is
+established. One frozen source, correct loaded revisions, all three golden sizes
+per role, normal policies, one 10.076 s timing command, seven workers/fixtures gone
+and lease free. No repeat or tuning. AS replaces AC's warm row; original evidence:
+
+| Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
+| --- | --- | ---: | ---: | ---: | --- |
+| Complete JSON-lines aggregation [AC], warm | 4,096 records / 110,592 UTF-8 bytes | 9.692 ms | 4.260 ms | — | Historical warm diagnostic; elapsed change within spread |
+
+| Label | Date | Measured Lython revision | Evidence |
+| --- | --- | --- | --- |
+| AC | 2026-10-15 | Working JSON value-forwarding candidate on 50583327; one frozen production source; unchanged script/tooling | [Complete JSON file job and callback/ownership checks](benchmarks/results/2026-10-15-json-value-dispatch/README.md) |
+
 The [2026-10-16 prefix-call delivery](results/2026-10-16-string-prefix-calls/README.md)
 shares existing receiver/argument slots and the Unicode/tuple kernel for ordinary
 one-argument exact-string startswith. Both roles include keyword/static tuple

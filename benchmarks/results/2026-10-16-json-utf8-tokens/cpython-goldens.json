@@ -1,0 +1,50 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "checks": [
+    {
+      "name": "plain",
+      "source": "import json\nprint(json.dumps(json.loads('\"caf\u00e9\ud83d\ude00\"'),ensure_ascii=True))",
+      "stdout": "\"caf\\u00e9\\ud83d\\ude00\"\n"
+    },
+    {
+      "name": "empty",
+      "source": "import json\nprint(json.dumps(json.loads('[\"\",\"a\",\"\ud83d\ude00\"]')))",
+      "stdout": "[\"\", \"a\", \"\\ud83d\\ude00\"]\n"
+    },
+    {
+      "name": "escaped",
+      "source": "import json\nprint(json.dumps(json.loads(r'\"a\\nb\\u0041\"')))",
+      "stdout": "\"a\\nbA\"\n"
+    },
+    {
+      "name": "duplicate-keys",
+      "source": "import json\nprint(json.dumps(json.loads('{\"kind\":\"red\",\"note\":\"caf\u00e9\ud83d\ude00\",\"kind\":\"blue\"}'),sort_keys=True))",
+      "stdout": "{\"kind\": \"blue\", \"note\": \"caf\\u00e9\\ud83d\\ude00\"}\n"
+    },
+    {
+      "name": "pairs-hook",
+      "source": "import json\nprint(json.dumps(json.loads('{\"a\":\"x\",\"a\":\"y\"}',object_pairs_hook=lambda pairs:pairs)))",
+      "stdout": "[[\"a\", \"x\"], [\"a\", \"y\"]]\n"
+    },
+    {
+      "name": "raw-decode",
+      "source": "import json\nprint(json.dumps(json.JSONDecoder().raw_decode('xx\"caf\u00e9\ud83d\ude00\"tail',2)))",
+      "stdout": "[\"caf\\u00e9\\ud83d\\ude00\", 9]\n"
+    },
+    {
+      "name": "lenient",
+      "source": "import json\nprint(json.dumps(json.loads('\"a'+chr(1)+'b\"',strict=False)))",
+      "stdout": "\"a\\u0001b\"\n"
+    },
+    {
+      "name": "errors",
+      "source": "import json\nfor source in ['\"caf\u00e9\ud83d\ude00\" trailing','{\"caf\u00e9\":\"\ud83d\ude00\",\"x\":}','\"unterminated',r'\"bad\\q\"']:\n try:json.loads(source)\n except json.JSONDecodeError as e:print(e.pos,e.doc==source)",
+      "stdout": "8 True\n16 True\n0 True\n4 True\n"
+    },
+    {
+      "name": "roundtrip",
+      "source": "import json\nvalue=['caf\u00e9\ud83d\ude00','',{'a':'b','note':'line\\nquoted\\\"'}]\nprint(json.dumps(json.loads(json.dumps(value,ensure_ascii=False)),sort_keys=True))",
+      "stdout": "[\"caf\\u00e9\\ud83d\\ude00\", \"\", {\"a\": \"b\", \"note\": \"line\\nquoted\\\"\"}]\n"
+    }
+  ]
+}
