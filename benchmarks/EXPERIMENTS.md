@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 cursor dispatch change](results/2026-10-16-cursor-sync-dispatch/README.md)
+removes async forwarding for synchronous builtin pulls and existing user/async
+iterator tasks. One unchanged branch loop observed 5.979 → 5.889 ms, CPython
+1.0203 ms; spreads 4.74%/0.70%/0.37%. The 1.5% lower median is within baseline
+spread: inconclusive, no speedup/qualified ratio. One 7.257 s capture, no retry,
+retuning or new producer. Frozen manifests and independent three-size arithmetic
+goldens match; seven workers/fixtures gone, services inactive, lease free. BM
+refreshes the same branch-loop row; BG remains historical. No later HEAD claim.
+
 The [2026-10-16 JSON forwarding deletion](results/2026-10-16-json-container-forwarding/README.md)
 removes container forwarding awaits and the redundant prefix decoder/result
 record. One unchanged JSON transform observed 2.626 → 2.691 ms, CPython 0.4439 ms;

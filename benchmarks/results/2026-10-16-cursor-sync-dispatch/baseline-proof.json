@@ -1,0 +1,23 @@
+{
+  "revision": "86ef68e9a1eae419112fcddb4059d9aa63c084b7",
+  "tests": 52,
+  "matrices": [
+    "CURSOR_DISPATCH_MATRIX:{\"length\":65,\"asynchronous\":false,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],\"checksum\":\"2730\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":65,\"asynchronous\":false,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],\"checksum\":\"-1430\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":64,\"asynchronous\":false,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],\"checksum\":\"2656\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":64,\"asynchronous\":false,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],\"checksum\":\"-1376\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":65,\"asynchronous\":true,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],\"checksum\":\"2730\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":65,\"asynchronous\":true,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],\"checksum\":\"-1430\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":63,\"asynchronous\":true,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],\"checksum\":\"2583\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":63,\"asynchronous\":true,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],\"checksum\":\"-1323\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":0,\"asynchronous\":false,\"direction\":1,\"steps\":[1],\"checksum\":\"0\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":0,\"asynchronous\":false,\"direction\":-1,\"steps\":[1],\"checksum\":\"0\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":64,\"asynchronous\":true,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],\"checksum\":\"2656\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":64,\"asynchronous\":true,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],\"checksum\":\"-1376\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":0,\"asynchronous\":true,\"direction\":1,\"steps\":[1],\"checksum\":\"0\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":0,\"asynchronous\":true,\"direction\":-1,\"steps\":[1],\"checksum\":\"0\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":63,\"asynchronous\":false,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],\"checksum\":\"2583\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":63,\"asynchronous\":false,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],\"checksum\":\"-1323\"}"
+  ],
+  "pyIterationSha256": "abb74b8bcfa4e30e9a24adefdf539857aa17d0cab7266b5e20ae3efa3a4a30b9"
+}

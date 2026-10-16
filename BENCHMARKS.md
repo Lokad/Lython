@@ -16,7 +16,7 @@
 | Starred-list helper loop [BJ], warm `RunAsync` | 16,384 calls / 264 UTF-8 source bytes | 27.550 ms | 2.9739 ms | — | Short diagnostic at 527ff833; admitted local buffers; 3.6% higher median, unqualified; no benefit established |
 | Keyword helper-call loop [BI], warm `RunAsync` | 16,384 calls / 134 UTF-8 source bytes | 6.680 ms | 1.0849 ms | — | Short diagnostic at 60961196; direct function transport; 1.8% lower median within 13.3% baseline spread, inconclusive |
 | Constructed-text strip/length loop [BH], warm `RunAsync` | 32,768 lines / 425,984 UTF-8 bytes constructed in execution | 17.832 ms | 3.1868 ms | — | Short diagnostic at d4ac39db; direct len transport; 26.4% lower median with 18.8% baseline spread, unqualified |
-| Branch/integer loop [BG], warm `RunAsync` | 16,384 iterations; modulo/comparison/add/subtract | 5.980 ms | 1.0136 ms | — | Short diagnostic at f8d87288; direct ordinary control flow; 8.2% lower Lython median, unqualified |
+| Branch/integer loop [BM], warm `RunAsync` | 16,384 iterations / 119 UTF-8 source bytes; modulo/comparison/add/subtract | 5.889 ms | 1.0203 ms | — | Short diagnostic at 2e4d0a34; synchronous cursor dispatch; 1.5% lower median within 4.7% baseline spread, inconclusive |
 | Instance-method accumulator [AZ], fresh compile/run | 16,384 calls / 208 UTF-8 source bytes | 11.494 ms | 0.9783 ms | — | Rejected c3db3ca2 prototype: Linux stack overflow; median 23.3% higher, unqualified; setup erratum linked |
 | Instance-method accumulator [BC], warm `Run` | 2,048 calls / 207 UTF-8 source bytes | 1.060 ms | 0.11428 ms | — | Short diagnostic at d88d6440; direct lowered-method transport; 7.4% lower median, unqualified |
 | Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
@@ -47,6 +47,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BM | 2026-10-16 UTC | 2e4d0a34; ordinary cursor pulls reuse synchronous core; user/async iterator tasks forwarded directly | [Cursor dispatch, exact fuel/protocol controls and short diagnostic](benchmarks/results/2026-10-16-cursor-sync-dispatch/README.md) |
 | BL | 2026-10-16 UTC | 35d99a88; direct container forwarding and redundant prefix decoder removed; excludes later integer-admission correction | [JSON deletions, exact guards and short diagnostic](benchmarks/results/2026-10-16-json-container-forwarding/README.md) |
 | BK | 2026-10-16 UTC | 4b930ca5; synchronous true/false/null dispatch; both roles include error correction 2a2ebada | [JSON transformation, exact guards and error correction](benchmarks/results/2026-10-16-json-literal-dispatch/README.md) |
 | BJ | 2026-10-16 UTC | 527ff833; invocation-owned admitted local-capacity buffers | [Lifetime consolidation, earlier denial and short diagnostic](benchmarks/results/2026-10-16-owned-function-locals/README.md) |
@@ -134,6 +135,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Synchronous cursor pulls under RunAsync, 2026-10-16 UTC | 86ef68e9 → 2e4d0a34; unchanged branch loop | No benefit established: 5.979 → 5.889 ms; 1.5% lower median within 4.7% baseline spread | [Shared core and genuine suspension preserved](benchmarks/results/2026-10-16-cursor-sync-dispatch/README.md) |
 | JSON container/prefix forwarding, 2026-10-16 UTC | 73426010 → 35d99a88; unchanged in-memory JSON transform | No benefit established: 2.626 → 2.691 ms; 2.5% higher median within 8–13% spread | [Removed wrappers and preserved checkpoints](benchmarks/results/2026-10-16-json-container-forwarding/README.md) |
 | Synchronous JSON literals, 2026-10-16 UTC | 2a2ebada → 4b930ca5; unchanged in-memory JSON transform | No benefit established: 2.365 → 2.380 ms; 0.6% higher median within 17–22% spread | [Shared scalar admission and unchanged hooks](benchmarks/results/2026-10-16-json-literal-dispatch/README.md) |
 | Invocation-owned function locals, 2026-10-16 UTC | cd32a964 → 527ff833; unchanged starred-list helper | No benefit established: 26.602 → 27.550 ms; 3.6% higher median, one unqualified diagnostic | [Capacity admission, cleanup and semantic controls](benchmarks/results/2026-10-16-owned-function-locals/README.md) |

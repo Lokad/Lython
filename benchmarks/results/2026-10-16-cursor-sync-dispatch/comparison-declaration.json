@@ -1,0 +1,28 @@
+{
+  "baselineRevision": "86ef68e9a1eae419112fcddb4059d9aa63c084b7",
+  "candidateRevision": "2e4d0a3462a6b0d580e141739ca7158f79691f8c",
+  "caseId": "loops.branch.large",
+  "expectedCaseSize": 16384,
+  "expectedIterations": 16384,
+  "expectedSourceUtf8Bytes": 119,
+  "expectedSourceSha256": "f561f11f62301d183ac0e240174d882de9b34ad052d97b922f3711d050e6cf4e",
+  "lane": "warm-async",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm public RunAsync of unchanged branch/integer loop;16384iterations,reused compilation,fresh invocation state,execution/projection and prior-result cleanup timed. Compilation/startup/transport excluded; no host I/O.",
+  "stoppingRule": "One existing branch-loop warm-async capture after cursor dispatch; no retry,retuning,new producer or full lane.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "b9c6e91a77526f94b19126bd2a8d58ad491512971c9719a4c4ec9e28877743cf",
+    "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+    "sourceArchiveSha256": "694c4e9497038c4f777a55514a47b073efc35a31fae81b0419c0f9fa841cf17b"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "76522875acde63aa581271cb93664d072b2d365dc57d018fc6859074b9908156",
+    "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+    "sourceArchiveSha256": "c7361cdeb5df453a3060d53b9252aa98eeaddb419e871b3c9c511f2bc481a127"
+  }
+}

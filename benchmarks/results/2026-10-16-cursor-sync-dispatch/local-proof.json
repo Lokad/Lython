@@ -1,0 +1,165 @@
+{
+  "baselineRevision": "86ef68e9a1eae419112fcddb4059d9aa63c084b7",
+  "runtimeRevision": "2e4d0a3462a6b0d580e141739ca7158f79691f8c",
+  "checks": [
+    {
+      "stage": "cursor-dispatch-corrected-focused",
+      "tests": 52,
+      "process": {
+        "source": "direct-cursor-pulls",
+        "production": "86ef68e9-plus-cursor-dispatch",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "69990F31A8B1F3B0EAA3F12DEAF9EECC60E77928014F5333F422816CDBE2057B",
+        "filter": "Category!=Stress&(FullyQualifiedName~CursorDispatchTests|FullyQualifiedName~CheckedRangeIterationTests|FullyQualifiedName~IterationCancellationTests|FullyQualifiedName~ExecutableAsyncIteratorCleanupTests)",
+        "pid": 25804,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1196,
+        "stdoutSha256": "3DCBACEF9026348BD34ABFC47F4639CFC8C3113153A01162F1B5EEF120C4DC93",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "cursor-dispatch-public",
+      "tests": 195,
+      "process": {
+        "source": "direct-cursor-pulls",
+        "production": "2e4d0a34",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "8BDAB5B9CDA5CD0AC84B58B731F98A8BAFA4F8DDD7446178F444C03AF0F07D78",
+        "filter": "Category!=Stress&(FullyQualifiedName~IteratorProtocolScenarioTests|FullyQualifiedName~BuiltinIterationCancellationTests|FullyQualifiedName~CustomIterationModuleRoutingTests|FullyQualifiedName~GeneratorCleanupCompositionTests|FullyQualifiedName~GeneratorExpressionBoundaryTests|FullyQualifiedName~BuiltinIteratorSequenceFunctionTests|FullyQualifiedName~ListReplaceDuringIterationTests|FullyQualifiedName~SetMutationDuringIterationTests|FullyQualifiedName~AdmissionFailureCommandTests)",
+        "pid": 79796,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 6058,
+        "stdoutSha256": "998CCFA5C09F34410C67C9FA9EA2E9865864E2D03EBC3315F488B21610A6E318",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "cursor-dispatch-full-white",
+      "tests": 2887,
+      "process": {
+        "source": "direct-cursor-pulls",
+        "production": "2e4d0a34",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "69990F31A8B1F3B0EAA3F12DEAF9EECC60E77928014F5333F422816CDBE2057B",
+        "filter": "Category!=Stress",
+        "pid": 59924,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 19848,
+        "stdoutSha256": "77C9FB6795A80BF3256316AEFD4F723B9B613BC6D417EB690664C906D8C335D0",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "cursor-dispatch-stack",
+      "tests": 59,
+      "process": {
+        "source": "direct-cursor-pulls",
+        "production": "2e4d0a34",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "8BDAB5B9CDA5CD0AC84B58B731F98A8BAFA4F8DDD7446178F444C03AF0F07D78",
+        "filter": "Category!=Stress&(FullyQualifiedName~StackGuardScenarioTests|FullyQualifiedName~RecursionDepthScenarioTests|FullyQualifiedName~RecursiveExceptionPropagationTests|FullyQualifiedName~FailureAttributionTests|FullyQualifiedName~CopyHookChainScenarioTests)",
+        "pid": 52964,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 9189,
+        "stdoutSha256": "B3DDA10EF455C6F8C6A63884491A97C48B11F92C2C62E572378BD7A0DEBE75B4",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "cursor-dispatch-representative",
+      "tests": 93,
+      "process": {
+        "source": "direct-cursor-pulls",
+        "production": "2e4d0a34",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "8BDAB5B9CDA5CD0AC84B58B731F98A8BAFA4F8DDD7446178F444C03AF0F07D78",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests|FullyQualifiedName~RepresentativeFileRetentionTests|FullyQualifiedName~RepresentativeProtocolCancellationTests|FullyQualifiedName~CsvBatchAliasLifetimeTests)",
+        "pid": 63364,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 15086,
+        "stdoutSha256": "74D262193D1D04E6A77D80D3FDBF0180743005032BAC7B7828BB4A1E27349013",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    }
+  ],
+  "build": {
+    "pid": 57152,
+    "exitCode": 0,
+    "hasExited": true,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 23703,
+    "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+    "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+    "arguments": [
+      "build",
+      "Lokad.Lython.slnx",
+      "-c",
+      "Release",
+      "--no-restore"
+    ]
+  },
+  "oldTracesPreserved": 26,
+  "cursorTracesPreserved": 16,
+  "outputs": [
+    "GENERAL_TRANSPORT_MATRIX:{\"asynchronous\":false,\"defaulted\":true,\"steps\":15,\"fullEffects\":[\"body:3,1,0\"],\"checkpoints\":[\"-:\",\"7,6,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"42,17,3,3:\",\"42,5,3,3:\",\"42,17,3,3:\",\"42,17,3,3:\",\"48,4,3,9:\",\"53,5,3,14:\",\"69,5,4,10:body:3,1,0\",\"0,15,1,1:body:3,1,0\"]}",
+    "LOWERED_TRANSPORT_MATRIX:{\"asynchronous\":false,\"defaulted\":false,\"steps\":16,\"fullEffects\":[\"body:3,1,0\"],\"checkpoints\":[\"-:\",\"7,6,1,8:\",\"14,5,1,15:\",\"7,13,1,8:\",\"7,13,1,8:\",\"7,13,1,8:\",\"7,13,1,8:\",\"7,13,1,8:\",\"40,17,3,3:\",\"40,5,3,3:\",\"40,17,3,3:\",\"40,17,3,3:\",\"46,4,3,9:\",\"51,5,3,14:\",\"67,5,4,10:body:3,1,0\",\"0,20,1,1:body:3,1,0\"]}",
+    "JSON_LITERAL_MATRIX:{\"asynchronous\":true,\"pairs\":true,\"steps\":40,\"fullEffects\":[\"hook:3,0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"55,4,2,44:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"12,48,2,1:hook:3,0\"]}",
+    "JSON_LITERAL_MATRIX:{\"asynchronous\":false,\"pairs\":false,\"steps\":15,\"fullEffects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}",
+    "JSON_WHITESPACE_MATRIX:{\"asynchronous\":true,\"pairs\":false,\"steps\":17,\"fullEffects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}",
+    "GENERAL_TRANSPORT_MATRIX:{\"asynchronous\":true,\"defaulted\":true,\"steps\":15,\"fullEffects\":[\"body:3,1,0\"],\"checkpoints\":[\"-:\",\"7,6,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"42,17,3,3:\",\"42,5,3,3:\",\"42,17,3,3:\",\"42,17,3,3:\",\"48,4,3,9:\",\"53,5,3,14:\",\"69,5,4,10:body:3,1,0\",\"0,15,1,1:body:3,1,0\"]}",
+    "GENERAL_TRANSPORT_MATRIX:{\"asynchronous\":false,\"defaulted\":false,\"steps\":16,\"fullEffects\":[\"body:3,1,0\"],\"checkpoints\":[\"-:\",\"7,6,1,8:\",\"20,5,1,21:\",\"7,19,1,8:\",\"7,19,1,8:\",\"7,19,1,8:\",\"7,19,1,8:\",\"7,19,1,8:\",\"42,17,3,3:\",\"42,5,3,3:\",\"42,17,3,3:\",\"42,17,3,3:\",\"48,4,3,9:\",\"53,5,3,14:\",\"69,5,4,10:body:3,1,0\",\"0,26,1,1:body:3,1,0\"]}",
+    "LOWERED_TRANSPORT_MATRIX:{\"asynchronous\":true,\"defaulted\":false,\"steps\":16,\"fullEffects\":[\"body:3,1,0\"],\"checkpoints\":[\"-:\",\"7,6,1,8:\",\"14,5,1,15:\",\"7,13,1,8:\",\"7,13,1,8:\",\"7,13,1,8:\",\"7,13,1,8:\",\"7,13,1,8:\",\"40,17,3,3:\",\"40,5,3,3:\",\"40,17,3,3:\",\"40,17,3,3:\",\"46,4,3,9:\",\"51,5,3,14:\",\"67,5,4,10:body:3,1,0\",\"0,20,1,1:body:3,1,0\"]}",
+    "ORDINARY_FUNCTION_GUARDS:{\"shape\":0,\"asynchronous\":true,\"steps\":19,\"effects\":[\"body:4,1,0\"],\"checkpoints\":[\"-:\",\"7,1,1,8:\",\"9,5,1,10:\",\"22,1,1,23:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"24,5,2,2:\",\"30,5,2,8:\",\"24,12,2,2:\",\"24,12,2,2:\",\"24,12,2,2:\",\"24,12,2,2:body:4,1,0\",\"45,5,3,9:body:4,1,0\",\"38,12,3,2:body:4,1,0\",\"0,24,1,1:body:4,1,0\"]}",
+    "JSON_LITERAL_MATRIX:{\"asynchronous\":false,\"pairs\":true,\"steps\":40,\"fullEffects\":[\"hook:3,0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"55,4,2,44:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"12,48,2,1:hook:3,0\"]}",
+    "JSON_STRING_MATRIX:{\"asynchronous\":false,\"pairs\":false,\"steps\":15,\"fullEffects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}",
+    "JSON_STRING_MATRIX:{\"asynchronous\":true,\"pairs\":false,\"steps\":15,\"fullEffects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}",
+    "ORDINARY_FUNCTION_GUARDS:{\"shape\":0,\"asynchronous\":false,\"steps\":19,\"effects\":[\"body:4,1,0\"],\"checkpoints\":[\"-:\",\"7,1,1,8:\",\"9,5,1,10:\",\"22,1,1,23:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"24,5,2,2:\",\"30,5,2,8:\",\"24,12,2,2:\",\"24,12,2,2:\",\"24,12,2,2:\",\"24,12,2,2:body:4,1,0\",\"45,5,3,9:body:4,1,0\",\"38,12,3,2:body:4,1,0\",\"0,24,1,1:body:4,1,0\"]}",
+    "ORDINARY_FUNCTION_GUARDS:{\"shape\":3,\"asynchronous\":false,\"steps\":20,\"effects\":[\"body:4,1,0\"],\"checkpoints\":[\"-:\",\"7,1,1,8:\",\"9,5,1,10:\",\"15,1,1,16:\",\"21,1,1,22:\",\"7,16,1,8:\",\"7,16,1,8:\",\"7,16,1,8:\",\"7,16,1,8:\",\"7,16,1,8:\",\"7,16,1,8:\",\"39,5,2,2:\",\"45,5,2,8:\",\"39,12,2,2:\",\"39,12,2,2:\",\"39,12,2,2:\",\"39,12,2,2:body:4,1,0\",\"60,5,3,9:body:4,1,0\",\"53,12,3,2:body:4,1,0\",\"0,23,1,1:body:4,1,0\"]}",
+    "ORDINARY_FUNCTION_GUARDS:{\"shape\":2,\"asynchronous\":true,\"steps\":16,\"effects\":[\"body:3,1,0\"],\"checkpoints\":[\"-:\",\"7,1,1,8:\",\"9,5,1,10:\",\"22,1,1,23:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"44,12,3,3:\",\"44,5,3,3:\",\"44,12,3,3:\",\"44,12,3,3:\",\"50,5,3,9:\",\"66,5,4,10:body:3,1,0\",\"0,24,1,1:body:3,1,0\"]}",
+    "JSON_STRING_MATRIX:{\"asynchronous\":true,\"pairs\":true,\"steps\":29,\"fullEffects\":[\"hook:3,0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"55,4,2,44:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"12,48,2,1:hook:3,0\"]}",
+    "ORDINARY_FUNCTION_GUARDS:{\"shape\":2,\"asynchronous\":false,\"steps\":16,\"effects\":[\"body:3,1,0\"],\"checkpoints\":[\"-:\",\"7,1,1,8:\",\"9,5,1,10:\",\"22,1,1,23:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"7,17,1,8:\",\"44,12,3,3:\",\"44,5,3,3:\",\"44,12,3,3:\",\"44,12,3,3:\",\"50,5,3,9:\",\"66,5,4,10:body:3,1,0\",\"0,24,1,1:body:3,1,0\"]}",
+    "ORDINARY_FUNCTION_GUARDS:{\"shape\":1,\"asynchronous\":true,\"steps\":18,\"effects\":[\"body:4,1,0\"],\"checkpoints\":[\"-:\",\"7,1,1,8:\",\"9,5,1,10:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"26,5,2,2:\",\"32,5,2,8:\",\"26,12,2,2:\",\"26,12,2,2:\",\"26,12,2,2:\",\"26,12,2,2:body:4,1,0\",\"47,5,3,9:body:4,1,0\",\"40,12,3,2:body:4,1,0\",\"0,15,1,1:body:4,1,0\"]}",
+    "JSON_STRING_MATRIX:{\"asynchronous\":false,\"pairs\":true,\"steps\":29,\"fullEffects\":[\"hook:3,0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"55,4,2,44:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"12,48,2,1:hook:3,0\"]}",
+    "LOWERED_TRANSPORT_MATRIX:{\"asynchronous\":false,\"defaulted\":true,\"steps\":15,\"fullEffects\":[\"body:3,1,0\"],\"checkpoints\":[\"-:\",\"7,6,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"40,17,3,3:\",\"40,5,3,3:\",\"40,17,3,3:\",\"40,17,3,3:\",\"46,4,3,9:\",\"51,5,3,14:\",\"67,5,4,10:body:3,1,0\",\"0,15,1,1:body:3,1,0\"]}",
+    "ORDINARY_FUNCTION_GUARDS:{\"shape\":3,\"asynchronous\":true,\"steps\":20,\"effects\":[\"body:4,1,0\"],\"checkpoints\":[\"-:\",\"7,1,1,8:\",\"9,5,1,10:\",\"15,1,1,16:\",\"21,1,1,22:\",\"7,16,1,8:\",\"7,16,1,8:\",\"7,16,1,8:\",\"7,16,1,8:\",\"7,16,1,8:\",\"7,16,1,8:\",\"39,5,2,2:\",\"45,5,2,8:\",\"39,12,2,2:\",\"39,12,2,2:\",\"39,12,2,2:\",\"39,12,2,2:body:4,1,0\",\"60,5,3,9:body:4,1,0\",\"53,12,3,2:body:4,1,0\",\"0,23,1,1:body:4,1,0\"]}",
+    "GENERAL_TRANSPORT_MATRIX:{\"asynchronous\":true,\"defaulted\":false,\"steps\":16,\"fullEffects\":[\"body:3,1,0\"],\"checkpoints\":[\"-:\",\"7,6,1,8:\",\"20,5,1,21:\",\"7,19,1,8:\",\"7,19,1,8:\",\"7,19,1,8:\",\"7,19,1,8:\",\"7,19,1,8:\",\"42,17,3,3:\",\"42,5,3,3:\",\"42,17,3,3:\",\"42,17,3,3:\",\"48,4,3,9:\",\"53,5,3,14:\",\"69,5,4,10:body:3,1,0\",\"0,26,1,1:body:3,1,0\"]}",
+    "ORDINARY_FUNCTION_GUARDS:{\"shape\":1,\"asynchronous\":false,\"steps\":18,\"effects\":[\"body:4,1,0\"],\"checkpoints\":[\"-:\",\"7,1,1,8:\",\"9,5,1,10:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"26,5,2,2:\",\"32,5,2,8:\",\"26,12,2,2:\",\"26,12,2,2:\",\"26,12,2,2:\",\"26,12,2,2:body:4,1,0\",\"47,5,3,9:body:4,1,0\",\"40,12,3,2:body:4,1,0\",\"0,15,1,1:body:4,1,0\"]}",
+    "JSON_LITERAL_MATRIX:{\"asynchronous\":true,\"pairs\":false,\"steps\":15,\"fullEffects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}",
+    "LOWERED_TRANSPORT_MATRIX:{\"asynchronous\":true,\"defaulted\":true,\"steps\":15,\"fullEffects\":[\"body:3,1,0\"],\"checkpoints\":[\"-:\",\"7,6,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"7,8,1,8:\",\"40,17,3,3:\",\"40,5,3,3:\",\"40,17,3,3:\",\"40,17,3,3:\",\"46,4,3,9:\",\"51,5,3,14:\",\"67,5,4,10:body:3,1,0\",\"0,15,1,1:body:3,1,0\"]}",
+    "JSON_WHITESPACE_MATRIX:{\"asynchronous\":false,\"pairs\":false,\"steps\":17,\"fullEffects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":63,\"asynchronous\":true,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],\"checksum\":\"2583\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":63,\"asynchronous\":true,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],\"checksum\":\"-1323\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":63,\"asynchronous\":false,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],\"checksum\":\"2583\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":63,\"asynchronous\":false,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],\"checksum\":\"-1323\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":64,\"asynchronous\":true,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],\"checksum\":\"2656\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":64,\"asynchronous\":true,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],\"checksum\":\"-1376\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":0,\"asynchronous\":true,\"direction\":1,\"steps\":[1],\"checksum\":\"0\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":0,\"asynchronous\":true,\"direction\":-1,\"steps\":[1],\"checksum\":\"0\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":65,\"asynchronous\":true,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],\"checksum\":\"2730\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":65,\"asynchronous\":true,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],\"checksum\":\"-1430\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":0,\"asynchronous\":false,\"direction\":1,\"steps\":[1],\"checksum\":\"0\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":0,\"asynchronous\":false,\"direction\":-1,\"steps\":[1],\"checksum\":\"0\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":65,\"asynchronous\":false,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],\"checksum\":\"2730\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":65,\"asynchronous\":false,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],\"checksum\":\"-1430\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":64,\"asynchronous\":false,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],\"checksum\":\"2656\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":64,\"asynchronous\":false,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],\"checksum\":\"-1376\"}"
+  ],
+  "sourceAcceptance": "Nonasync cursor dispatch reuses synchronous core and forwards user/async iterator tasks; only real async-enumerator conversion awaits. Duplicate sync arms and forwarding awaits removed.",
+  "limitations": [
+    "Internal exceptions may throw before returning ValueTask; actual callers await inside existing exception/cleanup scopes.",
+    "VM ForNext, cursor creation, stack policy and memory owners unchanged.",
+    "No claim that all asynchronous hosting overhead is removed."
+  ],
+  "protectedHistorySha256": "F496A90B1D68A0B314367907D1967579230DB81BF40B6CC1D8A127325AC69E20"
+}

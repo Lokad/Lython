@@ -1,0 +1,22 @@
+{
+  "tests": 52,
+  "exactCursorMatrices": 16,
+  "outputs": [
+    "CURSOR_DISPATCH_MATRIX:{\"length\":0,\"asynchronous\":false,\"direction\":1,\"steps\":[1],\"checksum\":\"0\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":0,\"asynchronous\":false,\"direction\":-1,\"steps\":[1],\"checksum\":\"0\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":64,\"asynchronous\":true,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],\"checksum\":\"2656\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":64,\"asynchronous\":true,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],\"checksum\":\"-1376\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":0,\"asynchronous\":true,\"direction\":1,\"steps\":[1],\"checksum\":\"0\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":0,\"asynchronous\":true,\"direction\":-1,\"steps\":[1],\"checksum\":\"0\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":63,\"asynchronous\":false,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],\"checksum\":\"2583\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":63,\"asynchronous\":false,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],\"checksum\":\"-1323\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":65,\"asynchronous\":false,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],\"checksum\":\"2730\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":65,\"asynchronous\":false,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],\"checksum\":\"-1430\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":63,\"asynchronous\":true,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],\"checksum\":\"2583\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":63,\"asynchronous\":true,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],\"checksum\":\"-1323\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":65,\"asynchronous\":true,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],\"checksum\":\"2730\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":65,\"asynchronous\":true,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],\"checksum\":\"-1430\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":64,\"asynchronous\":false,\"direction\":1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],\"checksum\":\"2656\"}",
+    "CURSOR_DISPATCH_MATRIX:{\"length\":64,\"asynchronous\":false,\"direction\":-1,\"steps\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],\"checksum\":\"-1376\"}"
+  ]
+}
