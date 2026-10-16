@@ -1776,6 +1776,13 @@ chars use Python whitespace. Unchanged exact-string trim results retain their
 input identity, including an empty chars set. General/exposed/unbound calls share
 the same text/ownership rules; unsupported arguments fail explicitly.
 
+Builtin `str.startswith(prefix[, start[, end]])` and `str.endswith(suffix[, start[, end]])`
+take positional arguments only. Prefix/suffix tuples are examined in order and
+stop at the first match; an invalid later entry is not examined after a match.
+Static diagnostics reject a tuple entry only when its validation is certain;
+an earlier string or unknown value defers later validation to runtime. Argument
+expressions, including awaited host calls, complete before keyword rejection.
+
 The supported subset must support the following string methods:
 
 - `split`

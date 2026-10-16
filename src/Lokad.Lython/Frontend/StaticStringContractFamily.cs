@@ -80,17 +80,16 @@ internal static class StaticStringContractFamily
         {
             foreach (var item in prefixValue.RequireSequenceItems())
             {
-                if (item.Kind != AbstractValueKind.String)
-                {
-                    AddDiagnostic(
-                        diagnostics,
-                        "LA3074",
-                        memberName == "startswith"
-                            ? $"tuple for startswith must only contain str, not {StaticAbstractFacts.DescribeValue(item)}"
-                            : $"tuple for endswith must only contain str, not {StaticAbstractFacts.DescribeValue(item)}",
-                        item.Span);
-                    return;
-                }
+                // A possible string match can skip every later tuple member.
+                if (item.Kind is AbstractValueKind.String or AbstractValueKind.Unknown) break;
+                AddDiagnostic(
+                    diagnostics,
+                    "LA3074",
+                    memberName == "startswith"
+                        ? $"tuple for startswith must only contain str, not {StaticAbstractFacts.DescribeValue(item)}"
+                        : $"tuple for endswith must only contain str, not {StaticAbstractFacts.DescribeValue(item)}",
+                    item.Span);
+                return;
             }
 
             AnalyzeStringBoundsArguments(arguments, diagnostics, bindings);

@@ -11,8 +11,8 @@ internal sealed partial class LythonRuntime
             // N17: hot fixed signatures hoisted per family.
             private static readonly LythonCallableSignature StrEncodeSignature = LythonCallableSignature.Create("str.encode", ["encoding", "errors"], 0);
             private static readonly LythonCallableSignature StrReplaceSignature = LythonCallableSignature.Create("str.replace", ["old", "new", "count"], 2);
-            private static readonly LythonCallableSignature StrStartsWithSignature = LythonCallableSignature.Create("str.startswith", ["prefix", "start", "end"], 1);
-            private static readonly LythonCallableSignature StrEndsWithSignature = LythonCallableSignature.Create("str.endswith", ["suffix", "start", "end"], 1);
+            private static readonly LythonCallableSignature StrStartsWithSignature = LythonCallableSignature.Create("str.startswith", 1);
+            private static readonly LythonCallableSignature StrEndsWithSignature = LythonCallableSignature.Create("str.endswith", 1);
             public static readonly TextSemanticsMemberProvider Instance = new();
 
             public bool TryGetMember(PyString text, string name, [MaybeNullWhen(false)] out object value)
