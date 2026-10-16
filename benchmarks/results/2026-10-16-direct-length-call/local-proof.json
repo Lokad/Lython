@@ -1,0 +1,80 @@
+{
+  "productionRevision": "d4ac39db4139168a9950a2460c1b2b1e835ba8a2",
+  "baselineRevision": "17eac376c766aa8ebd691b03b08c02b3808d3be9",
+  "tests": [
+    {
+      "stage": "input-white",
+      "passed": 40,
+      "milliseconds": 1158,
+      "assemblySha256": "577933F3B5C990472774CB23C328FD1EC7818FD219904182F7C2E0D2502DCF9C"
+    },
+    {
+      "stage": "public-corrected",
+      "passed": 229,
+      "milliseconds": 3587,
+      "assemblySha256": "E036467E4734E8DC81C084C8B1263DFF2EC42946C61E1A881DF2F8ABA0182A2F"
+    },
+    {
+      "stage": "stack",
+      "passed": 59,
+      "milliseconds": 9536,
+      "assemblySha256": "E036467E4734E8DC81C084C8B1263DFF2EC42946C61E1A881DF2F8ABA0182A2F"
+    },
+    {
+      "stage": "full-white",
+      "passed": 2746,
+      "milliseconds": 19825,
+      "assemblySha256": "577933F3B5C990472774CB23C328FD1EC7818FD219904182F7C2E0D2502DCF9C"
+    },
+    {
+      "stage": "representative",
+      "passed": 93,
+      "milliseconds": 14800,
+      "assemblySha256": "E036467E4734E8DC81C084C8B1263DFF2EC42946C61E1A881DF2F8ABA0182A2F"
+    }
+  ],
+  "guardMatrices": [
+    {
+      "asynchronous": true,
+      "steps": 8,
+      "checkpoints": [
+        "-",
+        "7,3,1,8",
+        "11,5,1,12",
+        "7,10,1,8",
+        "7,10,1,8",
+        "7,10,1,8",
+        "7,10,1,8",
+        "0,17,1,1"
+      ]
+    },
+    {
+      "asynchronous": false,
+      "steps": 8,
+      "checkpoints": [
+        "-",
+        "7,3,1,8",
+        "11,5,1,12",
+        "7,10,1,8",
+        "7,10,1,8",
+        "7,10,1,8",
+        "7,10,1,8",
+        "0,17,1,1"
+      ]
+    }
+  ],
+  "frozenGuardMatricesMatch": true,
+  "cpythonControls": {
+    "version": "3.13.2",
+    "cases": 7,
+    "apis": [
+      "Run",
+      "RunAsync"
+    ]
+  },
+  "initialTestCorrection": "The initial invalid-len effect control was statically rejected with existing LA3032. Passing the callable and invalid value through parameters makes the intended runtime test valid. No production correction was needed.",
+  "boundary": "Exact shared len, one positional input, excluding PyInstance in both APIs. General binder and required lowered routes remain.",
+  "removed": "Eligible pooled call-buffer rental/fill/clear and fresh one-element bound-value copy. String-specific guard replaced by the shared single-input guard.",
+  "preserved": "Original eight-step/span boundary, stack policies, protocols, preflights, retained aliases, suspension/cancellation and first terminal admission failure.",
+  "claims": "Source-level transport removal; pooled buffer does not imply two heap allocations saved. No timing claim before the single diagnostic."
+}

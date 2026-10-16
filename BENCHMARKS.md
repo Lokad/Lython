@@ -12,6 +12,7 @@
 | File search with helper and protected early exit [AR], warm | 2,049 lines / 42,010 UTF-8 bytes | 3.223 ms | 0.2845 ms | — | Short diagnostic at 473aa396; inconclusive (57%/64% Lython spread); no improvement established |
 | Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
 | Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | Historical warm diagnostic; elapsed change within spread |
+| Constructed-text strip/length loop [BH], warm `RunAsync` | 32,768 lines / 425,984 UTF-8 bytes constructed in execution | 17.832 ms | 3.1868 ms | — | Short diagnostic at d4ac39db; direct len transport; 26.4% lower median with 18.8% baseline spread, unqualified |
 | Branch/integer loop [BG], warm `RunAsync` | 16,384 iterations; modulo/comparison/add/subtract | 5.980 ms | 1.0136 ms | — | Short diagnostic at f8d87288; direct ordinary control flow; 8.2% lower Lython median, unqualified |
 | Instance-method accumulator [AZ], fresh compile/run | 16,384 calls / 208 UTF-8 source bytes | 11.494 ms | 0.9783 ms | — | Rejected c3db3ca2 prototype: Linux stack overflow; median 23.3% higher, unqualified; setup erratum linked |
 | Instance-method accumulator [BC], warm `Run` | 2,048 calls / 207 UTF-8 source bytes | 1.060 ms | 0.11428 ms | — | Short diagnostic at d88d6440; direct lowered-method transport; 7.4% lower median, unqualified |
@@ -43,6 +44,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BH | 2026-10-16 | d4ac39db; builtin len consumes existing operand storage | [Strip/length loop, unchanged guards and retained inputs](benchmarks/results/2026-10-16-direct-length-call/README.md) |
 | BG | 2026-10-16 | f8d87288; ordinary control flow uses the existing synchronous handler under RunAsync | [Branch loop, unchanged guards and actual suspension](benchmarks/results/2026-10-16-async-control-flow/README.md) |
 | BF | 2026-10-16 | c487cb70; bulk hashing of existing string/bytes storage | [Two loops removed, key/owner controls and noisy timing](benchmarks/results/2026-10-16-bulk-byte-hash/README.md) |
 | BE | 2026-10-16 | ffdac05d; shared guarded entry for immediate strip/split/lower | [Source deletion, unchanged guards and inconclusive timing](benchmarks/results/2026-10-16-noarg-string-consolidation/README.md) |
@@ -125,6 +127,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Direct ordinary builtin len, 2026-10-16 | 17eac376 → d4ac39db; unchanged constructed-text strip/length loop | 24.213 → 17.832 ms; 26.4% lower median in one noisy, unqualified diagnostic | [Argument transport removal and shared guard](benchmarks/results/2026-10-16-direct-length-call/README.md) |
 | Ordinary async-host control flow, 2026-10-16 | 6a4a236b → f8d87288; unchanged branch/integer loop | 6.514 → 5.980 ms; 8.2% lower median in one unqualified diagnostic | [Shared handlers, awaited protocols and cleanup](benchmarks/results/2026-10-16-async-control-flow/README.md) |
 | Bulk string/bytes hashing, 2026-10-16 | cd4c8b27 → c487cb70; unchanged complete text-summary job | No speedup established: 8.807 → 6.118 ms; 30.5% lower median alongside 30.0% baseline spread | [Safe bulk API, equal-key consistency and ownership](benchmarks/results/2026-10-16-bulk-byte-hash/README.md) |
 | Shared zero-argument string entry, 2026-10-16 | df9093cf → ffdac05d; unchanged complete text-summary job | Source simplification; no elapsed improvement established: 6.193 → 6.293 ms, within spread | [Deleted duplicate entries and preserved boundaries](benchmarks/results/2026-10-16-noarg-string-consolidation/README.md) |

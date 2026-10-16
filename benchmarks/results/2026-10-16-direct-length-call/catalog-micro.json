@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "strings.strip-lines.small",
+      "family": "strings",
+      "category": "core",
+      "scale": "small",
+      "size": 256,
+      "source": "N = 256\ntext = (' \\talpha caf\u00e9\ud83d\ude00\\u2003\\nbeta\\n') * N\ntotal = 0\nfor line in text.splitlines():\n    total += len(line.strip())\nprint(total)\n",
+      "fixtureJson": "{\"size\":256,\"text\":null}",
+      "expectedOutput": "3840\n",
+      "sourceUtf8Bytes": 141,
+      "expectedOutputUtf8Bytes": 5,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "9c3df56f1d46acb640377bc11c749342226a590ed056030033ff7708044efb9b",
+      "fixtureSha256": "014e3e36d9dda0eeafbc9f34005088e5e5bba7a7d2e87f1fa56dc2a3be77740e",
+      "expectedOutputSha256": "f6f7f0c81b1a2114c8b9d61ec3b64744f1c1db55576af6b46f89f8649f52af44"
+    },
+    {
+      "id": "strings.strip-lines.medium",
+      "family": "strings",
+      "category": "core",
+      "scale": "medium",
+      "size": 2048,
+      "source": "N = 2048\ntext = (' \\talpha caf\u00e9\ud83d\ude00\\u2003\\nbeta\\n') * N\ntotal = 0\nfor line in text.splitlines():\n    total += len(line.strip())\nprint(total)\n",
+      "fixtureJson": "{\"size\":2048,\"text\":null}",
+      "expectedOutput": "30720\n",
+      "sourceUtf8Bytes": 142,
+      "expectedOutputUtf8Bytes": 6,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "c128520028bbc75bed69a5a641c5109528830f8ba24a4749c03e78de9ea1e8dc",
+      "fixtureSha256": "cc19526c1d9f59f92c233c4276c92e42e48bc1ecbbeec305f81a44877bd877d6",
+      "expectedOutputSha256": "9f29e9be734b017fd72a3d195b36b6ca44c6ba6e2d501fce9866a052098b8015"
+    },
+    {
+      "id": "strings.strip-lines.large",
+      "family": "strings",
+      "category": "core",
+      "scale": "large",
+      "size": 16384,
+      "source": "N = 16384\ntext = (' \\talpha caf\u00e9\ud83d\ude00\\u2003\\nbeta\\n') * N\ntotal = 0\nfor line in text.splitlines():\n    total += len(line.strip())\nprint(total)\n",
+      "fixtureJson": "{\"size\":16384,\"text\":null}",
+      "expectedOutput": "245760\n",
+      "sourceUtf8Bytes": 143,
+      "expectedOutputUtf8Bytes": 7,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "17a205bcd03e74de70776ead0a7666d533b1729dbb69de64f8ebb75dd80a72ce",
+      "fixtureSha256": "c1c16fa8a40dac165afc8c9915fab90012d9af6a9836b6a2e03812eb3f441155",
+      "expectedOutputSha256": "f0e10c85a28a10d8e8de8cb1a8fbc22e28268f46067f3992cf48f329714dccc0"
+    }
+  ]
+}

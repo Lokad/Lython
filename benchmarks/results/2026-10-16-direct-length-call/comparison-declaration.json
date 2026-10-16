@@ -1,0 +1,29 @@
+{
+  "baselineRevision": "17eac376c766aa8ebd691b03b08c02b3808d3be9",
+  "candidateRevision": "d4ac39db4139168a9950a2460c1b2b1e835ba8a2",
+  "caseId": "strings.strip-lines.large",
+  "expectedCaseSize": 16384,
+  "expectedLineCount": 32768,
+  "expectedConstructedTextUtf8Bytes": 425984,
+  "expectedSourceUtf8Bytes": 143,
+  "expectedSourceSha256": "17a205bcd03e74de70776ead0a7666d533b1729dbb69de64f8ebb75dd80a72ce",
+  "lane": "warm-async",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm public RunAsync of unchanged strip/length loop; text constructed inside execution, completed host operations, fresh invocation state, execution/projection and prior-result cleanup timed. Compilation/startup/transport excluded; no files.",
+  "stoppingRule": "One existing strip-lines warm-async capture after len transport removal; no retry, retune, new producer or long lane.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "34790171e9e0c67794129218e60bc51aa7e6348b2ed191374cf4d4a521d3f6f8",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "fe81bb8f646b842a57b1a44e965ea83e5de71a1cc0885d61989eb693e9b68a9f"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "5b76aa20a56701b4949222703e2e9810e153937f87c7857b40af73933721ead7",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "73a0d67c45d71058d66621cc2d3984f40ac3b104d0c5e5c328cbf7fb0410be79"
+  }
+}

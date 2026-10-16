@@ -1,0 +1,36 @@
+{
+  "productionRevision": "17eac376",
+  "milliseconds": 2471,
+  "matrices": [
+    {
+      "asynchronous": true,
+      "steps": 8,
+      "checkpoints": [
+        "-",
+        "7,3,1,8",
+        "11,5,1,12",
+        "7,10,1,8",
+        "7,10,1,8",
+        "7,10,1,8",
+        "7,10,1,8",
+        "0,17,1,1"
+      ]
+    },
+    {
+      "asynchronous": false,
+      "steps": 8,
+      "checkpoints": [
+        "-",
+        "7,3,1,8",
+        "11,5,1,12",
+        "7,10,1,8",
+        "7,10,1,8",
+        "7,10,1,8",
+        "7,10,1,8",
+        "0,17,1,1"
+      ]
+    }
+  ],
+  "temporaryObserverRemoved": true,
+  "initialObserverCompileError": "A long constant needed the existing count-limit conversion; corrected to an int. No production changes."
+}
