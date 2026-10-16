@@ -515,11 +515,14 @@ return value
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 96
+                // Fund the small VM buffer; 1,000 repeated observations still
+                // exceed this cap if charged cumulatively.
+                MaxExecutionMemoryBytes = 1024
             });
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("constant", result.ReturnValue);
+        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 1024);
     }
 
     [Fact]

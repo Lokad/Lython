@@ -4,75 +4,42 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// Native literal operations share conservative storage estimates with their
-// lowered counterparts. These shapes should report the same peak and value.
+// Executable buffers have their own admitted capacity. Compare observable
+// values, bounded peaks and owner cleanup rather than identical internal peaks.
 public sealed class ExecutionPathOwnershipParityTests
 {
-    // Literal shapes only. Comprehension scope/admission regressions verify
-    // observable guarantees without requiring identical execution machinery.
     public static TheoryData<string> Programs => new()
     {
         "x = [1, 2, 3] * 500\nreturn len(x)\n",
-        "x = {" + string.Join(",", System.Linq.Enumerable.Range(0, 200).Select(static i => i.ToString())) + "}\nreturn len(x)\n",
-        "x = (" + string.Join(",", System.Linq.Enumerable.Range(0, 200).Select(static i => i.ToString())) + ")\nreturn len(x)\n",
-        "x = {" + string.Join(",", System.Linq.Enumerable.Range(0, 50).Select(static i => "\"k" + i + "\": " + i)) + "}\nreturn len(x)\n",
+        "x = {" + string.Join(",", Enumerable.Range(0, 200)) + "}\nreturn len(x)\n",
+        "x = (" + string.Join(",", Enumerable.Range(0, 200)) + ")\nreturn len(x)\n",
+        "x = {" + string.Join(",", Enumerable.Range(0, 50).Select(static i => "\"k" + i + "\": " + i)) + "}\nreturn len(x)\n",
+        "x = {0: 0}\nreturn len(x)\n",
     };
 
     [Theory]
     [MemberData(nameof(Programs))]
-    public void ExecutableAndLoweredPathsReportIdenticalPeaks(string source)
+    public void LiteralPathsPreserveResultsAndBoundedOwnership(string source)
     {
         var frontend = LythonFrontend.Compile(source);
-        Assert.True(
-            frontend.Diagnostics.All(static d => d.Severity != LythonDiagnosticSeverity.Error),
-            string.Join("|", frontend.Diagnostics.Select(static d => d.Code + ":" + d.Message)));
+        Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var lowered = LoweredScript.Lower(frontend.Script!);
-        ExecutableScript? executable = null;
-        try
+        var executable = ExecutableScript.Compile(lowered);
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        const long cap = 1024 * 1024;
+        using (var owner = budget.CreateScope())
         {
-            executable = ExecutableScript.Compile(lowered);
+            var options = new LythonRunOptions { MemoryBudget = owner, MaxExecutionMemoryBytes = cap };
+            using (var executableResult = new LythonRuntime().Run(executable, new MockLythonHost(), options))
+            using (var loweredResult = new LythonRuntime().Run(lowered, new MockLythonHost(), options))
+            {
+                Assert.True(executableResult.Success, executableResult.Failure?.Message);
+                Assert.True(loweredResult.Success, loweredResult.Failure?.Message);
+                Assert.Equal(executableResult.ReturnValue, loweredResult.ReturnValue);
+                Assert.InRange(executableResult.PeakExecutionMemoryBytes, 1, cap);
+                Assert.InRange(loweredResult.PeakExecutionMemoryBytes, 1, cap);
+            }
         }
-        catch (ExecutableLoweringFallbackException)
-        {
-        }
-
-        Assert.NotNull(executable);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1L << 40 };
-        var executableResult = new LythonRuntime().Run(executable, new MockLythonHost(), options);
-        var loweredResult = new LythonRuntime().Run(lowered, new MockLythonHost(), options);
-        Assert.True(executableResult.Success, executableResult.Failure?.Message);
-        Assert.True(loweredResult.Success, loweredResult.Failure?.Message);
-        Assert.Equal(executableResult.ReturnValue, loweredResult.ReturnValue);
-        Assert.Equal(executableResult.PeakExecutionMemoryBytes, loweredResult.PeakExecutionMemoryBytes);
-    }
-
-    // Literal boxing differs between evaluators; retained-entry storage makes
-    // admission independent of that implementation detail.
-    [Fact]
-    public void IntDictDisplayOwnershipIsIndependentOfBoxIdentity()
-    {
-        const string source = "x = {0: 0}\nreturn len(x)\n";
-        var frontend = LythonFrontend.Compile(source);
-        Assert.True(
-            frontend.Diagnostics.All(static d => d.Severity != LythonDiagnosticSeverity.Error),
-            string.Join("|", frontend.Diagnostics.Select(static d => d.Code + ":" + d.Message)));
-        var lowered = LoweredScript.Lower(frontend.Script!);
-        ExecutableScript? executable = null;
-        try
-        {
-            executable = ExecutableScript.Compile(lowered);
-        }
-        catch (ExecutableLoweringFallbackException)
-        {
-        }
-
-        Assert.NotNull(executable);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1L << 40 };
-        var executableResult = new LythonRuntime().Run(executable, new MockLythonHost(), options);
-        var loweredResult = new LythonRuntime().Run(lowered, new MockLythonHost(), options);
-        Assert.True(executableResult.Success, executableResult.Failure?.Message);
-        Assert.True(loweredResult.Success, loweredResult.Failure?.Message);
-        Assert.Equal(executableResult.ReturnValue, loweredResult.ReturnValue);
-        Assert.Equal(executableResult.PeakExecutionMemoryBytes, loweredResult.PeakExecutionMemoryBytes);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

@@ -25,11 +25,10 @@ internal sealed partial class LythonRuntime
         public MemoryGovernor? OwnerMemoryGovernor { get; }
         public LythonSourceSpan? AllocationSpan => _span;
         bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes)
-            => OwnershipSnapshot.Owned(OwnerMemoryGovernor, _bytes, out bytes);
+            => OwnershipSnapshot.Owned(OwnerMemoryGovernor, checked(_bytes + (_interpreter?.RetainedStackBytes ?? 0)), out bytes);
 
         private static long EstimateStorage(ExecutableCodeObject code)
-            => checked(512L + 96L * (code.Blocks.Sum(block => block.Instructions.Count) +
-                code.LocalNames.Count + code.MemberCacheCount + code.Blocks.Count));
+            => checked(512L + 96L * (code.LocalNames.Count + code.MemberCacheCount + code.Blocks.Count));
 
         internal static async ValueTask<PyGenerator> CreateExpressionAsync(ExecutableCodeObject code,
             ExecutionContext context, object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, bool asynchronous)
@@ -41,6 +40,7 @@ internal sealed partial class LythonRuntime
             governor.Reserve(bytes, span);
             governor.Commit(bytes);
             PyIteration.Cursor? cursor = null;
+            PyGenerator? generator = null;
             try
             {
                 var cells = CaptureExecutableClosures(code, context, span);
@@ -48,16 +48,23 @@ internal sealed partial class LythonRuntime
                 if (code.RequiresLocalVariableMirroring) RetainLocalsForLambda(context.FunctionClosureContext);
                 var frame = new ExecutionContext(context.FunctionClosureContext, code.ScopeFacts)
                 { FunctionName = "<genexpr>", FirstPositionalParameterName = ".0" };
+                generator = new PyGenerator(code, frame, span, bytes, cells);
                 var outer = asynchronous
                     ? await PyIteration.AcquireGeneratorOuterAsync(outerValue, outerSpan, context).ConfigureAwait(false)
                     : PyIteration.AcquireGeneratorOuter(outerValue, outerSpan, context);
                 cursor = PyIteration.Cursor.FromGeneratorOuter(outer, outerValue, asynchronous, outerSpan, context);
                 frame.Variables[".0"] = outer.Iterator;
-                return new PyGenerator(code, frame, span, bytes, cells, cursor);
+                generator._interpreter!.SeedGeneratorOuter(outer.Iterator, cursor);
+                cursor = null; // ownership transferred to the retained frame
+                return generator;
             }
             catch
             {
-                try { if (cursor is not null) await cursor.DisposeAsync().ConfigureAwait(false); }
+                try
+                {
+                    try { if (cursor is not null) await cursor.DisposeAsync().ConfigureAwait(false); }
+                    finally { if (generator is not null) await generator.CompleteAsync(asynchronous).ConfigureAwait(false); }
+                }
                 finally { governor.Release(bytes); }
                 throw;
             }
@@ -65,8 +72,8 @@ internal sealed partial class LythonRuntime
 
         internal static PyGenerator Create(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span, IReadOnlyList<ExecutableCell>? closureCells = null)
         {
-            // Fund locals, cells, operand stack including resize overlap, caches
-            // and handler/delegation state before constructing retained storage.
+            // Fund locals, cells, caches and handler/delegation state. Operand
+            // buffers admit actual capacity and replacement overlap separately.
             var bytes = EstimateStorage(code);
             frame.MemoryGovernor.Reserve(bytes, span);
             frame.MemoryGovernor.Commit(bytes);
@@ -77,7 +84,7 @@ internal sealed partial class LythonRuntime
         }
 
         private PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span, long bytes,
-            IReadOnlyList<ExecutableCell>? closureCells, PyIteration.Cursor? acquiredOuter = null)
+            IReadOnlyList<ExecutableCell>? closureCells)
         {
             _frame = frame;
             // Mirrored namespaces remain authoritative for retained cells while
@@ -96,7 +103,7 @@ internal sealed partial class LythonRuntime
                 cells = new ExecutableCell[locals.Length];
                 foreach (var slot in code.CapturedLocalSlots) cells[slot] = new ExecutableCell(locals[slot], frame, code.LocalNames[slot]);
             }
-            _interpreter = new ExecutableFrameInterpreter(code, frame, locals, cells, closureCells, acquiredOuter);
+            _interpreter = new ExecutableFrameInterpreter(code, frame, locals, cells, closureCells);
         }
 
         public bool IsTruthy() => true;

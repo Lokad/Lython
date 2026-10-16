@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
@@ -14,7 +15,7 @@ public sealed class ExecutableOperandStackBoundaryTests
     [InlineData(17)]
     public void GrowthAndReuseKeepEachLiveReference(int size)
     {
-        var stack = new StackView();
+        using var stack = new StackView();
         for (var pass = 0; pass < 2; pass++)
         {
             var values = Enumerable.Range(0, size).Select(_ => new object()).ToArray();
@@ -41,7 +42,7 @@ public sealed class ExecutableOperandStackBoundaryTests
     [InlineData(17)]
     public void UnwindDisposesLastInFirstOutBeforeClearingLiveEntries(int size)
     {
-        var stack = new StackView();
+        using var stack = new StackView();
         var retained = new object();
         stack.Push(retained);
         var disposed = new List<int>();
@@ -72,7 +73,7 @@ public sealed class ExecutableOperandStackBoundaryTests
     [InlineData(17)]
     public void FailedDisposalKeepsOriginalEntriesForPropagation(int size)
     {
-        var stack = new StackView();
+        using var stack = new StackView();
         var denied = new InvalidOperationException("controlled disposal failure");
         var fail = true;
         var disposed = new List<int>();
@@ -97,12 +98,21 @@ public sealed class ExecutableOperandStackBoundaryTests
         public void Dispose() => dispose();
     }
 
-    // Exercise the existing private stack contract on the unmodified runtime
-    // first, without requiring a particular storage representation or capacity.
-    private sealed class StackView
+    // Keep reference order and failed-disposal guarantees while supplying the
+    // real owner required by operand-capacity admission.
+    private sealed class StackView : IDisposable
     {
         private static readonly Type StackType = typeof(LythonRuntime).GetNestedType("ExecutableValueStack", BindingFlags.NonPublic)!;
-        private readonly object _stack = Activator.CreateInstance(StackType, [8])!;
+        private readonly LythonRuntime.ExecutionContext _context = new(new MockLythonHost(),
+            new LythonRunOptions { MaxExecutionMemoryBytes = 64 * 1024 });
+        private readonly object _stack;
+        public StackView() => _stack = Activator.CreateInstance(StackType, [8, _context, null])!;
+        public void Dispose()
+        {
+            RemoveTail(Count);
+            Invoke("ReleaseStorage");
+            Assert.Equal(0, _context.MemoryGovernor.CurrentAccountedBytes);
+        }
         public int Count => (int)StackType.GetProperty("Count")!.GetValue(_stack)!;
         public object At(int index) => StackType.GetProperty("Item")!.GetValue(_stack, [index])!;
         public void Push(object value) => Invoke("Push", value);
@@ -111,7 +121,7 @@ public sealed class ExecutableOperandStackBoundaryTests
         public void RemoveTail(int count) => Invoke("RemoveTail", count);
         private object? Invoke(string method, params object[] arguments)
         {
-            try { return StackType.GetMethod(method)!.Invoke(_stack, arguments); }
+            try { return StackType.GetMethod(method, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!.Invoke(_stack, arguments); }
             catch (TargetInvocationException error) when (error.InnerException is { } inner)
             {
                 ExceptionDispatchInfo.Capture(inner).Throw();

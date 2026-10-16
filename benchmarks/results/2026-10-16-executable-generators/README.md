@@ -60,3 +60,8 @@ class/lowered routes retain their earlier iterator-only method interface; this
 is not complete retirement of every execution route. Conservative larger frame
 estimates can deny earlier. No new memory-management infrastructure or native
 code was introduced. Historical timings do not describe later HEAD.
+
+Subsequent CI found that this revision overcharged a large unadvanced body by
+instruction count. The following operand-capacity correction preserves the fixed
+1 MiB regression cap and is not measured by this capture. These timings identify
+fa2b72af explicitly; they must not be attributed to the corrected delivery HEAD.

@@ -75,12 +75,13 @@ public sealed class DirectStringStripTests
         const long limit = 64 * 1024;
         foreach (var changed in new[] { false, true })
         {
-            var (code, context) = Prepare("return text.strip()\n", new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+            var (code, context) = Prepare("fill()\nreturn text.strip()\n", new LythonRunOptions { MaxExecutionMemoryBytes = limit });
             var text = PyString.FromString(changed ? " word " : "word", context.MemoryGovernor, null);
             context.Variables["text"] = text;
             var baseline = context.MemoryGovernor.CurrentAccountedBytes;
-            using (context.MemoryGovernor.ReserveTemporary(limit - baseline, null))
+            using (var padding = new BudgetPad(limit, text))
             {
+                context.Variables["fill"] = padding;
                 if (changed)
                 {
                     var error = asynchronous
@@ -103,6 +104,19 @@ public sealed class DirectStringStripTests
     {
         var frontend = LythonFrontend.Compile(source);
         return (ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())), new(new MockLythonHost(), options ?? new()));
+    }
+
+    private sealed class BudgetPad(long limit, PyString result) : LythonRuntime.ICallable, IDisposable
+    {
+        private MemoryGovernor.TemporaryMemoryReservation? _reservation;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            // Apply pressure after the VM buffer is admitted, isolating strip's
+            // allocation preflight from invocation working-storage admission.
+            _reservation = context.MemoryGovernor.ReserveTemporary(limit - context.MemoryGovernor.CurrentAccountedBytes, span);
+            return result;
+        }
+        public void Dispose() => _reservation?.Dispose();
     }
 
     private sealed class Record : LythonRuntime.ICallable

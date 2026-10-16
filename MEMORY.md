@@ -97,6 +97,16 @@ and entry refusal/cancellation await its native cleanup before returning; failed
 construction refunds its frame estimate only after cleanup finishes. Surviving
 cell/namespace charges can remain conservatively with the finite owner. Larger
 frame estimates can cause earlier denial than the former lowered iterator.
+Operand buffers admit their actual initial capacity, then reserve full new
+capacity before replacement while the old buffer remains charged. Successful
+replacement relinquishes the old buffer immediately; failed admission leaves it
+unchanged. Terminal cleanup clears/releases the buffer after awaited native
+disposal; yield retains it and generator ownership snapshots include live buffer
+capacity. Compiled instruction storage is not charged again as an execution
+buffer merely because a large deferred body exists. Unadvanced host-owned code
+therefore need not fund its unused potential operand depth. Imported compilation
+and retained guest data keep their existing charges; no deferred debt or collector
+tier is involved. Growth failures retain the allocating instruction's source span.
 Ordinary bodies no longer retain clauses through a creator overlay or mirror the
 caller just to evaluate a lowered body. Required dynamic/lowered routes remain.
 Lowered bodies and dynamic namespace consumers retain their existing dictionary

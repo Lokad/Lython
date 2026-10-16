@@ -40,17 +40,19 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             object[] locals,
             ExecutableCell?[]? localCells,
-            IReadOnlyList<ExecutableCell>? closureCells,
-            PyIteration.Cursor? acquiredOuter = null)
+            IReadOnlyList<ExecutableCell>? closureCells)
             : base(codeObject, locals, localCells, closureCells)
         {
             _context = context;
-            _stack = new(Math.Max(8, codeObject.LocalNames.Count));
-            if (acquiredOuter is not null) _stack.Push(acquiredOuter);
             _currentBlockIndex = codeObject.EntryBlockIndex;
             _entryActiveException = context.Services.CurrentException;
             _memberCaches = codeObject.MemberCacheCount == 0 ? Array.Empty<ExecutableMemberCache?>() : new ExecutableMemberCache?[codeObject.MemberCacheCount];
             _blockEntryStackDepths = codeObject.ExceptionRegions.Count == 0 ? Array.Empty<int?>() : new int?[codeObject.Blocks.Count];
+            // Last allocation in construction: a failed constructor cannot
+            // strand a successfully admitted operand buffer.
+            var entry = codeObject.Blocks[codeObject.EntryBlockIndex].Instructions;
+            _stack = new(Math.Max(8, codeObject.LocalNames.Count), context,
+                entry.Count == 0 ? null : entry[0].Span);
         }
 
         // The mutable stack lives in this interpreter, including across generator
@@ -65,6 +67,16 @@ internal sealed partial class LythonRuntime
         private GeneratorDelegation? _delegation;
         internal bool HasYield { get; private set; }
         internal object YieldValue { get; private set; } = PyNone.Instance;
+        internal LythonSourceSpan? CurrentInstructionSpan
+            => _instructionIndex < _codeObject.Blocks[_currentBlockIndex].InstructionArray.Length
+                ? _codeObject.Blocks[_currentBlockIndex].InstructionArray[_instructionIndex].Span : null;
+        internal long RetainedStackBytes => _stack.RetainedBytes;
+
+        internal void SeedGeneratorOuter(object iterator, PyIteration.Cursor cursor)
+        {
+            _locals[_codeObject.LocalNameToSlot[".0"]] = iterator;
+            _stack.Push(cursor);
+        }
 
         internal async ValueTask ReleaseGeneratorTemporariesAsync(bool asynchronous)
         {
@@ -72,7 +84,8 @@ internal sealed partial class LythonRuntime
             try
             {
                 _stack.RemoveTail(_stack.Count);
-                if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
+                try { if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false); }
+                finally { _stack.ReleaseStorage(); }
             }
             finally { _stack.DeferAsyncDisposal = false; }
         }
@@ -894,7 +907,8 @@ internal sealed partial class LythonRuntime
                     // including cancellation outside opcode routing, relinquishes
                     // native temporaries before this frame leaves its owner.
                     if (!HasYield) _stack.RemoveTail(_stack.Count);
-                    if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
+                    try { if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false); }
+                    finally { if (!HasYield) _stack.ReleaseStorage(); }
                 }
                 finally { _stack.DeferAsyncDisposal = false; }
             }

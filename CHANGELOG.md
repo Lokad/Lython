@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Govern executable operand buffers by actual capacity and replacement overlap, releasing relinquished buffers after native cleanup. Remove instruction-count charging of unadvanced generator bodies and preflight every buffer resize. Preserve the existing 1 MiB host-owned deferred-code control, imported-code rejection, retained aliases and suspended inputs; construct/admit the frame before effectful outer acquisition.
+
 - Lower eligible lazy generator-expression bodies into real resumable child instructions with local slots and shared capture cells, reusing the eager comprehension loop compiler and existing generator methods. Remove the lowered creator overlay and ordinary fallback-only caller mirroring. Preserve eager outer acquisition, deferred inner work, walrus writes, locals and Python iterator aliases; await native cleanup on unstarted close/throw and refused/cancelled entry.
 
 - Await native async cursor cleanup when executable loops and generators exit through break, return, close, exceptions, cancellation or refused admission. Preserve nested handler continuation and retained Python iterator aliases; release abandoned cursors in order even when an inner disposal fails. Reuse stack/cursor storage for pending cleanup without per-removal allocations or new ownership scopes.

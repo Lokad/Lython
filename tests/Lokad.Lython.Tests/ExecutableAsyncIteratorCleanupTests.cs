@@ -140,6 +140,8 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         Assert.False((await generator.TryMoveNextAsync()).HasValue);
         Assert.Equal(1, inner.Disposals);
         Assert.Equal(1, outer.Disposals);
+        Assert.True(((IPyOwnershipSnapshot)generator).TrySnapshotOwnership(out var retainedBytes));
+        Assert.Equal(retainedBytes, context.MemoryGovernor.CurrentAccountedBytes);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
     }
@@ -177,6 +179,8 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         else Assert.Equal("ZeroDivisionError", Assert.IsType<LythonRuntimeException>(error).ExceptionType);
         Assert.Equal(1, inner.Disposals);
         Assert.Equal(1, outer.Disposals);
+        Assert.True(((IPyOwnershipSnapshot)generator).TrySnapshotOwnership(out var retainedBytes));
+        Assert.Equal(retainedBytes, context.MemoryGovernor.CurrentAccountedBytes);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
     }

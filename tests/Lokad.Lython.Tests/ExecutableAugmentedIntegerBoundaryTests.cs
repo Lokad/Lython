@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
 using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
@@ -132,18 +133,17 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
         {
             var context = Create("18446744073709551615", "1");
             var governor = context.MemoryGovernor;
-            var padding = 1024 * 1024 - governor.CurrentAccountedBytes - available;
-            governor.Reserve(padding, null);
-            governor.Commit(padding);
+            var padding = new BudgetPad(available, PyString.FromString("funded", governor));
+            context.Variables["pad"] = padding;
             var before = governor.CurrentCommittedBytes;
             var old = context.Variables["left"];
-            var error = Assert.Throws<LythonRuntimeException>(() => Run(context, asynchronous));
+            var error = Assert.Throws<LythonRuntimeException>(() => Run(context, asynchronous, "pad()\n" + Source));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Same(old, context.Variables["left"]);
-            Assert.Equal(before, governor.CurrentCommittedBytes);
+            Assert.Equal(before + padding.Bytes, governor.CurrentCommittedBytes);
             Assert.Equal(41, governor.LastDeniedReservationBytes);
-            Assert.Equal(new LythonSourceSpan(12, 13, 2, 1), error.Span);
-            Assert.Equal(4, context.Limits.ExecutionStepCount);
+            Assert.Equal(new LythonSourceSpan(18, 13, 3, 1), error.Span);
+            Assert.Equal(padding.Steps + 4, context.Limits.ExecutionStepCount);
             output.WriteLine($"available={available}; denied={governor.LastDeniedReservationBytes}; span={error.Span}; steps={context.Limits.ExecutionStepCount}");
             AssertUnwound(context);
         }
@@ -159,18 +159,17 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
         {
             var context = Create("18446744073709551615", "2");
             var governor = context.MemoryGovernor;
-            var padding = 1024 * 1024 - governor.CurrentAccountedBytes;
-            governor.Reserve(padding, null);
-            governor.Commit(padding);
+            var padding = new BudgetPad(0, PyString.FromString("funded", governor));
+            context.Variables["pad"] = padding;
             var before = governor.CurrentCommittedBytes;
             var original = context.Variables["left"];
             var error = Assert.Throws<LythonRuntimeException>(() => Run(context, asynchronous,
-                $"global left\nleft {token}= right\n"));
+                $"pad()\nglobal left\nleft {token}= right\n"));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Same(original, context.Variables["left"]);
-            Assert.Equal(before, governor.CurrentCommittedBytes);
+            Assert.Equal(before + padding.Bytes, governor.CurrentCommittedBytes);
             Assert.True(governor.LastDeniedReservationBytes > 0);
-            Assert.Equal(4, context.Limits.ExecutionStepCount);
+            Assert.Equal(padding.Steps + 4, context.Limits.ExecutionStepCount);
             AssertUnwound(context);
         }
     }
@@ -191,6 +190,21 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
             Assert.Null(error.Span);
             Assert.Equal(fuelDenied ? 1001 : 1, context.Limits.ExecutionStepCount);
             AssertUnwound(context);
+        }
+    }
+
+    private sealed class BudgetPad(long available, PyString result) : LythonRuntime.ICallable
+    {
+        internal long Bytes;
+        internal long Steps;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+        {
+            var governor = context.MemoryGovernor;
+            Bytes = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes - available;
+            governor.Reserve(Bytes, span);
+            governor.Commit(Bytes);
+            Steps = context.Limits.ExecutionStepCount;
+            return result;
         }
     }
 

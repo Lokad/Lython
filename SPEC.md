@@ -672,6 +672,11 @@ instruction path without replay. Required class/lowered routes remain separate;
 this is not retirement of every generator-expression execution route.
 Generator-expression send/throw/close currently require an executable creation
 site; required lowered/class routes retain their earlier iterator-only interface.
+Runtime operand buffers reserve initial/replacement capacity before allocation,
+including replacement overlap, and release relinquished buffers independently of
+CLR collection. A suspended generator retains its buffer until completion/close;
+uncalled compiled bodies do not prepay their potential operand depth. This does
+not exempt imported compilation or retained guest values from their owners.
 
 Suspension is supported in formatted-string fields and dynamic specifiers,
 including unparenthesized field yields and tuple/starred yielded expression lists,

@@ -178,7 +178,11 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                if (!HasYield) _stack.RemoveTail(_stack.Count);
+                if (!HasYield)
+                {
+                    _stack.RemoveTail(_stack.Count);
+                    _stack.ReleaseStorage();
+                }
             }
         }
     }

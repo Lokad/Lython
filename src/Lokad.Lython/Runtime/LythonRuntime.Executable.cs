@@ -246,14 +246,32 @@ internal sealed partial class LythonRuntime
     private struct ExecutableValueStack
     {
         private object?[] _items;
+        private readonly ExecutionContext _context;
+        private readonly LythonSourceSpan? _allocationSpan;
         private PyIteration.Cursor? _pendingDisposalHead, _pendingDisposalTail;
         internal bool DeferAsyncDisposal;
         internal bool HasPendingDisposals => _pendingDisposalHead is not null;
 
-        public ExecutableValueStack(int capacity)
+        public ExecutableValueStack(int capacity, ExecutionContext context, LythonSourceSpan? allocationSpan)
         {
-            _items = new object[Math.Max(4, capacity)];
+            _context = context;
+            _allocationSpan = allocationSpan;
+            var governor = context.MemoryGovernor;
+            capacity = Math.Max(4, capacity);
+            var bytes = EstimateObjectArrayBytes(capacity);
+            governor.Reserve(bytes, allocationSpan);
+            try { _items = new object[capacity]; governor.Commit(bytes); }
+            catch { governor.ReleaseReserved(bytes); throw; }
             Count = 0;
+        }
+
+        internal long RetainedBytes => _items.Length == 0 ? 0 : EstimateObjectArrayBytes(_items.Length);
+
+        internal void ReleaseStorage()
+        {
+            var bytes = RetainedBytes;
+            _items = Array.Empty<object?>();
+            _context.MemoryGovernor.Release(bytes);
         }
 
         internal PyIteration.Cursor? TakePendingDisposal()
@@ -278,7 +296,17 @@ internal sealed partial class LythonRuntime
         {
             if (Count == _items.Length)
             {
-                Array.Resize(ref _items, checked(_items.Length * 2));
+                var capacity = checked(_items.Length * 2);
+                var bytes = EstimateObjectArrayBytes(capacity);
+                var previous = RetainedBytes;
+                var governor = _context.MemoryGovernor;
+                var span = _context.CurrentExecutableFrame is ExecutableFrameInterpreter frame
+                    ? frame.CurrentInstructionSpan ?? _allocationSpan : _allocationSpan;
+                // Full new capacity overlaps the still-owned old buffer.
+                governor.Reserve(bytes, span);
+                try { Array.Resize(ref _items, capacity); governor.Commit(bytes); }
+                catch { governor.ReleaseReserved(bytes); throw; }
+                governor.Release(previous);
             }
 
             _items[Count++] = value;
