@@ -1,0 +1,25 @@
+{
+  "pythonVersion": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "name": "integer-boundary",
+      "source": "import json\nprint(json.loads('9223372036854775808'))",
+      "expected": "9223372036854775808\n"
+    },
+    {
+      "name": "negative-zero",
+      "source": "import json,math\nprint(math.copysign(1.0,json.loads('-0.0')))",
+      "expected": "-1.0\n"
+    },
+    {
+      "name": "hook-spellings",
+      "source": "import json\nseen=[]\ndef read(s):\n seen.append(s)\n return s\nprint(json.loads('[-0,1.2300e+04]',parse_int=read,parse_float=read),seen)",
+      "expected": "['-0', '1.2300e+04'] ['-0', '1.2300e+04']\n"
+    },
+    {
+      "name": "large-exact-integer",
+      "source": "import json\nprint(json.loads('-'+'9'*64))",
+      "expected": "-9999999999999999999999999999999999999999999999999999999999999999\n"
+    }
+  ]
+}
