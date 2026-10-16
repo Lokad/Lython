@@ -67,6 +67,8 @@ internal sealed partial class LythonRuntime
             await ExecuteSliceAssignmentAsync(receiver, slice.StartBound, slice.StopBound, slice.StepBound, value, span, context).ConfigureAwait(false);
             return;
         }
+        if (UsesNativeMutationIndex(receiver) && index is PyInstance)
+            index = await CoerceTypeIndexAsync(index, context, span, true).ConfigureAwait(false) ?? PyNone.Instance;
         if (receiver is PyInstance instance)
         {
             if (!instance.Type.TryLookupInMro("__setitem__", 0, out var raw, out _))

@@ -156,7 +156,7 @@ internal sealed partial class LythonRuntime
                 break;
             case SubscriptAssignmentTargetSyntax item:
                 if (asynchronous) await ExecuteResolvedSubscriptDeletionAsync(reads[item.Target], reads[item.Index], span, _context).ConfigureAwait(false);
-                else ExecuteResolvedSubscriptDeletion(reads[item.Target], reads[item.Index], span, _context);
+                else DeleteSubscriptValue(reads[item.Target], reads[item.Index], span, _context);
                 break;
             case SliceAssignmentTargetSyntax slice:
                 var sequence = reads[slice.Target];

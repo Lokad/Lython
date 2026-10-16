@@ -395,7 +395,7 @@ internal sealed partial class LythonRuntime
 
                 var target = EvaluateLoweredExpression(subscript.Target, context);
                 var index = EvaluateLoweredExpression(subscript.Index, context);
-                ExecuteResolvedSubscriptDeletion(target, index, span, context);
+                DeleteSubscriptValue(target, index, span, context);
                 return;
 
             case SliceExpressionSyntax:
@@ -428,60 +428,6 @@ internal sealed partial class LythonRuntime
         }
 
         throw new LythonRuntimeException("RuntimeError", "Unsupported delete target.", span);
-    }
-
-    private static void ExecuteResolvedSubscriptDeletion(
-        object target,
-        object index,
-        LythonSourceSpan span,
-        ExecutionContext context)
-    {
-            using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-        // Slice objects delete through the shared slice path on lists like
-        // CPython; every other receiver keeps its existing behaviour.
-        if (index is PySlice slice && target is PyList)
-        {
-            ExecuteSliceDeletion(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context);
-            return;
-        }
-
-        switch (target)
-        {
-            case IDeletablePySubscriptableValue subscriptable:
-                subscriptable.DeleteSubscript(index, span);
-                return;
-            case IMutablePySequenceValue sequence:
-                sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, span, PyIndexing.TargetKind(sequence), PyIndexing.IndexOperation.Delete));
-                return;
-            case PyDict dict:
-                if (!dict.Remove(ValidateDictionaryKey(index, span)))
-                {
-                    throw RuntimeErrors.MissingKey(index, span);
-                }
-
-                return;
-            case PyDefaultDict defaultDict:
-                if (!defaultDict.Remove(ValidateDictionaryKey(index, span)))
-                {
-                    throw RuntimeErrors.MissingKey(index, span);
-                }
-
-                return;
-            case PyCounter counter:
-                _ = counter.Remove(ValidateDictionaryKey(index, span));
-                return;
-            case PyInstance instance:
-                InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(index)], context, span);
-                return;
-            case PyTuple:
-                throw new LythonRuntimeException("TypeError", "'tuple' object doesn't support item deletion", span);
-            case PyString:
-                throw new LythonRuntimeException("TypeError", "'str' object doesn't support item deletion", span);
-            case PyBytes:
-                throw new LythonRuntimeException("TypeError", "'bytes' object doesn't support item deletion", span);
-            default:
-                throw DeletionNotSupported(target, context, span);
-        }
     }
 
     private static void ExecuteLoweredRaiseStatement(LoweredRaiseStatement statement, ExecutionContext context)

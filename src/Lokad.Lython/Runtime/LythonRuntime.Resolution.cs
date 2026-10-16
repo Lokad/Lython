@@ -350,6 +350,11 @@ internal sealed partial class LythonRuntime
 
     // Shared native sequence/XML conversion: implicit index hooks come from the
     // type, and may suspend during descriptor binding or the call itself.
+    // Read-only builtin sequences also convert scalar indices before rejecting
+    // assignment/deletion; mappings and user item protocols keep raw keys.
+    private static bool UsesNativeMutationIndex(object target)
+        => target is IMutablePySequenceValue or PyTuple or PyBytes or PyString or PyRange or string;
+
     internal static async ValueTask<object?> CoerceTypeIndexAsync(object? index, ExecutionContext context,
         LythonSourceSpan span, bool asynchronous)
     {

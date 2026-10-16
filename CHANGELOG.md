@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Convert native mutation indices through type-level __index__, awaiting target callbacks under RunAsync and re-coercing retained augmented keys after the RHS. Preserve raw mapping/custom keys and Python's read-only rejection order. Delete the duplicate synchronous item-deletion dispatcher while retaining ambient structural guards, admission and cleanup.
+
 - Compile member augmented assignments with existing duplicate/member-load/in-place instructions and the shared member store. Preserve captured receivers, current setters, in-place aliases, yielding targets and async callbacks; remove their statement fallback and obsolete prepared member-read arm without per-store dictionaries or a new opcode/owner/frame.
 
 - Resolve native slice bounds and slice.indices() lengths through type-level __index__ hooks, awaiting descriptor binding, callbacks and replacement iteration under RunAsync. Share colon/explicit-key and sync/async mutation helpers; replace the duplicated slice drain and final array copy with the existing owned lease while preserving overlap admission, cancellation and retained aliases.

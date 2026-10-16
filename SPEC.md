@@ -934,6 +934,12 @@ slice expressions, assignment/deletion targets and `slice.indices()` await
 descriptor binding, index callbacks and list-replacement iteration. Colon syntax
 and explicit `slice(...)` keys use the same conversion and mutation helpers.
 Cancellation keeps their storage funded until those users unwind.
+Scalar native item assignment/deletion uses the same type-level index conversion
+for lists and deques before normalizing against their current length. Augmented
+stores convert the retained key again after the RHS. Read-only builtin sequences
+convert a valid scalar index hook before rejecting mutation with TypeError.
+Target handlers await descriptor binding/callbacks under `RunAsync`; mapping and
+user-object keys stay raw. Earlier callback effects survive subsequent refusal.
 
 Colon slices delivered to a user object's item methods retain the original
 start, stop and step objects without `__index__` coercion. A fresh guest-visible

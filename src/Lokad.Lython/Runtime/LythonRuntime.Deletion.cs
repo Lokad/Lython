@@ -11,7 +11,9 @@ internal sealed partial class LythonRuntime
         }
         if (target is not PyInstance instance)
         {
-            ExecuteResolvedSubscriptDeletion(target, index, span, context);
+            if (UsesNativeMutationIndex(target) && index is PyInstance)
+                index = await CoerceTypeIndexAsync(index, context, span, true).ConfigureAwait(false) ?? PyNone.Instance;
+            DeleteSubscriptValue(target, index, span, context);
             return;
         }
         if (!instance.Type.TryLookupInMro("__delitem__", 0, out var raw, out _))

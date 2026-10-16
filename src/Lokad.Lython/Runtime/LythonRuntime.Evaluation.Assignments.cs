@@ -152,6 +152,8 @@ internal sealed partial class LythonRuntime
             ExecuteSliceDeletion(target, sliceIndex.StartBound, sliceIndex.StopBound, sliceIndex.StepBound, span, context);
             return;
         }
+        if (UsesNativeMutationIndex(target) && index is PyInstance)
+            index = CoerceTypeIndexAsync(index, context, span, false).GetAwaiter().GetResult() ?? PyNone.Instance;
 
         switch (target)
         {
@@ -359,6 +361,8 @@ internal sealed partial class LythonRuntime
             ExecuteSliceAssignment(target, slice.StartBound, slice.StopBound, slice.StepBound, value, span, context);
             return;
         }
+        if (UsesNativeMutationIndex(target) && index is PyInstance)
+            index = CoerceTypeIndexAsync(index, context, span, false).GetAwaiter().GetResult() ?? PyNone.Instance;
 
         switch (target)
         {
