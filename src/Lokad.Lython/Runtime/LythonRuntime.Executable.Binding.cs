@@ -549,7 +549,7 @@ internal sealed partial class LythonRuntime
             else if (callSite.HasReceiver && stack[start] is PyString stringReceiver &&
                 target is Func<PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
             {
-                result = InvokeStringNoArguments(stringReceiver, stringOperation, callSite.CallSpan, context);
+                result = InvokeSingleInput(stringReceiver, stringOperation, callSite.CallSpan, context);
             }
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringStartsWith))
             {
@@ -560,6 +560,11 @@ internal sealed partial class LythonRuntime
                 result = InvokeDictionaryGet((PyDict)stack[start], stack[start + callSite.ArgumentOffset],
                     callSite.ArgumentCount == 2 ? stack[start + callSite.ArgumentOffset + 1] : PyNone.Instance,
                     callSite.CallSpan, context);
+            }
+            else if (callSite.IsPositionalOnly && callSite.ArgumentCount == 1 && ExecutionContext.IsLengthBuiltin(target) &&
+                stack[start + callSite.ArgumentOffset] is not PyInstance)
+            {
+                result = InvokeSingleInput(stack[start + callSite.ArgumentOffset], LengthOperation, callSite.CallSpan, context);
             }
             else if (callSite.IsPositionalOnly && target is PyExecutableFunction { SupportsDirectPositional: true } function)
             {

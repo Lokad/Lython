@@ -9,6 +9,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> LengthOperation = GetLength;
+
     private static object Len(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length != 1)
@@ -16,7 +18,11 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "len() takes exactly one argument (" + arguments.Length + " given)", span);
         }
 
-        return arguments[0] switch
+        return GetLength(arguments[0], span, context);
+    }
+
+    private static object GetLength(object value, LythonSourceSpan span, ExecutionContext context)
+        => value switch
         {
             PyChainMap chainMap => LenChainMap(chainMap, span, context),
             PyRange range => range.Length,
@@ -24,9 +30,8 @@ internal sealed partial class LythonRuntime
             IReadOnlyCollection<object> collection => new BigInteger(collection.Count),
             System.Collections.ICollection collection => new BigInteger(collection.Count),
             PyInstance instance => GetInstanceLength(instance, context, span),
-            _ => throw new LythonRuntimeException("TypeError", $"object of type '{RuntimeErrors.OperandTypeName(arguments[0])}' has no len()", span)
+            _ => throw new LythonRuntimeException("TypeError", $"object of type '{RuntimeErrors.OperandTypeName(value)}' has no len()", span)
         };
-    }
 
     private static ValueTask<object> LenAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         => arguments.Length == 1 && arguments[0] is PyInstance instance

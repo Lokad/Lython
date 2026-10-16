@@ -156,15 +156,15 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private static object InvokeStringNoArguments(PyString receiver,
-        Func<PyString, LythonSourceSpan, ExecutionContext, object> operation, LythonSourceSpan span, ExecutionContext context)
+    private static object InvokeSingleInput<T>(T value,
+        Func<T, LythonSourceSpan, ExecutionContext, object> operation, LythonSourceSpan span, ExecutionContext context) where T : class
     {
         context.EnterInterpreterFrame(span);
         try
         {
             context.CheckExecution(span);
             context.CheckExecution(span);
-            return operation(receiver, span, context);
+            return operation(value, span, context);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }

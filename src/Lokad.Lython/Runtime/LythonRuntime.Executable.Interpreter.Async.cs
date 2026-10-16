@@ -89,7 +89,7 @@ internal sealed partial class LythonRuntime
                         else if (call.HasReceiver && _stack[start] is Text.PyString stringReceiver &&
                             callable is Func<Text.PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
                         {
-                            result = InvokeStringNoArguments(stringReceiver, stringOperation, call.CallSpan, _context);
+                            result = InvokeSingleInput(stringReceiver, stringOperation, call.CallSpan, _context);
                         }
                         else if (call.HasReceiver && ReferenceEquals(callable, DirectStringStartsWith))
                         {
@@ -105,6 +105,11 @@ internal sealed partial class LythonRuntime
                             result = key is Text.PyString && receiver.HasProtocolKeys
                                 ? await InvokeDictionaryGetAsync(receiver, key, fallback, call.CallSpan, _context).ConfigureAwait(false)
                                 : InvokeDictionaryGet(receiver, key, fallback, call.CallSpan, _context);
+                        }
+                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 && ExecutionContext.IsLengthBuiltin(callable) &&
+                            _stack[start + call.ArgumentOffset] is not PyInstance)
+                        {
+                            result = InvokeSingleInput(_stack[start + call.ArgumentOffset], LengthOperation, call.CallSpan, _context);
                         }
                         else if (call.IsPositionalOnly && callable is PyExecutableFunction { SupportsDirectPositional: true } function)
                         {

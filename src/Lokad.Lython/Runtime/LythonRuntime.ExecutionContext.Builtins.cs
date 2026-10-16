@@ -11,6 +11,8 @@ internal sealed partial class LythonRuntime
         private static readonly BuiltinCallable SharedRepr = BuiltinCallable.Create("repr", Repr, ["value"]);
         private static readonly BuiltinCallable SharedAscii = BuiltinCallable.Create("ascii", Ascii, ["value"]);
 
+        internal static bool IsLengthBuiltin(object value) => ReferenceEquals(value, SharedLen);
+
         // Python types are mutable. Every root execution context therefore needs
         // its own connected object/type graph instead of sharing a cached table.
         private static Dictionary<string, object> CreateBuiltinVariables()

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Call ordinary one-argument builtin `len` directly from executable storage, bypassing pooled argument transport and the copied parameter array. Share the existing single-input guard with string methods; preserve Python-instance protocols, aliases, argument effects, cancellation and retained ownership.
+
 - Resolve implicit `len()` through type slots and descriptor binding, ignoring instance shadows and ordinary attribute hooks. Await length descriptors and callbacks under `RunAsync`, preserving cancellation, terminal admission refusal and retained ownership; keep exact builtin lengths synchronous.
 
 - Dispatch ordinary zero-argument str.lower calls directly from executable receiver storage, sharing the existing casing and result-ownership operation with exposed methods. Remove per-receiver bound callables and synchronous cache traffic; preserve Unicode, guards, allocation preflights, cancellation and retained owners.
