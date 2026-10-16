@@ -120,34 +120,20 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 ## Remaining uncertainty and maintenance
 
-The next useful comparison is the four complete CSV, text, JSON and file scripts,
-with identical input/output bytes and a declared file-host boundary. Their
-correctness is established. The [file-worker delivery](benchmarks/results/2026-10-12-file-workers/README.md)
-at `ed987087` verifies all 12 cases against CPython 3.13.2 on Windows, in persistent
-and fresh processes, with matched disk staging/reset and output checks. Quiet-VM
-timing and qualification remain pending. The older retained-CSV
-job is not evidence for bounded streaming or host latency.
+The complete CSV, text, JSON and file jobs have independent stdout/file goldens
+and matched efficient host operations; the leading table records their named
+revision snapshots. Fresh compile-to-result coverage beyond configuration and
+search, current-HEAD performance and host tail latency remain incomplete.
+Use targeted comparisons to fill material gaps, rather than a new campaign.
 
-Process-wide forced GC remains a containment concern. The separate
-[embedding-impact experiment](benchmarks/results/2026-10-12-embedding-impact/README.md)
-records host request tails, heartbeat stalls and collection counts; fewer full
-collections alone do not establish better host latency. A separate
-[Windows observer pilot](benchmarks/results/2026-10-12-embedding-observer-v2/README.md)
-passes its fixed setup/output gates for async CSV and file jobs; shared-machine
-data does not qualify host latency.
-The [Linux async comparison at `4cdfd6b9`](benchmarks/results/2026-10-12-embedding-async/README.md)
-qualifies all four complete jobs at that revision within its finite host model, while GC-independent
-accounting and broader host-impact qualification remain open. The
-[Linux sync/retained-pressure model at `f67419a8`](benchmarks/results/2026-10-13-embedding-sync-pressure/README.md)
-meets the same latency targets in 30 original samples: no Gen2 in the four complete
-streaming jobs, one Gen2 per fresh retained-pressure execution. It is a finite
-embedding model; Windows impact and GC-independent reclamation remain open.
-The [bound/exposed/retained-error model at `7f5fbf70`](benchmarks/results/2026-10-13-embedding-exception-pressure/README.md)
-also meets those latency targets in 24 original samples, but incurs 128 Gen2
-collections per completed job versus one for unbound catches. These cases
-complete 12–14 jobs per nominal four-second window versus 1,250–1,267 for unbound catches;
-each window finishes its last complete job.
-The report also records failed memory recovery after reference withdrawal.
+The runtime now uses [cooperative admission and explicit owners](MEMORY.md),
+with bounded host-driven executions for long streams. Weak reclamation and
+forced collection are removed. This establishes an accounting contract, not a
+measurement of host latency or physical CLR memory. The older embedding-pressure
+campaigns ran the retired collector-based runtime; their tails and collection
+counts must not be read as current behavior. Their complete evidence and limits
+remain in [historical embedding qualification](benchmarks/EXPERIMENTS.md#embedding-impact-qualification-before-governed-ownership).
+No new host-latency qualification is claimed here.
 Regex performance waits
 for [managed-only backend qualification](benchmarks/results/2026-10-13-regex-scalar-44/README.md).
 
@@ -161,7 +147,8 @@ identity. Do not relabel historical receipts as current results.
 The [list and enumeration checkpoint](benchmarks/results/2026-10-14-list-and-enumeration/README.md)
 preserves two additional short comparisons and their preceding-source identities.
 Both are inconclusive; neither supplies a qualified speed change or CPython
-multiplier. Complete ownership and forced-GC independence remain open.
+multiplier. That checkpoint predates governed ownership and does not qualify
+current accounting or host latency.
 
 The [zip containment diagnostic](benchmarks/results/2026-10-14-zip-state/README.md)
 retains a higher candidate median with substantial noise. Its status is

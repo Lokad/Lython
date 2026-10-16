@@ -834,3 +834,39 @@ measurements. The [original scripts](scripts) remain ordinary Python.
 G uses the same shared Windows workstation/toolchain as A and CPython3.13.2.
 Its warm CSV comparison excludes compilation/startup and is a single7.320-second
 diagnostic; later local-import changes are unmeasured.
+
+
+## Embedding-impact qualification before governed ownership
+
+The following original qualification narrative predates the cooperative
+ownership migration. Its open collector/reachability questions are historical,
+not current runtime requirements. Links preserve the original source receipts.
+
+The next useful comparison is the four complete CSV, text, JSON and file scripts,
+with identical input/output bytes and a declared file-host boundary. Their
+correctness is established. The [file-worker delivery](results/2026-10-12-file-workers/README.md)
+at `ed987087` verifies all 12 cases against CPython 3.13.2 on Windows, in persistent
+and fresh processes, with matched disk staging/reset and output checks. Quiet-VM
+timing and qualification remain pending. The older retained-CSV
+job is not evidence for bounded streaming or host latency.
+
+Process-wide forced GC remains a containment concern. The separate
+[embedding-impact experiment](results/2026-10-12-embedding-impact/README.md)
+records host request tails, heartbeat stalls and collection counts; fewer full
+collections alone do not establish better host latency. A separate
+[Windows observer pilot](results/2026-10-12-embedding-observer-v2/README.md)
+passes its fixed setup/output gates for async CSV and file jobs; shared-machine
+data does not qualify host latency.
+The [Linux async comparison at `4cdfd6b9`](results/2026-10-12-embedding-async/README.md)
+qualifies all four complete jobs at that revision within its finite host model, while GC-independent
+accounting and broader host-impact qualification remain open. The
+[Linux sync/retained-pressure model at `f67419a8`](results/2026-10-13-embedding-sync-pressure/README.md)
+meets the same latency targets in 30 original samples: no Gen2 in the four complete
+streaming jobs, one Gen2 per fresh retained-pressure execution. It is a finite
+embedding model; Windows impact and GC-independent reclamation remain open.
+The [bound/exposed/retained-error model at `7f5fbf70`](results/2026-10-13-embedding-exception-pressure/README.md)
+also meets those latency targets in 24 original samples, but incurs 128 Gen2
+collections per completed job versus one for unbound catches. These cases
+complete 12–14 jobs per nominal four-second window versus 1,250–1,267 for unbound catches;
+each window finishes its last complete job.
+The report also records failed memory recovery after reference withdrawal.
