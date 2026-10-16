@@ -150,18 +150,8 @@ internal sealed partial class LythonRuntime
                 finally { context.LeaveInterpreterFrame(); }
             }
 
-            return ReadJsonNonStringValueAsync(input, options, context, span, depth, position, asynchronous);
-        }
-
-        private async ValueTask<(object Value, int End)> ReadJsonNonStringValueAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position, bool asynchronous)
-        {
-            var bytes = input.Source;
-            if (TryMatchJsonConstant(bytes.Span, position, out var constant, out var constantEnd))
-            {
-                return (await ConvertJsonConstantAsync(constant, options, context, span, asynchronous).ConfigureAwait(false), constantEnd);
-            }
-
-            var first = bytes.Span[position];
+            // The child parser owns its storage and suspended users. No generic
+            // token state is needed around an unchanged container result.
             if (first is (byte)'{' or (byte)'[')
             {
                 if (depth >= 64)
@@ -170,8 +160,19 @@ internal sealed partial class LythonRuntime
                 }
 
                 return first == (byte)'{'
-                    ? await ReadJsonObjectAsync(input, options, context, span, depth + 1, position, asynchronous).ConfigureAwait(false)
-                    : await ReadJsonArrayAsync(input, options, context, span, depth + 1, position, asynchronous).ConfigureAwait(false);
+                    ? ReadJsonObjectAsync(input, options, context, span, depth + 1, position, asynchronous)
+                    : ReadJsonArrayAsync(input, options, context, span, depth + 1, position, asynchronous);
+            }
+
+            return ReadJsonNumberOrConstantAsync(input, options, context, span, position, asynchronous);
+        }
+
+        private async ValueTask<(object Value, int End)> ReadJsonNumberOrConstantAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int position, bool asynchronous)
+        {
+            var bytes = input.Source;
+            if (TryMatchJsonConstant(bytes.Span, position, out var constant, out var constantEnd))
+            {
+                return (await ConvertJsonConstantAsync(constant, options, context, span, asynchronous).ConfigureAwait(false), constantEnd);
             }
 
             context.EnterInterpreterFrame(span);

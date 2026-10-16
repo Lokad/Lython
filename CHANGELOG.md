@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Forward JSON object/array parsing directly from the token dispatcher, removing two generic async forwarding paths and their unused depth argument. Keep child parsers, the existing nesting limit, hooks, cancellation, admission and retained ownership.
+
 - Dispatch JSON true/false/null synchronously alongside strings through both execution APIs, removing their generic async-token route. Preserve scalar-frame admission, Python prefix/error rules, hooks, cancellation, retained ownership and exact fuel/spans.
 
 - Report Python `Extra data` for trailing JSON input and include character coordinates in parser-produced JSON errors. Return the ordinary single formatted exception argument, removing the special three-argument reconstruction and trailing-character conversion. Preserve payload fields, callbacks, ownership and raw-decode suffixes.

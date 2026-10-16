@@ -126,6 +126,53 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
         Assert.Contains("maximum configured depth of 64", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData(false, 64)]
+    [InlineData(false, 65)]
+    [InlineData(true, 64)]
+    [InlineData(true, 65)]
+    public async Task LoadsExactNestingBoundaryPrecedesObjectHooks(bool objects, int depth)
+    {
+        const string source = """
+            import json
+            events = []
+            def hook(value):
+                events.append(1)
+                return value
+            try:
+                json.loads(source, object_hook=hook)
+                print('ok', depth, len(events))
+            except json.JSONDecodeError as error:
+                print('limited', depth, error.pos, error.lineno, error.colno, len(events))
+            """;
+        var document = string.Concat(Enumerable.Repeat(objects ? "{\"a\":" : "[", depth))
+            + "true" + new string(objects ? '}' : ']', depth);
+        var position = objects ? 320 : 64;
+        var expected = depth == 64
+            ? $"ok 64 {(objects ? 64 : 0)}\n"
+            : $"limited 65 {position} 1 {position + 1} 0\n";
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions
+        {
+            Globals = new Dictionary<string, object?> { ["source"] = document, ["depth"] = depth },
+            MaxExecutionMemoryBytes = 1024 * 1024
+        };
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(expected, result.StandardOutput);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void DeepContainersStayDepthBounded()
     {
