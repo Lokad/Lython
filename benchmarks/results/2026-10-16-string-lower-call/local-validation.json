@@ -1,0 +1,85 @@
+{
+  "groups": [
+    {
+      "stage": "string-lower-call-qualified-white",
+      "role": "rejected-candidate",
+      "filter": "Category!=Stress",
+      "assemblySha256": "76AC01730F359D425C92CD5515FB4315774B3FF50B759A8CE9931C0ECCABCF9F",
+      "counters": {
+        "total": "2354",
+        "executed": "2354",
+        "passed": "2354",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 12633
+    },
+    {
+      "stage": "string-lower-call-qualified-public",
+      "role": "rejected-candidate",
+      "filter": "(FullyQualifiedName~ImmediateStringLowerTests|FullyQualifiedName~StringStripCallTests|FullyQualifiedName~StringMethodCompatibilityTests|FullyQualifiedName~SharedFixedLabelBehaviorTests)&Category!=Stress",
+      "assemblySha256": "1C64E4FB95DE46356187A467ABE1928263636AACA50BE08549F23811C215F505",
+      "counters": {
+        "total": "251",
+        "executed": "251",
+        "passed": "251",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 3124
+    },
+    {
+      "stage": "string-lower-call-retained-public",
+      "role": "restored-baseline-runtime",
+      "filter": "(FullyQualifiedName~StringLowerCallTests|FullyQualifiedName~StringStripCallTests|FullyQualifiedName~StringMethodCompatibilityTests|FullyQualifiedName~SharedFixedLabelBehaviorTests)&Category!=Stress",
+      "assemblySha256": "134FA3DDCFCD5088397C20E8D7E607680464FF8485413DCD098FDD9E538CD9C3",
+      "counters": {
+        "total": "251",
+        "executed": "251",
+        "passed": "251",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "elapsedMillisecondsIncludingCleanup": 3166
+    }
+  ],
+  "groupsOverlap": true,
+  "independentCPythonGoldens": 5,
+  "prototypeRetained": false,
+  "productionSourcesMatchBaseline": true,
+  "originalStressRerun": false,
+  "fullLocalPublicRerun": false
+}

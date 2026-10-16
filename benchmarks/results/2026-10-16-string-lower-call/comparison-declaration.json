@@ -1,0 +1,21 @@
+{
+  "baselineRevision": "72856c8c817ea709b90d3966ec5aa98cfbafc772",
+  "candidateRevision": "64b8e2651d75ad7d6a58e3bf00df492bc140e5a4",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "12eb4f272fca2e9e11d5b11e6a0d9ac2262307e78dd31b0dd7d70f2783ebd334",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "2f594b2faf698d93e0285f22d55460ee631e5323231126536cd98a637182d058",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "bd409dded8f72d2d51b2be926ea0e5160d998f5d0f6bf22fc3b89b5468c1c773",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "c0f1b9743ebb7c4b81f6aeeebd2cfb8ab35464ac3f3b93edff2edb4380bde1e7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "b91ec23263f83dfeda9e5cc9bb5744706d0bc8ef367585eb8107a8b089026af6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs": "9ac38bde33e9a52cfe1e931e80f56f1a29a41d052016a3de336dd0eca920c462"
+  },
+  "sourceArchiveSha256": "70b12f0033377fc361427d7259091f282d3aa64113d293ffbcdcfe4e20b59dde",
+  "caseId": "scripts.text-summary.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Existing direct receiver transport avoids bound wrappers for immediate zero-argument str.lower; exposed/dynamic/expanded/malformed calls remain ordinary. Share lower Unicode/ownership body and strip/lower frame/checkpoint/exception handler. No argument arrays were present in the existing no-argument callable.",
+  "normalGCAndTiering": true,
+  "boundary": "Warm synchronous Run for existing complete text-summary file job with input/output staging, exact file goldens, fresh state, execution/projection and cleanup; CPython ordinary warm code. Compilation/startup/transport/hash excluded.",
+  "stoppingRule": "Exactly one existing complete text job comparison after source/semantic gates; no repeat, retuning, new workload/framework or 600-second lane. Delete unjustified prototype, preserving original evidence."
+}

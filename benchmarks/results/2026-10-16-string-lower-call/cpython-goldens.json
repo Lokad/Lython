@@ -1,0 +1,25 @@
+{
+  "python": "CPython 3.13.2",
+  "checks": [
+    {
+      "source": "for text in ('','AbC','İΣ','ΟΣ','Straße','𐐀'):\n print(text.lower())",
+      "stdout": "\nabc\ni̇ς\nος\nstraße\n𐐨\n"
+    },
+    {
+      "source": "text='AbC'\nfirst=text.lower\nsecond=text.lower\nprint(first is second,first.__self__ is text,first.__name__,first.__qualname__,first.__module__)\ntext='CHANGED'\nprint(first(),second())",
+      "stdout": "False True lower str.lower None\nabc abc\n"
+    },
+    {
+      "source": "events=[]\ndef argument():\n events.append('arg')\n return 0\ndef call(value):\n try: value.lower(argument())\n except TypeError: print(events)\ncall('AbC')",
+      "stdout": "['arg']\n"
+    },
+    {
+      "source": "class Value:\n def lower(self): return 'custom'\nprint(Value().lower())",
+      "stdout": "custom\n"
+    },
+    {
+      "source": "events=[]\ndef arguments():\n events.append('args')\n return []\ntext='AbC'\nprint(text.lower(*arguments()),events)",
+      "stdout": "abc ['args']\n"
+    }
+  ]
+}

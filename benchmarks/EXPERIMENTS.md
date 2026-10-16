@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 lower-call wrapper experiment](results/2026-10-16-string-lower-call/README.md)
+was rejected and all production changes removed. One complete text job observed
+6.8308 -> 6.7464 ms, CPython 1.3224 ms, spread 5.7%/4.8%/0.9%: a 1.2% change
+within variability. No repeat/retuning. The leading representative text row AM
+uses the newer 72856c8c **baseline**; historical AA stays archived below. Twelve
+useful public regressions remain, with no required discarded implementation.
+
 The [2026-10-16 native-index candidate](results/2026-10-16-async-native-index/README.md)
 shares synchronous observed transfer for exact integer reads on sealed native
 sequences. One existing ASCII indexed-text diagnostic observed 0.4388 -> 0.3918 ms,
