@@ -154,16 +154,14 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private static object InvokeDirectStringNoArguments(PyString receiver, object operation, LythonSourceSpan span, ExecutionContext context)
+    private static object InvokeStringStrip(PyString receiver, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);
         try
         {
             context.CheckExecution(span);
             context.CheckExecution(span);
-            return ReferenceEquals(operation, DirectStringStrip)
-                ? StringMembers.StripWhitespace(receiver, span, context)
-                : StringMembers.Lower(receiver, span, context);
+            return StringMembers.StripWhitespace(receiver, span, context);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }

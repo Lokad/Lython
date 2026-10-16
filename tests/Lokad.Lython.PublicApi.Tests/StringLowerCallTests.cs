@@ -2,7 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class ImmediateStringLowerTests
+public sealed class StringLowerCallTests
 {
     [Theory]
     [InlineData(false)]

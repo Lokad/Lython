@@ -12,7 +12,6 @@ internal sealed partial class LythonRuntime
     private static readonly object DirectListAppend = new();
     private static readonly object DirectDictionaryGet = new();
     private static readonly object DirectStringStrip = new();
-    private static readonly object DirectStringLower = new();
 
     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
     {
@@ -547,9 +546,9 @@ internal sealed partial class LythonRuntime
             {
                 result = InvokeListAppend((PyList)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
             }
-            else if (callSite.HasReceiver && (ReferenceEquals(target, DirectStringStrip) || ReferenceEquals(target, DirectStringLower)))
+            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringStrip))
             {
-                result = InvokeDirectStringNoArguments((PyString)stack[start], target, callSite.CallSpan, context);
+                result = InvokeStringStrip((PyString)stack[start], callSite.CallSpan, context);
             }
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectDictionaryGet))
             {

@@ -323,7 +323,7 @@ internal sealed partial class ExecutableScript
                 {
                     "get" => call.Arguments.Count is 1 or 2,
                     "append" => call.Arguments.Count == 1,
-                    "strip" or "lower" => call.Arguments.Count == 0,
+                    "strip" => call.Arguments.Count == 0,
                     _ => false
                 };
             if (callTarget is LoweredMemberExpression member)
