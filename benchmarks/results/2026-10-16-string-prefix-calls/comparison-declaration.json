@@ -1,0 +1,21 @@
+{
+  "baselineRevision": "cdf959615e4093c7fb35f7294ca46c88390e59eb",
+  "candidateRevision": "473aa3966802a68c155efebecffa9e816abf763b",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "30fedb597e0e0d39cd7fcde0cb65807e59c36246899d27f8268b72d5fee77f91",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "7e2bc71b3319197107dd979de4398825cf84187440732c82a56bfe0b3f7ed2a3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "ba78d32d87eaec4239f2e099304713058122c88c890ac2d07d171855a284b9ff",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "03e79f180cb58d5a9f8552f507c3148eeca388cf499f17dbdb810921685e2ec7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "1449a89de2d7ad0bf4591934df8532e9fecaee09a8b937da62d32dd09c2f0457",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.cs": "bb4b5b10343cbdb8c192d2721d9e26a808f6a4ffe68b90844af2481be22bfa37"
+  },
+  "sourceArchiveSha256": "b8cd262c93e0709fa5c3f82b9408d762836129a59610d5b87ae0ef05fc11aba0",
+  "caseId": "scripts.file-search.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Direct one-positional-argument exact PyString startswith through existing receiver/argument frame slots, shared kernel and existing call guards. Correctness fixes are in both roles.",
+  "normalGCAndTiering": true,
+  "boundary": "Unchanged file search with helper and protected early exit; 2049 lines, stop after line 1025. Warm synchronous Run and ordinary warm CPython. Includes file reset, complete job, stdout/file checks, projection and prior-result cleanup. Compile/startup/transport/full hash excluded.",
+  "stoppingRule": "One existing affected complete job; no repeat, retuning, new producer/framework or long lane. No milestone qualification."
+}

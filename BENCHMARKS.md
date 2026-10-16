@@ -8,7 +8,7 @@
 | Complete text-summary file job [AN], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.414 ms | 1.239 ms | — | Short diagnostic at 7caf4833; target-read consolidation retained; timing change inconclusive (baseline spread 12.4%) |
 | Complete JSON-lines aggregation [AC], warm | 4,096 records / 110,592 UTF-8 bytes | 9.692 ms | 4.260 ms | — | Historical warm diagnostic; elapsed change within spread |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
-| File search with helper and protected early exit [P], warm | 2,049 lines / 42,010 UTF-8 bytes | 4.249 ms | 0.265 ms | — | One candidate diagnostic; inconclusive (56.4% spread) |
+| File search with helper and protected early exit [AR], warm | 2,049 lines / 42,010 UTF-8 bytes | 3.223 ms | 0.2845 ms | — | Short diagnostic at 473aa396; inconclusive (57%/64% Lython spread); no improvement established |
 | Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
 | Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | Historical warm diagnostic; elapsed change within spread |
 | Branch/integer loop [AE], warm `RunAsync` | 16,384 iterations; modulo/comparison/add/subtract | 6.321 ms | 0.9599 ms | — | One warm async diagnostic; completed host operations; unqualified |
@@ -48,6 +48,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 | P | 2026-10-15 | Working protected-loop candidate on b2235259; two frontend source changes frozen by hashes | [Separate warm and compile/run diagnostics](benchmarks/results/2026-10-15-protected-loop-jumps/README.md), [source declaration](benchmarks/results/2026-10-15-protected-loop-jumps/comparison-declaration.json) |
 | AB | 2026-10-15 | Working UTF-8 upper candidate on 29a1862e; one frozen source; identical new report script/catalog in both roles | [Complete report, noise and expansion/ownership checks](benchmarks/results/2026-10-15-utf8-upper/README.md) |
 | AE | 2026-10-15 | Working exact-integer dispatch candidate on 60277f65; one frozen interpreter source; unchanged case/tooling | [Async integer operators, suspension and boundary checks](benchmarks/results/2026-10-15-async-integer-operators/README.md) |
+| AR | 2026-10-16 | 473aa396 on cdf95961; six frozen compiler/runtime files; unchanged file search | [Direct prefix calls, compatibility fixes and inconclusive timing](benchmarks/results/2026-10-16-string-prefix-calls/README.md) |
 | AQ | 2026-10-16 | 4846928c on a2103402; three frozen compiler/runtime files; unchanged configuration job | [Compiled subscript updates and inconclusive complete-job timing](benchmarks/results/2026-10-16-augmented-subscript-stores/README.md) |
 | AP | 2026-10-16 | 58aece73 on 9d0902a3; three frozen compiler/runtime files; unchanged method job | [Compiled member updates and no established timing benefit](benchmarks/results/2026-10-16-augmented-member-stores/README.md) |
 
@@ -103,6 +104,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Direct string prefix calls, 2026-10-16 | cdf95961 → 473aa396; unchanged complete file search | No improvement established: 5.667 → 3.223 ms; 43.1% change below 57%/64% spreads | [Shared call storage and preserved diagnostics](benchmarks/results/2026-10-16-string-prefix-calls/README.md) |
 | Executable subscript augmented stores, 2026-10-16 | a2103402 → 4846928c; unchanged warm configuration job | No improvement established: 3.338 → 3.309 ms; 0.9% change within spread | [Shared operands, deletion and one complete-job diagnostic](benchmarks/results/2026-10-16-augmented-subscript-stores/README.md) |
 | Executable member augmented stores, 2026-10-16 | 9d0902a3 → 58aece73; unchanged method job | No improvement established: 1.113 → 1.144 ms; candidate median 2.8% higher | [Existing instructions, deletion and inconclusive timing](benchmarks/results/2026-10-16-augmented-member-stores/README.md) |
 | Executable loop/comprehension target stores, 2026-10-16 | 722f4bab → 155843d0; unchanged stable-sort job | Inconclusive: 1.608 → 1.550 ms; baseline spread 3.5% | [Scoped stores, admission and unchanged workload](benchmarks/results/2026-10-16-loop-target-stores/README.md) |

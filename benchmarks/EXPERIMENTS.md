@@ -7,6 +7,21 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 prefix-call delivery](results/2026-10-16-string-prefix-calls/README.md)
+shares existing receiver/argument slots and the Unicode/tuple kernel for ordinary
+one-argument exact-string startswith. Both roles include keyword/static tuple
+correctness fixes. One unchanged complete search observed 5.6667 -> 3.2231 ms,
+CPython 0.2845 ms, spread 57.4%/63.7%/1.3%. The 43.1% lower median is inconclusive;
+no improvement is established. Six frozen sources, correct loaded versions, all
+three golden sizes per role, normal policies, one 8.736 s timing command, seven
+workers/fixtures removed and lease free. No repeat/retuning or new producer.
+AR replaces P's earlier warm row only; P's fresh compile/run row and identity stay.
+The prior warm evidence remains:
+
+| Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
+| --- | --- | ---: | ---: | ---: | --- |
+| File search with helper and protected early exit [P], warm | 2,049 lines / 42,010 UTF-8 bytes | 4.249 ms | 0.265 ms | — | One candidate diagnostic; inconclusive (56.4% spread) |
+
 The [2026-10-16 subscript-augmented delivery](results/2026-10-16-augmented-subscript-stores/README.md)
 retains receiver/key in existing frame slots and deletes their prepared read/store
 arms. One unchanged complete configuration job observed 3.3377 -> 3.3093 ms,
