@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Await user-descriptor method binding for reads, writes and deletion under RunAsync. A descriptor slot implemented by an async-capable descriptor can suspend before its resulting callable runs; synchronous execution and absent/noncallable errors keep their existing paths.
+
 - Forget pre-try dictionary key facts before computed exception headers and handlers. Accept valid reads after partial protected-body mutations, including aliases and nested mappings; retain definite diagnostics for fresh missing keys and normal runtime key checks.
 
 - Compile ordinary subscript-store receiver/key expressions in the caller frame, preserving RHS-first and chained-assignment order. Use a fixed three-operand store with existing mutation helpers, cleanup and target diagnostics; avoid general target evaluation and per-store read packaging.

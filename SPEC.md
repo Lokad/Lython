@@ -937,6 +937,11 @@ fuel thresholds; native allocation admission still precedes mutation.
 
 Assignment behavior for supported target forms must follow Python semantics.
 
+Under `RunAsync`, binding a user descriptor's `__get__`, `__set__` or `__delete__`
+method must use asynchronous descriptor access before invoking the resulting
+callable. Binding and invocation may each suspend without replaying earlier
+effects. Synchronous execution retains synchronous descriptor access.
+
 The supported ordinary assignment targets are:
 
 - simple names

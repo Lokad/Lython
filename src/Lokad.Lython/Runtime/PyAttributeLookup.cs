@@ -192,7 +192,7 @@ internal static class PyAttributeLookup
         if (rawValue is IPyDescriptor descriptor)
             return await descriptor.GetAsync(instance, instance.Type, context, span).ConfigureAwait(false);
         if (rawValue is PyInstance descriptorInstance &&
-            TryLookupDescriptorMethod(descriptorInstance, "__get__", context, span, out var callable))
+            await LookupDescriptorMethodAsync(descriptorInstance, "__get__", context, span).ConfigureAwait(false) is { } callable)
             return await CallableInvocation.InvokeBinaryAsync(callable, instance, instance.Type, span, context).ConfigureAwait(false);
         return rawValue;
     }
@@ -501,7 +501,7 @@ internal static class PyAttributeLookup
             return true;
         }
         if (descriptor is PyInstance descriptorInstance &&
-            TryLookupDescriptorMethod(descriptorInstance, "__set__", context, span, out var callable))
+            await LookupDescriptorMethodAsync(descriptorInstance, "__set__", context, span).ConfigureAwait(false) is { } callable)
         {
             _ = await CallableInvocation.InvokeBinaryAsync(callable, instance, value, span, context).ConfigureAwait(false);
             return true;
@@ -535,7 +535,7 @@ internal static class PyAttributeLookup
             return true;
         }
         if (descriptor is PyInstance descriptorInstance &&
-            TryLookupDescriptorMethod(descriptorInstance, "__delete__", context, span, out var callable))
+            await LookupDescriptorMethodAsync(descriptorInstance, "__delete__", context, span).ConfigureAwait(false) is { } callable)
         {
             _ = await CallableInvocation.InvokeUnaryAsync(callable, instance, span, context).ConfigureAwait(false);
             return true;
@@ -612,6 +612,18 @@ internal static class PyAttributeLookup
 
         value = rawValue;
         return false;
+    }
+
+    private static async ValueTask<LythonRuntime.ICallable?> LookupDescriptorMethodAsync(
+        PyInstance descriptorInstance, string methodName, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!descriptorInstance.Type.TryLookupInMro(methodName, 0, out var rawMethod, out _))
+            return null;
+        var bound = rawMethod is IPyDescriptor descriptor
+            ? await descriptor.GetAsync(descriptorInstance, descriptorInstance.Type, context, span).ConfigureAwait(false)
+            : rawMethod;
+        return bound as LythonRuntime.ICallable
+            ?? throw new LythonRuntimeException("TypeError", $"Descriptor method '{methodName}' must be callable.", span);
     }
 
     private static bool TryLookupDescriptorMethod(PyInstance descriptorInstance, string methodName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out LythonRuntime.ICallable callable)
