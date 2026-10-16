@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse synchronous cursor pulls under asynchronous hosting and forward existing user/async iterator tasks directly, removing their redundant async forwarding paths. Preserve protocol precedence, fuel/cancellation checkpoints, ownership and awaited iterator cleanup.
+
 - Admit major integer Counter count additions before computation or replacement, reusing ordinary integer-addition admission for updates, totals and binary addition. Fund new magnitudes under the existing owner; preserve retained aliases, decimal/float behavior and terminal refusal. Conservative estimates can reject earlier under tight budgets.
 
 - Preflight major native integer additions before allocating their result, including ordinary addition, generic sums and mixed CLR integer inputs. Reuse existing magnitude admission and retained owners, preserving small-value handling, fuel, callbacks and terminal refusal; conservative major estimates can reject earlier under tight budgets.

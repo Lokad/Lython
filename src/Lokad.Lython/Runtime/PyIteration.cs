@@ -504,43 +504,37 @@ internal static partial class PyIteration
             return false;
         }
 
-        public async ValueTask<PyIterationResult> TryMoveNextAsync()
+        public ValueTask<PyIterationResult> TryMoveNextAsync()
         {
             CheckExecution();
             if (_asyncEnumerator is not null)
-                return await _asyncEnumerator.MoveNextAsync().ConfigureAwait(false)
-                    ? PyIterationResult.Yield(_asyncEnumerator.Current) : PyIterationResult.End;
+                return PullAsyncEnumeratorAsync();
             if (_userIterator is not null)
             {
-                return await _userIterator.TryMoveNextAsync().ConfigureAwait(false);
+                return _userIterator.TryMoveNextAsync();
             }
 
             if (_value is IPyAsyncIteratorValue asyncIterator)
             {
-                return await asyncIterator.TryMoveNextAsync().ConfigureAwait(false);
+                return asyncIterator.TryMoveNextAsync();
             }
 
-            if (_value is IPyIteratorValue iterator)
+            // Synchronous iterator slots precede asynchronous iterable fallback.
+            if (_value is IPyAsyncIterableValue asyncIterable && _value is not IPyIteratorValue)
             {
-                return iterator.TryMoveNext(out var value)
-                    ? PyIterationResult.Yield(value)
-                    : PyIterationResult.End;
+                _asyncEnumerator = asyncIterable.IterateAsync().GetAsyncEnumerator();
+                return PullAsyncEnumeratorAsync();
             }
 
-            if (_value is IPyAsyncIterableValue asyncIterable)
-            {
-                _asyncEnumerator ??= asyncIterable.IterateAsync().GetAsyncEnumerator();
-                if (await _asyncEnumerator.MoveNextAsync().ConfigureAwait(false))
-                {
-                    return PyIterationResult.Yield(_asyncEnumerator.Current);
-                }
-
-                return PyIterationResult.End;
-            }
-
-            return TryMoveNextCore(out var syncValue)
+            return ValueTask.FromResult(TryMoveNextCore(out var syncValue)
                 ? PyIterationResult.Yield(syncValue)
-                : PyIterationResult.End;
+                : PyIterationResult.End);
+        }
+
+        private async ValueTask<PyIterationResult> PullAsyncEnumeratorAsync()
+        {
+            return await _asyncEnumerator!.MoveNextAsync().ConfigureAwait(false)
+                ? PyIterationResult.Yield(_asyncEnumerator.Current) : PyIterationResult.End;
         }
 
         private void CheckExecution()
