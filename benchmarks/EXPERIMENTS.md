@@ -7,6 +7,16 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 JSON forwarding deletion](results/2026-10-16-json-container-forwarding/README.md)
+removes container forwarding awaits and the redundant prefix decoder/result
+record. One unchanged JSON transform observed 2.626 → 2.691 ms, CPython 0.4439 ms;
+spreads 8.42%/12.68%/0.33%. The 2.5% higher median is within spread, inconclusive.
+One 7.516 s capture, no retry/retuning/new producer; frozen sources and independent
+three-size goldens match, seven workers/fixtures gone, services inactive, lease
+free. BL refreshes the same in-memory row; BK remains historical. The later
+integer-admission correction is allocation/containment work, excluded from the
+measured source pair and with no elapsed-time claim.
+
 The [2026-10-16 JSON literal change](results/2026-10-16-json-literal-dispatch/README.md)
 removes true/false/null from the generic async token route, preserving the existing
 scalar admission and actual callback suspension. Both roles include the preceding

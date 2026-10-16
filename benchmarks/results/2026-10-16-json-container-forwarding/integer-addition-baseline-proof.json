@@ -1,0 +1,77 @@
+{
+  "revision": "35d99a88",
+  "controls": [
+    {
+      "route": 2,
+      "asynchronous": false,
+      "allocated": 69520,
+      "reason": "ExecutionMemoryLimit",
+      "committed": 1040384,
+      "after": 1040384,
+      "reserved": 0,
+      "messages": [
+        "Refused magnitude allocated 69520 bytes."
+      ]
+    },
+    {
+      "route": 0,
+      "asynchronous": false,
+      "allocated": 68104,
+      "reason": "ExecutionMemoryLimit",
+      "committed": 1040384,
+      "after": 1040384,
+      "reserved": 0,
+      "messages": [
+        "Refused magnitude allocated 68104 bytes."
+      ]
+    },
+    {
+      "route": 0,
+      "asynchronous": true,
+      "allocated": 70752,
+      "reason": "ExecutionMemoryLimit",
+      "committed": 1040384,
+      "after": 1040384,
+      "reserved": 0,
+      "messages": [
+        "Refused magnitude allocated 70752 bytes."
+      ]
+    },
+    {
+      "route": 1,
+      "asynchronous": false,
+      "allocated": 69520,
+      "reason": "ExecutionMemoryLimit",
+      "committed": 1040384,
+      "after": 1040384,
+      "reserved": 0,
+      "messages": [
+        "Refused magnitude allocated 69520 bytes."
+      ]
+    },
+    {
+      "route": 2,
+      "asynchronous": true,
+      "allocated": 78368,
+      "reason": "ExecutionMemoryLimit",
+      "committed": 1040384,
+      "after": 1040384,
+      "reserved": 0,
+      "messages": [
+        "Refused magnitude allocated 78368 bytes."
+      ]
+    },
+    {
+      "route": 1,
+      "asynchronous": true,
+      "allocated": 72384,
+      "reason": "ExecutionMemoryLimit",
+      "committed": 1040384,
+      "after": 1040384,
+      "reserved": 0,
+      "messages": [
+        "Refused magnitude allocated 72384 bytes."
+      ]
+    }
+  ]
+}

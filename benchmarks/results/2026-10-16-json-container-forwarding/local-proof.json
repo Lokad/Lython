@@ -1,0 +1,41 @@
+{
+  "containerRevision": "df1ab51f0c8d1968a58979813dccc5c1b93e7462",
+  "prefixRevision": "35d99a88f7b1cff5aa71e2005027d890e2449036",
+  "checks": [
+    {
+      "stage": "json-forwarding-batch-focused-white",
+      "passed": 54,
+      "elapsedMillisecondsIncludingCleanup": 1533,
+      "assemblySha256": "033570F190EF08F29E56FF02E1E13EB5769F21A55E448DC6AE3ED9A3B742A248"
+    },
+    {
+      "stage": "json-forwarding-batch-public",
+      "passed": 359,
+      "elapsedMillisecondsIncludingCleanup": 7538,
+      "assemblySha256": "ABFC6EDFAE909DB0A596B802A5F455314A6D3BAE449D35ADE6AB8DCDEF078968"
+    },
+    {
+      "stage": "json-forwarding-batch-full-white",
+      "passed": 2797,
+      "elapsedMillisecondsIncludingCleanup": 18248,
+      "assemblySha256": "033570F190EF08F29E56FF02E1E13EB5769F21A55E448DC6AE3ED9A3B742A248"
+    },
+    {
+      "stage": "json-forwarding-batch-stack",
+      "passed": 59,
+      "elapsedMillisecondsIncludingCleanup": 9423,
+      "assemblySha256": "ABFC6EDFAE909DB0A596B802A5F455314A6D3BAE449D35ADE6AB8DCDEF078968"
+    },
+    {
+      "stage": "json-forwarding-batch-representative",
+      "passed": 93,
+      "elapsedMillisecondsIncludingCleanup": 15238,
+      "assemblySha256": "ABFC6EDFAE909DB0A596B802A5F455314A6D3BAE449D35ADE6AB8DCDEF078968"
+    }
+  ],
+  "guardCasesPreserved": 26,
+  "baseline": "Four prior exact64/65public probe cases; four new permanent depth/hook regressions pass. Two new1025-space matrices froze17steps before prefix removal; all traces unchanged.",
+  "sourceAcceptance": "Two container forwarding awaits, unused scalar depth parameter, whole prefix decoder/result record and duplicate checks/packaging removed. No new parser/helper/owner/state/policy.",
+  "limitations": "Required number/constant callbacks, real recursive parsers, escaped-token conversion and explicit64cap remain. No predicted speedup, no new abstraction or general redesign.",
+  "previousGoalTurn": "Progress: errors/literals delivered and qualified73426010; saved traces/depth baseline changed this next action."
+}

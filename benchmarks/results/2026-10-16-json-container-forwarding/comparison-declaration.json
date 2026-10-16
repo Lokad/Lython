@@ -1,0 +1,29 @@
+{
+  "baselineRevision": "734260108f0d198303ba1c1890cfd8be539f9494",
+  "candidateRevision": "35d99a88f7b1cff5aa71e2005027d890e2449036",
+  "caseId": "json.transform-roundtrip.large",
+  "expectedCaseSize": 1024,
+  "expectedRecords": 1024,
+  "lane": "warm-async",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm public RunAsync of unchanged JSON loads/edit/dumps script;1024records including one boolean each, reused compilation,fresh invocation state, execution/projection and prior-result cleanup timed. Startup/compilation/transport excluded; no files.",
+  "stoppingRule": "One unchanged JSON transform warm-async diagnostic for combined container forwarding/prefix removal. No retries, retuning, new producer or long lane.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "18e8549b18650c2f5820e26fd36aac0eb74fc891b077f21111f7bd99dcd58ea8",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "03cc1b35db7a710501ec9760ec08d8eb003f3da87877665ac4485cc7aad3d672"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "afc2d2b430ece2c45d61bc6fb6a63ab55cf669ca11867120afb9f5d574a5fe21",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "81abc8a54df72c16a91ec8af313dfafff889788f61d3ee4225d69f1fade421f5"
+  },
+  "expectedSourceUtf8Bytes": 58977,
+  "expectedSourceSha256": "0a8ff6409a214cebdae833c96ab9bc33f3a8c50adeb4ad3823ad4b51ae8b608c",
+  "expectedFixtureUtf8Bytes": 55723
+}
