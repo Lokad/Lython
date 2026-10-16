@@ -49,9 +49,8 @@ internal sealed partial class LythonRuntime
                         var start = _stack[first + 2];
                         var stop = _stack[first + 3];
                         var step = _stack[first + 4];
-                        if (asynchronous && receiver is PyInstance)
-                            await SetHeaderSubscriptAsync(receiver, CreateSliceValue(start, stop, step, slice.TargetSpan, _context),
-                                _stack[first], slice.TargetSpan, _context).ConfigureAwait(false);
+                        if (asynchronous)
+                            await ExecuteSliceAssignmentAsync(receiver, start, stop, step, _stack[first], slice.TargetSpan, _context).ConfigureAwait(false);
                         else ExecuteSliceAssignment(receiver, start, stop, step, _stack[first], slice.TargetSpan, _context);
                     }
                     finally { _stack.RemoveTail(5); }
@@ -184,8 +183,8 @@ internal sealed partial class LythonRuntime
             case SubscriptAssignmentTargetSyntax item:
                 var container = reads[item.Target];
                 var index = reads[item.Index];
-                return container is PyInstance instance
-                    ? asynchronous ? await GetUserItemAsync(instance, index, _context, span).ConfigureAwait(false) : GetUserItem(instance, index, _context, span)
+                return asynchronous
+                    ? await ReadLoweredSubscriptAsync(container, index, span, _context).ConfigureAwait(false)
                     : ReadSubscriptValue(container, index, span, _context);
             case SliceAssignmentTargetSyntax slice:
                 var sequence = reads[slice.Target];
@@ -197,7 +196,9 @@ internal sealed partial class LythonRuntime
                     return asynchronous ? await GetUserItemAsync(prepared.Receiver, prepared.Key, _context, span).ConfigureAwait(false)
                         : GetUserItem(prepared.Receiver, prepared.Key, _context, span);
                 }
-                return PyIndexing.ReadSlice(sequence, start, end, step, span, _context);
+                return asynchronous
+                    ? await ReadSliceValueAsync(sequence, start, end, step, span, _context).ConfigureAwait(false)
+                    : ReadSliceValue(sequence, start, end, step, span, _context);
             default: throw new InvalidOperationException("Prepared reads require an attribute or item target.");
         }
     }
@@ -233,6 +234,7 @@ internal sealed partial class LythonRuntime
                     if (asynchronous) await SetHeaderSubscriptAsync(sequence, key, value, span, _context).ConfigureAwait(false);
                     else SetSubscriptValue(sequence, key, value, span, _context);
                 }
+                else if (asynchronous) await ExecuteSliceAssignmentAsync(sequence, start, end, step, value, span, _context).ConfigureAwait(false);
                 else ExecuteSliceAssignment(sequence, start, end, step, value, span, _context);
                 break;
             default: throw new InvalidOperationException("Prepared stores require an attribute or item target.");

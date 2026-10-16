@@ -928,6 +928,12 @@ in that order. Each invalid bound fails before the next bound's `__index__`
 callback; a zero step fails before start/stop conversion or list-replacement
 iteration. `slice.indices()` validates its length before those bounds. Specialized
 non-sequence protocols, including worksheet cell ranges, retain their own keys.
+Native bound and `slice.indices()` length conversion resolve `__index__` through
+the type, ignoring instance-only overrides and `__getattr__`. Under `RunAsync`,
+slice expressions, assignment/deletion targets and `slice.indices()` await
+descriptor binding, index callbacks and list-replacement iteration. Colon syntax
+and explicit `slice(...)` keys use the same conversion and mutation helpers.
+Cancellation keeps their storage funded until those users unwind.
 
 Colon slices delivered to a user object's item methods retain the original
 start, stop and step objects without `__index__` coercion. A fresh guest-visible

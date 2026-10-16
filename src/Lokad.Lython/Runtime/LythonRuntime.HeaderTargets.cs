@@ -31,9 +31,7 @@ internal sealed partial class LythonRuntime
                 var start = slice.Start is null ? PyNone.Instance : await Read(slice.Start).ConfigureAwait(false);
                 var end = slice.End is null ? PyNone.Instance : await Read(slice.End).ConfigureAwait(false);
                 var step = slice.Step is null ? PyNone.Instance : await Read(slice.Step).ConfigureAwait(false);
-                if (sequence is PyInstance)
-                    await SetHeaderSubscriptAsync(sequence, CreateSliceValue(start, end, step, slice.Span, context), value, slice.Span, context).ConfigureAwait(false);
-                else ExecuteSliceAssignment(sequence, start, end, step, value, slice.Span, context);
+                await ExecuteSliceAssignmentAsync(sequence, start, end, step, value, slice.Span, context).ConfigureAwait(false);
                 break;
             case UnpackingAssignmentTargetGroupSyntax group:
             {
@@ -64,6 +62,11 @@ internal sealed partial class LythonRuntime
     private static async ValueTask SetHeaderSubscriptAsync(object receiver, object index, object value,
         LythonSourceSpan span, ExecutionContext context)
     {
+        if (receiver is PyList && index is PySlice slice)
+        {
+            await ExecuteSliceAssignmentAsync(receiver, slice.StartBound, slice.StopBound, slice.StepBound, value, span, context).ConfigureAwait(false);
+            return;
+        }
         if (receiver is PyInstance instance)
         {
             if (!instance.Type.TryLookupInMro("__setitem__", 0, out var raw, out _))

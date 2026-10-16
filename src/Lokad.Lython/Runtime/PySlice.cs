@@ -68,6 +68,13 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHas
     private sealed class SliceIndicesMethod(PySlice owner) : LythonRuntime.ICallable
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+
+        private async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+            LythonRuntime.ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
 
@@ -92,7 +99,7 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHas
                 throw new LythonRuntimeException("TypeError", "slice.indices() takes exactly one argument (" + positionals + " given)", span);
             }
 
-            var coercedLength = LythonRuntime.CoerceIndexProtocol(length!, context, span);
+            var coercedLength = await LythonRuntime.CoerceTypeIndexAsync(length, context, span, asynchronous).ConfigureAwait(false) ?? PyNone.Instance;
             BigInteger bigLength;
             if (coercedLength is int smallLength)
             {
@@ -111,8 +118,8 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHas
             // Huge lengths clamp to the addressable range like the other
             // bounded helpers; int-range behaviour stays exact.
             var intLength = bigLength > int.MaxValue ? int.MaxValue : (int)bigLength;
-            var (start, stop, step) = PyIndexing.CoerceSliceBounds(
-                owner.StartBound, owner.StopBound, owner.StepBound, context, span);
+            var (start, stop, step) = await LythonRuntime.CoerceSliceBoundsAsync(
+                owner.StartBound, owner.StopBound, owner.StepBound, context, span, asynchronous).ConfigureAwait(false);
             var bounds = PyIndexing.NormalizeSliceBounds(intLength, start, stop, step, span);
             return new PyTuple(
                 [(object)new BigInteger(bounds.Start), new BigInteger(bounds.End), new BigInteger(bounds.Step)],

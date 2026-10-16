@@ -530,18 +530,28 @@ internal sealed partial class LythonRuntime
         return PyIndexing.ReadIndex(target, index, span, context);
     }
 
-    private static void ExecuteSliceAssignment(
+    private static void ExecuteSliceAssignment(object target, object? start, object? end, object? step,
+        object value, LythonSourceSpan span, ExecutionContext context)
+        => ExecuteSliceAssignmentCoreAsync(target, start, end, step, value, span, context, false).GetAwaiter().GetResult();
+
+    private static ValueTask ExecuteSliceAssignmentAsync(object target, object? start, object? end, object? step,
+        object value, LythonSourceSpan span, ExecutionContext context)
+        => ExecuteSliceAssignmentCoreAsync(target, start, end, step, value, span, context, true);
+
+    private static async ValueTask ExecuteSliceAssignmentCoreAsync(
         object target,
         object? start,
         object? end,
         object? step,
         object value,
         LythonSourceSpan span,
-        ExecutionContext context)
+        ExecutionContext context, bool asynchronous)
     {
         if (target is PyInstance)
         {
-            SetSubscriptValue(target, CreateSliceValue(start, end, step, span, context), value, span, context);
+            var key = CreateSliceValue(start, end, step, span, context);
+            if (asynchronous) await SetHeaderSubscriptAsync(target, key, value, span, context).ConfigureAwait(false);
+            else SetSubscriptValue(target, key, value, span, context);
             return;
         }
 
@@ -553,38 +563,17 @@ internal sealed partial class LythonRuntime
         }
 
         // Complete bound validation before draining replacement values.
-        (start, end, step) = PyIndexing.CoerceSliceBounds(start, end, step, context, span);
+        (start, end, step) = await CoerceSliceBoundsAsync(start, end, step, context, span, asynchronous).ConfigureAwait(false);
 
         if (target is PyList list)
         {
             list.AttachMemoryGovernor(context.MemoryGovernor, span);
-            // The drained values array duplicates the retained content beside
-            // it while SetSlice runs; grow a transient reservation with the
-            // drain (mirroring the shared drains) and cover the final array,
-            // released on return.
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var collected = new List<object>();
-            var chargedCapacity = 0;
-            foreach (var item in ToSequence(value, span, context))
-            {
-                if (collected.Count == collected.Capacity)
-                {
-                    var predicted = collected.Capacity == 0 ? 4L : (long)collected.Capacity * 2L;
-                    scratch.Grow(checked(16L * (predicted - chargedCapacity)), span);
-                }
-
-                collected.Add(item);
-                if (collected.Capacity > chargedCapacity)
-                {
-                    scratch.Grow(16L * (collected.Capacity - chargedCapacity), span);
-                    chargedCapacity = collected.Capacity;
-                }
-            }
-
-            scratch.Grow(16L * collected.Count, span);
-            var values = collected.ToArray();
+            // Keep replacement backing funded alongside destination growth.
+            using var replacement = asynchronous
+                ? await PyIteration.MaterializeLeasedAsync(value, span, context).ConfigureAwait(false)
+                : PyIteration.MaterializeLeased(value, span, context);
             var bounds = PyIndexing.NormalizeSliceBounds(list.Count, start, end, step, span);
-            list.SetSlice(bounds, values, span);
+            list.SetSlice(bounds, replacement.Items, span);
             context.ObserveCollectionCount(list.Count, span);
             return;
         }
@@ -602,17 +591,23 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("TypeError", "Object does not support slice assignment.", span);
     }
 
-    private static void ExecuteSliceDeletion(
+    private static void ExecuteSliceDeletion(object target, object? start, object? end, object? step,
+        LythonSourceSpan span, ExecutionContext context)
+        => ExecuteSliceDeletionCoreAsync(target, start, end, step, span, context, false).GetAwaiter().GetResult();
+
+    private static async ValueTask ExecuteSliceDeletionCoreAsync(
         object target,
         object? start,
         object? end,
         object? step,
         LythonSourceSpan span,
-        ExecutionContext context)
+        ExecutionContext context, bool asynchronous)
     {
         if (target is PyInstance instance)
         {
-            InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(CreateSliceValue(start, end, step, span, context))], context, span);
+            var key = CreateSliceValue(start, end, step, span, context);
+            if (asynchronous) await ExecuteResolvedSubscriptDeletionAsync(instance, key, span, context).ConfigureAwait(false);
+            else InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(key)], context, span);
             return;
         }
         // Mappings delete colon slices as keys like CPython; bounds stay raw.
@@ -646,7 +641,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        (start, end, step) = PyIndexing.CoerceSliceBounds(start, end, step, context, span);
+        (start, end, step) = await CoerceSliceBoundsAsync(start, end, step, context, span, asynchronous).ConfigureAwait(false);
 
         if (target is PyList list)
         {

@@ -4,6 +4,11 @@ internal sealed partial class LythonRuntime
 {
     private static async ValueTask ExecuteResolvedSubscriptDeletionAsync(object target, object index, LythonSourceSpan span, ExecutionContext context)
     {
+        if (target is PyList && index is PySlice slice)
+        {
+            await ExecuteSliceDeletionAsync(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context).ConfigureAwait(false);
+            return;
+        }
         if (target is not PyInstance instance)
         {
             ExecuteResolvedSubscriptDeletion(target, index, span, context);
@@ -18,10 +23,5 @@ internal sealed partial class LythonRuntime
     }
 
     private static ValueTask ExecuteSliceDeletionAsync(object target, object? start, object? end, object? step, LythonSourceSpan span, ExecutionContext context)
-    {
-        if (target is PyInstance)
-            return ExecuteResolvedSubscriptDeletionAsync(target, CreateSliceValue(start, end, step, span, context), span, context);
-        ExecuteSliceDeletion(target, start, end, step, span, context);
-        return ValueTask.CompletedTask;
-    }
+        => ExecuteSliceDeletionCoreAsync(target, start, end, step, span, context, true);
 }

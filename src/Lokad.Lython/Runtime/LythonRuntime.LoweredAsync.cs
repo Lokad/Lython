@@ -419,9 +419,7 @@ internal sealed partial class LythonRuntime
             case LoweredSubscriptAugmentedAssignmentTarget subscript:
                 var subscriptTarget = await EvaluateLoweredExpressionAsync(subscript.Receiver, context).ConfigureAwait(false);
                 var index = await EvaluateLoweredExpressionAsync(subscript.Index, context).ConfigureAwait(false);
-                var subscriptValue = subscriptTarget is PyInstance subscriptInstance
-                    ? await GetUserItemAsync(subscriptInstance, index, context, subscript.Span).ConfigureAwait(false)
-                    : ReadSubscriptValue(subscriptTarget, index, subscript.Span, context);
+                var subscriptValue = await ReadLoweredSubscriptAsync(subscriptTarget, index, subscript.Span, context).ConfigureAwait(false);
                 return new AugmentedAssignmentTargetReference(
                     subscriptValue,
                     value => SetSubscriptValue(subscriptTarget, index, value, subscript.Span, context),
@@ -440,14 +438,15 @@ internal sealed partial class LythonRuntime
                     : await EvaluateLoweredExpressionAsync(slice.Step, context).ConfigureAwait(false);
                 var sliceIndex = sliceTarget is PyInstance
                     ? CreateSliceValue(start, end, step, slice.Span, context)
-                    : new PySlice(start ?? PyNone.Instance, end ?? PyNone.Instance, step ?? PyNone.Instance);
+                    : (object)PyNone.Instance;
                 var sliceValue = sliceTarget is PyInstance sliceInstance
                     ? await GetUserItemAsync(sliceInstance, sliceIndex, context, slice.Span).ConfigureAwait(false)
-                    : PyIndexing.ReadSlice(sliceTarget, start, end, step, slice.Span, context);
+                    : await ReadSliceValueAsync(sliceTarget, start, end, step, slice.Span, context).ConfigureAwait(false);
                 return new AugmentedAssignmentTargetReference(
                     sliceValue,
                     value => ExecuteSliceAssignment(sliceTarget, start, end, step, value, slice.Span, context),
-                    sliceTarget is PyInstance ? value => SetHeaderSubscriptAsync(sliceTarget, sliceIndex, value, slice.Span, context) : null);
+                    sliceTarget is PyInstance ? value => SetHeaderSubscriptAsync(sliceTarget, sliceIndex, value, slice.Span, context)
+                        : value => ExecuteSliceAssignmentAsync(sliceTarget, start, end, step, value, slice.Span, context));
 
             case LoweredMemberAugmentedAssignmentTarget member:
                 var memberTarget = await EvaluateLoweredExpressionAsync(member.Receiver, context).ConfigureAwait(false);
@@ -484,15 +483,7 @@ internal sealed partial class LythonRuntime
         var start = startExpression is null ? null : await EvaluateLoweredExpressionAsync(startExpression, context).ConfigureAwait(false);
         var end = endExpression is null ? null : await EvaluateLoweredExpressionAsync(endExpression, context).ConfigureAwait(false);
         var step = stepExpression is null ? null : await EvaluateLoweredExpressionAsync(stepExpression, context).ConfigureAwait(false);
-        if (target is PyInstance)
-        {
-            var key = CreateSliceValue(start, end, step, statement.Span, context);
-            await SetHeaderSubscriptAsync(target, key, value, statement.Span, context).ConfigureAwait(false);
-        }
-        else
-        {
-            ExecuteSliceAssignment(target, start, end, step, value, statement.Span, context);
-        }
+        await ExecuteSliceAssignmentAsync(target, start, end, step, value, statement.Span, context).ConfigureAwait(false);
     }
 
     private static async ValueTask ExecuteLoweredSubscriptAssignmentAsync(

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resolve native slice bounds and slice.indices() lengths through type-level __index__ hooks, awaiting descriptor binding, callbacks and replacement iteration under RunAsync. Share colon/explicit-key and sync/async mutation helpers; replace the duplicated slice drain and final array copy with the existing owned lease while preserving overlap admission, cancellation and retained aliases.
+
 - Compile ordinary slice-store receivers and bounds into the current frame. Hold five operands through the existing mutation helpers and awaited user setters; remove the final general target opcode, operand kind, binding table, builder plumbing and VM handlers. Preserve raw bounds, aliases, cancellation, diagnostics and native storage preflights.
 
 - Validate native slice bounds in Python's step/start/stop order, including reads, list assignment/deletion and slice.indices(). Reject invalid or zero steps before later callbacks and replacement iteration; preserve raw user/mapping and worksheet keys. Remove the empty legacy slice-result tracking hook.

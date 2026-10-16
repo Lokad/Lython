@@ -713,6 +713,8 @@ internal sealed partial class LythonRuntime
         {
             return await GetUserItemAsync(instance, index, context, span).ConfigureAwait(false);
         }
+        if (index is PySlice slice && PyIndexing.IsNativeSliceTarget(target))
+            return await ReadSliceValueAsync(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context).ConfigureAwait(false);
         if (target is PyType type && type.TryGetMember("__type_params__", out _))
         {
             return await CreateGenericSubscriptAsync(target, index, context, span, true).ConfigureAwait(false);

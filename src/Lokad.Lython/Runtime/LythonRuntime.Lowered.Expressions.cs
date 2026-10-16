@@ -266,12 +266,19 @@ internal sealed partial class LythonRuntime
             ? GetUserItem(instance, CreateSliceValue(start, end, step, span, context), context, span)
             : PyIndexing.ReadSlice(target, start, end, step, span, context);
 
-    private static ValueTask<object> ReadSliceValueAsync(object target, object? start, object? end, object? step, LythonSourceSpan span, ExecutionContext context)
-        => target is ElementTreeModule.Element element
-            ? ElementTreeModule.ReadSliceAsync(element, start, end, step, context, span, true)
-            : target is PyInstance instance
-            ? GetUserItemAsync(instance, CreateSliceValue(start, end, step, span, context), context, span)
-            : new(PyIndexing.ReadSlice(target, start, end, step, span, context));
+    private static async ValueTask<object> ReadSliceValueAsync(object target, object? start, object? end, object? step, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (target is ElementTreeModule.Element element)
+            return await ElementTreeModule.ReadSliceAsync(element, start, end, step, context, span, true).ConfigureAwait(false);
+        if (target is PyInstance instance)
+            return await GetUserItemAsync(instance, CreateSliceValue(start, end, step, span, context), context, span).ConfigureAwait(false);
+        if (PyIndexing.IsNativeSliceTarget(target))
+        {
+            (start, end, step) = await CoerceSliceBoundsAsync(start, end, step, context, span, true).ConfigureAwait(false);
+            return PyIndexing.ReadSliceCore(target, start, end, step, span, context);
+        }
+        return PyIndexing.ReadSlice(target, start, end, step, span, context);
+    }
 
     private static object ResolveLoweredMember(LoweredMemberExpression member, ExecutionContext context)
     {

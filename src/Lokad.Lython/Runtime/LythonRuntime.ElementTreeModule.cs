@@ -266,9 +266,7 @@ internal sealed partial class LythonRuntime
         internal static async ValueTask<object> ReadSliceAsync(Element target, object? start, object? end,
             object? step, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            start = await CoerceTypeIndexAsync(start, context, span, asynchronous).ConfigureAwait(false);
-            end = await CoerceTypeIndexAsync(end, context, span, asynchronous).ConfigureAwait(false);
-            step = await CoerceTypeIndexAsync(step, context, span, asynchronous).ConfigureAwait(false);
+            (start, end, step) = await CoerceSliceBoundsAsync(start, end, step, context, span, asynchronous).ConfigureAwait(false);
             var result = (PyList)target.GetSlice(PyIndexing.SliceIndices(target.Length, start, end, step, span));
             return result;
         }

@@ -138,7 +138,8 @@ public sealed class LoweredAugmentedTargetBoundaryTests(ITestOutputHelper output
             "member" => [CallSpan, CallSpan, new(107, 17, 9, 3), new(107, 6, 9, 3), new(123, 1, 9, 19)],
             "index" => [CallSpan, CallSpan, new(107, 17, 9, 3), new(107, 5, 9, 3), new(113, 5, 9, 9), new(123, 1, 9, 19)],
             _ => [CallSpan, CallSpan, new(107, 15, 9, 3), new(107, 5, 9, 3), new(119, 3, 9, 15),
-                new(120, 1, 9, 16), new(119, 3, 9, 15), new(107, 15, 9, 3), new(107, 8, 9, 3), new(107, 8, 9, 3)]
+                new(120, 1, 9, 16), new(119, 3, 9, 15), new(107, 15, 9, 3), new(107, 8, 9, 3), new(107, 8, 9, 3),
+                new(107, 8, 9, 3), new(107, 8, 9, 3)]
         };
         foreach (var asynchronous in new[] { false, true })
         {
@@ -167,8 +168,8 @@ public sealed class LoweredAugmentedTargetBoundaryTests(ITestOutputHelper output
         }
         Assert.Equal(snapshots[0], snapshots[1]);
         Assert.Equal(allSpans[0], allSpans[1]);
-        // Pinned from the pre-prototype runtime, independently of its target
-        // representation: exact checks/spans and retained slice funding.
+        // Keep exact checks/spans and retained slice funding pinned. The shared
+        // slice-replacement drain includes its two per-element checkpoints.
         Assert.Equal((long)expectedSpans.Length, snapshots[0].Steps);
         if (form == "slice") Assert.True(snapshots[0].Fee > 0);
         else Assert.Equal(0, snapshots[0].Fee);

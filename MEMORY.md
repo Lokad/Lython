@@ -114,6 +114,12 @@ RHS, receiver, start, stop and step. Native list replacement keeps its existing
 temporary-capacity and destination-overlap preflights; user/mapping slice keys
 keep their shell admission. No per-store owner or read dictionary is added.
 Additional header instructions can change narrow memory/fuel failure thresholds.
+Native list-slice replacement uses the existing owned iteration lease through
+destination mutation, including suspended iterator callbacks. It no longer keeps
+an extra final array or duplicates the slice-specific capacity-growth accounting.
+The lease and destination replacement remain funded together. Shared capacity
+charges can admit previously denied narrow budgets; shared collection-count checks
+can reject earlier. Neither change refunds retained aliases or depends on CLR GC.
 
 Host command requests carry the active budget in
 `LythonSubprocessRequest.MemoryBudget`. A cooperating dispatcher borrows it,

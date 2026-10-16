@@ -176,11 +176,20 @@ internal static class PyIndexing
 
         // Native sequences validate integer bounds. Other slice protocols
         // (for example worksheet cell ranges) receive their own raw keys.
-        if (context is not null && (target is IPyIndexableValue || target is PyRange || PyStringOps.TryAsString(target, out _)))
+        if (context is not null && IsNativeSliceTarget(target))
         {
             (start, end, step) = CoerceSliceBounds(start, end, step, context, span);
         }
 
+        return ReadSliceCore(target, start, end, step, span, context);
+    }
+
+    internal static bool IsNativeSliceTarget(object target)
+        => target is IPyIndexableValue || target is PyRange || PyStringOps.TryAsString(target, out _);
+
+    internal static object ReadSliceCore(object target, object? start, object? end, object? step,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext? context)
+    {
         var result = target switch
         {
             IPySliceableValue value => value.GetSlice(start, end, step, span),
@@ -200,21 +209,10 @@ internal static class PyIndexing
 
     internal static (object? Start, object? End, object? Step) CoerceSliceBounds(
         object? start, object? end, object? step, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        // Python validates the step first, then each remaining bound before
-        // invoking the next callback or consuming an assignment's replacement.
-        step = CoerceSliceBound(step, context, span);
-        if (NormalizeSliceBound(step, span) is { IsZero: true })
-            throw RuntimeErrors.Value("slice step cannot be zero", span);
-        start = CoerceSliceBound(start, context, span);
-        _ = NormalizeSliceBound(start, span);
-        end = CoerceSliceBound(end, context, span);
-        _ = NormalizeSliceBound(end, span);
-        return (start, end, step);
-    }
+        => LythonRuntime.CoerceSliceBoundsAsync(start, end, step, context, span, false).GetAwaiter().GetResult();
 
     internal static object? CoerceSliceBound(object? bound, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        => bound is null ? null : LythonRuntime.CoerceIndexProtocol(bound, context, span);
+        => LythonRuntime.CoerceTypeIndexAsync(bound, context, span, false).GetAwaiter().GetResult();
 
     public static int NormalizeIndex(object? index, int length, LythonSourceSpan span)
         => NormalizeIndex(index, length, span, IndexTargetName.Unnamed);
@@ -403,7 +401,7 @@ internal static class PyIndexing
         return counter.GetCount(key);
     }
 
-    private static BigInteger? NormalizeSliceBound(object? value, LythonSourceSpan span)
+    internal static BigInteger? NormalizeSliceBound(object? value, LythonSourceSpan span)
     {
         return value switch
         {

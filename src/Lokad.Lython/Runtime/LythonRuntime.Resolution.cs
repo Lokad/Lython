@@ -350,7 +350,7 @@ internal sealed partial class LythonRuntime
 
     // Shared native sequence/XML conversion: implicit index hooks come from the
     // type, and may suspend during descriptor binding or the call itself.
-    private static async ValueTask<object?> CoerceTypeIndexAsync(object? index, ExecutionContext context,
+    internal static async ValueTask<object?> CoerceTypeIndexAsync(object? index, ExecutionContext context,
         LythonSourceSpan span, bool asynchronous)
     {
         if (index is not PyInstance instance) return index;
@@ -366,6 +366,19 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Type("__index__ returned non-int (type " +
                 UnboundTypeMethod.PythonTypeName(result, context) + ")", span);
         return integer;
+    }
+
+    internal static async ValueTask<(object? Start, object? End, object? Step)> CoerceSliceBoundsAsync(
+        object? start, object? end, object? step, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+    {
+        step = await CoerceTypeIndexAsync(step, context, span, asynchronous).ConfigureAwait(false);
+        if (PyIndexing.NormalizeSliceBound(step, span) is { IsZero: true })
+            throw RuntimeErrors.Value("slice step cannot be zero", span);
+        start = await CoerceTypeIndexAsync(start, context, span, asynchronous).ConfigureAwait(false);
+        _ = PyIndexing.NormalizeSliceBound(start, span);
+        end = await CoerceTypeIndexAsync(end, context, span, asynchronous).ConfigureAwait(false);
+        _ = PyIndexing.NormalizeSliceBound(end, span);
+        return (start, end, step);
     }
 
     internal static object CoerceIndexProtocol(object index, ExecutionContext context, LythonSourceSpan span)
