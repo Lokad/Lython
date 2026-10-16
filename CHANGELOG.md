@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile ordinary member-store receivers in the caller frame and remove their general target-read evaluation. Keep RHS and receiver in two existing operand slots through awaited mutation, then clear them in finally; preserve chained effects, target spans and retained aliases.
+
 - Await user-descriptor method binding for reads, writes and deletion under RunAsync. A descriptor slot implemented by an async-capable descriptor can suspend before its resulting callable runs; synchronous execution and absent/noncallable errors keep their existing paths.
 
 - Forget pre-try dictionary key facts before computed exception headers and handlers. Accept valid reads after partial protected-body mutations, including aliases and nested mappings; retain definite diagnostics for fresh missing keys and normal runtime key checks.

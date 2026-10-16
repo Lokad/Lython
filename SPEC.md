@@ -926,12 +926,13 @@ backing capacity and replacement overlap have separate storage estimates.
 
 ### 9.3.1 Assignment Semantics
 
-Eligible executable subscript stores evaluate the RHS, receiver and key in that
-order through ordinary instructions. Their three operands remain available until
-the shared mutation helper completes, including actual asynchronous suspension.
+Eligible executable member and subscript stores evaluate the RHS, receiver and,
+for subscripts, key in that order through ordinary instructions. Their two or
+three operands remain available until the shared mutation helper completes,
+including actual asynchronous suspension.
 Chained assignments still store left to right and retain earlier mutations if a
 later target fails. Statement checkpoints and target diagnostics retain their own
-spans. Member, unpacking, augmented and explicitly yielding target routes retain
+spans. Unpacking, augmented and explicitly yielding target routes retain
 their established handling. Additional instruction checkpoints can change opt-in
 fuel thresholds; native allocation admission still precedes mutation.
 

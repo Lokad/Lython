@@ -12,6 +12,22 @@ internal sealed partial class LythonRuntime
         {
             switch (operation)
             {
+                case ExecutableStoreMember member:
+                {
+                    var first = _stack.Count - 2;
+                    try
+                    {
+                        if (asynchronous)
+                        {
+                            if (!await PyMemberAccess.TryAssignAsync(_stack[first + 1], member.MemberName,
+                                _stack[first], _context, member.TargetSpan).ConfigureAwait(false))
+                                throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", member.TargetSpan);
+                        }
+                        else SetMemberValue(_stack[first + 1], member.MemberName, _stack[first], member.TargetSpan, _context);
+                    }
+                    finally { _stack.RemoveTail(2); }
+                    break;
+                }
                 case ExecutableStoreSubscript store:
                 {
                     var first = _stack.Count - 3;

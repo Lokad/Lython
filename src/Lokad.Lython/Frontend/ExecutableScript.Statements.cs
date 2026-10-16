@@ -213,16 +213,21 @@ internal sealed partial class ExecutableScript
                 CompileStoreBoundName(name.Name, span, block);
                 return block;
             }
-            if (target is SubscriptAssignmentTargetSyntax item &&
-                !(_generator && AssignmentTargetFacts.Reads(target).Any(GeneratorSyntaxFacts.ContainsYield)))
+            if (_generator && AssignmentTargetFacts.Reads(target).Any(GeneratorSyntaxFacts.ContainsYield))
+                return CompileSuspendingStoreTarget(target, span, block);
+            if (target is SubscriptAssignmentTargetSyntax item)
             {
                 block = CompileExpression(LoweredScript.LowerExpression(item.Target), block);
                 block = CompileExpression(LoweredScript.LowerExpression(item.Index), block);
                 EmitOperation(new ExecutableStoreSubscript(item.Span), span, block);
                 return block;
             }
-            if (_generator && AssignmentTargetFacts.Reads(target).Any(GeneratorSyntaxFacts.ContainsYield))
-                return CompileSuspendingStoreTarget(target, span, block);
+            if (target is MemberAssignmentTargetSyntax member)
+            {
+                block = CompileExpression(LoweredScript.LowerExpression(member.Target), block);
+                EmitOperation(new ExecutableStoreMember(member.MemberName, member.Span), span, block);
+                return block;
+            }
             AddInstruction(block, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(AssignmentTargetFacts.ToLoop(target), span), span));
             return block;
         }
