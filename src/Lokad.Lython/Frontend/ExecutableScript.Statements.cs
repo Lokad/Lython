@@ -153,6 +153,16 @@ internal sealed partial class ExecutableScript
                     return currentBlock;
 
                 case LoweredAugmentedAssignmentStatement augmented:
+                    if (augmented.Target is LoweredSubscriptAugmentedAssignmentTarget augmentedItem)
+                    {
+                        currentBlock = CompileExpression(augmentedItem.Receiver, currentBlock);
+                        currentBlock = CompileExpression(augmentedItem.Index, currentBlock);
+                        EmitOperation(new ExecutableReadRetainedSubscript(), augmentedItem.Span, currentBlock);
+                        currentBlock = CompileExpression(augmented.Expression, currentBlock);
+                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
+                        EmitOperation(new ExecutableStoreSubscript(augmentedItem.Span, ValueLast: true), augmented.Span, currentBlock);
+                        return currentBlock;
+                    }
                     if (augmented.Target is LoweredMemberAugmentedAssignmentTarget augmentedMember)
                     {
                         currentBlock = CompileExpression(augmentedMember.Receiver, currentBlock);
@@ -228,8 +238,6 @@ internal sealed partial class ExecutableScript
                     block = CompileStoreTarget(AssignmentTargetFacts.FromUnpacking(child), child.Span, block);
                 return block;
             }
-            if (_generator && AssignmentTargetFacts.Reads(target).Any(GeneratorSyntaxFacts.ContainsYield))
-                return CompileSuspendingStoreTarget(target, span, block);
             if (target is SubscriptAssignmentTargetSyntax item)
             {
                 block = CompileExpression(LoweredScript.LowerExpression(item.Target), block);
@@ -237,6 +245,8 @@ internal sealed partial class ExecutableScript
                 EmitOperation(new ExecutableStoreSubscript(item.Span), span, block);
                 return block;
             }
+            if (_generator && AssignmentTargetFacts.Reads(target).Any(GeneratorSyntaxFacts.ContainsYield))
+                return CompileSuspendingStoreTarget(target, span, block);
             if (target is MemberAssignmentTargetSyntax member)
             {
                 block = CompileExpression(LoweredScript.LowerExpression(member.Target), block);

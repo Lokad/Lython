@@ -971,6 +971,14 @@ operation consumes the updated value last, resolving the current setter after th
 RHS. Ordinary and yielding member updates use executable instructions without
 prepared read dictionaries or fallback-only local mirroring. Required local
 introspection and other fallback routes retain their own namespace behavior.
+Subscript augmented assignments similarly retain the receiver and raw key in two
+frame slots, read the old value, then evaluate the RHS and apply the in-place
+operator. The shared three-slot store consumes the result last. Receiver/key
+expressions run once; native indices are converted again at store time, after the
+RHS, while mappings and user handlers keep the original key. Ordinary and yielding
+forms share this path without prepared read dictionaries or fallback-only mirroring.
+In-place mutations remain visible if the subsequent store fails. Required slice
+and other lowered routes retain their existing behavior.
 Chained assignments still store left to right and retain earlier mutations if a
 later target fails. Statement checkpoints and target diagnostics retain their own
 spans. Augmented and explicitly yielding target routes retain

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile ordinary and yielding subscript augmented assignments using captured receiver/key frame slots and the shared value-last store. Remove their statement fallback and prepared read/store branches; route yielding ordinary subscript stores through the same helper. Preserve key identity, native re-conversion after the RHS, in-place aliases, awaited callbacks, admission and cleanup.
+
 - Call user descriptor getter slots raw with descriptor, instance and owner, matching Python's staticmethod/callable behavior and rejecting property/classmethod slots before side effects. Reuse ternary invocation and preserve valid setter/deleter binding, async instance callbacks, cancellation and retained results. Recognize property objects in builtin type reporting.
 
 - Resolve implicit user __getitem__ through type-level slots, preserving ordinary explicit attribute access and callable/non-callable error distinctions. Share synchronous/asynchronous binding and existing unary invocation, await valid descriptors under RunAsync, and preserve raw keys, aliases, cancellation and diagnostics.

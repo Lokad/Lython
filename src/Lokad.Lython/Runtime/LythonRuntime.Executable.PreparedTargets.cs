@@ -30,14 +30,31 @@ internal sealed partial class LythonRuntime
                     finally { _stack.RemoveTail(2); }
                     break;
                 }
+                case ExecutableReadRetainedSubscript:
+                {
+                    var first = _stack.Count - 2;
+                    try
+                    {
+                        // Keep the captured receiver and raw key through RHS and store.
+                        var value = asynchronous
+                            ? await ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], span, _context).ConfigureAwait(false)
+                            : ReadSubscriptValue(_stack[first], _stack[first + 1], span, _context);
+                        PushObserved(value, span);
+                    }
+                    catch { _stack.RemoveTail(_stack.Count - first); throw; }
+                    break;
+                }
                 case ExecutableStoreSubscript store:
                 {
                     var first = _stack.Count - 3;
+                    var receiver = _stack[first + (store.ValueLast ? 0 : 1)];
+                    var key = _stack[first + (store.ValueLast ? 1 : 2)];
+                    var value = _stack[first + (store.ValueLast ? 2 : 0)];
                     try
                     {
                         if (asynchronous)
-                            await SetHeaderSubscriptAsync(_stack[first + 1], _stack[first + 2], _stack[first], store.TargetSpan, _context).ConfigureAwait(false);
-                        else SetSubscriptValue(_stack[first + 1], _stack[first + 2], _stack[first], store.TargetSpan, _context);
+                            await SetHeaderSubscriptAsync(receiver, key, value, store.TargetSpan, _context).ConfigureAwait(false);
+                        else SetSubscriptValue(receiver, key, value, store.TargetSpan, _context);
                     }
                     finally { _stack.RemoveTail(3); }
                     break;
@@ -175,12 +192,6 @@ internal sealed partial class LythonRuntime
     {
         switch (target)
         {
-            case SubscriptAssignmentTargetSyntax item:
-                var container = reads[item.Target];
-                var index = reads[item.Index];
-                return asynchronous
-                    ? await ReadLoweredSubscriptAsync(container, index, span, _context).ConfigureAwait(false)
-                    : ReadSubscriptValue(container, index, span, _context);
             case SliceAssignmentTargetSyntax slice:
                 var sequence = reads[slice.Target];
                 var start = slice.Start is null ? PyNone.Instance : reads[slice.Start];
@@ -208,10 +219,6 @@ internal sealed partial class LythonRuntime
                 var assigned = asynchronous ? await PyMemberAccess.TryAssignAsync(receiver, member.MemberName, value, _context, span).ConfigureAwait(false)
                     : PyMemberAccess.TryAssign(receiver, member.MemberName, value, _context, span);
                 if (!assigned) throw RuntimeErrors.Type("Object does not support attribute assignment", span);
-                break;
-            case SubscriptAssignmentTargetSyntax item:
-                if (asynchronous) await SetHeaderSubscriptAsync(reads[item.Target], reads[item.Index], value, span, _context).ConfigureAwait(false);
-                else SetSubscriptValue(reads[item.Target], reads[item.Index], value, span, _context);
                 break;
             case SliceAssignmentTargetSyntax slice:
                 var sequence = reads[slice.Target];
