@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 generator-binding correction](results/2026-10-16-generator-bindings/README.md)
+removes per-yield binding scans, preserving walrus writes through rejected filters,
+errors and suspended captured cells. One unchanged warm numeric reduction observed
+4.919 → 4.077 ms (17.1% lower median), CPython 0.5695 ms; spreads
+0.64%/1.11%/0.22%. This is an unqualified single diagnostic; generator-expression
+bodies remain lowered. Frozen sources match, seven workers/fixtures are gone,
+services inactive and lease free. Failed CRLF shell setup stopped before timing;
+its evidence is retained. No repeat, retuning, new producer or full lane.
+
 The [2026-10-16 terminal-admission correction](results/2026-10-16-terminal-admission/README.md)
 ends the command after refused admission while preserving native cleanup,
 retained funding and later commands. One unchanged complete JSON aggregation

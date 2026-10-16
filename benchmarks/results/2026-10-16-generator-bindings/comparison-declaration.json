@@ -1,0 +1,32 @@
+{
+  "baselineRevision": "b387be6dc3fbeacdbd787dccddf7391da1ea21b3",
+  "candidateRevision": "569a653a49c1aba9663c2197ab4984aa0f43eae1",
+  "caseId": "math.dyadic-fsum.large",
+  "lane": "warm",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm public Run over unchanged math.fsum generator expression; fresh execution state/output validation and prior-result cleanup. Compilation/startup excluded. G0 removes per-yield propagation; generator bodies remain lowered.",
+  "stoppingRule": "One existing seconds-long micro; no retuning, repeat capture, new producer or full lane.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "b26e081c7d563b6cbc30b3d78b01efc89d6c6b2f9a0a8d2e542f23ba85bc9982",
+    "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+    "sourceArchiveSha256": "e1a686d38127828b4dc0e051117b09cd7b7ccbeffaa9d3f87c08f297c44b4f8b"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "2234148151ada747ff892e7735d0a0d4ff71ad393f93daec333d0112d38954c2",
+    "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+    "sourceArchiveSha256": "b6c5296b509e186b7b32de2fb2e6e3d03f6592d90b8044a20b3dee295f1b564b"
+  },
+  "setupCorrection": {
+    "cause": "PowerShell-hosted Python wrote CRLF shell scripts; Bash rejected pipefail before checkout/build/verification. An inactive collected unit lookup was initially misread as success; receipt preflight prevented any timing.",
+    "originalCrLfCounts": {
+      "prepare.sh": 29,
+      "micro.sh": 15
+    },
+    "action": "Preserve original scripts/journal; new LF-only prepare/micro scripts, explicit preparation EXIT receipt, and require correctness/source/cleanup proof before the one capture."
+  }
+}

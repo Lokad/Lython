@@ -1,0 +1,4 @@
+Oct 16 11:16:29 lython-bench systemd[1]: Started lython-generator-g0-prepare-20261016.service - /bin/bash /home/lokad/lython-bench-checks/generator-g0-20261016/prepare.sh.
+Oct 16 11:16:29 lython-bench bash[2378015]: [109B blob data]
+Oct 16 11:16:29 lython-bench systemd[1]: lython-generator-g0-prepare-20261016.service: Main process exited, code=exited, status=2/INVALIDARGUMENT
+Oct 16 11:16:29 lython-bench systemd[1]: lython-generator-g0-prepare-20261016.service: Failed with result 'exit-code'.

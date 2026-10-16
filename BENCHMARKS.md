@@ -14,6 +14,7 @@
 | Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | Historical warm diagnostic; elapsed change within spread |
 | Branch/integer loop [AE], warm `RunAsync` | 16,384 iterations; modulo/comparison/add/subtract | 6.321 ms | 0.9599 ms | — | One warm async diagnostic; completed host operations; unqualified |
 | Instance-method accumulator [AP], warm `Run` | 2,048 calls; construct, update field and print | 1.144 ms | 0.11515 ms | — | Short diagnostic at 58aece73; no improvement established; candidate median 2.8% higher |
+| Generator-expression numeric reduction [AV], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 4.077 ms | 0.5695 ms | — | One seven-round diagnostic at 569a653a; unqualified; bodies remain lowered |
 
 These representative snapshots come from the named revisions below; they are
 not measurements of today's HEAD. Inconclusive cases remain visible. See
@@ -41,6 +42,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| AV | 2026-10-16 | 569a653a; immediate generator bindings and captured-cell resumption | [Generator reduction, correctness and single diagnostic](benchmarks/results/2026-10-16-generator-bindings/README.md) |
 | AF | 2026-10-15 | 654b4f5a; two identical Lython controls, freshly compiled configuration job | [Compile-to-result boundary, controls and independent file goldens](benchmarks/results/2026-10-15-config-fresh/README.md) |
 | C | 2026-10-14 | f95fb734, governed runtime and worker ownership; parser candidate rejected | [Complete CSV diagnostic](benchmarks/results/2026-10-14-representative-csv/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-csv/micro.json) |
 | AN | 2026-10-16 | 7caf4833; three frozen compiler/runtime files on a5a96af2; both roles include the type-slot mutation prerequisite | [Executable subscript headers, correctness and inconclusive complete-job timing](benchmarks/results/2026-10-16-executable-subscript-stores/README.md) |
@@ -106,6 +108,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Immediate generator bindings, 2026-10-16 | b387be6d → 569a653a; unchanged numeric reduction | 17.1% lower median: 4.919 → 4.077 ms in one short diagnostic | [Per-yield scan removal and preserved semantics](benchmarks/results/2026-10-16-generator-bindings/README.md) |
 | Terminal admission, 2026-10-16 | 159cf7d4 → ae37d1f9; unchanged complete JSON aggregation | Correctness change; no speed change established: 9.713 → 9.492 ms, within baseline spread | [Command failure, ownership cleanup and short diagnostic](benchmarks/results/2026-10-16-terminal-admission/README.md) |
 | Fixed plain builtin definitions, 2026-10-16 | 66420bd6 → a2653a61; empty warm invocation control | No improvement established: 23.318 → 23.445 µs; 0.5% higher median within spread | [Bounded metadata reuse, isolation and control limits](benchmarks/results/2026-10-16-builtin-setup/README.md) |
 | UTF-8 JSON numeric tokens, 2026-10-16 | 09f44e94 → dc950cde; unchanged complete aggregation | No improvement established: 9.814 → 9.587 ms; 2.3% change within baseline spread | [Shared conversion/preflight and retained hook text](benchmarks/results/2026-10-16-json-utf8-numbers/README.md) |
