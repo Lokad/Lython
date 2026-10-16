@@ -91,10 +91,7 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
         }
 
         var hash = new HashCode();
-        foreach (var value in _bytes)
-        {
-            hash.Add(value);
-        }
+        hash.AddBytes(_bytes);
 
         var computed = hash.ToHashCode();
         _hashCode = computed;

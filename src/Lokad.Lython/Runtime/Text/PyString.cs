@@ -486,10 +486,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         }
 
         var hash = new HashCode();
-        foreach (var b in _utf8)
-        {
-            hash.Add(b);
-        }
+        hash.AddBytes(_utf8);
 
         var computed = hash.ToHashCode();
         _hashCode = computed;

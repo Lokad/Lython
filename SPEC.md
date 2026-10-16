@@ -1572,6 +1572,12 @@ The builtin environment must include exactly the following builtins and builtin 
 
 No builtin outside this set is supported unless it is explicitly added elsewhere in this specification.
 
+`hash()` and builtin `__hash__` members agree with dictionary and set key hashing.
+Equal strings and equal bytes have equal hashes within a process. Their numeric
+hashes are implementation details: they may differ from CPython and change across
+processes or Lython versions. Do not persist these values as stable identifiers;
+use an appropriate `hashlib` digest when a stable content digest is required.
+
 `property(fget=None, fset=None, fdel=None, doc=None)` supports all four positional
 or keyword arguments. Its readonly `fget`, `fset` and `fdel` metadata retains the
 original accessor objects, including `None`. Construction accepts non-callable
