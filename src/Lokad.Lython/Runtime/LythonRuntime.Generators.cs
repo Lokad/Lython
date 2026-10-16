@@ -119,66 +119,115 @@ internal sealed partial class LythonRuntime
         }
         public bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
-            var result = AdvanceAsync(PyNone.Instance, null, false).GetAwaiter().GetResult();
+            var result = Advance(PyNone.Instance, null);
             value = result.HasValue ? result.Value : PyNone.Instance;
             return result.HasValue;
         }
-        public ValueTask<PyIterationResult> TryMoveNextAsync() => AdvanceAsync(PyNone.Instance, null, true);
+        public ValueTask<PyIterationResult> TryMoveNextAsync() => AdvanceAsync(PyNone.Instance, null);
 
-        private async ValueTask<PyIterationResult> AdvanceAsync(object sent, LythonRuntimeException? injected, bool asynchronous)
+        private PyIterationResult Advance(object sent, LythonRuntimeException? injected)
         {
-            if (_running) throw new LythonRuntimeException("ValueError", "generator already executing", _span);
-            if (!_started && sent is not PyNone)
-                throw new LythonRuntimeException("TypeError", "can't send non-None value to a just-started generator", _span);
-            if (_completed) { ReturnValue = PyNone.Instance; if (injected is not null) throw injected; return PyIterationResult.End; }
-            if (!_started && injected is not null) { await CompleteAsync(asynchronous).ConfigureAwait(false); throw injected; }
+            if (!CanAdvance(sent, injected)) return PyIterationResult.End;
+            if (!_started && injected is not null) { CompleteSynchronously(); throw injected; }
             var frame = _frame!;
             var interpreter = _interpreter!;
             var previousSlots = frame.CurrentExecutableFrame;
             var previousException = frame.Services.CurrentException;
-            var functionEntered = false;
-            var interpreterEntered = false;
+            var entered = false;
             try
             {
-                frame.EnterFunctionCall(_span);
-                functionEntered = true;
-                frame.EnterInterpreterFrame(_span);
-                interpreterEntered = true;
-                _running = true;
-                frame.EnterExecutableSlots(interpreter);
-                interpreter.SetCallerException(previousException);
-                frame.Services.SetCurrentException(interpreter.HasActiveHandler ? _suspendedException : previousException);
-                _started = true;
+                EnterFrame(frame, interpreter, previousException);
+                entered = true;
                 interpreter.Resume(sent, injected);
-                if (asynchronous) await interpreter.ExecuteAsync().ConfigureAwait(false);
-                else interpreter.Execute();
-                _suspendedException = frame.Services.CurrentException;
-                if (interpreter.HasYield) return PyIterationResult.Yield(interpreter.YieldValue);
-                ReturnValue = interpreter.HasFrameReturn ? interpreter.FrameReturnValue : PyNone.Instance;
-                await CompleteAsync(asynchronous).ConfigureAwait(false);
-                return PyIterationResult.End;
+                interpreter.Execute();
+                var result = ReadResult(frame, interpreter);
+                if (!result.HasValue) CompleteSynchronously();
+                return result;
             }
             catch (LythonRuntimeException exception)
             {
-                await CompleteAsync(asynchronous).ConfigureAwait(false);
+                CompleteSynchronously();
                 PyFunctionBinding.AnnotateException(exception, frame, frame.FunctionName ?? "<generator>", _span);
                 if (exception.Identity == PythonExceptionIdentity.Builtin("StopIteration"))
                     throw GeneratorRaisedStopIteration(exception, frame, _span);
                 throw;
             }
-            catch { await CompleteAsync(asynchronous).ConfigureAwait(false); throw; }
-            finally
-            {
-                _running = false;
-                if (interpreterEntered)
-                {
-                    frame.Services.SetCurrentException(previousException);
-                    frame.LeaveExecutableSlots(previousSlots);
-                    frame.LeaveInterpreterFrame();
-                }
-                if (functionEntered) frame.LeaveFunctionCall();
-            }
+            catch { CompleteSynchronously(); throw; }
+            finally { if (entered) LeaveFrame(frame, previousSlots, previousException); }
         }
+
+        private async ValueTask<PyIterationResult> AdvanceAsync(object sent, LythonRuntimeException? injected)
+        {
+            if (!CanAdvance(sent, injected)) return PyIterationResult.End;
+            if (!_started && injected is not null) { await CompleteAsync(true).ConfigureAwait(false); throw injected; }
+            var frame = _frame!;
+            var interpreter = _interpreter!;
+            var previousSlots = frame.CurrentExecutableFrame;
+            var previousException = frame.Services.CurrentException;
+            var entered = false;
+            try
+            {
+                EnterFrame(frame, interpreter, previousException);
+                entered = true;
+                interpreter.Resume(sent, injected);
+                await interpreter.ExecuteAsync().ConfigureAwait(false);
+                var result = ReadResult(frame, interpreter);
+                if (!result.HasValue) await CompleteAsync(true).ConfigureAwait(false);
+                return result;
+            }
+            catch (LythonRuntimeException exception)
+            {
+                await CompleteAsync(true).ConfigureAwait(false);
+                PyFunctionBinding.AnnotateException(exception, frame, frame.FunctionName ?? "<generator>", _span);
+                if (exception.Identity == PythonExceptionIdentity.Builtin("StopIteration"))
+                    throw GeneratorRaisedStopIteration(exception, frame, _span);
+                throw;
+            }
+            catch { await CompleteAsync(true).ConfigureAwait(false); throw; }
+            finally { if (entered) LeaveFrame(frame, previousSlots, previousException); }
+        }
+
+        private bool CanAdvance(object sent, LythonRuntimeException? injected)
+        {
+            if (_running) throw new LythonRuntimeException("ValueError", "generator already executing", _span);
+            if (_completed) { ReturnValue = PyNone.Instance; if (injected is not null) throw injected; return false; }
+            if (!_started && sent is not PyNone)
+                throw new LythonRuntimeException("TypeError", "can't send non-None value to a just-started generator", _span);
+            return true;
+        }
+
+        private void EnterFrame(ExecutionContext frame, ExecutableFrameInterpreter interpreter, PyException? previousException)
+        {
+            frame.EnterFunctionCall(_span);
+            try { frame.EnterInterpreterFrame(_span); }
+            catch { frame.LeaveFunctionCall(); throw; }
+            _running = true;
+            frame.EnterExecutableSlots(interpreter);
+            interpreter.SetCallerException(previousException);
+            frame.Services.SetCurrentException(interpreter.HasActiveHandler ? _suspendedException : previousException);
+            _started = true;
+        }
+
+        private void LeaveFrame(ExecutionContext frame, ExecutableFrameState? previousSlots, PyException? previousException)
+        {
+            _running = false;
+            frame.Services.SetCurrentException(previousException);
+            frame.LeaveExecutableSlots(previousSlots);
+            frame.LeaveInterpreterFrame();
+            frame.LeaveFunctionCall();
+        }
+
+        private PyIterationResult ReadResult(ExecutionContext frame, ExecutableFrameInterpreter interpreter)
+        {
+            _suspendedException = frame.Services.CurrentException;
+            if (interpreter.HasYield) return PyIterationResult.Yield(interpreter.YieldValue);
+            ReturnValue = interpreter.HasFrameReturn ? interpreter.FrameReturnValue : PyNone.Instance;
+            return PyIterationResult.End;
+        }
+
+        // Only terminal cleanup uses this bridge; ordinary synchronous pulls
+        // enter and execute the frame without an async advancement state machine.
+        private void CompleteSynchronously() => CompleteAsync(false).GetAwaiter().GetResult();
 
         private async ValueTask CompleteAsync(bool asynchronous)
         {
@@ -226,7 +275,10 @@ internal sealed partial class LythonRuntime
                     { await generator.CompleteAsync(asynchronous).ConfigureAwait(false); return PyNone.Instance; }
                     try
                     {
-                        var closed = await generator.AdvanceAsync(PyNone.Instance, new LythonRuntimeException("GeneratorExit", "", span), asynchronous).ConfigureAwait(false);
+                        var exit = new LythonRuntimeException("GeneratorExit", "", span);
+                        var closed = asynchronous
+                            ? await generator.AdvanceAsync(PyNone.Instance, exit).ConfigureAwait(false)
+                            : generator.Advance(PyNone.Instance, exit);
                         if (closed.HasValue) throw new LythonRuntimeException("RuntimeError", "generator ignored GeneratorExit", span);
                         return generator.ReturnValue;
                     }
@@ -255,7 +307,9 @@ internal sealed partial class LythonRuntime
                 }
                 else if (name == "send" && arguments.Length == 1) sent = arguments[0].Value;
                 else if (name != "__next__" || arguments.Length != 0) throw new LythonRuntimeException("TypeError", "invalid generator method arguments", span);
-                var result = await generator.AdvanceAsync(sent, injected, asynchronous).ConfigureAwait(false);
+                var result = asynchronous
+                    ? await generator.AdvanceAsync(sent, injected).ConfigureAwait(false)
+                    : generator.Advance(sent, injected);
                 if (result.HasValue) return result.Value;
                 throw new LythonRuntimeException("StopIteration", "", span, null, generator.ReturnValue);
             }

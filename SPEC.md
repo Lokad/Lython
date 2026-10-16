@@ -629,7 +629,8 @@ the named Unicode-escape exclusion still apply.
 Functions and lambdas containing `yield` or `yield from` return lazy, single-pass
 Python generators. Calling a generator function binds arguments without running
 its body. `next`, `send`, `throw`, `close`, `__iter__` and `__next__` resume the
-retained frame. A non-None initial send raises TypeError; recursive advancement
+retained frame. A non-None initial send to a new generator raises TypeError; sending to a closed
+generator reports exhaustion regardless of the sent value. Recursive advancement
 raises ValueError. Return values are delivered as StopIteration.value on the
 first exhaustion; later pulls have value None. Escaping StopIteration becomes
 RuntimeError with the original exception as its cause (PEP 479).
@@ -644,7 +645,10 @@ while handling GeneratorExit. Closing an unstarted generator runs no body.
 Suspended frames and their retained interpreter storage are governed execution
 values. RunAsync awaits host effects when advancing, sending, throwing or
 closing a generator, including delegated user iterators. Cancellation remains
-terminal. Reusing a compiled script creates independent generator state.
+terminal. Ordinary synchronous pulls execute the retained instruction frame directly;
+synchronous terminal cleanup can bridge the shared cleanup helper. Both execution
+modes share admission, frame entry/exit and exception restoration. Reusing a
+compiled script creates independent generator state.
 
 Generator expressions acquire their outer iterator at construction and defer
 their remaining clauses and items. Assignment expressions write to the defining

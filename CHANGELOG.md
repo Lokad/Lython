@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Advance synchronous executable generators directly without an async advancement state machine on ordinary pulls. Share admission, frame entry/exit and result handling with asynchronous advancement, preserving awaited native cleanup, caller exceptions and managed stack guards. Fix non-None sends to generators closed before starting to report exhaustion, matching Python.
+
 - Govern executable operand buffers by actual capacity and replacement overlap, releasing relinquished buffers after native cleanup. Remove instruction-count charging of unadvanced generator bodies and preflight every buffer resize. Preserve the existing 1 MiB host-owned deferred-code control, imported-code rejection, retained aliases and suspended inputs; construct/admit the frame before effectful outer acquisition.
 
 - Lower eligible lazy generator-expression bodies into real resumable child instructions with local slots and shared capture cells, reusing the eager comprehension loop compiler and existing generator methods. Remove the lowered creator overlay and ordinary fallback-only caller mirroring. Preserve eager outer acquisition, deferred inner work, walrus writes, locals and Python iterator aliases; await native cleanup on unstarted close/throw and refused/cancelled entry.

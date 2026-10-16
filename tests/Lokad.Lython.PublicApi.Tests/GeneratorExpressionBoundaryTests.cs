@@ -54,6 +54,9 @@ public sealed class GeneratorExpressionBoundaryTests
         { "send-discards-resumed-value", "g=(i*2 for i in range(3))\nprint(next(g),g.send(99),g.send(None),next(g,'end'))", "0 2 4 end\n" },
         { "throw-before-start", "events=[]\ndef source():\n events.append('started')\n yield 1\ng=(i for i in source())\ntry:g.throw(ValueError('before'))\nexcept ValueError as error:print(str(error))\nprint(events,next(g,'end'))", "before\n[] end\n" },
         { "close-preserves-outer-alias", "events=[]\ndef source():\n try:\n  yield 1\n  yield 2\n finally:events.append('closed')\nouter=source()\ng=(i for i in outer)\nprint(next(g))\ng.close()\nprint(events,next(outer))\nouter.close()\nprint(events)", "1\n[] 2\n['closed']\n" },
+        { "closed-before-start-send", "def values():yield 7\nfor make in (values,lambda:(i for i in (7,))):\n g=make()\n g.close()\n try:g.send(99)\n except StopIteration:print('closed')", "closed\nclosed\n" },
+        { "invalid-first-send-keeps-generator", "def values():yield 7\nfor make in (values,lambda:(i for i in (7,))):\n g=make()\n try:g.send(99)\n except TypeError:print('new')\n print(next(g),next(g,'end'))", "new\n7 end\nnew\n7 end\n" },
+        { "reentrant-next-terminal", "def recurse():return next(g)\ng=(recurse() for i in (0,))\ntry:next(g)\nexcept ValueError as error:print(str(error))\nprint(next(g,'end'))", "generator already executing\nend\n" },
     };
 
     [Theory]
