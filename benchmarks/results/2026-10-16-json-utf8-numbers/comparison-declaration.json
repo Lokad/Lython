@@ -1,0 +1,17 @@
+{
+  "baselineRevision": "09f44e94b7815f172bc1ae40bbe97e16bd4883c8",
+  "candidateRevision": "dc950cdecf1bbe469ba7880dfefd45b821d2e4d3",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "b586e2c8723faaefc35e2c8cae4e21e7bba1d5f2827b5359c4f6ff155499b1d8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.cs": "4a551d932c8195ec8b6a9f70e65ad57ec61d049f1c0ee74339751c40d2e32d15"
+  },
+  "sourceArchiveSha256": "f945d3cec7380145987b275b497d444ed11e95e7f2cfb59dc079799d702f9343",
+  "caseId": "scripts.json-summary.large",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Default JSON long/float values parse UTF-8; shared hook preparation uses owned UTF-8 factory; conservative magnitude estimate is shared by count and existing string callers; large integers retain exact fallback.",
+  "normalGCAndTiering": true,
+  "boundary": "Unchanged complete JSON-lines aggregation: 4096 records / 110592 UTF-8 bytes. Warm synchronous Run and ordinary warm CPython; disk reset/staging, full job, byte/stdout checks, projection and prior-result cleanup included. Compile/startup/transport/full hash excluded.",
+  "stoppingRule": "One existing affected complete workload for this new numeric conversion change; no repeat/tuning or new producer/framework/long lane. Prior string-token diagnostic stays closed. No milestone qualification."
+}

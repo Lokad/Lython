@@ -1,0 +1,45 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "checks": [
+    {
+      "name": "int-boundaries",
+      "source": "import json\nvalues=json.loads('[-9223372036854775808,9223372036854775807,9223372036854775808,-9223372036854775809]')\nprint(json.dumps(values))",
+      "stdout": "[-9223372036854775808, 9223372036854775807, 9223372036854775808, -9223372036854775809]\n"
+    },
+    {
+      "name": "large-int",
+      "source": "import json\nfor text in ['1'+'0'*200,'-1'+'0'*200]:\n value=json.loads(text)\n print(len(str(value)),str(value)==text)",
+      "stdout": "201 True\n202 True\n"
+    },
+    {
+      "name": "floats",
+      "source": "import json,math\nv=json.loads('[1.25,-0.0,1e-300,1e300]')\nprint(v[0]==1.25,math.copysign(1.0,v[1])==-1.0,0<v[2]<1,v[3]>10**299)",
+      "stdout": "True True True True\n"
+    },
+    {
+      "name": "overflow",
+      "source": "import json,math\nfor source in ['1e9999','-1e9999']:\n value=json.loads(source)\n print(math.isinf(value),value>0)",
+      "stdout": "True True\nTrue False\n"
+    },
+    {
+      "name": "hooks",
+      "source": "import json\nevents=[]\ndef integer(s):events.append(('int',s));return s\ndef floating(s):events.append(('float',s));return s\nvalue=json.loads('[-0,1.20e+03,9223372036854775808]',parse_int=integer,parse_float=floating)\nprint(json.dumps(value));print(json.dumps(events))",
+      "stdout": "[\"-0\", \"1.20e+03\", \"9223372036854775808\"]\n[[\"int\", \"-0\"], [\"float\", \"1.20e+03\"], [\"int\", \"9223372036854775808\"]]\n"
+    },
+    {
+      "name": "prefix",
+      "source": "import json\nd=json.JSONDecoder()\nfor source in ['01','-01','1.','1e','1e+','1e2tail']:print(json.dumps(d.raw_decode(source)))",
+      "stdout": "[0, 1]\n[0, 2]\n[1, 1]\n[1, 1]\n[1, 1]\n[100.0, 3]\n"
+    },
+    {
+      "name": "malformed",
+      "source": "import json\nfor source in ['[1e]','[01]','--1']:\n try:json.loads(source)\n except json.JSONDecodeError as e:print(e.pos)",
+      "stdout": "2\n2\n0\n"
+    },
+    {
+      "name": "empty-suffix",
+      "source": "import json\nfor source in ['0','-0','0.0','-0.0','1e0']:print(json.dumps(json.JSONDecoder().raw_decode(source)))",
+      "stdout": "[0, 1]\n[0, 2]\n[0.0, 3]\n[-0.0, 4]\n[1.0, 3]\n"
+    }
+  ]
+}

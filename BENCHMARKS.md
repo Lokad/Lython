@@ -6,7 +6,7 @@
 | Same JSON configuration job [AQ], warm `Run` | 16 existing paths / 181 UTF-8 input bytes | 3.309 ms | 1.695 ms | — | Short diagnostic at 4846928c; 0.9% change within spread; no improvement established |
 | Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
 | Complete text-summary file job [AN], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.414 ms | 1.239 ms | — | Short diagnostic at 7caf4833; target-read consolidation retained; timing change inconclusive (baseline spread 12.4%) |
-| Complete JSON-lines aggregation [AS], warm | 4,096 records / 110,592 UTF-8 bytes | 10.548 ms | 4.651 ms | — | Short diagnostic at b85fdde9; candidate median 2.9% higher, within 17.2% baseline spread; inconclusive |
+| Complete JSON-lines aggregation [AT], warm | 4,096 records / 110,592 UTF-8 bytes | 9.587 ms | 4.401 ms | — | Short diagnostic at dc950cde; 2.3% lower median within 17.6% baseline spread; inconclusive |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
 | File search with helper and protected early exit [AR], warm | 2,049 lines / 42,010 UTF-8 bytes | 3.223 ms | 0.2845 ms | — | Short diagnostic at 473aa396; inconclusive (57%/64% Lython spread); no improvement established |
 | Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
@@ -43,7 +43,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 | AF | 2026-10-15 | 654b4f5a; two identical Lython controls, freshly compiled configuration job | [Compile-to-result boundary, controls and independent file goldens](benchmarks/results/2026-10-15-config-fresh/README.md) |
 | C | 2026-10-14 | f95fb734, governed runtime and worker ownership; parser candidate rejected | [Complete CSV diagnostic](benchmarks/results/2026-10-14-representative-csv/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-csv/micro.json) |
 | AN | 2026-10-16 | 7caf4833; three frozen compiler/runtime files on a5a96af2; both roles include the type-slot mutation prerequisite | [Executable subscript headers, correctness and inconclusive complete-job timing](benchmarks/results/2026-10-16-executable-subscript-stores/README.md) |
-| AS | 2026-10-16 | b85fdde9 on f3e05ad9; one frozen parser source; unchanged JSON aggregation | [Owned UTF-8 tokens, preserved decoding and inconclusive timing](benchmarks/results/2026-10-16-json-utf8-tokens/README.md) |
+| AT | 2026-10-16 | dc950cde on 09f44e94; two frozen numeric/preflight sources; unchanged JSON aggregation | [UTF-8 numeric parsing, shared admission and inconclusive timing](benchmarks/results/2026-10-16-json-utf8-numbers/README.md) |
 | AD | 2026-10-15 | Working exact-bytes sum candidate on 64fecd53; one frozen source; unchanged script/tooling | [Complete manifest job, exact sums and ownership/preflight checks](benchmarks/results/2026-10-15-bytes-sum/README.md) |
 | P | 2026-10-15 | Working protected-loop candidate on b2235259; two frontend source changes frozen by hashes | [Separate warm and compile/run diagnostics](benchmarks/results/2026-10-15-protected-loop-jumps/README.md), [source declaration](benchmarks/results/2026-10-15-protected-loop-jumps/comparison-declaration.json) |
 | AB | 2026-10-15 | Working UTF-8 upper candidate on 29a1862e; one frozen source; identical new report script/catalog in both roles | [Complete report, noise and expansion/ownership checks](benchmarks/results/2026-10-15-utf8-upper/README.md) |
@@ -104,6 +104,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| UTF-8 JSON numeric tokens, 2026-10-16 | 09f44e94 → dc950cde; unchanged complete aggregation | No improvement established: 9.814 → 9.587 ms; 2.3% change within baseline spread | [Shared conversion/preflight and retained hook text](benchmarks/results/2026-10-16-json-utf8-numbers/README.md) |
 | Direct UTF-8 JSON tokens, 2026-10-16 | f3e05ad9 → b85fdde9; unchanged complete aggregation job | No improvement established: 10.250 → 10.548 ms; 2.9% higher median within baseline spread | [Intermediate removal and storage/decoding controls](benchmarks/results/2026-10-16-json-utf8-tokens/README.md) |
 | Direct string prefix calls, 2026-10-16 | cdf95961 → 473aa396; unchanged complete file search | No improvement established: 5.667 → 3.223 ms; 43.1% change below 57%/64% spreads | [Shared call storage and preserved diagnostics](benchmarks/results/2026-10-16-string-prefix-calls/README.md) |
 | Executable subscript augmented stores, 2026-10-16 | a2103402 → 4846928c; unchanged warm configuration job | No improvement established: 3.338 → 3.309 ms; 0.9% change within spread | [Shared operands, deletion and one complete-job diagnostic](benchmarks/results/2026-10-16-augmented-subscript-stores/README.md) |

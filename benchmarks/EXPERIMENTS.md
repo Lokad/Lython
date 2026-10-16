@@ -7,6 +7,23 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 JSON number delivery](results/2026-10-16-json-utf8-numbers/README.md)
+removes unconditional CLR numeric text conversion and shares raw-hook preparation
+and existing magnitude admission. One unchanged complete job observed 9.8138 ->
+9.5872 ms, CPython 4.4011 ms, spread 17.6%/4.1%/0.3%. The 2.3% lower median is
+inconclusive; no improvement established. Two frozen sources, exact loaded versions,
+all three golden sizes per role, normal policies, one 9.626 s timing command, seven
+workers/fixtures removed and lease free. No repeat, tuning or new producer. AT
+replaces AS's warm row; the earlier string-token evidence remains:
+
+| Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
+| --- | --- | ---: | ---: | ---: | --- |
+| Complete JSON-lines aggregation [AS], warm | 4,096 records / 110,592 UTF-8 bytes | 10.548 ms | 4.651 ms | — | Short diagnostic at b85fdde9; candidate median 2.9% higher, within 17.2% baseline spread; inconclusive |
+
+| Label | Date | Measured Lython revision | Evidence |
+| --- | --- | --- | --- |
+| AS | 2026-10-16 | b85fdde9 on f3e05ad9; one frozen parser source; unchanged JSON aggregation | [Owned UTF-8 tokens, preserved decoding and inconclusive timing](benchmarks/results/2026-10-16-json-utf8-tokens/README.md) |
+
 The [2026-10-16 JSON token delivery](results/2026-10-16-json-utf8-tokens/README.md)
 removes the CLR string/re-encoding round trip for well-formed unescaped values
 and keys, reuses governed copied storage and deletes the single-use helper.
