@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse the compiled generator function’s scope facts when its definition executes, removing repeated syntax traversal, parameter scratch and directive/local-name sets. Keep defaults, mutable namespaces and captured cells per invocation.
+
 - Advance synchronous executable generators directly without an async advancement state machine on ordinary pulls. Share admission, frame entry/exit and result handling with asynchronous advancement, preserving awaited native cleanup, caller exceptions and managed stack guards. Fix non-None sends to generators closed before starting to report exhaustion, matching Python.
 
 - Govern executable operand buffers by actual capacity and replacement overlap, releasing relinquished buffers after native cleanup. Remove instruction-count charging of unadvanced generator bodies and preflight every buffer resize. Preserve the existing 1 MiB host-owned deferred-code control, imported-code rejection, retained aliases and suspended inputs; construct/admit the frame before effectful outer acquisition.

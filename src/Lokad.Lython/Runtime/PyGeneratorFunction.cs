@@ -11,7 +11,7 @@ internal sealed class PyGeneratorFunction : PyFunctionBase
         LythonRuntime.ExecutionContext closure, Dictionary<string, object> defaults,
         IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null)
         : this(definition.Syntax.DeclaredName, definition.Parameters, definition.GeneratorCode!,
-            closure, defaults, ScopeDirectiveFactsCollector.ForFunction(definition.Syntax), closureCells) { }
+            closure, defaults, definition.GeneratorCode!.ScopeFacts, closureCells) { }
 
     public PyGeneratorFunction(string name, IReadOnlyList<LoweredFunctionParameter> parameters,
         ExecutableCodeObject code, LythonRuntime.ExecutionContext closure,
