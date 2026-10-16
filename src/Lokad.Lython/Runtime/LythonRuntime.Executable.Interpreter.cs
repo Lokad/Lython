@@ -66,6 +66,13 @@ internal sealed partial class LythonRuntime
 
         internal void Resume(object sent, LythonRuntimeException? injected)
         {
+            // A retained closure can write a cell while this generator is
+            // suspended. Refresh only captured slots, including direct-call inputs.
+            for (var index = 0; index < _codeObject.CapturedLocalSlots.Count; index++)
+            {
+                var slot = _codeObject.CapturedLocalSlots[index];
+                _locals[slot] = _localCells![slot]!.Value;
+            }
             HasYield = false;
             _sentValue = sent;
             _injectedException = injected;

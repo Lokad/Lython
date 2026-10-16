@@ -291,6 +291,17 @@ internal sealed partial class LythonRuntime
         internal bool TryGetNonlocalTarget(string name, [MaybeNullWhen(false)] out ExecutionContext context)
             => NonlocalTargets.TryGetValue(name, out context);
 
+        internal bool TryReadNonlocalValue(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (NonlocalTargets.TryGetValue(name, out var target))
+            {
+                if (target.CurrentExecutableFrame is { } frame && frame.TryResolveLocalOrClosure(name, out value)) return true;
+                if (target.Variables.TryGetValue(name, out value) && !ReferenceEquals(value, UninitializedLocal)) return true;
+            }
+            value = null;
+            return false;
+        }
+
         internal bool MirrorsExecutableLocals { get; private set; }
 
         internal void EnterExecutableSlots(ExecutableFrameState frame)

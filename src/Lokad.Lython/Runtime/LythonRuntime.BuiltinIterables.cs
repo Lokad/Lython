@@ -84,7 +84,12 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        if (context.CurrentExecutableFrame is not null)
+        if (context.CurrentExecutableFrame is null)
+        {
+            foreach (var name in context.ScopeFacts.NonlocalNames)
+                if (context.TryReadNonlocalValue(name, out _)) yield return name;
+        }
+        else
         {
             foreach (var pair in context.CurrentExecutableFrame.EnumerateVisibleLocals())
             {

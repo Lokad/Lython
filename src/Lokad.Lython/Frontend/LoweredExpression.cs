@@ -162,8 +162,8 @@ internal sealed record LoweredGeneratorExpression(
     IReadOnlyList<LoweredComprehensionClause> Clauses) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Generator;
-    public ScopeDirectiveFacts ScopeFacts { get; } = ComprehensionSyntaxFacts.Bindings(Clauses.Select(clause => clause.Target), generator: true)
-        with { RequiresClassCell = Generator.PreparedComprehensionScopeFacts?.RequiresClassCell == true };
+    public ScopeDirectiveFacts ScopeFacts { get; } = Generator.PreparedComprehensionScopeFacts ??
+        ComprehensionSyntaxFacts.Bindings(Clauses.Select(clause => clause.Target), generator: true);
 }
 
 internal abstract record LoweredDictionaryDisplayItem(

@@ -4,6 +4,14 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    internal static LythonRuntimeException GeneratorRaisedStopIteration(
+        LythonRuntimeException exception, ExecutionContext context, LythonSourceSpan span)
+    {
+        var cause = CreatePythonExceptionInstance(exception, context);
+        return new LythonRuntimeException("RuntimeError", "generator raised StopIteration", span, exception)
+        { PythonCause = cause, PythonContext = cause, SuppressPythonContext = true };
+    }
+
     internal sealed class PyGenerator : IPyAsyncIteratorValue, IPyDynamicAttributes, IPyTruthyValue,
         IPyGovernedValue, IPyOwnershipSnapshot
     {
@@ -36,6 +44,9 @@ internal sealed partial class LythonRuntime
         private PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span, long bytes, IReadOnlyList<ExecutableCell>? closureCells)
         {
             _frame = frame;
+            // Mirrored namespaces remain authoritative for retained cells while
+            // the executable frame is suspended, without retaining an active frame.
+            frame.MirrorLocalStores |= code.RequiresLocalVariableMirroring;
             _span = span;
             _bytes = bytes;
             OwnerMemoryGovernor = frame.MemoryGovernor;
@@ -106,9 +117,8 @@ internal sealed partial class LythonRuntime
                 {
                     Complete();
                     PyFunctionBinding.AnnotateException(exception, frame, frame.FunctionName ?? "<generator>", _span);
-                    if (exception.ExceptionType == "StopIteration")
-                        throw new LythonRuntimeException("RuntimeError", "generator raised StopIteration", _span, exception)
-                        { PythonCause = CreatePythonExceptionInstance(exception, frame), SuppressPythonContext = true };
+                    if (exception.Identity == PythonExceptionIdentity.Builtin("StopIteration"))
+                        throw GeneratorRaisedStopIteration(exception, frame, _span);
                     throw;
                 }
                 catch { Complete(); throw; }

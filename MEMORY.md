@@ -79,6 +79,15 @@ Cell metadata can be conservatively charged per capture even when bindings are
 shared; this can change narrow admission thresholds. No registry or extra owner
 is introduced, and the caller's full namespace need not be mirrored for these
 bodies. Ordinary dynamic/generator routes can still require that mirroring.
+
+Generator-expression assignment targets use prepared global/nonlocal metadata
+and the existing name-storage owners. Nonlocal target-map capacity is admitted
+before constructing the retained iteration scope; failed construction returns
+that estimate. Global-only expressions need no target map. These estimates remain
+charged for the execution/result lifetime, so narrow allowances may refuse
+earlier. No bindings are copied back at yield or during cleanup. Mirrored generator
+namespaces stay authoritative for retained cells while suspended; only captured
+slots are refreshed on resume. Existing frame admission funds those cells.
 Lowered bodies and dynamic namespace consumers retain their existing dictionary
 ownership. Lambda metadata now uses ordinary function storage, so small allowances
 can reject at different thresholds; pending users and escaping aliases stay funded.

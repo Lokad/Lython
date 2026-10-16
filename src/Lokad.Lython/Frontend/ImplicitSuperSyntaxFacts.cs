@@ -33,6 +33,31 @@ internal static class ImplicitSuperSyntaxFacts
             }
             return true;
         }
+
+        public ScopeDirectiveFacts BindGeneratorAssignments(ExpressionSyntax expression, ScopeDirectiveFacts facts)
+        {
+            var assigned = new HashSet<string>(StringComparer.Ordinal);
+            ScopeDirectiveFactsCollector.CollectExpressionBindings(expression, assigned);
+            if (assigned.Count == 0) return facts;
+            var globals = new HashSet<string>(StringComparer.Ordinal);
+            var nonlocals = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var name in assigned)
+            {
+                var nonlocal = false;
+                for (var scope = this; scope is not null; scope = scope.Parent)
+                {
+                    if (scope.Class) continue;
+                    if (scope.Facts.IsGlobal(name)) break;
+                    if (scope.Facts.IsNonlocal(name) || scope.Function && scope.Facts.LocalNames.Contains(name))
+                    {
+                        nonlocal = true;
+                        break;
+                    }
+                }
+                (nonlocal ? nonlocals : globals).Add(name);
+            }
+            return facts with { GlobalNames = globals, NonlocalNames = nonlocals };
+        }
     }
 
     public static void Prepare(ScriptSyntax script)
@@ -86,6 +111,7 @@ internal static class ImplicitSuperSyntaxFacts
             {
                 pending.Push((clauses[0].Iterable, scope));
                 var facts = ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target), generator);
+                if (generator) facts = scope.BindGeneratorAssignments(node, facts);
                 var bodyScope = new Scope(scope, facts, Function: generator || scope.Function, Positional: generator || scope.Positional);
                 if (generator)
                     facts = facts with { RequiresClassCell = !facts.LocalNames.Contains("__class__") && bodyScope.HasEnclosingClassBinding() &&

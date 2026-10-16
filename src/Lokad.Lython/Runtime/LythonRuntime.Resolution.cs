@@ -43,17 +43,9 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NameNotDefined(name, span);
         }
 
-        if (context.TryGetNonlocalTarget(name, out var nonlocalContext))
+        if (context.TryGetNonlocalTarget(name, out _))
         {
-            if (nonlocalContext.CurrentExecutableFrame is { } frame &&
-                frame.TryResolveLocalOrClosure(name, out var cellValue)) return cellValue;
-            if (nonlocalContext.Variables.TryGetValue(name, out var nonlocalValue))
-            {
-                if (name == "__class__" && ReferenceEquals(nonlocalValue, UninitializedLocal))
-                    throw RuntimeErrors.FreeVariableNotAssociated(name, span);
-                return nonlocalValue;
-            }
-
+            if (context.TryReadNonlocalValue(name, out var nonlocalValue)) return nonlocalValue;
             throw RuntimeErrors.FreeVariableNotAssociated(name, span);
         }
 
@@ -514,8 +506,8 @@ internal sealed partial class LythonRuntime
             LoweredScript.LowerStandaloneExpression(generator.ItemExpression),
             context.FunctionClosureContext,
             generator.Span,
-            outer, ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target), generator: true)
-                with { RequiresClassCell = generator.PreparedComprehensionScopeFacts?.RequiresClassCell == true });
+            outer, generator.PreparedComprehensionScopeFacts ??
+                ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target), generator: true));
         return produced;
     }
 
@@ -635,49 +627,6 @@ internal sealed partial class LythonRuntime
             }
             default:
                 throw new InvalidOperationException($"Unsupported loop target type: {target.GetType().Name}");
-        }
-    }
-
-    internal static void PropagateComprehensionBindings(
-        ExecutionContext scope,
-        ExecutionContext outer,
-        IEnumerable<LoopTargetSyntax> targets,
-        LythonSourceSpan span)
-    {
-        var loopNames = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var target in targets)
-        {
-            CollectLoopTargetNames(target, loopNames);
-        }
-
-        foreach (var pair in scope.Variables)
-        {
-            if (pair.Key != ".0" && !loopNames.Contains(pair.Key) && !ExecutionState.BuiltinNames.Contains(pair.Key))
-            {
-                StoreName(pair.Key, pair.Value, outer, span);
-            }
-        }
-    }
-
-    private static void CollectLoopTargetNames(LoopTargetSyntax target, HashSet<string> names)
-    {
-        switch (target)
-        {
-            case LoopStoreTargetSyntax store:
-                foreach (var binding in AssignmentTargetFacts.Names(store.Target)) names.Add(binding);
-                break;
-            case LoopNameTargetSyntax name:
-                names.Add(name.Name);
-                break;
-            case LoopStarredTargetSyntax starred:
-                names.Add(starred.Name);
-                break;
-            case LoopTupleTargetSyntax tuple:
-                foreach (var item in tuple.Items)
-                {
-                    CollectLoopTargetNames(item, names);
-                }
-                break;
         }
     }
 

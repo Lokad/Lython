@@ -25,10 +25,9 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     // sync outer for both modes.
     private IAsyncEnumerator<object>? _outerAsyncEnumerator;
     private LythonRuntime.ExecutionContext? _iterationScope;
-    private readonly IReadOnlyList<LoopTargetSyntax> _targets;
     private IEnumerator<object>? _iterator;
     private IAsyncEnumerator<object>? _asyncIterator;
-    private bool _asyncCompleted;
+    private bool _completed;
 
     public PyGeneratorExpression(
         IReadOnlyList<LoweredComprehensionClause> clauses,
@@ -38,7 +37,6 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         PyIteration.GeneratorOuter outer, ScopeDirectiveFacts scopeFacts)
     {
         _clauses = clauses;
-        _targets = clauses.Select(clause => clause.Target).ToArray();
         _itemExpression = itemExpression;
         _closure = closure;
         _span = span;
@@ -59,16 +57,26 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
 
     public bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        _iterationScope ??= CreateIterationScope();
-        _iterator ??= IterateClauses(_clauses, 0, _iterationScope).GetEnumerator();
-        if (_iterator.MoveNext())
+        if (_completed) { value = PyNone.Instance; return false; }
+        try
         {
-            value = _iterator.Current;
-            return true;
+            _iterationScope ??= CreateIterationScope();
+            _iterator ??= IterateClauses(_clauses, 0, _iterationScope).GetEnumerator();
+            if (_iterator.MoveNext())
+            {
+                value = _iterator.Current;
+                return true;
+            }
+            _completed = true;
+            value = PyNone.Instance;
+            return false;
         }
-
-        value = PyNone.Instance;
-        return false;
+        catch (LythonRuntimeException exception) when (exception.Identity == PythonExceptionIdentity.Builtin("StopIteration"))
+        {
+            _completed = true;
+            throw LythonRuntime.GeneratorRaisedStopIteration(exception, _closure, _span);
+        }
+        catch { _completed = true; throw; }
     }
 
     internal void AttachAsyncOuter(object outerValue)
@@ -82,6 +90,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     private async IAsyncEnumerable<object> EnumerateOuterAsync()
     {
         var enumerator = _outerAsyncEnumerator;
+        _outerAsyncEnumerator = null;
         if (enumerator is null)
         {
             yield break;
@@ -109,6 +118,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
 
     public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
+        if (_completed) return PyIterationResult.End;
         if (_iterator is not null)
         {
             return TryMoveNext(out var syncValue)
@@ -116,32 +126,63 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
                 : PyIterationResult.End;
         }
 
-        if (_asyncCompleted)
+        try
         {
+            _iterationScope ??= CreateIterationScope();
+            _asyncIterator ??= IterateClausesAsync(_clauses, 0, _iterationScope).GetAsyncEnumerator();
+            if (await _asyncIterator.MoveNextAsync().ConfigureAwait(false))
+                return PyIterationResult.Yield(_asyncIterator.Current);
+            _completed = true;
             return PyIterationResult.End;
         }
-
-        _iterationScope ??= CreateIterationScope();
-        _asyncIterator ??= IterateClausesAsync(_clauses, 0, _iterationScope).GetAsyncEnumerator();
-        if (await _asyncIterator.MoveNextAsync().ConfigureAwait(false))
+        catch (LythonRuntimeException exception) when (exception.Identity == PythonExceptionIdentity.Builtin("StopIteration"))
         {
-            return PyIterationResult.Yield(_asyncIterator.Current);
+            _completed = true;
+            throw LythonRuntime.GeneratorRaisedStopIteration(exception, _closure, _span);
         }
-
-        await _asyncIterator.DisposeAsync().ConfigureAwait(false);
-        _asyncIterator = null;
-        _asyncCompleted = true;
-        return PyIterationResult.End;
+        catch { _completed = true; throw; }
+        finally
+        {
+            if (_completed)
+            {
+                var iterator = _asyncIterator;
+                _asyncIterator = null;
+                try
+                {
+                    if (iterator is not null) await iterator.DisposeAsync().ConfigureAwait(false);
+                }
+                finally
+                {
+                    // Scope admission can fail before clause enumeration takes
+                    // ownership of the eagerly acquired async outer iterator.
+                    var outer = _outerAsyncEnumerator;
+                    _outerAsyncEnumerator = null;
+                    if (outer is not null) await outer.DisposeAsync().ConfigureAwait(false);
+                }
+            }
+        }
     }
 
     private LythonRuntime.ExecutionContext CreateIterationScope()
     {
-        var scope = new LythonRuntime.ExecutionContext(_closure, _scopeFacts)
+        // New nonlocal target-map capacity belongs to the retained iteration
+        // scope. Fund it before allocation; ordinary generators need no map.
+        var bytes = _scopeFacts.NonlocalNames.Count == 0 ? 0 : checked(128L + 96L * _scopeFacts.NonlocalNames.Count);
+        if (bytes != 0)
         {
-            FunctionName = "<genexpr>", FirstPositionalParameterName = ".0"
-        };
-        scope.Variables[".0"] = _outerIterator;
-        return scope;
+            _closure.MemoryGovernor.Reserve(bytes, _span);
+            _closure.MemoryGovernor.Commit(bytes);
+        }
+        try
+        {
+            var scope = new LythonRuntime.ExecutionContext(_closure, _scopeFacts)
+            {
+                FunctionName = "<genexpr>", FirstPositionalParameterName = ".0"
+            };
+            scope.Variables[".0"] = _outerIterator;
+            return scope;
+        }
+        catch { if (bytes != 0) _closure.MemoryGovernor.Release(bytes); throw; }
     }
 
     private IEnumerable<object> IterateClauses(
@@ -172,9 +213,6 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
             if (index == clauses.Count - 1)
             {
                 var produced = LythonRuntime.RuntimeValue(LythonRuntime.EvaluateLoweredExpression(_itemExpression, scope));
-                // Assignment expressions escape to the defining scope on each
-                // advance, so partial consumption already binds (like CPython).
-                LythonRuntime.PropagateComprehensionBindings(scope, _closure, _targets, _span);
                 yield return produced;
             }
             else
@@ -214,9 +252,6 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
             {
                 var produced = LythonRuntime.RuntimeValue(
                     await LythonRuntime.EvaluateLoweredExpressionAsync(_itemExpression, scope).ConfigureAwait(false));
-                // Assignment expressions escape to the defining scope on each
-                // advance, so partial consumption already binds (like CPython).
-                LythonRuntime.PropagateComprehensionBindings(scope, _closure, _targets, _span);
                 yield return produced;
             }
             else

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Bind generator-expression walrus targets directly through prepared global/nonlocal metadata, preserving writes in rejected filters and before errors. Remove per-yield namespace propagation and target-name scratch. Share StopIteration-to-RuntimeError conversion with generator functions, retain the original cause/context, exhaust failed generators and await async cleanup. Preserve captured writes across suspended generator frames and expose current nonlocal snapshots.
+
 - Discard stale list element values and types after possible mutation, including list facts inside immutable tuples and optional values. Preserve tuple bounds, unaffected scalar facts and fresh-list diagnostics. Replace the old element-joining rule with bounded compiler-fact widening; conservative alias invalidation can defer errors to unchanged runtime checks.
 
 - Preserve mutable-container invalidation across eager comprehension scopes, fixing false out-of-range and missing-key diagnostics after helper calls. Analyze lambda defaults immediately while keeping iteration bindings local, generator/lambda-body effects deferred, and proven diagnostics after pure or unreachable expressions. Account for generator outer-iterable effects immediately and skip statically empty comprehension bodies.

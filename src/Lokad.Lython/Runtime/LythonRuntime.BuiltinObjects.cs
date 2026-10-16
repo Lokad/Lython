@@ -960,6 +960,11 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        if (includeFrameLocals && context.CurrentExecutableFrame is null)
+            foreach (var name in context.ScopeFacts.NonlocalNames)
+                if (context.TryReadNonlocalValue(name, out var value))
+                    scope.SetItem(PyString.FromString(name, context.MemoryGovernor, span), value);
+
         if (includeFrameLocals && context.IncludeCallerLocals && context.CurrentExecutableFrame is not null)
         {
             foreach (var pair in context.CurrentExecutableFrame.EnumerateVisibleLocals())

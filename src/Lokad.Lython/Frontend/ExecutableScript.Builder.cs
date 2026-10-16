@@ -164,16 +164,13 @@ internal sealed partial class ExecutableScript
 
                     foreach (var closureName in code.ClosureNames)
                     {
-                        if (_localIndexes.TryGetValue(closureName, out var slot))
-                        {
-                            captured.Add(slot);
-                        }
-                        else if (_parentClosureCandidates.Contains(closureName))
-                        {
-                            InternClosure(closureName);
-                        }
+                        CaptureName(closureName);
                     }
                 }
+
+                foreach (var generator in _expressionFallbacks.Select(fallback => fallback.Expression).OfType<LoweredGeneratorExpression>()
+                    .Concat(_constants.OfType<ExecutableCreateGeneratorExpression>().Select(operation => operation.Expression)))
+                    foreach (var capturedName in generator.ScopeFacts.NonlocalNames) CaptureName(capturedName);
 
                 if (captured.Count == 0)
                 {
@@ -188,6 +185,12 @@ internal sealed partial class ExecutableScript
                 }
 
                 return result;
+
+                void CaptureName(string capturedName)
+                {
+                    if (_localIndexes.TryGetValue(capturedName, out var slot)) captured.Add(slot);
+                    else if (_parentClosureCandidates.Contains(capturedName)) InternClosure(capturedName);
+                }
             }
         }
 

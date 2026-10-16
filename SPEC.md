@@ -641,6 +641,18 @@ values. RunAsync awaits host effects when advancing, sending, throwing or
 closing a generator, including delegated user iterators. Cancellation remains
 terminal. Reusing a compiled script creates independent generator state.
 
+Generator expressions acquire their outer iterator at construction and defer
+their remaining clauses and items. Assignment expressions write to the defining
+global or nonlocal binding immediately, including rejected filters and writes
+preceding a later error; iteration names stay local. Subsequent advances observe
+external rebinding. Their nonlocal values appear in locals()/dir() snapshots.
+Escaping body StopIteration becomes RuntimeError with the original exception as
+both cause and context, with context display suppressed; ordinary exhaustion and
+an exception during outer acquisition retain their distinct behavior. Terminal
+advancement errors exhaust the generator, with asynchronous iterator cleanup
+awaited. Captured writes made while a generator function is suspended become
+visible when it resumes, including direct call arguments.
+
 Suspension is supported in formatted-string fields and dynamic specifiers,
 including unparenthesized field yields and tuple/starred yielded expression lists,
 starred calls/displays, outermost comprehension iterables, match guards and
