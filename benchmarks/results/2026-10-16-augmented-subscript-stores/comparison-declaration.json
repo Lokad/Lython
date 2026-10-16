@@ -1,0 +1,18 @@
+{
+  "baselineRevision": "a21034029a1963ce6d46352850c334f50775b3e8",
+  "candidateRevision": "4846928c72dd22f318c8d5257dba4fe595912b9f",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "831d12652761b539519670d753ff4553a8f13a7d84e700a48972544c69b1b51d",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingTargets.cs": "b09a0f873286d4a202a0c963b001c28c9756693d2588793825c8dbdfced590a8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedTargets.cs": "ab34081d177b5edf48a6c3811ee7ddeaaa000ef057d79e13a51e32b78e8480a1"
+  },
+  "sourceArchiveSha256": "c9d09ea9336afcb7ef80675ee77ddc44ff5f6b1d1c1986ecdd4a037b1f45a29a",
+  "caseId": "scripts.config-edit.small",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Compile subscript augmented updates and yielding ordinary stores with retained frame operands; delete subscript prepared read/store arms. No new opcode/frame/owner/binder.",
+  "normalGCAndTiering": true,
+  "boundary": "Unchanged configuration read/edit/write job with 16 existing paths. Warm synchronous Run and ordinary warm CPython; includes invocation setup, JSON, mediated files, config retries update, output/projection, fixture reset and prior result cleanup as defined by existing worker. Compile/startup/transport/full hash excluded.",
+  "stoppingRule": "One existing affected complete job; no repeat, retuning, new producer/framework or long lane. Not an isolated item-update cost and no milestone qualification."
+}

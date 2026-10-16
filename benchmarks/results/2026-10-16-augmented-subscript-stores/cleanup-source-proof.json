@@ -1,0 +1,62 @@
+{
+  "checks": [
+    {
+      "engine": "timing-baseline",
+      "pid": 2366105,
+      "fixture": "/tmp/lython-comparison-files-TH07Dp",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-candidate",
+      "pid": 2366126,
+      "fixture": "/tmp/lython-comparison-files-bjGYEa",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-CPython",
+      "pid": 2366141,
+      "fixture": "/tmp/lython-comparison-files-ZDPzFB",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-lythonIdentity",
+      "pid": 2365848,
+      "fixture": "/tmp/lython-comparison-files-Fo4kZy",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-pythonIdentity",
+      "pid": 2365870,
+      "fixture": "/tmp/lython-comparison-files-3Rqyl8",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-lythonIdentity",
+      "pid": 2365977,
+      "fixture": "/tmp/lython-comparison-files-38r4eG",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-pythonIdentity",
+      "pid": 2365999,
+      "fixture": "/tmp/lython-comparison-files-Znvvwp",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    }
+  ],
+  "productionDifferences": [
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingTargets.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedTargets.cs"
+  ],
+  "frozenSourceHashesMatch": true,
+  "comparisonSourcesIdentical": true,
+  "relevantUnits": "",
+  "leaseAcquired": true
+}

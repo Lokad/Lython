@@ -7,6 +7,16 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 subscript-augmented delivery](results/2026-10-16-augmented-subscript-stores/README.md)
+retains receiver/key in existing frame slots and deletes their prepared read/store
+arms. One unchanged complete configuration job observed 3.3377 -> 3.3093 ms,
+CPython 1.6950 ms, spread 6.9%/10.4%/4.9%. The 0.9% change is inconclusive;
+no performance benefit is established. Three frozen production differences,
+role-specific loaded revisions, all three golden sizes per role, normal policies,
+one 11.668 s command, seven exited workers/removed fixtures and a free VM lease.
+AQ adds a warm configuration snapshot alongside AF's separately marked fresh
+compile/run measurement. No repeat, retuning or current overall ratio claim.
+
 The [2026-10-16 member-augmented delivery](results/2026-10-16-augmented-member-stores/README.md)
 uses existing executable instructions and a shared store, removing the ordinary
 fallback and prepared member-read arm. One unchanged 2,048-call method job observed

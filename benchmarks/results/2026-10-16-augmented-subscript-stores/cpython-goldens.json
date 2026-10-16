@@ -1,0 +1,85 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "checks": [
+    {
+      "name": "counts",
+      "source": "counts={'a':0,'b':0}\nfor word in ['a','b','a']: counts[word]+=1\nprint(counts)",
+      "stdout": "{'a': 2, 'b': 1}\n"
+    },
+    {
+      "name": "locals",
+      "source": "def run(values,key):\n delta=3\n values[key]+=locals()['delta']\n return values\nprint(run([1,2],1))",
+      "stdout": "[1, 5]\n"
+    },
+    {
+      "name": "captured-index",
+      "source": "index=[0]\nvalues=[[1],[2]]\ndef rhs():\n index[0]=1\n return [3]\nvalues[index[0]]+=rhs()\nprint(values,index)",
+      "stdout": "[[1, 3], [2]] [1]\n"
+    },
+    {
+      "name": "index-recoercion",
+      "source": "events=[]\nclass Key:\n def __index__(self): events.append(self.value);return self.value\nk=Key();k.value=0\nvalues=[1,10]\ndef rhs(): k.value=1;return 2\nvalues[k]+=rhs()\nprint(values,events)",
+      "stdout": "[1, 3] [0, 1]\n"
+    },
+    {
+      "name": "inplace-alias",
+      "source": "values=[[1]]\nalias=values[0]\nvalues[0]+=[2]\nprint(alias,alias is values[0])",
+      "stdout": "[1, 2] True\n"
+    },
+    {
+      "name": "raw-key",
+      "source": "class Key:\n def __index__(self): raise AssertionError('converted')\nk=Key();values={k:1};values[k]+=2\nprint(values[k])",
+      "stdout": "3\n"
+    },
+    {
+      "name": "raw-slice-key",
+      "source": "class Box:\n def __getitem__(self,key): self.key=key;return [1]\n def __setitem__(self,key,value): print(key is self.key,value)\nk=slice('a','b','c');Box()[k]+=[2]",
+      "stdout": "True [1, 2]\n"
+    },
+    {
+      "name": "missing-before-rhs",
+      "source": "def rhs(): raise AssertionError('rhs ran')\ndef run(items,key): items[key]+=rhs()\ntry: run({},'missing')\nexcept KeyError: print('missing')",
+      "stdout": "missing\n"
+    },
+    {
+      "name": "tuple-inplace",
+      "source": "value=[];items=(value,)\ntry: items[0]+=[2]\nexcept TypeError: print(value,items[0] is value)",
+      "stdout": "[2] True\n"
+    },
+    {
+      "name": "setter-replacement",
+      "source": "events=[]\nclass Box:\n def __getitem__(self,key): events.append('get');return 1\n def __setitem__(self,key,value): events.append('old')\ndef setter(self,key,value): events.append(('new',value))\ndef rhs(): Box.__setitem__=setter;return 2\nBox()[0]+=rhs()\nprint(events)",
+      "stdout": "['get', ('new', 3)]\n"
+    },
+    {
+      "name": "nonlocal",
+      "source": "def outer():\n values=[1]\n def run():\n  nonlocal values\n  values[0]+=2\n run()\n return values\nprint(outer())",
+      "stdout": "[3]\n"
+    },
+    {
+      "name": "class-scope",
+      "source": "values=[1]\nclass Runner: values[0]+=2\nprint(values)",
+      "stdout": "[3]\n"
+    },
+    {
+      "name": "yield-rhs",
+      "source": "values=[1]\ndef update():\n values[0]+=(yield 'rhs')\n yield values[0]\ng=update();print(next(g),g.send(2),values)",
+      "stdout": "rhs 3 [3]\n"
+    },
+    {
+      "name": "yield-header",
+      "source": "values=[1]\ndef update():\n (yield 'receiver')[(yield 'key')]+=(yield 'rhs')\n yield 'done'\ng=update();print(next(g),g.send(values),g.send(0),g.send(2),values)",
+      "stdout": "receiver key rhs done [3]\n"
+    },
+    {
+      "name": "yield-store",
+      "source": "values=[1]\ndef update():\n (yield 'receiver')[(yield 'key')]=2\n yield 'done'\ng=update();print(next(g),g.send(values),g.send(0),values)",
+      "stdout": "receiver key done [2]\n"
+    },
+    {
+      "name": "protected-error",
+      "source": "values=[1]\ntry: values[5]+=2\nexcept IndexError: values[0]+=3\nprint(values)",
+      "stdout": "[4]\n"
+    }
+  ]
+}
