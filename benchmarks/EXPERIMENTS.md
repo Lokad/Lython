@@ -7,6 +7,16 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 JSON literal change](results/2026-10-16-json-literal-dispatch/README.md)
+removes true/false/null from the generic async token route, preserving the existing
+scalar admission and actual callback suspension. Both roles include the preceding
+parser-error correction. One unchanged JSON parse/edit/dump case observed
+2.365 → 2.380 ms, CPython 0.4414 ms; spreads 17.11%/22.15%/0.15%. The 0.6% change
+is within spread: no benefit or qualified ratio established. One 7.385 s capture,
+no retry/retuning/new producer. Independent three-size row goldens and frozen
+sources match; seven workers/fixtures gone, services inactive, lease free. BK keeps
+this in-memory case separate from historical complete file jobs and later HEAD.
+
 The [2026-10-16 invocation-owned locals change](results/2026-10-16-owned-function-locals/README.md)
 consolidates executable parameter/local storage and admits unpooled capacity
 before binding. One unchanged starred-list helper observed26.602 →27.550ms,

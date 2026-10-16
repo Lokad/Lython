@@ -6,6 +6,7 @@
 | Same JSON configuration job [AQ], warm `Run` | 16 existing paths / 181 UTF-8 input bytes | 3.309 ms | 1.695 ms | — | Short diagnostic at 4846928c; 0.9% change within spread; no improvement established |
 | Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
 | Complete text-summary file job [BF], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.118 ms | 1.2864 ms | — | Short diagnostic at c487cb70; bulk hashing; 30.5% lower median alongside 30.0% baseline spread, inconclusive |
+| In-memory JSON parse/edit/dump [BK], warm `RunAsync` | 1,024 records / 55,723 UTF-8 input bytes | 2.380 ms | 0.4414 ms | — | Short diagnostic at 4b930ca5; synchronous literal dispatch; 0.6% higher median within 17–22% spread, inconclusive |
 | Complete JSON-lines aggregation [BB], warm | 4,096 records / 110,592 UTF-8 bytes | 9.475 ms | 4.1751 ms | — | Short diagnostic at 5d5fd2e7; numeric forwarding; 6.1% higher median within 14.2% baseline spread; no benefit established |
 | Same JSON aggregation [AU], fresh compile/run | Same 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
@@ -46,6 +47,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BK | 2026-10-16 UTC | 4b930ca5; synchronous true/false/null dispatch; both roles include error correction 2a2ebada | [JSON transformation, exact guards and error correction](benchmarks/results/2026-10-16-json-literal-dispatch/README.md) |
 | BJ | 2026-10-16 UTC | 527ff833; invocation-owned admitted local-capacity buffers | [Lifetime consolidation, earlier denial and short diagnostic](benchmarks/results/2026-10-16-owned-function-locals/README.md) |
 | BI | 2026-10-16 | 60961196; ordinary Python functions bind existing operands and compiled names | [Keyword calls, live defaults and unchanged guard/owner contracts](benchmarks/results/2026-10-16-ordinary-function-transport/README.md) |
 | BH | 2026-10-16 | d4ac39db; builtin len consumes existing operand storage | [Strip/length loop, unchanged guards and retained inputs](benchmarks/results/2026-10-16-direct-length-call/README.md) |
@@ -131,6 +133,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Synchronous JSON literals, 2026-10-16 UTC | 2a2ebada → 4b930ca5; unchanged in-memory JSON transform | No benefit established: 2.365 → 2.380 ms; 0.6% higher median within 17–22% spread | [Shared scalar admission and unchanged hooks](benchmarks/results/2026-10-16-json-literal-dispatch/README.md) |
 | Invocation-owned function locals, 2026-10-16 UTC | cd32a964 → 527ff833; unchanged starred-list helper | No benefit established: 26.602 → 27.550 ms; 3.6% higher median, one unqualified diagnostic | [Capacity admission, cleanup and semantic controls](benchmarks/results/2026-10-16-owned-function-locals/README.md) |
 | Ordinary function operand transport, 2026-10-16 | e9dbb7ac → 60961196; unchanged keyword helper loop | No speedup established: 6.800 → 6.680 ms; 1.8% change within 13.3% baseline spread | [Shared binder, live defaults and suspension](benchmarks/results/2026-10-16-ordinary-function-transport/README.md) |
 | Direct ordinary builtin len, 2026-10-16 | 17eac376 → d4ac39db; unchanged constructed-text strip/length loop | 24.213 → 17.832 ms; 26.4% lower median in one noisy, unqualified diagnostic | [Argument transport removal and shared guard](benchmarks/results/2026-10-16-direct-length-call/README.md) |

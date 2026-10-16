@@ -1,0 +1,53 @@
+{
+  "errorCorrectionRevision": "2a2ebada5a74663c98ad2947dea5e7fab5386df1",
+  "literalDispatchRevision": "4b930ca52527bb7a320e3bc0a6acef3a41846aff",
+  "checks": [
+    {
+      "stage": "json-errors-public-2",
+      "passed": 116,
+      "elapsedMillisecondsIncludingCleanup": 2333,
+      "assemblySha256": "21F65B118450846CF0B6632E5FC372F2EA5231EDF39CEFAF59DFB6AEEA0D4D9C"
+    },
+    {
+      "stage": "json-literals-focused-white",
+      "passed": 52,
+      "elapsedMillisecondsIncludingCleanup": 1271,
+      "assemblySha256": "1AE826A08FAC33ED4E2B14CD328DBAF4EDCE81FA5FBAC560D53AD8509C190E47"
+    },
+    {
+      "stage": "json-literals-public",
+      "passed": 231,
+      "elapsedMillisecondsIncludingCleanup": 5250,
+      "assemblySha256": "60F1071FF234FBFC7407434D3400DE7B220072C7819AB583EDE56A661B1B1DD1"
+    },
+    {
+      "stage": "json-literals-full-white",
+      "passed": 2795,
+      "elapsedMillisecondsIncludingCleanup": 18196,
+      "assemblySha256": "1AE826A08FAC33ED4E2B14CD328DBAF4EDCE81FA5FBAC560D53AD8509C190E47"
+    },
+    {
+      "stage": "json-literals-stack",
+      "passed": 59,
+      "elapsedMillisecondsIncludingCleanup": 9183,
+      "assemblySha256": "60F1071FF234FBFC7407434D3400DE7B220072C7819AB583EDE56A661B1B1DD1"
+    },
+    {
+      "stage": "json-literals-representative",
+      "passed": 93,
+      "elapsedMillisecondsIncludingCleanup": 15099,
+      "assemblySha256": "60F1071FF234FBFC7407434D3400DE7B220072C7819AB583EDE56A661B1B1DD1"
+    }
+  ],
+  "guardMatricesIdentical": {
+    "literal": 4,
+    "ordinaryCalls": 16
+  },
+  "baseline": "10new trailing-error cases fail against1f7129d6 for expected old text. First candidate has11failures (payload dictionary args and duplicate strict-control coordinates); corrected candidate116pass. Original receipts retained.",
+  "oracles": "14independent CPython3.13.2 error documents and seven prior semantic controls promoted into public tests through both APIs.",
+  "removed": "Trailing-character rune decode/string/concatenation, JSON three-argument payload reconstruction, duplicate strict-control coordinate formatting, three literal branches from generic async token helper.",
+  "limitations": "Remaining backend error wording and explicitly constructed JSONDecodeError behavior are not qualified by this parser-produced boundary. Containers/numeric/constant hooks retain existing async paths; no general parser rewrite.",
+  "protectedHistorySha256": "F496A90B1D68A0B314367907D1967579230DB81BF40B6CC1D8A127325AC69E20",
+  "previousGoalTurn": "Progress: owned buffers and comparison delivered/qualified at1f7129d6; saved literal/error evidence changed this next action.",
+  "qualification": "Focused/full local gates pass; one existing affected diagnostic and coherent platform/package boundary pending."
+}

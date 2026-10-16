@@ -1,0 +1,38 @@
+[
+  {
+    "document": "{",
+    "index": -1,
+    "msg": "Expecting property name enclosed in double quotes",
+    "pos": 1,
+    "line": 1,
+    "column": 2,
+    "expected": "Expecting property name enclosed in double quotes\nExpecting property name enclosed in double quotes: line 1 column 2 (char 1)\n('Expecting property name enclosed in double quotes: line 1 column 2 (char 1)',)\n1 1 2 True\n"
+  },
+  {
+    "document": "[true,",
+    "index": -1,
+    "msg": "Expecting value",
+    "pos": 6,
+    "line": 1,
+    "column": 7,
+    "expected": "Expecting value\nExpecting value: line 1 column 7 (char 6)\n('Expecting value: line 1 column 7 (char 6)',)\n6 1 7 True\n"
+  },
+  {
+    "document": "\"a\u0001b\"",
+    "index": -1,
+    "msg": "Invalid control character at",
+    "pos": 2,
+    "line": 1,
+    "column": 3,
+    "expected": "Invalid control character at\nInvalid control character at: line 1 column 3 (char 2)\n('Invalid control character at: line 1 column 3 (char 2)',)\n2 1 3 True\n"
+  },
+  {
+    "document": "café😀",
+    "index": 20,
+    "msg": "Expecting value",
+    "pos": 20,
+    "line": 1,
+    "column": 21,
+    "expected": "Expecting value\nExpecting value: line 1 column 21 (char 20)\n('Expecting value: line 1 column 21 (char 20)',)\n20 1 21 True\n"
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "document": "true false",
+    "pos": 5,
+    "line": 1,
+    "column": 6,
+    "rawStart": 0,
+    "rawEnd": 4,
+    "expected": "Extra data\nExtra data: line 1 column 6 (char 5)\n('Extra data: line 1 column 6 (char 5)',)\n5 1 6 True\n4\n"
+  },
+  {
+    "document": "nullx",
+    "pos": 4,
+    "line": 1,
+    "column": 5,
+    "rawStart": 0,
+    "rawEnd": 4,
+    "expected": "Extra data\nExtra data: line 1 column 5 (char 4)\n('Extra data: line 1 column 5 (char 4)',)\n4 1 5 True\n4\n"
+  },
+  {
+    "document": "01",
+    "pos": 1,
+    "line": 1,
+    "column": 2,
+    "rawStart": 0,
+    "rawEnd": 1,
+    "expected": "Extra data\nExtra data: line 1 column 2 (char 1)\n('Extra data: line 1 column 2 (char 1)',)\n1 1 2 True\n1\n"
+  },
+  {
+    "document": "[1] [2]",
+    "pos": 4,
+    "line": 1,
+    "column": 5,
+    "rawStart": 0,
+    "rawEnd": 3,
+    "expected": "Extra data\nExtra data: line 1 column 5 (char 4)\n('Extra data: line 1 column 5 (char 4)',)\n4 1 5 True\n3\n"
+  },
+  {
+    "document": "{\"a\":1} {}",
+    "pos": 8,
+    "line": 1,
+    "column": 9,
+    "rawStart": 0,
+    "rawEnd": 7,
+    "expected": "Extra data\nExtra data: line 1 column 9 (char 8)\n('Extra data: line 1 column 9 (char 8)',)\n8 1 9 True\n7\n"
+  },
+  {
+    "document": "\"café😀\" λ",
+    "pos": 8,
+    "line": 1,
+    "column": 9,
+    "rawStart": 0,
+    "rawEnd": 7,
+    "expected": "Extra data\nExtra data: line 1 column 9 (char 8)\n('Extra data: line 1 column 9 (char 8)',)\n8 1 9 True\n7\n"
+  },
+  {
+    "document": "\n{\"é\":\"😀\"}\n false",
+    "pos": 12,
+    "line": 3,
+    "column": 2,
+    "rawStart": 1,
+    "rawEnd": 10,
+    "expected": "Extra data\nExtra data: line 3 column 2 (char 12)\n('Extra data: line 3 column 2 (char 12)',)\n12 3 2 True\n10\n"
+  },
+  {
+    "document": "-Infinity!",
+    "pos": 9,
+    "line": 1,
+    "column": 10,
+    "rawStart": 0,
+    "rawEnd": 9,
+    "expected": "Extra data\nExtra data: line 1 column 10 (char 9)\n('Extra data: line 1 column 10 (char 9)',)\n9 1 10 True\n9\n"
+  },
+  {
+    "document": "NaNx",
+    "pos": 3,
+    "line": 1,
+    "column": 4,
+    "rawStart": 0,
+    "rawEnd": 3,
+    "expected": "Extra data\nExtra data: line 1 column 4 (char 3)\n('Extra data: line 1 column 4 (char 3)',)\n3 1 4 True\n3\n"
+  },
+  {
+    "document": "  null \n\t true",
+    "pos": 10,
+    "line": 2,
+    "column": 3,
+    "rawStart": 2,
+    "rawEnd": 6,
+    "expected": "Extra data\nExtra data: line 2 column 3 (char 10)\n('Extra data: line 2 column 3 (char 10)',)\n10 2 3 True\n6\n"
+  }
+]
