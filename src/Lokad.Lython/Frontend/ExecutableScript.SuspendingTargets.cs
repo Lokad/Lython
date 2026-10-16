@@ -2,6 +2,7 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed record ExecutableUnpackValues(UnpackingLayout Layout) : ExecutableOperation;
 internal sealed record ExecutableStorePreparedTarget(AssignmentTargetSyntax Target, bool ValueLast) : ExecutableOperation;
+internal sealed record ExecutableStoreSubscript(LythonSourceSpan TargetSpan) : ExecutableOperation;
 internal sealed record ExecutableReadPreparedTarget(AssignmentTargetSyntax Target) : ExecutableOperation;
 
 internal sealed partial class ExecutableScript

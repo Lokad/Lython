@@ -85,6 +85,12 @@ Native enumeration working storage is disposed on loop/comprehension failure or
 early exit. This releases its temporary allowance without closing retained Python
 iterator/generator values or refunding their surviving storage.
 
+Executable subscript stores retain RHS/receiver/key operands under the existing
+execution owner until the awaited mutation ends, then clear them even on failure.
+They introduce no per-store read dictionary, scratch owner or reservation fee.
+Stored aliases retain their existing funding; clearing operands does not refund
+data still retained by containers or results.
+
 Host command requests carry the active budget in
 `LythonSubprocessRequest.MemoryBudget`. A cooperating dispatcher borrows it,
 creates any working scopes it needs, forwards it to nested Lython executions,

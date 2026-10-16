@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile ordinary subscript-store receiver/key expressions in the caller frame, preserving RHS-first and chained-assignment order. Use a fixed three-operand store with existing mutation helpers, cleanup and target diagnostics; avoid general target evaluation and per-store read packaging.
+
 - Resolve implicit item mutations through type-level slots, ignoring instance-only overrides and getattr fallback. Await setter/deleter descriptor binding under RunAsync while preserving mutation arguments, alias funding and existing missing/noncallable errors.
 
 - Share the synchronous observed-value handler for exact integer reads on native list, tuple, bytes, text and range values under RunAsync; custom containers/indices, mappings and slices retain asynchronous dispatch.

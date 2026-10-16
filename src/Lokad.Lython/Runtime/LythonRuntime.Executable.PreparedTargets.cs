@@ -12,6 +12,18 @@ internal sealed partial class LythonRuntime
         {
             switch (operation)
             {
+                case ExecutableStoreSubscript store:
+                {
+                    var first = _stack.Count - 3;
+                    try
+                    {
+                        if (asynchronous)
+                            await SetHeaderSubscriptAsync(_stack[first + 1], _stack[first + 2], _stack[first], store.TargetSpan, _context).ConfigureAwait(false);
+                        else SetSubscriptValue(_stack[first + 1], _stack[first + 2], _stack[first], store.TargetSpan, _context);
+                    }
+                    finally { _stack.RemoveTail(3); }
+                    break;
+                }
                 case ExecutableFailAssertion assertion:
                     ThrowAssertionError(assertion.HasMessage ? Pop(ref _stack, span) : null, _context, span);
                     break;
