@@ -7,6 +7,17 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 fresh JSON boundary](results/2026-10-16-json-fresh/README.md)
+measures fresh compile/run of the unchanged complete aggregation job inside warm
+hosts. Two identical Lython binaries at 1ad18b79 observed 9.8803/10.0244 ms,
+CPython 4.3585 ms; spread 21.3%/8.7%/0.7%. These are equivalent controls and an
+unqualified diagnostic, not a runtime change, confidence interval or pure compile
+cost. One 9.364 s capture, no other lane/repeat/tuning/new framework. Independent
+three-size goldens per control, all 524 production sources and shared tooling
+verified, seven workers/fixtures gone and lease free. AU adds the fresh boundary;
+AT and all warm data remain separate. No historical warm subtraction or current
+overall ratio follows.
+
 The [2026-10-16 JSON number delivery](results/2026-10-16-json-utf8-numbers/README.md)
 removes unconditional CLR numeric text conversion and shares raw-hook preparation
 and existing magnitude admission. One unchanged complete job observed 9.8138 ->

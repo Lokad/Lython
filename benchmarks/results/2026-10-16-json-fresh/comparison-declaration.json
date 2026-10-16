@@ -1,0 +1,18 @@
+{
+  "measuredRevision": "1ad18b79f57421e15df10188ff6ec83f86c98d88",
+  "baselineRevision": "1ad18b79f57421e15df10188ff6ec83f86c98d88",
+  "candidateRevision": "1ad18b79f57421e15df10188ff6ec83f86c98d88",
+  "controlsEquivalent": true,
+  "productionChanges": false,
+  "productionSourceCount": 524,
+  "productionManifestSha256": "85e5a2a535a53b589e39e9ea060e3b9f735f72861f8d3f272dec5f68e5c63705",
+  "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+  "sourceArchiveSha256": "4a3fe70b1dd7cb0a2c0d8b33cb421fed40fd2c8e9897211054283a9d43cd8411",
+  "caseId": "scripts.json-summary.large",
+  "lane": "compile-run",
+  "captures": 1,
+  "retries": false,
+  "boundary": "Fresh code compilation and complete JSON-lines aggregation inside a warm host; 4096 records / 110592 UTF-8 bytes. Same existing file reset/staging, stdout/output byte checks, projection and prior-result cleanup. Process startup, transport and full hashes excluded.",
+  "normalGCAndTiering": true,
+  "stoppingRule": "One seconds-long compile-run capture with two identical Lython controls and CPython; no other lane, repeat/tuning/new producer/framework or noise campaign. No runtime speedup or pure-compilation subtraction claim."
+}

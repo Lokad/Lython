@@ -7,6 +7,7 @@
 | Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
 | Complete text-summary file job [AN], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.414 ms | 1.239 ms | — | Short diagnostic at 7caf4833; target-read consolidation retained; timing change inconclusive (baseline spread 12.4%) |
 | Complete JSON-lines aggregation [AT], warm | 4,096 records / 110,592 UTF-8 bytes | 9.587 ms | 4.401 ms | — | Short diagnostic at dc950cde; 2.3% lower median within 17.6% baseline spread; inconclusive |
+| Same JSON aggregation [AU], fresh compile/run | Same 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
 | File search with helper and protected early exit [AR], warm | 2,049 lines / 42,010 UTF-8 bytes | 3.223 ms | 0.2845 ms | — | Short diagnostic at 473aa396; inconclusive (57%/64% Lython spread); no improvement established |
 | Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
@@ -22,8 +23,8 @@ for changes against prior Lython versions.
 
 **Ratio convention:** Lython elapsed time divided by CPython elapsed time;
 above 1 means Lython takes longer. A dash means unavailable or unqualified,
-never zero. No workload ratio is qualified here. AF's range contains the medians
-of two identical Lython controls, not a confidence interval. Other entries show
+never zero. No workload ratio is qualified here. AF and AU ranges contain the medians
+of two identical Lython controls, not confidence intervals. Other entries show
 one diagnostic median. The jobs show performance gaps in those runs; their
 magnitudes and changes remain uncertain as marked.
 
@@ -43,6 +44,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 | AF | 2026-10-15 | 654b4f5a; two identical Lython controls, freshly compiled configuration job | [Compile-to-result boundary, controls and independent file goldens](benchmarks/results/2026-10-15-config-fresh/README.md) |
 | C | 2026-10-14 | f95fb734, governed runtime and worker ownership; parser candidate rejected | [Complete CSV diagnostic](benchmarks/results/2026-10-14-representative-csv/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-csv/micro.json) |
 | AN | 2026-10-16 | 7caf4833; three frozen compiler/runtime files on a5a96af2; both roles include the type-slot mutation prerequisite | [Executable subscript headers, correctness and inconclusive complete-job timing](benchmarks/results/2026-10-16-executable-subscript-stores/README.md) |
+| AU | 2026-10-16 | 1ad18b79; identical Lython binary in both controls; fresh compile/run | [Fresh complete JSON job, boundary and equivalent controls](benchmarks/results/2026-10-16-json-fresh/README.md) |
 | AT | 2026-10-16 | dc950cde on 09f44e94; two frozen numeric/preflight sources; unchanged JSON aggregation | [UTF-8 numeric parsing, shared admission and inconclusive timing](benchmarks/results/2026-10-16-json-utf8-numbers/README.md) |
 | AD | 2026-10-15 | Working exact-bytes sum candidate on 64fecd53; one frozen source; unchanged script/tooling | [Complete manifest job, exact sums and ownership/preflight checks](benchmarks/results/2026-10-15-bytes-sum/README.md) |
 | P | 2026-10-15 | Working protected-loop candidate on b2235259; two frontend source changes frozen by hashes | [Separate warm and compile/run diagnostics](benchmarks/results/2026-10-15-protected-loop-jumps/README.md), [source declaration](benchmarks/results/2026-10-15-protected-loop-jumps/comparison-declaration.json) |
@@ -66,7 +68,7 @@ remain available behind the detailed diagnostic history.
 
 ## Execution, compilation and startup are separate
 
-Except for the explicitly marked fresh compile/run rows AF and P, the leading table uses
+Except for the explicitly marked fresh compile/run rows AF, AU and P, the leading table uses
 **warm execution**: both engines reuse compiled code,
 create fresh invocation state, execute the complete module, capture/project
 output and perform the cheap golden check inside the worker timer. Compilation,
@@ -131,8 +133,8 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 The complete CSV, text, JSON and file jobs have independent stdout/file goldens
 and matched efficient host operations; the leading table records their named
-revision snapshots. Fresh compile-to-result coverage beyond configuration and
-search, current-HEAD performance and host tail latency remain incomplete.
+revision snapshots. Fresh compile-to-result coverage beyond configuration,
+search and JSON aggregation, current-HEAD performance and host tail latency remain incomplete.
 Use targeted comparisons to fill material gaps, rather than a new campaign.
 
 The runtime now uses [cooperative admission and explicit owners](MEMORY.md),

@@ -1,0 +1,43 @@
+{
+  "revision": "1ad18b79f57421e15df10188ff6ec83f86c98d88",
+  "sourceOnly": true,
+  "purpose": "Fill AP00 material gap: fresh compile-to-result for complete JSON aggregation. Not a runtime optimization or warm diagnostic repeat.",
+  "sourceHashes": {
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonMicroCommand.cs": "C94517C052799B925BB203A2BF398F8C55AC80E01A7BD2B6652DFFA196F4F497",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/LythonComparisonWorker.cs": "6A9C78EDCB3232FCCC73A2CDE2EB841FF0CE4280FAAE9464279C71CBF3B2EDA3",
+    "benchmarks/cpython-worker.py": "887ECE4480977FE10BD74862A510CC540A8ECFBD41229ABCC291DB7B9C32C639",
+    "src/Lokad.Lython/Public/LythonEngine.cs": "B4F6190AC8610F99692FE6E0615EAC419723095D477719B4362405CEAA563E59"
+  },
+  "existingSupport": [
+    "ComparisonMicroCommand accepts compile-run without adding a lane or framework.",
+    "Lython worker compiles a new script inside each timed iteration and disposes it after Invoke.",
+    "CPython worker calls compile_case inside each compile-run iteration, then Invoke.",
+    "LythonEngine.CompileCore runs frontend/lowering/executable construction; source-script caching is not used.",
+    "Both workers use their existing complete-file reset/output-check/cleanup boundary."
+  ],
+  "proposedCapture": {
+    "caseId": "scripts.json-summary.large",
+    "lane": "compile-run",
+    "baselineAndCandidate": "identical current qualified Lython binary; disclose equivalent controls",
+    "externalBaseline": "ordinary persistent CPython, freshly compile code per job",
+    "runtimeChanges": false,
+    "captures": 1,
+    "startup": "excluded; workers/host warm",
+    "compileOnly": "not measured separately"
+  },
+  "acceptance": [
+    "Exact revision/source/SDK/runtime/CPython identities and declared unchanged case.",
+    "Independent stdout/file goldens before measurement.",
+    "Preserve protections, normal GC/tiering, fresh job state and included cleanup.",
+    "Retain all samples and report both equivalent controls/spread honestly; unqualified ratio stays unavailable.",
+    "Prove workers and file fixtures gone, services inactive and exclusive lease available.",
+    "Add useful fresh JSON snapshot with warm snapshots separate; archive nothing by implication."
+  ],
+  "stoppingCriteria": [
+    "One seconds-long capture, no other lane/repeat/retuning/full noise campaign.",
+    "No inference of pure compilation cost by subtracting historical warm captures.",
+    "If current producer cannot express the intended boundary, stop and record instead of redesigning.",
+    "Other AP00 cases remain explicit; runtime roadmap resumes after this bounded documentation task."
+  ],
+  "captureStarted": false
+}
