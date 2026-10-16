@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Preserve mutable-container invalidation across eager comprehension scopes, fixing false out-of-range and missing-key diagnostics after helper calls. Analyze lambda defaults immediately while keeping iteration bindings local, generator/lambda-body effects deferred, and proven diagnostics after pure or unreachable expressions. Account for generator outer-iterable effects immediately and skip statically empty comprehension bodies.
+
 - Compile eligible lambdas created inside eager comprehensions, capturing live iteration bindings without forcing caller namespace mirroring. Preserve late/default/transitive captures, admission preflights, retained aliases and asynchronous cleanup. Give Python functions identity hashing and include current captured free variables in compiled locals()/dir() snapshots.
 
 - Await type-level __index__ binding and calls for optional str.startswith/endswith bounds under RunAsync. Validate the start before invoking the end callback, ignore instance shadows, and preserve ordinary native-bound completion, cancellation, retained receivers and terminal admission refusal. Validate invalid affixes even for impossible ranges and honor Boolean bounds on empty text. Consolidate the two method handlers and report Python-shaped noncallable index-slot errors.

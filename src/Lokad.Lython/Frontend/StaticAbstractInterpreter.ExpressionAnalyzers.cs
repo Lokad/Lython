@@ -30,7 +30,7 @@ internal static partial class StaticAbstractInterpreter
                     return true;
 
                 case GeneratorExpressionSyntax generator:
-                    AnalyzeComprehension(generator.ItemExpression, generator.Clauses, diagnostics, bindings);
+                    AnalyzeComprehension(generator.ItemExpression, generator.Clauses, diagnostics, bindings, deferred: true);
                     return true;
 
                 case DictLiteralExpressionSyntax dict:
@@ -67,6 +67,7 @@ internal static partial class StaticAbstractInterpreter
                         AnalyzeExpression(dictComprehension.KeyExpression, diagnostics, comprehensionBindings);
                         AnalyzeExpression(dictComprehension.ValueExpression, diagnostics, comprehensionBindings);
                     }
+                    bindings.ApplyContainerInvalidation(comprehensionBindings);
                     return true;
 
                 case TupleLiteralExpressionSyntax tuple:
@@ -85,12 +86,17 @@ internal static partial class StaticAbstractInterpreter
                 ExpressionSyntax item,
                 IReadOnlyList<ComprehensionClauseSyntax> clauses,
                 List<LythonDiagnostic> diagnostics,
-                AbstractState bindings)
+                AbstractState bindings,
+                bool deferred = false)
             {
                 var comprehensionBindings = AnalyzeComprehensionClauses(clauses, diagnostics, bindings, out var reachable);
                 if (reachable)
                 {
                     AnalyzeExpression(item, diagnostics, comprehensionBindings);
+                }
+                if (!deferred)
+                {
+                    bindings.ApplyContainerInvalidation(comprehensionBindings);
                 }
             }
 
@@ -334,6 +340,10 @@ internal static partial class StaticAbstractInterpreter
                     return true;
 
                 case LambdaExpressionSyntax lambda:
+                    foreach (var parameter in lambda.Parameters)
+                    {
+                        AnalyzeExpressionIfPresent(parameter.DefaultValue, diagnostics, bindings);
+                    }
                     var lambdaBindings = bindings.CloneForDeferredBody();
                     StaticBindingEngine.BindFunctionParametersUnknown(lambda.Parameters, lambdaBindings);
                     AnalyzeExpression(lambda.Body, diagnostics, lambdaBindings);

@@ -879,6 +879,16 @@ Static analysis of boolean conditions must respect the same reachability. Facts 
 
 For supported statically known sized values, comparison of `len(value)` with a known integer may refine conservative minimum and maximum length bounds on the corresponding branch. Refinement must account for reversed comparisons, negation, and negative indexes. A known sequence mutation must invalidate or widen facts for possible aliases; an unknown length must not become a static out-of-range error. Exact literal bounds continue to justify diagnostics for definitely invalid positive or negative indexes.
 
+Container-fact invalidation caused by calls analyzed inside eager list, set and
+dictionary comprehensions must reach the surrounding state, without exporting
+iteration bindings. A generator expression evaluates its outer iterable at construction;
+only that iterable's effects apply immediately. Its deferred clauses and body,
+and deferred lambda bodies, must not discard surrounding facts merely because
+they are analyzed. Lambda defaults are evaluated and analyzed immediately in the
+enclosing scope. Proven empty iterables and short-circuited conditions skip
+unreachable comprehension expressions. A possible mutation may defer a certain
+index or missing-key diagnostic to the ordinary runtime check.
+
 Exception selection can observe partial mutations from the protected body. Before
 analyzing a computed exception header or handler, discard pre-`try` dictionary
 contents and mutable-sequence shape facts, including dictionary facts nested in

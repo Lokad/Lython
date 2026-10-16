@@ -42,10 +42,22 @@ internal static partial class StaticAbstractInterpreter
     {
         var comprehensionBindings = bindings.Clone();
         reachable = true;
-        foreach (var clause in clauses)
+        for (var index = 0; index < clauses.Count; index++)
         {
+            var clause = clauses[index];
             AnalyzeExpression(clause.Iterable, diagnostics, comprehensionBindings);
+            if (index == 0)
+            {
+                // Even a lazy generator evaluates its outer iterable now.
+                bindings.ApplyContainerInvalidation(comprehensionBindings);
+            }
             StaticIterationDiagnostics.AnalyzeLoopTarget(clause.Target, clause.Iterable, clause.Span, diagnostics, comprehensionBindings);
+            if (StaticAbstractValueResolver.TryResolve(clause.Iterable, comprehensionBindings, out var iterable) &&
+                StaticAbstractFacts.TryGetTruthiness(iterable, out var hasItems) && !hasItems)
+            {
+                reachable = false;
+                return comprehensionBindings;
+            }
             StaticBindingEngine.BindLoopTargetFromIterable(clause.Target, clause.Iterable, comprehensionBindings);
             if (clause.Condition is not null)
             {

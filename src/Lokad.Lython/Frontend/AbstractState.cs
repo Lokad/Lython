@@ -66,6 +66,7 @@ internal sealed class AbstractState
     private readonly Dictionary<ExpressionSyntax, CachedAbstractValue> _abstractValueCache;
     private readonly Dictionary<string, AbstractSequenceLengthBounds> _sequenceLengths;
     private readonly Dictionary<string, AbstractValue> _values;
+    private bool _containerFactsInvalidated;
     private int _version;
 
     public AbstractState()
@@ -126,6 +127,7 @@ internal sealed class AbstractState
 
     public void InvalidateDictionaryFacts()
     {
+        _containerFactsInvalidated = true;
         // Mutable mapping aliases are not tracked. Calls and mutations can
         // change any reachable mapping, including one captured by a function.
         foreach (var name in _values.Keys.ToArray())
@@ -161,6 +163,7 @@ internal sealed class AbstractState
 
     public void InvalidateMutableSequenceFacts()
     {
+        _containerFactsInvalidated = true;
         var changed = false;
         foreach (var name in _values.Keys.ToArray())
         {
@@ -184,6 +187,17 @@ internal sealed class AbstractState
         if (changed)
         {
             InvalidateCachedFacts();
+        }
+    }
+
+    public void ApplyContainerInvalidation(AbstractState other)
+    {
+        // A lexical child can mutate an outer container even when its own
+        // binding shadows that container. Carry the effect, not its bindings.
+        if (other._containerFactsInvalidated)
+        {
+            InvalidateDictionaryFacts();
+            InvalidateMutableSequenceFacts();
         }
     }
 
@@ -222,12 +236,15 @@ internal sealed class AbstractState
             _ => false,
         };
 
+    // Each clone records new invalidation requests independently. Deferred
+    // bodies do not publish them; evaluated branches join them below.
     public AbstractState Clone() => new(
         new Dictionary<string, AbstractValue>(_values, StringComparer.Ordinal),
         new Dictionary<string, AbstractSequenceLengthBounds>(_sequenceLengths, StringComparer.Ordinal));
 
     public void ReplaceWith(AbstractState other)
     {
+        _containerFactsInvalidated |= other._containerFactsInvalidated;
         _values.Clear();
         foreach (var (name, value) in other._values)
         {
@@ -245,6 +262,7 @@ internal sealed class AbstractState
 
     public void MergeFrom(AbstractState left, AbstractState right)
     {
+        _containerFactsInvalidated |= left._containerFactsInvalidated || right._containerFactsInvalidated;
         _values.Clear();
         foreach (var name in left._values.Keys.Concat(right._values.Keys).Distinct(StringComparer.Ordinal))
         {
