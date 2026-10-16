@@ -329,23 +329,23 @@ internal sealed partial class LythonRuntime
     private static bool Contains(object container, object candidate, LythonSourceSpan span) => PyContainment.Contains(container, candidate, span);
 
     internal static object GetUserItem(PyInstance instance, object index, ExecutionContext context, LythonSourceSpan span)
+        => GetUserItemCoreAsync(instance, index, context, span, false).GetAwaiter().GetResult();
+
+    internal static ValueTask<object> GetUserItemAsync(PyInstance instance, object index, ExecutionContext context, LythonSourceSpan span)
+        => GetUserItemCoreAsync(instance, index, context, span, true);
+
+    private static async ValueTask<object> GetUserItemCoreAsync(PyInstance instance, object index,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        if (!instance.TryGetAttribute("__getitem__", context, span, out var member) || member is not ICallable callable)
-        {
+        if (!instance.Type.TryLookupInMro("__getitem__", 0, out var raw, out _))
             throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object is not subscriptable", span);
-        }
-
-        return CallableInvocation.InvokeUnary(callable, index, span, context);
-    }
-
-    internal static async ValueTask<object> GetUserItemAsync(PyInstance instance, object index, ExecutionContext context, LythonSourceSpan span)
-    {
-        if (!instance.TryGetAttribute("__getitem__", context, span, out var member) || member is not ICallable callable)
-        {
-            throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object is not subscriptable", span);
-        }
-
-        return await CallableInvocation.InvokeUnaryAsync(callable, index, span, context).ConfigureAwait(false);
+        var member = asynchronous
+            ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false)
+            : PyAttributeLookup.BindForInstance(instance, raw, context, span);
+        if (member is not ICallable callable) throw NotCallableError(member, context, span);
+        return asynchronous
+            ? await CallableInvocation.InvokeUnaryAsync(callable, index, span, context).ConfigureAwait(false)
+            : CallableInvocation.InvokeUnary(callable, index, span, context);
     }
 
     // Shared native sequence/XML conversion: implicit index hooks come from the

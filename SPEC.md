@@ -940,6 +940,12 @@ stores convert the retained key again after the RHS. Read-only builtin sequences
 convert a valid scalar index hook before rejecting mutation with TypeError.
 Target handlers await descriptor binding/callbacks under `RunAsync`; mapping and
 user-object keys stay raw. Earlier callback effects survive subsequent refusal.
+Implicit user item reads resolve `__getitem__` from the receiver's type MRO,
+bypassing instance attributes and `__getattr__`/`__getattribute__` overrides.
+Explicit access to `obj.__getitem__` remains ordinary attribute access. A missing
+slot reports a non-subscriptable object; a present non-callable slot reports its
+callable TypeError. Async reads await descriptor binding and invocation while
+retaining the original key and any returned aliases.
 
 Colon slices delivered to a user object's item methods retain the original
 start, stop and step objects without `__index__` coercion. A fresh guest-visible

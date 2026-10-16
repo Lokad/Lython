@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resolve implicit user __getitem__ through type-level slots, preserving ordinary explicit attribute access and callable/non-callable error distinctions. Share synchronous/asynchronous binding and existing unary invocation, await valid descriptors under RunAsync, and preserve raw keys, aliases, cancellation and diagnostics.
+
 - Convert native mutation indices through type-level __index__, awaiting target callbacks under RunAsync and re-coercing retained augmented keys after the RHS. Preserve raw mapping/custom keys and Python's read-only rejection order. Delete the duplicate synchronous item-deletion dispatcher while retaining ambient structural guards, admission and cleanup.
 
 - Compile member augmented assignments with existing duplicate/member-load/in-place instructions and the shared member store. Preserve captured receivers, current setters, in-place aliases, yielding targets and async callbacks; remove their statement fallback and obsolete prepared member-read arm without per-store dictionaries or a new opcode/owner/frame.
