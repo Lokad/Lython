@@ -1,0 +1,18 @@
+{
+  "baselineRevision": "722f4babf813eb3ed2f95fc4e7f29e36bc951355",
+  "candidateRevision": "155843d0f55319f7952dc30b9522156c1e72c55f",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Comprehensions.cs": "47b433188c1c65aca986b79ee727071841a644254e3a9b92b333757851252228",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "ad23d3b3e75c4c303fadf31a0a206940511a65d9f9a79fb75f5c8537cee9f64d",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingTargets.cs": "2b19a3870ff4b2c3852fcd193c4c75e5f97f415265cc4a812ce4964811605703"
+  },
+  "sourceArchiveSha256": "82ad5afadf9b7c2d146fe706594291f2b750b148d810213738a349a4f68702d9",
+  "caseId": "lists.stable-sort.medium",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Share executable for/comprehension target lowering and scoped resolved name stores; remove eligible general target bindings/visitor dispatch. Retain required slice fallback; no new opcode/frame/owner/cache.",
+  "normalGCAndTiering": true,
+  "boundary": "Unchanged 2048-tuple stable-sort job: input comprehension, lambda sort, print/projection and prior-result cleanup in fresh invocation state; warm synchronous Run and ordinary warm CPython. Compile/startup/transport/full hashing excluded.",
+  "stoppingRule": "One fixed existing affected workload; no repeat, retuning, new producer/framework or 600-second lane. Source consolidation/admission contract can stand independently of noisy timing."
+}

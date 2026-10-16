@@ -7,6 +7,16 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 loop-target delivery](results/2026-10-16-loop-target-stores/README.md)
+shares executable target operations for ordinary for loops and eager
+comprehensions, preserving the existing inlined binding scope. One unchanged
+2,048-tuple stable-sort job observed 1.6082 ->1.5503 ms, CPython0.3033 ms,
+spread3.5%/0.9%/0.5%. The observed3.6% change is comparable to baseline spread and
+is inconclusive. Three frozen compiler differences, normal policies, one7.703s
+command, seven workers exited and VM lease available; no repeat/retuning or new
+producer. AO replaces the leading sort snapshot; AL's time and revision remain
+archived below. No current overall ratio or compile-to-result claim follows.
+
 The [2026-10-16 executable subscript-store delivery](results/2026-10-16-executable-subscript-stores/README.md)
 compiles ordinary target reads in the existing frame and removes their general
 syntax/lowered-evaluation binding. One complete text job observed 6.7951 ->
@@ -703,7 +713,7 @@ measurement-status labels retain their original meaning; see the
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Stable sort with lambda key [AL], warm `Run` | 2,048 tuples; build, stable-sort and print | 1.595 ms | 0.3020 ms | — | One diagnostic; observed 10.2% lower Lython median; executable lambda bodies; comprehension unchanged |
+| Stable sort with lambda key [AL], warm `Run` | 2,048 tuples; build, stable-sort and print | 1.595 ms | 0.3020 ms | — | One diagnostic; observed 10.2% lower Lython median; executable lambda bodies; comprehension unchanged; precedes the final name-label fix |
 | Expanded-call forwarding helper [AK], warm `Run` | 2,048 calls; tuple and keyword mapping | 2.077 ms | 0.2443 ms | — | One diagnostic; observed 13.9% lower Lython median; fallback/mirroring removed; general binder remains |
 | Formatted report helper [AJ], warm `Run` | 2,048 calls; padded row and computed next value | 2.125 ms | 0.4201 ms | — | One diagnostic; observed 13.4% lower Lython median; ordinary f-string fallback removed |
 | Expanded set/dictionary helper [AI], warm `Run` | 2,048 calls; mixed literal/expanded entries | 4.963 ms | 0.6326 ms | — | One diagnostic; observed 8.8% lower Lython median; fallbacks/mirroring removed |
