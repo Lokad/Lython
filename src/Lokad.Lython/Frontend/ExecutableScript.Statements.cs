@@ -153,6 +153,17 @@ internal sealed partial class ExecutableScript
                     return currentBlock;
 
                 case LoweredAugmentedAssignmentStatement augmented:
+                    if (augmented.Target is LoweredMemberAugmentedAssignmentTarget augmentedMember)
+                    {
+                        currentBlock = CompileExpression(augmentedMember.Receiver, currentBlock);
+                        AddInstruction(currentBlock, ExecutableInstruction.Dup(augmentedMember.Span));
+                        AddInstruction(currentBlock, ExecutableInstruction.LoadMember(InternName(augmentedMember.Target.MemberName),
+                            AllocateMemberCache(), augmentedMember.Span));
+                        currentBlock = CompileExpression(augmented.Expression, currentBlock);
+                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
+                        EmitOperation(new ExecutableStoreMember(augmentedMember.Target.MemberName, augmentedMember.Span, ValueLast: true), augmented.Span, currentBlock);
+                        return currentBlock;
+                    }
                     if (augmented.Target is not LoweredNameAugmentedAssignmentTarget augmentedName)
                     {
                         if (_generator && (GeneratorSyntaxFacts.ContainsYield(augmented.Expression.Syntax) ||

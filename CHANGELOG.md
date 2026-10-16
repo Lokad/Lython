@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile member augmented assignments with existing duplicate/member-load/in-place instructions and the shared member store. Preserve captured receivers, current setters, in-place aliases, yielding targets and async callbacks; remove their statement fallback and obsolete prepared member-read arm without per-store dictionaries or a new opcode/owner/frame.
+
 - Resolve native slice bounds and slice.indices() lengths through type-level __index__ hooks, awaiting descriptor binding, callbacks and replacement iteration under RunAsync. Share colon/explicit-key and sync/async mutation helpers; replace the duplicated slice drain and final array copy with the existing owned lease while preserving overlap admission, cancellation and retained aliases.
 
 - Compile ordinary slice-store receivers and bounds into the current frame. Hold five operands through the existing mutation helpers and awaited user setters; remove the final general target opcode, operand kind, binding table, builder plumbing and VM handlers. Preserve raw bounds, aliases, cancellation, diagnostics and native storage preflights.

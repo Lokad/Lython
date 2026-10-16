@@ -953,6 +953,12 @@ Eligible executable member and subscript stores evaluate the RHS, receiver and,
 for subscripts, key in that order through ordinary instructions. Their two or
 three operands remain available until the shared mutation helper completes,
 including actual asynchronous suspension.
+Member augmented assignments evaluate and retain the receiver, load its attribute,
+then evaluate the RHS and apply the in-place operator. The same member-store
+operation consumes the updated value last, resolving the current setter after the
+RHS. Ordinary and yielding member updates use executable instructions without
+prepared read dictionaries or fallback-only local mirroring. Required local
+introspection and other fallback routes retain their own namespace behavior.
 Chained assignments still store left to right and retain earlier mutations if a
 later target fails. Statement checkpoints and target diagnostics retain their own
 spans. Augmented and explicitly yielding target routes retain

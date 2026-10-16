@@ -15,15 +15,17 @@ internal sealed partial class LythonRuntime
                 case ExecutableStoreMember member:
                 {
                     var first = _stack.Count - 2;
+                    var receiver = _stack[first + (member.ValueLast ? 0 : 1)];
+                    var value = _stack[first + (member.ValueLast ? 1 : 0)];
                     try
                     {
                         if (asynchronous)
                         {
-                            if (!await PyMemberAccess.TryAssignAsync(_stack[first + 1], member.MemberName,
-                                _stack[first], _context, member.TargetSpan).ConfigureAwait(false))
+                            if (!await PyMemberAccess.TryAssignAsync(receiver, member.MemberName,
+                                value, _context, member.TargetSpan).ConfigureAwait(false))
                                 throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", member.TargetSpan);
                         }
-                        else SetMemberValue(_stack[first + 1], member.MemberName, _stack[first], member.TargetSpan, _context);
+                        else SetMemberValue(receiver, member.MemberName, value, member.TargetSpan, _context);
                     }
                     finally { _stack.RemoveTail(2); }
                     break;
@@ -173,13 +175,6 @@ internal sealed partial class LythonRuntime
     {
         switch (target)
         {
-            case MemberAssignmentTargetSyntax member:
-                var receiver = reads[member.Target];
-                var result = asynchronous ? await TryResolveRuntimeMemberAsync(receiver, member.MemberName, _context, span).ConfigureAwait(false)
-                    : TryResolveRuntimeMember(receiver, member.MemberName, _context, span, out var value)
-                        ? (Found: true, Value: value) : (Found: false, Value: (object)PyNone.Instance);
-                if (!result.Found) throw PyMemberAccess.CreateMissingMemberError(receiver, member.MemberName, span, _context);
-                return result.Value;
             case SubscriptAssignmentTargetSyntax item:
                 var container = reads[item.Target];
                 var index = reads[item.Index];

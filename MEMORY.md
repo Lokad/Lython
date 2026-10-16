@@ -109,6 +109,11 @@ execution owner until the awaited mutation ends, then clear them even on failure
 They introduce no per-store read dictionary, scratch owner or reservation fee.
 Stored aliases retain their existing funding; clearing operands does not refund
 data still retained by containers or results.
+Member augmented stores use the same two operands after the in-place operation;
+the receiver also remains live through getter/RHS suspension. Their executable
+path introduces no prepared-read dictionary, temporary owner or 1,024-byte working
+fee. Setter failure preserves any earlier in-place mutation, as Python requires.
+Instruction fuel and narrow admission thresholds can differ from lowered execution.
 Ordinary slice stores follow the same policy with five existing operand slots:
 RHS, receiver, start, stop and step. Native list replacement keeps its existing
 temporary-capacity and destination-overlap preflights; user/mapping slice keys
