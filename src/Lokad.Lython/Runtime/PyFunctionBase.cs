@@ -82,6 +82,16 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         return InvokeBound(boundArguments, span);
     }
 
+    // A separate receiver entry keeps the existing invocation depth and guards;
+    // the binder consumes self first without materializing a prefixed array.
+    internal object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, object receiver)
+    {
+        context.CheckExecution(span);
+        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context, receiver);
+        return InvokeBound(boundArguments, span);
+    }
+
     protected object InvokeBound(BoundCallArguments boundArguments, LythonSourceSpan span)
     {
         LythonRuntime.ExecutionContext frame;
@@ -123,6 +133,18 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         {
             context.CheckExecution(span);
             var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, _bindingPlan, context);
+            return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
+        }
+        catch (Exception error) { return ValueTask.FromException<object>(error); }
+    }
+
+    internal ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, object receiver)
+    {
+        try
+        {
+            context.CheckExecution(span);
+            var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, _bindingPlan, context, receiver);
             return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
         }
         catch (Exception error) { return ValueTask.FromException<object>(error); }

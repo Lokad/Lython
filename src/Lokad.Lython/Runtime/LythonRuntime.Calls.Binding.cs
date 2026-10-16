@@ -84,7 +84,8 @@ internal sealed partial class LythonRuntime
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
         FunctionBindingPlan plan,
-        ExecutionContext context)
+        ExecutionContext context,
+        object? receiver = null)
     {
         // Values travel in plan layout order (positional, keyword-only, then
         // variadic names) with presence bits, instead of a per-call name
@@ -95,7 +96,7 @@ internal sealed partial class LythonRuntime
             : RentBoundValues(plan.LayoutParameterNames.Count);
         try
         {
-            return BindInto(values, arguments, span, plan, context);
+            return BindInto(values, arguments, span, plan, context, receiver: receiver);
         }
         catch
         {
@@ -108,12 +109,13 @@ internal sealed partial class LythonRuntime
     }
 
     internal static ValueTask<BoundCallArguments> BindFunctionArgumentsAsync(
-        CallArgumentValue[] arguments, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context)
+        CallArgumentValue[] arguments, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context,
+        object? receiver = null)
     {
         var defaults = plan.KeywordDefaultStorage;
         if (defaults is not { HasProtocolKeys: true })
-            return new(BindFunctionArguments(arguments, span, plan, context));
-        return BindProtocolDefaultsAsync(arguments, span, plan, context);
+            return new(BindFunctionArguments(arguments, span, plan, context, receiver));
+        return BindProtocolDefaultsAsync(arguments, span, plan, context, receiver);
     }
 
     // Eligible signatures contain only positional parameters. Read existing
@@ -155,12 +157,12 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<BoundCallArguments> BindProtocolDefaultsAsync(
         CallArgumentValue[] arguments, LythonSourceSpan span, FunctionBindingPlan plan,
-        ExecutionContext context)
+        ExecutionContext context, object? receiver)
     {
         var values = plan.LayoutParameterNames.Count == 0 ? [] : RentBoundValues(plan.LayoutParameterNames.Count);
         try
         {
-            var bound = BindInto(values, arguments, span, plan, context, deferKeywordDefaults: true);
+            var bound = BindInto(values, arguments, span, plan, context, deferKeywordDefaults: true, receiver: receiver);
             for (var k = 0; k < plan.KeywordOnlyParameters.Count; k++)
             {
                 var index = plan.PositionalParameters.Count + k;
@@ -191,7 +193,8 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         FunctionBindingPlan plan,
         ExecutionContext context,
-        bool deferKeywordDefaults = false)
+        bool deferKeywordDefaults = false,
+        object? receiver = null)
     {
         var pool = context.State.MemoryGovernor;
         var assigned = new ArgumentPresence(plan.LayoutParameterNames.Count);
@@ -204,8 +207,11 @@ internal sealed partial class LythonRuntime
         Dictionary<string, object>? extraKeywords = null;
         var positionalIndex = 0;
 
-        foreach (var argument in arguments)
+        // A bound receiver follows exactly the same positional/overflow rules,
+        // before supplied arguments. All values are consumed before any await.
+        for (var argumentIndex = receiver is null ? 0 : -1; argumentIndex < arguments.Length; argumentIndex++)
         {
+            var argument = argumentIndex < 0 ? CallArgumentValue.Positional(receiver!) : arguments[argumentIndex];
             if (argument.IsPositional)
             {
                 if (positionalIndex >= plan.PositionalParameters.Count)

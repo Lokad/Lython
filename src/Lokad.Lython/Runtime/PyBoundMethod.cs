@@ -72,6 +72,10 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        if (_function is PyFunction function)
+            return function.Invoke(arguments, span, context, _self);
+
+        // Other wrapped callables can retain their arguments: keep an owned copy.
         var bound = new CallArgumentValue[arguments.Length + 1];
         bound[0] = CallArgumentValue.Positional(_self);
         Array.Copy(arguments, 0, bound, 1, arguments.Length);
@@ -80,6 +84,9 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
 
     public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        if (_function is PyFunction function)
+            return function.InvokeAsync(arguments, span, context, _self);
+
         var bound = new CallArgumentValue[arguments.Length + 1];
         bound[0] = CallArgumentValue.Positional(_self);
         Array.Copy(arguments, 0, bound, 1, arguments.Length);
