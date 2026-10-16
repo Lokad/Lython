@@ -854,6 +854,13 @@ Static analysis of boolean conditions must respect the same reachability. Facts 
 
 For supported statically known sized values, comparison of `len(value)` with a known integer may refine conservative minimum and maximum length bounds on the corresponding branch. Refinement must account for reversed comparisons, negation, and negative indexes. A known sequence mutation must invalidate or widen facts for possible aliases; an unknown length must not become a static out-of-range error. Exact literal bounds continue to justify diagnostics for definitely invalid positive or negative indexes.
 
+Exception selection can observe partial mutations from the protected body. Before
+analyzing a computed exception header or handler, discard pre-`try` dictionary
+contents and mutable-sequence shape facts, including dictionary facts nested in
+other known values. This conservative boundary can defer a missing-key diagnostic
+to runtime. Fresh dictionary facts established inside the handler still justify
+definite missing-key diagnostics; runtime key checks remain unchanged.
+
 ### 9.3 `None`, Comparison, Membership, and Indexing
 
 The supported subset must include the value `None`.

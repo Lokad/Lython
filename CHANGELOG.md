@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Forget pre-try dictionary key facts before computed exception headers and handlers. Accept valid reads after partial protected-body mutations, including aliases and nested mappings; retain definite diagnostics for fresh missing keys and normal runtime key checks.
+
 - Compile ordinary subscript-store receiver/key expressions in the caller frame, preserving RHS-first and chained-assignment order. Use a fixed three-operand store with existing mutation helpers, cleanup and target diagnostics; avoid general target evaluation and per-store read packaging.
 
 - Resolve implicit item mutations through type-level slots, ignoring instance-only overrides and getattr fallback. Await setter/deleter descriptor binding under RunAsync while preserving mutation arguments, alias funding and existing missing/noncallable errors.
