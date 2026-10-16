@@ -94,6 +94,10 @@ internal sealed partial class LythonRuntime
                         {
                             result = InvokeStringSplit((Text.PyString)_stack[start], call.CallSpan, _context);
                         }
+                        else if (call.HasReceiver && ReferenceEquals(callable, DirectStringLower))
+                        {
+                            result = InvokeStringLower((Text.PyString)_stack[start], call.CallSpan, _context);
+                        }
                         else if (call.HasReceiver && ReferenceEquals(callable, DirectStringStartsWith))
                         {
                             result = InvokeStringStartsWith((Text.PyString)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context);

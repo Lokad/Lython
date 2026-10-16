@@ -6,6 +6,9 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
+        internal static PyString Lower(PyString receiver, LythonSourceSpan span, ExecutionContext context)
+            => OwnMethodResult(receiver.ToLowerInvariant(), receiver, context.MemoryGovernor, span);
+
         private sealed class TextSemanticsMemberProvider : IStringMemberProvider
         {
             // N17: hot fixed signatures hoisted per family.
@@ -68,7 +71,7 @@ internal sealed partial class LythonRuntime
                         (arguments, span, context) => InvokeStringAffix(text, arguments, span, context, isStart: false, asynchronous: false).GetAwaiter().GetResult(),
                         StrEndsWithSignature,
                         (arguments, span, context) => InvokeStringAffix(text, arguments, span, context, isStart: false, asynchronous: true)),
-                    "lower" => BoundCallable.CreateNoArguments(text, "str.lower", static (receiver, span, context) => OwnMethodResult(receiver.ToLowerInvariant(),receiver,context.MemoryGovernor,span)),
+                    "lower" => BoundCallable.CreateNoArguments(text, "str.lower", Lower),
                     "capitalize" => BoundCallable.CreateNoArguments(text, "str.capitalize", static (receiver, span, context) => OwnMethodResult(PyStringOps.Capitalize(receiver),receiver,context.MemoryGovernor,span)),
                     "islower" => BoundCallable.CreateNoArguments(text, "str.islower", static (receiver, _, _) => PyStringOps.IsLower(receiver)),
                     "upper" => BoundCallable.CreateNoArguments(text, "str.upper", static (receiver, span, context) => OwnMethodResult(receiver.ToUpperInvariant(),receiver,context.MemoryGovernor,span)),

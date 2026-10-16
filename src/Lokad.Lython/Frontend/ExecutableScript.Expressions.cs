@@ -324,7 +324,7 @@ internal sealed partial class ExecutableScript
                 {
                     "get" => call.Arguments.Count is 1 or 2,
                     "append" => call.Arguments.Count == 1,
-                    "strip" or "split" => call.Arguments.Count == 0,
+                    "strip" or "split" or "lower" => call.Arguments.Count == 0,
                     "startswith" => call.Arguments.Count == 1,
                     _ => false
                 };

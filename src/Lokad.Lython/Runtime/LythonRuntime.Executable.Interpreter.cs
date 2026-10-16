@@ -26,6 +26,7 @@ internal sealed partial class LythonRuntime
                 PyDict when name == "get" => DirectDictionaryGet,
                 Text.PyString when name == "strip" => DirectStringStrip,
                 Text.PyString when name == "split" => DirectStringSplit,
+                Text.PyString when name == "lower" => DirectStringLower,
                 Text.PyString when name == "startswith" => DirectStringStartsWith,
                 _ => null
             };
