@@ -11,7 +11,7 @@
 | Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
 | Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | Historical warm diagnostic; elapsed change within spread |
 | Branch/integer loop [AE], warm `RunAsync` | 16,384 iterations; modulo/comparison/add/subtract | 6.321 ms | 0.9599 ms | — | One warm async diagnostic; completed host operations; unqualified |
-| Stable sort with lambda key [AO], warm `Run` | 2,048 tuples; build, stable-sort and print | 1.550 ms | 0.3033 ms | — | Short diagnostic at 155843d0; target stores compiled; timing change inconclusive (baseline spread 3.5%) |
+| Instance-method accumulator [AP], warm `Run` | 2,048 calls; construct, update field and print | 1.144 ms | 0.11515 ms | — | Short diagnostic at 58aece73; no improvement established; candidate median 2.8% higher |
 
 These representative snapshots come from the named revisions below; they are
 not measurements of today's HEAD. Inconclusive cases remain visible. See
@@ -47,7 +47,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 | P | 2026-10-15 | Working protected-loop candidate on b2235259; two frontend source changes frozen by hashes | [Separate warm and compile/run diagnostics](benchmarks/results/2026-10-15-protected-loop-jumps/README.md), [source declaration](benchmarks/results/2026-10-15-protected-loop-jumps/comparison-declaration.json) |
 | AB | 2026-10-15 | Working UTF-8 upper candidate on 29a1862e; one frozen source; identical new report script/catalog in both roles | [Complete report, noise and expansion/ownership checks](benchmarks/results/2026-10-15-utf8-upper/README.md) |
 | AE | 2026-10-15 | Working exact-integer dispatch candidate on 60277f65; one frozen interpreter source; unchanged case/tooling | [Async integer operators, suspension and boundary checks](benchmarks/results/2026-10-15-async-integer-operators/README.md) |
-| AO | 2026-10-16 | 155843d0 on 722f4bab; three frozen compiler files; unchanged input comprehension, lambda sort and output | [Shared loop-target stores and inconclusive warm diagnostic](benchmarks/results/2026-10-16-loop-target-stores/README.md) |
+| AP | 2026-10-16 | 58aece73 on 9d0902a3; three frozen compiler/runtime files; unchanged method job | [Compiled member updates and no established timing benefit](benchmarks/results/2026-10-16-augmented-member-stores/README.md) |
 
 K, R, V, D, I, E, H and P used the same VM and SDK/runtime/CPython versions described below.
 I measures warm completed-host `RunAsync` against ordinary warm CPython code.
@@ -101,6 +101,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Executable member augmented stores, 2026-10-16 | 9d0902a3 → 58aece73; unchanged method job | No improvement established: 1.113 → 1.144 ms; candidate median 2.8% higher | [Existing instructions, deletion and inconclusive timing](benchmarks/results/2026-10-16-augmented-member-stores/README.md) |
 | Executable loop/comprehension target stores, 2026-10-16 | 722f4bab → 155843d0; unchanged stable-sort job | Inconclusive: 1.608 → 1.550 ms; baseline spread 3.5% | [Scoped stores, admission and unchanged workload](benchmarks/results/2026-10-16-loop-target-stores/README.md) |
 | Executable ordinary subscript stores, 2026-10-16 | a5a96af2 → 7caf4833; unchanged complete text job | Inconclusive: 6.795 →6.414 ms; baseline spread12.4% | [Executable coverage, type slots and operand cleanup](benchmarks/results/2026-10-16-executable-subscript-stores/README.md) |
 | Async native integer-index reads, 2026-10-16 | 06e7f2df → 917d8bb9; identical existing ASCII text job | 10.7% lower median, one 512-read diagnostic | [Shared index correctness and guarded dispatch](benchmarks/results/2026-10-16-async-native-index/README.md) |

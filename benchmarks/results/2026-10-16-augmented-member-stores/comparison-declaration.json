@@ -1,0 +1,18 @@
+{
+  "baselineRevision": "9d0902a373f0ab3515a9d947952e4dc844ec5f61",
+  "candidateRevision": "58aece733e1123a11a7d043e606bd4cca4360695",
+  "candidateSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "d6e07c9f8405b819ef299022cce763c5d904032f411fe2b75416a66ff9250e13",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingTargets.cs": "9d287a2c52bfd713e89028223f69aa160f974c2c8d51dacefdaf1837bcc84e0d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedTargets.cs": "a3c84f37a9ea56845f6053c1dfff0696d95667f4784e5df9bca7ab66e26b823a"
+  },
+  "sourceArchiveSha256": "cc0a1e7aab2bad96f3365527ba975e7e8bc03bdd41d68a2fcf810c9ea952e747",
+  "caseId": "calls.method.medium",
+  "lane": "warm",
+  "comparisons": 1,
+  "retries": false,
+  "productionChange": "Compile member augmented updates with existing instructions and shared two-operand store; delete prepared member-read arm. No new opcode/frame/owner/read dictionary or blanket mirroring.",
+  "normalGCAndTiering": true,
+  "boundary": "Unchanged 2048-call Accumulator job: class/instance construction, self.value += value + 3, method calls, output/projection and previous-result cleanup; warm synchronous Run and ordinary warm CPython. Compile/startup/transport/full hash excluded.",
+  "stoppingRule": "One fixed existing affected workload; no repeat, retuning, new producer/framework or long lane. Keep inconclusive evidence."
+}

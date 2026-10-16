@@ -1,0 +1,80 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "checks": [
+    {
+      "name": "order",
+      "source": "events=[]\nclass Box:\n @property\n def value(self): events.append('get'); return 1\n @value.setter\n def value(self,value): events.append(('set',value))\nbox=Box()\ndef receiver(): events.append('receiver'); return box\ndef rhs(): events.append('rhs'); return 2\nreceiver().value+=rhs()\nprint(events)",
+      "stdout": "['receiver', 'get', 'rhs', ('set', 3)]\n"
+    },
+    {
+      "name": "rebinding",
+      "source": "class Box: pass\nfirst=Box(); first.value=1\nsecond=Box(); second.value=10\ncurrent=first\ndef rhs():\n global current\n current=second\n return 2\ncurrent.value+=rhs()\nprint(first.value,second.value,current is second)",
+      "stdout": "3 10 True\n"
+    },
+    {
+      "name": "alias",
+      "source": "class Box: pass\nbox=Box(); box.value=[1]; alias=box.value\nbox.value+=[2]\nprint(alias,alias is box.value)",
+      "stdout": "[1, 2] True\n"
+    },
+    {
+      "name": "readonly-inplace",
+      "source": "class Box:\n @property\n def value(self): return payload\npayload=[1]\ntry: Box().value+=[2]\nexcept AttributeError: print(payload)",
+      "stdout": "[1, 2]\n"
+    },
+    {
+      "name": "fallback-add",
+      "source": "events=[]\nclass Value:\n def __iadd__(self,other): events.append('iadd'); return NotImplemented\n def __add__(self,other): events.append('add'); return 7\nclass Box: pass\nbox=Box();box.value=Value()\nbox.value+=2\nprint(events,box.value)",
+      "stdout": "['iadd', 'add'] 7\n"
+    },
+    {
+      "name": "raising-inplace",
+      "source": "events=[]\nclass Value:\n def __iadd__(self,other): events.append('iadd'); raise ValueError('bad')\nclass Box: pass\nbox=Box();original=Value();box.value=original\ndef rhs(): events.append('rhs'); return 2\ntry: box.value+=rhs()\nexcept ValueError: print(events,box.value is original)",
+      "stdout": "['rhs', 'iadd'] True\n"
+    },
+    {
+      "name": "getattr",
+      "source": "class Box:\n def __getattr__(self,name): return 1\nbox=Box();box.value+=2\nprint(box.value,vars(box))",
+      "stdout": "3 {'value': 3}\n"
+    },
+    {
+      "name": "missing-before-rhs",
+      "source": "class Box: pass\ndef rhs(): raise AssertionError('rhs ran')\ntry: Box().missing+=rhs()\nexcept AttributeError: print('missing')",
+      "stdout": "missing\n"
+    },
+    {
+      "name": "locals",
+      "source": "class Box: pass\nbox=Box();box.value=1\ndef run(box):\n delta=2\n box.value+=locals()['delta']\n return locals()['box'] is box\nprint(run(box),box.value)",
+      "stdout": "True 3\n"
+    },
+    {
+      "name": "yield-rhs",
+      "source": "class Box: pass\nbox=Box();box.value=1\ndef update(box):\n box.value+=(yield 'rhs')\n yield box.value\ng=update(box); print(next(g),g.send(2),box.value)",
+      "stdout": "rhs 3 3\n"
+    },
+    {
+      "name": "yield-receiver",
+      "source": "class Box: pass\nbox=Box();box.value=1\ndef update():\n (yield 'receiver').value+=2\n yield 'updated'\ng=update(); print(next(g),g.send(box),box.value)",
+      "stdout": "receiver updated 3\n"
+    },
+    {
+      "name": "nonlocal",
+      "source": "def outer():\n class Box: pass\n box=Box();box.value=1\n def run():\n  nonlocal box\n  box.value+=2\n run()\n return box.value\nprint(outer())",
+      "stdout": "3\n"
+    },
+    {
+      "name": "descriptor-replacement",
+      "source": "events=[]\nclass D:\n def __init__(self,name): self.name=name\n def __get__(self,obj,owner): events.append(('get',self.name)); return 1\n def __set__(self,obj,value): events.append(('set',self.name,value))\nclass C: value=D('old')\nobj=C()\ndef rhs(): C.value=D('new'); return 2\nobj.value+=rhs()\nprint(events)",
+      "stdout": "[('get', 'old'), ('set', 'new', 3)]\n"
+    },
+    {
+      "name": "inheritance",
+      "source": "class Base:\n @property\n def value(self): return self.saved\n @value.setter\n def value(self,value): self.saved=value\nclass Child(Base): pass\nbox=Child();box.saved=1\nbox.value+=2\nprint(box.value)",
+      "stdout": "3\n"
+    },
+    {
+      "name": "class-scope",
+      "source": "class Box: pass\nbox=Box();box.value=1\nclass Runner: box.value+=2\nprint(box.value)",
+      "stdout": "3\n"
+    }
+  ]
+}

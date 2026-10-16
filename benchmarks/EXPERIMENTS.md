@@ -7,6 +7,16 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 member-augmented delivery](results/2026-10-16-augmented-member-stores/README.md)
+uses existing executable instructions and a shared store, removing the ordinary
+fallback and prepared member-read arm. One unchanged 2,048-call method job observed
+1.1127 -> 1.1439 ms, CPython 0.11515 ms, spread 1.2%/2.6%/0.2%. The candidate median
+is 2.8% higher; no performance benefit is established. Source consolidation remains;
+no retuning or repeat. Three frozen differences, correct loaded revisions, normal
+policies, one 7.455 s command, seven exited workers and a free VM lease. AP supplies
+the leading method snapshot; AO's earlier sort row and identity remain archived.
+No current overall ratio or compile-to-result claim follows.
+
 The [2026-10-16 loop-target delivery](results/2026-10-16-loop-target-stores/README.md)
 shares executable target operations for ordinary for loops and eager
 comprehensions, preserving the existing inlined binding scope. One unchanged
@@ -14,7 +24,7 @@ comprehensions, preserving the existing inlined binding scope. One unchanged
 spread3.5%/0.9%/0.5%. The observed3.6% change is comparable to baseline spread and
 is inconclusive. Three frozen compiler differences, normal policies, one7.703s
 command, seven workers exited and VM lease available; no repeat/retuning or new
-producer. AO replaces the leading sort snapshot; AL's time and revision remain
+producer. AO previously replaced the leading sort snapshot; AL's time and revision remain
 archived below. No current overall ratio or compile-to-result claim follows.
 
 The [2026-10-16 executable subscript-store delivery](results/2026-10-16-executable-subscript-stores/README.md)
@@ -713,6 +723,7 @@ measurement-status labels retain their original meaning; see the
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Stable sort with lambda key [AO], warm `Run` | 2,048 tuples; build, stable-sort and print | 1.550 ms | 0.3033 ms | — | Short diagnostic at 155843d0; target stores compiled; timing change inconclusive (baseline spread 3.5%) |
 | Stable sort with lambda key [AL], warm `Run` | 2,048 tuples; build, stable-sort and print | 1.595 ms | 0.3020 ms | — | One diagnostic; observed 10.2% lower Lython median; executable lambda bodies; comprehension unchanged; precedes the final name-label fix |
 | Expanded-call forwarding helper [AK], warm `Run` | 2,048 calls; tuple and keyword mapping | 2.077 ms | 0.2443 ms | — | One diagnostic; observed 13.9% lower Lython median; fallback/mirroring removed; general binder remains |
 | Formatted report helper [AJ], warm `Run` | 2,048 calls; padded row and computed next value | 2.125 ms | 0.4201 ms | — | One diagnostic; observed 13.4% lower Lython median; ordinary f-string fallback removed |
@@ -783,6 +794,7 @@ processes, not two revisions. No complete-script multiplier or overall speedup i
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| AO | 2026-10-16 | 155843d0 on 722f4bab; three frozen compiler files; unchanged input comprehension, lambda sort and output | [Shared loop-target stores and inconclusive warm diagnostic](results/2026-10-16-loop-target-stores/README.md) |
 | AI | 2026-10-15 | Working expanded set/dict candidate on28c41f1d; two frozen compiler sources; both roles contain entry-order fix | [Executable displays, mapping suspension and order qualification](results/2026-10-15-expanded-set-dict-executable/README.md) |
 | AJ | 2026-10-15 | Working f-string candidate on 0c367762; one frozen compiler file, shared report fixture | [Executable fields, async protocols and ownership qualification](results/2026-10-15-executable-fstrings/README.md) |
 | AK | 2026-10-15 | Working expanded-call candidate on 42dfd774; two frozen compiler files; both roles contain argument-order fix | [Executable expansion, argument effects and ownership qualification](results/2026-10-15-executable-expanded-calls/README.md) |
