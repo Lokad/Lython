@@ -246,11 +246,24 @@ internal sealed partial class LythonRuntime
     private struct ExecutableValueStack
     {
         private object?[] _items;
+        private PyIteration.Cursor? _pendingDisposalHead, _pendingDisposalTail;
+        internal bool DeferAsyncDisposal;
+        internal bool HasPendingDisposals => _pendingDisposalHead is not null;
 
         public ExecutableValueStack(int capacity)
         {
             _items = new object[Math.Max(4, capacity)];
             Count = 0;
+        }
+
+        internal PyIteration.Cursor? TakePendingDisposal()
+        {
+            var cursor = _pendingDisposalHead;
+            if (cursor is null) return null;
+            _pendingDisposalHead = cursor.NextPendingDisposal;
+            cursor.NextPendingDisposal = null;
+            if (_pendingDisposalHead is null) _pendingDisposalTail = null;
+            return cursor;
         }
 
         public int Count { get; private set; }
@@ -293,7 +306,18 @@ internal sealed partial class LythonRuntime
 
             var newCount = Count - count;
             for (var i = Count - 1; i >= newCount; i--)
-                if (_items[i] is IExecutableTemporaryValue temporary) temporary.Dispose();
+            {
+                if (DeferAsyncDisposal && _items[i] is PyIteration.Cursor cursor)
+                {
+                    if (_pendingDisposalTail is null) _pendingDisposalHead = cursor;
+                    else _pendingDisposalTail.NextPendingDisposal = cursor;
+                    _pendingDisposalTail = cursor;
+                    // Ownership moved to the pending chain. A later synchronous
+                    // disposal can fail; retrying the trim must not enqueue twice.
+                    _items[i] = null;
+                }
+                else if (_items[i] is IExecutableTemporaryValue temporary) temporary.Dispose();
+            }
             Array.Clear(_items, newCount, count);
             Count = newCount;
         }

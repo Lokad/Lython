@@ -41,7 +41,7 @@ public sealed class ExecutableCallTransferTests
     }
 
     [Fact]
-    public async Task CancelledSuspensionWithdrawsOnlyItsCallInputs()
+    public async Task CancelledSuspensionReleasesFrameInputs()
     {
         var (code, context) = Prepare("marker = 23\nreturn (marker, probe('x' * 16000, amount=7))\n");
         var probe = new Probe(false);
@@ -50,9 +50,9 @@ public sealed class ExecutableCallTransferTests
         await probe.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
         probe.Release.SetCanceled();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
-        // Cancellation leaves the surrounding expression to frame unwinding;
-        // the call itself must already have withdrawn its target and arguments.
-        Assert.Equal(new object[] { new BigInteger(23) }, Operands(probe.Frame!));
+        // The call checked its live inputs during suspension. Terminal cleanup
+        // must also withdraw the surrounding expression before frame exit.
+        Assert.Empty(Operands(probe.Frame!));
         Assert.Null(context.CurrentExecutableFrame);
     }
 

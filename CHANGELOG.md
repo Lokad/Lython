@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Await native async cursor cleanup when executable loops and generators exit through break, return, close, exceptions, cancellation or refused admission. Preserve nested handler continuation and retained Python iterator aliases; release abandoned cursors in order even when an inner disposal fails. Reuse stack/cursor storage for pending cleanup without per-removal allocations or new ownership scopes.
+
 - Bind generator-expression walrus targets directly through prepared global/nonlocal metadata, preserving writes in rejected filters and before errors. Remove per-yield namespace propagation and target-name scratch. Share StopIteration-to-RuntimeError conversion with generator functions, retain the original cause/context, exhaust failed generators and await async cleanup. Preserve captured writes across suspended generator frames and expose current nonlocal snapshots.
 
 - Discard stale list element values and types after possible mutation, including list facts inside immutable tuples and optional values. Preserve tuple bounds, unaffected scalar facts and fresh-list diagnostics. Replace the old element-joining rule with bounded compiler-fact widening; conservative alias invalidation can defer errors to unchanged runtime checks.

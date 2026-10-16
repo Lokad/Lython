@@ -288,8 +288,13 @@ Prepared checkpoints may change explicit fuel/admission thresholds. Partial
 storage can stay charged to the finite execution/result owner after a caught
 failure; retained results and asynchronous users remain funded.
 Executable loop/comprehension abandonment disposes native enumeration temporaries,
-including on early break. This does not close retained Python iterator/generator
-values; they can continue from their current position.
+including on early break. Asynchronous execution awaits native cursor disposal
+before a handler/finally suite or subsequent instruction resumes, and before a
+terminal result/failure is published. Cancellation and refused admission do not
+skip native cleanup. Nested abandoned cursors dispose from inner to outer; a
+cleanup failure does not strand the remaining native cursors. This does not close
+retained Python iterator/generator values; they can continue from their current
+position.
 Guest-visible Python exception shells have a conservative160-byte estimate.
 Rebinding or rethrowing an alias does not allocate another shell. Execution owners
 retain admitted guest storage conservatively until their finite batch ends;

@@ -104,6 +104,12 @@ lexical namespace owner; they introduce no additional scope, allowance or cache.
 Native enumeration working storage is disposed on loop/comprehension failure or
 early exit. This releases its temporary allowance without closing retained Python
 iterator/generator values or refunding their surviving storage.
+Async executable frames await removed native cursors before guest continuation or
+terminal publication, including cancellation and admission failure. Existing stack
+storage links pending disposals without new reservations or ownership scopes;
+the execution remains funded while disposal is outstanding. Yielded generators
+keep their active cursors alive. Cleanup failure still drains other abandoned
+native cursors in inner-to-outer order.
 
 Fixed-arity unpacking admits capacity for at most one excess value beyond its
 target count, using the existing temporary lease and capacity-growth preflights.

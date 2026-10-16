@@ -45,7 +45,7 @@ public sealed class ExecutableValueTransferTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task FailedOrCancelledOperationWithdrawsOnlyItsInputs(bool asynchronous, bool cancellation)
+    public async Task FailedOrCancelledOperationReleasesFrameInputs(bool asynchronous, bool cancellation)
     {
         foreach (var augmented in new[] { false, true })
         {
@@ -61,9 +61,9 @@ public sealed class ExecutableValueTransferTests
             if (cancellation) await Assert.ThrowsAnyAsync<OperationCanceledException>(Execute);
             else Assert.Same(probe.Failure, await Assert.ThrowsAsync<LythonRuntimeException>(Execute));
             Assert.True(probe.Checked);
-            // Cancellation leaves the surrounding expression for frame unwinding.
-            if (cancellation && !augmented) Assert.Equal(new object[] { new BigInteger(23) }, Operands(probe.Frame!));
-            else Assert.Empty(Operands(probe.Frame!));
+            // The callback checked its live inputs; terminal frame cleanup also
+            // withdraws the surrounding expression after cancellation.
+            Assert.Empty(Operands(probe.Frame!));
             if (augmented)
             {
                 var frame = Assert.IsAssignableFrom<LythonRuntime.ExecutableFrameState>(probe.Frame);

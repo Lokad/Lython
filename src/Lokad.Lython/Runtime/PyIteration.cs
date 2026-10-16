@@ -378,6 +378,9 @@ internal static partial class PyIteration
         private int _movesUntilCheckpoint;
         private IEnumerator<object>? _syncEnumerator;
         private IAsyncEnumerator<object>? _asyncEnumerator;
+        // Intrusive link used only after this temporary leaves an async VM
+        // stack. Awaiting cleanup needs no extra list or per-removal allocation.
+        internal Cursor? NextPendingDisposal;
 
         internal static Cursor FromAcquired(PyUserIterator iterator, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
             => new(iterator.Iterator, span, iterator, context);
@@ -521,15 +524,20 @@ internal static partial class PyIteration
 
         public void Dispose()
         {
-            _syncEnumerator?.Dispose();
+            var enumerator = _syncEnumerator;
+            _syncEnumerator = null;
+            enumerator?.Dispose();
         }
 
         public async ValueTask DisposeAsync()
         {
-            Dispose();
-            if (_asyncEnumerator is not null)
+            var enumerator = _asyncEnumerator;
+            _asyncEnumerator = null;
+            try { Dispose(); }
+            finally
             {
-                await _asyncEnumerator.DisposeAsync().ConfigureAwait(false);
+                if (enumerator is not null)
+                    await enumerator.DisposeAsync().ConfigureAwait(false);
             }
         }
 
