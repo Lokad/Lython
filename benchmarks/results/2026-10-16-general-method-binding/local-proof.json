@@ -1,0 +1,46 @@
+{
+  "tests": [
+    {
+      "stage": "general-method-binding-baseline-witnesses",
+      "passed": 7,
+      "milliseconds": 1167
+    },
+    {
+      "stage": "general-method-binding-candidate-witnesses",
+      "passed": 142,
+      "milliseconds": 1448
+    },
+    {
+      "stage": "general-method-binding-public-classes",
+      "passed": 279,
+      "milliseconds": 15480
+    },
+    {
+      "stage": "general-method-binding-public-protocol",
+      "passed": 180,
+      "milliseconds": 3646
+    },
+    {
+      "stage": "general-method-binding-public-stack-native",
+      "passed": 81,
+      "milliseconds": 8628
+    },
+    {
+      "stage": "general-method-binding-full-white",
+      "passed": 2723,
+      "milliseconds": 18927
+    }
+  ],
+  "probes": [
+    {
+      "mode": "sync",
+      "passed": 6
+    },
+    {
+      "mode": "async",
+      "passed": 6
+    }
+  ],
+  "protectedHistorySha256": "F496A90B1D68A0B314367907D1967579230DB81BF40B6CC1D8A127325AC69E20",
+  "allocationComparison": "72 excess bytes per entry before; zero after; elapsed unmeasured"
+}

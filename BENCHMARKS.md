@@ -109,6 +109,11 @@ and startup costs must not be folded into the warm table.
 
 ## Improvements against earlier Lython revisions
 
+General-method receiver binding at 90be9683 has separate
+[allocation-only evidence](benchmarks/results/2026-10-16-general-method-binding/README.md):
+72 excess bytes per entry with one argument become zero against a prefixed control.
+Elapsed time and CPython performance for that change remain unmeasured.
+
 These compare Lython with earlier Lython, **not with CPython**. Each uses short
 diagnostic collections, ordinary protection/GC/tiering and unchanged worker
 boundaries. They have no milestone qualification or claimed confidence interval.

@@ -1,0 +1,20 @@
+[
+  {
+    "iterations": 256,
+    "bound": 163840,
+    "control": 145408,
+    "difference": 18432
+  },
+  {
+    "iterations": 256,
+    "bound": 163840,
+    "control": 145408,
+    "difference": 18432
+  },
+  {
+    "iterations": 256,
+    "bound": 163840,
+    "control": 145408,
+    "difference": 18432
+  }
+]

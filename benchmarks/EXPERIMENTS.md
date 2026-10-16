@@ -845,6 +845,8 @@ preserve the distinct CPython and earlier-Lython comparisons.
 
 ## Diagnostic comparisons by revision
 
+- [General method receiver binding](results/2026-10-16-general-method-binding/README.md): existing binder consumes the receiver separately for ordinary Python methods, including keywords/variadics/lowered callers. One short allocation diagnostic shows 72 excess bytes per entry become zero; no elapsed or CPython performance claim. Original guards, live defaults and suspended ownership remain.
+
 - [Direct ordinary method transport](results/2026-10-16-lowered-method-transport/README.md): caller/prepended-self packaging removed for positional lowered methods, retaining original bodies and guards. The unchanged 2,048-call warm job has a 7.4% lower Lython median in one short, unqualified diagnostic. This is separate from AP and the rejected AZ class compiler.
 
 - [JSON numeric/callback forwarding](results/2026-10-16-json-number-forwarding/README.md): two forwarding state machines removed with caller-owned frame/scratch unchanged; complete job median 6.1% higher within 14.2% baseline spread, no performance benefit established. One declared new capture; callback-overhead magnitude unmeasured.

@@ -1,0 +1,94 @@
+{
+  "baselineProductionRevision": "7d3f02704a577ea83efe7cf4e93f252ba8d981a3",
+  "candidateProductionSourceCommittedAs": "90be96838e6987ed66f10e133622ad0798f47fe4",
+  "capturedBeforeCandidateCommit": true,
+  "productionCompiledIntoTestAssembly": true,
+  "configuration": "Release",
+  "diagnosticSourceSha256": "c864ef9e6424e91a56c7cf640d0907683018456f6719f225a5a94a2f03727812",
+  "sourceHashes": {
+    "baseline": {
+      "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "4832beaaa0db0c1d20d84008b42cbe4c99f8b63d48bc7d6ca215f1a5ff4705e4",
+      "src/Lokad.Lython/Runtime/PyBoundMethod.cs": "cb808db501e8cb770fecc1874dc19e255e1e296d41e395fa87c59616124b0a7e",
+      "src/Lokad.Lython/Runtime/PyFunctionBase.cs": "4723a44fd3da6ebdca167ee17107515e86763288c6198d3facdda92ad8a56f9c"
+    },
+    "candidate": {
+      "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "2d697fc17d636f8049f0b3d52d88323328d66d49cd885e56f86a951ef3b82eee",
+      "src/Lokad.Lython/Runtime/PyBoundMethod.cs": "4bf83e17efcdbd10c9e38845ba4954abe214e7d68ae6e80a230a4c0b6eb40883",
+      "src/Lokad.Lython/Runtime/PyFunctionBase.cs": "1a61aed21e39a0e94fe0a1deff48ece1016a6c01e08f779828916c7357098e8b"
+    }
+  },
+  "baselineTestReceipt": {
+    "source": "general-method-binding-baseline",
+    "production": "7d3f0270",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+    "assemblySha256": "878FA6B32D6212936BCFE9DB5DE240D533F78C3DFD4EE767C3C6F022670ED5AE",
+    "filter": "Category!=Stress&(FullyQualifiedName~GeneralBoundMethodTransportTests|FullyQualifiedName~GeneralBoundMethodDefaultLifetimeTests|FullyQualifiedName~GeneralMethodAllocationDiagnosticTests)",
+    "pid": 79340,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 1167,
+    "stdoutSha256": "36A6B8DDD36CD8EDA772F0A8F63DAF9BFA5758CD4ECC5E5878B653F87CFBBFCA",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "candidateTestReceipt": {
+    "source": "general-method-binding-candidate",
+    "production": "7d3f0270-plus-general-receiver",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+    "assemblySha256": "8CD878FC075A8856813152FD95A59BCEEB335DE0B49F9E7768D0BAFCDA673297",
+    "filter": "Category!=Stress&(FullyQualifiedName~GeneralBoundMethodTransportTests|FullyQualifiedName~GeneralBoundMethodDefaultLifetimeTests|FullyQualifiedName~GeneralMethodAllocationDiagnosticTests|FullyQualifiedName~PositionalCallTransportTests|FullyQualifiedName~BoundMethodInvocationBoundaryTests|FullyQualifiedName~ClassMethodExecutionBoundaryTests|FullyQualifiedName~MethodBodyControlBoundaryTests|FullyQualifiedName~MethodBodyCompilationBoundaryTests|FullyQualifiedName~CallBindingSubsystemTests)",
+    "pid": 2672,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 1448,
+    "stdoutSha256": "6D29A52B3259B115D7B57DF6B249B22DF54A3C5CC031BE982637343C11D4899E",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "baselineBuildReceipt": {
+    "pid": 62108,
+    "exitCode": 0,
+    "hasExited": true,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 13887,
+    "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+    "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+    "arguments": [
+      "build",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release"
+    ]
+  },
+  "candidateBuildReceipt": {
+    "pid": 18004,
+    "exitCode": 0,
+    "hasExited": true,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 12617,
+    "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+    "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+    "arguments": [
+      "build",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release"
+    ]
+  },
+  "capturesPerSource": 1,
+  "samples": 3,
+  "callsPerSample": 256,
+  "warmupPairs": 32,
+  "boundary": "Synchronous existing PyFunction method entry versus prebuilt prefixed-argument control; current-thread allocation only; exact same receiver/value, reused arrays outside the counter, fresh invocation frames.",
+  "notMeasured": [
+    "elapsed time",
+    "CPython ratio",
+    "public built-library allocation profile",
+    "asynchronous throughput",
+    "complete file workloads",
+    "startup",
+    "compilation",
+    "embedding latency"
+  ],
+  "runtimeIdentityLimitation": "Captured test receipts identify the white-box assembly. SDK/installed host inventory is recorded after capture; runtime patch was not emitted by the diagnostic process. Both precommit builds may report parent repository metadata."
+}

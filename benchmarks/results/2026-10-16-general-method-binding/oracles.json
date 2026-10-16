@@ -1,0 +1,35 @@
+{
+  "pythonVersion": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "name": "receiver-in-variadic-list",
+      "source": "class Box:\n def run(*items):return items\nbox=Box()\nvalues=box.run(3,4)\nprint(values[0] is box,values[1:])",
+      "expected": "True (3, 4)\n"
+    },
+    {
+      "name": "no-positional-formal",
+      "source": "events=[]\nclass Box:\n def run(**kw):events.append('body')\ntry:Box().run(value=3)\nexcept TypeError:print('arity',events)",
+      "expected": "arity []\n"
+    },
+    {
+      "name": "self-keyword-collision",
+      "source": "class Box:\n def run(self,**kw):return kw\ntry:Box().run(self=3)\nexcept TypeError:print('duplicate')\nclass Other:\n def run(self,/,**kw):return kw\nprint(Other().run(self=3))",
+      "expected": "duplicate\n{'self': 3}\n"
+    },
+    {
+      "name": "lowered-to-lowered-mixed-call",
+      "source": "class Box:\n def leaf(self,left,*items,right=2,**kw):return left,items,right,kw\n def run(self):return self.leaf(1,3,4,right=5,label=6)\nprint(Box().run())",
+      "expected": "(1, (3, 4), 5, {'label': 6})\n"
+    },
+    {
+      "name": "live-protocol-keyword-defaults",
+      "source": "events=[]\nclass Key:\n def __hash__(self):return hash('x')\n def __eq__(self,other):\n  events.append(other)\n  Box.run.__kwdefaults__={'x':99,'y':100}\n  return other=='x'\nclass Box:\n def run(self,*,x,y):return x,y\nBox.run.__kwdefaults__={Key():7,'y':8}\nmethod=Box().run\nprint(method(),method(),events)",
+      "expected": "(7, 100) (99, 100) ['x']\n"
+    },
+    {
+      "name": "escaped-receiver-aliases",
+      "source": "class Box:\n def run(self,*items,**kw):return self,items,kw\nbox=Box()\nmethod=box.run\na,items,kw=method(box,other=box)\nprint(a is box,items[0] is box,kw['other'] is box,method.__self__ is box)",
+      "expected": "True True True True\n"
+    }
+  ]
+}

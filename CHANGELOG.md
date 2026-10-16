@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Bind ordinary Python method receivers through the existing general binder, removing the prepended-self argument array for keyword, variadic and lowered-body calls. Preserve live defaults, suspended inputs, cancellation, frame guards and fresh retainable arrays for other wrapped callables.
+
 - Bind ordinary positional class-method calls directly from executable operands and the existing receiver into invocation-owned parameter storage. Remove caller argument packaging and the prepended-self array for eligible calls, preserving lowered method bodies, namespace mirroring, defaults, guards and suspended input lifetimes.
 
 - Return completed numeric JSON conversions and forward optional JSON callbacks directly, removing two forwarding state machines. Preserve exact parsing, magnitude/text admission, original token spellings and caller-owned frame/scratch cleanup through actual callback suspension.
