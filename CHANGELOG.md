@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Discard stale list element values and types after possible mutation, including list facts inside immutable tuples and optional values. Preserve tuple bounds, unaffected scalar facts and fresh-list diagnostics. Replace the old element-joining rule with bounded compiler-fact widening; conservative alias invalidation can defer errors to unchanged runtime checks.
+
 - Preserve mutable-container invalidation across eager comprehension scopes, fixing false out-of-range and missing-key diagnostics after helper calls. Analyze lambda defaults immediately while keeping iteration bindings local, generator/lambda-body effects deferred, and proven diagnostics after pure or unreachable expressions. Account for generator outer-iterable effects immediately and skip statically empty comprehension bodies.
 
 - Compile eligible lambdas created inside eager comprehensions, capturing live iteration bindings without forcing caller namespace mirroring. Preserve late/default/transitive captures, admission preflights, retained aliases and asynchronous cleanup. Give Python functions identity hashing and include current captured free variables in compiled locals()/dir() snapshots.

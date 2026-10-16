@@ -800,9 +800,9 @@ from pathlib import Path
 
 items = ["alpha", "beta"]
 copy = items.copy()
-popped = items.pop()
-
 copy[0].find(1)
+
+popped = items.pop()
 popped.startswith(1)
 
 numbers = [1]

@@ -168,13 +168,11 @@ internal sealed class AbstractState
         foreach (var name in _values.Keys.ToArray())
         {
             var value = _values[name];
-            if (value.Kind == AbstractValueKind.List)
+            var remainingTupleWork = Parser.MaxNestingDepth;
+            var widened = ForgetMutableSequenceContents(value, ref remainingTupleWork);
+            if (widened.Kind != value.Kind || !widened.HasSamePayload(value))
             {
-                var items = value.RequireSequenceItems();
-                var item = items.Count == 0
-                    ? AbstractValue.Unknown(value.Span)
-                    : items.Skip(1).Aggregate(items[0], (joined, next) => AbstractValue.Join(joined, next, value.Span));
-                _values[name] = AbstractValue.ListOf(item, value.Span);
+                _values[name] = widened;
                 changed = true;
             }
 
@@ -187,6 +185,50 @@ internal sealed class AbstractState
         if (changed)
         {
             InvalidateCachedFacts();
+        }
+    }
+
+    private static AbstractValue ForgetMutableSequenceContents(AbstractValue value, ref int remainingTupleWork)
+    {
+        switch (value.Kind)
+        {
+            case AbstractValueKind.List:
+            case AbstractValueKind.ListType:
+                // An alias or callback may replace every item, including its type.
+                return value.Kind == AbstractValueKind.ListType && value.RequireNestedValue().Kind == AbstractValueKind.Unknown
+                    ? value
+                    : AbstractValue.ListOf(AbstractValue.Unknown(value.Span), value.Span);
+
+            case AbstractValueKind.Tuple:
+                // Repeated assignments can build deeper facts than parsed syntax.
+                // Bound normalization work and recursion; only static precision is lost.
+                if (remainingTupleWork == 0) return AbstractValue.Unknown(value.Span);
+                remainingTupleWork--;
+                var items = value.RequireSequenceItems();
+                AbstractValue[]? replacement = null;
+                for (var index = 0; index < items.Count; index++)
+                {
+                    var item = items[index];
+                    var widened = ForgetMutableSequenceContents(item, ref remainingTupleWork);
+                    if (widened.Kind != item.Kind || !widened.HasSamePayload(item))
+                    {
+                        replacement ??= items.ToArray();
+                        replacement[index] = widened;
+                    }
+                }
+                return replacement is null ? value : AbstractValue.Tuple(replacement, value.Span);
+
+            case AbstractValueKind.MaybeNone:
+                if (remainingTupleWork == 0) return AbstractValue.Unknown(value.Span);
+                remainingTupleWork--;
+                var nested = value.RequireNestedValue();
+                var widenedNested = ForgetMutableSequenceContents(nested, ref remainingTupleWork);
+                return widenedNested.Kind == nested.Kind && widenedNested.HasSamePayload(nested)
+                    ? value
+                    : AbstractValue.MaybeNone(widenedNested, value.Span);
+
+            default:
+                return value;
         }
     }
 

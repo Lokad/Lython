@@ -879,6 +879,15 @@ Static analysis of boolean conditions must respect the same reachability. Facts 
 
 For supported statically known sized values, comparison of `len(value)` with a known integer may refine conservative minimum and maximum length bounds on the corresponding branch. Refinement must account for reversed comparisons, negation, and negative indexes. A known sequence mutation must invalidate or widen facts for possible aliases; an unknown length must not become a static out-of-range error. Exact literal bounds continue to justify diagnostics for definitely invalid positive or negative indexes.
 
+Possible list mutation discards prior element values and types as well as length,
+including list facts held inside known tuples or optional values. Immutable tuple
+arity and unaffected elements remain known. Invalidation is conservative across
+possible aliases, including separately created copies; a formerly provable error
+can move to the ordinary runtime check. Freshly established facts still justify
+diagnostics. Normalizing nested compiler facts has a finite work bound; unusually
+deep or branching facts can become unknown below that bound without changing
+guest values, execution limits or memory ownership.
+
 Container-fact invalidation caused by calls analyzed inside eager list, set and
 dictionary comprehensions must reach the surrounding state, without exporting
 iteration bindings. A generator expression evaluates its outer iterable at construction;
