@@ -1,0 +1,24 @@
+{
+  "baselineRevision": "159cf7d4101785d2b07e4d238e3c0a306cdc796f",
+  "candidateRevision": "ae37d1f93147651ead7bdaf276597672d2e9792a",
+  "caseId": "scripts.json-summary.large",
+  "lane": "warm",
+  "captures": 1,
+  "retries": false,
+  "normalGCAndTiering": true,
+  "boundary": "Existing complete JSON-lines file aggregation, warm Run including host file operations and output publication; excludes compilation and process startup. Normal memory and stack protections enabled.",
+  "stoppingRule": "One existing seconds-long micro only; no retuning, second lane or new producer. Diagnostic only.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "e88de769f72f81806cc2b32742e54a4b551046cad202a69441f5fb02192aafe1",
+    "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+    "sourceArchiveSha256": "fd79145667764922e6d40b9da1209e303d0aa2deadbb38fe605ce2952ded3c1b"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "48b8005685a93fd2772549fc301a6f27bdb2872f1368a4cf4bd7886ebbcd0a19",
+    "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+    "sourceArchiveSha256": "4a87e9967df35c12a6d03b65bf1a37ed0a3529fb20010fd099469c7ea3b924d3"
+  },
+  "setupCorrection": "Initial general catalog omits representative file scripts; stopped on zero selected cases before verification or timing. Preserve initial catalog and service failure, reuse completed baseline build and select existing representative profile. Frozen source archives unchanged."
+}

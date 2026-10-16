@@ -1,0 +1,10 @@
+Running as unit: lython-g02-memory-refusal-prepare-20261016.service; invocation ID: 728a9af0dd4e4dcfb60083eadbfa670b
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+AssertionError
+Finished with result: exit-code
+Main processes terminated with: code=exited/status=1
+Service runtime: 10.384s
+CPU time consumed: 25.791s
+Memory peak: 764.0K
+Memory swap peak: 0B

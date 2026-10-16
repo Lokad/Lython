@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 terminal-admission correction](results/2026-10-16-terminal-admission/README.md)
+ends the command after refused admission while preserving native cleanup,
+retained funding and later commands. One unchanged complete JSON aggregation
+observed 9.713 → 9.492 ms, CPython 4.175 ms. The 2.3% difference is within baseline
+spread; no speed change, qualified ratio or host-latency result. One 9.533 s owned
+capture, no repeat or retuning; frozen sources match and all workers exited. The
+initial catalog-profile preparation failure occurred before timing and is preserved.
+
 The [2026-10-16 builtin setup change](results/2026-10-16-builtin-setup/README.md)
 shares three fixed plain definitions, retaining private type graphs and current
 caller module resolution. One existing empty warm invocation control observed

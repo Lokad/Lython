@@ -1,0 +1,68 @@
+{
+  "checks": [
+    {
+      "engine": "timing-baseline",
+      "pid": 2376107,
+      "fixture": "/tmp/lython-comparison-files-R9Xxkb",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-candidate",
+      "pid": 2376128,
+      "fixture": "/tmp/lython-comparison-files-INYKVK",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "timing-CPython",
+      "pid": 2376143,
+      "fixture": "/tmp/lython-comparison-files-cHPh7E",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-lythonIdentity",
+      "pid": 2375838,
+      "fixture": "/tmp/lython-comparison-files-CgITCa",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "baseline-pythonIdentity",
+      "pid": 2375858,
+      "fixture": "/tmp/lython-comparison-files-bNLrNI",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-lythonIdentity",
+      "pid": 2375965,
+      "fixture": "/tmp/lython-comparison-files-BwdbKF",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    },
+    {
+      "engine": "candidate-pythonIdentity",
+      "pid": 2375986,
+      "fixture": "/tmp/lython-comparison-files-cCkcM1",
+      "processAbsent": true,
+      "fixtureAbsent": true
+    }
+  ],
+  "sources": {
+    "baseline": {
+      "productionSourceCount": 524,
+      "productionManifestSha256": "e88de769f72f81806cc2b32742e54a4b551046cad202a69441f5fb02192aafe1",
+      "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57"
+    },
+    "candidate": {
+      "productionSourceCount": 524,
+      "productionManifestSha256": "48b8005685a93fd2772549fc301a6f27bdb2872f1368a4cf4bd7886ebbcd0a19",
+      "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57"
+    }
+  },
+  "frozenSourcesMatch": true,
+  "relevantUnits": "",
+  "leaseAcquired": true
+}
