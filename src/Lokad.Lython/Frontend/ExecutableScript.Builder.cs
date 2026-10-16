@@ -87,6 +87,19 @@ internal sealed partial class ExecutableScript
             // the defining builder's candidates and capture the existing cell.
             if ((!_generator || generatorExpression is not null) && _scopeFacts.RequiresClassCell && (_declaredScopeFacts is not null || _parentClosureCandidates.Contains("__class__")))
                 InternClosure("__class__");
+            // Match Python and FunctionBindingPlan: positional, keyword-only,
+            // then variadic parameters. Collect this prefix once, before body locals.
+            if (_functionParameters is not null)
+            {
+                foreach (var parameter in _functionParameters)
+                    if (parameter.Kind is FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly or FunctionParameterKind.KeywordOnly
+                        && IsLocalBindingName(parameter.Name))
+                        InternLocal(parameter.Name);
+                foreach (var parameter in _functionParameters)
+                    if (parameter.Kind is FunctionParameterKind.VariadicList or FunctionParameterKind.VariadicDictionary
+                        && IsLocalBindingName(parameter.Name))
+                        InternLocal(parameter.Name);
+            }
             CollectLocals(statements);
             if (_functionParameters is not null)
             {
@@ -197,20 +210,6 @@ internal sealed partial class ExecutableScript
 
         private void CollectLocals(IReadOnlyList<LoweredStatement> statements)
         {
-            if (_functionParameters is not null)
-            {
-                foreach (var parameter in _functionParameters)
-                {
-                    if (parameter.Kind is FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly or FunctionParameterKind.KeywordOnly or FunctionParameterKind.VariadicList or FunctionParameterKind.VariadicDictionary)
-                    {
-                        if (IsLocalBindingName(parameter.Name))
-                        {
-                            InternLocal(parameter.Name);
-                        }
-                    }
-                }
-            }
-
             foreach (var statement in statements)
             {
                 switch (statement)

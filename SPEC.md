@@ -1227,6 +1227,8 @@ variable raises `NameError`. Module and class namespace lookup retain their
 Python behavior. Existing static diagnostics still reject statically certain
 reads before assignment.
 
+Function locals()/vars() snapshots list parameters in Python binding order:
+positional parameters, keyword-only parameters, then `*args` and `**kwargs`.
 Executable function entry guards attribute failures to the original call span.
 Lowered-method locals()/vars() snapshots include an initialized captured
 `__class__`, preserving explicit local/global shadowing.
