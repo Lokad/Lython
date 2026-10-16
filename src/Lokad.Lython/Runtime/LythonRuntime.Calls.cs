@@ -2582,7 +2582,7 @@ internal sealed partial class LythonRuntime
     // below (PyType.*, PyDateTimeOps.*, RandomType, and the two singleton
     // factories) is shared across independent runs, so the static constructor
     // publishes each wrapper exactly once and the choke above only reads them
-    // afterwards. Per-run constructors (BuiltinCallable, DictCallable,
+    // afterwards. Per-run type constructors (BuiltinCallable, DictCallable,
     // ZipCallable, per-access CollectionsCallable, per-run ExceptionTypeValue)
     // and their per-instance unbound caches keep their lazy slot: those
     // objects are confined to a single run's thread. A run stays

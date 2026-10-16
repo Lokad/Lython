@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse the fixed len/repr/ascii builtin definitions across executions, removing repeated wrappers, parameter-name arrays and signature-catalog lookups. Keep mutable type graphs, builtin dictionaries and contextual module lookup isolated per run; retain ordinary binding, host/cancellation behavior and result ownership.
+
 - Parse default JSON long/float tokens from UTF-8 and share raw numeric-hook preparation through the existing governed text factory. Remove unconditional CLR token decoding and duplicate hook branches; preserve exact large-integer fallback, shared magnitude preflights, signed zero/overflow, hook lifetimes and cancellation.
 
 - Copy well-formed unescaped JSON strings and keys directly from validated UTF-8 tokens into existing governed storage. Remove their temporary CLR string and UTF-8 re-encoding plus the single-use conversion helper. Preserve escaped/error paths, token scratch overlap, before-copy admission, hook cancellation and retained aliases.

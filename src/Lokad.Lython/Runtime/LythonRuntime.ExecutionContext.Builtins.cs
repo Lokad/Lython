@@ -4,6 +4,13 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
+        // These fixed plain functions have no receiver, run state or type caches:
+        // BuiltinCallable's mutable slots are gated on builtin type names. Their
+        // __self__ is resolved from the caller context, not stored on the callable.
+        private static readonly BuiltinCallable SharedLen = BuiltinCallable.Create("len", Len);
+        private static readonly BuiltinCallable SharedRepr = BuiltinCallable.Create("repr", Repr, ["value"]);
+        private static readonly BuiltinCallable SharedAscii = BuiltinCallable.Create("ascii", Ascii, ["value"]);
+
         // Python types are mutable. Every root execution context therefore needs
         // its own connected object/type graph instead of sharing a cached table.
         private static Dictionary<string, object> CreateBuiltinVariables()
@@ -47,10 +54,10 @@ internal sealed partial class LythonRuntime
                 ["print"] = new PrintCallable(),
                 ["input"] = BuiltinCallable.Create("input", Input, InputAsync, ["prompt"], requiredCount: 0),
                 ["str"] = BuiltinCallable.Create(LythonCallableSignature.Create("str", ["object", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Str),
-                ["repr"] = BuiltinCallable.Create("repr", Repr, ["value"]),
-                ["ascii"] = BuiltinCallable.Create("ascii", Ascii, ["value"]),
+                ["repr"] = SharedRepr,
+                ["ascii"] = SharedAscii,
                 ["format"] = BuiltinCallable.Create("format", Format, ["value", "format_spec"], requiredCount: 1),
-                ["len"] = BuiltinCallable.Create("len", Len),
+                ["len"] = SharedLen,
                 ["sorted"] = BuiltinCallable.Create(LythonCallableSignature.Create("sorted", ["iterable", "key", "reverse"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sorted, SortedAsync),
                 ["any"] = BuiltinCallable.Create("any", Any, AnyAsync),
                 ["all"] = BuiltinCallable.Create("all", All, AllAsync),

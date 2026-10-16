@@ -159,6 +159,10 @@ defaults does not refund storage that can still have aliases or an active lookup
 Parameter-heavy definition batches can therefore refuse earlier than older
 revisions that omitted layout capacity. Use bounded execution batches; immutable
 layout sharing remains a performance opportunity, not an accounting exemption.
+The fixed `len`, `repr` and `ascii` builtin definitions are shared trusted runtime
+metadata covered by host/control headroom. They retain no execution context,
+guest storage or host; their module is resolved through the current caller.
+Builtin dictionaries, mutable type graphs and owned results remain per execution.
 Approximation deliberately leaves roughly 20% of minor objects, metadata and
 short-lived temporaries uninstrumented; this is a design allowance, not a
 measured coverage percentage. Keep additional host headroom for CLR/runtime
