@@ -1,0 +1,45 @@
+{
+  "reference": "Python 3.13.2",
+  "cases": [
+    {
+      "name": "unicode-whitespace",
+      "source": "print(' alpha\\tbeta\\n café\\u00a0😀\\u2009tail '.split())",
+      "stdout": "['alpha', 'beta', 'café', '😀', 'tail']\n"
+    },
+    {
+      "name": "empty-and-boundaries",
+      "source": "for text in ('',' ','\\t\\n','word',' word ',' a  b '):print(text.split())",
+      "stdout": "[]\n[]\n[]\n['word']\n['word']\n['a', 'b']\n"
+    },
+    {
+      "name": "fresh-results",
+      "source": "text='one two'\na=text.split()\nb=text.split()\na.append('three')\nprint(a,b,a is b,text)",
+      "stdout": "['one', 'two', 'three'] ['one', 'two'] False one two\n"
+    },
+    {
+      "name": "explicit-options",
+      "source": "text=' a  b c '\nprint(text.split(None),text.split(sep=None,maxsplit=1),text.split(' '),text.split(None,0))",
+      "stdout": "['a', 'b', 'c'] ['a', 'b c '] ['', 'a', '', 'b', 'c', ''] ['a  b c ']\n"
+    },
+    {
+      "name": "exposed",
+      "source": "method=' a b '.split\nprint(method(),method(None,1))",
+      "stdout": "['a', 'b'] ['a', 'b ']\n"
+    },
+    {
+      "name": "custom-receiver",
+      "source": "class Text:\n def split(self):return ['custom']\nprint(Text().split())",
+      "stdout": "['custom']\n"
+    },
+    {
+      "name": "expanded",
+      "source": "print(' a b '.split(*[],**{}))",
+      "stdout": "['a', 'b']\n"
+    },
+    {
+      "name": "receiver-once",
+      "source": "events=[]\ndef text():\n events.append('receiver')\n return ' a b '\nprint(text().split(),events)",
+      "stdout": "['a', 'b'] ['receiver']\n"
+    }
+  ]
+}

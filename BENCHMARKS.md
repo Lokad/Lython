@@ -5,7 +5,7 @@
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Same JSON configuration job [AQ], warm `Run` | 16 existing paths / 181 UTF-8 input bytes | 3.309 ms | 1.695 ms | — | Short diagnostic at 4846928c; 0.9% change within spread; no improvement established |
 | Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
-| Complete text-summary file job [AN], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.414 ms | 1.239 ms | — | Short diagnostic at 7caf4833; target-read consolidation retained; timing change inconclusive (baseline spread 12.4%) |
+| Complete text-summary file job [AY], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.405 ms | 1.3426 ms | — | Short diagnostic at 8b0f32fb; direct split; 8.7% lower median within 10.7% baseline spread, inconclusive |
 | Complete JSON-lines aggregation [AT], warm | 4,096 records / 110,592 UTF-8 bytes | 9.587 ms | 4.401 ms | — | Short diagnostic at dc950cde; 2.3% lower median within 17.6% baseline spread; inconclusive |
 | Same JSON aggregation [AU], fresh compile/run | Same 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
@@ -42,6 +42,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| AY | 2026-10-16 | 8b0f32fb; direct zero-argument exact-string split | [Complete text job, lifecycle and inconclusive timing](benchmarks/results/2026-10-16-direct-string-split/README.md) |
 | AX | 2026-10-16 | 44199dd3; direct synchronous executable-generator advancement | [Shared frame guards, lifecycle and short diagnostic](benchmarks/results/2026-10-16-generator-sync-advance/README.md) |
 | AW | 2026-10-16 | fa2b72af; genuine executable generator-expression bodies | [Lifecycle, ownership and inconclusive timing](benchmarks/results/2026-10-16-executable-generators/README.md) |
 | AV | 2026-10-16 | 569a653a; immediate generator bindings and captured-cell resumption | [Generator reduction, correctness and single diagnostic](benchmarks/results/2026-10-16-generator-bindings/README.md) |
@@ -110,6 +111,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Direct zero-argument string split, 2026-10-16 | 4717904d → 8b0f32fb; unchanged complete text-summary job | No speedup established: 7.018 → 6.405 ms; 8.7% change within 10.7% baseline spread | [Direct calls, shared kernel and ownership checks](benchmarks/results/2026-10-16-direct-string-split/README.md) |
 | Direct synchronous generator advancement, 2026-10-16 | b52be7e4 → 44199dd3; unchanged numeric reduction | 4.118 → 3.912 ms; 5.0% lower median, one unqualified diagnostic | [Direct pull, shared frame guards and lifecycle controls](benchmarks/results/2026-10-16-generator-sync-advance/README.md) |
 | Executable generator-expression bodies, 2026-10-16 | c74f53c9 → fa2b72af; unchanged numeric reduction | No speedup established: 4.330 → 4.252 ms; 1.8% change within 3.8% candidate spread | [Real instructions, shared frames and lifecycle checks](benchmarks/results/2026-10-16-executable-generators/README.md) |
 | Immediate generator bindings, 2026-10-16 | b387be6d → 569a653a; unchanged numeric reduction | 17.1% lower median: 4.919 → 4.077 ms in one short diagnostic | [Per-yield scan removal and preserved semantics](benchmarks/results/2026-10-16-generator-bindings/README.md) |

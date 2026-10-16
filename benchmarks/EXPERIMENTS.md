@@ -7,6 +7,16 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 direct split change](results/2026-10-16-direct-string-split/README.md)
+removes per-receiver callable/binder work from ordinary zero-argument exact-string
+split and reuses the governed kernel. One unchanged complete text job observed
+7.018 → 6.405 ms, CPython 1.3426 ms; spreads10.70%/10.08%/0.87%. The 8.7%
+change is within spread: no speedup or qualified ratio established. One8.094s
+capture after corrected catalog-profile setup; original failure occurred before
+timing. Three-size independent file/stdout goldens and frozen manifests match;
+seven workers/fixtures gone, services inactive and lease free. AY refreshes the
+leading text snapshot; AN remains separate history. No repeat/tuning/new producer.
+
 The [2026-10-16 synchronous advancement change](results/2026-10-16-generator-sync-advance/README.md)
 removes the async advancement wrapper from ordinary synchronous generator pulls,
 sharing managed admissions, frame entry/exit and result reading. One unchanged

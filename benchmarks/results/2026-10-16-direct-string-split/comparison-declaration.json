@@ -1,0 +1,24 @@
+{
+  "baselineRevision": "4717904d4d8b8fd6a455c55557a86d17d62f5c1f",
+  "candidateRevision": "8b0f32fb30f9a53a43cab9eaf91ca0a702fb9747",
+  "caseId": "scripts.text-summary.large",
+  "lane": "warm",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm synchronous public Run for unchanged complete text-summary file job: fresh invocation state, input/output staging, exact file checks, execution/projection and prior-result cleanup timed; compile/startup/transport/full hashing excluded.",
+  "stoppingRule": "One existing seconds-long complete text-summary micro; no retuning, repeat, new producer or full lane.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "e9dc5e470a5b40f5fc9bef9a6601addab3ae3d638fab8ca25772cd827ccdd316",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "4a6dfc10a7c24d2e9acc715e357e6e5bbcb14db499970d11fdc078ba84242c83"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "858bc4e0ae938f9c23b0d87c9d7467b0604c31d64e6ee245686ba5c881a57692",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "6cbfb991eb8ec0e5437cb7b2d489699ca6a9524f711458a39cbe9fde75f08c61"
+  }
+}

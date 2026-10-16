@@ -124,7 +124,11 @@ public sealed class DirectStringSplitTests
                 _ = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(1, null));
             }
         }
-        finally { receiver.Release.TrySetResult(); }
+        finally
+        {
+            receiver.Release.TrySetResult();
+            _ = await Xunit.Record.ExceptionAsync(async () => await pending.WaitAsync(TimeSpan.FromSeconds(5)));
+        }
         if (route == "success") Assert.Equal(2, Assert.IsType<PyList>(await pending.WaitAsync(TimeSpan.FromSeconds(5))).Count);
         else
         {
