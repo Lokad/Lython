@@ -249,16 +249,7 @@ internal sealed partial class ExecutableScript
             AddInstruction(currentBlock, ExecutableInstruction.Jump(headBlock, statement.Span));
 
             AddInstruction(headBlock, ExecutableInstruction.ForNext(statement.ElseStatements is null ? exitBlock : elseBlock, statement.Iterable.Span));
-            var suspendingTarget = _generator && AssignmentTargetFacts.Reads(statement.Syntax.Target).Any(GeneratorSyntaxFacts.ContainsYield);
-            var targetExit = suspendingTarget
-                ? CompileSuspendingLoopTarget(statement.Syntax.Target, statement.Span, headBlock) : headBlock;
-            if (!suspendingTarget)
-            {
-                if (statement.Syntax.Target is LoopNameTargetSyntax name)
-                    CompileStoreBoundName(name.Name, statement.Span, headBlock);
-                else
-                    AddInstruction(headBlock, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(statement.Syntax.Target, statement.Span), statement.Span));
-            }
+            var targetExit = CompileLoopTarget(statement.Syntax.Target, statement.Span, headBlock);
             AddInstruction(targetExit, ExecutableInstruction.Jump(bodyBlock, statement.Span));
 
             _loops.Push(new LoopContext(headBlock, exitBlock, HasIterator: true));

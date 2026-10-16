@@ -32,8 +32,8 @@ internal sealed partial class ExecutableScript
                     loops[index] = (head, exit);
                     AddInstruction(block, ExecutableInstruction.Jump(head, clause.Span));
                     AddInstruction(head, ExecutableInstruction.ForNext(exit, clause.Iterable.Span));
-                    AddInstruction(head, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(clause.Target, clause.Iterable.Span), clause.Iterable.Span));
-                    AddInstruction(head, ExecutableInstruction.Jump(body, clause.Span));
+                    var targetExit = CompileLoopTarget(clause.Target, clause.Iterable.Span, head);
+                    AddInstruction(targetExit, ExecutableInstruction.Jump(body, clause.Span));
                     block = body;
                     if (clause.Condition is not null)
                     {

@@ -18,22 +18,32 @@ internal sealed partial class ExecutableScript
             return block;
         }
 
-        private int CompileSuspendingLoopTarget(LoopTargetSyntax target, LythonSourceSpan span, int block)
+        private int CompileLoopTarget(LoopTargetSyntax target, LythonSourceSpan span, int block)
         {
             switch (target)
             {
-                case LoopNameTargetSyntax name: CompileStoreBoundName(name.Name, span, block); return block;
-                case LoopStarredTargetSyntax star: CompileStoreBoundName(star.Name, span, block); return block;
+                case LoopNameTargetSyntax name: CompileLoopBinding(name.Name, span, block); return block;
+                case LoopStarredTargetSyntax star: CompileLoopBinding(star.Name, span, block); return block;
                 case LoopStoreTargetSyntax store: return CompileStoreTarget(store.Target, span, block);
                 case LoopTupleTargetSyntax tuple:
                     var starIndex = -1;
                     for (var i = 0; i < tuple.Items.Count; i++)
                         if (AssignmentTargetFacts.IsStarred(tuple.Items[i])) starIndex = i;
                     EmitOperation(new ExecutableUnpackValues(new UnpackingLayout(tuple.Items.Count, starIndex)), span, block);
-                    foreach (var child in tuple.Items) block = CompileSuspendingLoopTarget(child, span, block);
+                    foreach (var child in tuple.Items) block = CompileLoopTarget(child, span, block);
                     return block;
                 default: throw new InvalidOperationException("Unknown loop target.");
             }
+        }
+
+        private void CompileLoopBinding(string name, LythonSourceSpan span, int block)
+        {
+            if (_comprehensionNames.Any(names => names.Contains(name)))
+            {
+                // The resolved store selects inlined bindings before caller directives.
+                AddInstruction(block, ExecutableInstruction.StoreGlobal(InternName(name), span));
+            }
+            else CompileStoreBoundName(name, span, block);
         }
 
         private int CompileSuspendingAugmentedAssignment(LoweredAugmentedAssignmentStatement statement, int block)

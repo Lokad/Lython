@@ -68,14 +68,14 @@ public sealed class ExecutableUnpackingTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    private sealed class Sink : IPyMutableDynamicAttributes
+    internal sealed class Sink : IPyMutableDynamicAttributes
     {
         public int Stores { get; private set; }
         public bool TryGetMember(string name, out object value) { value = PyNone.Instance; return false; }
         public bool TrySetMember(string name, object value) { Stores++; return true; }
     }
 
-    private sealed class LimitAfterEnumeration(MemoryGovernor governor, long limit) : IEnumerable<object>, IDisposable
+    internal sealed class LimitAfterEnumeration(MemoryGovernor governor, long limit) : IEnumerable<object>, IDisposable
     {
         private IDisposable? _reservation;
         public bool LimitedAllowance { get; private set; }

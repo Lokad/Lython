@@ -81,6 +81,9 @@ Executable eager comprehensions reuse the existing binding lifetime in the calle
 frame. Scope end restores lookup/capture state and does not refund collection or
 element storage retained by a result. Failed/cancelled nested scopes unwind in
 reverse order; unpublished partial storage can stay with the finite owner.
+Compiled loop/comprehension targets use the same admitted unpack transfer and
+starred-rest policy as ordinary groups. Comprehension stores keep their existing
+lexical namespace owner; they introduce no additional scope, allowance or cache.
 Native enumeration working storage is disposed on loop/comprehension failure or
 early exit. This releases its temporary allowance without closing retained Python
 iterator/generator values or refunding their surviving storage.

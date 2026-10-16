@@ -728,6 +728,11 @@ Unpacked values remain funded through target stores, including guest setters and
 delayed host effects. Executable groups admit frame storage while the materialized
 buffer is still live, transfer its references, then release that buffer. Temporary
 cleanup does not refund values retained by the execution or an escaping owner.
+Eligible ordinary `for` targets and eager-comprehension targets share executable
+unpack and child-store operations. Comprehension names resolve to the active
+inlined binding scope before enclosing global/nonlocal directives or caller slots;
+scope end restores lookup without invalidating retained closures or values.
+General slice and required lowered/generator-expression routes remain separate.
 With headers accept parenthesized item lists, optional grouped trailing commas
 and full assignment targets. Target binding is protected by the entered manager:
 failures unwind or suppress through __exit__ like failures in the body.
