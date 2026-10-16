@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
     {
         if (op == BinaryOperatorSyntax.Add && left is BigInteger leftInteger && right is BigInteger rightInteger)
-            return AddExactIntegers(leftInteger, rightInteger, context, span);
+            return AddExactIntegers(leftInteger, rightInteger, context.MemoryGovernor, span);
 
         if (op == BinaryOperatorSyntax.MatrixMultiply) return EvaluateMatrixMultiplyAsync(left, right, context, span, false).GetAwaiter().GetResult();
         if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;
@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
     {
         if (op == BinaryOperatorSyntax.Add && left is BigInteger leftInteger && right is BigInteger rightInteger)
-            return AddExactIntegers(leftInteger, rightInteger, context, span);
+            return AddExactIntegers(leftInteger, rightInteger, context.MemoryGovernor, span);
 
         if (op == BinaryOperatorSyntax.MatrixMultiply) return await EvaluateMatrixMultiplyAsync(left, right, context, span, true).ConfigureAwait(false);
         if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;

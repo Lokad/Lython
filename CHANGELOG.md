@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Admit major integer Counter count additions before computation or replacement, reusing ordinary integer-addition admission for updates, totals and binary addition. Fund new magnitudes under the existing owner; preserve retained aliases, decimal/float behavior and terminal refusal. Conservative estimates can reject earlier under tight budgets.
+
 - Preflight major native integer additions before allocating their result, including ordinary addition, generic sums and mixed CLR integer inputs. Reuse existing magnitude admission and retained owners, preserving small-value handling, fuel, callbacks and terminal refusal; conservative major estimates can reject earlier under tight budgets.
 
 - Remove the redundant JSON prefix decoder, its result record and duplicate leading-whitespace/empty-input checks. Whole-document decoding uses the existing value reader directly, preserving whitespace fuel, trailing-data validation, hooks, errors and input ownership.

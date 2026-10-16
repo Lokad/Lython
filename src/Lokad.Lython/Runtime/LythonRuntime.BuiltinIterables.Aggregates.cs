@@ -142,7 +142,7 @@ internal sealed partial class LythonRuntime
         if (source.Length != 0)
         {
             _ = PyNumberOps.TryAsInteger(start, out var initial);
-            operation.Result = AddExactIntegers(initial, new BigInteger(subtotal), context, span);
+            operation.Result = AddExactIntegers(initial, new BigInteger(subtotal), context.MemoryGovernor, span);
         }
         operation.FinishIteration();
         return true;

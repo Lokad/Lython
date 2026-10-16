@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
     private static object EvaluateAdd(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is BigInteger leftInteger && right is BigInteger rightInteger)
-            return AddExactIntegers(leftInteger, rightInteger, context, span);
+            return AddExactIntegers(leftInteger, rightInteger, context.MemoryGovernor, span);
 
         if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Add, left, right, context, span, operation);
         if (left is PyDecimal || right is PyDecimal)
@@ -144,7 +144,7 @@ internal sealed partial class LythonRuntime
         }
 
         if (!lhs.IsFloat && !rhs.IsFloat)
-            return AddExactIntegers(lhs.Integer, rhs.Integer, context, span);
+            return AddExactIntegers(lhs.Integer, rhs.Integer, context.MemoryGovernor, span);
 
         try
         {
@@ -166,11 +166,11 @@ internal sealed partial class LythonRuntime
     // Boxed BigInteger is an exact built-in int, so neither operand can supply
     // user operator methods. Keep one result box and the existing ownership and
     // overflow funnel while avoiding generalized collection/numeric dispatch.
-    private static object AddExactIntegers(BigInteger left, BigInteger right, ExecutionContext context, LythonSourceSpan span)
+    private static object AddExactIntegers(BigInteger left, BigInteger right, MemoryGovernor? governor, LythonSourceSpan span)
     {
         try
         {
-            using var integerAdmission = GuardIntegerAddition(left, right, context.MemoryGovernor, span);
+            using var integerAdmission = governor is null ? null : GuardIntegerAddition(left, right, governor, span);
             var result = left + right;
             if (integerAdmission is not null && RuntimeMemoryEstimates.GetMagnitudeBitLength(result) > 64)
                 integerAdmission.Commit(RuntimeMemoryEstimates.EstimateBigIntegerBytes(result));

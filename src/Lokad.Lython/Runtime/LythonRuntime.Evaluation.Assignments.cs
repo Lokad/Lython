@@ -714,7 +714,7 @@ internal sealed partial class LythonRuntime
     {
         if (op == AugmentedAssignmentOperatorSyntax.Add &&
             currentValue is BigInteger leftInteger && right is BigInteger rightInteger)
-            return AddExactIntegers(leftInteger, rightInteger, context, span);
+            return AddExactIntegers(leftInteger, rightInteger, context.MemoryGovernor, span);
 
         if (op == AugmentedAssignmentOperatorSyntax.MatrixMultiply) return EvaluateMatrixInPlaceAsync(currentValue, right, context, span, false).GetAwaiter().GetResult();
         var inPlaceMethod = AugmentedInPlaceMethod(op);

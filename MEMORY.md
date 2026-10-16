@@ -69,6 +69,12 @@ remaining scratch releases after the operation. Retained major values keep their
 execution/result owner. This covers ordinary addition and generic sums as well as
 mixed CLR integer inputs; the byte-sum kernel shares that result path. Small
 bounded values keep the control-headroom policy.
+Counter count addition uses the same path: updates reserve against the counter's
+owner before replacing a count, binary addition retains the result's existing
+owner, and totals reserve against the current execution. Newly constructed major
+counts remain funded even when a container later removes its reference, until
+their finite owner ends. Ungoverned internal containers retain their existing
+behavior; public executions establish owners before exposing containers.
 Major operations can reject earlier under tight budgets, including opposite-sign
 operands that would cancel, because admission uses an upper bound and accounts
 replacement/scratch overlap. No scalar identities, new scope or reclamation

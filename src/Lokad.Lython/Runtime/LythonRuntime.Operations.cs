@@ -615,7 +615,9 @@ internal sealed partial class LythonRuntime
 
         PyNumberOps.TryAsNumber(left, out var lhs);
         PyNumberOps.TryAsNumber(right, out var rhs);
-        return PyNumberOps.Add(lhs, rhs);
+        return !lhs.IsFloat && !rhs.IsFloat
+            ? AddExactIntegers(lhs.Integer, rhs.Integer, governor, span)
+            : PyNumberOps.Add(lhs, rhs);
     }
 
     private static object SubtractCounterCounts(object left,object right,LythonSourceSpan span,MemoryGovernor? governor)
