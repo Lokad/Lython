@@ -11,13 +11,12 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     // Pooled binder value slots for the common layout widths. The consumer
-    // bound Values remain invocation-owned: matching executable frames borrow
+    // bound Values remain invocation-owned: nonmirrored executable frames borrow
     // them through completion, other frames copy refs out, and dataclass
     // dunders read transiently. Captures/exposed locals retain values or cells,
     // never this array. ThreadStatic plus take-null with keep-first
     // stays safe under recursion, suspension and parallel tests; slots are
-    // cleared before caching (fresh arrays start null too). Binding failures
-    // drop the box instead of caching it. Only the hot user-function paths
+    // cleared before caching (fresh arrays start null too). Only the user-function paths
     // return boxes; colder paths simply do not cache.
     [ThreadStatic]
     private static object[]? _pooledOneBoundValue;
@@ -80,6 +79,47 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    // The function invocation owns this buffer through default lookup and body
+    // completion. Values/cells/snapshots have their own retained ownership.
+    internal static void ReturnBoundArguments(BoundCallArguments bound)
+    {
+        try
+        {
+            if (bound.Values.Length > 3) Array.Clear(bound.Values);
+            ReturnBoundValues(bound.Values);
+        }
+        finally { bound.StorageOwner?.Release(bound.StorageBytes); }
+    }
+
+    private static BoundCallArguments RentFunctionArgumentStorage(
+        FunctionBindingPlan plan, LythonSourceSpan span, MemoryGovernor? governor, int? storageCapacity)
+    {
+        var parameterCount = plan.LayoutParameterNames.Count;
+        var capacity = storageCapacity ?? parameterCount;
+        ArgumentOutOfRangeException.ThrowIfLessThan(capacity, parameterCount);
+        // Existing one/two/three-slot cleared pools are bounded control storage.
+        // Unpooled executable storage covers capacity, flags and metadata before
+        // allocation, without a separate per-call reservation object.
+        var owner = storageCapacity is not null && capacity > 3
+            ? governor ?? throw new ArgumentNullException(nameof(governor)) : null;
+        var bytes = owner is null ? 0 : 64L + 16L * capacity;
+        owner?.Reserve(bytes, span);
+        object[] values = [];
+        try
+        {
+            values = capacity == 0 ? [] : RentBoundValues(capacity);
+            var bound = new BoundCallArguments(values, new ArgumentPresence(parameterCount), owner, bytes);
+            owner?.Commit(bytes);
+            return bound;
+        }
+        catch
+        {
+            ReturnBoundValues(values);
+            owner?.ReleaseReserved(bytes);
+            throw;
+        }
+    }
+
     internal static BoundCallArguments BindFunctionArguments(
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
@@ -88,51 +128,53 @@ internal sealed partial class LythonRuntime
         object? receiver = null,
         ExecutableCallSite? callSite = null,
         ReadOnlySpan<object?> operands = default,
-        bool deferKeywordDefaults = false)
+        bool deferKeywordDefaults = false,
+        int? storageCapacity = null)
     {
         // Values travel in plan layout order (positional, keyword-only, then
         // variadic names) with presence bits, instead of a per-call name
         // dictionary. The layout arrays live on the shared plan; only the value
         // slots are per-call.
-        var values = plan.LayoutParameterNames.Count == 0
-            ? Array.Empty<object>()
-            : RentBoundValues(plan.LayoutParameterNames.Count);
+        var storage = RentFunctionArgumentStorage(plan, span, context.MemoryGovernor, storageCapacity);
         try
         {
-            return BindInto(values, arguments, span, plan, context, deferKeywordDefaults, receiver, callSite, operands);
+            return BindInto(storage, arguments, span, plan, context, deferKeywordDefaults, receiver, callSite, operands);
         }
         catch
         {
             // Arity failures after the rent must not strand the pooled box:
             // clear it and hand it back so the next bind reuses the array
             // instead of allocating (and retaining argument refs until GC).
-            ReturnBoundValues(values);
+            ReturnBoundArguments(storage);
             throw;
         }
     }
 
     internal static ValueTask<BoundCallArguments> BindFunctionArgumentsAsync(
         CallArgumentValue[] arguments, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context,
-        object? receiver = null, ExecutableCallSite? callSite = null, ReadOnlySpan<object?> operands = default)
+        object? receiver = null, ExecutableCallSite? callSite = null, ReadOnlySpan<object?> operands = default,
+        int? storageCapacity = null)
     {
         var defer = plan.KeywordDefaultStorage is { HasProtocolKeys: true };
         // Consume borrowed operands before any default-key protocol can suspend.
-        var bound = BindFunctionArguments(arguments, span, plan, context, receiver, callSite, operands, defer);
+        var bound = BindFunctionArguments(arguments, span, plan, context, receiver, callSite, operands, defer, storageCapacity);
         return defer ? CompleteProtocolDefaultsAsync(bound, span, plan, context) : new(bound);
     }
 
     // Eligible signatures contain only positional parameters. Read existing
     // operands once into owned bound storage, before a body can suspend.
     internal static BoundCallArguments BindPositionalFunctionArguments(
-        ReadOnlySpan<object?> arguments, LythonSourceSpan span, FunctionBindingPlan plan, object? receiver = null)
+        ReadOnlySpan<object?> arguments, LythonSourceSpan span, FunctionBindingPlan plan, object? receiver = null,
+        MemoryGovernor? governor = null, int? storageCapacity = null)
     {
-        var values = plan.LayoutParameterNames.Count == 0 ? [] : RentBoundValues(plan.LayoutParameterNames.Count);
+        var storage = RentFunctionArgumentStorage(plan, span, governor, storageCapacity);
+        var values = storage.Values;
         try
         {
             var offset = receiver is null ? 0 : 1;
             if (arguments.Length > plan.PositionalParameters.Count - offset)
                 throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
-            var assigned = new ArgumentPresence(values.Length);
+            var assigned = storage.Assigned;
             if (receiver is not null)
             {
                 values[0] = receiver;
@@ -143,17 +185,17 @@ internal sealed partial class LythonRuntime
                 values[i + offset] = arguments[i].RequireNotNull();
                 assigned[i + offset] = true;
             }
-            for (var i = arguments.Length + offset; i < values.Length; i++)
+            for (var i = arguments.Length + offset; i < assigned.Length; i++)
             {
                 if (!plan.TryGetPositionalDefault(i, out var value))
                     throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.PositionalParameters[i].Name, span);
                 values[i] = value;
             }
-            return new BoundCallArguments(values, assigned);
+            return storage with { Assigned = assigned };
         }
         catch
         {
-            ReturnBoundValues(values);
+            ReturnBoundArguments(storage);
             throw;
         }
     }
@@ -180,7 +222,7 @@ internal sealed partial class LythonRuntime
         }
         catch
         {
-            ReturnBoundValues(values);
+            ReturnBoundArguments(bound);
             throw;
         }
     }
@@ -189,7 +231,7 @@ internal sealed partial class LythonRuntime
     // unexpected or duplicated keywords, missing arguments) funnels through
     // the catch in BindFunctionArguments, which returns the rented box.
     private static BoundCallArguments BindInto(
-        object[] values,
+        BoundCallArguments storage,
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
         FunctionBindingPlan plan,
@@ -199,11 +241,10 @@ internal sealed partial class LythonRuntime
         ExecutableCallSite? callSite = null,
         ReadOnlySpan<object?> operands = default)
     {
-        var pool = context.State.MemoryGovernor;
-        var assigned = new ArgumentPresence(plan.LayoutParameterNames.Count);
+        var values = storage.Values;
+        var assigned = storage.Assigned;
         // The overflow list is scratch: most calls never spill positionals,
-        // so materialize it only on the first spill, tracked in the call pool
-        // invocation for a list that is dropped before return.
+        // so materialize it only on the first spill under existing ownership.
         PyList? extraPositional = null;
         // Keyword overflow likewise materializes only for **kwargs functions
         // receiving unknown names; every other call skips the dictionary.
@@ -338,7 +379,7 @@ internal sealed partial class LythonRuntime
             assigned[keywordDictIndex] = true;
         }
 
-        return new BoundCallArguments(values, assigned);
+        return storage with { Assigned = assigned };
     }
 
     // Constructed function objects retain a wrapper plus binding plan and

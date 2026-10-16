@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+- Bind eligible executable functions into their final local-capacity buffer, removing the separate local array and parameter copy. Admit unpooled capacity before binding and release it after all users finish, including suspended defaults and bodies; retain independent funding for escaping cells, snapshots and values. Tight budgets can now refuse before binding errors or default callbacks.
+
 - Use Python parameter order in compiled function locals()/vars() snapshots and collect the parameter prefix once per code-object compilation. Preserve values, snapshot aliases, closure cells, live defaults and required lowered routes.
 
-- Remove executable functions’ argument-slot maps, identity scans and simple-return parameter searches. Bind the compiler’s aligned parameter prefix directly, preserving captured-cell writes, exact-size local borrowing and completion-time cleanup; larger frames retain separate locals.
+- Remove executable functions’ argument-slot maps, identity scans and simple-return parameter searches. Bind the compiler’s aligned parameter prefix directly, preserving captured-cell writes and completion-time cleanup.
 
 - Bind ordinary Python function and method keyword/variadic calls directly from executable operands and compiled argument names, removing temporary argument transport and the async preparation closure. Share the existing binder and live-default completion; preserve receiver aliases, guards, cancellation, terminal refusal and invocation-owned inputs through suspension.
 

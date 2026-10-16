@@ -98,8 +98,8 @@ public sealed class OrdinaryFunctionTransportTests(ITestOutputHelper output)
     {
         const string key = "class Key:\n def __hash__(self):return hash('value')\n def __eq__(self,other):\n  tap()\n  return other=='value'\n";
         var definitionSource = key + (bound
-            ? "class Box:\n def method(self,arg,*,value):body();return value\nBox.method.__kwdefaults__={Key():payload}\nf=Box().method"
-            : "def f(arg,*,value):body();return value\nf.__kwdefaults__={Key():payload}");
+            ? "class Box:\n def method(self,arg,*,value):\n  first=value\n  second=first\n  third=second\n  body()\n  return third\nBox.method.__kwdefaults__={Key():payload}\nf=Box().method"
+            : "def f(arg,*,value):\n first=value\n second=first\n third=second\n body()\n return third\nf.__kwdefaults__={Key():payload}");
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();

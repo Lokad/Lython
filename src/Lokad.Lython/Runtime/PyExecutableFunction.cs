@@ -17,16 +17,16 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         Dictionary<string, object> defaultValues,
         ScopeDirectiveFacts scopeFacts,
         PythonCallableKind callableKind = PythonCallableKind.Function)
-        : base(name, parameters, closure, defaultValues, scopeFacts, callableKind)
+        : base(name, parameters, closure, defaultValues, scopeFacts, callableKind,
+            storageCapacity: codeObject.RequiresLocalVariableMirroring ? null : codeObject.LocalNames.Count)
     {
         _codeObject = codeObject;
         _closureCells = closureCells;
         SupportsDirectPositional = !_codeObject.RequiresLocalVariableMirroring && SupportsPositionalBinding;
         // Compiler parameter slots are the binding-layout prefix. The invocation
-        // already owns this exact-size array through completion.
+        // owns the full local-capacity array through completion.
         // Captures use separate cells; exposed locals copy values, never the array.
-        _argumentsAreLocals = !codeObject.RequiresLocalVariableMirroring &&
-            BindingPlan.LayoutParameterNames.Count == codeObject.LocalNames.Count;
+        _argumentsAreLocals = !codeObject.RequiresLocalVariableMirroring;
     }
 
     protected override bool RequiresArgumentMirroring => _codeObject.RequiresLocalVariableMirroring;

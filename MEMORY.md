@@ -51,6 +51,17 @@ disposal invalidates descendants and refunds their reservations, so descendants
 and their storage must never outlive an ancestor. There is no automatic ownership
 transfer or refund triggered by CLR collection.
 
+Eligible executable function calls bind parameters into one invocation-owned
+local-capacity buffer. Unpooled buffers admit conservative capacity and metadata
+before allocation or binding, and return that allowance after binding/frame-entry
+failure or body completion, including awaited callbacks and cleanup. Small cleared
+buffers use the existing bounded control-storage pools. Cells, snapshots and
+returned values retain their separate funding after the buffer is cleared.
+This preflight can refuse before an argument TypeError or an effectful default
+lookup that previously happened first. Funded calls preserve Python binding and
+execution behavior. Modules and functions requiring namespace mirroring retain
+their separate local-storage route; this is not guest-reference tracing.
+
 Executable starred-tuple expansion uses an owned mutable working list before
 constructing its immutable result. Working and result storage are funded together
 during conversion. Their estimates may remain charged until the execution/result

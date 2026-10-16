@@ -486,9 +486,10 @@ internal sealed partial class LythonRuntime
     {
         // InvokeBound owns bound storage until this interpreter has detached,
         // including actual asynchronous suspension. No second local array/copy
-        // is needed when the precomputed layouts coincide.
+        // is needed for nonmirrored executable functions.
         var locals = argumentsAreLocals ? boundArguments.Values : new object[codeObject.LocalNames.Count];
-        if (!argumentsAreLocals) Array.Fill(locals, UninitializedLocal);
+        Array.Fill(locals, UninitializedLocal, argumentsAreLocals ? boundArguments.Assigned.Length : 0,
+            locals.Length - (argumentsAreLocals ? boundArguments.Assigned.Length : 0));
         var needsLocalCells = codeObject.CapturedLocalSlots.Count != 0;
         ExecutableCell?[]? localCells = null;
         if (needsLocalCells)
@@ -502,7 +503,7 @@ internal sealed partial class LythonRuntime
         }
 
         var argumentValues = boundArguments.Values ?? Array.Empty<object>();
-        for (var i = 0; !argumentsAreLocals && i < argumentValues.Length; i++)
+        for (var i = 0; !argumentsAreLocals && i < boundArguments.Assigned.Length; i++)
         {
             var value = argumentValues[i];
             locals[i] = value;

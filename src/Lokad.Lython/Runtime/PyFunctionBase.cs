@@ -9,6 +9,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     private static readonly PyString LambdaName = PyString.FromString("<lambda>");
 
     private readonly FunctionBindingPlan _bindingPlan;
+    private readonly int? _storageCapacity;
     private readonly LythonRuntime.ExecutionContext _closure;
     // Metadata tables grow one CLR entry per guest attribute name; charge
     // each new key so retained attributes accumulate. The key strings
@@ -32,9 +33,11 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonRuntime.ExecutionContext closure,
         Dictionary<string, object> defaultValues,
         ScopeDirectiveFacts scopeFacts,
-        PythonCallableKind callableKind = PythonCallableKind.Function)
+        PythonCallableKind callableKind = PythonCallableKind.Function,
+        int? storageCapacity = null)
     {
         Name = name;
+        _storageCapacity = storageCapacity;
         _closure = closure;
         _memoryGovernor = closure.MemoryGovernor;
         _nameValue = callableKind == PythonCallableKind.Lambda
@@ -60,8 +63,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     {
         context.CheckExecution(span);
         var bound = callSite is null
-            ? LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver)
-            : LythonRuntime.BindFunctionArguments([], span, _bindingPlan, context, receiver, callSite, arguments);
+            ? LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver, context.MemoryGovernor, _storageCapacity)
+            : LythonRuntime.BindFunctionArguments([], span, _bindingPlan, context, receiver, callSite, arguments, storageCapacity: _storageCapacity);
         return InvokeBound(bound, span);
     }
 
@@ -70,8 +73,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     {
         context.CheckExecution(span);
         var binding = callSite is null
-            ? new ValueTask<BoundCallArguments>(LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver))
-            : LythonRuntime.BindFunctionArgumentsAsync([], span, _bindingPlan, context, receiver, callSite, arguments);
+            ? new ValueTask<BoundCallArguments>(LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver, context.MemoryGovernor, _storageCapacity))
+            : LythonRuntime.BindFunctionArgumentsAsync([], span, _bindingPlan, context, receiver, callSite, arguments, _storageCapacity);
         return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
     }
 
@@ -83,7 +86,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
-        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
+        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context, storageCapacity: _storageCapacity);
         return InvokeBound(boundArguments, span);
     }
 
@@ -93,7 +96,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonRuntime.ExecutionContext context, object receiver)
     {
         context.CheckExecution(span);
-        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context, receiver);
+        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context, receiver, storageCapacity: _storageCapacity);
         return InvokeBound(boundArguments, span);
     }
 
@@ -108,7 +111,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         {
             // Recursion or budget failure during frame entry must not strand
             // the rented bound-values box: hand it back before propagating.
-            LythonRuntime.ReturnBoundValues(boundArguments.Values);
+            LythonRuntime.ReturnBoundArguments(boundArguments);
             throw;
         }
 
@@ -128,7 +131,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         finally
         {
             frame.LeaveFunctionCall();
-            LythonRuntime.ReturnBoundValues(boundArguments.Values);
+            LythonRuntime.ReturnBoundArguments(boundArguments);
         }
     }
 
@@ -137,7 +140,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         try
         {
             context.CheckExecution(span);
-            var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, _bindingPlan, context);
+            var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, _bindingPlan, context, storageCapacity: _storageCapacity);
             return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
         }
         catch (Exception error) { return ValueTask.FromException<object>(error); }
@@ -149,7 +152,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         try
         {
             context.CheckExecution(span);
-            var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, _bindingPlan, context, receiver);
+            var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, _bindingPlan, context, receiver, storageCapacity: _storageCapacity);
             return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
         }
         catch (Exception error) { return ValueTask.FromException<object>(error); }
@@ -168,7 +171,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         catch
         {
             // Async twin of the entry cleanup above.
-            LythonRuntime.ReturnBoundValues(boundArguments.Values);
+            LythonRuntime.ReturnBoundArguments(boundArguments);
             throw;
         }
 
@@ -188,7 +191,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         finally
         {
             frame.LeaveFunctionCall();
-            LythonRuntime.ReturnBoundValues(boundArguments.Values);
+            LythonRuntime.ReturnBoundArguments(boundArguments);
         }
     }
 

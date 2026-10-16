@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
             return true;
         }
         var index = instruction.LocalSlot;
-        var bound = (uint)index < (uint)arguments.Values.Length;
+        var bound = (uint)index < (uint)arguments.Assigned.Length;
         value = bound ? arguments.Values[index] : null;
         // Unbound locals must fail through the original LoadLocal operation.
         return bound;
