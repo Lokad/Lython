@@ -7,6 +7,16 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-16 executable generator migration](results/2026-10-16-executable-generators/README.md)
+uses genuine child instructions and existing frames/cells; ordinary lowered
+creation/overlay and fallback-only parent mirroring are removed. One unchanged
+warm numeric reduction observed 4.330 → 4.252 ms, CPython 0.5611 ms; spread
+1.45%/3.83%/0.26%. The 1.8% change is inconclusive: no established speedup or
+qualified ratio. One 7.219 s capture, no repeat/tuning/new producer. Both roles
+pass three-size independent goldens, frozen manifests match, seven workers and
+fixtures are gone, services inactive and lease free. AW refreshes the leading
+numeric snapshot; AV and its earlier binding result remain historical evidence.
+
 The [2026-10-16 generator-binding correction](results/2026-10-16-generator-bindings/README.md)
 removes per-yield binding scans, preserving walrus writes through rejected filters,
 errors and suspended captured cells. One unchanged warm numeric reduction observed

@@ -1,0 +1,24 @@
+{
+  "baselineRevision": "c74f53c9b1f1d96f3cd5b513847086a14034cdf3",
+  "candidateRevision": "fa2b72af37e7c50ccf8ffa556683ea29833c257c",
+  "caseId": "math.dyadic-fsum.large",
+  "lane": "warm",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm public Run over unchanged math.fsum generator expression; fresh state/output checks and prior-result cleanup. Compilation/startup excluded. G1 replaces ordinary lowered generator bodies with child instructions.",
+  "stoppingRule": "One existing seconds-long micro; no retuning, repeat, new producer or full lane.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "a97bfcbadb591af1e6ddc66d6938f9c2483d6d4d5fc0882b5c193d0cf42a5f68",
+    "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+    "sourceArchiveSha256": "9d9284c419d5362e1dbca2891500f6f132a3ed08b59673475143a9f3dd7b207c"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "c376c3a91a2cbf249a7a9ba62c7b49217dfb9113329da2baf03ed4d0ad8539de",
+    "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+    "sourceArchiveSha256": "8e4fd0d6a679d8ec7d43b15a99f27da8716bdef9aba529a31a6628132c031655"
+  }
+}
