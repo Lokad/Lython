@@ -112,7 +112,7 @@ internal sealed partial class LythonRuntime
         // Reads one value at the exact byte position with no leading
         // whitespace skip, for prefix entry points whose contract starts at
         // the given index.
-        private async ValueTask<(object Value, int End)> ReadJsonValueExactAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position, bool asynchronous)
+        private ValueTask<(object Value, int End)> ReadJsonValueExactAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position, bool asynchronous)
         {
             context.CheckExecution(span);
             var bytes = input.Source;
@@ -121,6 +121,21 @@ internal sealed partial class LythonRuntime
                 throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
             }
 
+            // Keys and string values cannot suspend. Keep the same scalar-frame
+            // admission and decoder, without constructing an async state machine.
+            if (bytes.Span[position] == (byte)'"')
+            {
+                context.EnterInterpreterFrame(span);
+                try { return new(ReadJsonString(input, options.Strict, position, context, span)); }
+                finally { context.LeaveInterpreterFrame(); }
+            }
+
+            return ReadJsonNonStringValueAsync(input, options, context, span, depth, position, asynchronous);
+        }
+
+        private async ValueTask<(object Value, int End)> ReadJsonNonStringValueAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position, bool asynchronous)
+        {
+            var bytes = input.Source;
             if (TryMatchJsonConstant(bytes.Span, position, out var constant, out var constantEnd))
             {
                 return (await ConvertJsonConstantAsync(constant, options, context, span, asynchronous).ConfigureAwait(false), constantEnd);
@@ -165,11 +180,6 @@ internal sealed partial class LythonRuntime
                 {
                     using var numberScratch = context.MemoryGovernor.ReserveTemporary(checked(4L * (numberEnd - position)), span);
                     return (await ConvertJsonNumberTextAsync(bytes, position, numberEnd, options, context, span, asynchronous).ConfigureAwait(false), numberEnd);
-                }
-
-                if (first == (byte)'"')
-                {
-                    return ReadJsonString(input, options.Strict, position, context, span);
                 }
 
                 throw CreateJsonExpectingError(input, position, JsonIncompleteExpectation.Value, span, context);

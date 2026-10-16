@@ -2138,6 +2138,11 @@ construction, captured options and method overrides. Internal allocation totals 
 execution-checkpoint counts can change when this absent work disappears; Python
 results, hook order, error coordinates and resource guards remain supported.
 
+JSON property names and string values use the same synchronous token decoder
+under Run and RunAsync, retaining managed frame admission, checkpoints and storage
+preflights. Non-string values and hooks keep their existing asynchronous path;
+actual hook suspension preserves input and decoded-result ownership.
+
 Unescaped JSON string values and keys use independently owned UTF-8 storage,
 admitted beside the existing token scratch before allocation. The runtime checks
 well-formed UTF-8 before copying the validated payload; escaped strings and invalid

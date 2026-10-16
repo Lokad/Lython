@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Dispatch JSON property names and string values synchronously through the existing token decoder under both execution APIs, avoiding the generic async parser for those tokens. Preserve managed admission, exact checkpoints, storage preflights, Python errors, hooks and retained aliases.
+
 - Include an initialized captured `__class__` in lowered-method locals()/vars() snapshots using the existing lexical-cell resolver and governed dictionary; preserve local/global shadowing and unbound cells.
 
 - Attribute executable function entry failures to the call span, rethrow unhandled exceptions through handler-free frames without abrupt routing, and defer abandoned-generator namespace retention until outer acquisition succeeds. Keep the validated managed nesting policy; withdraw the prepared-class-method prototype after its Linux stack regression.
