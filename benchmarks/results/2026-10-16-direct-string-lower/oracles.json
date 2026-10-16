@@ -1,0 +1,36 @@
+{
+  "pythonVersion": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "name": "unicode-expansion-and-sigma",
+      "source": "for text in ('','AbC','\u0130\u03a3','\u039f\u03a3','A\u03a3A','A\u03a3\\u0307','Stra\u00dfe','\ud801\udc00'):\n print(repr(text.lower()))",
+      "expected": "''\n'abc'\n'i\u0307\u03c2'\n'\u03bf\u03c2'\n'a\u03c3a'\n'a\u03c2\u0307'\n'stra\u00dfe'\n'\ud801\udc28'\n"
+    },
+    {
+      "name": "retained-methods",
+      "source": "original='AbC'\ntext=original\nfirst=text.lower\nsecond=text.lower\ntext='CHANGED'\nprint(first is second,first.__self__ is original,first.__name__,first.__qualname__,first.__module__)\nprint(first(),second())",
+      "expected": "False True lower str.lower None\nabc abc\n"
+    },
+    {
+      "name": "custom-lookup-order",
+      "source": "events=[]\nclass Value:\n @property\n def lower(self):\n  events.append('bind')\n  def convert():\n   events.append('call')\n   return 'custom'\n  return convert\nprint(Value().lower(),events)",
+      "expected": "custom ['bind', 'call']\n"
+    },
+    {
+      "name": "expanded-and-rejected-arguments",
+      "source": "events=[]\ndef arguments():\n events.append('args')\n return []\ndef check(value):\n for action in (lambda:value.lower(1),lambda:value.lower(flag=1)):\n  try:action()\n  except TypeError:events.append('error')\ntext='AbC'\nprint(text.lower(*arguments()),str.lower(text))\ncheck(text)\nprint(events)",
+      "expected": "abc abc\n['args', 'error', 'error']\n"
+    },
+    {
+      "name": "subclass-override-and-unbound",
+      "source": "class Fancy(str):\n def lower(self):return 'custom'\nvalue=Fancy('ABC')\nprint(value.lower(),str.lower(value))",
+      "expected": "custom abc\n"
+    },
+    {
+      "name": "result-and-receiver-aliases",
+      "source": "source='\u00c5\u03a3'\nvalue=source.lower()\nheld={value:source}\nprint(value,held[value] is source,source)\nprint([text.lower() for text in ('ALPHA','BETA','\u0393\u03a3')])",
+      "expected": "\u00e5\u03c2 True \u00c5\u03a3\n['alpha', 'beta', '\u03b3\u03c2']\n"
+    }
+  ],
+  "stdoutEncoding": "utf-8"
+}

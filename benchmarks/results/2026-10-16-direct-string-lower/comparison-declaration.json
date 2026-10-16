@@ -1,0 +1,29 @@
+{
+  "baselineRevision": "b41a03450be7173855ebd25b10a67c17795d3baa",
+  "candidateRevision": "1894234070082d35eac4ee203410b6edbc472270",
+  "caseId": "scripts.text-summary.large",
+  "expectedCaseSize": 1024,
+  "expectedLineCount": 3072,
+  "expectedInputUtf8Bytes": 35840,
+  "expectedSourceUtf8Bytes": 353,
+  "expectedSourceSha256": "d34b08e1864b76f5be1bea22d8aef6b43be63262aed98e2ac5c0bc76e168253f",
+  "lane": "warm",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm synchronous public Run of unchanged complete text-summary file job: fresh invocation state, file staging, exact output checks and prior-result cleanup timed. Compilation/startup/transport excluded.",
+  "stoppingRule": "One existing complete-text capture after direct lower dispatch; no retry, retune, new producer or long lane.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "441af9425456ef7616170b0c43f3e91273246f250b5179fca6124b70ff5e7325",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "e6650afa61982db3391d7eafd5fc0481f693cbed69b044e6d0fdc5f389a78133"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "b6f50a57e0877ec5512d8f52519ed94b7fb77156759c50d60e1cf870588f9490",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "dcaac004cb3d28889b1a316a9ce78ba99727f2f7fd9c265ecae4f2d3c9489377"
+  }
+}

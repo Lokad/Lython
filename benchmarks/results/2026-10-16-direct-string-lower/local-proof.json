@@ -1,0 +1,40 @@
+{
+  "tests": [
+    {
+      "stage": "direct-string-lower-focused-white-revised",
+      "passed": 114,
+      "milliseconds": 1212
+    },
+    {
+      "stage": "direct-string-lower-public-casing",
+      "passed": 205,
+      "milliseconds": 2457
+    },
+    {
+      "stage": "direct-string-lower-public-stack",
+      "passed": 57,
+      "milliseconds": 8056
+    },
+    {
+      "stage": "direct-string-lower-full-white",
+      "passed": 2734,
+      "milliseconds": 18630
+    }
+  ],
+  "probes": [
+    {
+      "mode": "sync",
+      "matchingCases": 5,
+      "explicitUnsupportedCases": 1
+    },
+    {
+      "mode": "async",
+      "matchingCases": 5,
+      "explicitUnsupportedCases": 1
+    }
+  ],
+  "protectedHistorySha256": "F496A90B1D68A0B314367907D1967579230DB81BF40B6CC1D8A127325AC69E20",
+  "frozenGuardSequenceUnchanged": true,
+  "baselineCache": "one sync cache witness fails; async cache was already bypassed",
+  "rejectionFixture": "Headroom distinguishes casing storage from callable observation; direct/exposed routes preserve actual first refusal and owner cleanup"
+}

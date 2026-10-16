@@ -1,0 +1,6 @@
+[
+  {
+    "name": "Lokad.Lython.Tests.DirectStringLowerTests.DistinctReceiversProduceOwnedStringsWithoutBoundMethodCaches(asynchronous: False)",
+    "message": "Assert.All() Failure: 1 out of 1 items in the collection did not pass.\r\n[0]: Item:  ExecutableMemberCache { Target = \u0130\u03a3, Value = Lokad.Lython.Runtime.LythonRuntime+NoArgumentsReceiverBoundCallable`1[Lokad.Lython.Runtime.Text.PyString] }\r\n     Error: Assert.Null() Failure: Value is not null\r\n            Expected: null\r\n            Actual:   ExecutableMemberCache { Target = \u0130\u03a3, Value = Lokad.Lython.Runtime.LythonRuntime+NoArgumentsReceiverBoundCallable`1[Lokad.Lython.Runtime.Text.PyString] }"
+  }
+]

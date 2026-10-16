@@ -5,7 +5,7 @@
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Same JSON configuration job [AQ], warm `Run` | 16 existing paths / 181 UTF-8 input bytes | 3.309 ms | 1.695 ms | — | Short diagnostic at 4846928c; 0.9% change within spread; no improvement established |
 | Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
-| Complete text-summary file job [AY], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.405 ms | 1.3426 ms | — | Short diagnostic at 8b0f32fb; direct split; 8.7% lower median within 10.7% baseline spread, inconclusive |
+| Complete text-summary file job [BD], warm | 3,072 lines / 35,840 UTF-8 bytes | 5.699 ms | 1.2403 ms | — | Short diagnostic at 18942340; direct lower; 7.6% lower median within 10.5% baseline spread, inconclusive |
 | Complete JSON-lines aggregation [BB], warm | 4,096 records / 110,592 UTF-8 bytes | 9.475 ms | 4.1751 ms | — | Short diagnostic at 5d5fd2e7; numeric forwarding; 6.1% higher median within 14.2% baseline spread; no benefit established |
 | Same JSON aggregation [AU], fresh compile/run | Same 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
@@ -43,6 +43,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BD | 2026-10-16 | 18942340; direct immediate exact-string lower calls | [Complete text job, shared casing/ownership and inconclusive timing](benchmarks/results/2026-10-16-direct-string-lower/README.md) |
 | BC | 2026-10-16 | d88d6440; direct positional transport, ordinary lowered method bodies | [Method job, unchanged guards and short diagnostic](benchmarks/results/2026-10-16-lowered-method-transport/README.md) |
 | BB | 2026-10-16 | 5d5fd2e7; numeric and shared JSON callback forwarding | [Complete job, unchanged lifetimes and no established performance benefit](benchmarks/results/2026-10-16-json-number-forwarding/README.md) |
 | BA | 2026-10-16 | 5ed2b203; direct synchronous JSON string-token dispatch | [Complete JSON job, guard matrices and inconclusive timing](benchmarks/results/2026-10-16-json-string-dispatch/README.md) |
@@ -121,6 +122,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Direct immediate string lower, 2026-10-16 | b41a0345 → 18942340; unchanged complete text-summary job | No speedup established: 6.168 → 5.699 ms; 7.6% lower median within 10.5% baseline spread | [Shared operation, guards and existing ownership](benchmarks/results/2026-10-16-direct-string-lower/README.md) |
 | Direct ordinary method transport, 2026-10-16 | ba6086f3 → d88d6440; unchanged 2,048-call method job | 1.145 → 1.060 ms; 7.4% lower median, one unqualified diagnostic | [Argument packaging removed, lowered bodies and guards preserved](benchmarks/results/2026-10-16-lowered-method-transport/README.md) |
 | JSON numeric/callback forwarding, 2026-10-16 | 537f8903 → 5d5fd2e7; unchanged complete JSON job | No benefit established: 8.932 → 9.475 ms; 6.1% higher median within 14.2% baseline spread | [Two forwarding state machines removed, guards/lifetimes preserved](benchmarks/results/2026-10-16-json-number-forwarding/README.md) |
 | Direct JSON string-token dispatch, 2026-10-16 | b7fd485a → 5ed2b203; unchanged complete JSON job | No improvement established: 9.806 → 9.010 ms; 8.1% change within 10.2% baseline spread | [Shared decoder, admission and checkpoint controls](benchmarks/results/2026-10-16-json-string-dispatch/README.md) |

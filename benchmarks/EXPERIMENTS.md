@@ -845,6 +845,8 @@ preserve the distinct CPython and earlier-Lython comparisons.
 
 ## Diagnostic comparisons by revision
 
+- [Direct immediate string lower](results/2026-10-16-direct-string-lower/README.md): existing receiver dispatch and shared casing/ownership operation remove per-receiver callables. The unchanged complete text job has a 7.6% lower median within 10.5% baseline spread, inconclusive. One declared capture; frozen guards, rejection-origin controls and retained/cancelled users preserved.
+
 - [General method receiver binding](results/2026-10-16-general-method-binding/README.md): existing binder consumes the receiver separately for ordinary Python methods, including keywords/variadics/lowered callers. One short allocation diagnostic shows 72 excess bytes per entry become zero; no elapsed or CPython performance claim. Original guards, live defaults and suspended ownership remain.
 
 - [Direct ordinary method transport](results/2026-10-16-lowered-method-transport/README.md): caller/prepended-self packaging removed for positional lowered methods, retaining original bodies and guards. The unchanged 2,048-call warm job has a 7.4% lower Lython median in one short, unqualified diagnostic. This is separate from AP and the rejected AZ class compiler.
