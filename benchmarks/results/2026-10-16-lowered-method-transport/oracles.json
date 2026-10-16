@@ -1,0 +1,35 @@
+{
+  "pythonVersion": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "name": "target-before-arguments",
+      "source": "events=[]\nclass Box:\n def run(self,x):\n  events.append(('old',x))\n  return x\nbox=Box()\nold=box.run\ndef replacement(self,x):\n events.append(('new',x))\n return x+10\ndef change():\n Box.run=replacement\n events.append('arg')\n return 3\nprint(box.run(change()),box.run(4),old.__self__ is box,events)",
+      "expected": "3 14 True ['arg', ('old', 3), ('new', 4)]\n"
+    },
+    {
+      "name": "defaults-during-arguments",
+      "source": "class Box:\n def run(self,x,y=2):return x,y\ndef change():\n Box.run.__defaults__=(9,)\n return 3\nprint(Box().run(change()))",
+      "expected": "(3, 9)\n"
+    },
+    {
+      "name": "positional-only-negative-keyword",
+      "source": "class Box:\n def run(self,/,a=2):return a\nmethod=Box().run\nprint(method(),method(4))\ntry:method(self=2)\nexcept TypeError:print('keyword')",
+      "expected": "2 4\nkeyword\n"
+    },
+    {
+      "name": "zero-formals-before-body",
+      "source": "class Box:\n def run():raise AssertionError('body')\ntry:Box().run()\nexcept TypeError:print('arity')",
+      "expected": "arity\n"
+    },
+    {
+      "name": "general-signature-controls",
+      "source": "class Box:\n def keyword(self,x=1,*,y=2):return x+y\n def rest(self,*a,**kw):return a,kw\nprint(Box().keyword(y=7),Box().rest(1,2,label=3))",
+      "expected": "8 ((1, 2), {'label': 3})\n"
+    },
+    {
+      "name": "receiver-result-aliases",
+      "source": "class Box:\n def run(self,a):return self,a\nbox=Box()\nmethod=box.run\nanswer,argument=method(box)\nprint(answer is box,argument is box,method.__func__ is Box.run,method.__self__ is box)",
+      "expected": "True True True True\n"
+    }
+  ]
+}

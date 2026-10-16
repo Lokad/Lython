@@ -1,0 +1,28 @@
+{
+  "baselineRevision": "ba6086f3fb59efa02363ba68ff926c3145a9a8d4",
+  "candidateRevision": "d88d64406f53b68910a43fbe62f4f85c0744d7b1",
+  "caseId": "calls.method.medium",
+  "expectedCaseSize": 2048,
+  "expectedSourceUtf8Bytes": 207,
+  "expectedSourceSha256": "929c4a6812769f502caa6865737fe71029c68313e1c93b9903aa19736f60ad58",
+  "lane": "warm",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm synchronous public Run of unchanged method accumulator: fresh instance, 2048 add calls and printed exact sum. Compilation/startup/transport excluded.",
+  "stoppingRule": "One existing medium method capture; no retry, retune, new producer or long lane.",
+  "unmeasured": "Fresh compilation/startup, async throughput and whole file workloads.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "85459ce0eaf4a426680872f8cdcd8f1bfd96d3dee7936ef0ca64f777bf5fc33d",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "c41dd0d4904d557adf3e1ee2f5dc155113262bec2bd8ed884aa72df1ebf70549"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "678d3e538d67d616cdb893947fadfa6456ac6f10fe5762e9d111a2cb799f80b7",
+    "comparisonManifestSha256": "5e0048166f4d47d31e62a9bfabe699d9fd094aecd7259be31f4c09386e45723c",
+    "sourceArchiveSha256": "9036ffe4a75f4b8beed7554db54c01e3f36e889de5bf3219ab86cc605f5e6ccd"
+  }
+}

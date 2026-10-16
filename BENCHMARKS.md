@@ -14,7 +14,7 @@
 | Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | Historical warm diagnostic; elapsed change within spread |
 | Branch/integer loop [AE], warm `RunAsync` | 16,384 iterations; modulo/comparison/add/subtract | 6.321 ms | 0.9599 ms | — | One warm async diagnostic; completed host operations; unqualified |
 | Instance-method accumulator [AZ], fresh compile/run | 16,384 calls / 208 UTF-8 source bytes | 11.494 ms | 0.9783 ms | — | Rejected c3db3ca2 prototype: Linux stack overflow; median 23.3% higher, unqualified; setup erratum linked |
-| Instance-method accumulator [AP], warm `Run` | 2,048 calls; construct, update field and print | 1.144 ms | 0.11515 ms | — | Short diagnostic at 58aece73; no improvement established; candidate median 2.8% higher |
+| Instance-method accumulator [BC], warm `Run` | 2,048 calls / 207 UTF-8 source bytes | 1.060 ms | 0.11428 ms | — | Short diagnostic at d88d6440; direct lowered-method transport; 7.4% lower median, unqualified |
 | Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
 
 These representative snapshots come from the named revisions below; they are
@@ -43,6 +43,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BC | 2026-10-16 | d88d6440; direct positional transport, ordinary lowered method bodies | [Method job, unchanged guards and short diagnostic](benchmarks/results/2026-10-16-lowered-method-transport/README.md) |
 | BB | 2026-10-16 | 5d5fd2e7; numeric and shared JSON callback forwarding | [Complete job, unchanged lifetimes and no established performance benefit](benchmarks/results/2026-10-16-json-number-forwarding/README.md) |
 | BA | 2026-10-16 | 5ed2b203; direct synchronous JSON string-token dispatch | [Complete JSON job, guard matrices and inconclusive timing](benchmarks/results/2026-10-16-json-string-dispatch/README.md) |
 | AZ | 2026-10-16 | c3db3ca2; rejected prepared-method prototype, fresh compile/run | [Slower diagnostic, actual input and setup erratum](benchmarks/results/2026-10-16-compiled-class-methods/README.md) |
@@ -115,6 +116,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Direct ordinary method transport, 2026-10-16 | ba6086f3 → d88d6440; unchanged 2,048-call method job | 1.145 → 1.060 ms; 7.4% lower median, one unqualified diagnostic | [Argument packaging removed, lowered bodies and guards preserved](benchmarks/results/2026-10-16-lowered-method-transport/README.md) |
 | JSON numeric/callback forwarding, 2026-10-16 | 537f8903 → 5d5fd2e7; unchanged complete JSON job | No benefit established: 8.932 → 9.475 ms; 6.1% higher median within 14.2% baseline spread | [Two forwarding state machines removed, guards/lifetimes preserved](benchmarks/results/2026-10-16-json-number-forwarding/README.md) |
 | Direct JSON string-token dispatch, 2026-10-16 | b7fd485a → 5ed2b203; unchanged complete JSON job | No improvement established: 9.806 → 9.010 ms; 8.1% change within 10.2% baseline spread | [Shared decoder, admission and checkpoint controls](benchmarks/results/2026-10-16-json-string-dispatch/README.md) |
 | Prepared ordinary class methods, 2026-10-16 | 4484f64a → c3db3ca2; fresh compile/run with 16,384 calls | Rejected for Linux containment failure: 9.325 → 11.494 ms; 23.3% higher median, unqualified | [Executable coverage, conservative stack policy and setup erratum](benchmarks/results/2026-10-16-compiled-class-methods/README.md) |
