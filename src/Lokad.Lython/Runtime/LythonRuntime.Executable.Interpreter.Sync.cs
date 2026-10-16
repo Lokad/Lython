@@ -114,7 +114,6 @@ internal sealed partial class LythonRuntime
 
                             case ExecutableOpCode.GetIter or
                                  ExecutableOpCode.AssignLoopTarget or
-                                 ExecutableOpCode.AssignUnpackingTargets or
                                  ExecutableOpCode.Call or
                                  ExecutableOpCode.Subscript or
                                  ExecutableOpCode.Slice or

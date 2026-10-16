@@ -80,10 +80,6 @@ internal sealed partial class LythonRuntime
                     var loop = _codeObject.LoopTargets[instruction.LoopTargetIndex];
                     await AssignLoopTargetAsync(loop.Target, Pop(ref _stack, instruction.Span), loop.Span, _context).ConfigureAwait(false);
                     break;
-                case ExecutableOpCode.AssignUnpackingTargets:
-                    var unpacking = _codeObject.UnpackingTargets[instruction.UnpackingTargetIndex];
-                    await AssignTargetAsync(unpacking.Lowered, Pop(ref _stack, instruction.Span), _context).ConfigureAwait(false);
-                    break;
                 case ExecutableOpCode.Call:
                     var call = _codeObject.CallSites[instruction.CallSiteIndex];
                     var start = ReadExecutableCallTarget(call, ref _stack, out var callable);

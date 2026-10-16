@@ -12,13 +12,6 @@ internal sealed partial class ExecutableScript
     {
         private int CompileSuspendingStoreTarget(AssignmentTargetSyntax target, LythonSourceSpan span, int block)
         {
-            if (target is UnpackingAssignmentTargetGroupSyntax group)
-            {
-                EmitOperation(new ExecutableUnpackValues(UnpackingLayout.FromTargets(group.Targets)), span, block);
-                foreach (var child in group.Targets)
-                    block = CompileStoreTarget(AssignmentTargetFacts.FromUnpacking(child), child.Span, block);
-                return block;
-            }
             foreach (var read in AssignmentTargetFacts.Reads(target))
                 block = CompileExpression(LoweredScript.LowerExpression(read), block);
             EmitOperation(new ExecutableStorePreparedTarget(target, ValueLast: false), span, block);

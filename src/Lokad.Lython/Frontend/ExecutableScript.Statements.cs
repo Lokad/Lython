@@ -183,10 +183,7 @@ internal sealed partial class ExecutableScript
 
                 case LoweredUnpackingAssignmentStatement unpacking:
                     currentBlock = CompileExpression(unpacking.Expression, currentBlock);
-                    if (_generator && unpacking.Assignment.Targets.SelectMany(t => AssignmentTargetFacts.Reads(AssignmentTargetFacts.FromUnpacking(t))).Any(GeneratorSyntaxFacts.ContainsYield))
-                        return CompileStoreTarget(new UnpackingAssignmentTargetGroupSyntax(unpacking.Assignment.Targets, unpacking.Span), unpacking.Span, currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.AssignUnpackingTargets(InternUnpackingTargets(unpacking.Assignment.Targets, unpacking.Span), unpacking.Span));
-                    return currentBlock;
+                    return CompileStoreTarget(new UnpackingAssignmentTargetGroupSyntax(unpacking.Assignment.Targets, unpacking.Span), unpacking.Span, currentBlock);
 
                 case LoweredMemberAssignmentStatement member:
                     currentBlock = CompileExpression(member.Expression, currentBlock);
@@ -211,6 +208,13 @@ internal sealed partial class ExecutableScript
             if (target is NameAssignmentTargetSyntax name)
             {
                 CompileStoreBoundName(name.Name, span, block);
+                return block;
+            }
+            if (target is UnpackingAssignmentTargetGroupSyntax group)
+            {
+                EmitOperation(new ExecutableUnpackValues(UnpackingLayout.FromTargets(group.Targets)), span, block);
+                foreach (var child in group.Targets)
+                    block = CompileStoreTarget(AssignmentTargetFacts.FromUnpacking(child), child.Span, block);
                 return block;
             }
             if (_generator && AssignmentTargetFacts.Reads(target).Any(GeneratorSyntaxFacts.ContainsYield))

@@ -42,7 +42,6 @@ internal enum ExecutableOpCode
     GetIter,
     ForNext,
     AssignLoopTarget,
-    AssignUnpackingTargets,
     Call,
     Subscript,
     Slice,
@@ -147,7 +146,6 @@ internal readonly record struct ExecutableInstruction
         MatchCaseIndex,
         BlockIndex,
         LoopTargetIndex,
-        UnpackingTargetIndex,
         CallSiteIndex,
         ExceptionNameIndex,
         CleanupId,
@@ -206,7 +204,6 @@ internal readonly record struct ExecutableInstruction
     public int TargetBlockIndex => ReadOperand(_primaryOperand, OperandKind.BlockIndex);
     public int ChainSlot => ReadOperand(_primaryOperand, OperandKind.LocalSlot);
     public int LoopTargetIndex => ReadOperand(_primaryOperand, OperandKind.LoopTargetIndex);
-    public int UnpackingTargetIndex => ReadOperand(_primaryOperand, OperandKind.UnpackingTargetIndex);
     public int CallSiteIndex => ReadOperand(_primaryOperand, OperandKind.CallSiteIndex);
     public int CleanupId => ReadOperand(OpCode == ExecutableOpCode.EndFinally ? _secondaryOperand : _primaryOperand, OperandKind.CleanupId);
     public int ExceptionNameIndex => ReadOperand(_primaryOperand, OperandKind.ExceptionNameIndex);
@@ -323,9 +320,6 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction AssignLoopTarget(int loopTargetIndex, LythonSourceSpan span)
         => CreateIndexed(ExecutableOpCode.AssignLoopTarget, new Operand(OperandKind.LoopTargetIndex, loopTargetIndex), span);
-
-    public static ExecutableInstruction AssignUnpackingTargets(int unpackingTargetIndex, LythonSourceSpan span)
-        => CreateIndexed(ExecutableOpCode.AssignUnpackingTargets, new Operand(OperandKind.UnpackingTargetIndex, unpackingTargetIndex), span);
 
     public static ExecutableInstruction Call(int callSiteIndex, LythonSourceSpan span)
         => CreateIndexed(
@@ -472,13 +466,6 @@ internal sealed record ExecutableLoopTargetBinding(
     LoopTargetSyntax Target,
     LythonSourceSpan Span);
 
-internal sealed record ExecutableUnpackingTargetBinding(
-    IReadOnlyList<UnpackingTargetSyntax> Targets,
-    LythonSourceSpan Span)
-{
-    public LoweredStoreTarget Lowered { get; } = new(new UnpackingAssignmentTargetGroupSyntax(Targets, Span));
-}
-
 internal sealed record ExecutableFunctionBinding(
     LoweredFunctionDefinitionStatement Function,
     ExecutableCodeObject? CodeObject,
@@ -521,7 +508,6 @@ internal sealed class ExecutableCodeObject
         IReadOnlyList<ExecutableCallSite> callSites,
         int memberCacheCount,
         IReadOnlyList<ExecutableLoopTargetBinding> loopTargets,
-        IReadOnlyList<ExecutableUnpackingTargetBinding> unpackingTargets,
         IReadOnlyList<ExecutableFunctionBinding> functions,
         IReadOnlyList<ExecutableMatchCaseBinding> matchCases,
         IReadOnlyList<ExecutableStatementFallback> statementFallbacks,
@@ -545,7 +531,6 @@ internal sealed class ExecutableCodeObject
         CallSites = callSites;
         MemberCacheCount = memberCacheCount;
         LoopTargets = loopTargets;
-        UnpackingTargets = unpackingTargets;
         Functions = functions;
         MatchCases = matchCases;
         StatementFallbacks = statementFallbacks;
@@ -586,8 +571,6 @@ internal sealed class ExecutableCodeObject
     public int MemberCacheCount { get; }
 
     public IReadOnlyList<ExecutableLoopTargetBinding> LoopTargets { get; }
-
-    public IReadOnlyList<ExecutableUnpackingTargetBinding> UnpackingTargets { get; }
 
     public IReadOnlyList<ExecutableFunctionBinding> Functions { get; }
 

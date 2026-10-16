@@ -439,10 +439,6 @@ internal sealed partial class LythonRuntime
                     AssignLoopTarget(loopBinding.Target, Pop(ref _stack, instruction.Span), loopBinding.Span, _context);
                     break;
 
-                case ExecutableOpCode.AssignUnpackingTargets:
-                    var unpackingBinding = _codeObject.UnpackingTargets[instruction.UnpackingTargetIndex];
-                    AssignTargets(unpackingBinding.Targets, Pop(ref _stack, instruction.Span), unpackingBinding.Span, _context);
-                    break;
 
                 case ExecutableOpCode.Call:
                     ExecuteExecutableCall(
@@ -795,7 +791,6 @@ internal sealed partial class LythonRuntime
                             case ExecutableOpCode.GetIter or
                                  ExecutableOpCode.ForNext or
                                  ExecutableOpCode.AssignLoopTarget or
-                                 ExecutableOpCode.AssignUnpackingTargets or
                                  ExecutableOpCode.Call or
                                  ExecutableOpCode.Slice or
                                  ExecutableOpCode.MakeSlice:

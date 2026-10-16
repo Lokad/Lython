@@ -93,6 +93,14 @@ can run before subsequent buffer growth is refused; target stores wait for arity
 validation. Lease cleanup releases scratch capacity while values retained by
 guest containers, iterators or public results keep their owners and funding.
 
+Executable unpacking admits the starred remainder and operand-frame capacity
+while the leased input buffer is live, then releases that buffer after transfer.
+Values remain funded across child stores and suspension. This can refuse a rest
+list before prefix effects, or allow setter work after a larger temporary buffer
+has ended. Committed batch-owned allocations can still cause a later admission
+to fail; they become reusable when that owner ends. No guest-reachability refund
+or identical tiny-budget threshold is promised.
+
 Executable member/subscript stores retain RHS/receiver and optional key under the existing
 execution owner until the awaited mutation ends, then clear them even on failure.
 They introduce no per-store read dictionary, scratch owner or reservation fee.

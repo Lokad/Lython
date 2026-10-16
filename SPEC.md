@@ -724,8 +724,10 @@ host effects; it does not make Python asynchronous syntax available to scripts.
 Loop and comprehension targets follow ordinary assignment rules, including
 nested list/tuple unpacking, starred targets, attribute/subscript/slice stores
 and trailing commas. Receivers and indices evaluate once at each ordered store.
-Unpacking scratch remains charged until all target stores finish, including
-guest setters and delayed host effects; failure releases its reservation.
+Unpacked values remain funded through target stores, including guest setters and
+delayed host effects. Executable groups admit frame storage while the materialized
+buffer is still live, transfer its references, then release that buffer. Temporary
+cleanup does not refund values retained by the execution or an escaping owner.
 With headers accept parenthesized item lists, optional grouped trailing commas
 and full assignment targets. Target binding is protected by the entered manager:
 failures unwind or suppress through __exit__ like failures in the body.
@@ -932,7 +934,7 @@ three operands remain available until the shared mutation helper completes,
 including actual asynchronous suspension.
 Chained assignments still store left to right and retain earlier mutations if a
 later target fails. Statement checkpoints and target diagnostics retain their own
-spans. Unpacking, augmented and explicitly yielding target routes retain
+spans. Augmented and explicitly yielding target routes retain
 their established handling. Additional instruction checkpoints can change opt-in
 fuel thresholds; native allocation admission still precedes mutation.
 
@@ -966,6 +968,14 @@ Leaves may be supported ordinary assignment targets. Each unpacking level may
 contain at most one starred target. Receivers and indices are evaluated at the
 corresponding store, in source order. Loop, comprehension and context-manager
 binding use the same target forms as described in section 8.7.
+
+Eligible ordinary and chained unpacking groups use the existing executable unpack
+operations and child stores, including slot/cell updates, without a separate
+unpacking opcode or binding table. At each starred level, admit/create the rest
+list before prefix target stores. Allocation denial can therefore precede effects
+that the previous ordinary helper performed first. Buffer-to-frame transfer can
+also reduce temporary overlap while setters run; committed batch-owned storage
+can remain charged afterwards. Exact resource-failure thresholds are not stable.
 
 For an unpacking level with `N` nonstarred targets, read at most `N+1` values.
 The first excess value raises `ValueError` without requesting another value or
