@@ -62,6 +62,18 @@ lookup that previously happened first. Funded calls preserve Python binding and
 execution behavior. Modules and functions requiring namespace mirroring retain
 their separate local-storage route; this is not guest-reference tracing.
 
+Ordinary integer addition and sums admit a conservative major-result estimate before the
+CLR computes it, including carry/sign headroom and computation overlap. The result
+commits its portion of that existing reservation without a second admission;
+remaining scratch releases after the operation. Retained major values keep their
+execution/result owner. This covers ordinary addition and generic sums as well as
+mixed CLR integer inputs; the byte-sum kernel shares that result path. Small
+bounded values keep the control-headroom policy.
+Major operations can reject earlier under tight budgets, including opposite-sign
+operands that would cancel, because admission uses an upper bound and accounts
+replacement/scratch overlap. No scalar identities, new scope or reclamation
+mechanism is introduced.
+
 Executable starred-tuple expansion uses an owned mutable working list before
 constructing its immutable result. Working and result storage are funded together
 during conversion. Their estimates may remain charged until the execution/result

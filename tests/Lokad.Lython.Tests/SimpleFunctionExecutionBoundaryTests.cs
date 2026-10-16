@@ -70,7 +70,10 @@ public sealed class SimpleFunctionExecutionBoundaryTests
             var error = Assert.Throws<LythonRuntimeException>(() => Invoke(function, arguments, context, driver));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Same(code.Blocks[code.EntryBlockIndex].InstructionArray[resultDenied ? 2 : 1].Span, error.Span);
-            Assert.Equal(resultDenied ? RuntimeMemoryEstimates.EstimateBigIntegerBytes(large + 1) : 33, governor.LastDeniedReservationBytes);
+            if (resultDenied)
+                Assert.True(governor.LastDeniedReservationBytes >= RuntimeMemoryEstimates.EstimateBigIntegerBytes(large + 1));
+            else Assert.Equal(33, governor.LastDeniedReservationBytes);
+            Assert.Equal(governor.LastDeniedReservationBytes, error.Attribution?.Requested);
             Assert.Same(active, error.PythonContext);
             Assert.Same(active, context.Services.CurrentException);
             Assert.Equal("/callee.py", error.SourcePath);

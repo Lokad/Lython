@@ -141,7 +141,9 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Same(old, context.Variables["left"]);
             Assert.Equal(before + padding.Bytes, governor.CurrentCommittedBytes);
-            Assert.Equal(41, governor.LastDeniedReservationBytes);
+            Assert.True(governor.LastDeniedReservationBytes >= 41);
+            Assert.True(governor.LastDeniedReservationBytes > available);
+            Assert.Equal(governor.LastDeniedReservationBytes, error.Attribution?.Requested);
             Assert.Equal(new LythonSourceSpan(18, 13, 3, 1), error.Span);
             Assert.Equal(padding.Steps + 4, context.Limits.ExecutionStepCount);
             output.WriteLine($"available={available}; denied={governor.LastDeniedReservationBytes}; span={error.Span}; steps={context.Limits.ExecutionStepCount}");

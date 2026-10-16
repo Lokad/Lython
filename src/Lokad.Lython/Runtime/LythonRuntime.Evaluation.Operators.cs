@@ -143,6 +143,9 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.UnsupportedOperands(operation ?? "+", left, right, span);
         }
 
+        if (!lhs.IsFloat && !rhs.IsFloat)
+            return AddExactIntegers(lhs.Integer, rhs.Integer, context, span);
+
         try
         {
             return OwnHeapInteger(PyNumberOps.Add(lhs, rhs), context.MemoryGovernor, span);
@@ -167,7 +170,11 @@ internal sealed partial class LythonRuntime
     {
         try
         {
-            return OwnHeapInteger(left + right, context.MemoryGovernor, span);
+            using var integerAdmission = GuardIntegerAddition(left, right, context.MemoryGovernor, span);
+            var result = left + right;
+            if (integerAdmission is not null && RuntimeMemoryEstimates.GetMagnitudeBitLength(result) > 64)
+                integerAdmission.Commit(RuntimeMemoryEstimates.EstimateBigIntegerBytes(result));
+            return result;
         }
         catch (OverflowException ex)
         {

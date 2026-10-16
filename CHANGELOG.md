@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Preflight major native integer additions before allocating their result, including ordinary addition, generic sums and mixed CLR integer inputs. Reuse existing magnitude admission and retained owners, preserving small-value handling, fuel, callbacks and terminal refusal; conservative major estimates can reject earlier under tight budgets.
+
 - Remove the redundant JSON prefix decoder, its result record and duplicate leading-whitespace/empty-input checks. Whole-document decoding uses the existing value reader directly, preserving whitespace fuel, trailing-data validation, hooks, errors and input ownership.
 
 - Forward JSON object/array parsing directly from the token dispatcher, removing two generic async forwarding paths and their unused depth argument. Keep child parsers, the existing nesting limit, hooks, cancellation, admission and retained ownership.

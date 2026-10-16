@@ -14,6 +14,24 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static MemoryGovernor.TemporaryMemoryReservation? GuardIntegerAddition(
+        BigInteger left, BigInteger right, MemoryGovernor governor, LythonSourceSpan span)
+    {
+        // Ordinary counters need no separate magnitude admission. Seven signed
+        // bytes per operand cannot produce a result outside the bounded 64-bit tier.
+        if (left.GetByteCount() < 8 && right.GetByteCount() < 8) return null;
+        var resultBits = RuntimeMemoryEstimates.SaturatingAdd(Math.Max(
+            RuntimeMemoryEstimates.GetMagnitudeBitLength(left),
+            RuntimeMemoryEstimates.GetMagnitudeBitLength(right)), 1);
+        if (resultBits <= 64) return null;
+        // Admit result and computation overlap together. The shared addition
+        // commits the result from this reservation; no second admission follows
+        // arithmetic. Remaining scratch is refunded when the reservation ends.
+        var resultBytes = RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
+            RuntimeMemoryEstimates.SaturatingAdd(resultBits, 1));
+        return governor.ReserveTemporary(RuntimeMemoryEstimates.SaturatingMultiply(2, resultBytes), span);
+    }
+
     private static MemoryGovernor.TemporaryMemoryReservation? GuardIntegerPower(PyNumber lhs, PyNumber rhs, MemoryGovernor governor, LythonSourceSpan span)
     {
         if (lhs.IsFloat || rhs.IsFloat || rhs.Integer < BigInteger.Zero)

@@ -142,10 +142,7 @@ internal sealed partial class LythonRuntime
         if (source.Length != 0)
         {
             _ = PyNumberOps.TryAsInteger(start, out var initial);
-            var subtotalBits = subtotal == 0 ? 0 : BitOperations.Log2((ulong)subtotal) + 1;
-            var bits = Math.Max(RuntimeMemoryEstimates.GetMagnitudeBitLength(initial), subtotalBits) + 1;
-            using var admission = GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(bits), context.MemoryGovernor, span);
-            operation.Result = OwnHeapInteger(initial + subtotal, context.MemoryGovernor, span);
+            operation.Result = AddExactIntegers(initial, new BigInteger(subtotal), context, span);
         }
         operation.FinishIteration();
         return true;
