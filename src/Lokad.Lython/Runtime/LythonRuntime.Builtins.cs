@@ -293,6 +293,9 @@ internal sealed partial class LythonRuntime
         return arguments.Length == 1 && await IsTruthyAsync(arguments[0], context, span).ConfigureAwait(false);
     }
 
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> IntegerTextOperation
+        = static (value, span, context) => ConvertIntegerValue(value, 10, context, span);
+
     private static object Int(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length > 2)

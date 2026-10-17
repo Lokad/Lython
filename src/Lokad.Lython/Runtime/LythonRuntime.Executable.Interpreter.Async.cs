@@ -111,6 +111,11 @@ internal sealed partial class LythonRuntime
                         {
                             result = InvokeSingleInput(_stack[start + call.ArgumentOffset], LengthOperation, call.CallSpan, _context);
                         }
+                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 && callable is BuiltinCallable { Name: "int" } &&
+                            _stack[start + call.ArgumentOffset] is Text.PyString or PyBytes)
+                        {
+                            result = InvokeSingleInput(_stack[start + call.ArgumentOffset], IntegerTextOperation, call.CallSpan, _context);
+                        }
                         else if (callable is PyFunctionBase function)
                         {
                             result = await InvokeFunctionFromOperandsAsync(function, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),

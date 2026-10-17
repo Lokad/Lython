@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Call ordinary one-argument `int(text)` and `int(bytes)` directly from executable operand storage through both execution APIs. Remove argument packaging while preserving existing checkpoints, conversion admission, mutable constructors, aliases and dynamic/protocol fallbacks.
+
 - Admit integer text/bytes decoding and arithmetic overlap before allocation, commit retained results from that reservation, and process whitespace/sign/prefix slices without copying. Remove late and duplicate admission; padded inputs can reject earlier under tight allowances.
 
 - Await guest integer-conversion descriptors and callbacks under `RunAsync`, including explicit bases and indexed truncation results. Share scalar/base/result validation, keep native conversions synchronous, and preserve input/result ownership, cancellation and terminal admission refusal through suspension.
