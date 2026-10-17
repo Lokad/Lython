@@ -1,0 +1,19 @@
+{
+  "unit": "lython-json-default-call-capture-6c9a51df-20261018",
+  "command": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-json-default-call-capture-6c9a51df-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=30",
+    "--property=TimeoutStopSec=0",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/json-default-call-6c9a51df/capture/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/json-default-call-6c9a51df/capture/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/json-default-call-6c9a51df/capture/run.py"
+  ],
+  "stdout": "",
+  "stderr": "Running as unit: lython-json-default-call-capture-6c9a51df-20261018.service; invocation ID: 01eb134c87974da384e131e0dd64f004\n"
+}

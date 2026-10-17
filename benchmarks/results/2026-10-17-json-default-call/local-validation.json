@@ -1,0 +1,246 @@
+{
+  "baseRevision": "6c9a51df1796346c522b47ee41f0019a98a941b0",
+  "focusedPassed": 588,
+  "checks": [
+    {
+      "stage": "candidate-bindings",
+      "passed": 117,
+      "process": {
+        "source": "json-default-call",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "ECD3051836A549A63666B8A7A491EFD4865247A54C757BBDBF47905AAC6FE3F7",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeJsonDecoderOptionTests|FullyQualifiedName~JsonBooleanOptionTests|FullyQualifiedName~JsonModuleCallBindingTests|FullyQualifiedName~JsonMutableInstanceTests|FullyQualifiedName~JsonDecoderScenarioTests|FullyQualifiedName~JsonSubclassScenarioTests|FullyQualifiedName~JsonSuspendingCallbackTests|FullyQualifiedName~JsonObjectGraphOwnershipTests)",
+        "pid": 61964,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 5479,
+        "stdoutSha256": "4F6B213DC7E9778718A43C2CEAD50A7D2023ED02EF0C27234BD37A3C5192F19A",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "candidate-parsing",
+      "passed": 222,
+      "process": {
+        "source": "json-default-call",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "ECD3051836A549A63666B8A7A491EFD4865247A54C757BBDBF47905AAC6FE3F7",
+        "filter": "Category!=Stress&(FullyQualifiedName~JsonNumberExecutionTests|FullyQualifiedName~JsonPrefixValidationTests|FullyQualifiedName~JsonTokenExecutionTests|FullyQualifiedName~JsonTrailingDataTests|FullyQualifiedName~JsonTrailingCommaTests|FullyQualifiedName~EscapedJsonStringTests|FullyQualifiedName~JsonCollectionsMappingTests|FullyQualifiedName~JsonCoverageScenarioTests|FullyQualifiedName~JsonStrictnessScenarioTests|FullyQualifiedName~JsonRoundTripScenarioTests|FullyQualifiedName~JsonTextStreamTests|FullyQualifiedName~JsonBoundedGrowthScenarioTests)",
+        "pid": 41988,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 5392,
+        "stdoutSha256": "1A5950167CB260C7B78C7BB5AC7A59F82A375FDDEF8D785AFAC6441CD35B51A6",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "candidate-white-json",
+      "passed": 70,
+      "process": {
+        "source": "json-default-call",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "840977EF27ACBA207DE97C82922DEC6D323BABD0A5689A225AE4EFD990C04509",
+        "filter": "Category!=Stress&FullyQualifiedName~Json",
+        "pid": 62428,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1235,
+        "stdoutSha256": "5DF087041B11724007C56C7BF5ED0EBF096E5AE7A2406273C619354806AF0166",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "candidate-owners",
+      "passed": 121,
+      "process": {
+        "source": "json-default-call",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "ECD3051836A549A63666B8A7A491EFD4865247A54C757BBDBF47905AAC6FE3F7",
+        "filter": "Category!=Stress&(FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~CsvBatchAliasLifetimeTests|FullyQualifiedName~CsvRetainedRowLifetimeTests|FullyQualifiedName~CsvFieldNameLifetimeTests|FullyQualifiedName~CsvSourceStorageLifetimeTests|FullyQualifiedName~CsvExhaustedInputLifetimeTests)",
+        "pid": 51540,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8220,
+        "stdoutSha256": "93C4CF7BC19BDFB27ABB5622F8E68C86D195C4234624CECBF38EC3D0E9014D15",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "candidate-goldens",
+      "passed": 58,
+      "process": {
+        "source": "json-default-call",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "ECD3051836A549A63666B8A7A491EFD4865247A54C757BBDBF47905AAC6FE3F7",
+        "filter": "Category!=Stress&FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles",
+        "pid": 34616,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 9064,
+        "stdoutSha256": "B8BEE54ACE1BC51E67B602DEF7E2C5779F265CF57489BC7B2B8EBA274A610A8E",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    }
+  ],
+  "independentProbes": {
+    "sync": {
+      "count": 6,
+      "allMatchCPython": true,
+      "process": {
+        "pid": 73076,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 946,
+        "asynchronous": false,
+        "production": "candidate",
+        "probeSha256": "29B7FA98ABA4F5F957513432701E22E2D529A3ECBD69C3E92442785A10C1A4DB",
+        "librarySha256": "FCA9BEA1A655BD1BE9D15376C1EAB277978AE90E846037D671458D34E3E36EDA"
+      }
+    },
+    "async": {
+      "count": 6,
+      "allMatchCPython": true,
+      "process": {
+        "pid": 67672,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 775,
+        "asynchronous": true,
+        "production": "candidate",
+        "probeSha256": "29B7FA98ABA4F5F957513432701E22E2D529A3ECBD69C3E92442785A10C1A4DB",
+        "librarySha256": "FCA9BEA1A655BD1BE9D15376C1EAB277978AE90E846037D671458D34E3E36EDA"
+      }
+    }
+  },
+  "whiteJsonFrozenRecordsExact": {
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.DecodedStorageDoesNotBorrowTheInputArray(source: \"\\\"alpha\\\"\", expected: \"alpha\", asynchronous: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.PendingNativeHookKeepsItsArgumentFundedUntilCompletion(floating: False, cancel: True)": [],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.OutputStorageIsAdmittedBesideTokenScratch(asynchronous: False, deny: True)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.IntegerMagnitudeAdmissionPrecedesParsing(asynchronous: False, deny: True)": [],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.DecodedStorageDoesNotBorrowTheInputArray(source: \"\\\"caf\u00e9\\ud83d\\ude00\\\"\", expected: \"caf\u00e9\\ud83d\\ude00\", asynchronous: True)": [],
+    "Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: True, pairs: False, padded: False)": [
+      "JSON_LITERAL_MATRIX:{\"asynchronous\":true,\"pairs\":false,\"steps\":15,\"fullEffects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.HookTextAdmissionPrecedesItsCallback(asynchronous: False, floating: True, deny: True)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.HookTextAdmissionPrecedesItsCallback(asynchronous: True, floating: True, deny: True)": [],
+    "Lokad.Lython.Tests.JsonStringDispatchBoundaryTests.EveryStringCheckpointPreservesEffectsAndUnwinds(asynchronous: False, pairs: False)": [
+      "JSON_STRING_MATRIX:{\"asynchronous\":false,\"pairs\":false,\"steps\":15,\"fullEffects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: False, pairs: False, padded: False)": [
+      "JSON_LITERAL_MATRIX:{\"asynchronous\":false,\"pairs\":false,\"steps\":15,\"fullEffects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}"
+    ],
+    "Lokad.Lython.Tests.EscapedJsonStorageTests.ResultCopyRefusalPreservesInputAndRefundsOnlyScratch(asynchronous: True, shared: False)": [],
+    "Lokad.Lython.Tests.JsonBooleanOwnershipTests.ConversionKeepsItsAliasFundedAndAwaitsAllUsersBeforeCleanup(route: \"cancel\", encoding: False)": [],
+    "Lokad.Lython.Tests.JsonIterencodeAbandonedScratchAccountingTests.SortedJsonBatchesReturnAllowanceAndDoNotDisruptAnotherIterator": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.HookTextAdmissionPrecedesItsCallback(asynchronous: True, floating: False, deny: True)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.HookTextAdmissionPrecedesItsCallback(asynchronous: False, floating: False, deny: False)": [],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.InvalidUtf8StillRejectsBeforeProducingAString(asynchronous: True)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.NumericCheckpointsAndArgumentEffectsRemainStable(asynchronous: True, floating: True, callback: True)": [
+      "JSON_NUMBER_MATRIX:{\"asynchronous\":true,\"floating\":true,\"callback\":true,\"steps\":19,\"effects\":[\"4,0:1.2300e\\u002B04\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"49,7,2,38:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"12,45,2,1:4,0:1.2300e\\u002B04\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.DefaultFloatPreservesSignedZeroAndOverflow(text: \"1e9999\", asynchronous: True)": [],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.InvalidUtf8StillRejectsBeforeProducingAString(asynchronous: False)": [],
+    "Lokad.Lython.Tests.JsonStringDispatchBoundaryTests.EveryStringCheckpointPreservesEffectsAndUnwinds(asynchronous: False, pairs: True)": [
+      "JSON_STRING_MATRIX:{\"asynchronous\":false,\"pairs\":true,\"steps\":29,\"fullEffects\":[\"hook:3,0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"55,4,2,44:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"12,48,2,1:hook:3,0\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonStringDispatchBoundaryTests.EveryStringCheckpointPreservesEffectsAndUnwinds(asynchronous: True, pairs: False)": [
+      "JSON_STRING_MATRIX:{\"asynchronous\":true,\"pairs\":false,\"steps\":15,\"fullEffects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}"
+    ],
+    "Lokad.Lython.Tests.EscapedJsonStorageTests.ResultCopyRefusalPreservesInputAndRefundsOnlyScratch(asynchronous: False, shared: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.PendingNativeHookKeepsItsArgumentFundedUntilCompletion(floating: True, cancel: True)": [],
+    "Lokad.Lython.Tests.JsonStringDispatchBoundaryTests.EveryStringCheckpointPreservesEffectsAndUnwinds(asynchronous: True, pairs: True)": [
+      "JSON_STRING_MATRIX:{\"asynchronous\":true,\"pairs\":true,\"steps\":29,\"fullEffects\":[\"hook:3,0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"55,4,2,44:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"12,48,2,1:hook:3,0\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonBooleanOwnershipTests.ConversionKeepsItsAliasFundedAndAwaitsAllUsersBeforeCleanup(route: \"admission\", encoding: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.NumericCheckpointsAndArgumentEffectsRemainStable(asynchronous: False, floating: True, callback: False)": [
+      "JSON_NUMBER_MATRIX:{\"asynchronous\":false,\"floating\":true,\"callback\":false,\"steps\":15,\"effects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.PendingNativeHookKeepsItsArgumentFundedUntilCompletion(floating: False, cancel: False)": [],
+    "Lokad.Lython.Tests.JsonBooleanOwnershipTests.ConversionKeepsItsAliasFundedAndAwaitsAllUsersBeforeCleanup(route: \"success\", encoding: True)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.HookTextAdmissionPrecedesItsCallback(asynchronous: True, floating: True, deny: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.HookTextAdmissionPrecedesItsCallback(asynchronous: True, floating: False, deny: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.DefaultFloatPreservesSignedZeroAndOverflow(text: \"-0.0\", asynchronous: True)": [],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.OutputStorageIsAdmittedBesideTokenScratch(asynchronous: True, deny: False)": [],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.DecodedStorageDoesNotBorrowTheInputArray(source: \"\\\"\\\"\", expected: \"\", asynchronous: True)": [],
+    "Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: True, pairs: True, padded: False)": [
+      "JSON_LITERAL_MATRIX:{\"asynchronous\":true,\"pairs\":true,\"steps\":40,\"fullEffects\":[\"hook:3,0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"55,4,2,44:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"12,48,2,1:hook:3,0\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.LargeIntegerFallbackAdmitsWorkingStorageBeforeDecoding(asynchronous: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.DefaultLongKeepsTheIntegerRepresentation(asynchronous: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.NumericCheckpointsAndArgumentEffectsRemainStable(asynchronous: True, floating: True, callback: False)": [
+      "JSON_NUMBER_MATRIX:{\"asynchronous\":true,\"floating\":true,\"callback\":false,\"steps\":15,\"effects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.OutputStorageIsAdmittedBesideTokenScratch(asynchronous: True, deny: True)": [],
+    "Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: False, pairs: False, padded: True)": [
+      "JSON_WHITESPACE_MATRIX:{\"asynchronous\":false,\"pairs\":false,\"steps\":17,\"fullEffects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: False, pairs: True, padded: False)": [
+      "JSON_LITERAL_MATRIX:{\"asynchronous\":false,\"pairs\":true,\"steps\":40,\"fullEffects\":[\"hook:3,0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"55,4,2,44:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"19,41,2,8:\",\"12,48,2,1:hook:3,0\"]}"
+    ],
+    "Lokad.Lython.Tests.EscapedJsonStorageTests.DecodedValueRetainsItsOwnerAfterScratchEnds(asynchronous: True)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.HookTextAdmissionPrecedesItsCallback(asynchronous: False, floating: True, deny: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.LargeIntegerFallbackAdmitsWorkingStorageBeforeDecoding(asynchronous: True)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.NumericCheckpointsAndArgumentEffectsRemainStable(asynchronous: True, floating: False, callback: False)": [
+      "JSON_NUMBER_MATRIX:{\"asynchronous\":true,\"floating\":false,\"callback\":false,\"steps\":16,\"effects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.NumericCheckpointsAndArgumentEffectsRemainStable(asynchronous: False, floating: False, callback: True)": [
+      "JSON_NUMBER_MATRIX:{\"asynchronous\":false,\"floating\":false,\"callback\":true,\"steps\":18,\"effects\":[\"4,0:-0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"47,7,2,36:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"12,43,2,1:4,0:-0\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.NumericCheckpointsAndArgumentEffectsRemainStable(asynchronous: False, floating: False, callback: False)": [
+      "JSON_NUMBER_MATRIX:{\"asynchronous\":false,\"floating\":false,\"callback\":false,\"steps\":16,\"effects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.IntegerMagnitudeAdmissionPrecedesParsing(asynchronous: True, deny: True)": [],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.DecodedStorageDoesNotBorrowTheInputArray(source: \"\\\"caf\u00e9\\ud83d\\ude00\\\"\", expected: \"caf\u00e9\\ud83d\\ude00\", asynchronous: False)": [],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.DecodedStorageDoesNotBorrowTheInputArray(source: \"\\\"a\\\\nb\\\"\", expected: \"a\\nb\", asynchronous: True)": [],
+    "Lokad.Lython.Tests.JsonBooleanOwnershipTests.ConversionKeepsItsAliasFundedAndAwaitsAllUsersBeforeCleanup(route: \"success\", encoding: False)": [],
+    "Lokad.Lython.Tests.EscapedJsonStorageTests.ResultCopyRefusalPreservesInputAndRefundsOnlyScratch(asynchronous: False, shared: True)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.NumericCheckpointsAndArgumentEffectsRemainStable(asynchronous: False, floating: True, callback: True)": [
+      "JSON_NUMBER_MATRIX:{\"asynchronous\":false,\"floating\":true,\"callback\":true,\"steps\":19,\"effects\":[\"4,0:1.2300e\\u002B04\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"49,7,2,38:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"19,38,2,8:\",\"12,45,2,1:4,0:1.2300e\\u002B04\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.DefaultFloatPreservesSignedZeroAndOverflow(text: \"-0.0\", asynchronous: False)": [],
+    "Lokad.Lython.Tests.ExecutionOptionsScenarioTests.ExecutionMemoryBudget_IsEnforcedForJsonArrayProjection": [],
+    "Lokad.Lython.Tests.EscapedJsonStorageTests.DecodedValueRetainsItsOwnerAfterScratchEnds(asynchronous: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.DefaultFloatPreservesSignedZeroAndOverflow(text: \"1e9999\", asynchronous: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.PendingNativeHookKeepsItsArgumentFundedUntilCompletion(floating: True, cancel: False)": [],
+    "Lokad.Lython.Tests.EscapedJsonStorageTests.ResultCopyRefusalPreservesInputAndRefundsOnlyScratch(asynchronous: True, shared: True)": [],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.DecodedStorageDoesNotBorrowTheInputArray(source: \"\\\"\\\"\", expected: \"\", asynchronous: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.NumericCheckpointsAndArgumentEffectsRemainStable(asynchronous: True, floating: False, callback: True)": [
+      "JSON_NUMBER_MATRIX:{\"asynchronous\":true,\"floating\":false,\"callback\":true,\"steps\":18,\"effects\":[\"4,0:-0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"47,7,2,36:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"19,36,2,8:\",\"12,43,2,1:4,0:-0\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: True, pairs: False, padded: True)": [
+      "JSON_WHITESPACE_MATRIX:{\"asynchronous\":true,\"pairs\":false,\"steps\":17,\"fullEffects\":[],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,6,2,19:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"19,18,2,8:\",\"12,25,2,1:\"]}"
+    ],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.DecodedStorageDoesNotBorrowTheInputArray(source: \"\\\"alpha\\\"\", expected: \"alpha\", asynchronous: True)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.IntegerMagnitudeAdmissionPrecedesParsing(asynchronous: False, deny: False)": [],
+    "Lokad.Lython.Tests.JsonBooleanOwnershipTests.ConversionKeepsItsAliasFundedAndAwaitsAllUsersBeforeCleanup(route: \"admission\", encoding: True)": [],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.DecodedStorageDoesNotBorrowTheInputArray(source: \"\\\"a\\\\nb\\\"\", expected: \"a\\nb\", asynchronous: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.DefaultLongKeepsTheIntegerRepresentation(asynchronous: True)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.HookTextAdmissionPrecedesItsCallback(asynchronous: False, floating: False, deny: True)": [],
+    "Lokad.Lython.Tests.JsonStringTokenStorageTests.OutputStorageIsAdmittedBesideTokenScratch(asynchronous: False, deny: False)": [],
+    "Lokad.Lython.Tests.JsonNumberTokenStorageTests.IntegerMagnitudeAdmissionPrecedesParsing(asynchronous: True, deny: False)": [],
+    "Lokad.Lython.Tests.JsonBooleanOwnershipTests.ConversionKeepsItsAliasFundedAndAwaitsAllUsersBeforeCleanup(route: \"cancel\", encoding: True)": []
+  },
+  "temporaryProbeRemoved": true,
+  "nativeCalls": {
+    "iterations": 128,
+    "bytesSavedPerDefaultCall": 88,
+    "bothApis": true,
+    "keywordExplicitClassHookControlsUnchanged": true
+  },
+  "sourceCanonicalSha256": "39e8bbf89b9a2156aba3b7929620851bc593d3198dd89e4021b294821c5452f1",
+  "protectedRegexHistoryWorkflowUnchanged": true,
+  "fullStressRerun": false
+}

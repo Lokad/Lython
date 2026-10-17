@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 ordinary JSON loads](results/2026-10-17-json-default-call/README.md)
+removes generic binding storage from a single-positional default call. A preceding
+ten-second JSON-helper profile has 7,952 samples, no lost events/missing stacks
+and source aligned to 6c9a51df; inclusive costs select the boundary, not a gain
+prediction. Native128-call counts save 11,264 bytes through both APIs. One 9.662 s
+whole-job capture records 11.893 → 11.631 ms versus CPython 4.245 ms: nominal
+2.2% lower, unqualified. All 37 responses / 469 invocations match goldens; inputs,
+frozen binaries and cleanup are verified. No repeat trace/capture or new framework.
+
 The [2026-10-17 JSON numeric scratch placement](results/2026-10-17-json-number-scratch/README.md)
 keeps token-sized scratch only around the allocating integer fallback. Separate
 native counts remove 32 bytes per ordinary conversion/hook, with the large-integer

@@ -1,0 +1,11 @@
+{
+  "sourceAlignedRevision": "6c9a51df1796346c522b47ee41f0019a98a941b0",
+  "assemblyMetadataRevision": "e470ccc2a62836cbebb3ed80b59acc1ebdda747d",
+  "sourceFilesMatchCurrentGit": 546,
+  "responses": 444,
+  "invocations": 886,
+  "allOutputAndFileGoldensMatch": true,
+  "workerPid": 2439621,
+  "traceSha256": "4043c3a988b34577c6970ec1b37965ebb968cb782edfd0915f7040021411294c",
+  "ordinaryRuntimeOverrides": true
+}

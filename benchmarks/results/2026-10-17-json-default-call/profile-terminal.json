@@ -1,0 +1,9 @@
+{
+  "observedUtc": "2026-10-17T23:15:20.049303+00:00",
+  "unit": "lython-json-profile-6c9a51df-20261018",
+  "properties": "MainPID=0\nResult=success\nExecMainStatus=0\nControlGroup=\nActiveState=inactive\nSubState=dead\n",
+  "workerGone": true,
+  "tracerGone": true,
+  "fixtureGone": true,
+  "leaseReleased": true
+}

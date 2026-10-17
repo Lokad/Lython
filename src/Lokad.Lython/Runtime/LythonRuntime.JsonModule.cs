@@ -66,6 +66,10 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
+                if (IsDefaultLoads(arguments))
+                {
+                    return Instance.LoadsDefault(arguments[0].Value, span, context, asynchronous: false).GetAwaiter().GetResult();
+                }
                 var extras = CollectExtraArguments(arguments);
                 var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
                 var result = _implementation(bound, extras, span, context);
@@ -75,6 +79,10 @@ internal sealed partial class LythonRuntime
             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
+                if (IsDefaultLoads(arguments))
+                {
+                    return await Instance.LoadsDefault(arguments[0].Value, span, context, asynchronous: true).ConfigureAwait(false);
+                }
                 var extras = CollectExtraArguments(arguments);
                 var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
                 var result = _asyncImplementation is null
@@ -82,6 +90,12 @@ internal sealed partial class LythonRuntime
                     : await _asyncImplementation(bound, extras, span, context).ConfigureAwait(false);
                 return result;
             }
+
+            // This complete call shape has no keyword/default slots to bind.
+            // Other signatures and every explicit option retain general binding.
+            private bool IsDefaultLoads(CallArgumentValue[] arguments)
+                => ReferenceEquals(_signature, LythonKnownCallableSignatures.JsonLoads) &&
+                    arguments.Length == 1 && arguments[0].IsPositional;
 
             // All four signatures allow extra keywords. The ordinary binder
             // snapshots known values before any suspension; only constructor
@@ -190,10 +204,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            if (bound.Values.Length < 1 || !PyStringOps.TryAsString(bound.Values[0], out var text))
-            {
-                throw new LythonRuntimeException("TypeError", "json.loads(s, *, ...) expects a string argument.", span);
-            }
+            var text = RequireLoadsText(bound.Values[0], span);
 
             return DecodeWithClass(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context);
         }
@@ -205,12 +216,26 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            if (bound.Values.Length < 1 || !PyStringOps.TryAsString(bound.Values[0], out var text))
-            {
-                throw new LythonRuntimeException("TypeError", "json.loads(s, *, ...) expects a string argument.", span);
-            }
+            var text = RequireLoadsText(bound.Values[0], span);
 
             return await DecodeWithClassAsync(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context).ConfigureAwait(false);
+        }
+
+        private ValueTask<object> LoadsDefault(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            context.CheckExecution(span);
+            var text = RequireLoadsText(value, span);
+            // Preserve the default decoder's checkpoint before entering the
+            // same parser; only binding storage and forwarding are omitted.
+            context.CheckExecution(span);
+            return ParseJsonTextCoreAsync(text, JsonLoadOptions.Default, context, span, asynchronous);
+        }
+
+        private static PyString RequireLoadsText(object value, LythonSourceSpan span)
+        {
+            if (!PyStringOps.TryAsString(value, out var text))
+                throw new LythonRuntimeException("TypeError", "json.loads(s, *, ...) expects a string argument.", span);
+            return text;
         }
 
         private object Dump(

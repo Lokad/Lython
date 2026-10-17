@@ -7,6 +7,9 @@ public sealed class JsonModuleCallBindingTests
     // Independent CPython 3.13 call results, including supported custom classes.
     public static TheoryData<string, string, string> Programs => new()
     {
+        { "loads_positional_alias", "import json\nload = json.loads\nvalues = [\"{\\\"é\\\":7}\"]\nprint(load(*values))\nprint(load(**{\"s\":\"-0.0\"}))", "{'é': 7}\n-0.0\n" },
+        { "loads_default_effect_order", "import json\neffects=[]\ndef argument():\n effects.append(\"argument\")\n return \"[7,null,true]\"\nprint(json.loads(argument()))\nprint(effects)", "[7, None, True]\n['argument']\n" },
+        { "loads_positional_type_error", "import json\nload = json.loads\ntry:load(7)\nexcept TypeError:print(\"type\")\nprint(load(\"7\"))", "type\n7\n" },
         { "loads_keyword", "import json\ndef call(*args,**kw):return json.loads(*args,**kw)\nprint(call(s=\"7\"))", "7\n" },
         { "loads_none", "import json\ndef call(*args,**kw):return json.loads(*args,**kw)\nprint(call(**{\"s\":\"7\",\"strict\":None,\"parse_int\":None}))", "7\n" },
         { "dumps_keyword", "import json\ndef call(*args,**kw):return json.dumps(*args,**kw)\nprint(call(obj={\"é\":1},ensure_ascii=None))", "{\"é\": 1}\n" },

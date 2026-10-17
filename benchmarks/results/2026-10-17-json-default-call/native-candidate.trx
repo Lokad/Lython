@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="f397297f-eb36-4192-ba56-2a34db3c9b3f" name="JoannesVermorel@LOKAD-0399 2026-10-18 01:19:56" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T01:19:56.2576867+02:00" queuing="2026-10-18T01:19:56.2576869+02:00" start="2026-10-18T01:19:55.3260276+02:00" finish="2026-10-18T01:19:56.2603531+02:00" />
+  <TestSettings name="default" id="d8e93bc1-bb0e-4ae9-ab60-5359ccc96358">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_01_19_56" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="d466e3fa-77d1-4c1a-be85-782fb5f7c8f6" testId="34a75ba1-4fdf-9526-209d-5a04df9cffd9" testName="Lokad.Lython.Tests.JsonDefaultCallDiagnostic.Capture" computerName="LOKAD-0399" duration="00:00:00.1638718" startTime="2026-10-18T01:19:56.0204241+02:00" endTime="2026-10-18T01:19:56.1882887+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d466e3fa-77d1-4c1a-be85-782fb5f7c8f6" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.JsonDefaultCallDiagnostic.Capture" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="34a75ba1-4fdf-9526-209d-5a04df9cffd9">
+      <Execution id="d466e3fa-77d1-4c1a-be85-782fb5f7c8f6" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDefaultCallDiagnostic" name="Capture" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="34a75ba1-4fdf-9526-209d-5a04df9cffd9" executionId="d466e3fa-77d1-4c1a-be85-782fb5f7c8f6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.42]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.43]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.62]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

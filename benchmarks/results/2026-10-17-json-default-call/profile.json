@@ -1,0 +1,164 @@
+{
+  "diagnosticOnly": true,
+  "performanceQualified": false,
+  "traceSeconds": 10,
+  "ownedSeconds": 14.452866,
+  "samples": 7952,
+  "lostEvents": 0,
+  "missingStacks": 0,
+  "unresolvedLeaves": 265,
+  "source": {
+    "sourceAlignedRevision": "6c9a51df1796346c522b47ee41f0019a98a941b0",
+    "assemblyMetadataRevision": "e470ccc2a62836cbebb3ed80b59acc1ebdda747d",
+    "sourceFilesMatchCurrentGit": 546,
+    "responses": 444,
+    "invocations": 886,
+    "allOutputAndFileGoldensMatch": true,
+    "workerPid": 2439621,
+    "traceSha256": "4043c3a988b34577c6970ec1b37965ebb968cb782edfd0915f7040021411294c",
+    "ordinaryRuntimeOverrides": true
+  },
+  "terminal": {
+    "observedUtc": "2026-10-17T23:15:20.049303+00:00",
+    "unit": "lython-json-profile-6c9a51df-20261018",
+    "properties": "MainPID=0\nResult=success\nExecMainStatus=0\nControlGroup=\nActiveState=inactive\nSubState=dead\n",
+    "workerGone": true,
+    "tracerGone": true,
+    "fixtureGone": true,
+    "leaseReleased": true
+  },
+  "jsonInclusive": [
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+JsonModuleCallable+<InvokeAsync>d__6::MoveNext()",
+      "samples": 1814,
+      "percent": 22.811871227364186
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+<LoadsAsync>d__70::MoveNext()",
+      "samples": 1646,
+      "percent": 20.699195171026158
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+<DecodeWithClassAsync>d__80::MoveNext()",
+      "samples": 1613,
+      "percent": 20.28420523138833
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+<ParseJsonTextCoreAsync>d__2::MoveNext()",
+      "samples": 1572,
+      "percent": 19.76861167002012
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+JsonModule::ReadJsonValueExactAsync(valuetype Lokad.Lython.Runtime.LythonRuntime/JsonModule/JsonParseInput,class Lokad.Lython.Runtime.LythonRuntime/JsonLoadOptions,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,int32,bool)",
+      "samples": 1518,
+      "percent": 19.08953722334004
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+<ReadJsonObjectAsync>d__11::MoveNext()",
+      "samples": 1468,
+      "percent": 18.46076458752515
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+JsonModule::ReadJsonString(valuetype Lokad.Lython.Runtime.LythonRuntime/JsonModule/JsonParseInput,bool,int32,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 721,
+      "percent": 9.066901408450704
+    }
+  ],
+  "topLeaf": [
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter+<ExecuteAsync>d__63::MoveNext()",
+      "samples": 1113,
+      "percent": 13.996478873239436
+    },
+    {
+      "name": "ObjectNative::Monitor_TryEnter_FastPath(Object*)",
+      "samples": 270,
+      "percent": 3.3953722334004026
+    },
+    {
+      "name": "ObjectNative::Monitor_Exit_FastPath(Object*)",
+      "samples": 233,
+      "percent": 2.930080482897384
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState+<ReadLineAsync>d__36::MoveNext()",
+      "samples": 207,
+      "percent": 2.6031187122736417
+    },
+    {
+      "name": "__tls_get_addr",
+      "samples": 184,
+      "percent": 2.3138832997987926
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+<ReadJsonObjectAsync>d__11::MoveNext()",
+      "samples": 181,
+      "percent": 2.2761569416498992
+    },
+    {
+      "name": "[unresolved] ",
+      "samples": 159,
+      "percent": 1.9994969818913482
+    },
+    {
+      "name": "System.Runtime.CompilerServices.CastHelpers::IsInstanceOfInterface(void*,object)",
+      "samples": 142,
+      "percent": 1.7857142857142858
+    },
+    {
+      "name": "Lokad.Lython.Runtime.Numbers.PyNumberOps::TryAsNumber(object,valuetype Lokad.Lython.Runtime.Numbers.PyNumber&)",
+      "samples": 125,
+      "percent": 1.5719315895372235
+    },
+    {
+      "name": "Lokad.Lython.Runtime.PyEquality::AreEqual(object,object)",
+      "samples": 120,
+      "percent": 1.5090543259557343
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+JsonModule::ReadJsonString(valuetype Lokad.Lython.Runtime.LythonRuntime/JsonModule/JsonParseInput,bool,int32,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 110,
+      "percent": 1.3832997987927564
+    },
+    {
+      "name": "Lokad.Lython.Runtime.Text.PyString::FromUtf8(valuetype [System.Runtime]System.ReadOnlyMemory`1<uint8>,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 101,
+      "percent": 1.2701207243460764
+    },
+    {
+      "name": "Lokad.Lython.Runtime.MemoryGovernor::EnsureCanReserve(int64,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 95,
+      "percent": 1.1946680080482897
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter+<ExecuteValueOperationAsync>d__2::MoveNext()",
+      "samples": 95,
+      "percent": 1.1946680080482897
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteObservedValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)",
+      "samples": 94,
+      "percent": 1.1820925553319919
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteStackTransfer(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)",
+      "samples": 85,
+      "percent": 1.0689134808853118
+    }
+  ],
+  "limitations": [
+    "Inclusive costs overlap and do not predict savings.",
+    "Ordinary tiering/JIT work is included.",
+    "No before/after CPU, embedding latency, RSS or finite-budget claim."
+  ],
+  "nextCandidate": {
+    "workstream": "AP03",
+    "file": "src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs",
+    "demonstrated": "The default single-positional json.loads call builds an eight-slot bound array and traverses general decoder-option/class handling for every record. The native JSON callable/loads/decoder/parse chain is 22.81/20.70/20.28/19.77 percent inclusive; these overlap.",
+    "proposal": "Recognize only the exact built-in loads signature with one positional argument inside its existing callable, then use shared text validation and immutable default options directly. Retain the general binder for keywords/options/custom cls and every other JSON operation.",
+    "expectedRemoval": "One eight-slot bound values array, its validation/fill, extra-keyword scan and two forwarding state entries per eligible default call; no new binder protocol/cache/pool/owner. General binding remains necessary for other shapes.",
+    "contracts": "Preserve all three existing CheckExecution entries before parsing, exact TypeError, argument evaluation once, native parser frames/fuel/spans, allocation preflights, terminal refusal, owner cleanup and Python results. No new public contract or tiny-budget policy.",
+    "validation": "Baseline and candidate native128-call allocation controls for positional, keyword, explicit cls=None and hook calls; focused existing JSON/default/subclass/suspension/owner/fuel/goldens plus independent CPython probes. One short unchanged whole-job comparison. Remove temporary probe. Qualify Release/platform at coherent delivery.",
+    "stop": "Stop if a new protocol/state/ownership layer is required, fuel/effects differ, allocation proof fails or native common calls regress materially. No second profile or variant campaign."
+  }
+}

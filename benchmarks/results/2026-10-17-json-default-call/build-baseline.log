@@ -1,0 +1,12 @@
+
+  Determining projects to restore...
+  Restored /home/lokad/lython-bench-checks/json-default-call-6c9a51df/source/src/Lokad.Lython/Lokad.Lython.csproj (in 143 ms).
+  Restored /home/lokad/lython-bench-checks/json-default-call-6c9a51df/source/benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj (in 147 ms).
+  Lokad.Lython -> /home/lokad/lython-bench-checks/json-default-call-6c9a51df/source/src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll
+  Lokad.Lython.Benchmarks -> /home/lokad/lython-bench-checks/json-default-call-6c9a51df/source/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:09.89

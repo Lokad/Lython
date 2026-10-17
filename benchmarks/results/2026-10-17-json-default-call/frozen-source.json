@@ -1,0 +1,6 @@
+{
+  "baseRevision": "6c9a51df1796346c522b47ee41f0019a98a941b0",
+  "kind": "working one-file runtime candidate; tests excluded from benchmark build",
+  "sourceFile": "src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs",
+  "canonicalSha256": "39e8bbf89b9a2156aba3b7929620851bc593d3198dd89e4021b294821c5452f1"
+}

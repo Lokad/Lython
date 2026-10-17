@@ -9,7 +9,7 @@
 | Complete CSV helper with annotation-only local [BT], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 19.745 ms | 17.014 ms | — | Local Windows, 3f799746 + one-line guard deletion; 48.9%/13.5% spreads, inconclusive |
 | Complete text-summary file job [BR], fresh compile/run | 3,072 lines / 35,840 UTF-8 bytes | 14.994–16.539 ms | 11.188 ms | — | Local Windows diagnostic at 877f20e2; identical controls; 49%/107%/39% spreads, inconclusive |
 | Complete JSON-lines aggregation [AU], fresh compile/run | 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
-| Complete JSON-lines aggregation with helper [BZ], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 12.438 ms | 4.288 ms | — | One frozen JSON runtime file on e470ccc2; nominal 2.901×, unqualified; 5.45%/0.92% spreads |
+| Complete JSON-lines aggregation with helper [CA], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 11.631 ms | 4.245 ms | — | One frozen JSON runtime file on 6c9a51df; nominal 2.740×, unqualified; 1.67%/0.83% spreads |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
 | File search with helper and early exit [P], fresh compile/run | 2,049 lines / 42,010 UTF-8 bytes; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
 | Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | Historical warm diagnostic; elapsed change within spread |
@@ -66,6 +66,12 @@ The native allocation reduction is separate from elapsed time: its 1.26% higher
 complete-job median is within spread. BY remains visible below; these captures
 must not be pooled or treated as measurements of later HEADs.
 
+CA uses the same boundary/toolchains with one frozen JSON module file on
+6c9a51df. Ordinary single-positional `json.loads` avoids general binding storage.
+Its separate native diagnostic saves 88 bytes per eligible call through each
+API. The sole complete-job capture records a nominal 2.2% lower median; this
+short diagnostic does not qualify a speedup or an embedding-latency improvement.
+
 BU executes frozen Release package binaries built with SDK
 10.0.300-preview.0.26177.108 on the VM's .NET 10.0.12 runtime. Its identical
 adapter was built at a35ee62c; only the packaged Lython DLL differs between
@@ -85,6 +91,7 @@ to infer a change from the quiet-VM measurements.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| CA | 2026-10-17 UTC | One frozen JSON module file on 6c9a51df; complete helper job; warm public RunAsync | [Ordinary call binding, preceding CPU attribution, native allocations and CPython comparison](benchmarks/results/2026-10-17-json-default-call/README.md) |
 | BZ | 2026-10-17 UTC | One frozen JSON runtime file on e470ccc2; complete helper job; warm public RunAsync | [Scratch placement, allocation controls, CPython comparison and cleanup](benchmarks/results/2026-10-17-json-number-scratch/README.md) |
 | BY | 2026-10-17 UTC | Two frozen JSON runtime files on f728636a; complete helper job; warm public RunAsync | [Source identity, native allocations, CPython comparison and cleanup](benchmarks/results/2026-10-17-json-default-options/README.md) |
 | BX | 2026-10-17 UTC | f728636a; two identical clean Lython controls; complete JSON helper job | [Immutable controls, exact outputs, identities and cleanup](benchmarks/results/2026-10-17-json-helper-warm-async/README.md) |
@@ -179,6 +186,7 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Complete JSON-lines aggregation with helper [BZ], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 12.438 ms | 4.288 ms | — | One frozen JSON runtime file on e470ccc2; nominal 2.901×, unqualified; 5.45%/0.92% spreads |
 | Complete JSON-lines aggregation with helper [BY], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 12.993 ms | 4.520 ms | — | Two frozen JSON runtime files on f728636a; nominal 2.875×, unqualified; 2.23%/1.02% spreads |
 | Complete JSON-lines aggregation with helper [BX], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 12.223–12.340 ms | 4.309 ms | — | Identical f728636a controls differ by 0.95%; nominal 2.837–2.864×, unqualified |
 | Complete CSV summary with annotated helper [BV], warm `RunAsync` | 4,096 records / 57,361 UTF-8 bytes | 10.346 ms | 3.756 ms | — | Dedicated-VM diagnostic at 1b6a1531; nominal 2.755×, unqualified; 2.03%/0.51% spreads |
@@ -198,6 +206,14 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 | Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
 
 ## Improvements against earlier Lython revisions
+
+Ordinary JSON loads [CA](benchmarks/results/2026-10-17-json-default-call/README.md)
+removes the eight-slot binding array and default option/class forwarding per
+single-positional call. Separate native counts save 11,264 bytes per 128 calls
+through either API; keyword/explicit-class/hook controls are unchanged. The sole
+complete-job capture records 11.893 → 11.631 ms, spreads 1.82%/1.67%: nominal
+2.2% lower, unqualified. Preceding CPU attribution selects this source boundary;
+it is not a prediction or before/after CPU measurement.
 
 JSON numeric scratch placement [BZ](benchmarks/results/2026-10-17-json-number-scratch/README.md)
 removes one temporary lease and reserve/release traffic from span conversions and
