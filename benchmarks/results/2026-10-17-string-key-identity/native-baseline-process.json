@@ -1,0 +1,14 @@
+{
+  "source": "aa9fc0ea",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "E3562EF95AB5889686CC87AB687DF6F4CA05A938EAF91EAC155C55071847A709",
+  "filter": "FullyQualifiedName~StringKeyComparerDiagnostic",
+  "pid": 42628,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1520,
+  "stdoutSha256": "007F6C4D5821FEF29CB963B7A5F7DBAACAD7C4EC5641247D993693F143AFA915",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

@@ -1,0 +1,86 @@
+{
+  "unit": "MainPID=0\nResult=success\nExecMainStatus=0\nControlGroup=\nActiveState=inactive\nSubState=dead\n",
+  "state": "Completed",
+  "summaries": [
+    {
+      "engine": "baseline",
+      "medianMicroseconds": 12666.512499999999,
+      "iqrFraction": 0.03659110982600772
+    },
+    {
+      "engine": "candidate",
+      "medianMicroseconds": 11495.3895,
+      "iqrFraction": 0.023554878240532907
+    },
+    {
+      "engine": "CPython",
+      "medianMicroseconds": 4335.89575,
+      "iqrFraction": 0.023491815387858488
+    }
+  ],
+  "error": null,
+  "responses": 37,
+  "ownership": {
+    "collectionCount": 1,
+    "state": "Completed",
+    "startedUtc": "2026-10-17T23:40:54.019204+00:00",
+    "command": [
+      "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+      "/home/lokad/lython-bench-checks/string-key-aa9fc0ea/source/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+      "--compare",
+      "micro",
+      "--catalog",
+      "/home/lokad/lython-bench-checks/json-helper-f728636a/catalog.json",
+      "--dotnet",
+      "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+      "--baseline-worker",
+      "/home/lokad/lython-bench-checks/string-key-aa9fc0ea/baseline-worker/Lokad.Lython.Benchmarks.dll",
+      "--python",
+      "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+      "--python-worker",
+      "/home/lokad/lython-bench-checks/string-key-aa9fc0ea/source/benchmarks/cpython-worker.py",
+      "--out",
+      "/home/lokad/lython-bench-checks/string-key-aa9fc0ea/capture/micro.json",
+      "--case",
+      "scripts.json-summary-helpers.large",
+      "--lane",
+      "warm-async"
+    ],
+    "loadBefore": [
+      0.11767578125,
+      0.18408203125,
+      0.08203125
+    ],
+    "supervisorTieredCompilation": "0",
+    "exitCode": 0,
+    "loadAfter": [
+      0.2685546875,
+      0.21435546875,
+      0.0927734375
+    ],
+    "stoppedUtc": "2026-10-17T23:41:03.456000+00:00"
+  },
+  "workers": {
+    "baseline": {
+      "pid": 2441570,
+      "processGone": true,
+      "fixtureDirectory": "/tmp/lython-comparison-files-PYESem",
+      "fixtureDirectoryGone": true
+    },
+    "candidate": {
+      "pid": 2441591,
+      "processGone": true,
+      "fixtureDirectory": "/tmp/lython-comparison-files-Gzpm9q",
+      "fixtureDirectoryGone": true
+    },
+    "CPython": {
+      "pid": 2441606,
+      "processGone": true,
+      "fixtureDirectory": "/tmp/lython-comparison-files-5NKSan",
+      "fixtureDirectoryGone": true
+    }
+  },
+  "archive": "/home/lokad/lython-bench-checks/string-key-aa9fc0ea/comparison-evidence.tar.gz",
+  "archiveBytes": 14390,
+  "archiveSha256": "b3dca31f825a74290dda96c2b8763084eb105fd30a36f04f29d712203d603b8e"
+}

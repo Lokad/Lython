@@ -1,0 +1,19 @@
+{
+  "unit": "lython-string-key-identity-capture-aa9fc0ea-20261018",
+  "command": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-string-key-identity-capture-aa9fc0ea-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=30",
+    "--property=TimeoutStopSec=0",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/string-key-identity-aa9fc0ea/capture/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/string-key-identity-aa9fc0ea/capture/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/string-key-identity-aa9fc0ea/capture/run.py"
+  ],
+  "stdout": "",
+  "stderr": "Running as unit: lython-string-key-identity-capture-aa9fc0ea-20261018.service; invocation ID: 0a6300aae58941ac8eae727461fa05fd\n"
+}

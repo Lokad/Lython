@@ -1705,6 +1705,11 @@ hashes are implementation details: they may differ from CPython and change acros
 processes or Lython versions. Do not persist these values as stable identifiers;
 use an appropriate `hashlib` digest when a stable content digest is required.
 
+Dictionary and set key probing accepts the identical key object before testing
+value equality. A stored non-reflexive key, such as a float or complex
+NaN, can therefore be retrieved using that same object. Distinct NaN objects
+remain distinct keys, and ordinary `nan == nan` remains false.
+
 `len(instance)` resolves `__len__` on the instance's type and its MRO, then binds
 the descriptor. Instance attributes and ordinary `__getattribute__`/`__getattr__`
 hooks do not replace that implicit lookup; explicit `instance.__len__` access

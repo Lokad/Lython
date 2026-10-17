@@ -1,0 +1,45 @@
+{
+  "declaredUnsupportedSubset": true,
+  "constructorFailsBeforeKeyProbe": true,
+  "rawProbe": {
+    "Index": 7,
+    "Lython": {
+      "Success": false,
+      "StandardOutput": "",
+      "StandardError": "",
+      "ExitCode": 1,
+      "Diagnostics": [],
+      "PeakExecutionMemoryBytes": 672,
+      "PeakProjectionMemoryBytes": 236,
+      "DeniedReservationBytes": 0,
+      "Failure": {
+        "ExceptionType": "InvalidOperation",
+        "Message": "NaN, sNaN, and Infinity are not supported by Lython's fixed-precision Decimal.",
+        "Span": "line 2, column 5",
+        "Frames": [
+          "<module> (line 2)"
+        ]
+      }
+    },
+    "CPython": {
+      "Success": true,
+      "StandardOutput": "7 7 True False\n1 9 False\n2 True True\n",
+      "StandardError": "",
+      "ExitCode": null,
+      "Diagnostics": [],
+      "PeakExecutionMemoryBytes": null,
+      "PeakProjectionMemoryBytes": null,
+      "DeniedReservationBytes": null,
+      "Failure": null
+    },
+    "Matches": false,
+    "Note": null,
+    "Compared": true,
+    "Options": {
+      "MaxMemoryBytes": null,
+      "Async": false
+    }
+  },
+  "testReceipt": "key-regression/tests.trx",
+  "proposedTestsCorrected": "Remove the two invalid Decimal-NaN success cases; retain existing Decimal nonfinite-rejection coverage. No runtime change for Decimal."
+}

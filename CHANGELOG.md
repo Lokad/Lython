@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Respect dictionary/set key identity for non-reflexive values, fixing lookup and updates through identical float/complex NaN objects while preserving ordinary NaN inequality. Compare exact builtin string keys directly without entering general numeric/structural equality or guest-dispatch suppression.
+
 - Execute asynchronous `for` movement directly in the main instruction loop, removing the extra per-step operation-helper state entry. Preserve exactly-once pulls, checkpoints, value publication, awaited disposal, protocol suspension and containment.
 
 - Pass already-prepared executable arguments directly through the shared async call entry, removing per-call capturing factories. Preserve deferred argument evaluation, call guards, exception translation and argument ownership through suspension; strengthen existing suspended-call buffer checks.

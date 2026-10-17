@@ -7,6 +7,49 @@ namespace Lokad.Lython.Tests;
 public sealed class EqualityHashingSubsystemTests
 {
     [Fact]
+    public void NonReflexiveKeyIdentityDoesNotMakeValueEqualityReflexive()
+    {
+        object key = double.NaN;
+        object other = double.NaN;
+        Assert.False(PyEquality.AreEqual(key, key));
+        Assert.True(PyValueComparer.Instance.Equals(key, key));
+        Assert.False(PyValueComparer.Instance.Equals(key, other));
+        var table = new PyDict();
+        table.SetItem(key, new BigInteger(7));
+        Assert.Equal(new BigInteger(7), Assert.IsType<BigInteger>(table.GetItem(key)));
+        Assert.False(table.ContainsKey(other));
+    }
+
+    [Theory]
+    [InlineData("", "", true)]
+    [InlineData("amount", "amount", true)]
+    [InlineData("café😀\0", "café😀\0", true)]
+    [InlineData("café😀", "cafe😀", false)]
+    [InlineData("é", "e\u0301", false)]
+    [InlineData("amount", "amount\0", false)]
+    [InlineData("", "\0", false)]
+    public void OwnedStringKeysPreserveEqualityHashingAndFunding(string left, string right, bool expected)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var governor = new MemoryGovernor(null, owner);
+            var a = PyString.FromString(left, governor);
+            var b = PyString.FromString(right, governor);
+            var table = new PyDict(governor);
+            table.SetItem(a, new BigInteger(7));
+            var baseline = budget.ReservedBytes;
+            Assert.Equal(expected, PyValueComparer.Instance.Equals(a, b));
+            if (expected) Assert.Equal(PyValueComparer.Instance.GetHashCode(a), PyValueComparer.Instance.GetHashCode(b));
+            Assert.Equal(expected, table.TryGetValue(b, out var value));
+            if (expected) Assert.Equal(new BigInteger(7), Assert.IsType<BigInteger>(value));
+            Assert.True(baseline > 0);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public void PyValueComparer_UsesRuntimeHashingProtocols()
     {
         var comparer = PyValueComparer.Instance;

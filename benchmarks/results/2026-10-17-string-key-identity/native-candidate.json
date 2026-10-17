@@ -1,0 +1,677 @@
+{
+  "frequency": 10000000,
+  "rows": [
+    {
+      "round": 0,
+      "name": "identity",
+      "iterations": 65536,
+      "elapsedTicks": 241,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 0,
+      "name": "empty",
+      "iterations": 65536,
+      "elapsedTicks": 239,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 0,
+      "name": "ascii",
+      "iterations": 65536,
+      "elapsedTicks": 1556,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 0,
+      "name": "unicode",
+      "iterations": 65536,
+      "elapsedTicks": 1195,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 0,
+      "name": "long",
+      "iterations": 65536,
+      "elapsedTicks": 56517,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 0,
+      "name": "unequal",
+      "iterations": 65536,
+      "elapsedTicks": 599,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 0,
+      "name": "mixed",
+      "iterations": 65536,
+      "elapsedTicks": 102473,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 0,
+      "name": "integer-float",
+      "iterations": 65536,
+      "elapsedTicks": 160037,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 0,
+      "name": "bool-integer",
+      "iterations": 65536,
+      "elapsedTicks": 90428,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 0,
+      "name": "nan-identity",
+      "iterations": 65536,
+      "elapsedTicks": 240,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 0,
+      "name": "tuple",
+      "iterations": 65536,
+      "elapsedTicks": 441238,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 0,
+      "name": "null",
+      "iterations": 65536,
+      "elapsedTicks": 180,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 1,
+      "name": "empty",
+      "iterations": 65536,
+      "elapsedTicks": 239,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 1,
+      "name": "ascii",
+      "iterations": 65536,
+      "elapsedTicks": 1553,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 1,
+      "name": "unicode",
+      "iterations": 65536,
+      "elapsedTicks": 1195,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 1,
+      "name": "long",
+      "iterations": 65536,
+      "elapsedTicks": 54933,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 1,
+      "name": "unequal",
+      "iterations": 65536,
+      "elapsedTicks": 598,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 1,
+      "name": "mixed",
+      "iterations": 65536,
+      "elapsedTicks": 99765,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 1,
+      "name": "integer-float",
+      "iterations": 65536,
+      "elapsedTicks": 188432,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 1,
+      "name": "bool-integer",
+      "iterations": 65536,
+      "elapsedTicks": 30089,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 1,
+      "name": "nan-identity",
+      "iterations": 65536,
+      "elapsedTicks": 239,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 1,
+      "name": "tuple",
+      "iterations": 65536,
+      "elapsedTicks": 156558,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 1,
+      "name": "null",
+      "iterations": 65536,
+      "elapsedTicks": 180,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 1,
+      "name": "identity",
+      "iterations": 65536,
+      "elapsedTicks": 240,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 2,
+      "name": "ascii",
+      "iterations": 65536,
+      "elapsedTicks": 1332,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 2,
+      "name": "unicode",
+      "iterations": 65536,
+      "elapsedTicks": 1314,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 2,
+      "name": "long",
+      "iterations": 65536,
+      "elapsedTicks": 38659,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 2,
+      "name": "unequal",
+      "iterations": 65536,
+      "elapsedTicks": 598,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 2,
+      "name": "mixed",
+      "iterations": 65536,
+      "elapsedTicks": 26609,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 2,
+      "name": "integer-float",
+      "iterations": 65536,
+      "elapsedTicks": 16491,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 2,
+      "name": "bool-integer",
+      "iterations": 65536,
+      "elapsedTicks": 15326,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 2,
+      "name": "nan-identity",
+      "iterations": 65536,
+      "elapsedTicks": 239,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 2,
+      "name": "tuple",
+      "iterations": 65536,
+      "elapsedTicks": 58988,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 2,
+      "name": "null",
+      "iterations": 65536,
+      "elapsedTicks": 205,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 2,
+      "name": "identity",
+      "iterations": 65536,
+      "elapsedTicks": 240,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 2,
+      "name": "empty",
+      "iterations": 65536,
+      "elapsedTicks": 239,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 3,
+      "name": "unicode",
+      "iterations": 65536,
+      "elapsedTicks": 1290,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 3,
+      "name": "long",
+      "iterations": 65536,
+      "elapsedTicks": 38164,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 3,
+      "name": "unequal",
+      "iterations": 65536,
+      "elapsedTicks": 598,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 3,
+      "name": "mixed",
+      "iterations": 65536,
+      "elapsedTicks": 29131,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 3,
+      "name": "integer-float",
+      "iterations": 65536,
+      "elapsedTicks": 16325,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 3,
+      "name": "bool-integer",
+      "iterations": 65536,
+      "elapsedTicks": 14662,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 3,
+      "name": "nan-identity",
+      "iterations": 65536,
+      "elapsedTicks": 240,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 3,
+      "name": "tuple",
+      "iterations": 65536,
+      "elapsedTicks": 59161,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 3,
+      "name": "null",
+      "iterations": 65536,
+      "elapsedTicks": 180,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 3,
+      "name": "identity",
+      "iterations": 65536,
+      "elapsedTicks": 252,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 3,
+      "name": "empty",
+      "iterations": 65536,
+      "elapsedTicks": 239,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 3,
+      "name": "ascii",
+      "iterations": 65536,
+      "elapsedTicks": 1434,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 4,
+      "name": "long",
+      "iterations": 65536,
+      "elapsedTicks": 37995,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 4,
+      "name": "unequal",
+      "iterations": 65536,
+      "elapsedTicks": 598,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 4,
+      "name": "mixed",
+      "iterations": 65536,
+      "elapsedTicks": 28274,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 4,
+      "name": "integer-float",
+      "iterations": 65536,
+      "elapsedTicks": 16389,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 4,
+      "name": "bool-integer",
+      "iterations": 65536,
+      "elapsedTicks": 14601,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 4,
+      "name": "nan-identity",
+      "iterations": 65536,
+      "elapsedTicks": 240,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 4,
+      "name": "tuple",
+      "iterations": 65536,
+      "elapsedTicks": 58789,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 4,
+      "name": "null",
+      "iterations": 65536,
+      "elapsedTicks": 180,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 4,
+      "name": "identity",
+      "iterations": 65536,
+      "elapsedTicks": 242,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 4,
+      "name": "empty",
+      "iterations": 65536,
+      "elapsedTicks": 239,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 4,
+      "name": "ascii",
+      "iterations": 65536,
+      "elapsedTicks": 1196,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 4,
+      "name": "unicode",
+      "iterations": 65536,
+      "elapsedTicks": 1314,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 5,
+      "name": "unequal",
+      "iterations": 65536,
+      "elapsedTicks": 598,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 5,
+      "name": "mixed",
+      "iterations": 65536,
+      "elapsedTicks": 26954,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 5,
+      "name": "integer-float",
+      "iterations": 65536,
+      "elapsedTicks": 16020,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 5,
+      "name": "bool-integer",
+      "iterations": 65536,
+      "elapsedTicks": 15904,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 5,
+      "name": "nan-identity",
+      "iterations": 65536,
+      "elapsedTicks": 240,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 5,
+      "name": "tuple",
+      "iterations": 65536,
+      "elapsedTicks": 59638,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 5,
+      "name": "null",
+      "iterations": 65536,
+      "elapsedTicks": 180,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 5,
+      "name": "identity",
+      "iterations": 65536,
+      "elapsedTicks": 239,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 5,
+      "name": "empty",
+      "iterations": 65536,
+      "elapsedTicks": 239,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 5,
+      "name": "ascii",
+      "iterations": 65536,
+      "elapsedTicks": 1315,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 5,
+      "name": "unicode",
+      "iterations": 65536,
+      "elapsedTicks": 1314,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 5,
+      "name": "long",
+      "iterations": 65536,
+      "elapsedTicks": 38145,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 6,
+      "name": "mixed",
+      "iterations": 65536,
+      "elapsedTicks": 26890,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 6,
+      "name": "integer-float",
+      "iterations": 65536,
+      "elapsedTicks": 15987,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 6,
+      "name": "bool-integer",
+      "iterations": 65536,
+      "elapsedTicks": 15134,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 6,
+      "name": "nan-identity",
+      "iterations": 65536,
+      "elapsedTicks": 240,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 6,
+      "name": "tuple",
+      "iterations": 65536,
+      "elapsedTicks": 59681,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 6,
+      "name": "null",
+      "iterations": 65536,
+      "elapsedTicks": 180,
+      "allocatedBytes": 0,
+      "matches": 0
+    },
+    {
+      "round": 6,
+      "name": "identity",
+      "iterations": 65536,
+      "elapsedTicks": 240,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 6,
+      "name": "empty",
+      "iterations": 65536,
+      "elapsedTicks": 240,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 6,
+      "name": "ascii",
+      "iterations": 65536,
+      "elapsedTicks": 1195,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 6,
+      "name": "unicode",
+      "iterations": 65536,
+      "elapsedTicks": 1314,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 6,
+      "name": "long",
+      "iterations": 65536,
+      "elapsedTicks": 38108,
+      "allocatedBytes": 0,
+      "matches": 65536
+    },
+    {
+      "round": 6,
+      "name": "unequal",
+      "iterations": 65536,
+      "elapsedTicks": 598,
+      "allocatedBytes": 0,
+      "matches": 0
+    }
+  ]
+}

@@ -7,6 +7,17 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 key identity/string comparison](results/2026-10-17-string-key-identity/README.md)
+accepts identical keys and omits general equality/suppression for builtin strings.
+Independent probes exposed an existing NaN-key bug in the immutable aa9fc0ea
+package; the final source fixes it while preserving ordinary NaN inequality.
+The first string-only prototype's native/timing/failure evidence is retained
+separately. One required final-source capture records 11.700 → 10.953 ms versus
+CPython 4.259 ms: nominal 6.4% lower, unqualified. Its 9.317 s run preserves all
+36 responses / 456 invocations, inputs, frozen files and cleanup. Native fixed-
+operand timings permit optimizer folding; zero allocations and outcome controls
+are useful, not their apparent per-call speedups. No further capture or trace ran.
+
 The [2026-10-17 ordinary JSON loads](results/2026-10-17-json-default-call/README.md)
 removes generic binding storage from a single-positional default call. A preceding
 ten-second JSON-helper profile has 7,952 samples, no lost events/missing stacks

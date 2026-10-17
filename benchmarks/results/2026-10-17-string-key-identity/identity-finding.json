@@ -1,0 +1,170 @@
+{
+  "demonstratedBaselineBug": true,
+  "baselineIdentity": {
+    "immutablePackageCommit": "aa9fc0eadae262c17210a59cb72e418928ca4446",
+    "packageSha512": "fc3e751457d4e54bf2593f46891d365da776194dbe1aec9d8b3fb03b74a7b390695a91f58d398e93d04267df7d4b4f3dc9924bfde26a8ad1dbaefb99c73ef911",
+    "librarySha256": "76e055acb07e73fd2bb664eb9d980b1efa0082c4b5b49fd52daacc634fcf994f",
+    "probeHostCopiedFromUnchangedSource": true
+  },
+  "failingCase": {
+    "baseline-probe-sync": {
+      "Index": 2,
+      "Lython": {
+        "Success": false,
+        "StandardOutput": "1 decimal decimal decimal\n",
+        "StandardError": "",
+        "ExitCode": 1,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 1441,
+        "PeakProjectionMemoryBytes": 170,
+        "DeniedReservationBytes": 0,
+        "Failure": {
+          "ExceptionType": "KeyError",
+          "Message": "nan",
+          "Span": "line 6, column 7",
+          "Frames": [
+            "<module> (line 6)"
+          ]
+        }
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "1 decimal decimal decimal\nnan False 2\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    "baseline-probe-async": {
+      "Index": 2,
+      "Lython": {
+        "Success": false,
+        "StandardOutput": "1 decimal decimal decimal\n",
+        "StandardError": "",
+        "ExitCode": 1,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 1441,
+        "PeakProjectionMemoryBytes": 170,
+        "DeniedReservationBytes": 0,
+        "Failure": {
+          "ExceptionType": "KeyError",
+          "Message": "nan",
+          "Span": "line 6, column 7",
+          "Frames": [
+            "<module> (line 6)"
+          ]
+        }
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "1 decimal decimal decimal\nnan False 2\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": true
+      }
+    },
+    "probe-sync": {
+      "Index": 2,
+      "Lython": {
+        "Success": false,
+        "StandardOutput": "1 decimal decimal decimal\n",
+        "StandardError": "",
+        "ExitCode": 1,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 1441,
+        "PeakProjectionMemoryBytes": 170,
+        "DeniedReservationBytes": 0,
+        "Failure": {
+          "ExceptionType": "KeyError",
+          "Message": "nan",
+          "Span": "line 6, column 7",
+          "Frames": [
+            "<module> (line 6)"
+          ]
+        }
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "1 decimal decimal decimal\nnan False 2\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    "probe-async": {
+      "Index": 2,
+      "Lython": {
+        "Success": false,
+        "StandardOutput": "1 decimal decimal decimal\n",
+        "StandardError": "",
+        "ExitCode": 1,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 1441,
+        "PeakProjectionMemoryBytes": 170,
+        "DeniedReservationBytes": 0,
+        "Failure": {
+          "ExceptionType": "KeyError",
+          "Message": "nan",
+          "Span": "line 6, column 7",
+          "Frames": [
+            "<module> (line 6)"
+          ]
+        }
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "1 decimal decimal decimal\nnan False 2\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": true
+      }
+    }
+  },
+  "correction": "Key identity is accepted before value equality in PyValueComparer, except the existing internal null/null=false behavior. PyEquality remains unchanged so ordinary NaN == NaN is false.",
+  "scope": "This same comparer supplies dictionary/set key probing. No numeric representation, hash, owner or general equality redesign.",
+  "oldPrototype": "The four-line exact-string-only prototype and its completed comparison remain preserved. Its timing does not describe the corrected source. A new final-source comparison is justified by the required correctness change, not tuning."
+}

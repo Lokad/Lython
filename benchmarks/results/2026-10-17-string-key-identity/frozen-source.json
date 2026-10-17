@@ -1,0 +1,6 @@
+{
+  "baseRevision": "aa9fc0eadae262c17210a59cb72e418928ca4446",
+  "kind": "working one-file runtime candidate; tests excluded from benchmark build",
+  "sourceFile": "src/Lokad.Lython/Runtime/PyValueComparer.cs",
+  "canonicalSha256": "493d736927c6c6dba1bf4569b7f6dc1d9bfc5bceaeb2fa71b2866c02b323014d"
+}

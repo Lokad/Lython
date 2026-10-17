@@ -1,0 +1,14 @@
+{
+  "source": "identity-fix",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "E005693D51D4C194EEFACCC1BCDB87823D0192BC9E2556C92137DB88FD0062BD",
+  "filter": "FullyQualifiedName~StringKeyIdentityDiagnostic",
+  "pid": 26364,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1357,
+  "stdoutSha256": "12833D67200FE6B73B404DC37F38DF02AB5753C2EA193B62978AA7387258094A",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}
