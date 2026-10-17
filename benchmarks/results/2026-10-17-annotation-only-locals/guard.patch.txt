@@ -1,0 +1,6 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
+index de0047af..d9a70fec 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
+@@ -133 +132,0 @@ internal sealed partial class ExecutableScript
+-                        if (!_generator) throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support annotation-only assignments: {annotated.Assignment.GetType().Name}.");

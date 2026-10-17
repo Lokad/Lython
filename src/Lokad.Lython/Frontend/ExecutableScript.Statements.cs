@@ -130,7 +130,6 @@ internal sealed partial class ExecutableScript
                     }
                     if (annotated.Expression is null)
                     {
-                        if (!_generator) throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support annotation-only assignments: {annotated.Assignment.GetType().Name}.");
                         // Function-local annotations do not evaluate. Attribute
                         // and item annotation targets still evaluate their reads.
                         foreach (var read in AssignmentTargetFacts.Reads(annotated.Assignment.Target))

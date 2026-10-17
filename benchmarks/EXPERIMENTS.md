@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [annotation-only local CSV diagnostic](results/2026-10-17-annotation-only-locals/README.md)
+compares 3f799746 and one guard deletion with CPython 3.13.2 on Windows.
+Fresh-job medians 21.677/19.745/17.014 ms have 38.0%/48.9%/13.5% spread;
+no direction or ratio is qualified. One 11.228 s capture, 36 full-output/file responses,
+100 unchanged frozen files and recorded worker cleanup are preserved. It is a
+source-level executable-coverage correction, with no measured elapsed claim.
+
 The [2026-10-17 native dictionary-read diagnostic](results/2026-10-17-native-dictionary-dispatch/README.md)
 compares 2cb4a786 with the archived guard-only patch: allocation stays320bytes
 per128reads in all four native cases. Async dictionary median falls while its

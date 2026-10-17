@@ -705,6 +705,11 @@ annotation scope and eager/postponed rules; annotations alone do not require
 parent locals to be mirrored into dictionaries. Actual escaping annotation
 lambdas and namespaces use the existing retention barriers, and retained metadata
 keeps its owner.
+Annotation-only declarations inside ordinary functions also retain executable
+bodies. Their annotation expressions do not run or populate metadata; name targets
+still declare locals, while attribute/item targets evaluate their base and index
+expressions without reading or writing the target. Module annotation behavior is
+unchanged.
 Compiled body/call fuel can differ from lowered execution and remains
 implementation-defined. The contained
 `from __future__ import annotations` mode stores Python 3.13 canonical expression

@@ -5,6 +5,7 @@
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Complete CSV summary [BP], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 7.503 ms | 3.849 ms | — | Short diagnostic at27a61681; nominal8.3% below prior Lython,7.5%/6.4% spreads; inconclusive |
 | Complete CSV summary with annotated helper [BS], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 17.358 ms | 14.348 ms | — | Local Windows diagnostic at efccd974; 45.8%/29.8% spreads, inconclusive |
+| Complete CSV helper with annotation-only local [BT], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 19.745 ms | 17.014 ms | — | Local Windows, 3f799746 + one-line guard deletion; 48.9%/13.5% spreads, inconclusive |
 | Complete text-summary file job [BR], fresh compile/run | 3,072 lines / 35,840 UTF-8 bytes | 14.994–16.539 ms | 11.188 ms | — | Local Windows diagnostic at 877f20e2; identical controls; 49%/107%/39% spreads, inconclusive |
 | Complete JSON-lines aggregation [AU], fresh compile/run | 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
@@ -29,7 +30,7 @@ magnitudes and changes remain uncertain as marked.
 
 ## Which code and machine were measured?
 
-The quiet-VM snapshots (all leading rows except BQ/BR/BS, and historical Q/L campaigns) used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
+The quiet-VM snapshots (all leading rows except BQ/BR/BS/BT, and historical Q/L campaigns) used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
 x86_64, four AMD EPYC 9V45 vCPUs, one thread per core, 16 GiB RAM, no swap.
 Lython was a clean Release build using **.NET SDK 10.0.401 / runtime 10.0.12**.
 The primary external reference was **CPython 3.13.16**, built with GCC 13.3,
@@ -38,7 +39,7 @@ PGO/LTO, ordinary GIL and cyclic GC, without debug mode or JIT, launched with
 instruction fuel was unset. Both engines ran sequentially on that machine.
 The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
-BQ, BR and BS use the active Windows 11 development workstation: Intel Core i7-14700KF,
+BQ, BR, BS and BT use the active Windows 11 development workstation: Intel Core i7-14700KF,
 28 logical processors, .NET SDK 10.0.300-preview.0.26177.108 / runtime 10.0.13
 and CPython 3.13.2. They are unqualified local diagnostics and cannot be directly
 compared with quiet-VM timings. BQ establishes an allocation reduction only.
@@ -152,6 +153,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 | Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
 
 ## Improvements against earlier Lython revisions
+
+The annotation-only CSV helper [BT](benchmarks/results/2026-10-17-annotation-only-locals/README.md)
+compares 3f799746 with its one-line fallback-guard deletion: 21.677 → 19.745 ms,
+38.0%/48.9% spread. This single fresh-job diagnostic includes compilation/file
+staging and establishes no elapsed benefit. It measures the archived source patch;
+no current-HEAD, allocation or qualified CPython multiplier is implied.
 
 The [native dictionary-read guard diagnostic](benchmarks/results/2026-10-17-native-dictionary-dispatch/README.md)
 records unchanged allocation: 320 bytes per 128 reads through both instruction

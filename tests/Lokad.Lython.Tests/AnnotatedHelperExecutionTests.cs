@@ -14,6 +14,10 @@ public sealed class AnnotatedHelperExecutionTests
     [InlineData("from __future__ import annotations\ndef helper(value:missing)->missing:return value\nreturn helper")]
     [InlineData("def make(seed):\n Kind=int\n def helper(value:Kind=2)->Kind:return seed+value\n seed+=1\n return helper\nreturn make(3)")]
     [InlineData("def helper(value:'int')->'int':return value+1\nreturn helper")]
+    [InlineData("def helper(value):\n result:int\n result=value+1\n return result\nreturn helper")]
+    [InlineData("def helper(value):\n value:int\n return value\nreturn helper")]
+    [InlineData("def helper(value):\n value.field:missing()\n return 7\nreturn helper")]
+    [InlineData("def outer():\n result:int\n result=7\n def inner():return result\n return inner\nreturn outer")]
     public async Task OrdinaryAnnotatedBodiesRemainExecutable(string source)
     {
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
