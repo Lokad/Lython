@@ -1,0 +1,22 @@
+{
+  "runtimeBase": "e470ccc2a62836cbebb3ed80b59acc1ebdda747d",
+  "scope": "JSON numeric wrapper, converter and existing integer/string admission",
+  "externalSources": [
+    "https://github.com/dotnet/runtime/blob/v10.0.12/src/libraries/System.Private.CoreLib/src/System/Number.Parsing.cs",
+    "https://github.com/dotnet/runtime/blob/v10.0.12/src/libraries/System.Private.CoreLib/src/System/Double.cs",
+    "https://github.com/dotnet/runtime/blob/v10.0.12/src/libraries/System.Private.CoreLib/src/System/Number.NumberToFloatingPointBits.cs",
+    "https://github.com/dotnet/runtime/blob/v10.0.12/src/libraries/System.Private.CoreLib/src/System/Number.BigInteger.cs"
+  ],
+  "proof": [
+    "The NumberStyles.Integer Int64 span path accumulates a scalar and returns failure on overflow; it does not materialize token-sized storage.",
+    "Double's UTF-8 span path uses a type-sized number buffer; slow conversion uses fixed ref-struct scratch independent of token length. These framework calls already exist; no implementation is copied into Lython.",
+    "JSON numeric grammar restricts the matched span to valid ASCII number tokens before conversion. Whole-document suffix/error handling is unchanged.",
+    "GuardIntegerParseBytes remains before parsing and OwnFreshInteger remains before major magnitude publication.",
+    "The large-integer fallback allocates a UTF-16 string and magnitude/computation storage. Keep the same four-times-token scratch around that fallback, overlapping existing integer admission and output ownership.",
+    "Callback raw text is admitted and committed by CreateUtf8String/PyString before invoking the hook. Whole-array reuse is charged too; sliced text copies are preflighted. Captured text stays execution/result-owned independently of scratch, including across suspension and callback failure."
+  ],
+  "proposedChange": "Move the existing four-times-token temporary reservation from the wrapper to immediately before the allocating large-integer text fallback. No new classifier, state/lifetime layer or ownership type.",
+  "contractTradeoff": "Small-number and hook paths can succeed with less unused allowance. Big fallback admission order changes: magnitude preflight still precedes parsing, then fallback working storage is admitted before decoding. No old tiny-budget threshold or unused temporary reservation is promised. Refused admission is still terminal and never retried.",
+  "testMigration": "Keep fuel/span/effect and denial-before-callback/magnitude witnesses. Remove only exact unused-scratch expectations: arm denial against the actual demand, compare callback committed funding across suspension, and omit the obsolete temporary-byte component from frozen callback event records. Preserve all timeouts, original Stress scales and externally observable assertions.",
+  "notProvedBySource": "Elapsed benefit, allocation magnitude and embedding latency; validate allocation and one affected complete job separately."
+}

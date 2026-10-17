@@ -1,0 +1,14 @@
+{
+  "source": "json-number-scratch",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "D1ADAC0DC1113ED131A2EFFF9788BBD07A45DEA8212310F0DC850580DF7FE798",
+  "filter": "Category!=Stress&(FullyQualifiedName~JsonNumberTokenStorageTests|FullyQualifiedName~JsonNumberScratchDiagnostic)",
+  "pid": 58288,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1265,
+  "stdoutSha256": "012893C73FD0526A92399E58445EA5E1FBFCD21A14B7671BA78994BB1413E939",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

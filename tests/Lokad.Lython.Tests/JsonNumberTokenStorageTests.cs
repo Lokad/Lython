@@ -49,7 +49,7 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
         var demand = RuntimeMemoryEstimates.SaturatingMultiply(2, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(4L * text.Length));
         var (code, context) = Prepare("import json\nreturn json.loads(arm(source))", limit);
         context.Variables["source"] = PyString.FromString(text, context.MemoryGovernor, null);
-        using var arm = new AdmissionGate(context.MemoryGovernor, limit, text.Length, demand, deny);
+        using var arm = new AdmissionGate(context.MemoryGovernor, limit, demand, deny);
         context.Variables["arm"] = arm;
         try
         {
@@ -60,6 +60,31 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
                 Assert.Equal(demand, context.MemoryGovernor.LastDeniedReservationBytes);
             }
             else Assert.Equal(BigInteger.Parse(text, CultureInfo.InvariantCulture), Assert.IsType<BigInteger>(await Run(code, context, asynchronous)));
+            Assert.Equal(1, arm.Calls);
+            Assert.True(context.MemoryGovernor.PeakAccountedBytes <= limit);
+        }
+        finally { arm.Dispose(); }
+        AssertUnwound(context);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LargeIntegerFallbackAdmitsWorkingStorageBeforeDecoding(bool asynchronous)
+    {
+        const long limit = 1024 * 1024;
+        var text = new string('9', 64);
+        var magnitudeDemand = 2 * RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(4L * text.Length);
+        var workingDemand = 4L * text.Length;
+        var (code, context) = Prepare("import json\nreturn json.loads(arm(source))", limit);
+        context.Variables["source"] = PyString.FromString(text, context.MemoryGovernor, null);
+        using var arm = new AdmissionGate(context.MemoryGovernor, limit, magnitudeDemand + workingDemand, true);
+        context.Variables["arm"] = arm;
+        try
+        {
+            var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
+            Assert.Equal("MemoryError", error.ExceptionType);
+            Assert.Equal(workingDemand, context.MemoryGovernor.LastDeniedReservationBytes);
             Assert.Equal(1, arm.Calls);
             Assert.True(context.MemoryGovernor.PeakAccountedBytes <= limit);
         }
@@ -83,7 +108,7 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
         var (code, context) = Prepare("import json\nreturn json.loads(arm(source)," + (floating ? "parse_float" : "parse_int") + "=capture)", limit);
         context.Variables["source"] = PyString.FromString(text, context.MemoryGovernor, null);
         var demand = PyString.EstimateApproximateBytes(text.Length);
-        using var arm = new AdmissionGate(context.MemoryGovernor, limit, text.Length, demand, deny);
+        using var arm = new AdmissionGate(context.MemoryGovernor, limit, demand, deny);
         var capture = new Capture();
         context.Variables["arm"] = arm;
         context.Variables["capture"] = capture;
@@ -119,7 +144,7 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
     [InlineData(false, true, true)]
     [InlineData(true, false, true)]
     [InlineData(true, true, true)]
-    public async Task NumericCheckpointAndScratchLifetimesRemainStable(bool asynchronous, bool floating, bool callback)
+    public async Task NumericCheckpointsAndArgumentEffectsRemainStable(bool asynchronous, bool floating, bool callback)
     {
         var text = floating ? (callback ? "1.2300e+04" : "-0.0") : (callback ? "-0" : "9223372036854775808");
         var source = "import json\nreturn json.loads(source" + (callback ? "," + (floating ? "parse_float" : "parse_int") + "=capture)" : ")");
@@ -160,7 +185,8 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
             }
             Assert.Equal(0, budget.ReservedBytes);
         }
-        // Frozen on537f8903 before removing either forwarding state machine.
+        // Fuel, spans and argument effects were frozen on537f8903. Temporary
+        // reservation counts are internal accounting policy, not guest effects.
         var expected = (floating, callback) switch
         {
             (false, false) => (16, Array.Empty<string>(), new[]
@@ -170,13 +196,13 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
                 "19,18,2,8:", "19,18,2,8:", "19,18,2,8:", "19,18,2,8:",
                 "19,18,2,8:", "19,18,2,8:", "19,18,2,8:", "12,25,2,1:",
             }),
-            (false, true) => (18, new[] { "4,0,8:-0" }, new[]
+            (false, true) => (18, new[] { "4,0:-0" }, new[]
             {
                 "-:", "0,11,1,1:", "-:", "19,4,2,8:",
                 "19,10,2,8:", "30,6,2,19:", "47,7,2,36:", "19,36,2,8:",
                 "19,36,2,8:", "19,36,2,8:", "19,36,2,8:", "19,36,2,8:",
                 "19,36,2,8:", "19,36,2,8:", "19,36,2,8:", "19,36,2,8:",
-                "19,36,2,8:", "12,43,2,1:4,0,8:-0",
+                "19,36,2,8:", "12,43,2,1:4,0:-0",
             }),
             (true, false) => (15, Array.Empty<string>(), new[]
             {
@@ -185,13 +211,13 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
                 "19,18,2,8:", "19,18,2,8:", "19,18,2,8:", "19,18,2,8:",
                 "19,18,2,8:", "19,18,2,8:", "12,25,2,1:",
             }),
-            (true, true) => (19, new[] { "4,0,40:1.2300e+04" }, new[]
+            (true, true) => (19, new[] { "4,0:1.2300e+04" }, new[]
             {
                 "-:", "0,11,1,1:", "-:", "19,4,2,8:",
                 "19,10,2,8:", "30,6,2,19:", "49,7,2,38:", "19,38,2,8:",
                 "19,38,2,8:", "19,38,2,8:", "19,38,2,8:", "19,38,2,8:",
                 "19,38,2,8:", "19,38,2,8:", "19,38,2,8:", "19,38,2,8:",
-                "19,38,2,8:", "19,38,2,8:", "12,45,2,1:4,0,40:1.2300e+04",
+                "19,38,2,8:", "19,38,2,8:", "12,45,2,1:4,0:1.2300e+04",
             }),
         };
         Assert.Equal(expected.Item1, steps);
@@ -205,7 +231,7 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public async Task PendingNativeHookKeepsCallerScratchUntilCompletion(bool floating, bool cancel)
+    public async Task PendingNativeHookKeepsItsArgumentFundedUntilCompletion(bool floating, bool cancel)
     {
         var text = floating ? "1.2300e+04" : "-0";
         var source = "import json\nreturn json.loads(source," + (floating ? "parse_float" : "parse_int") + "=capture)";
@@ -222,8 +248,8 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
             Assert.False(pending.IsCompleted);
             Assert.Equal(1, capture.Calls);
             Assert.Equal(text, capture.Value!.AsString());
-            Assert.True(capture.Reserved >= 4L * text.Length);
-            Assert.Equal(capture.Reserved, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.True(capture.Committed >= PyString.EstimateApproximateBytes(text.Length));
+            Assert.Equal(capture.Committed, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(capture.Depth, context.Limits.CurrentInterpreterDepth);
             Assert.True(budget.ReservedBytes > 0);
             if (cancel)
@@ -263,7 +289,7 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
     {
         public int Calls;
         public PyString? Value;
-        public long Reserved;
+        public long Committed;
         public long Depth;
         public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -273,7 +299,7 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
         {
             Calls++;
             Value = Assert.IsType<PyString>(Assert.Single(arguments).Value);
-            Reserved = context.MemoryGovernor.CurrentReservedBytes;
+            Committed = context.MemoryGovernor.CurrentCommittedBytes;
             Depth = context.Limits.CurrentInterpreterDepth;
             Started.TrySetResult();
             await Release.Task.ConfigureAwait(false);
@@ -306,19 +332,19 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
             Calls++;
             Value = Assert.Single(arguments).Value;
             var text = Assert.IsType<PyString>(Value);
-            Events.Add($"{context.Limits.CurrentInterpreterDepth},{context.Limits.CurrentRecursionDepth},{context.MemoryGovernor.CurrentReservedBytes}:{text.AsString()}");
+            Events.Add($"{context.Limits.CurrentInterpreterDepth},{context.Limits.CurrentRecursionDepth}:{text.AsString()}");
             return Value;
         }
     }
 
-    private sealed class AdmissionGate(MemoryGovernor governor, long limit, int length, long demand, bool deny) : LythonRuntime.ICallable, IDisposable
+    private sealed class AdmissionGate(MemoryGovernor governor, long limit, long demand, bool deny) : LythonRuntime.ICallable, IDisposable
     {
         private IDisposable? _reservation;
         public int Calls { get; private set; }
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Calls++;
-            if (deny) _reservation = governor.ReserveTemporary(limit - governor.CurrentAccountedBytes - 4L * length - demand + 1, span);
+            if (deny) _reservation = governor.ReserveTemporary(limit - governor.CurrentAccountedBytes - demand + 1, span);
             return Assert.Single(arguments).Value;
         }
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

@@ -1,0 +1,40 @@
+{
+  "collectionCount": 1,
+  "state": "Completed",
+  "startedUtc": "2026-10-17T23:02:28.339768+00:00",
+  "command": [
+    "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+    "/home/lokad/lython-bench-checks/json-number-scratch-e470ccc2/source/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+    "--compare",
+    "micro",
+    "--catalog",
+    "/home/lokad/lython-bench-checks/json-helper-f728636a/catalog.json",
+    "--dotnet",
+    "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+    "--baseline-worker",
+    "/home/lokad/lython-bench-checks/json-number-scratch-e470ccc2/baseline-worker/Lokad.Lython.Benchmarks.dll",
+    "--python",
+    "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+    "--python-worker",
+    "/home/lokad/lython-bench-checks/json-number-scratch-e470ccc2/source/benchmarks/cpython-worker.py",
+    "--out",
+    "/home/lokad/lython-bench-checks/json-number-scratch-e470ccc2/capture/micro.json",
+    "--case",
+    "scripts.json-summary-helpers.large",
+    "--lane",
+    "warm-async"
+  ],
+  "loadBefore": [
+    0.34228515625,
+    0.169921875,
+    0.06396484375
+  ],
+  "supervisorTieredCompilation": "0",
+  "exitCode": 0,
+  "loadAfter": [
+    0.39501953125,
+    0.18408203125,
+    0.0693359375
+  ],
+  "stoppedUtc": "2026-10-17T23:02:37.812652+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "iterations": 128,
+  "rows": [
+    {
+      "name": "small-int",
+      "allocatedBytes": 12288
+    },
+    {
+      "name": "float",
+      "allocatedBytes": 7168
+    },
+    {
+      "name": "slow-float",
+      "allocatedBytes": 7168
+    },
+    {
+      "name": "overflow-float",
+      "allocatedBytes": 7168
+    },
+    {
+      "name": "large-int",
+      "allocatedBytes": 58368
+    },
+    {
+      "name": "callback",
+      "allocatedBytes": 23552
+    }
+  ]
+}

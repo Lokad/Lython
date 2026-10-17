@@ -1,0 +1,19 @@
+{
+  "unit": "lython-json-number-capture-e470ccc2-20261018",
+  "command": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-json-number-capture-e470ccc2-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=30",
+    "--property=TimeoutStopSec=0",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/json-number-scratch-e470ccc2/capture/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/json-number-scratch-e470ccc2/capture/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/json-number-scratch-e470ccc2/capture/run.py"
+  ],
+  "stdout": "",
+  "stderr": "Running as unit: lython-json-number-capture-e470ccc2-20261018.service; invocation ID: c94611fb285046959198f6c18da8d40e\n"
+}

@@ -162,7 +162,6 @@ internal sealed partial class LythonRuntime
                 // belongs to whole-document validation, not this token.
                 if (TryMatchJsonNumber(bytes.Span, position, context, span, out var numberEnd))
                 {
-                    using var numberScratch = context.MemoryGovernor.ReserveTemporary(checked(4L * (numberEnd - position)), span);
                     return (await ConvertJsonNumberTextAsync(bytes, position, numberEnd, options, context, span, asynchronous).ConfigureAwait(false), numberEnd);
                 }
 
@@ -679,6 +678,10 @@ internal sealed partial class LythonRuntime
                     return new(new BigInteger(integer));
                 }
 
+                // Only the text fallback allocates token-sized temporary storage.
+                // Span parsing needs no such lease; callback text already owns
+                // its funding before invocation, including retained aliases.
+                using var numberScratch = context.MemoryGovernor.ReserveTemporary(checked(4L * raw.Length), span);
                 return new(OwnFreshInteger(BigInteger.Parse(Encoding.UTF8.GetString(raw.Span), CultureInfo.InvariantCulture), context.MemoryGovernor, span));
             }
 

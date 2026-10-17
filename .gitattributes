@@ -39,3 +39,5 @@ benchmarks/results/2026-10-17-csv-pull/candidate.patch -text -whitespace
 benchmarks/results/2026-10-17-json-helper-warm-async/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-17-json-default-options/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-17-json-default-options/candidate.patch -text -whitespace
+benchmarks/results/2026-10-17-json-number-scratch/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-17-json-number-scratch/candidate.patch -text -whitespace

@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 JSON numeric scratch placement](results/2026-10-17-json-number-scratch/README.md)
+keeps token-sized scratch only around the allocating integer fallback. Separate
+native counts remove 32 bytes per ordinary conversion/hook, with the large-integer
+control unchanged. One 9.473 s complete-job comparison records 12.283 → 12.438 ms
+versus CPython 4.288 ms; the 1.26% higher median is within 1.57%/5.45% spread.
+All 37 responses / 471 invocations match goldens, twelve inputs and 55 baseline
+files remain unchanged, workers/fixtures are gone and the lease is released.
+No latency gain, repeated capture or new benchmark framework is claimed.
+
 The [2026-10-17 JSON helper controls](results/2026-10-17-json-helper-warm-async/README.md)
 measure identical f728636a binaries through warm completed-host RunAsync:
 12.223–12.340 ms versus CPython 3.13.16 4.309 ms, unqualified. One 9.495 s run,

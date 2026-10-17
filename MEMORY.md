@@ -98,7 +98,18 @@ the existing reservation before scratch is refunded; there is no second admissio
 after computation. Raw input capacity is deliberately conservative, so padded or
 prefix-heavy inputs can reject earlier even when their integer is small. The
 input and retained result keep their existing owners. Small bounded magnitudes
-retain the control-headroom policy; JSON's separate token path is unchanged.
+retain the control-headroom policy.
+
+JSON numeric tokens use the existing UTF-8 span conversions for ordinary integers
+and floats. These do not require a token-sized temporary reservation. Numeric
+hooks receive text admitted and committed before invocation; that text stays
+funded through suspension and escaping aliases. The allocating large-integer
+text fallback retains a four-times-token working reservation before decoding,
+overlapping its existing magnitude preflight and result ownership. Removing unused
+scratch lets some commands fit smaller allowances; magnitude admission now
+precedes fallback scratch admission. Identical tiny-budget thresholds and the
+previous ordering of those failures are not guaranteed. Any refused admission
+still fails the command without retry.
 
 Float parsing from text or bytes admits decoded UTF-16 capacity and a possible
 normalization buffer before decoding. One buffer normalizes Unicode decimal

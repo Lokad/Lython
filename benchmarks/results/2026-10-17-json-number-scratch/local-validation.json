@@ -1,0 +1,415 @@
+{
+  "baseRevision": "e470ccc2a62836cbebb3ed80b59acc1ebdda747d",
+  "focusedPassed": 585,
+  "checks": [
+    {
+      "stage": "candidate-bindings",
+      "passed": 114,
+      "process": {
+        "source": "json-default-options",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "FCABC87CA5A178FDA71EDCECCCB86BB399C8D348D6DD109A99B75385016EB348",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeJsonDecoderOptionTests|FullyQualifiedName~JsonBooleanOptionTests|FullyQualifiedName~JsonModuleCallBindingTests|FullyQualifiedName~JsonMutableInstanceTests|FullyQualifiedName~JsonDecoderScenarioTests|FullyQualifiedName~JsonSubclassScenarioTests|FullyQualifiedName~JsonSuspendingCallbackTests|FullyQualifiedName~JsonObjectGraphOwnershipTests)",
+        "pid": 78428,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 5507,
+        "stdoutSha256": "7050973F6FCA9F4A336E0099496BF6D40FF57448CA0A75286CFF49938562A14B",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "wrapperTag": "legacy json-default-options label; runtime identity is the recorded assembly hash and current frozen source"
+    },
+    {
+      "stage": "candidate-parsing",
+      "passed": 222,
+      "process": {
+        "source": "json-default-options",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "FCABC87CA5A178FDA71EDCECCCB86BB399C8D348D6DD109A99B75385016EB348",
+        "filter": "Category!=Stress&(FullyQualifiedName~JsonNumberExecutionTests|FullyQualifiedName~JsonPrefixValidationTests|FullyQualifiedName~JsonTokenExecutionTests|FullyQualifiedName~JsonTrailingDataTests|FullyQualifiedName~JsonTrailingCommaTests|FullyQualifiedName~EscapedJsonStringTests|FullyQualifiedName~JsonCollectionsMappingTests|FullyQualifiedName~JsonCoverageScenarioTests|FullyQualifiedName~JsonStrictnessScenarioTests|FullyQualifiedName~JsonRoundTripScenarioTests|FullyQualifiedName~JsonTextStreamTests|FullyQualifiedName~JsonBoundedGrowthScenarioTests)",
+        "pid": 21420,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4802,
+        "stdoutSha256": "BDB5EDFA0065FE73C80037C7F534E8878225308C92D1321A34A8AA5EA8702614",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "wrapperTag": "legacy json-default-options label; runtime identity is the recorded assembly hash and current frozen source"
+    },
+    {
+      "stage": "candidate-white-json",
+      "passed": 70,
+      "process": {
+        "source": "json-default-options",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "90A321186720ED18FB09734862BF5EC051335890811AF4B963E566A5D95BB218",
+        "filter": "Category!=Stress&FullyQualifiedName~Json",
+        "pid": 73360,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1250,
+        "stdoutSha256": "6B497F92AB033FAF65D0D64B1840CB86ED2CD4679E676C40102D5F198405BC08",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "wrapperTag": "legacy json-default-options label; runtime identity is the recorded assembly hash and current frozen source"
+    },
+    {
+      "stage": "candidate-owners",
+      "passed": 121,
+      "process": {
+        "source": "json-default-options",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "FCABC87CA5A178FDA71EDCECCCB86BB399C8D348D6DD109A99B75385016EB348",
+        "filter": "Category!=Stress&(FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~CsvBatchAliasLifetimeTests|FullyQualifiedName~CsvRetainedRowLifetimeTests|FullyQualifiedName~CsvFieldNameLifetimeTests|FullyQualifiedName~CsvSourceStorageLifetimeTests|FullyQualifiedName~CsvExhaustedInputLifetimeTests)",
+        "pid": 79396,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8571,
+        "stdoutSha256": "177EABDA59DF4EE94C45859C952341254A3387B5E2E3EF0204E45232D7014B74",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "wrapperTag": "legacy json-default-options label; runtime identity is the recorded assembly hash and current frozen source"
+    },
+    {
+      "stage": "candidate-goldens",
+      "passed": 58,
+      "process": {
+        "source": "json-default-options",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "FCABC87CA5A178FDA71EDCECCCB86BB399C8D348D6DD109A99B75385016EB348",
+        "filter": "Category!=Stress&FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles",
+        "pid": 62172,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 9049,
+        "stdoutSha256": "5EB463548C475B5047EFA95F77675DF913ED3B7544E31DD1EBA3E127331B0CE5",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "wrapperTag": "legacy json-default-options label; runtime identity is the recorded assembly hash and current frozen source"
+    }
+  ],
+  "independentProbes": {
+    "sync": {
+      "count": 6,
+      "allMatchCPython": true,
+      "process": {
+        "pid": 48240,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 861,
+        "asynchronous": false,
+        "production": "candidate",
+        "probeSha256": "8E67C0E5E36A99E844CA31711B7A082E51759518419588DF66F4660E936F21E6",
+        "librarySha256": "149E6D9AB30A4DEC6EAA0942D2DB1A27F686C34244DC46778B3176DB6A56CAF5"
+      }
+    },
+    "async": {
+      "count": 6,
+      "allMatchCPython": true,
+      "process": {
+        "pid": 3468,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 624,
+        "asynchronous": true,
+        "production": "candidate",
+        "probeSha256": "8E67C0E5E36A99E844CA31711B7A082E51759518419588DF66F4660E936F21E6",
+        "librarySha256": "149E6D9AB30A4DEC6EAA0942D2DB1A27F686C34244DC46778B3176DB6A56CAF5"
+      }
+    }
+  },
+  "nativeAllocations": [
+    {
+      "case": "small-int",
+      "beforeBytes": 12288,
+      "afterBytes": 8192
+    },
+    {
+      "case": "float",
+      "beforeBytes": 7168,
+      "afterBytes": 3072
+    },
+    {
+      "case": "slow-float",
+      "beforeBytes": 7168,
+      "afterBytes": 3072
+    },
+    {
+      "case": "overflow-float",
+      "beforeBytes": 7168,
+      "afterBytes": 3072
+    },
+    {
+      "case": "large-int",
+      "beforeBytes": 58368,
+      "afterBytes": 58368
+    },
+    {
+      "case": "callback",
+      "beforeBytes": 23552,
+      "afterBytes": 19456
+    }
+  ],
+  "temporaryProbeRemoved": true,
+  "runtimeOnlyScratchPlacementVerified": true,
+  "numericCorpus": {
+    "cases": 8,
+    "fuelSpansDepthsAndArgumentEffectsExact": true,
+    "normalization": "Only former temporary-reserved-byte component removed from callback events; all steps/spans/depths/text kept exactly.",
+    "totalFrozenCheckpoints": 136,
+    "records": [
+      {
+        "asynchronous": false,
+        "floating": false,
+        "callback": false,
+        "steps": 16,
+        "effects": [],
+        "checkpoints": [
+          "-:",
+          "0,11,1,1:",
+          "-:",
+          "19,4,2,8:",
+          "19,10,2,8:",
+          "30,6,2,19:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "12,25,2,1:"
+        ]
+      },
+      {
+        "asynchronous": false,
+        "floating": false,
+        "callback": true,
+        "steps": 18,
+        "effects": [
+          "4,0:-0"
+        ],
+        "checkpoints": [
+          "-:",
+          "0,11,1,1:",
+          "-:",
+          "19,4,2,8:",
+          "19,10,2,8:",
+          "30,6,2,19:",
+          "47,7,2,36:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "12,43,2,1:4,0:-0"
+        ]
+      },
+      {
+        "asynchronous": false,
+        "floating": true,
+        "callback": false,
+        "steps": 15,
+        "effects": [],
+        "checkpoints": [
+          "-:",
+          "0,11,1,1:",
+          "-:",
+          "19,4,2,8:",
+          "19,10,2,8:",
+          "30,6,2,19:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "12,25,2,1:"
+        ]
+      },
+      {
+        "asynchronous": false,
+        "floating": true,
+        "callback": true,
+        "steps": 19,
+        "effects": [
+          "4,0:1.2300e+04"
+        ],
+        "checkpoints": [
+          "-:",
+          "0,11,1,1:",
+          "-:",
+          "19,4,2,8:",
+          "19,10,2,8:",
+          "30,6,2,19:",
+          "49,7,2,38:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "12,45,2,1:4,0:1.2300e+04"
+        ]
+      },
+      {
+        "asynchronous": true,
+        "floating": false,
+        "callback": false,
+        "steps": 16,
+        "effects": [],
+        "checkpoints": [
+          "-:",
+          "0,11,1,1:",
+          "-:",
+          "19,4,2,8:",
+          "19,10,2,8:",
+          "30,6,2,19:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "12,25,2,1:"
+        ]
+      },
+      {
+        "asynchronous": true,
+        "floating": false,
+        "callback": true,
+        "steps": 18,
+        "effects": [
+          "4,0:-0"
+        ],
+        "checkpoints": [
+          "-:",
+          "0,11,1,1:",
+          "-:",
+          "19,4,2,8:",
+          "19,10,2,8:",
+          "30,6,2,19:",
+          "47,7,2,36:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "19,36,2,8:",
+          "12,43,2,1:4,0:-0"
+        ]
+      },
+      {
+        "asynchronous": true,
+        "floating": true,
+        "callback": false,
+        "steps": 15,
+        "effects": [],
+        "checkpoints": [
+          "-:",
+          "0,11,1,1:",
+          "-:",
+          "19,4,2,8:",
+          "19,10,2,8:",
+          "30,6,2,19:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "19,18,2,8:",
+          "12,25,2,1:"
+        ]
+      },
+      {
+        "asynchronous": true,
+        "floating": true,
+        "callback": true,
+        "steps": 19,
+        "effects": [
+          "4,0:1.2300e+04"
+        ],
+        "checkpoints": [
+          "-:",
+          "0,11,1,1:",
+          "-:",
+          "19,4,2,8:",
+          "19,10,2,8:",
+          "30,6,2,19:",
+          "49,7,2,38:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "19,38,2,8:",
+          "12,45,2,1:4,0:1.2300e+04"
+        ]
+      }
+    ]
+  },
+  "sourceProof": {
+    "runtimeBase": "e470ccc2a62836cbebb3ed80b59acc1ebdda747d",
+    "scope": "JSON numeric wrapper, converter and existing integer/string admission",
+    "externalSources": [
+      "https://github.com/dotnet/runtime/blob/v10.0.12/src/libraries/System.Private.CoreLib/src/System/Number.Parsing.cs",
+      "https://github.com/dotnet/runtime/blob/v10.0.12/src/libraries/System.Private.CoreLib/src/System/Double.cs",
+      "https://github.com/dotnet/runtime/blob/v10.0.12/src/libraries/System.Private.CoreLib/src/System/Number.NumberToFloatingPointBits.cs",
+      "https://github.com/dotnet/runtime/blob/v10.0.12/src/libraries/System.Private.CoreLib/src/System/Number.BigInteger.cs"
+    ],
+    "proof": [
+      "The NumberStyles.Integer Int64 span path accumulates a scalar and returns failure on overflow; it does not materialize token-sized storage.",
+      "Double's UTF-8 span path uses a type-sized number buffer; slow conversion uses fixed ref-struct scratch independent of token length. These framework calls already exist; no implementation is copied into Lython.",
+      "JSON numeric grammar restricts the matched span to valid ASCII number tokens before conversion. Whole-document suffix/error handling is unchanged.",
+      "GuardIntegerParseBytes remains before parsing and OwnFreshInteger remains before major magnitude publication.",
+      "The large-integer fallback allocates a UTF-16 string and magnitude/computation storage. Keep the same four-times-token scratch around that fallback, overlapping existing integer admission and output ownership.",
+      "Callback raw text is admitted and committed by CreateUtf8String/PyString before invoking the hook. Whole-array reuse is charged too; sliced text copies are preflighted. Captured text stays execution/result-owned independently of scratch, including across suspension and callback failure."
+    ],
+    "proposedChange": "Move the existing four-times-token temporary reservation from the wrapper to immediately before the allocating large-integer text fallback. No new classifier, state/lifetime layer or ownership type.",
+    "contractTradeoff": "Small-number and hook paths can succeed with less unused allowance. Big fallback admission order changes: magnitude preflight still precedes parsing, then fallback working storage is admitted before decoding. No old tiny-budget threshold or unused temporary reservation is promised. Refused admission is still terminal and never retried.",
+    "testMigration": "Keep fuel/span/effect and denial-before-callback/magnitude witnesses. Remove only exact unused-scratch expectations: arm denial against the actual demand, compare callback committed funding across suspension, and omit the obsolete temporary-byte component from frozen callback event records. Preserve all timeouts, original Stress scales and externally observable assertions.",
+    "notProvedBySource": "Elapsed benefit, allocation magnitude and embedding latency; validate allocation and one affected complete job separately."
+  },
+  "protectedRegexHistoryWorkflowUnchanged": true,
+  "fullStressRerun": false
+}
