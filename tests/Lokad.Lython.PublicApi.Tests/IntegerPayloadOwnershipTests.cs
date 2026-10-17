@@ -145,7 +145,10 @@ public class IntegerPayloadOwnershipTests : LifetimeScenario
     [Fact]
     public void AliasedBoxesKeepPythonIdentityWithConservativeStorage()
     {
-        var payload = Nines(10001);
+        // Keep a major magnitude, without making alias identity depend on the
+        // old parser's unfunded UTF-16/computation scratch at this fixed cap.
+        // Large-input preallocation refusals have separate regression coverage.
+        var payload = Nines(101);
         var result = new LythonEngine().Run(
             "x = int(\"" + payload + "\")\nxs = [x, x]\nreturn [len(xs), xs[0] is xs[1]]\n",
             new MockLythonHost(),
