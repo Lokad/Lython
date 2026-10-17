@@ -67,6 +67,13 @@ the copy, while the working buffer remains charged. A failed conversion retains
 the builder and its funding. A successful consuming conversion releases only
 working storage; the result and its aliases remain funded under their owner.
 
+Bounded empty-pattern string replacement admits a checked capacity for the
+required insertion prefix and copies the untouched UTF-8 suffix in bulk. It
+retains source, replacement, builder and result funding during overlap without
+constructing scalar strings for the suffix. Oversized bounded results now use
+the same checked string-size `RuntimeError` guard as unlimited replacement,
+before partial construction. Admission refusals still fail the command.
+
 Ordinary integer addition and sums admit a conservative major-result estimate before the
 CLR computes it, including carry/sign headroom and computation overlap. The result
 commits its portion of that existing reservation without a second admission;

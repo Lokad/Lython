@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Consolidate bounded and unlimited string replacement in the UTF-8 implementation, deleting the duplicate bounded algorithm and its per-scalar string allocations. Bounded empty-pattern insertion copies the untouched suffix in bulk; checked capacity admission and existing builder cleanup preserve funding and rollback.
+
 - Admit string-builder result copies against the shared host allowance before allocation, reusing the existing governed UTF-8 copy path. Remove duplicated materialization logic while preserving independent result storage, failed-builder funding and successful consumption.
 
 - Construct slice objects for tuple subscription keys through the existing synchronous handler under asynchronous hosting, removing redundant async delegation and its unused synchronous fallback. Preserve raw bounds, deferred index protocols, admission and source-order effects.

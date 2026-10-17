@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var count = arguments.Length == 3 ? ParseStringOptionalInt(arguments[2], "count", "str.replace(old, new[, count])", span, context) : -1;
-                        return OwnMethodResult(PyStringOps.Replace(text, oldValue, newValue, count),text,context.MemoryGovernor,span);
+                        return OwnMethodResult(text.Replace(oldValue, newValue, count),text,context.MemoryGovernor,span);
                     }, StrReplaceSignature),
                     "startswith" => BoundCallable.Create(
                         (arguments, span, context) => InvokeStringAffix(text, arguments, span, context, isStart: true, asynchronous: false).GetAwaiter().GetResult(),

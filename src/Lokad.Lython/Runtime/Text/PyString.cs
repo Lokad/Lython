@@ -423,11 +423,20 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         }
     }
 
-    public PyString Replace(PyString oldValue, PyString newValue)
+    public PyString Replace(PyString oldValue, PyString newValue, int count = -1)
     {
+        if (count == 0) return this;
+        var remaining = count < 0 ? long.MaxValue : count;
         if (oldValue._utf8.Length == 0)
         {
-            var insertionCount = _utf8.Length == 0 ? 1 : Length + 1;
+            long insertionCount = 1;
+            var prefixEnd = 0;
+            while (prefixEnd < _utf8.Length && insertionCount < remaining)
+            {
+                prefixEnd += GetRuneLengthAtByteIndex(prefixEnd);
+                insertionCount++;
+            }
+            if (prefixEnd == _utf8.Length) _runeLength = (int)(insertionCount - 1);
             var capacity = CheckedByteLength(
                 RuntimeMemoryEstimates.SaturatingAdd(
                     _utf8.Length,
@@ -436,37 +445,41 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             var builder = _memoryGovernor is null
                 ? new GovernedByteBuilder(capacity)
                 : new GovernedByteBuilder(_memoryGovernor, _allocationSpan, capacity);
-            builder.Append(newValue);
-            for (var byteIndex = 0; byteIndex < _utf8.Length;)
+            try
             {
-                var runeLength = GetRuneLengthAtByteIndex(byteIndex);
-                builder.Append(_utf8.AsSpan(byteIndex, runeLength));
                 builder.Append(newValue);
-                byteIndex += runeLength;
+                for (var byteIndex = 0; byteIndex < prefixEnd;)
+                {
+                    var runeLength = GetRuneLengthAtByteIndex(byteIndex);
+                    builder.Append(_utf8.AsSpan(byteIndex, runeLength));
+                    builder.Append(newValue);
+                    byteIndex += runeLength;
+                }
+                builder.Append(_utf8.AsSpan(prefixEnd));
+                return builder.ToPyStringAndRelease();
             }
-
-            return builder.ToPyStringAndRelease();
+            finally { builder.Release(); }
         }
 
         var result = _memoryGovernor is null
             ? new GovernedByteBuilder(_utf8.Length)
             : new GovernedByteBuilder(_memoryGovernor, _allocationSpan, _utf8.Length);
-        var offset = 0;
-        while (offset < _utf8.Length)
+        try
         {
-            var found = IndexOfBytes(_utf8.AsSpan()[offset..], oldValue._utf8);
-            if (found < 0)
+            var offset = 0;
+            while (offset < _utf8.Length && remaining > 0)
             {
-                result.Append(_utf8.AsSpan()[offset..]);
-                break;
+                var found = IndexOfBytes(_utf8.AsSpan(offset), oldValue._utf8);
+                if (found < 0) break;
+                result.Append(_utf8.AsSpan(offset, found));
+                result.Append(newValue);
+                offset += found + oldValue._utf8.Length;
+                remaining--;
             }
-
-            result.Append(_utf8.AsSpan()[offset..(offset + found)]);
-            result.Append(newValue);
-            offset += found + oldValue._utf8.Length;
+            result.Append(_utf8.AsSpan(offset));
+            return result.ToPyStringAndRelease();
         }
-
-        return result.ToPyStringAndRelease();
+        finally { result.Release(); }
     }
 
     public PyString ToLowerInvariant()
