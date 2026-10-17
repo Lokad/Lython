@@ -810,6 +810,13 @@ the operand stack until that target's deletion finishes, including actual protoc
 I/O under `RunAsync`. Native mutation/key construction keeps its allocation
 preflights; deleting a binding does not refund an alias that remains retained.
 
+Ordinary module/function `raise` reuses executable exception/cause evaluation and
+existing coercion/chaining operations. Evaluate the exception expression before
+the optional cause, preserve existing exception identity, explicit cause and
+suppression, and use the innermost active handler for bare reraises. Nested
+handlers restore the surrounding exception state. Protected cleanup, source/stack
+attribution and actual expression/cause I/O under `RunAsync` remain supported.
+
 Asynchronous functions, `await`, `async for`, and `async with` are outside the
 current language subset. These forms must
 be rejected explicitly. `LythonEngine.RunAsync` is an embedding API that awaits

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Keep ordinary module and function `raise` executable, reusing existing exception/cause evaluation, coercion, chaining and bare-reraise operations. Remove the generator-only lowering restriction while preserving handler restoration, protected cleanup, cancellation, admission refusal and retained exception arguments.
+
 - Keep ordinary module and function deletion executable. Reuse existing deletion kernels with raw operands retained through protocol I/O, removing the per-target read array/dictionary, fixed capture reservation and blanket local reload. Preserve scope bindings, target order, partial mutation, cancellation, allocation preflights and retained aliases.
 
 - Keep ordinary assertions on the executable path. Preserve lazy message arguments and identity instead of rendering while raising; deliberate rendering observes later mutations. Render unhandled assertion diagnostics after guest cleanup and before final output capture, preserving terminal admission refusal and existing ownership.

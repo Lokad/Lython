@@ -54,8 +54,8 @@ internal sealed partial class ExecutableScript
 
                 case LoweredAssertStatement assertion:
                     return CompileAssert(assertion, currentBlock);
-                case LoweredRaiseStatement raised when _generator:
-                    return CompileSuspendingRaise(raised, currentBlock);
+                case LoweredRaiseStatement raised:
+                    return CompileRaise(raised, currentBlock);
                 case LoweredDeleteStatement deleted:
                     return CompileDelete(deleted.Target.Syntax, currentBlock);
 

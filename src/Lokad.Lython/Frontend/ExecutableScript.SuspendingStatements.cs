@@ -22,7 +22,7 @@ internal sealed partial class ExecutableScript
             return after;
         }
 
-        private int CompileSuspendingRaise(LoweredRaiseStatement statement, int block)
+        private int CompileRaise(LoweredRaiseStatement statement, int block)
         {
             if (statement.Expression is null)
                 AddInstruction(block, ExecutableInstruction.ReraiseException(statement.Span));
