@@ -335,8 +335,10 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         bool asynchronous)
     {
+        var hasAnnotations = functionBinding.Function.ReturnAnnotation is not null ||
+            functionBinding.Function.Parameters.Any(p => p.Annotation is not null);
         if (functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context) ||
-            functionBinding.Function.ReturnAnnotation is not null || functionBinding.Function.Parameters.Any(p => p.Annotation is not null))
+            hasAnnotations && (functionBinding.CodeObject is null || functionBinding.Function.GeneratorCode is not null))
         {
             if (asynchronous) await ExecuteLoweredFunctionDefinitionAsync(functionBinding.Function, context).ConfigureAwait(false);
             else ExecuteLoweredFunctionDefinition(functionBinding.Function, context);
@@ -384,7 +386,16 @@ internal sealed partial class LythonRuntime
                 context.MemoryGovernor,
                 functionBinding.Function.Span);
             if (function is PyFunctionBase defined)
+            {
                 PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Function.Body, context, functionBinding.Function.Span);
+                if (hasAnnotations)
+                {
+                    // Metadata does not require interpreting an otherwise compiled body.
+                    // Keep its existing scope, evaluation order and ownership before publication.
+                    var typeScope = CreateTypeScope(null, context, functionBinding.Function.Span);
+                    await AttachTypeMetadataAsync(defined, functionBinding.Function, typeScope, context, asynchronous).ConfigureAwait(false);
+                }
+            }
             var decorated = asynchronous
                 ? await ApplyDecoratorsAsync(function, decorators, functionBinding.Function.Span, context).ConfigureAwait(false)
                 : ApplyDecorators(function, decorators, functionBinding.Function.Span, context);

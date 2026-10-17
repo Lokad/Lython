@@ -698,7 +698,15 @@ execution-memory ownership across send/throw/close. A solitary starred call
 argument is iterated after keywords; mixed positional/starred calls expand each
 star before the following argument. F-string values evaluate before specifiers.
 Function annotations evaluate after all defaults and before decorators are
-applied, exposing their values through `__annotations__`. The contained
+applied, exposing their values through `__annotations__`. In ordinary executable
+definitions outside generic scopes, annotations alone do not force an executable
+nongenerator body into lowered interpretation. Metadata still uses its existing
+annotation scope and eager/postponed rules; annotations alone do not require
+parent locals to be mirrored into dictionaries. Actual escaping annotation
+lambdas and namespaces use the existing retention barriers, and retained metadata
+keeps its owner.
+Compiled body/call fuel can differ from lowered execution and remains
+implementation-defined. The contained
 `from __future__ import annotations` mode stores Python 3.13 canonical expression
 strings in function, module and class `__annotations__` without evaluating those
 expressions, including annotations in generic definitions. Private annotation

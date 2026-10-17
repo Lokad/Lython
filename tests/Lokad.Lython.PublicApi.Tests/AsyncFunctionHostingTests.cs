@@ -13,7 +13,7 @@ public sealed class AsyncFunctionHostingTests
         { "escaped_defaults_cells", "def make(seed):\n    note('make')\n    def inner(value=seed):\n        with open('number.txt') as source:\n            return value+seed+int(source.read())\n    seed+=1\n    return inner\nf=make(5)\nprint(f())", "14\n", "make\n" },
         { "yielding_property", "class Box:\n    @property\n    def value(self):\n        note('get')\n        with open('number.txt') as source:\n            return int(source.read())\ndef f(box):\n    return box.value+1\nprint(f(Box()))", "4\n", "get\n" },
         { "yielding_operator", "class Number:\n    def __add__(self,other):\n        note('add')\n        with open('number.txt') as source:\n            return int(source.read())+other\ndef f(value):\n    return value+1\nprint(f(Number()))", "4\n", "add\n" },
-        { "annotated_fallback", "def f(value:int=read())->int:\n    return value\nprint(f(), f.__annotations__['value'] is int)", "3 True\n", "default\n" },
+        { "annotated_helper", "def f(value:int=read())->int:\n    return value\nprint(f(), f.__annotations__['value'] is int)", "3 True\n", "default\n" },
         { "generator_closure", "def make(seed):\n    def values(amount=read()):\n        yield seed+amount\n    seed+=1\n    return values\nvalues=make(4)\nprint(list(values()))", "[8]\n", "default\n" },
         { "failed_default_old_binding", "def f():\n    return 11\ndef fail():\n    note('fail')\n    raise ValueError('default')\ntry:\n    def f(x=fail()):\n        return x\nexcept ValueError:\n    note('caught')\nprint(f())", "11\n", "fail\ncaught\n" },
         { "defaults_once", "def f(a=read(),b=read()):\n    return a+b\nprint(f())", "6\n", "default\ndefault\n" },
