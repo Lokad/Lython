@@ -2177,6 +2177,8 @@ input/output and memory limits, with the usual stdout/stderr capture.
 
 `loads` must support `object_hook`, `object_pairs_hook`, `parse_int`, `parse_float`, and `parse_constant` callbacks at every value position, plus `strict` (when false, literal control characters inside strings are allowed). Invalid JSON text must raise catchable `JSONDecodeError` with `msg`, `doc`, `pos`, `lineno`, and `colno` fields. Positions and prefix end offsets are Python string indices.
 
+With `ensure_ascii=True`, JSON strings escape U+007F and higher characters, using lowercase hexadecimal digits and surrogate pairs for supplementary characters. With `ensure_ascii=False` or `None`, those characters remain literal; quotes, backslashes and characters below U+0020 still use JSON escapes. These rules also apply to string keys, encoder methods and streamed chunks.
+
 `dumps` and `dump` must support indentation, separators, key sorting, `ensure_ascii`, `skipkeys`, callable `default`, `allow_nan`, and circular-reference checks. Supported output values include `None`, booleans, strings, integers, floats, decimals, lists, tuples, and dictionaries. Dictionary keys may be strings, integers, finite floats, booleans, or `None`; unsupported keys fail unless `skipkeys=True`.
 
 `collections.Counter` and `collections.defaultdict` use the same dictionary

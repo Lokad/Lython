@@ -422,6 +422,7 @@ internal sealed partial class LythonRuntime
 
         internal static void AppendJsonString(StringBuilder builder, string text, bool ensureAscii, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
         {
+            Span<char> escapedCodeUnit = stackalloc char[4];
             builder.Append('"');
             for (var i = 0; i < text.Length; i++)
             {
@@ -457,10 +458,12 @@ internal sealed partial class LythonRuntime
                         continue;
                 }
 
-                if (ch < 0x20 || ensureAscii && ch > 0x7f)
+                if (ch < 0x20 || ensureAscii && ch >= 0x7f)
                 {
                     builder.Append("\\u");
-                    builder.Append(((int)ch).ToString("x4", CultureInfo.InvariantCulture));
+                    // A UTF-16 code unit always fits exactly four hex digits.
+                    _ = ((int)ch).TryFormat(escapedCodeUnit, out _, "x4", CultureInfo.InvariantCulture);
+                    builder.Append(escapedCodeUnit);
                     continue;
                 }
 

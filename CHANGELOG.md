@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Escape U+007F in JSON output when `ensure_ascii` is enabled, matching Python across module calls, encoders, dictionary keys and streamed chunks. Reuse bounded working storage for hexadecimal escapes instead of allocating a string per UTF-16 unit; preserve short escapes, Unicode, admission, cancellation and ownership.
+
 - Bind JSON module calls from their existing argument storage and collect extra constructor keywords only when present. Remove standard-argument split lists and copies while preserving custom encoder/decoder forwarding, binding errors, defaults and asynchronous lifetimes.
 
 - Bind native `json.load`/`json.loads` decoder options directly from existing argument slots, removing redundant keyword lists, arrays and rescanning. Preserve guest decoder construction, callback validation order, explicit `None` semantics, admission and cleanup.
