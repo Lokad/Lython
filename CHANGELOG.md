@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Preserve generic exception arguments without formatting them during construction. Reuse existing lazy args rendering for mutable values, KeyError repr and public diagnostics; `.message` now renders current arguments on access after custom shadows. Keep SystemExit and specialized native factories separate, with existing ownership, terminal admission and awaited diagnostic cleanup.
+
 - Keep ordinary module and function `raise` executable, reusing existing exception/cause evaluation, coercion, chaining and bare-reraise operations. Remove the generator-only lowering restriction while preserving handler restoration, protected cleanup, cancellation, admission refusal and retained exception arguments.
 
 - Keep ordinary module and function deletion executable. Reuse existing deletion kernels with raw operands retained through protocol I/O, removing the per-target read array/dictionary, fixed capture reservation and blanket local reload. Preserve scope bindings, target order, partial mutation, cancellation, allocation preflights and retained aliases.

@@ -356,6 +356,17 @@ Existing failure-writer cleanup runs after diagnostic rendering too; RunAsync
 awaits outstanding publication before returning the result or refunding its
 execution scope. Cancellation continues to skip publication.
 
+Generic exception constructors keep their existing owned argument tuple and shell,
+using the existing authoritative args slot for lazy rendering. They no longer
+allocate a formatted copy or invoke argument protocols during construction;
+literal string text may remain as a best-effort CLR diagnostic fallback. Argument
+packaging/admission and specialized native factories are unchanged. `.message`,
+explicit rendering and unhandled diagnostics use the existing execution owner;
+admission refusal remains terminal and diagnostic writers drain before refund.
+No new rendering owner, budget, object layout or reference-withdrawal reclamation
+is introduced. Replacing args can conservatively retain original construction
+storage for the finite owner lifetime.
+
 An execution's first refusal is terminal even if guest code catches `MemoryError`,
 suppresses it in `__exit__`, or returns/raises from `finally`. Further guest work
 and host calls stop. Guest cleanup is not an emergency allocation budget and can

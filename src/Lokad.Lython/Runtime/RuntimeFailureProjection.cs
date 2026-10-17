@@ -39,7 +39,7 @@ internal static class RuntimeFailureProjection
 
     // Mapping misses carry their key as the payload; like CPython and the
     // caught str() path, the projected message renders the key through repr.
-    // Assertions defer their authoritative args to this diagnostic boundary.
+    // Constructed exceptions defer authoritative args to this diagnostic boundary.
     // Other payload-free or unrenderable errors keep the stored message; the
     // caller preserves a first admission refusal encountered while rendering.
     internal static string RenderFailureMessage(LythonRuntimeException exception, LythonRuntime.ExecutionContext? context)
@@ -48,9 +48,8 @@ internal static class RuntimeFailureProjection
 
         try
         {
-            if (exception.Identity.IsBuiltin && exception.ExceptionType == "AssertionError" &&
-                exception.OriginalPythonException is { ArgsOverride: not null } assertion)
-                return PyRendering.ToInterpolatedPyString(assertion, new PyRenderingContext(context)).AsString();
+            if (exception.OriginalPythonException is { ArgsOverride: not null } pythonException)
+                return PyRendering.ToInterpolatedPyString(pythonException, new PyRenderingContext(context)).AsString();
 
             if (exception.ExceptionType == "KeyError" && exception.Payload is not null and not PyNone)
                 return PyRendering.ToReprPyString(exception.Payload, new PyRenderingContext(context)).AsString();

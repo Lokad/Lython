@@ -128,6 +128,12 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            if (name == "message" && exception.ArgsOverride is not null)
+            {
+                value = PyRendering.ToInterpolatedPyString(exception, new PyRenderingContext(context));
+                return true;
+            }
+
             if (name == "__class__" &&
                 exception.Identity.IsBuiltin &&
                 context.TryGetBuiltin(exception.Identity.TypeName, out var typeValue) &&

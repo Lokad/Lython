@@ -685,12 +685,6 @@ internal sealed partial class LythonRuntime
 
         public override int GetHashCode() => ExceptionIdentity.GetHashCode();
 
-        private static string TakeMessageText(PyString rendered, ExecutionContext context, LythonSourceSpan span)
-        {
-            var text = rendered.AsString();
-            return text;
-        }
-
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
@@ -715,18 +709,13 @@ internal sealed partial class LythonRuntime
 
             var values = arguments.Select(argument => argument.Value).ToArray();
             var args = new PyTuple(values, context.MemoryGovernor, span);
-            var message = values.Length switch
-            {
-                0 => string.Empty,
-                // Like CPython, a single KeyError argument renders through
-                // repr instead of str; every other single argument uses str.
-                1 when ExceptionIdentity.IsBuiltin && string.Equals(TypeName, "KeyError", StringComparison.Ordinal) =>
-                    TakeMessageText(PyRendering.ToReprPyString(values[0], new PyRenderingContext(context)), context, span),
-                1 => TakeMessageText(PyRendering.ToInterpolatedPyString(values[0], new PyRenderingContext(context)), context, span),
-                _ => TakeMessageText(PyRendering.ToReprPyString(args, new PyRenderingContext(context)), context, span),
-            };
+            // Preserve literal text as a diagnostic fallback without invoking
+            // argument protocols. The existing args renderer owns str/repr.
+            var message = values is [PyString literal] ? literal.AsString() : string.Empty;
             var payload = values.Length == 0 ? PyNone.Instance : values.Length == 1 ? values[0] : args;
-            return PyException.CreateOwned(ExceptionIdentity, message, payload, context, span, args);
+            var exception = PyException.CreateOwned(ExceptionIdentity, message, payload, context, span, args);
+            exception.ArgsOverride = args;
+            return exception;
         }
     }
 

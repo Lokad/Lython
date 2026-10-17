@@ -109,6 +109,7 @@ internal static class PyMemberAccess
             target is not PySuper &&
             target is not PyInstance &&
             target is not PyType &&
+            target is not PyException &&
             TryResolveNonContextual(target, memberName, out value))
         {
             return true;

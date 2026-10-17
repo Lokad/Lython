@@ -817,6 +817,17 @@ suppression, and use the innermost active handler for bare reraises. Nested
 handlers restore the surrounding exception state. Protected cleanup, source/stack
 attribution and actual expression/cause I/O under `RunAsync` remain supported.
 
+Generic exception construction retains its original argument objects without
+calling their `__str__`/`__repr__` hooks. Existing argument-based rendering applies
+when `str`/`repr` is requested and at unhandled-failure publication, so mutations
+and repeated hook calls remain observable. One KeyError argument renders via
+repr; other single arguments use str and multiple arguments render as a tuple.
+The `.message` compatibility extension renders current authoritative arguments
+on access, after custom attribute shadows, rather than serving a construction
+snapshot. Argument rendering retains its existing synchronous boundary; this
+does not add async exception-message hooks. SystemExit's separate constructor
+and specialized module/native error factories retain their existing contracts.
+
 Asynchronous functions, `await`, `async for`, and `async with` are outside the
 current language subset. These forms must
 be rejected explicitly. `LythonEngine.RunAsync` is an embedding API that awaits
