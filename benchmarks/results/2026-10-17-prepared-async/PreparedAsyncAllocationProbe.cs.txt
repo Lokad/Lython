@@ -1,0 +1,49 @@
+using System.Numerics;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary bounded diagnostic; archive and remove before final qualification.
+public sealed class PreparedAsyncAllocationProbe(ITestOutputHelper output)
+{
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task NativeSortedLoop(bool asynchronous, bool keyword)
+    {
+        var source = "for i in range(128): result=sorted(values" + (keyword ? ",reverse=True" : "") + ")\nreturn result";
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        context.Variables["values"] = new PyList([new BigInteger(3), new BigInteger(1), new BigInteger(2)], context.MemoryGovernor, null);
+        var samples = new List<long>();
+        object? result = null;
+        for (var sample = -4; sample < 8; sample++)
+        {
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var pending = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+            Assert.True(pending.IsCompleted);
+            result = await pending;
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            if (sample >= 0) samples.Add(allocated);
+        }
+        Assert.Equal(keyword ? [new BigInteger(3), new BigInteger(2), new BigInteger(1)] : new[] { new BigInteger(1), new BigInteger(2), new BigInteger(3) },
+            Assert.IsType<PyList>(result).Cast<BigInteger>());
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        output.WriteLine("PREPARED_ASYNC_ALLOCATION:" + JsonSerializer.Serialize(new { asynchronous, keyword, callsPerSample = 128, samples }));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+}

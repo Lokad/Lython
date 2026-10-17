@@ -152,7 +152,7 @@ internal sealed partial class LythonRuntime
                             try
                             {
                                 result = await InvokeCallableTargetAsync(callable, call.TargetSpan, call.CallSpan, _context,
-                                    () => new ValueTask<CallArgumentValue[]>(arguments)).ConfigureAwait(false);
+                                    arguments).ConfigureAwait(false);
                             }
                             finally { ReturnCallArguments(arguments); }
                         }

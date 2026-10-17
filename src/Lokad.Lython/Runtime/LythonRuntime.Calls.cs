@@ -80,16 +80,35 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static async ValueTask<object> InvokeCallableTargetAsync(
+    // Prepared arrays use the same awaited frame policy as deferred arguments,
+    // without a capturing factory. The caller owns them until the call completes.
+    internal static ValueTask<object> InvokeCallableTargetAsync(
         object target,
         LythonSourceSpan targetSpan,
         LythonSourceSpan callSpan,
         ExecutionContext context,
         Func<ValueTask<CallArgumentValue[]>> expandArguments)
+        => InvokeCallableTargetAsync(target, targetSpan, callSpan, context, new DeferredAsyncCallArguments(expandArguments));
+
+    internal static ValueTask<object> InvokeCallableTargetAsync(
+        object target,
+        LythonSourceSpan targetSpan,
+        LythonSourceSpan callSpan,
+        ExecutionContext context,
+        CallArgumentValue[] arguments)
+        => InvokeCallableTargetAsync(target, targetSpan, callSpan, context, new PreparedCallArguments(arguments));
+
+    private static async ValueTask<object> InvokeCallableTargetAsync<TArguments>(
+        object target,
+        LythonSourceSpan targetSpan,
+        LythonSourceSpan callSpan,
+        ExecutionContext context,
+        TArguments arguments)
+        where TArguments : struct, IAsyncCallArguments
     {
         if (target is not ICallable callable)
         {
-            _ = await expandArguments().ConfigureAwait(false);
+            _ = await arguments.ExpandAsync().ConfigureAwait(false);
             throw RuntimeErrors.NotCallable(targetSpan);
         }
 
@@ -97,8 +116,8 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(callSpan);
-            var arguments = await expandArguments().ConfigureAwait(false);
-            return RuntimeValue(await callable.InvokeAsync(arguments, callSpan, context).ConfigureAwait(false));
+            var expanded = await arguments.ExpandAsync().ConfigureAwait(false);
+            return RuntimeValue(await callable.InvokeAsync(expanded, callSpan, context).ConfigureAwait(false));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, callSpan, out var translated))
         {
@@ -412,9 +431,20 @@ internal sealed partial class LythonRuntime
         public CallArgumentValue[] Expand() => ExpandArguments();
     }
 
-    private readonly record struct PreparedCallArguments(CallArgumentValue[] Arguments) : ICallArguments
+    private interface IAsyncCallArguments
+    {
+        ValueTask<CallArgumentValue[]> ExpandAsync();
+    }
+
+    private readonly record struct DeferredAsyncCallArguments(Func<ValueTask<CallArgumentValue[]>> ExpandArguments) : IAsyncCallArguments
+    {
+        public ValueTask<CallArgumentValue[]> ExpandAsync() => ExpandArguments();
+    }
+
+    private readonly record struct PreparedCallArguments(CallArgumentValue[] Arguments) : ICallArguments, IAsyncCallArguments
     {
         public CallArgumentValue[] Expand() => Arguments;
+        public ValueTask<CallArgumentValue[]> ExpandAsync() => ValueTask.FromResult(Arguments);
     }
 
     internal interface ICallable

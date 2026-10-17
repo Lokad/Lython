@@ -133,18 +133,18 @@ public sealed class ExecutableCallTransferTests
         internal readonly TaskCompletionSource Started = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal object? Frame;
-        private object? _input;
+        private CallArgumentValue[]? _arguments;
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            _input = arguments[0].Value;
+            _arguments = arguments;
             Check(context);
             return Complete(span);
         }
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            _input = arguments[0].Value;
+            _arguments = arguments;
             try { Check(context); }
             finally { Started.TrySetResult(); }
             await Release.Task.ConfigureAwait(false);
@@ -154,13 +154,19 @@ public sealed class ExecutableCallTransferTests
 
         internal void Check(LythonRuntime.ExecutionContext context)
         {
+            Assert.NotNull(_arguments);
+            Assert.Equal(2, _arguments.Length);
+            Assert.True(_arguments[0].IsPositional);
+            Assert.Equal(16000, Assert.IsType<PyString>(_arguments[0].Value).AsString().Length);
+            Assert.Equal("amount", _arguments[1].KeywordName);
+            Assert.Equal(new BigInteger(7), _arguments[1].Value);
             Frame = context.CurrentExecutableFrame;
             Assert.NotNull(Frame);
             var values = Operands(Frame!);
             Assert.Equal(4, values.Length);
             Assert.Equal(new BigInteger(23), values[0]);
             Assert.Same(this, values[1]);
-            Assert.Same(_input, values[2]);
+            Assert.Same(_arguments[0].Value, values[2]);
             Assert.Equal(new BigInteger(7), values[3]);
         }
 

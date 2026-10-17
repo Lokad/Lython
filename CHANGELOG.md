@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Pass already-prepared executable arguments directly through the shared async call entry, removing per-call capturing factories. Preserve deferred argument evaluation, call guards, exception translation and argument ownership through suspension; strengthen existing suspended-call buffer checks.
+
 - Bind named builtin arguments into their final storage after validation, removing temporary full-shape arrays, trimming copies and variadic value lists. Preserve argument effects, error precedence, omitted versus explicit `None`, optional gaps and presence-aware calls.
 
 - Reuse already compiled generator and generator-lambda code before preparing helper arguments. Remove the compiler helper's redundant generator-code parameter and avoid collecting a second, unused set of function scope facts; preserve defaults, closures and diagnostics.

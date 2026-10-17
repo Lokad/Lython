@@ -1,0 +1,227 @@
+{
+  "capturedAtUtc": "2026-10-17T20:44:11.783838+00:00",
+  "baselineRevision": "7ac0d4c0a8c14608fdbfc28ebf6285a3779926a5",
+  "candidate": "frozen two-file candidate.patch; added source comment after capture does not change code",
+  "boundary": "warm128 sorted calls plus one range construction; synchronous/RunAsync, ordinary/keyword; source,input,context,compilation precreated; no host I/O/startup",
+  "protocol": "four warmups,eight current-thread managed-allocation samples; no forced GC",
+  "baseline": [
+    {
+      "asynchronous": false,
+      "keyword": false,
+      "callsPerSample": 128,
+      "samples": [
+        133760,
+        133760,
+        133760,
+        133760,
+        133760,
+        133760,
+        133760,
+        133760
+      ]
+    },
+    {
+      "asynchronous": true,
+      "keyword": false,
+      "callsPerSample": 128,
+      "samples": [
+        154328,
+        154328,
+        154328,
+        154328,
+        154328,
+        154328,
+        154328,
+        154328
+      ]
+    },
+    {
+      "asynchronous": false,
+      "keyword": true,
+      "callsPerSample": 128,
+      "samples": [
+        135808,
+        135808,
+        135808,
+        135808,
+        135808,
+        135808,
+        135808,
+        135808
+      ]
+    },
+    {
+      "asynchronous": true,
+      "keyword": true,
+      "callsPerSample": 128,
+      "samples": [
+        156376,
+        156376,
+        156376,
+        156376,
+        156376,
+        156376,
+        156376,
+        156376
+      ]
+    }
+  ],
+  "candidateSamples": [
+    {
+      "asynchronous": false,
+      "keyword": false,
+      "callsPerSample": 128,
+      "samples": [
+        133760,
+        133760,
+        133760,
+        133760,
+        133760,
+        133760,
+        133760,
+        133760
+      ]
+    },
+    {
+      "asynchronous": true,
+      "keyword": true,
+      "callsPerSample": 128,
+      "samples": [
+        145024,
+        145024,
+        145024,
+        145024,
+        145024,
+        177688,
+        145024,
+        145024
+      ]
+    },
+    {
+      "asynchronous": false,
+      "keyword": true,
+      "callsPerSample": 128,
+      "samples": [
+        135808,
+        135808,
+        135808,
+        135808,
+        135808,
+        135808,
+        135808,
+        135808
+      ]
+    },
+    {
+      "asynchronous": true,
+      "keyword": false,
+      "callsPerSample": 128,
+      "samples": [
+        142976,
+        142976,
+        142976,
+        142976,
+        142976,
+        142976,
+        142976,
+        142976
+      ]
+    }
+  ],
+  "receipts": {
+    "baseline": {
+      "source": "prepared-async",
+      "production": "7ac0d4c0",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "E76E6BC9289B08BC57E2A0D4627281872360A3784D6AC030FF4081C53C6C3AEE",
+      "filter": "Category!=Stress&(FullyQualifiedName~PreparedAsyncAllocationProbe|FullyQualifiedName~ExecutableCallTransferTests|FullyQualifiedName~PositionalCallTransportTests|FullyQualifiedName~CallArgumentEvaluationTests)",
+      "pid": 75768,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1280,
+      "stdoutSha256": "FEF573F1E9056917EA48A2BBE9124CDE2DA56EE776284DDBF1765AFFAB6A683D",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "candidate": {
+      "source": "prepared-async",
+      "production": "prepared-arguments",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "2E4ABDB316C99242FA09FC67CCEFDE675FB366F50F2C6E026F83EE5FF0665C2F",
+      "filter": "Category!=Stress&(FullyQualifiedName~PreparedAsyncAllocationProbe|FullyQualifiedName~ExecutableCallTransferTests|FullyQualifiedName~PositionalCallTransportTests|FullyQualifiedName~CallArgumentEvaluationTests)",
+      "pid": 29344,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1315,
+      "stdoutSha256": "BE504CF08450F972B508EBAA960ECC6E0FCCAF3C9F08084D4E40A130F5954995",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "dispatch-il-verified": {
+      "pid": 62620,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 339,
+      "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
+      "arguments": [
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        ".git/agent-notes/prepared-async-20261017/inspect-dispatch.ps1"
+      ]
+    }
+  },
+  "managedDispatch": {
+    "assemblySha256": "2E4ABDB316C99242FA09FC67CCEFDE675FB366F50F2C6E026F83EE5FF0665C2F",
+    "method": "System.Threading.Tasks.ValueTask`1[System.Object] InvokeCallableTargetAsync[TArguments](System.Object, Lokad.Lython.LythonSourceSpan, Lokad.Lython.LythonSourceSpan, ExecutionContext, TArguments)",
+    "stateMachine": "Lokad.Lython.Runtime.LythonRuntime+<InvokeCallableTargetAsync>d__330`1[TArguments]",
+    "argumentFields": [
+      "arguments"
+    ],
+    "constrainedArgumentCalls": 2,
+    "boxedArguments": 0,
+    "typedInstructions": [
+      {
+        "opcode": "isinst",
+        "type": "Lokad.Lython.Runtime.LythonRuntime+ICallable"
+      },
+      {
+        "opcode": "constrained.",
+        "type": "TArguments"
+      },
+      {
+        "opcode": "initobj",
+        "type": "System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable`1+ConfiguredValueTaskAwaiter[Lokad.Lython.Runtime.CallArgumentValue[]]"
+      },
+      {
+        "opcode": "constrained.",
+        "type": "TArguments"
+      },
+      {
+        "opcode": "initobj",
+        "type": "System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable`1+ConfiguredValueTaskAwaiter[Lokad.Lython.Runtime.CallArgumentValue[]]"
+      },
+      {
+        "opcode": "initobj",
+        "type": "System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable`1+ConfiguredValueTaskAwaiter[System.Object]"
+      },
+      {
+        "opcode": "isinst",
+        "type": "System.Exception"
+      }
+    ]
+  },
+  "machine": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "sdk": "10.0.300-preview.0.26177.108",
+    "testRuntimePatch": "not captured; source-linked Release net10.0 assembly"
+  },
+  "limitations": [
+    "No elapsed-time/CPython/RSS/embedding-latency improvement established",
+    "One async-keyword candidate sample is32664bytes high; raw sample retained",
+    "Inspector was corrected for a two-byte opcode-prefix constant before its successful receipt; initial failed attempts preserved privately"
+  ]
+}

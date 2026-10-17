@@ -1,0 +1,40 @@
+{
+  "assemblySha256": "2E4ABDB316C99242FA09FC67CCEFDE675FB366F50F2C6E026F83EE5FF0665C2F",
+  "method": "System.Threading.Tasks.ValueTask`1[System.Object] InvokeCallableTargetAsync[TArguments](System.Object, Lokad.Lython.LythonSourceSpan, Lokad.Lython.LythonSourceSpan, ExecutionContext, TArguments)",
+  "stateMachine": "Lokad.Lython.Runtime.LythonRuntime+<InvokeCallableTargetAsync>d__330`1[TArguments]",
+  "argumentFields": [
+    "arguments"
+  ],
+  "constrainedArgumentCalls": 2,
+  "boxedArguments": 0,
+  "typedInstructions": [
+    {
+      "opcode": "isinst",
+      "type": "Lokad.Lython.Runtime.LythonRuntime+ICallable"
+    },
+    {
+      "opcode": "constrained.",
+      "type": "TArguments"
+    },
+    {
+      "opcode": "initobj",
+      "type": "System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable`1+ConfiguredValueTaskAwaiter[Lokad.Lython.Runtime.CallArgumentValue[]]"
+    },
+    {
+      "opcode": "constrained.",
+      "type": "TArguments"
+    },
+    {
+      "opcode": "initobj",
+      "type": "System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable`1+ConfiguredValueTaskAwaiter[Lokad.Lython.Runtime.CallArgumentValue[]]"
+    },
+    {
+      "opcode": "initobj",
+      "type": "System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable`1+ConfiguredValueTaskAwaiter[System.Object]"
+    },
+    {
+      "opcode": "isinst",
+      "type": "System.Exception"
+    }
+  ]
+}
