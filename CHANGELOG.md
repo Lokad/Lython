@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Keep periodic structural-scan checkpoints local to each execution, including ambient synchronous paths. Reuse existing traversal state so earlier runs on a worker thread cannot shift another run's fuel boundary; retain the 64-element checks and original limits.
+
 - Resolve implicit `str`, `repr`, `ascii` and explicit f-string conversions through type slots, bypassing instance shadows and `__getattribute__`. Share descriptor binding, return validation and the default string-to-repr fallback. Root conversions under `RunAsync` now await protocol I/O; preserve cancellation, terminal admission refusal, managed stack limits and retained ownership. `ascii` reuses the governed UTF-8 escape path.
 
 - Keep ordinary function bodies executable when they contain annotation-only local declarations. Reuse existing target-read lowering and scope facts, removing the fallback exclusion; preserve ignored annotation expressions, closure bindings, target effects, cancellation, admission refusal and retained ownership.

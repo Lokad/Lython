@@ -303,7 +303,7 @@ internal static class PyStructuralGuard
             return;
         }
 
-        var state = ThreadState;
+        var state = context.Services.State.StructuralTraversal;
         // Periodic cooperative checks for long structural scans: the outer expression
         // performs a single budget check on entry, which cannot stop a million-element
         // scan that never nests deeply. Throttle to every 64 elements to keep
@@ -325,7 +325,9 @@ internal static class PyStructuralGuard
             return;
         }
 
-        var state = explicitContext?.Services.State.StructuralTraversal ?? ThreadState;
+        // Ambient and explicit calls advance the same execution-owned interval;
+        // previous executions on this thread must not consume its work budget.
+        var state = context.Services.State.StructuralTraversal;
         if ((++state.WorkTick & 63) != 0)
         {
             return;
