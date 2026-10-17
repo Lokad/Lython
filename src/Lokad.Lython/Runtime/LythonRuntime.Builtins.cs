@@ -232,6 +232,40 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("TypeError", "str(object=', encoding='utf-8', errors='strict') expects bytes when encoding or errors are provided.", span);
     }
 
+    private static ValueTask<object> StrAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => arguments.Length == 1 && arguments[0] is PyInstance instance
+            ? RenderInstanceStringAsync(instance, 's', context, span)
+            : new(Str(arguments, span, context));
+
+    private static ValueTask<object> ReprAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => arguments.Length == 1 && arguments[0] is PyInstance instance
+            ? RenderInstanceStringAsync(instance, 'r', context, span)
+            : new(Repr(arguments, span, context));
+
+    private static ValueTask<object> AsciiAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => arguments.Length == 1 && arguments[0] is PyInstance instance
+            ? RenderInstanceStringAsync(instance, 'a', context, span)
+            : new(Ascii(arguments, span, context));
+
+    private static async ValueTask<object> RenderInstanceStringAsync(PyInstance instance, char conversion,
+        ExecutionContext context, LythonSourceSpan span)
+    {
+        // Match the synchronous PyRendering entry frame. Native values and
+        // codecs continue through their ordinary synchronous handlers above.
+        context.EnterInterpreterFrame(null);
+        try
+        {
+            var rendering = new PyRenderingContext(context);
+            var text = conversion == 's'
+                ? await instance.RenderInterpolatedAsync(rendering).ConfigureAwait(false)
+                : await instance.RenderPythonAsync(rendering).ConfigureAwait(false);
+            return conversion == 'a'
+                ? EscapeNonAsciiPyString(text, context, span)
+                : text;
+        }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private static object Repr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length != 1)
@@ -249,7 +283,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "ascii(value) expects one argument.", span);
         }
 
-        return PyString.FromString(EscapeNonAscii(ToReprPyString(arguments[0], context).AsString()), context.MemoryGovernor, span);
+        return EscapeNonAsciiPyString(ToReprPyString(arguments[0], context), context, span);
     }
 
     private static object Format(object[] arguments, LythonSourceSpan span, ExecutionContext context)

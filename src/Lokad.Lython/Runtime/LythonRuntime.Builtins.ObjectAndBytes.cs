@@ -1238,34 +1238,30 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
+            var receiver = Receiver(arguments, span, context);
+            return receiver is PyInstance instance
+                ? instance.RenderPython(new PyRenderingContext(context))
+                : PyRendering.ToInterpolatedPyString(receiver, new PyRenderingContext(context));
+        }
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var receiver = Receiver(arguments, span, context);
+            return receiver is PyInstance instance
+                ? RenderReprAsync(instance, context)
+                : new(PyRendering.ToInterpolatedPyString(receiver, new PyRenderingContext(context)));
+        }
+
+        private static object Receiver(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
             context.CheckExecution(span);
             if (arguments.Length != 1 || arguments[0].IsKeyword)
-            {
                 throw new LythonRuntimeException("TypeError", "object.__str__(self) expects exactly one argument.", span);
-            }
-
-            // Like CPython, the default string conversion defers to __repr__
-            // so custom representations win; otherwise the default applies.
-            if (arguments[0].Value is PyInstance instance &&
-                instance.TryGetAttribute("__repr__", context, span, out var member) &&
-                member is ICallable reprCallable)
-            {
-                var text = reprCallable.Invoke([], span, context);
-                if (PyStringOps.TryAsString(text, out var rendered))
-                {
-                    return rendered;
-                }
-
-                throw new LythonRuntimeException("TypeError", "__repr__ returned non-string", null);
-            }
-
-            if (arguments[0].Value is PyInstance plain)
-            {
-                return PyString.FromString("<" + plain.Type.Name + " object>");
-            }
-
-            return PyRendering.ToInterpolatedPyString(arguments[0].Value, new PyRenderingContext(context));
+            return arguments[0].Value;
         }
+
+        private static async ValueTask<object> RenderReprAsync(PyInstance instance, ExecutionContext context)
+            => await instance.RenderPythonAsync(new PyRenderingContext(context)).ConfigureAwait(false);
     }
     private sealed class ObjectReprMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
     {
@@ -1327,7 +1323,7 @@ internal sealed partial class LythonRuntime
             // representations shadow this slot through member lookup.
             if (arguments[0].Value is PyInstance instance)
             {
-                return PyString.FromString("<" + instance.Type.Name + " object>");
+                return instance.RenderObjectRepresentation();
             }
 
             return PyRendering.ToReprPyString(arguments[0].Value, new PyRenderingContext(context));

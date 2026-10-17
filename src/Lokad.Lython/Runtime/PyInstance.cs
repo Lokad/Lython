@@ -151,14 +151,53 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
     }
 
     public PyString RenderPython(PyRenderingContext context)
+        => RenderSpecialAsync("__repr__", context, false).GetAwaiter().GetResult();
+
+    public PyString RenderInterpolated(PyRenderingContext context)
+        => RenderSpecialAsync("__str__", context, false).GetAwaiter().GetResult();
+
+    internal ValueTask<PyString> RenderPythonAsync(PyRenderingContext context)
+        => RenderSpecialAsync("__repr__", context, true);
+
+    internal ValueTask<PyString> RenderInterpolatedAsync(PyRenderingContext context)
+        => RenderSpecialAsync("__str__", context, true);
+
+    private async ValueTask<PyString> RenderSpecialAsync(string name, PyRenderingContext context, bool asynchronous)
     {
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        if (TryGetAttribute("__repr__", context.Context, span, out var reprMember) &&
-            reprMember is LythonRuntime.ICallable reprCallable)
+        // Implicit protocols bypass instance shadows and __getattribute__;
+        // descriptor binding still applies to the member found on the type.
+        if (Type.TryLookupInMro(name, 0, out var raw, out _))
         {
-            return RequireRenderedString(reprCallable.Invoke([], span, context.Context), "__repr__");
+            object member;
+            try
+            {
+                member = asynchronous
+                    ? await PyAttributeLookup.BindForInstanceAsync(this, raw, context.Context, span).ConfigureAwait(false)
+                    : PyAttributeLookup.BindForInstance(this, raw, context.Context, span);
+            }
+            catch (LythonRuntimeException error) when (name == "__repr__" && error.Attribution is null)
+            {
+                // CPython's repr slot clears ordinary descriptor-binding errors,
+                // but containment refusal/cancellation must still stop this run.
+                context.Context.CheckExecution(span);
+                return RenderObjectRepresentation();
+            }
+            if (member is not LythonRuntime.ICallable callable)
+                throw LythonRuntime.NotCallableError(member, context.Context, span);
+            var rendered = asynchronous
+                ? await callable.InvokeAsync([], span, context.Context).ConfigureAwait(false)
+                : callable.Invoke([], span, context.Context);
+            return RequireRenderedString(rendered, name);
         }
 
+        return name == "__str__"
+            ? await RenderSpecialAsync("__repr__", context, asynchronous).ConfigureAwait(false)
+            : RenderDefault(context);
+    }
+
+    private PyString RenderDefault(PyRenderingContext context)
+    {
         if (Type.DataclassReprEnabled && Type.DataclassReprFields is { } renderedFields)
         {
             var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
@@ -182,20 +221,10 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
             return builder.ToPyStringAndRelease();
         }
 
-        return PyString.FromString($"<{Type.Name} object>");
+        return RenderObjectRepresentation();
     }
 
-    public PyString RenderInterpolated(PyRenderingContext context)
-    {
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        if (TryGetAttribute("__str__", context.Context, span, out var strMember) &&
-            strMember is LythonRuntime.ICallable strCallable)
-        {
-            return RequireRenderedString(strCallable.Invoke([], span, context.Context), "__str__");
-        }
-
-        return RenderPython(context);
-    }
+    internal PyString RenderObjectRepresentation() => PyString.FromString($"<{Type.Name} object>");
 
     private static PyString RequireRenderedString(object value, string methodName)
     {

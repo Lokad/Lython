@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resolve implicit `str`, `repr`, `ascii` and explicit f-string conversions through type slots, bypassing instance shadows and `__getattribute__`. Share descriptor binding, return validation and the default string-to-repr fallback. Root conversions under `RunAsync` now await protocol I/O; preserve cancellation, terminal admission refusal, managed stack limits and retained ownership. `ascii` reuses the governed UTF-8 escape path.
+
 - Keep ordinary function bodies executable when they contain annotation-only local declarations. Reuse existing target-read lowering and scope facts, removing the fallback exclusion; preserve ignored annotation expressions, closure bindings, target effects, cancellation, admission refusal and retained ownership.
 - Preserve the declared `dict` owner when binding item descriptors to `defaultdict` and `Counter`, including `__get__`. Share inherited item handlers and positional-only signatures; base-dict deletion raises `KeyError` for missing Counter keys while Counter's own `__delitem__(elem=...)` retains its keyword and ignore-missing behavior. Remove five duplicated signatures/handlers and redundant arity checks.
 - Reject keywords for native `dict.__getitem__`, `dict.__setitem__` and `dict.__delitem__`, including extracted, unbound and expanded calls. Reuse positional-only signature binding so argument effects finish before `TypeError`, without invoking equality or mutating the dictionary. Remove three redundant body-level arity checks; preserve positional calls, asynchronous argument work, cancellation and retained ownership.

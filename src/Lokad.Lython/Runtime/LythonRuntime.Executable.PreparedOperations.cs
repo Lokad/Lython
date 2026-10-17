@@ -177,9 +177,31 @@ internal sealed partial class LythonRuntime
         if (value is PyInstance instance)
         {
             var hookName = conversion is 'r' or 'a' ? "__repr__" : conversion == 's' ? "__str__" : "__format__";
-            var hook = asynchronous ? await TryResolveRuntimeMemberAsync(instance, hookName, _context, span).ConfigureAwait(false)
-                : TryResolveRuntimeMember(instance, hookName, _context, span, out var member)
-                    ? (Found: true, Value: member) : (Found: false, Value: (object)PyNone.Instance);
+            (bool Found, object Value) hook;
+            if (conversion is 's' or 'r' or 'a')
+            {
+                try
+                {
+                    hook = instance.Type.TryLookupInMro(hookName, 0, out var raw, out _)
+                        ? (true, asynchronous
+                            ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, _context, span).ConfigureAwait(false)
+                            : PyAttributeLookup.BindForInstance(instance, raw, _context, span))
+                        : (false, PyNone.Instance);
+                }
+                catch (LythonRuntimeException error) when ((conversion is 'r' or 'a') && error.Attribution is null)
+                {
+                    _context.CheckExecution(span);
+                    var fallback = instance.RenderObjectRepresentation();
+                    if (conversion == 'a') fallback = EscapeNonAsciiPyString(fallback, _context, span);
+                    return FormatInterpolatedStringPart(fallback, null, specifier, _context, span);
+                }
+            }
+            else
+            {
+                hook = asynchronous ? await TryResolveRuntimeMemberAsync(instance, hookName, _context, span).ConfigureAwait(false)
+                    : TryResolveRuntimeMember(instance, hookName, _context, span, out var member)
+                        ? (true, member) : (false, PyNone.Instance);
+            }
             if (hook.Found)
             {
                 var arguments = conversion is null ? new[] { CallArgumentValue.Positional(PyString.FromString(specifier ?? "", _context.MemoryGovernor, span)) } : [];

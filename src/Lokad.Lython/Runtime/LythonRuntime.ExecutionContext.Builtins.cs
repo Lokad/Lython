@@ -8,8 +8,8 @@ internal sealed partial class LythonRuntime
         // BuiltinCallable's mutable slots are gated on builtin type names. Their
         // __self__ is resolved from the caller context, not stored on the callable.
         private static readonly BuiltinCallable SharedLen = BuiltinCallable.Create("len", Len, LenAsync);
-        private static readonly BuiltinCallable SharedRepr = BuiltinCallable.Create("repr", Repr, ["value"]);
-        private static readonly BuiltinCallable SharedAscii = BuiltinCallable.Create("ascii", Ascii, ["value"]);
+        private static readonly BuiltinCallable SharedRepr = BuiltinCallable.Create("repr", Repr, ReprAsync, ["value"]);
+        private static readonly BuiltinCallable SharedAscii = BuiltinCallable.Create("ascii", Ascii, AsciiAsync, ["value"]);
         private static readonly BuiltinCallable SharedFormat = BuiltinCallable.Create("format", Format, ["value", "format_spec"], requiredCount: 1);
         private static readonly BuiltinCallable SharedAbs = BuiltinCallable.Create("abs", Abs, ["x"]);
         private static readonly BuiltinCallable SharedPow = BuiltinCallable.Create("pow", Pow, ["base", "exp", "mod"], requiredCount: 2);
@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
                 ["open"] = new OpenCallable(),
                 ["print"] = new PrintCallable(),
                 ["input"] = BuiltinCallable.Create("input", Input, InputAsync, ["prompt"], requiredCount: 0),
-                ["str"] = BuiltinCallable.Create(LythonCallableSignature.Create("str", ["object", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Str),
+                ["str"] = BuiltinCallable.Create(LythonCallableSignature.Create("str", ["object", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Str, StrAsync),
                 ["repr"] = SharedRepr,
                 ["ascii"] = SharedAscii,
                 ["format"] = SharedFormat,
