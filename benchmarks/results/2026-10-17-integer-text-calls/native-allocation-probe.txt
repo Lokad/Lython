@@ -1,0 +1,51 @@
+using System.Numerics;
+using System.Text.Json;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary native diagnostic; remove after capturing the same four cases before/after.
+public sealed class DirectIntegerTextAllocationProbe(ITestOutputHelper output)
+{
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task MeasureOrdinaryIntegerTextCarriers(bool bytes, bool asynchronous)
+    {
+        const int calls = 128;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(
+            string.Join('\n', Enumerable.Repeat("int(value)", calls)) + "\nreturn 0").Script!)).EntryPoint;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        var samples = new List<long>();
+        for (var sample = -4; sample < 8; sample++)
+        {
+            using (var owner = budget.CreateScope())
+            {
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+                context.Variables["value"] = bytes ? new PyBytes([55], context.MemoryGovernor, null)
+                    : PyString.FromString("7", context.MemoryGovernor, null);
+                var before = GC.GetAllocatedBytesForCurrentThread();
+                object? result;
+                if (asynchronous)
+                {
+                    var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
+                    Assert.True(pending.IsCompleted);
+                    result = await pending;
+                }
+                else result = LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+                var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+                Assert.Equal(BigInteger.Zero, Assert.IsType<BigInteger>(result));
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                if (sample >= 0) samples.Add(allocated);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        output.WriteLine("INTEGER_TEXT_CALL_ALLOCATION:" + JsonSerializer.Serialize(new { bytes, asynchronous, calls, samples }));
+    }
+}

@@ -1,0 +1,186 @@
+{
+  "dateUtc": "2026-10-17",
+  "baselineProductionRevision": "8505c40d0f1123d7659480d49a02f5cb2a1e60e7",
+  "candidateProductionRevision": "dada7c9cd067259f7bda3cfcfd1a7d8c8dbe3162",
+  "measurementStatus": "Source-frozen allocation diagnostic in white-box assemblies; no elapsed/CPython measurement or qualified pipeline speedup.",
+  "environment": {
+    "machine": "Shared Windows11 x64 development workstation",
+    "processor": "Intel Core i7-14700KF,28logical processors,64GiB RAM",
+    "sdk": "10.0.300-preview.0.26177.108",
+    "runtime": "10.0.13",
+    "target": "net10.0",
+    "ordinaryGCAndTiering": true
+  },
+  "boundary": "128unrolled int(value) expressions followed by return0; one preconstructed governed PyString or PyBytes containing7. Compilation/context/input setup and final owner disposal excluded. Native async path completes inline; frame entry/cleanup, parsing, result admission and ordinary execution checks included.",
+  "warmupsPerCase": 4,
+  "samplesPerCase": 8,
+  "comparisons": [
+    {
+      "bytes": true,
+      "asynchronous": false,
+      "calls": 128,
+      "before": [
+        20792,
+        20792,
+        20792,
+        20792,
+        20792,
+        20792,
+        20792,
+        20792
+      ],
+      "after": [
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576
+      ]
+    },
+    {
+      "bytes": true,
+      "asynchronous": true,
+      "calls": 128,
+      "before": [
+        32056,
+        32056,
+        32056,
+        32056,
+        32056,
+        32056,
+        32056,
+        32056
+      ],
+      "after": [
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576
+      ]
+    },
+    {
+      "bytes": false,
+      "asynchronous": false,
+      "calls": 128,
+      "before": [
+        20792,
+        20792,
+        20792,
+        20792,
+        20792,
+        20792,
+        20792,
+        20792
+      ],
+      "after": [
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576
+      ]
+    },
+    {
+      "bytes": false,
+      "asynchronous": true,
+      "calls": 128,
+      "before": [
+        32056,
+        32056,
+        32056,
+        32056,
+        32056,
+        32056,
+        32056,
+        32056
+      ],
+      "after": [
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576
+      ]
+    }
+  ],
+  "sourceManifests": {
+    "8505c40d0f1123d7659480d49a02f5cb2a1e60e7": {
+      "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "6f21ab9c2cce430390356a9e7f76490045bbc88c9cfdfd5f5da620c806bb2af3",
+      "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "c4caed5f935d4652dc6473133b6231e1e07c80bf4e583a4eb0748fc8b76ac36f",
+      "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "a9c688be538e2134b120e66f91561d1e85928ead4287f2295a5fd3006c362961"
+    },
+    "dada7c9cd067259f7bda3cfcfd1a7d8c8dbe3162": {
+      "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "8748919f99de979c6845f319ab35f3797612e91158598d4b4a2ec6385f3277b1",
+      "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "0d106dee3c03f79ce1d79cb9e3a977e425e717c9eb46058c1632c3e74554e1e4",
+      "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "24670dfabf62c25348d7a3370dd678460f8961b5970c7e4a340036433af8f415"
+    }
+  },
+  "measuredCandidateRawSourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "07ed83368723d8598ce8180ba89b4804a08be8ff8e78170a0ca43edb3e0a2eb6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "0d106dee3c03f79ce1d79cb9e3a977e425e717c9eb46058c1632c3e74554e1e4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "24670dfabf62c25348d7a3370dd678460f8961b5970c7e4a340036433af8f415"
+  },
+  "diagnosticSourceSha256": "fd8b196d01fd69b305d914454e88d4bcc46f07668dd5f90d217604534eab2319",
+  "assemblyIdentityCaveat": "Both measurements preceded the candidate commit and use white-box binaries; baseline production unchanged at8505c40d, candidate production sources matchdada7c9c. Raw DLL hashes and source manifests identify the actual snapshots. Temporary diagnostic fixture identical; final owner assertion strengthened after measurement, outside the timed/counted probe.",
+  "processes": [
+    {
+      "role": "baseline",
+      "receipt": {
+        "source": "8505c40d-plus-controlled-fixtures-only",
+        "production": "8505c40d",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "0A767E6C4A0D636F81FCC93EFBC0A3B03232160524BFC962196341DF60B00E46",
+        "filter": "Category!=Stress&(FullyQualifiedName~DirectIntegerTextCallTests|FullyQualifiedName~DirectIntegerTextAllocationProbe)",
+        "pid": 61568,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1190,
+        "stdoutSha256": "0F0BCC45455B339AE8549DEE6C463EC936601232BE276F6989ACF7DEF8F4D2B8",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "role": "candidate",
+      "receipt": {
+        "source": "8505c40d-plus-direct-native-integer-text",
+        "production": "AP03b-candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "0BE8C2D0D891CEE57953DF2086D013B061D9AA4F6FCBA41DC7EEDF8AD497206A",
+        "filter": "Category!=Stress&(FullyQualifiedName~Lokad.Lython.Tests.CursorDispatchTests|FullyQualifiedName~Lokad.Lython.Tests.GeneralBoundMethodTransportTests|FullyQualifiedName~Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests|FullyQualifiedName~Lokad.Lython.Tests.JsonStringDispatchBoundaryTests|FullyQualifiedName~Lokad.Lython.Tests.OrdinaryFunctionTransportTests|FullyQualifiedName~Lokad.Lython.Tests.PositionalCallTransportTests|FullyQualifiedName~SliceValueDispatchTests|FullyQualifiedName~CasePredicateUtf8Tests|FullyQualifiedName~StringPredicateCallTests|FullyQualifiedName~IntegerConversionSlotTests|FullyQualifiedName~IntegerProtocolAsyncTests|FullyQualifiedName~LenProtocolAsyncTests|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~PyNumberPrimitiveTests|FullyQualifiedName~NumericArchitectureSubsystemTests|FullyQualifiedName~IntegerTextAdmissionTests|FullyQualifiedName~DirectIntegerTextCallTests|FullyQualifiedName~DirectIntegerTextAllocationProbe|FullyQualifiedName~DirectLengthCallTests)",
+        "pid": 58976,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1251,
+        "stdoutSha256": "CFF308E6C6965286FF6344910DB792BF50C74824F61BD410685E5AC893229D62",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    }
+  ],
+  "checks": {
+    "all80FuelAndSpanTracesExact": true,
+    "focusedCandidateWhite": 189,
+    "focusedCandidatePublic": 558,
+    "allOwnersReturnToBaseline": true,
+    "temporaryProbeRemoved": true
+  },
+  "limitations": [
+    "No actual host I/O, process startup, compile-to-result or complete CSV timing.",
+    "Allocation counts do not establish physical memory, collection pauses or embedding latency.",
+    "CPython remains the external performance baseline; this compares earlier Lython only."
+  ]
+}

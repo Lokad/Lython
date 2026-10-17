@@ -138,6 +138,12 @@ General-method receiver binding at 90be9683 has separate
 72 excess bytes per entry with one argument become zero against a prefixed control.
 Elapsed time and CPython performance for that change remain unmeasured.
 
+Ordinary native integer-text calls have separate
+[allocation-only evidence](benchmarks/results/2026-10-17-integer-text-calls/README.md)
+at8505c40d→dada7c9c:128calls allocate20,792→11,576bytes synchronously and
+32,056→11,576bytes with asynchronous hosting. Text and bytes agree. Complete
+script timing and CPython performance for this change remain unmeasured.
+
 These compare Lython with earlier Lython, **not with CPython**. Each uses short
 diagnostic collections, ordinary protection/GC/tiering and unchanged worker
 boundaries. They have no milestone qualification or claimed confidence interval.

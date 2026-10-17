@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 native integer-text call diagnostic](results/2026-10-17-integer-text-calls/README.md)
+compares8505c40d with production sources committed asdada7c9c. For128fixed native
+calls, allocation is20,792→11,576bytes synchronously and32,056→11,576bytes through
+asynchronous hosting, for both text and bytes. Four warmups/eight samples per case,
+80exact fuel/span traces and pending-input ownership controls preserve the boundary.
+The temporary diagnostic is removed; raw evidence/source are archived. Complete
+CSV timing and CPython performance remain unmeasured for this change.
+
 The [2026-10-17 fresh CSV snapshot](results/2026-10-17-csv-fresh/README.md)
 fills compile-to-result for the complete 4,096-record file job at 0f1cff1f.
 Two identical Lython controls observed 8.114/8.133 ms, CPython 3.8777 ms,
