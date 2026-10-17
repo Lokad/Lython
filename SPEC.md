@@ -1419,8 +1419,11 @@ evaluated receiver through argument effects and suspension. Exposed methods,
 count arguments, keywords, expansion and custom receivers retain normal binding
 and result ownership.
 
-`capitalize`, `title` and `swapcase` preserve contextual final Greek sigma,
-titlecase digraphs and supported full case expansions. Capitalization title-cases
+`upper`, `capitalize`, `title` and `swapcase` use Python's full multi-scalar
+uppercase/title expansions, including Greek vowels with ypogegrammeni. The finite
+expansion data follows Unicode 15.1; existing managed single-scalar mappings remain.
+Capitalization, title and swapcase also preserve contextual final Greek sigma and
+titlecase digraphs. Capitalization title-cases
 the first scalar and lower-cases the rest; title casing uses input cased boundaries;
 swapcase leaves titlecase letters unchanged. Native casing scans check cancellation
 and execution budgets and release temporary storage on failure.

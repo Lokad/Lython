@@ -119,58 +119,6 @@ internal static partial class PyStringOps
         }) : Rune.ToUpperInvariant(rune));
     }
 
-    private static string? GetCaseExpansion(Rune rune, CaseMapping mapping)
-    {
-        if (mapping == CaseMapping.Lower && rune.Value == 0x0130)
-        {
-            return "i\u0307";
-        }
-
-        if (mapping is CaseMapping.Upper or CaseMapping.Title)
-        {
-            var special = (rune.Value, mapping) switch
-            {
-                (0x00DF, CaseMapping.Upper) => "SS",
-                (0x00DF, CaseMapping.Title) => "Ss",
-                (0x0149, _) => "\u02BCN",
-                (0x01F0, _) => "J\u030C",
-                (0x0390, _) => "\u0399\u0308\u0301",
-                (0x03B0, _) => "\u03A5\u0308\u0301",
-                (0x0587, CaseMapping.Upper) => "\u0535\u0552",
-                (0x0587, CaseMapping.Title) => "\u0535\u0582",
-                (0xFB00, CaseMapping.Upper) => "FF",
-                (0xFB00, CaseMapping.Title) => "Ff",
-                (0xFB01, CaseMapping.Upper) => "FI",
-                (0xFB01, CaseMapping.Title) => "Fi",
-                (0xFB02, CaseMapping.Upper) => "FL",
-                (0xFB02, CaseMapping.Title) => "Fl",
-                (0xFB03, CaseMapping.Upper) => "FFI",
-                (0xFB03, CaseMapping.Title) => "Ffi",
-                (0xFB04, CaseMapping.Upper) => "FFL",
-                (0xFB04, CaseMapping.Title) => "Ffl",
-                (0xFB05 or 0xFB06, CaseMapping.Upper) => "ST",
-                (0xFB05 or 0xFB06, CaseMapping.Title) => "St",
-                (0xFB13, CaseMapping.Upper) => "\u0544\u0546",
-                (0xFB13, CaseMapping.Title) => "\u0544\u0576",
-                (0xFB14, CaseMapping.Upper) => "\u0544\u0535",
-                (0xFB14, CaseMapping.Title) => "\u0544\u0565",
-                (0xFB15, CaseMapping.Upper) => "\u0544\u053B",
-                (0xFB15, CaseMapping.Title) => "\u0544\u056B",
-                (0xFB16, CaseMapping.Upper) => "\u054E\u0546",
-                (0xFB16, CaseMapping.Title) => "\u054E\u0576",
-                (0xFB17, CaseMapping.Upper) => "\u0544\u053D",
-                (0xFB17, CaseMapping.Title) => "\u0544\u056D",
-                _ => null
-            };
-            if (special is not null)
-            {
-                return special;
-            }
-        }
-
-        return null;
-    }
-
     private static bool CheckAllRunes(PyString value, Func<Rune, bool> predicate)
     {
         var sawRune = false;
