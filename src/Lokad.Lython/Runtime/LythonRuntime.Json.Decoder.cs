@@ -183,6 +183,28 @@ internal sealed partial class LythonRuntime
         internal static JsonDecoderObject BindDecoderOptions(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             => new(BindLoadOptions(arguments, span), context);
 
+        // json.load/loads already bind these named slots. Validate in the same
+        // order as constructor forwarding, without rebuilding keyword arguments.
+        internal static JsonLoadOptions BindModuleLoadOptions(
+            BoundCallArguments bound,
+            IReadOnlyList<KeyValuePair<string, object>> extras,
+            LythonSourceSpan span)
+        {
+            var values = bound.Values;
+            var objectHook = JsonModule.OptionalJsonCallable(values[2], "object_hook", span);
+            var parseFloat = JsonModule.OptionalJsonCallable(values[3], "parse_float", span);
+            var parseInt = JsonModule.OptionalJsonCallable(values[4], "parse_int", span);
+            var parseConstant = JsonModule.OptionalJsonCallable(values[5], "parse_constant", span);
+            var objectPairsHook = JsonModule.OptionalJsonCallable(values[6], "object_pairs_hook", span);
+            if (extras.Count > 0)
+            {
+                throw UnexpectedKeyword(extras[0].Key, span);
+            }
+
+            return new JsonLoadOptions(objectHook, parseFloat, parseInt, parseConstant, objectPairsHook,
+                bound.Assigned[7] ? values[7] : true);
+        }
+
         internal static JsonLoadOptions BindLoadOptions(CallArgumentValue[] arguments, LythonSourceSpan span)
         {
             ICallable? objectHook = null;
@@ -221,7 +243,7 @@ internal sealed partial class LythonRuntime
                         objectPairsHook = JsonModule.OptionalJsonCallable(argument.Value, "object_pairs_hook", span);
                         break;
                     default:
-                        throw new LythonRuntimeException("TypeError", "JSONDecoder.__init__() got an unexpected keyword argument '" + argument.KeywordName + "'", span);
+                        throw UnexpectedKeyword(argument.KeywordName, span);
                 }
             }
 
@@ -232,6 +254,9 @@ internal sealed partial class LythonRuntime
 
             return new JsonLoadOptions(objectHook, parseFloat, parseInt, parseConstant, objectPairsHook, strict);
         }
+
+        private static LythonRuntimeException UnexpectedKeyword(string keyword, LythonSourceSpan span)
+            => new("TypeError", "JSONDecoder.__init__() got an unexpected keyword argument '" + keyword + "'", span);
 
         public PyString RenderPython(PyRenderingContext context)
         {

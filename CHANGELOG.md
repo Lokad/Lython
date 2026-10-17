@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Bind native `json.load`/`json.loads` decoder options directly from existing argument slots, removing redundant keyword lists, arrays and rescanning. Preserve guest decoder construction, callback validation order, explicit `None` semantics, admission and cleanup.
+
 - Treat explicit `None` as false for JSON boolean options while preserving omitted defaults. Reuse argument presence through module/class forwarding, retain raw decoder `strict` attributes and captured scanner behavior, and remove the obsolete None-as-default helper. This corrects prior `strict`, `ensure_ascii` and `allow_nan` behavior; managed recursion and ownership safeguards remain.
 
 - Decode short escaped JSON strings directly into bounded UTF-8 working storage, removing temporary CLR strings and re-encoding. Reuse the existing token reservation and governed result copy; preserve larger-token decoding, errors, offsets, hooks and managed stack protection.

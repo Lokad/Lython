@@ -343,7 +343,7 @@ internal sealed partial class LythonRuntime
             if (ReferenceEquals(clsValue, JsonDecoderClass.Instance))
             {
                 context.CheckExecution(span);
-                var options = JsonDecoderClass.BindLoadOptions(BuildDecoderForwardArgs(bound, extras).ToArray(), span);
+                var options = JsonDecoderClass.BindModuleLoadOptions(bound, extras, span);
                 return ParseJsonText(text, options, context, span);
             }
             var instance = ConstructDecoderClass(clsValue, bound, extras, span, context);
@@ -371,7 +371,7 @@ internal sealed partial class LythonRuntime
             if (ReferenceEquals(clsValue, JsonDecoderClass.Instance))
             {
                 context.CheckExecution(span);
-                var options = JsonDecoderClass.BindLoadOptions(BuildDecoderForwardArgs(bound, extras).ToArray(), span);
+                var options = JsonDecoderClass.BindModuleLoadOptions(bound, extras, span);
                 return await ParseJsonTextAsync(text, options, context, span).ConfigureAwait(false);
             }
             var instance = await ConstructDecoderClassAsync(clsValue, bound, extras, span, context).ConfigureAwait(false);
