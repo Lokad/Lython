@@ -1,0 +1,111 @@
+VSTest version 18.3.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.22]   Discovering: Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.42]   Discovered:  Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.47]   Starting:    Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.74]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.74]                        ↓ (pos 6)
+[xUnit.net 00:00:01.74]       Expected: "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, "···
+[xUnit.net 00:00:01.74]       Actual:   "{'a': '2', 'extra': ['3', '4', '5', '6', "···
+[xUnit.net 00:00:01.74]                        ↑ (pos 6)
+[xUnit.net 00:00:01.74]       Stack Trace:
+[xUnit.net 00:00:01.74]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs(40,0): at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected)
+[xUnit.net 00:00:01.74]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.74]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.74]                        ↓ (pos 6)
+[xUnit.net 00:00:01.74]       Expected: "{'a': 2.0, 'extra': [3.0]}\nTrue kept\n"
+[xUnit.net 00:00:01.74]       Actual:   "{'a': '2', 'extra': ['3']}\nTrue kept\n"
+[xUnit.net 00:00:01.74]                        ↑ (pos 6)
+[xUnit.net 00:00:01.74]       Stack Trace:
+[xUnit.net 00:00:01.74]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs(40,0): at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected)
+[xUnit.net 00:00:01.74]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.75]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.75]                         ↓ (pos 7)
+[xUnit.net 00:00:01.75]       Expected: "{'a': [3.0]}\nTrue kept\n"
+[xUnit.net 00:00:01.75]       Actual:   "{'a': ['3']}\nTrue kept\n"
+[xUnit.net 00:00:01.75]                         ↑ (pos 7)
+[xUnit.net 00:00:01.75]       Stack Trace:
+[xUnit.net 00:00:01.75]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs(40,0): at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected)
+[xUnit.net 00:00:01.75]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.77]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.77]                        ↓ (pos 6)
+[xUnit.net 00:00:01.77]       Expected: "{'a': 2.0}\n"
+[xUnit.net 00:00:01.77]       Actual:   "{'a': '2'}\n"
+[xUnit.net 00:00:01.77]                        ↑ (pos 6)
+[xUnit.net 00:00:01.77]       Stack Trace:
+[xUnit.net 00:00:01.77]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs(40,0): at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected)
+[xUnit.net 00:00:01.77]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.78]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.78]                        ↓ (pos 6)
+[xUnit.net 00:00:01.78]       Expected: "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, "···
+[xUnit.net 00:00:01.78]       Actual:   "{'a': '2', 'extra': ['3', '4', '5', '6', "···
+[xUnit.net 00:00:01.78]                        ↑ (pos 6)
+[xUnit.net 00:00:01.78]       Stack Trace:
+[xUnit.net 00:00:01.78]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs(40,0): at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected)
+[xUnit.net 00:00:01.78]         --- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2,3,4,5,6,7,8,9,10,11", numeric: True, restKey: "extra", expected: "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, 7.0, 8.0,"···) [241 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                 ↓ (pos 6)
+Expected: "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, "···
+Actual:   "{'a': '2', 'extra': ['3', '4', '5', '6', "···
+                 ↑ (pos 6)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs:line 40
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2,3", numeric: True, restKey: "extra", expected: "{'a': 2.0, 'extra': [3.0]}") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                 ↓ (pos 6)
+Expected: "{'a': 2.0, 'extra': [3.0]}\nTrue kept\n"
+Actual:   "{'a': '2', 'extra': ['3']}\nTrue kept\n"
+                 ↑ (pos 6)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs:line 40
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2,3", numeric: True, restKey: "a", expected: "{'a': [3.0]}") [5 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                  ↓ (pos 7)
+Expected: "{'a': [3.0]}\nTrue kept\n"
+Actual:   "{'a': ['3']}\nTrue kept\n"
+                  ↑ (pos 7)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs:line 40
+--- End of stack trace from previous location ---
+  Passed Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2,3,4,5,6,7,8,9,10,11", numeric: False, restKey: "extra", expected: "{'a': '2', 'extra': ['3', '4', '5', '6', '7', '8',"···) [23 ms]
+  Passed Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2,\"é,😀\",4", numeric: False, restKey: "extra", expected: "{'a': '2', 'extra': ['é,😀', '4']}") [1 ms]
+  Failed Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2", numeric: True, restKey: "extra", expected: "{'a': 2.0}") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                 ↓ (pos 6)
+Expected: "{'a': 2.0}\n"
+Actual:   "{'a': '2'}\n"
+                 ↑ (pos 6)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs:line 40
+--- End of stack trace from previous location ---
+  Passed Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1", numeric: False, restKey: "extra", expected: "{'a': None}") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2", numeric: False, restKey: "extra", expected: "{'a': '2'}") [2 ms]
+  Failed Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2,3,4,5,6,7,8,9,10", numeric: True, restKey: "extra", expected: "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, 7.0, 8.0,"···) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                 ↓ (pos 6)
+Expected: "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, "···
+Actual:   "{'a': '2', 'extra': ['3', '4', '5', '6', "···
+                 ↑ (pos 6)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs:line 40
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.79]   Finished:    Lokad.Lython.PublicApi.Tests
+  Passed Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2,3", numeric: False, restKey: "extra", expected: "{'a': '2', 'extra': ['3']}") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2,3,4,5,6,7,8,9,10", numeric: False, restKey: "extra", expected: "{'a': '2', 'extra': ['3', '4', '5', '6', '7', '8',"···) [1 ms]
+Results File: D:\code\Lython\.git\agent-notes\list-capacity-admission-20261017\baseline-csv\tests.trx
+
+Total tests: 11
+     Passed: 6
+     Failed: 5
+ Total time: 2.0898 Seconds

@@ -1,10 +1,76 @@
 using System.Numerics;
 using Lokad.Lython.Runtime;
+using Xunit.Abstractions;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class ListConstructionAbortAccountingTests
+public sealed class ListConstructionAbortAccountingTests(ITestOutputHelper output)
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GrowthFundsReplacementWhileOldStorageRemainsOwned(bool shared)
+    {
+        var budget = new LythonMemoryBudget(shared ? 800 : 4096);
+        using var owner = budget.CreateScope();
+        var governor = new MemoryGovernor(shared ? null : 800, owner);
+        var alias = new object();
+        var storage = new ArrayPyListStorage(16, governor, null);
+        storage.Add(alias);
+        var held = budget.ReservedBytes;
+        var committed = governor.CurrentCommittedBytes;
+        var failure = Assert.Throws<LythonRuntimeException>(() => storage.EnsureCapacity(17, governor, null));
+        Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+            failure.Attribution?.Reason);
+        Assert.Same(governor.AdmissionFailure, failure);
+        Assert.Equal(held, budget.ReservedBytes);
+        Assert.Equal(committed, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Same(alias, Assert.Single(storage));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void RefusalPrecedesBackingAllocationAndPreservesLiveAliases(bool grow, bool shared)
+    {
+        foreach (var measured in new[] { false, true })
+        {
+            var budget = new LythonMemoryBudget(shared ? 4096 : 1024 * 1024);
+            using var owner = budget.CreateScope();
+            var governor = new MemoryGovernor(shared ? null : 4096, owner);
+            var alias = new object();
+            var live = new PyList([alias], governor);
+            var storage = new ArrayPyListStorage(16, governor, null);
+            storage.Add(alias);
+            var committed = governor.CurrentCommittedBytes;
+            var held = budget.ReservedBytes;
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var error = Assert.Throws<LythonRuntimeException>(() =>
+            {
+                if (grow) storage.EnsureCapacity(8192, governor, null);
+                else _ = new ArrayPyListStorage(8192, governor, null);
+            });
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            if (measured) output.WriteLine($"LIST_STORAGE_ADMISSION:{grow}:{shared}:{allocated}");
+            Assert.Same(governor.AdmissionFailure, error);
+            Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+                error.Attribution?.Reason);
+            Assert.Equal(committed, governor.CurrentCommittedBytes);
+            Assert.Equal(held, budget.ReservedBytes);
+            Assert.Equal(0, governor.CurrentReservedBytes);
+            Assert.Same(alias, Assert.Single(live));
+            Assert.Same(alias, Assert.Single(storage));
+            owner.Dispose();
+            Assert.Equal(0, budget.ReservedBytes);
+            if (measured) Assert.True(allocated < 16384, $"Refused list backing allocated {allocated} bytes.");
+        }
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(2)]

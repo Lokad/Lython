@@ -1,0 +1,17 @@
+VSTest version 18.3.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.14]   Discovering: Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.41]   Discovered:  Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.42]   Starting:    Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.49]   Finished:    Lokad.Lython.WhiteBox.Tests
+  Passed Lokad.Lython.Tests.CsvOverflowAllocationProbe.ConvertPreReadRows(extraCount: 9) [39 ms]
+  Passed Lokad.Lython.Tests.CsvOverflowAllocationProbe.ConvertPreReadRows(extraCount: 0) [< 1 ms]
+Results File: D:\code\Lython\.git\agent-notes\list-capacity-admission-20261017\candidate-diagnostic\tests.trx
+
+Test Run Successful.
+Total tests: 2
+     Passed: 2
+ Total time: 0.7914 Seconds

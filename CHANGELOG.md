@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Admit array-backed list replacement against the shared host allowance before allocation, keeping old backing funded through the copy and refunding failed reservations. Remove the check-only/post-allocation charge helpers. CSV dictionary readers fill admitted excess-field lists directly, removing their temporary array and copy; retained aliases keep their existing owners. Replacement overlap can cause earlier rejection without changing the final capacity estimate.
+
 - Reduce exact-byte `any`/`all` directly over existing byte storage, removing per-element integer boxing and iterator/truth conversion. Preserve short circuits, the established 64-pull checkpoint policy including exhaustion, retained input funding and general iterable behavior in both execution APIs.
 
 - Reuse synchronous `any`/`all` kernels for exact bytes and ranges under asynchronous hosting. Preserve native checkpoints, admission and short circuits while keeping general iterable and guest-truth loops awaited; avoid native async enumeration transport without adding kernels or ownership machinery.

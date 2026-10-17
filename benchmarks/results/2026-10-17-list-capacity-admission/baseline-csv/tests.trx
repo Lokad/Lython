@@ -1,0 +1,211 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="a6961cc4-b4e3-4a0a-b637-39f04b761545" name="JoannesVermorel@LOKAD-0399 2026-10-17 19:18:13" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-17T19:18:13.4186771+02:00" queuing="2026-10-17T19:18:13.4186774+02:00" start="2026-10-17T19:18:11.3601884+02:00" finish="2026-10-17T19:18:13.4578588+02:00" />
+  <TestSettings name="default" id="b2f7214e-f0bc-4a09-b61d-35fc0277184d">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-17_19_18_13" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="45bbcfdc-6709-4bae-859c-20f282b8f669" testId="45ac3288-b570-b76f-0543-396bc9d93ae1" testName="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3&quot;, numeric: True, restKey: &quot;extra&quot;, expected: &quot;{'a': 2.0, 'extra': [3.0]}&quot;)" computerName="LOKAD-0399" duration="00:00:00.0018501" startTime="2026-10-17T19:18:13.3720783+02:00" endTime="2026-10-17T19:18:13.3721364+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="45bbcfdc-6709-4bae-859c-20f282b8f669">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+                 ↓ (pos 6)&#xD;
+Expected: "{'a': 2.0, 'extra': [3.0]}\nTrue kept\n"&#xD;
+Actual:   "{'a': '2', 'extra': ['3']}\nTrue kept\n"&#xD;
+                 ↑ (pos 6)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs:line 40&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7e1261ab-fea0-42d0-86df-e877fb2d8d0c" testId="e4461e74-bea6-1425-4571-6a407269bd11" testName="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3,4,5,6,7,8,9,10&quot;, numeric: False, restKey: &quot;extra&quot;, expected: &quot;{'a': '2', 'extra': ['3', '4', '5', '6', '7', '8',&quot;···)" computerName="LOKAD-0399" duration="00:00:00.0013250" startTime="2026-10-17T19:18:13.4108387+02:00" endTime="2026-10-17T19:18:13.4108665+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7e1261ab-fea0-42d0-86df-e877fb2d8d0c" />
+    <UnitTestResult executionId="698c5017-adc3-40dd-8493-26d7a73c3cb9" testId="45cef865-91f3-1a74-725d-a7d2c00e4f88" testName="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1&quot;, numeric: False, restKey: &quot;extra&quot;, expected: &quot;{'a': None}&quot;)" computerName="LOKAD-0399" duration="00:00:00.0015861" startTime="2026-10-17T19:18:13.4001086+02:00" endTime="2026-10-17T19:18:13.4014902+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="698c5017-adc3-40dd-8493-26d7a73c3cb9" />
+    <UnitTestResult executionId="a43cbef6-423c-4bc1-9381-db2f586a3710" testId="fca0efd2-dfee-c19d-bed1-7afd5ef0ffea" testName="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3&quot;, numeric: True, restKey: &quot;a&quot;, expected: &quot;{'a': [3.0]}&quot;)" computerName="LOKAD-0399" duration="00:00:00.0053635" startTime="2026-10-17T19:18:13.3728338+02:00" endTime="2026-10-17T19:18:13.3728661+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a43cbef6-423c-4bc1-9381-db2f586a3710">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+                  ↓ (pos 7)&#xD;
+Expected: "{'a': [3.0]}\nTrue kept\n"&#xD;
+Actual:   "{'a': ['3']}\nTrue kept\n"&#xD;
+                  ↑ (pos 7)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs:line 40&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c6c246cd-bb30-46f7-a81d-5d9196139008" testId="097e5601-8294-0ff6-5a0c-9ded91058491" testName="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3&quot;, numeric: False, restKey: &quot;extra&quot;, expected: &quot;{'a': '2', 'extra': ['3']}&quot;)" computerName="LOKAD-0399" duration="00:00:00.0016210" startTime="2026-10-17T19:18:13.4107270+02:00" endTime="2026-10-17T19:18:13.4107682+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c6c246cd-bb30-46f7-a81d-5d9196139008" />
+    <UnitTestResult executionId="26bad53d-fb42-40b7-9b02-bffbbd9c0174" testId="c17078cd-bbab-0d57-ddb5-efa45d5a3a8e" testName="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2&quot;, numeric: False, restKey: &quot;extra&quot;, expected: &quot;{'a': '2'}&quot;)" computerName="LOKAD-0399" duration="00:00:00.0023466" startTime="2026-10-17T19:18:13.4015694+02:00" endTime="2026-10-17T19:18:13.4041202+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="26bad53d-fb42-40b7-9b02-bffbbd9c0174" />
+    <UnitTestResult executionId="7ba845d1-9d67-40cc-a23e-db451094b3e5" testId="22ed4821-d755-399e-1b07-0078744e5fa3" testName="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3,4,5,6,7,8,9,10&quot;, numeric: True, restKey: &quot;extra&quot;, expected: &quot;{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, 7.0, 8.0,&quot;···)" computerName="LOKAD-0399" duration="00:00:00.0016135" startTime="2026-10-17T19:18:13.4041962+02:00" endTime="2026-10-17T19:18:13.4058703+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7ba845d1-9d67-40cc-a23e-db451094b3e5">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+                 ↓ (pos 6)&#xD;
+Expected: "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, "···&#xD;
+Actual:   "{'a': '2', 'extra': ['3', '4', '5', '6', "···&#xD;
+                 ↑ (pos 6)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs:line 40&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="552a237b-b09a-48ed-8cb9-6be1cdb2e1ea" testId="9433ac5c-0de8-098b-f723-1dafce09f91c" testName="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2&quot;, numeric: True, restKey: &quot;extra&quot;, expected: &quot;{'a': 2.0}&quot;)" computerName="LOKAD-0399" duration="00:00:00.0013769" startTime="2026-10-17T19:18:13.3982224+02:00" endTime="2026-10-17T19:18:13.3997403+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="552a237b-b09a-48ed-8cb9-6be1cdb2e1ea">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+                 ↓ (pos 6)&#xD;
+Expected: "{'a': 2.0}\n"&#xD;
+Actual:   "{'a': '2'}\n"&#xD;
+                 ↑ (pos 6)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs:line 40&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b025d145-35ae-427f-9672-6d2db4ccb40d" testId="bd5a5dfc-4a92-a845-0993-a32460117aac" testName="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,\&quot;é,\ud83d\ude00\&quot;,4&quot;, numeric: False, restKey: &quot;extra&quot;, expected: &quot;{'a': '2', 'extra': ['é,\ud83d\ude00', '4']}&quot;)" computerName="LOKAD-0399" duration="00:00:00.0015211" startTime="2026-10-17T19:18:13.3968402+02:00" endTime="2026-10-17T19:18:13.3981455+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b025d145-35ae-427f-9672-6d2db4ccb40d" />
+    <UnitTestResult executionId="6f818e31-73bc-4b40-8fdd-63cfa50bb183" testId="35c6492b-2fe8-4898-eebb-4a3ac0b623c1" testName="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3,4,5,6,7,8,9,10,11&quot;, numeric: True, restKey: &quot;extra&quot;, expected: &quot;{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, 7.0, 8.0,&quot;···)" computerName="LOKAD-0399" duration="00:00:00.2410635" startTime="2026-10-17T19:18:13.1279419+02:00" endTime="2026-10-17T19:18:13.3642817+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6f818e31-73bc-4b40-8fdd-63cfa50bb183">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+                 ↓ (pos 6)&#xD;
+Expected: "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, "···&#xD;
+Actual:   "{'a': '2', 'extra': ['3', '4', '5', '6', "···&#xD;
+                 ↑ (pos 6)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs:line 40&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0b7a11c8-0450-4628-aa5b-1c3d4bdd3623" testId="581941b3-5a13-9b4b-802b-9455d83bc5b5" testName="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3,4,5,6,7,8,9,10,11&quot;, numeric: False, restKey: &quot;extra&quot;, expected: &quot;{'a': '2', 'extra': ['3', '4', '5', '6', '7', '8',&quot;···)" computerName="LOKAD-0399" duration="00:00:00.0230468" startTime="2026-10-17T19:18:13.3732488+02:00" endTime="2026-10-17T19:18:13.3963169+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0b7a11c8-0450-4628-aa5b-1c3d4bdd3623" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3,4,5,6,7,8,9,10,11&quot;, numeric: False, restKey: &quot;extra&quot;, expected: &quot;{'a': '2', 'extra': ['3', '4', '5', '6', '7', '8',&quot;···)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="581941b3-5a13-9b4b-802b-9455d83bc5b5">
+      <Execution id="0b7a11c8-0450-4628-aa5b-1c3d4bdd3623" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests" name="DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3&quot;, numeric: True, restKey: &quot;extra&quot;, expected: &quot;{'a': 2.0, 'extra': [3.0]}&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="45ac3288-b570-b76f-0543-396bc9d93ae1">
+      <Execution id="45bbcfdc-6709-4bae-859c-20f282b8f669" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests" name="DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3,4,5,6,7,8,9,10,11&quot;, numeric: True, restKey: &quot;extra&quot;, expected: &quot;{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, 7.0, 8.0,&quot;···)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="35c6492b-2fe8-4898-eebb-4a3ac0b623c1">
+      <Execution id="6f818e31-73bc-4b40-8fdd-63cfa50bb183" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests" name="DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2&quot;, numeric: True, restKey: &quot;extra&quot;, expected: &quot;{'a': 2.0}&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="9433ac5c-0de8-098b-f723-1dafce09f91c">
+      <Execution id="552a237b-b09a-48ed-8cb9-6be1cdb2e1ea" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests" name="DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3,4,5,6,7,8,9,10&quot;, numeric: False, restKey: &quot;extra&quot;, expected: &quot;{'a': '2', 'extra': ['3', '4', '5', '6', '7', '8',&quot;···)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="e4461e74-bea6-1425-4571-6a407269bd11">
+      <Execution id="7e1261ab-fea0-42d0-86df-e877fb2d8d0c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests" name="DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1&quot;, numeric: False, restKey: &quot;extra&quot;, expected: &quot;{'a': None}&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="45cef865-91f3-1a74-725d-a7d2c00e4f88">
+      <Execution id="698c5017-adc3-40dd-8493-26d7a73c3cb9" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests" name="DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2&quot;, numeric: False, restKey: &quot;extra&quot;, expected: &quot;{'a': '2'}&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="c17078cd-bbab-0d57-ddb5-efa45d5a3a8e">
+      <Execution id="26bad53d-fb42-40b7-9b02-bffbbd9c0174" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests" name="DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3&quot;, numeric: True, restKey: &quot;a&quot;, expected: &quot;{'a': [3.0]}&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="fca0efd2-dfee-c19d-bed1-7afd5ef0ffea">
+      <Execution id="a43cbef6-423c-4bc1-9381-db2f586a3710" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests" name="DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,\&quot;é,\ud83d\ude00\&quot;,4&quot;, numeric: False, restKey: &quot;extra&quot;, expected: &quot;{'a': '2', 'extra': ['é,\ud83d\ude00', '4']}&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="bd5a5dfc-4a92-a845-0993-a32460117aac">
+      <Execution id="b025d145-35ae-427f-9672-6d2db4ccb40d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests" name="DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3&quot;, numeric: False, restKey: &quot;extra&quot;, expected: &quot;{'a': '2', 'extra': ['3']}&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="097e5601-8294-0ff6-5a0c-9ded91058491">
+      <Execution id="c6c246cd-bb30-46f7-a81d-5d9196139008" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests" name="DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: &quot;1,2,3,4,5,6,7,8,9,10&quot;, numeric: True, restKey: &quot;extra&quot;, expected: &quot;{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, 7.0, 8.0,&quot;···)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="22ed4821-d755-399e-1b07-0078744e5fa3">
+      <Execution id="7ba845d1-9d67-40cc-a23e-db451094b3e5" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests" name="DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="45ac3288-b570-b76f-0543-396bc9d93ae1" executionId="45bbcfdc-6709-4bae-859c-20f282b8f669" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e4461e74-bea6-1425-4571-6a407269bd11" executionId="7e1261ab-fea0-42d0-86df-e877fb2d8d0c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="45cef865-91f3-1a74-725d-a7d2c00e4f88" executionId="698c5017-adc3-40dd-8493-26d7a73c3cb9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fca0efd2-dfee-c19d-bed1-7afd5ef0ffea" executionId="a43cbef6-423c-4bc1-9381-db2f586a3710" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="097e5601-8294-0ff6-5a0c-9ded91058491" executionId="c6c246cd-bb30-46f7-a81d-5d9196139008" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c17078cd-bbab-0d57-ddb5-efa45d5a3a8e" executionId="26bad53d-fb42-40b7-9b02-bffbbd9c0174" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="22ed4821-d755-399e-1b07-0078744e5fa3" executionId="7ba845d1-9d67-40cc-a23e-db451094b3e5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9433ac5c-0de8-098b-f723-1dafce09f91c" executionId="552a237b-b09a-48ed-8cb9-6be1cdb2e1ea" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bd5a5dfc-4a92-a845-0993-a32460117aac" executionId="b025d145-35ae-427f-9672-6d2db4ccb40d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="35c6492b-2fe8-4898-eebb-4a3ac0b623c1" executionId="6f818e31-73bc-4b40-8fdd-63cfa50bb183" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="581941b3-5a13-9b4b-802b-9455d83bc5b5" executionId="0b7a11c8-0450-4628-aa5b-1c3d4bdd3623" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="11" executed="11" passed="6" failed="5" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.22]   Discovering: Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.42]   Discovered:  Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.47]   Starting:    Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.74]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:01.74]                        ↓ (pos 6)&#xD;
+[xUnit.net 00:00:01.74]       Expected: "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, "···&#xD;
+[xUnit.net 00:00:01.74]       Actual:   "{'a': '2', 'extra': ['3', '4', '5', '6', "···&#xD;
+[xUnit.net 00:00:01.74]                        ↑ (pos 6)&#xD;
+[xUnit.net 00:00:01.74]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.74]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs(40,0): at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected)&#xD;
+[xUnit.net 00:00:01.74]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.74]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:01.74]                        ↓ (pos 6)&#xD;
+[xUnit.net 00:00:01.74]       Expected: "{'a': 2.0, 'extra': [3.0]}\nTrue kept\n"&#xD;
+[xUnit.net 00:00:01.74]       Actual:   "{'a': '2', 'extra': ['3']}\nTrue kept\n"&#xD;
+[xUnit.net 00:00:01.74]                        ↑ (pos 6)&#xD;
+[xUnit.net 00:00:01.74]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.74]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs(40,0): at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected)&#xD;
+[xUnit.net 00:00:01.74]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.75]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:01.75]                         ↓ (pos 7)&#xD;
+[xUnit.net 00:00:01.75]       Expected: "{'a': [3.0]}\nTrue kept\n"&#xD;
+[xUnit.net 00:00:01.75]       Actual:   "{'a': ['3']}\nTrue kept\n"&#xD;
+[xUnit.net 00:00:01.75]                         ↑ (pos 7)&#xD;
+[xUnit.net 00:00:01.75]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.75]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs(40,0): at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected)&#xD;
+[xUnit.net 00:00:01.75]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.77]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:01.77]                        ↓ (pos 6)&#xD;
+[xUnit.net 00:00:01.77]       Expected: "{'a': 2.0}\n"&#xD;
+[xUnit.net 00:00:01.77]       Actual:   "{'a': '2'}\n"&#xD;
+[xUnit.net 00:00:01.77]                        ↑ (pos 6)&#xD;
+[xUnit.net 00:00:01.77]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.77]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs(40,0): at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected)&#xD;
+[xUnit.net 00:00:01.77]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.78]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:01.78]                        ↓ (pos 6)&#xD;
+[xUnit.net 00:00:01.78]       Expected: "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, "···&#xD;
+[xUnit.net 00:00:01.78]       Actual:   "{'a': '2', 'extra': ['3', '4', '5', '6', "···&#xD;
+[xUnit.net 00:00:01.78]                        ↑ (pos 6)&#xD;
+[xUnit.net 00:00:01.78]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.78]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvCompatibilityTests.cs(40,0): at Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(String input, Boolean numeric, String restKey, String expected)&#xD;
+[xUnit.net 00:00:01.78]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.79]   Finished:    Lokad.Lython.PublicApi.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-17T19:18:13.3661264+02:00">
+        <Text>[xUnit.net 00:00:01.74]     Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2,3,4,5,6,7,8,9,10,11", numeric: True, restKey: "extra", expected: "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, 7.0, 8.0,"···) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-17T19:18:13.3724443+02:00">
+        <Text>[xUnit.net 00:00:01.74]     Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2,3", numeric: True, restKey: "extra", expected: "{'a': 2.0, 'extra': [3.0]}") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-17T19:18:13.3731162+02:00">
+        <Text>[xUnit.net 00:00:01.75]     Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2,3", numeric: True, restKey: "a", expected: "{'a': [3.0]}") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-17T19:18:13.4000266+02:00">
+        <Text>[xUnit.net 00:00:01.77]     Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2", numeric: True, restKey: "extra", expected: "{'a': 2.0}") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-17T19:18:13.4061651+02:00">
+        <Text>[xUnit.net 00:00:01.78]     Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFieldsPreserveOrderNumericValuesAndRetainedAliases(input: "1,2,3,4,5,6,7,8,9,10", numeric: True, restKey: "extra", expected: "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, 7.0, 8.0,"···) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

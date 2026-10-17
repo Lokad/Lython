@@ -1,0 +1,14 @@
+{
+  "source": "list-capacity-admission",
+  "production": "97273b98-before-fix",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+  "assemblySha256": "F48C9ED813586901BAEDFC25BF62EDBC0A177951CD10CB2C5EDAE66C50C9B52D",
+  "filter": "FullyQualifiedName~Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFields",
+  "pid": 22820,
+  "hasExited": true,
+  "exitCode": 1,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 2378,
+  "stdoutSha256": "11975B087100668EBFD3B288F17C1025814B21709C290131E24CBADAF7E0D4B5",
+  "stderrSha256": "4D4C5AF1872BE14DF7C41C80A2A5AABD3D7661D6AF83343E8EB2C60BCE860F87"
+}

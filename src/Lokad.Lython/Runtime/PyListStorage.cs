@@ -349,50 +349,26 @@ internal sealed class ArrayPyListStorage : IPyListStorage
         }
 
         var previousCapacity = _items.Capacity;
-        EnsureCanReserveSlots(governor, span, previousCapacity, PredictCapacity(previousCapacity, targetCount));
-        var newCapacity = _items.EnsureCapacity(targetCount);
-        _committedBytes += ReserveSlots(governor, span, previousCapacity, newCapacity);
+        var newCapacity = GetNewCapacity(previousCapacity, targetCount);
+        // Fund the replacement before allocating, while old backing stays owned.
+        // The final charge retains the existing per-growth metadata/slot estimate.
+        using var replacement = governor?.ReserveTemporary(64L + (16L * newCapacity), span);
+        _items.Capacity = newCapacity;
+        if (replacement is not null)
+        {
+            var growth = 64L + (16L * (newCapacity - previousCapacity));
+            replacement.Commit(growth);
+            _committedBytes += growth;
+        }
     }
 
     public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-    private static long ReserveSlots(MemoryGovernor? governor, LythonSourceSpan? span, int previousCapacity, int newCapacity)
+    private static int GetNewCapacity(int previousCapacity, int targetCount)
     {
-        if (governor is null || newCapacity <= previousCapacity)
-        {
-            return 0;
-        }
-
-        var bytes = 64L + (16L * (newCapacity - previousCapacity));
-        governor.Reserve(bytes, span);
-        governor.Commit(bytes);
-        return bytes;
-    }
-
-    private static void EnsureCanReserveSlots(MemoryGovernor? governor, LythonSourceSpan? span, int previousCapacity, int newCapacity)
-    {
-        if (governor is null || newCapacity <= previousCapacity)
-        {
-            return;
-        }
-
-        governor.EnsureCanReserve(EstimateSlots(previousCapacity, newCapacity), span);
-    }
-
-    private static long EstimateSlots(int previousCapacity, int newCapacity)
-        => 64L + (16L * (newCapacity - previousCapacity));
-
-    private static int PredictCapacity(int previousCapacity, int targetCount)
-    {
-        if (targetCount <= previousCapacity)
-        {
-            return previousCapacity;
-        }
-
         var doubled = previousCapacity == 0 ? 4L : (long)previousCapacity * 2L;
-        var predicted = Math.Max(doubled, targetCount);
-        return predicted > int.MaxValue ? int.MaxValue : (int)predicted;
+        return Math.Max(targetCount, (int)Math.Min(doubled, Array.MaxLength));
     }
 }

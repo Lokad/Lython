@@ -67,6 +67,15 @@ the copy, while the working buffer remains charged. A failed conversion retains
 the builder and its funding. A successful consuming conversion releases only
 working storage; the result and its aliases remain funded under their owner.
 
+Array-backed list growth reserves full replacement capacity against both the
+execution limit and shared host allowance before allocation. The old backing
+remains charged until the copy finishes. Failed admission leaves its contents
+and funding unchanged; failed replacement refunds its reservation. Successful
+growth retains the existing final capacity estimate and returns temporary
+overlap funding. Budgets that cover only the final size can therefore refuse
+earlier. `csv.DictReader` fills excess-column lists directly into their admitted
+capacity, retaining the original cells without an intermediate reference array.
+
 Bounded empty-pattern string replacement admits a checked capacity for the
 required insertion prefix and copies the untouched UTF-8 suffix in bulk. It
 retains source, replacement, builder and result funding during overlap without

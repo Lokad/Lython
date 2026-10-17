@@ -4,6 +4,48 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class CsvCompatibilityTests
 {
+    [Theory]
+    [InlineData("1,2", false, "extra", "{'a': '2'}")]
+    [InlineData("\"1\",\"2\"", true, "extra", "{'a': '2'}")]
+    [InlineData("1,2,3", false, "extra", "{'a': '2', 'extra': ['3']}")]
+    [InlineData("\"1\",\"2\",\"3\"", true, "extra", "{'a': '2', 'extra': ['3']}")]
+    [InlineData("1,2,3,4,5,6,7,8,9,10", false, "extra", "{'a': '2', 'extra': ['3', '4', '5', '6', '7', '8', '9', '10']}")]
+    [InlineData("\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"10\"", true, "extra", "{'a': '2', 'extra': ['3', '4', '5', '6', '7', '8', '9', '10']}")]
+    [InlineData("1,2,3,4,5,6,7,8,9,10,11", false, "extra", "{'a': '2', 'extra': ['3', '4', '5', '6', '7', '8', '9', '10', '11']}")]
+    [InlineData("\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"10\",\"11\"", true, "extra", "{'a': '2', 'extra': ['3', '4', '5', '6', '7', '8', '9', '10', '11']}")]
+    [InlineData("1,2,\"é,😀\",4", false, "extra", "{'a': '2', 'extra': ['é,😀', '4']}")]
+    [InlineData("1,2,3", false, "a", "{'a': ['3']}")]
+    [InlineData("1", false, "extra", "{'a': None}")]
+    public async Task DictReaderExcessFieldsPreserveOrderQuotingAndRetainedAliases(
+        string input, bool numeric, string restKey, string expected)
+    {
+        var literal = input.Replace("\\", "\\\\").Replace("'", "\\'");
+        var source = "import csv\n" +
+            $"reader=csv.DictReader(['{literal}'],fieldnames=['a','a'],restkey='{restKey}',quoting={(numeric ? "csv.QUOTE_NONNUMERIC" : "csv.QUOTE_MINIMAL")})\n" +
+            "row=next(reader)\n" +
+            $"alias=row.get('{restKey}')\n" +
+            "print(row)\nnext(reader,None)\n" +
+            "if isinstance(alias,list):\n alias.append('kept')\n print(alias is row['" + restKey + "'],alias[-1])\n" +
+            "return row\n";
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var stdout = expected + "\n" + (expected.Contains('[') ? "True kept\n" : "");
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using var result = asynchronous
+                ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(stdout, result.StandardOutput);
+            Assert.True(budget.ReservedBytes > baseline);
+            result.Dispose();
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void ModuleExceptionTypes_RetainQualifiedIdentityAndResolveAliasesInExceptClauses()
     {

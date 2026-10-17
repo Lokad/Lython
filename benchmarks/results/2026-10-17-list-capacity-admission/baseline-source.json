@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-17T17:11:32.589830+00:00",
+  "revision": "97273b98aab6f2e9dff37e172f79ec3820c15322",
+  "previousGoalTurn": "progress",
+  "sourceHashes": {
+    "src/Lokad.Lython/Runtime/PyListStorage.cs": "437528bb132659b9bf4e9491652e7cbb5f53cd301f2fb2b2fe4b29ad1f8e2b31",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "78500fe61addfc51ee81c819e4b8c447f9b8903fd4a5491ba2f76a13732116ba",
+    "src/Lokad.Lython/Runtime/PyList.cs": "b32dde5ea8db06d3e0c3e0fc5a1c9e9b99737127ec3c2182558c77bdd75a1468",
+    "src/Lokad.Lython/Runtime/MemoryGovernor.cs": "4d5ef8585478ec41246553aaf586e1a910c34a24b895cda9be1c861ce84b6a9a"
+  },
+  "ciAlreadyQualified": "39052007160;terminal cached,never requery",
+  "scope": "Pre-admit full replacement before list backing growth; retain existing final charge; remove check-only/post-reserve helpers; then remove excess CSV array copy using known-capacity list. No tracing/regex migration/framework changes."
+}

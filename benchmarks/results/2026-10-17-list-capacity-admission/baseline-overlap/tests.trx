@@ -1,0 +1,224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="a6d8a7cf-e72e-4d1b-aefc-e21d46bcc8cf" name="JoannesVermorel@LOKAD-0399 2026-10-17 19:14:25" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-17T19:14:25.4920867+02:00" queuing="2026-10-17T19:14:25.4920871+02:00" start="2026-10-17T19:14:24.7202057+02:00" finish="2026-10-17T19:14:25.5172674+02:00" />
+  <TestSettings name="default" id="f9c70e48-95c0-4f39-8876-e18166f28e07">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-17_19_14_25" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="b0fbe9f9-026f-4b9d-8884-02682e22e676" testId="987873b0-3478-d041-ccd6-9a0ec919a1bb" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0000421" startTime="2026-10-17T19:14:25.4566002+02:00" endTime="2026-10-17T19:14:25.4566383+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b0fbe9f9-026f-4b9d-8884-02682e22e676">
+      <Output>
+        <StdOut>LIST_STORAGE_ADMISSION:False:True:66632</StdOut>
+        <ErrorInfo>
+          <Message>Refused list backing allocated 66632 bytes.</Message>
+          <StackTrace>   at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Boolean grow, Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs:line 70&#xD;
+   at InvokeStub_ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4e2e0b30-a4b2-4e1d-b0bb-93f93111d546" testId="d3e3b6ae-2163-2552-0625-1c65468a1f4e" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(shared: True)" computerName="LOKAD-0399" duration="00:00:00.0001755" startTime="2026-10-17T19:14:25.4572090+02:00" endTime="2026-10-17T19:14:25.4572252+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4e2e0b30-a4b2-4e1d-b0bb-93f93111d546">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Throws() Failure: No exception was thrown&#xD;
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)</Message>
+          <StackTrace>   at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs:line 22&#xD;
+   at InvokeStub_ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c4801719-6d03-42c4-b524-3e7733da7a96" testId="408d9aae-7eb7-1091-69aa-79531b216b7d" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivatePopulationAfterPromotionRefundsCurrentStorage(count: 9)" computerName="LOKAD-0399" duration="00:00:00.0001398" startTime="2026-10-17T19:14:25.4736292+02:00" endTime="2026-10-17T19:14:25.4736634+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c4801719-6d03-42c4-b524-3e7733da7a96" />
+    <UnitTestResult executionId="11558040-70a4-40e4-90ad-035c9f849a15" testId="bcff0528-d50f-a0ed-91a4-3b17f01f6c03" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivateSourcePreservesOtherLiveStorage(knownCount: 0)" computerName="LOKAD-0399" duration="00:00:00.0000160" startTime="2026-10-17T19:14:25.4740634+02:00" endTime="2026-10-17T19:14:25.4740776+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="11558040-70a4-40e4-90ad-035c9f849a15" />
+    <UnitTestResult executionId="36736a72-bbce-4d5b-b0bd-81241ece4d45" testId="ee584bfd-8d1d-1a72-4499-60abdb1663d0" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivateSourcePreservesOtherLiveStorage(knownCount: 2)" computerName="LOKAD-0399" duration="00:00:00.0002699" startTime="2026-10-17T19:14:25.4739847+02:00" endTime="2026-10-17T19:14:25.4739991+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="36736a72-bbce-4d5b-b0bd-81241ece4d45" />
+    <UnitTestResult executionId="9eec2565-6ce6-479a-8d5f-fa26e326c5f6" testId="09ff4206-5c2f-3cdb-c6ac-7205884b64cf" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedScalarAdoptionAfterPopulationStillRefundsStorage" computerName="LOKAD-0399" duration="00:00:00.0001469" startTime="2026-10-17T19:14:25.4741588+02:00" endTime="2026-10-17T19:14:25.4741727+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9eec2565-6ce6-479a-8d5f-fa26e326c5f6" />
+    <UnitTestResult executionId="d36813ba-45b7-4f93-94fa-50b6a9ecb377" testId="91ef306a-f538-c199-7697-38da2444c26e" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0045316" startTime="2026-10-17T19:14:25.4499109+02:00" endTime="2026-10-17T19:14:25.4503365+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d36813ba-45b7-4f93-94fa-50b6a9ecb377">
+      <Output>
+        <StdOut>LIST_STORAGE_ADMISSION:False:False:1176</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="eda431fa-965b-4d71-b28e-0887c95cdb9e" testId="4e18bc33-53c3-65e0-a7fe-482d427259d6" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(shared: False)" computerName="LOKAD-0399" duration="00:00:00.0011978" startTime="2026-10-17T19:14:25.4570123+02:00" endTime="2026-10-17T19:14:25.4570299+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eda431fa-965b-4d71-b28e-0887c95cdb9e">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Throws() Failure: No exception was thrown&#xD;
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)</Message>
+          <StackTrace>   at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs:line 22&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3f4fae9c-4e91-448d-9041-e427b16bd247" testId="29e695d3-573c-a144-55fa-54e57e5db43e" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivateSourcePreservesOtherLiveStorage(knownCount: 20)" computerName="LOKAD-0399" duration="00:00:00.0001252" startTime="2026-10-17T19:14:25.4740234+02:00" endTime="2026-10-17T19:14:25.4740377+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3f4fae9c-4e91-448d-9041-e427b16bd247" />
+    <UnitTestResult executionId="cfd2e4a6-ab82-483e-8ead-a9d5b1304439" testId="6c9e8a7d-3289-be11-10a6-b4e9102defad" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0005380" startTime="2026-10-17T19:14:25.4508084+02:00" endTime="2026-10-17T19:14:25.4531397+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cfd2e4a6-ab82-483e-8ead-a9d5b1304439">
+      <Output>
+        <StdOut>LIST_STORAGE_ADMISSION:True:True:66568</StdOut>
+        <ErrorInfo>
+          <Message>Refused list backing allocated 66568 bytes.</Message>
+          <StackTrace>   at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Boolean grow, Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs:line 70&#xD;
+   at InvokeStub_ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f18212ad-b247-485c-b7da-e647c940a372" testId="d2725c4e-5f03-6699-80ff-913429f58fea" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.CompletedPrivateConstructionChargesStorageAndRetainsIdentity(count: 20)" computerName="LOKAD-0399" duration="00:00:00.0000590" startTime="2026-10-17T19:14:25.4739220+02:00" endTime="2026-10-17T19:14:25.4739366+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f18212ad-b247-485c-b7da-e647c940a372" />
+    <UnitTestResult executionId="3a2f1f33-3842-4db7-b302-50a952154670" testId="51859a12-c9c0-3431-eb6a-9d02b9d4c877" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedLiveExtensionKeepsItsSuccessfulPrefixCharged" computerName="LOKAD-0399" duration="00:00:00.0087593" startTime="2026-10-17T19:14:25.4310560+02:00" endTime="2026-10-17T19:14:25.4438153+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3a2f1f33-3842-4db7-b302-50a952154670" />
+    <UnitTestResult executionId="d972f70e-ab57-44e9-a73e-98d58339bcc8" testId="42707788-646a-209e-70d8-a9bdebc47c16" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.UnderestimatedCountStillPreflightsGrowth" computerName="LOKAD-0399" duration="00:00:00.0016594" startTime="2026-10-17T19:14:25.4569426+02:00" endTime="2026-10-17T19:14:25.4569610+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d972f70e-ab57-44e9-a73e-98d58339bcc8" />
+    <UnitTestResult executionId="ddb9b223-3e88-48ad-a8d9-ecf278da901d" testId="613e4ee0-de90-b29d-e7c8-06ca0bf68e09" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivatePopulationAfterPromotionRefundsCurrentStorage(count: 30)" computerName="LOKAD-0399" duration="00:00:00.0004385" startTime="2026-10-17T19:14:25.4574094+02:00" endTime="2026-10-17T19:14:25.4574253+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ddb9b223-3e88-48ad-a8d9-ecf278da901d" />
+    <UnitTestResult executionId="b05c715f-a320-4b95-8676-01961556c83a" testId="86840a7a-5d23-3ae3-28bb-fec5fa70baa9" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.CompletedPrivateConstructionChargesStorageAndRetainsIdentity(count: 0)" computerName="LOKAD-0399" duration="00:00:00.0001314" startTime="2026-10-17T19:14:25.4738815+02:00" endTime="2026-10-17T19:14:25.4738969+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b05c715f-a320-4b95-8676-01961556c83a" />
+    <UnitTestResult executionId="50dc42d7-0a8e-4eae-923f-d1707a734cd6" testId="220a954a-336c-712e-f83a-172e31059adf" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.CompletedPrivateConstructionChargesStorageAndRetainsIdentity(count: 8)" computerName="LOKAD-0399" duration="00:00:00.0006478" startTime="2026-10-17T19:14:25.4738282+02:00" endTime="2026-10-17T19:14:25.4738469+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="50dc42d7-0a8e-4eae-923f-d1707a734cd6" />
+    <UnitTestResult executionId="ade55ea1-0363-4edb-a851-27c990dd180a" testId="099d6ee9-4de8-1518-68f0-ea02761a8851" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0000435" startTime="2026-10-17T19:14:25.4565123+02:00" endTime="2026-10-17T19:14:25.4565557+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ade55ea1-0363-4edb-a851-27c990dd180a">
+      <Output>
+        <StdOut>LIST_STORAGE_ADMISSION:True:False:1112</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2e9a4ecd-91d0-44fb-9b36-24f15315005d" testId="03a1acfd-5c08-dcc3-7bea-fd176857c60f" testName="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.DeniedPrivateIncrementalGrowthPreservesOtherLiveStorage" computerName="LOKAD-0399" duration="00:00:00.0003507" startTime="2026-10-17T19:14:25.4741116+02:00" endTime="2026-10-17T19:14:25.4741253+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2e9a4ecd-91d0-44fb-9b36-24f15315005d" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.DeniedPrivateIncrementalGrowthPreservesOtherLiveStorage" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="03a1acfd-5c08-dcc3-7bea-fd176857c60f">
+      <Execution id="2e9a4ecd-91d0-44fb-9b36-24f15315005d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="DeniedPrivateIncrementalGrowthPreservesOtherLiveStorage" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="099d6ee9-4de8-1518-68f0-ea02761a8851">
+      <Execution id="ade55ea1-0363-4edb-a851-27c990dd180a" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="RefusalPrecedesBackingAllocationAndPreservesLiveAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="4e18bc33-53c3-65e0-a7fe-482d427259d6">
+      <Execution id="eda431fa-965b-4d71-b28e-0887c95cdb9e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="GrowthFundsReplacementWhileOldStorageRemainsOwned" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivateSourcePreservesOtherLiveStorage(knownCount: 20)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="29e695d3-573c-a144-55fa-54e57e5db43e">
+      <Execution id="3f4fae9c-4e91-448d-9041-e427b16bd247" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="FailedPrivateSourcePreservesOtherLiveStorage" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivatePopulationAfterPromotionRefundsCurrentStorage(count: 9)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="408d9aae-7eb7-1091-69aa-79531b216b7d">
+      <Execution id="c4801719-6d03-42c4-b524-3e7733da7a96" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="FailedPrivatePopulationAfterPromotionRefundsCurrentStorage" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.CompletedPrivateConstructionChargesStorageAndRetainsIdentity(count: 0)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="86840a7a-5d23-3ae3-28bb-fec5fa70baa9">
+      <Execution id="b05c715f-a320-4b95-8676-01961556c83a" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="CompletedPrivateConstructionChargesStorageAndRetainsIdentity" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.CompletedPrivateConstructionChargesStorageAndRetainsIdentity(count: 20)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="d2725c4e-5f03-6699-80ff-913429f58fea">
+      <Execution id="f18212ad-b247-485c-b7da-e647c940a372" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="CompletedPrivateConstructionChargesStorageAndRetainsIdentity" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="6c9e8a7d-3289-be11-10a6-b4e9102defad">
+      <Execution id="cfd2e4a6-ab82-483e-8ead-a9d5b1304439" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="RefusalPrecedesBackingAllocationAndPreservesLiveAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivatePopulationAfterPromotionRefundsCurrentStorage(count: 30)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="613e4ee0-de90-b29d-e7c8-06ca0bf68e09">
+      <Execution id="ddb9b223-3e88-48ad-a8d9-ecf278da901d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="FailedPrivatePopulationAfterPromotionRefundsCurrentStorage" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivateSourcePreservesOtherLiveStorage(knownCount: 2)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="ee584bfd-8d1d-1a72-4499-60abdb1663d0">
+      <Execution id="36736a72-bbce-4d5b-b0bd-81241ece4d45" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="FailedPrivateSourcePreservesOtherLiveStorage" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="987873b0-3478-d041-ccd6-9a0ec919a1bb">
+      <Execution id="b0fbe9f9-026f-4b9d-8884-02682e22e676" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="RefusalPrecedesBackingAllocationAndPreservesLiveAliases" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="d3e3b6ae-2163-2552-0625-1c65468a1f4e">
+      <Execution id="4e2e0b30-a4b2-4e1d-b0bb-93f93111d546" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="GrowthFundsReplacementWhileOldStorageRemainsOwned" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivateSourcePreservesOtherLiveStorage(knownCount: 0)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="bcff0528-d50f-a0ed-91a4-3b17f01f6c03">
+      <Execution id="11558040-70a4-40e4-90ad-035c9f849a15" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="FailedPrivateSourcePreservesOtherLiveStorage" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.UnderestimatedCountStillPreflightsGrowth" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="42707788-646a-209e-70d8-a9bdebc47c16">
+      <Execution id="d972f70e-ab57-44e9-a73e-98d58339bcc8" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="UnderestimatedCountStillPreflightsGrowth" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedLiveExtensionKeepsItsSuccessfulPrefixCharged" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="51859a12-c9c0-3431-eb6a-9d02b9d4c877">
+      <Execution id="3a2f1f33-3842-4db7-b302-50a952154670" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="FailedLiveExtensionKeepsItsSuccessfulPrefixCharged" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedScalarAdoptionAfterPopulationStillRefundsStorage" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="09ff4206-5c2f-3cdb-c6ac-7205884b64cf">
+      <Execution id="9eec2565-6ce6-479a-8d5f-fa26e326c5f6" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="FailedScalarAdoptionAfterPopulationStillRefundsStorage" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.CompletedPrivateConstructionChargesStorageAndRetainsIdentity(count: 8)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="220a954a-336c-712e-f83a-172e31059adf">
+      <Execution id="50dc42d7-0a8e-4eae-923f-d1707a734cd6" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="CompletedPrivateConstructionChargesStorageAndRetainsIdentity" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="91ef306a-f538-c199-7697-38da2444c26e">
+      <Execution id="d36813ba-45b7-4f93-94fa-50b6a9ecb377" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ListConstructionAbortAccountingTests" name="RefusalPrecedesBackingAllocationAndPreservesLiveAliases" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="987873b0-3478-d041-ccd6-9a0ec919a1bb" executionId="b0fbe9f9-026f-4b9d-8884-02682e22e676" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d3e3b6ae-2163-2552-0625-1c65468a1f4e" executionId="4e2e0b30-a4b2-4e1d-b0bb-93f93111d546" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="408d9aae-7eb7-1091-69aa-79531b216b7d" executionId="c4801719-6d03-42c4-b524-3e7733da7a96" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bcff0528-d50f-a0ed-91a4-3b17f01f6c03" executionId="11558040-70a4-40e4-90ad-035c9f849a15" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ee584bfd-8d1d-1a72-4499-60abdb1663d0" executionId="36736a72-bbce-4d5b-b0bd-81241ece4d45" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="09ff4206-5c2f-3cdb-c6ac-7205884b64cf" executionId="9eec2565-6ce6-479a-8d5f-fa26e326c5f6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="91ef306a-f538-c199-7697-38da2444c26e" executionId="d36813ba-45b7-4f93-94fa-50b6a9ecb377" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4e18bc33-53c3-65e0-a7fe-482d427259d6" executionId="eda431fa-965b-4d71-b28e-0887c95cdb9e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="29e695d3-573c-a144-55fa-54e57e5db43e" executionId="3f4fae9c-4e91-448d-9041-e427b16bd247" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6c9e8a7d-3289-be11-10a6-b4e9102defad" executionId="cfd2e4a6-ab82-483e-8ead-a9d5b1304439" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d2725c4e-5f03-6699-80ff-913429f58fea" executionId="f18212ad-b247-485c-b7da-e647c940a372" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="51859a12-c9c0-3431-eb6a-9d02b9d4c877" executionId="3a2f1f33-3842-4db7-b302-50a952154670" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="42707788-646a-209e-70d8-a9bdebc47c16" executionId="d972f70e-ab57-44e9-a73e-98d58339bcc8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="613e4ee0-de90-b29d-e7c8-06ca0bf68e09" executionId="ddb9b223-3e88-48ad-a8d9-ecf278da901d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="86840a7a-5d23-3ae3-28bb-fec5fa70baa9" executionId="b05c715f-a320-4b95-8676-01961556c83a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="220a954a-336c-712e-f83a-172e31059adf" executionId="50dc42d7-0a8e-4eae-923f-d1707a734cd6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="099d6ee9-4de8-1518-68f0-ea02761a8851" executionId="ade55ea1-0363-4edb-a851-27c990dd180a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="03a1acfd-5c08-dcc3-7bea-fd176857c60f" executionId="2e9a4ecd-91d0-44fb-9b36-24f15315005d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="18" executed="18" passed="14" failed="4" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.41]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.43]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.46]       Refused list backing allocated 66568 bytes.&#xD;
+[xUnit.net 00:00:00.46]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.46]         D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs(70,0): at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Boolean grow, Boolean shared)&#xD;
+[xUnit.net 00:00:00.46]            at InvokeStub_ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.46]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.46]       Output:&#xD;
+[xUnit.net 00:00:00.46]         LIST_STORAGE_ADMISSION:True:True:66568&#xD;
+[xUnit.net 00:00:00.46]       Refused list backing allocated 66632 bytes.&#xD;
+[xUnit.net 00:00:00.46]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.46]         D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs(70,0): at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Boolean grow, Boolean shared)&#xD;
+[xUnit.net 00:00:00.46]            at InvokeStub_ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.46]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.46]       Output:&#xD;
+[xUnit.net 00:00:00.46]         LIST_STORAGE_ADMISSION:False:True:66632&#xD;
+[xUnit.net 00:00:00.47]       Assert.Throws() Failure: No exception was thrown&#xD;
+[xUnit.net 00:00:00.47]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)&#xD;
+[xUnit.net 00:00:00.47]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.47]         D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs(22,0): at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(Boolean shared)&#xD;
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)&#xD;
+[xUnit.net 00:00:00.47]       Assert.Throws() Failure: No exception was thrown&#xD;
+[xUnit.net 00:00:00.47]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)&#xD;
+[xUnit.net 00:00:00.47]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.47]         D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs(22,0): at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(Boolean shared)&#xD;
+[xUnit.net 00:00:00.47]            at InvokeStub_ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.48]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-17T19:14:25.4549202+02:00">
+        <Text>[xUnit.net 00:00:00.46]     Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: True, shared: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-17T19:14:25.4567598+02:00">
+        <Text>[xUnit.net 00:00:00.46]     Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: False, shared: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-17T19:14:25.4570994+02:00">
+        <Text>[xUnit.net 00:00:00.47]     Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(shared: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-17T19:14:25.4573012+02:00">
+        <Text>[xUnit.net 00:00:00.47]     Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(shared: True) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

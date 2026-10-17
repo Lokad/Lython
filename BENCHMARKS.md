@@ -164,6 +164,13 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [list admission / CSV-copy diagnostic](benchmarks/results/2026-10-17-list-capacity-admission/README.md)
+has separate native allocation evidence: 128 conversions of pre-read rows with
+nine excess fields allocate 74,752 → 61,440 bytes; the normal-width control stays
+at 30,720 bytes. It measures two frozen runtime files on 97273b98, excludes
+parsing/public execution, and establishes no whole-script or CPython speedup.
+The admission fix also funds replacement overlap before backing allocation.
+
 The complete CSV helper checkpoint
 [BU](benchmarks/results/2026-10-17-csv-checkpoint/README.md) separately measures
 a35ee62c → 463b7a7a: 8.432 → 8.581 ms, with 5.86%/4.36% spreads. The 1.77%

@@ -1,0 +1,93 @@
+VSTest version 18.3.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.41]   Discovered:  Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.43]   Starting:    Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.46]       Refused list backing allocated 66568 bytes.
+[xUnit.net 00:00:00.46]       Stack Trace:
+[xUnit.net 00:00:00.46]         D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs(70,0): at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Boolean grow, Boolean shared)
+[xUnit.net 00:00:00.46]            at InvokeStub_ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Object, Span`1)
+[xUnit.net 00:00:00.46]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.46]       Output:
+[xUnit.net 00:00:00.46]         LIST_STORAGE_ADMISSION:True:True:66568
+[xUnit.net 00:00:00.46]       Refused list backing allocated 66632 bytes.
+[xUnit.net 00:00:00.46]       Stack Trace:
+[xUnit.net 00:00:00.46]         D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs(70,0): at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Boolean grow, Boolean shared)
+[xUnit.net 00:00:00.46]            at InvokeStub_ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Object, Span`1)
+[xUnit.net 00:00:00.46]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.46]       Output:
+[xUnit.net 00:00:00.46]         LIST_STORAGE_ADMISSION:False:True:66632
+[xUnit.net 00:00:00.47]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.47]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+[xUnit.net 00:00:00.47]       Stack Trace:
+[xUnit.net 00:00:00.47]         D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs(22,0): at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(Boolean shared)
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.47]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.47]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+[xUnit.net 00:00:00.47]       Stack Trace:
+[xUnit.net 00:00:00.47]         D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs(22,0): at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(Boolean shared)
+[xUnit.net 00:00:00.47]            at InvokeStub_ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(Object, Span`1)
+[xUnit.net 00:00:00.47]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedLiveExtensionKeepsItsSuccessfulPrefixCharged [8 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: False, shared: False) [4 ms]
+  Failed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: True, shared: True) [< 1 ms]
+  Error Message:
+   Refused list backing allocated 66568 bytes.
+  Stack Trace:
+     at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Boolean grow, Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs:line 70
+   at InvokeStub_ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ LIST_STORAGE_ADMISSION:True:True:66568
+
+
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: True, shared: False) [< 1 ms]
+  Failed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: False, shared: True) [< 1 ms]
+  Error Message:
+   Refused list backing allocated 66632 bytes.
+  Stack Trace:
+     at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Boolean grow, Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs:line 70
+   at InvokeStub_ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ LIST_STORAGE_ADMISSION:False:True:66632
+
+
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.UnderestimatedCountStillPreflightsGrowth [1 ms]
+  Failed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(shared: False) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs:line 22
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(shared: True) [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\ListConstructionAbortAccountingTests.cs:line 22
+   at InvokeStub_ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivatePopulationAfterPromotionRefundsCurrentStorage(count: 30) [< 1 ms]
+[xUnit.net 00:00:00.48]   Finished:    Lokad.Lython.WhiteBox.Tests
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivatePopulationAfterPromotionRefundsCurrentStorage(count: 9) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.CompletedPrivateConstructionChargesStorageAndRetainsIdentity(count: 8) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.CompletedPrivateConstructionChargesStorageAndRetainsIdentity(count: 0) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.CompletedPrivateConstructionChargesStorageAndRetainsIdentity(count: 20) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivateSourcePreservesOtherLiveStorage(knownCount: 2) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivateSourcePreservesOtherLiveStorage(knownCount: 20) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivateSourcePreservesOtherLiveStorage(knownCount: 0) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.DeniedPrivateIncrementalGrowthPreservesOtherLiveStorage [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedScalarAdoptionAfterPopulationStillRefundsStorage [< 1 ms]
+Results File: D:\code\Lython\.git\agent-notes\list-capacity-admission-20261017\baseline-overlap\tests.trx
+
+Total tests: 18
+     Passed: 14
+     Failed: 4
+ Total time: 0.7886 Seconds

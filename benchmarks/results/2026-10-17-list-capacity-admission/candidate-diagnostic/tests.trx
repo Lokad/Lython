@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="7632cc58-6e87-4052-aba7-bfef2f7e9837" name="JoannesVermorel@LOKAD-0399 2026-10-17 19:20:46" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-17T19:20:46.5950091+02:00" queuing="2026-10-17T19:20:46.5950092+02:00" start="2026-10-17T19:20:45.7948814+02:00" finish="2026-10-17T19:20:46.5976394+02:00" />
+  <TestSettings name="default" id="7bb7242f-8e47-4994-8356-08e7a9a8f64f">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-17_19_20_46" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="4257404f-eba2-465f-9be6-0196bfe5ab74" testId="b89babee-8b5d-86f0-ae95-5c52c0652b5f" testName="Lokad.Lython.Tests.CsvOverflowAllocationProbe.ConvertPreReadRows(extraCount: 0)" computerName="LOKAD-0399" duration="00:00:00.0009056" startTime="2026-10-17T19:20:46.5311487+02:00" endTime="2026-10-17T19:20:46.5312077+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4257404f-eba2-465f-9be6-0196bfe5ab74">
+      <Output>
+        <StdOut>CSV_OVERFLOW_DIAGNOSTIC:{"extraCount":0,"conversions":128,"samples":[30720,30720,30720,30720,30720,30720,30720],"ticks":[268,266,271,286,284,272,277],"frequency":10000000}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="87eda7b6-b8f8-477f-9db2-b73536038991" testId="400039fd-16f5-118e-56b0-5b840dbdbc63" testName="Lokad.Lython.Tests.CsvOverflowAllocationProbe.ConvertPreReadRows(extraCount: 9)" computerName="LOKAD-0399" duration="00:00:00.0398774" startTime="2026-10-17T19:20:46.4821096+02:00" endTime="2026-10-17T19:20:46.5258790+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="87eda7b6-b8f8-477f-9db2-b73536038991">
+      <Output>
+        <StdOut>CSV_OVERFLOW_DIAGNOSTIC:{"extraCount":9,"conversions":128,"samples":[61440,61440,61440,61440,61440,61440,61440],"ticks":[1231,1311,1262,1301,1429,1375,1391],"frequency":10000000}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.CsvOverflowAllocationProbe.ConvertPreReadRows(extraCount: 9)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="400039fd-16f5-118e-56b0-5b840dbdbc63">
+      <Execution id="87eda7b6-b8f8-477f-9db2-b73536038991" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvOverflowAllocationProbe" name="ConvertPreReadRows" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvOverflowAllocationProbe.ConvertPreReadRows(extraCount: 0)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="b89babee-8b5d-86f0-ae95-5c52c0652b5f">
+      <Execution id="4257404f-eba2-465f-9be6-0196bfe5ab74" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvOverflowAllocationProbe" name="ConvertPreReadRows" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="b89babee-8b5d-86f0-ae95-5c52c0652b5f" executionId="4257404f-eba2-465f-9be6-0196bfe5ab74" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="400039fd-16f5-118e-56b0-5b840dbdbc63" executionId="87eda7b6-b8f8-477f-9db2-b73536038991" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.14]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.41]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.42]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.49]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

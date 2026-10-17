@@ -1,0 +1,14 @@
+{
+  "source": "list-capacity-admission",
+  "production": "97273b98-before-fix",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "5A86C1F03CEFB39366C32D8525A032290942FB8A6B3DAE4258057485B0990362",
+  "filter": "FullyQualifiedName~Lokad.Lython.Tests.ListConstructionAbortAccountingTests",
+  "pid": 53528,
+  "hasExited": true,
+  "exitCode": 1,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1070,
+  "stdoutSha256": "06BD7A3BECA193E9DB8760D78B126104DAA7A912DE2B9B52E4C8206C84ED4A13",
+  "stderrSha256": "ACF588BC570BE3B953CCF8D0F95D86AEC0DC374CD9B772C5322411F0C5B3F562"
+}

@@ -159,14 +159,13 @@ internal sealed partial class LythonRuntime
 
             if (row.Count > fieldNames.Length)
             {
-                var extras = new object[row.Count - fieldNames.Length];
+                var extras = new PyList(row.Count - fieldNames.Length, governor, span);
                 for (var i = fieldNames.Length; i < row.Count; i++)
                 {
-                    extras[i - fieldNames.Length] = row[i];
+                    extras.Add(row[i]);
                 }
 
-                var extrasList = new PyList(extras, governor, span);
-                dict.SetItem(LythonRuntime.ValidateDictionaryKey(restKey, span), extrasList);
+                dict.SetItem(LythonRuntime.ValidateDictionaryKey(restKey, span), extras);
             }
 
             return dict;

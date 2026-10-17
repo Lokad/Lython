@@ -1,0 +1,8 @@
+# Preserve measured receipts, recipe and recorded hashes on every platform.
+*.json -text whitespace=cr-at-eol
+*.txt -text whitespace=cr-at-eol
+*.trx -text whitespace=cr-at-eol
+*.patch -text -whitespace
+**/*.json -text whitespace=cr-at-eol
+**/*.txt -text whitespace=cr-at-eol
+**/*.trx -text whitespace=cr-at-eol

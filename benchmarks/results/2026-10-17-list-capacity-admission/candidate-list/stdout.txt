@@ -1,0 +1,54 @@
+VSTest version 18.3.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.39]   Discovered:  Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.41]   Starting:    Lokad.Lython.WhiteBox.Tests
+  Passed Lokad.Lython.Tests.MemoryGovernorDenialAccountingTests.UnboundedGovernorNeverDenies [4 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.DeniedGovernorAttachmentLeavesTheListUnowned [5 ms]
+  Passed Lokad.Lython.Tests.MemoryGovernorInvariantTests.PairedUseStillBalances [4 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedLiveExtensionKeepsItsSuccessfulPrefixCharged [6 ms]
+  Passed Lokad.Lython.Tests.MemoryGovernorInvariantTests.UnpairedCommitThrowsInStrictBuilds [< 1 ms]
+  Passed Lokad.Lython.Tests.MemoryGovernorInvariantTests.UnpairedReleaseThrowsInStrictBuilds [< 1 ms]
+  Passed Lokad.Lython.Tests.MemoryGovernorDenialAccountingTests.RefusalPreventsFurtherAdmissionButAllowsRefunds [< 1 ms]
+  Passed Lokad.Lython.Tests.MemoryGovernorDenialAccountingTests.DenialIsRecorded [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: False, shared: False) [3 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: True, shared: True) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: True, shared: False) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: False, shared: True) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.UnderestimatedCountStillPreflightsGrowth [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(shared: False) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(shared: True) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivatePopulationAfterPromotionRefundsCurrentStorage(count: 30) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivatePopulationAfterPromotionRefundsCurrentStorage(count: 9) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.CompletedPrivateConstructionChargesStorageAndRetainsIdentity(count: 8) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.CompletedPrivateConstructionChargesStorageAndRetainsIdentity(count: 0) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.CompletedPrivateConstructionChargesStorageAndRetainsIdentity(count: 20) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivateSourcePreservesOtherLiveStorage(knownCount: 2) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivateSourcePreservesOtherLiveStorage(knownCount: 20) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedPrivateSourcePreservesOtherLiveStorage(knownCount: 0) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.DeniedPrivateIncrementalGrowthPreservesOtherLiveStorage [< 1 ms]
+  Passed Lokad.Lython.Tests.ListConstructionAbortAccountingTests.FailedScalarAdoptionAfterPopulationStillRefundsStorage [< 1 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.TrackedPayloadDoesNotChangeTheSlotPolicy [15 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.RemovingOneAliasReleasesItsSlotAllowance [< 1 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.AttachedGovernorFundsExistingSlotsBeforeTheirRemoval [< 1 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.NonnumericSlotsKeepTheBackingFeeAndBooleanSlotsPayAllowances [< 1 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.DeniedBackingGrowthRefundsItsNumericDelta(operation: "extend", budget: 850) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.DeniedBackingGrowthRefundsItsNumericDelta(operation: "insert", budget: 800) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.DeniedBackingGrowthRefundsItsNumericDelta(operation: "repeat", budget: 1250) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.DeniedBackingGrowthRefundsItsNumericDelta(operation: "append", budget: 800) [< 1 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.EachOccupiedNumericAliasCarriesAStorageAllowance [< 1 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.NumericReplacementTransfersItsExistingSlotAllowance [< 1 ms]
+[xUnit.net 00:00:00.46]   Finished:    Lokad.Lython.WhiteBox.Tests
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.PinnedBudgetDeniesRepeatedSlotsBeforeMutation [< 1 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.PinnedBudgetDeniesAnotherAliasBeforeMutation(operation: "extend") [< 1 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.PinnedBudgetDeniesAnotherAliasBeforeMutation(operation: "insert") [< 1 ms]
+  Passed Lokad.Lython.Tests.ListNumericStoragePolicyTests.PinnedBudgetDeniesAnotherAliasBeforeMutation(operation: "append") [< 1 ms]
+Results File: D:\code\Lython\.git\agent-notes\list-capacity-admission-20261017\candidate-list\tests.trx
+
+Test Run Successful.
+Total tests: 39
+     Passed: 39
+ Total time: 0.7504 Seconds

@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "performanceQualified": false,
+  "recordedAtUtc": "2026-10-17T17:23:25.751337+00:00",
+  "baseRevision": "97273b98aab6f2e9dff37e172f79ec3820c15322",
+  "candidate": "Two frozen runtime files on97273b98; temporary diagnostic removed before delivery. Source hashes/diff identify measured code.",
+  "baselineSourceSha256": {
+    "src/Lokad.Lython/Runtime/PyListStorage.cs": "437528bb132659b9bf4e9491652e7cbb5f53cd301f2fb2b2fe4b29ad1f8e2b31",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "78500fe61addfc51ee81c819e4b8c447f9b8903fd4a5491ba2f76a13732116ba",
+    "src/Lokad.Lython/Runtime/PyList.cs": "b32dde5ea8db06d3e0c3e0fc5a1c9e9b99737127ec3c2182558c77bdd75a1468",
+    "src/Lokad.Lython/Runtime/MemoryGovernor.cs": "4d5ef8585478ec41246553aaf586e1a910c34a24b895cda9be1c861ce84b6a9a"
+  },
+  "candidateSourceSha256": {
+    "src/Lokad.Lython/Runtime/PyListStorage.cs": "3194f178f7208005c8d17c033758275f6b47ff2624346a2bc348ab3ae00b1dbc",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "c145f20ca2b8a1c71642d6e737af2b4182421f5d3da429ee96cdf13042687349",
+    "src/Lokad.Lython/Runtime/PyList.cs": "b32dde5ea8db06d3e0c3e0fc5a1c9e9b99737127ec3c2182558c77bdd75a1468",
+    "src/Lokad.Lython/Runtime/MemoryGovernor.cs": "4d5ef8585478ec41246553aaf586e1a910c34a24b895cda9be1c861ce84b6a9a"
+  },
+  "changedRuntimeFiles": [
+    "src/Lokad.Lython/Runtime/PyListStorage.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs"
+  ],
+  "probeSha256": "f8cc18932ef0858403bcf99603e0b035b7adc2f64b0a372c588e373aa9ee3e33",
+  "boundary": "128 native DictReader conversions from pre-read rows on one current managed thread. Parsing, compilation, context/input setup, public worker startup/projection and disposal are outside timer/allocation counter. Working ownership is a finite scope; all reservations return to zero after each sample. This is not a complete script or CPython comparison.",
+  "sampling": "Four discarded warmups, seven samples per role/control; one baseline and one candidate capture; ordinary GC/tiering; no forced GC or long lane.",
+  "comparisons": [
+    {
+      "extraCount": 9,
+      "conversions": 128,
+      "baselineAllocatedBytes": 74752,
+      "candidateAllocatedBytes": 61440,
+      "baselineMedianMs": 0.1523,
+      "candidateMedianMs": 0.1311,
+      "baselineIqrFraction": 0.07452396585686137,
+      "candidateIqrFraction": 0.07742181540808549,
+      "elapsedQualified": false
+    },
+    {
+      "extraCount": 0,
+      "conversions": 128,
+      "baselineAllocatedBytes": 30720,
+      "candidateAllocatedBytes": 30720,
+      "baselineMedianMs": 0.029,
+      "candidateMedianMs": 0.027200000000000002,
+      "baselineIqrFraction": 0.034482758620689745,
+      "candidateIqrFraction": 0.04044117647058811,
+      "elapsedQualified": false
+    }
+  ],
+  "machine": {
+    "os": "Windows11 Business26200 x64",
+    "cpu": "Intel Corei7-14700KF,20cores/28logical",
+    "buildSdk": "10.0.300-preview.0.26177.108",
+    "runtime": "10.0.13",
+    "referenceForSemanticsOnly": "CPython3.13.2; not timed"
+  },
+  "checks": [
+    {
+      "stage": "baseline-overlap",
+      "total": 18,
+      "passed": 14,
+      "failed": 4,
+      "process": {
+        "source": "list-capacity-admission",
+        "production": "97273b98-before-fix",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "5A86C1F03CEFB39366C32D8525A032290942FB8A6B3DAE4258057485B0990362",
+        "filter": "FullyQualifiedName~Lokad.Lython.Tests.ListConstructionAbortAccountingTests",
+        "pid": 53528,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1070,
+        "stdoutSha256": "06BD7A3BECA193E9DB8760D78B126104DAA7A912DE2B9B52E4C8206C84ED4A13",
+        "stderrSha256": "ACF588BC570BE3B953CCF8D0F95D86AEC0DC374CD9B772C5322411F0C5B3F562"
+      }
+    },
+    {
+      "stage": "candidate-list",
+      "total": 39,
+      "passed": 39,
+      "failed": 0,
+      "process": {
+        "source": "list-capacity-admission",
+        "production": "97273b98-plus-capacity-csv-fix",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "D415B459E85C5FAB17A5C47088DF80864D9C7EB73E965C345D3C8E5D60BF4E43",
+        "filter": "FullyQualifiedName~Lokad.Lython.Tests.ListConstructionAbortAccountingTests|FullyQualifiedName~Lokad.Lython.Tests.ListNumericStoragePolicyTests|FullyQualifiedName~Lokad.Lython.Tests.MemoryGovernor",
+        "pid": 51132,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1021,
+        "stdoutSha256": "572B4492754939DBB3F7025879389636022CB5B5F7D7DC174090337751C12628",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "baseline-diagnostic",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "process": {
+        "source": "list-capacity-admission",
+        "production": "97273b98-before-fix",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "9621BA3B293E6413AAB59A85C2EA114E0026509196AFB51ABFA2F364D30E56A4",
+        "filter": "FullyQualifiedName~Lokad.Lython.Tests.CsvOverflowAllocationProbe",
+        "pid": 51364,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1085,
+        "stdoutSha256": "3957F146C13DD24D5840785778FF3052A38DBF578D0537CAD154B353728AFABD",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "candidate-diagnostic",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "process": {
+        "source": "list-capacity-admission",
+        "production": "97273b98-plus-capacity-csv-fix",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "D415B459E85C5FAB17A5C47088DF80864D9C7EB73E965C345D3C8E5D60BF4E43",
+        "filter": "FullyQualifiedName~Lokad.Lython.Tests.CsvOverflowAllocationProbe",
+        "pid": 23068,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1077,
+        "stdoutSha256": "842A2A339CA5376CF3DEF9A1F2239B2E4FEEFE5C3C67D3395D881835CF562D5D",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "baseline-csv",
+      "total": 11,
+      "passed": 6,
+      "failed": 5,
+      "process": {
+        "source": "list-capacity-admission",
+        "production": "97273b98-before-fix",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "F48C9ED813586901BAEDFC25BF62EDBC0A177951CD10CB2C5EDAE66C50C9B52D",
+        "filter": "FullyQualifiedName~Lokad.Lython.PublicApi.Tests.CsvCompatibilityTests.DictReaderExcessFields",
+        "pid": 22820,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2378,
+        "stdoutSha256": "11975B087100668EBFD3B288F17C1025814B21709C290131E24CBADAF7E0D4B5",
+        "stderrSha256": "4D4C5AF1872BE14DF7C41C80A2A5AABD3D7661D6AF83343E8EB2C60BCE860F87"
+      }
+    }
+  ],
+  "unquotedNumericFinding": "Pre-existing reader QUOTE_NONNUMERIC conversion is missing; five independent failing CPython goldens retained separately and scheduled after this memory/copy delivery. Current public controls use correct quoted-field semantics.",
+  "evidenceSha256": {
+    "baseline-csv/process.receipt.json": "0a2bf6ec6d9f31789ed3203f6b244701760a0b12e93b36575510bb22d7230788",
+    "baseline-csv/stderr.txt": "4d4c5af1872be14df7c41c80a2a5aabd3d7661d6af83343e8eb2c60bce860f87",
+    "baseline-csv/stdout.txt": "11975b087100668ebfd3b288f17c1025814b21709c290131e24cbadaf7e0d4b5",
+    "baseline-csv/tests.trx": "401ff609c39c0786c6d9f49eccb9c3063f231cb2ccf2a766149d3176ea56059e",
+    "baseline-diagnostic/process.receipt.json": "03c1ac1c06c9d04aef9150e8dd3b02e259dd84fb106859c8189f4312ee488c5b",
+    "baseline-diagnostic/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "baseline-diagnostic/stdout.txt": "3957f146c13dd24d5840785778ff3052a38dbf578d0537cad154b353728afabd",
+    "baseline-diagnostic/tests.trx": "4015b363fa4c20c2c99084a6c1e519e269c80496887130362db77f909ef4f9b3",
+    "baseline-overlap/process.receipt.json": "f58333f02e933f7caa8cece35d056714e4081858cdcbb5bfb3b6ebcd42ce4eca",
+    "baseline-overlap/stderr.txt": "acf588bc570be3b953ccf8d0f95d86aec0dc374cd9b772c5322411f0c5b3f562",
+    "baseline-overlap/stdout.txt": "06bd7a3beca193e9db8760d78b126104daa7a912de2b9b52e4c8206c84ed4a13",
+    "baseline-overlap/tests.trx": "a1feaf7be7706bb371c5b99d3091c64c204873035271f8ee5b5125fd6aff2db3",
+    "baseline-source.json": "1a1d537d039610b7c9c4519007172b8448adb9099955150bda494c36d4c65bd0",
+    "candidate-diagnostic/process.receipt.json": "a36acf922d7f5bd8403b16b885e6e59d96303b02e9c9c0010056c52c620c497c",
+    "candidate-diagnostic/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "candidate-diagnostic/stdout.txt": "842a2a339ca5376cf3def9a1f2239b2e4feefe5c3c67d3395d881835cf562d5d",
+    "candidate-diagnostic/tests.trx": "66bf8ca28bad17d4df50592a3df7d568f06d1e18a8a68ff85a387ccd68b60876",
+    "candidate-list/process.receipt.json": "b89024d3fa182e626bf656e0c9aaa1fbcd2ffaf1d95c4dbc880f6af019939d33",
+    "candidate-list/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "candidate-list/stdout.txt": "572b4492754939dbb3f7025879389636022cb5b5f7d7dc174090337751c12628",
+    "candidate-list/tests.trx": "4557c0cac542d6a3fe8d6e46aeff95e90cac08a0e47348a0f26619ac03ce7dbb",
+    "cpython-quoted-controls.json": "9317b16fdabc6396e0e322fffb5e6f11b968e91b8c48b0fcf354effc2e03e6a0",
+    "CsvOverflowAllocationProbe.cs.txt": "f8cc18932ef0858403bcf99603e0b035b7adc2f64b0a372c588e373aa9ee3e33",
+    "diagnostic-samples.json": "55c3c2106a0c965bbf92156180572e91120f8717ace09d8726479f1c42b6128b",
+    "initial-CsvCompatibilityTests.cs.txt": "28dd3cb9ac0318d5d2aa1a9e8eb0f69602dbab19ca4f4db8fbd622e691bffb0b",
+    "runtime.patch": "36608178e48b22342fd09c29c517c293f61c35610ab743e47b81555a6a14ef10",
+    "unquoted-numeric-cpython-baseline.json": "f16b871d3806791849226855f188c28b5cc91d80f0ef699a9e62228b957d27a1"
+  }
+}

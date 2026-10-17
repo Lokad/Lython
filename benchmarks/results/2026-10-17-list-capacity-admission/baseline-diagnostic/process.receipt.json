@@ -1,0 +1,14 @@
+{
+  "source": "list-capacity-admission",
+  "production": "97273b98-before-fix",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "9621BA3B293E6413AAB59A85C2EA114E0026509196AFB51ABFA2F364D30E56A4",
+  "filter": "FullyQualifiedName~Lokad.Lython.Tests.CsvOverflowAllocationProbe",
+  "pid": 51364,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1085,
+  "stdoutSha256": "3957F146C13DD24D5840785778FF3052A38DBF578D0537CAD154B353728AFABD",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

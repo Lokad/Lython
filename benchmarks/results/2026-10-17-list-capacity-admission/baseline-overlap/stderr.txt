@@ -1,0 +1,5 @@
+[xUnit.net 00:00:00.46]     Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: True, shared: True) [FAIL]
+[xUnit.net 00:00:00.46]     Lokad.Lython.Tests.ListConstructionAbortAccountingTests.RefusalPrecedesBackingAllocationAndPreservesLiveAliases(grow: False, shared: True) [FAIL]
+[xUnit.net 00:00:00.47]     Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(shared: False) [FAIL]
+[xUnit.net 00:00:00.47]     Lokad.Lython.Tests.ListConstructionAbortAccountingTests.GrowthFundsReplacementWhileOldStorageRemainsOwned(shared: True) [FAIL]
+Test Run Failed.

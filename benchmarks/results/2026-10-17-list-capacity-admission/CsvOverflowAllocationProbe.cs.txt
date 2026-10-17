@@ -1,0 +1,64 @@
+using System.Diagnostics;
+using System.Text.Json;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary affected-kernel diagnostic; archive/remove before final qualification.
+public sealed class CsvOverflowAllocationProbe(ITestOutputHelper output)
+{
+    [Theory]
+    [InlineData(0)]
+    [InlineData(9)]
+    public void ConvertPreReadRows(int extraCount)
+    {
+        const int conversions = 128;
+        var samples = new List<long>();
+        var ticks = new List<long>();
+        for (var sample = -4; sample < 7; sample++)
+        {
+            var budget = new LythonMemoryBudget(16 * 1024 * 1024);
+            using var owner = budget.CreateScope();
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var governor = context.MemoryGovernor;
+            var span = new LythonSourceSpan(0, 1, 1, 1);
+            var value = PyString.FromString("é😀", governor, span);
+            var row = new PyList(Enumerable.Repeat<object>(value, extraCount + 1), governor, span);
+            var field = PyString.FromString("a", governor, span);
+            var rest = PyString.FromString("extra", governor, span);
+            var options = new LythonRuntime.CsvOptions(PyString.FromString(","), PyString.FromString("\""),
+                LythonRuntime.CsvQuotingMode.Minimal, true, null, false, PyString.FromString("\n"), false);
+            var records = new LythonRuntime.CsvRecordSource(new PyList([], governor, span), options, span, context);
+            var reader = new LythonRuntime.CsvDictReaderObject(records, [field], rest, PyNone.Instance, governor, span);
+            object? last = PyNone.Instance;
+            var count = 0;
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var start = Stopwatch.GetTimestamp();
+            for (var i = 0; i < conversions; i++)
+            {
+                records.PushBack(row);
+                if (!reader.TryMoveNext(out last)) throw new Exception("Missing pre-read row.");
+                count += ((PyDict)last!).Count;
+            }
+            var elapsed = Stopwatch.GetTimestamp() - start;
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            Assert.Equal(conversions * (extraCount == 0 ? 1 : 2), count);
+            if (extraCount > 0)
+            {
+                Assert.True(((PyDict)last!).TryGetValue(rest, out var tail));
+                var extras = Assert.IsType<PyList>(tail);
+                Assert.Equal(extraCount, extras.Count);
+                foreach (var item in extras) Assert.Same(value, item);
+            }
+            Assert.Equal(0, governor.CurrentReservedBytes);
+            if (sample >= 0) { samples.Add(allocated); ticks.Add(elapsed); }
+            owner.Dispose();
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        output.WriteLine("CSV_OVERFLOW_DIAGNOSTIC:" + JsonSerializer.Serialize(new
+            { extraCount, conversions, samples, ticks, frequency = Stopwatch.Frequency }));
+    }
+}
