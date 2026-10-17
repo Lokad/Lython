@@ -1,0 +1,55 @@
+using System.Numerics;
+using System.Text.Json;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary executable-loop diagnostic; archive/remove before final qualification.
+public sealed class BoundedStartsWithAllocationProbe(ITestOutputHelper output)
+{
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task DistinctReceivers(bool asynchronous, bool exposed)
+    {
+        var source = "checksum=0\nfor text in values:\n " + (exposed ? "method=text.startswith\n checksum+=method('😀',1,3)" : "checksum+=text.startswith('😀',1,3)") + "\nreturn checksum";
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var values = new List<object>();
+        var expected = 0;
+        for (var i = 0; i < 128; i++)
+        {
+            var value = PyString.FromString("a😀" + i + "a", context.MemoryGovernor, null);
+            values.Add(value);
+            expected++;
+        }
+        context.Variables["values"] = new PyList(values, context.MemoryGovernor, null);
+        var samples = new List<long>();
+        object? result = null;
+        for (var sample = -4; sample < 8; sample++)
+        {
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var pending = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+            if (!pending.IsCompleted) throw new Exception("Native loop must complete inline.");
+            result = await pending;
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            if (sample >= 0) samples.Add(allocated);
+        }
+        Assert.Equal(new BigInteger(expected), Assert.IsType<BigInteger>(result));
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        output.WriteLine("BOUNDED_STARTSWITH_ALLOCATION:" + JsonSerializer.Serialize(new { asynchronous, exposed, callsPerSample = 128, samples, expected }));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+}

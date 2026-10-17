@@ -170,14 +170,32 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private static object InvokeStringStartsWith(PyString receiver, object prefix, LythonSourceSpan span, ExecutionContext context)
+    private static object InvokeStringStartsWith(PyString receiver, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);
         try
         {
             context.CheckExecution(span);
             context.CheckExecution(span);
-            return StringMembers.StartsOrEndsWith(receiver, prefix, 0, receiver.Length, false, true, span);
+            return arguments.Length == 1
+                ? StringMembers.StartsOrEndsWith(receiver, arguments.Span[0]!, 0, receiver.Length, false, true, span)
+                : StringMembers.InvokeStringAffix(receiver, arguments, span, context, isStart: true, asynchronous: false).GetAwaiter().GetResult();
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
+    private static async ValueTask<object> InvokeStringStartsWithAsync(
+        PyString receiver, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            // The caller keeps the operand memory live until all bound hooks
+            // finish, including descriptor binding and asynchronous host I/O.
+            return await StringMembers.InvokeStringAffix(receiver, arguments, span, context, isStart: true, asynchronous: true).ConfigureAwait(false);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }

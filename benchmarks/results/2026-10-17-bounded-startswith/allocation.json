@@ -1,0 +1,126 @@
+{
+  "recipeSha256": "871cf16c3be245a37bbb50fcd9ed48d178a22b6eb204d07a85559189abece09c",
+  "comparisons": [
+    {
+      "asynchronous": true,
+      "exposed": false,
+      "callsPerSample": 128,
+      "beforeMedian": 55784.0,
+      "afterMedian": 7656.0,
+      "beforeSamples": [
+        55784,
+        55784,
+        55784,
+        55784,
+        55784,
+        55784,
+        55784,
+        55784
+      ],
+      "afterSamples": [
+        7656,
+        7656,
+        7656,
+        7656,
+        7656,
+        7656,
+        7656,
+        7656
+      ]
+    },
+    {
+      "asynchronous": false,
+      "exposed": false,
+      "callsPerSample": 128,
+      "beforeMedian": 48640.0,
+      "afterMedian": 7680.0,
+      "beforeSamples": [
+        48640,
+        48640,
+        48640,
+        48640,
+        48640,
+        48640,
+        48640,
+        48640
+      ],
+      "afterSamples": [
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680
+      ]
+    },
+    {
+      "asynchronous": false,
+      "exposed": true,
+      "callsPerSample": 128,
+      "beforeMedian": 44552.0,
+      "afterMedian": 44552.0,
+      "beforeSamples": [
+        44552,
+        44552,
+        44552,
+        44552,
+        44552,
+        44552,
+        44552,
+        44552
+      ],
+      "afterSamples": [
+        44552,
+        44552,
+        44552,
+        44552,
+        44552,
+        44552,
+        44552,
+        44552
+      ]
+    },
+    {
+      "asynchronous": true,
+      "exposed": true,
+      "callsPerSample": 128,
+      "beforeMedian": 55792.0,
+      "afterMedian": 55792.0,
+      "beforeSamples": [
+        55792,
+        55792,
+        55792,
+        55792,
+        55792,
+        55792,
+        55792,
+        55792
+      ],
+      "afterSamples": [
+        55792,
+        55792,
+        55792,
+        55792,
+        55792,
+        55792,
+        55792,
+        55792
+      ]
+    }
+  ],
+  "boundary": "Warm native 128-call distinct-receiver loop; context/inputs/compilation outside counter; outputs/cleanup/refunds checked; no elapsed claim.",
+  "source": "093bba6b before, five-file borrowed-operand patch after; exposed controls unchanged; fully managed; no GC.Collect.",
+  "dateUTC": "2026-10-17",
+  "machine": "Intel Core i7-14700KF; Windows 10.0.26200 x64; Release net10.0",
+  "baselineRevision": "093bba6bcd186f028a927f08773e3c2d97fec073",
+  "candidate": "Five-file source patch on 093bba6b, measured before commit; not an arbitrary later HEAD.",
+  "candidateSourceSha256": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "ee2bfbf6fa8c05ad096805c6d79b3dc344744bacda4cc0b2a01b27cd9e7151cb",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "20cc8f751b54c67c79834a3bd18cf97e1e94d3601c3d5fd4f7a5a950fe3bbf31",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "0669f125bbbe500e67ad3a869652988b9169adfd714b2aa9d3f02476391a71bb",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "915117b73273c1db8db99b803b47a2388b53ce68b7051d554fc917c11030a8a1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.cs": "232ba5861f08b0fa19a9a0091fc538548f03c7808f117be2072fed9e4873163d"
+  }
+}

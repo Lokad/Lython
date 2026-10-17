@@ -285,8 +285,8 @@ internal sealed partial class LythonRuntime
         private static int ParseStringOptionalInt(object value, string name, string signature, LythonSourceSpan span, ExecutionContext context)
             => RuntimeArgumentValidation.ParseIndexInt32(value, name, signature, span, context);
 
-        private static ValueTask<object> InvokeStringAffix(
-            PyString text, object[] arguments, LythonSourceSpan span, ExecutionContext context,
+        internal static ValueTask<object> InvokeStringAffix(
+            PyString text, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
             bool isStart, bool asynchronous)
         {
             if (arguments.Length is < 1 or > 3)
@@ -296,29 +296,29 @@ internal sealed partial class LythonRuntime
 
             // Ordinary bounds never enter an async state machine. Only guest
             // hooks can suspend; retain the same receiver/arguments through them.
-            if ((arguments.Length >= 2 && arguments[1] is PyInstance) ||
-                (arguments.Length == 3 && arguments[2] is PyInstance))
+            if ((arguments.Length >= 2 && arguments.Span[1] is PyInstance) ||
+                (arguments.Length == 3 && arguments.Span[2] is PyInstance))
                 return InvokeStringAffixWithGuestBoundsAsync(text, arguments, span, context, isStart, asynchronous);
 
             var bounds = NormalizeStringBounds(text.Length,
-                arguments.Length >= 2 ? arguments[1] : null,
-                arguments.Length == 3 ? arguments[2] : null, span);
-            return new(StartsOrEndsWith(text, arguments[0], bounds.Start, bounds.End, bounds.StartBeyondLength, isStart, span));
+                arguments.Length >= 2 ? arguments.Span[1] : null,
+                arguments.Length == 3 ? arguments.Span[2] : null, span);
+            return new(StartsOrEndsWith(text, arguments.Span[0]!, bounds.Start, bounds.End, bounds.StartBeyondLength, isStart, span));
         }
 
         private static async ValueTask<object> InvokeStringAffixWithGuestBoundsAsync(
-            PyString text, object[] arguments, LythonSourceSpan span, ExecutionContext context,
+            PyString text, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
             bool isStart, bool asynchronous)
         {
-            var start = await CoerceTypeIndexAsync(arguments[1], context, span, asynchronous).ConfigureAwait(false);
+            var start = await CoerceTypeIndexAsync(arguments.Span[1]!, context, span, asynchronous).ConfigureAwait(false);
             // A rejected start must prevent the end hook, including descriptor
             // binding, rather than validating only after both conversions.
             _ = NormalizeStringBounds(text.Length, start, null, span);
             var end = arguments.Length == 3
-                ? await CoerceTypeIndexAsync(arguments[2], context, span, asynchronous).ConfigureAwait(false)
+                ? await CoerceTypeIndexAsync(arguments.Span[2]!, context, span, asynchronous).ConfigureAwait(false)
                 : null;
             var bounds = NormalizeStringBounds(text.Length, start, end, span);
-            return StartsOrEndsWith(text, arguments[0], bounds.Start, bounds.End, bounds.StartBeyondLength, isStart, span);
+            return StartsOrEndsWith(text, arguments.Span[0]!, bounds.Start, bounds.End, bounds.StartBeyondLength, isStart, span);
         }
 
         private static StringSearchBounds ParseStringBounds(

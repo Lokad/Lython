@@ -565,7 +565,8 @@ internal sealed partial class LythonRuntime
             }
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringStartsWith))
             {
-                result = InvokeStringStartsWith((PyString)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+                result = InvokeStringStartsWith((PyString)stack[start],
+                    stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount), callSite.CallSpan, context);
             }
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringReplace))
             {

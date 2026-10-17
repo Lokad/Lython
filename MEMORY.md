@@ -367,6 +367,12 @@ No new rendering owner, budget, object layout or reference-withdrawal reclamatio
 is introduced. Replacing args can conservatively retain original construction
 storage for the finite owner lifetime.
 
+Immediate positional native-string `startswith` calls with optional bounds borrow
+the existing operand memory through descriptor/index callbacks and host I/O.
+The interpreter keeps the receiver and arguments until completion or awaited
+cleanup, then uses its ordinary transfer/unwind. Exposed methods retain their
+existing ownership; no extra reservation, argument array or owner is introduced.
+
 Immediate three-positional-argument native string replacement forwards its raw
 count from existing operand storage, sharing the two-argument operation and
 replacement kernel. It removes immediate method/argument packaging for that form;

@@ -2006,9 +2006,11 @@ precede prefix/suffix validation. `RunAsync` awaits descriptor binding and index
 callbacks without replay, retaining receiver/arguments and their existing
 funding until completion. Ordinary native bounds complete synchronously; pending
 callbacks preserve cancellation and terminal memory-admission failure.
-Eligible one-positional-argument calls to exact-string `startswith` use the
+Eligible one-to-three-positional-argument calls to exact-string `startswith` use the
 existing receiver and argument frame slots with a shared method implementation.
-The evaluated receiver stays retained through suspended argument evaluation.
+The evaluated receiver stays retained through suspended argument evaluation and
+guest-bound conversion. Bounded calls borrow those slots until completion and
+reuse the same bounds validation and awaited index hooks as exposed methods.
 Exposed methods, custom objects and other call shapes retain normal binding;
 all paths share the same Unicode/tuple kernel and call admission checks.
 

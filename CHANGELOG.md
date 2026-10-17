@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Extend direct exact-string `startswith` calls to positional start/end bounds. Borrow existing operand storage through shared bounds validation and awaited guest index hooks, avoiding immediate bound-method and argument packaging while preserving tuple order, captured receivers, cancellation, terminal admission failure and ownership.
+
 - Extend the existing direct `str.replace` call path to three positional arguments. Pass the raw count from operand storage through shared validation and replacement, avoiding immediate bound-method and argument packaging while preserving keyword/exposed/guest calls, allocation preflights and result ownership.
 
 - Preserve generic exception arguments without formatting them during construction. Reuse existing lazy args rendering for mutable values, KeyError repr and public diagnostics; `.message` now renders current arguments on access after custom shadows. Keep SystemExit and specialized native factories separate, with existing ownership, terminal admission and awaited diagnostic cleanup.
