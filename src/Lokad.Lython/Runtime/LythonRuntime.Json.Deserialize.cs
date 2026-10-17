@@ -240,9 +240,19 @@ internal sealed partial class LythonRuntime
                 var reader = new Utf8JsonReader(token.Span, new JsonReaderOptions());
                 if (!reader.Read()) throw CreateJsonExpectingError(input, end, JsonIncompleteExpectation.Value, span, context);
                 // Keep invalid UTF-8 on the backend's established error path.
-                var value = !reader.ValueIsEscaped && Utf8.IsValid(reader.ValueSpan)
-                    ? CreateUtf8String(token.Slice(1, reader.ValueSpan.Length), context, span)
-                    : CreateString(reader.GetString() ?? string.Empty, context, span);
+                PyString value;
+                if (!reader.ValueIsEscaped && Utf8.IsValid(reader.ValueSpan))
+                    value = CreateUtf8String(token.Slice(1, reader.ValueSpan.Length), context, span);
+                else if (reader.ValueIsEscaped && reader.ValueSpan.Length <= 256 && Utf8.IsValid(reader.ValueSpan))
+                {
+                    // A bounded managed buffer avoids a temporary CLR string
+                    // and re-encoding. The existing token reservation remains;
+                    // the final copy admits its own surviving UTF-8 storage.
+                    Span<byte> unescaped = stackalloc byte[256];
+                    var written = reader.CopyString(unescaped);
+                    value = PyString.CopyFromUtf8(unescaped[..written], context.MemoryGovernor, span);
+                }
+                else value = CreateString(reader.GetString() ?? string.Empty, context, span);
                 return (value, end);
             }
             catch (JsonException ex)

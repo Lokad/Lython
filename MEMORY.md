@@ -109,6 +109,12 @@ existing float, or returning one through `__float__`, preserves that object and
 its existing storage ownership rather than copying it. No new owner or independent
 allowance is introduced for protocol dispatch.
 
+Short escaped JSON strings can decode into bounded managed working storage
+before their governed UTF-8 result copy. The conservative token reservation is
+unchanged, and the surviving result still acquires its own allowance before
+allocation. Larger tokens retain the existing decoder; this optimization does
+not introduce a pool, new owner or different tight-budget contract.
+
 Ordinary integer addition and sums admit a conservative major-result estimate before the
 CLR computes it, including carry/sign headroom and computation overlap. The result
 commits its portion of that existing reservation without a second admission;

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Decode short escaped JSON strings directly into bounded UTF-8 working storage, removing temporary CLR strings and re-encoding. Reuse the existing token reservation and governed result copy; preserve larger-token decoding, errors, offsets, hooks and managed stack protection.
+
 - Resolve float conversion through type slots, bind fallback index descriptors once, and preserve existing float objects. Await descriptor and hook work through asynchronous hosting while keeping native conversion synchronous; reuse integer conversion helpers and preserve cancellation, terminal refusal, retained ownership and managed stack protection.
 
 - Admit float text/bytes decoding, underscore-removal capacity and error-message overlap before allocation. Refund parsing scratch while retaining escaped error funding; long inputs and repeated invalid conversions can reject earlier under tight allowances. Reuse shared repr rendering, fixing quoted control characters, and reject trailing NULs like Python.
