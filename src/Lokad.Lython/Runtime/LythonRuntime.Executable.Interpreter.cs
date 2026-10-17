@@ -784,17 +784,18 @@ internal sealed partial class LythonRuntime
 
                                 case ExecutableOpCode.Binary:
                                 case ExecutableOpCode.Augmented:
-                                    // Exact integers cannot invoke guest protocols. Share the
+                                    // Exact native scalars cannot invoke guest protocols. Share the
                                     // synchronous transfer/admission path before creating any
                                     // operation-helper state machine; never retry a guest call.
-                                    if (_stack[_stack.Count - 2] is BigInteger && _stack[_stack.Count - 1] is BigInteger)
+                                    if (_stack[_stack.Count - 2] is BigInteger or double or bool &&
+                                        _stack[_stack.Count - 1] is BigInteger or double or bool)
                                         ExecuteObservedValueOperation(instruction);
                                     else
                                         jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                     break;
 
                                 case ExecutableOpCode.Unary:
-                                    if (_stack[_stack.Count - 1] is BigInteger)
+                                    if (_stack[_stack.Count - 1] is BigInteger or double or bool)
                                         ExecuteObservedValueOperation(instruction);
                                     else
                                         jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
