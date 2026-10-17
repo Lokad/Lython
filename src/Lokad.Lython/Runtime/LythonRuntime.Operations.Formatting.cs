@@ -85,17 +85,38 @@ internal sealed partial class LythonRuntime
             _ => throw new LythonRuntimeException("ValueError", $"Unknown conversion specifier '!{conversion}'.", span)
         };
 
-        if (string.IsNullOrEmpty(formatSpecifier))
+        if (string.IsNullOrEmpty(formatSpecifier) && (converted is not null || value is not PyInstance))
         {
             return converted ?? ToInterpolatedPyString(value, context);
         }
 
-        var formatted = FormatInterpolatedStringValue(
-            converted ?? value,
-            formatSpecifier,
-            context,
-            span);
-        return PyString.FromString(formatted, context.MemoryGovernor, span);
+        return FormatValue(converted ?? value, formatSpecifier ?? "", context, span);
+    }
+
+    private static PyString FormatValue(object value, string specifier, ExecutionContext context, LythonSourceSpan span)
+        => value is PyInstance instance
+            ? (PyString)FormatInstanceAsync(instance, specifier, context, span, false).GetAwaiter().GetResult()
+            : PyString.FromString(FormatInterpolatedStringValue(value, specifier, context, span), context.MemoryGovernor, span);
+
+    private static async ValueTask<object> FormatInstanceAsync(PyInstance instance, string specifier,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+    {
+        if (instance.Type.TryLookupInMro("__format__", 0, out var raw, out _))
+        {
+            var member = asynchronous
+                ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false)
+                : PyAttributeLookup.BindForInstance(instance, raw, context, span);
+            if (member is not ICallable callable) throw NotCallableError(member, context, span);
+            var argument = PyString.FromString(specifier, context.MemoryGovernor, span);
+            var formatted = asynchronous
+                ? await CallableInvocation.InvokeUnaryAsync(callable, argument, span, context).ConfigureAwait(false)
+                : CallableInvocation.InvokeUnary(callable, argument, span, context);
+            if (!PyStringOps.TryAsString(formatted, out var text))
+                throw new LythonRuntimeException("TypeError", "__format__ returned non-string", span);
+            return text;
+        }
+
+        return PyString.FromString(FormatInterpolatedStringValue(instance, specifier, context, span), context.MemoryGovernor, span);
     }
 
     private static PyString EscapeNonAsciiPyString(PyString text, ExecutionContext context, LythonSourceSpan span)
@@ -138,23 +159,6 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (value is PyInstance instance &&
-            instance.TryGetAttribute("__format__", context, span, out var formatMember) &&
-            formatMember is ICallable formatCallable)
-        {
-            var formatted = CallableInvocation.InvokeUnary(
-                formatCallable,
-                PyString.FromString(formatSpecifier, context.MemoryGovernor, span),
-                span,
-                context);
-            if (!PyStringOps.TryAsString(formatted, out var formattedText))
-            {
-                throw new LythonRuntimeException("TypeError", "__format__ returned non-string", span);
-            }
-
-            return formattedText.AsString();
-        }
-
         if (value is PyDate or PyTime or PyDateTime)
         {
             return PyDateTimeOps.FormatValue(value, PyString.FromString(formatSpecifier), span).AsString();

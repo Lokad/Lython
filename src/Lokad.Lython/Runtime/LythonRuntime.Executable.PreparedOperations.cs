@@ -178,29 +178,20 @@ internal sealed partial class LythonRuntime
         {
             var hookName = conversion is 'r' or 'a' ? "__repr__" : conversion == 's' ? "__str__" : "__format__";
             (bool Found, object Value) hook;
-            if (conversion is 's' or 'r' or 'a')
+            try
             {
-                try
-                {
-                    hook = instance.Type.TryLookupInMro(hookName, 0, out var raw, out _)
-                        ? (true, asynchronous
-                            ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, _context, span).ConfigureAwait(false)
-                            : PyAttributeLookup.BindForInstance(instance, raw, _context, span))
-                        : (false, PyNone.Instance);
-                }
-                catch (LythonRuntimeException error) when ((conversion is 'r' or 'a') && error.Attribution is null)
-                {
-                    _context.CheckExecution(span);
-                    var fallback = instance.RenderObjectRepresentation();
-                    if (conversion == 'a') fallback = EscapeNonAsciiPyString(fallback, _context, span);
-                    return FormatInterpolatedStringPart(fallback, null, specifier, _context, span);
-                }
+                hook = instance.Type.TryLookupInMro(hookName, 0, out var raw, out _)
+                    ? (true, asynchronous
+                        ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, _context, span).ConfigureAwait(false)
+                        : PyAttributeLookup.BindForInstance(instance, raw, _context, span))
+                    : (false, PyNone.Instance);
             }
-            else
+            catch (LythonRuntimeException error) when ((conversion is 'r' or 'a') && error.Attribution is null)
             {
-                hook = asynchronous ? await TryResolveRuntimeMemberAsync(instance, hookName, _context, span).ConfigureAwait(false)
-                    : TryResolveRuntimeMember(instance, hookName, _context, span, out var member)
-                        ? (true, member) : (false, PyNone.Instance);
+                _context.CheckExecution(span);
+                var fallback = instance.RenderObjectRepresentation();
+                if (conversion == 'a') fallback = EscapeNonAsciiPyString(fallback, _context, span);
+                return FormatInterpolatedStringPart(fallback, null, specifier, _context, span);
             }
             if (hook.Found)
             {

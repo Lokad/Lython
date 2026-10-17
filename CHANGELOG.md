@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resolve implicit formatting through type slots and honor `__format__` in empty `str.format` / `format_map` fields. Share guest-format binding and validation, returning its string directly instead of decoding and re-encoding it. Root `format` and default `object.__format__` now await protocol I/O under `RunAsync`, preserving specifier order, cancellation, terminal admission refusal, managed stack protection and retained ownership.
+
 - Keep periodic structural-scan checkpoints local to each execution, including ambient synchronous paths. Reuse existing traversal state so earlier runs on a worker thread cannot shift another run's fuel boundary; retain the 64-element checks and original limits.
 
 - Resolve implicit `str`, `repr`, `ascii` and explicit f-string conversions through type slots, bypassing instance shadows and `__getattribute__`. Share descriptor binding, return validation and the default string-to-repr fallback. Root conversions under `RunAsync` now await protocol I/O; preserve cancellation, terminal admission refusal, managed stack limits and retained ownership. `ascii` reuses the governed UTF-8 escape path.

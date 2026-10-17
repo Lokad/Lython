@@ -2059,8 +2059,9 @@ evaluation precede lookup; the evaluated receiver, key and lookup storage stay
 funded through suspension. A miss, including withdrawal of a matching entry
 during equality, raises `KeyError` with the original key.
 
-Implicit `str`, `repr`, `ascii` and f-string `!s`, `!r`, `!a` conversions resolve
-`__str__` / `__repr__` on the type's method resolution order and bind descriptors.
+Implicit `str`, `repr`, `ascii`, `format` and f-string conversions resolve
+`__str__` / `__repr__` / `__format__` on the type's method resolution order and
+bind descriptors.
 Instance shadows and `__getattribute__` do not intercept these protocols; explicit
 attribute calls keep ordinary lookup. A found noncallable slot or a non-string
 return raises `TypeError`. The default `object.__str__` delegates to the repr slot.
@@ -2069,19 +2070,25 @@ the default object representation; exceptions from the repr body propagate.
 Attributed host or containment failures, cancellation and refused admission
 remain failures even during repr binding.
 
-Under `RunAsync`, root `str`, `repr`, `ascii` and explicit f-string conversions
+Under `RunAsync`, root `str`, `repr`, `ascii`, `format` and f-string conversions
 await descriptor binding and protocol bodies, including the default string-to-repr
-fallback. Native values and string decoding retain their ordinary CPU handlers.
-This suspension support does not extend to nested container/dataclass rendering
-or the default `__format__` path; those keep their existing synchronous callback
-boundaries. Managed stack admission, cancellation and explicit storage ownership
-apply throughout conversion and cleanup.
+fallback. Default `object.__format__` also awaits its empty-specifier string
+conversion, including explicit bound and unbound calls. Native values and string
+decoding retain their ordinary CPU handlers. This suspension support does not
+extend to nested container/dataclass rendering or `str.format` / `str.format_map`
+callbacks; those keep their existing synchronous callback boundaries. Managed
+stack admission, cancellation and explicit storage ownership apply throughout
+conversion and cleanup.
 
 `str.format(...)` supports automatic and explicit positional fields, named
 fields, item and attribute traversal, and the supported format-spec
 mini-language. `str.format_map(...)` supports the corresponding mapping-based
 named fields. Unsupported conversions or format-spec combinations must fail
 explicitly rather than silently degrading to default formatting.
+Empty fields still invoke a guest value's `__format__` with an empty specification;
+they do not bypass formatting through `str`. Explicit `!s`, `!r` and `!a`
+conversions instead format the converted string. Format descriptor-binding errors
+propagate, including `AttributeError` and explicitly raised `MemoryError`.
 
 ### 11.7 Regular Expressions
 

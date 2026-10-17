@@ -1445,6 +1445,7 @@ internal sealed partial class LythonRuntime
         {
             var bound = BoundCallable.Create(
                 (arguments, span, context) => FormatImpl(self, arguments, span, context),
+                (arguments, span, context) => FormatImplAsync(self, arguments, span, context),
                 "object.__format__",
                 ["spec"],
                 1);
@@ -1456,6 +1457,13 @@ internal sealed partial class LythonRuntime
             => instance is null ? this : Bind(instance);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+
+        private ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
             var receiverIndex = -1;
@@ -1478,10 +1486,24 @@ internal sealed partial class LythonRuntime
             var rest = new CallArgumentValue[arguments.Length - 1];
             Array.Copy(arguments, 0, rest, 0, receiverIndex);
             Array.Copy(arguments, receiverIndex + 1, rest, receiverIndex, rest.Length - receiverIndex);
-            return bound.Invoke(rest, span, context);
+            return asynchronous ? bound.InvokeAsync(rest, span, context) : new(bound.Invoke(rest, span, context));
         }
 
         private static object FormatImpl(object receiver, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            ValidateSpecifier(receiver, arguments, span);
+            return ToInterpolatedPyString(receiver, context);
+        }
+
+        private static ValueTask<object> FormatImplAsync(object receiver, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            ValidateSpecifier(receiver, arguments, span);
+            return receiver is PyInstance instance
+                ? RenderInstanceStringAsync(instance, 's', context, span)
+                : new(ToInterpolatedPyString(receiver, context));
+        }
+
+        private static void ValidateSpecifier(object receiver, object[] arguments, LythonSourceSpan span)
         {
             if (!PyStringOps.TryAsString(arguments[0], out var spec))
             {
@@ -1495,8 +1517,6 @@ internal sealed partial class LythonRuntime
             {
                 throw new LythonRuntimeException("TypeError", $"unsupported format string passed to {RuntimeErrors.OperandTypeName(receiver)}.__format__", span);
             }
-
-            return ToInterpolatedPyString(receiver, context);
         }
     }
     // object.__dir__ behaves like CPython method descriptors: the unbound

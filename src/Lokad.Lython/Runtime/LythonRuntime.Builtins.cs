@@ -288,6 +288,17 @@ internal sealed partial class LythonRuntime
 
     private static object Format(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        var spec = ReadFormatSpecifier(arguments, span, context);
+        return FormatValue(arguments[0], spec, context, span);
+    }
+
+    private static ValueTask<object> FormatAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => arguments.Length > 0 && arguments[0] is PyInstance instance
+            ? FormatInstanceAsync(instance, ReadFormatSpecifier(arguments, span, context), context, span, true)
+            : new(Format(arguments, span, context));
+
+    private static string ReadFormatSpecifier(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
         if (arguments.Length is < 1 or > 2)
         {
             throw new LythonRuntimeException("TypeError", "format(value[, format_spec]) expects one or two arguments.", span);
@@ -304,7 +315,7 @@ internal sealed partial class LythonRuntime
             spec = formatSpec.AsString();
         }
 
-        return PyString.FromString(FormatInterpolatedStringValue(arguments[0], spec, context, span), context.MemoryGovernor, span);
+        return spec;
     }
 
     private static object Bool(object[] arguments, LythonSourceSpan span, ExecutionContext context)

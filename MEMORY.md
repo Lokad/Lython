@@ -150,6 +150,12 @@ admitting output capacity while those parts still exist. Intermediate estimates
 can remain with the finite execution/result owner after a caught formatting or
 join failure. Earlier denial than the incremental lowered builder is possible;
 pending protocol callbacks and escaping text retain the same ownership protection.
+Root `format` and default `object.__format__` keep the receiver, specification and
+callback result funded through suspension. A guest formatter's existing string
+can be returned directly with its owner; conversion does not require decoding
+and re-encoding that storage. Retained results keep their surviving owners until
+all users release them. String-method formatting callbacks retain their existing
+synchronous boundary; root formatting and f-strings can await host I/O.
 Executable lambdas retain shared closure cells rather than forcing complete local
 namespace mirroring. Cell-array capacity and newly retained cells are admitted
 before allocating the captured array; denied capture publishes no funding marks.
