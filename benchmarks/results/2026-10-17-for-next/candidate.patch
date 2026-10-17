@@ -1,0 +1,53 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 3f39b162..98d6aa2a 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -64,18 +64,6 @@ internal sealed partial class LythonRuntime
+                     try { _stack[iterableSlot] = await PyIteration.Cursor.CreateAsync(_stack[iterableSlot], instruction.Span, _context).ConfigureAwait(false); }
+                     catch { _stack.RemoveTail(_stack.Count - iterableSlot); throw; }
+                     break;
+-                case ExecutableOpCode.ForNext:
+-                    var iterator = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
+-                    var advanced = await iterator.TryMoveNextAsync().ConfigureAwait(false);
+-                    if (!advanced.HasValue)
+-                    {
+-                        _ = Pop(ref _stack, instruction.Span);
+-                        await iterator.DisposeAsync().ConfigureAwait(false);
+-                        _currentBlockIndex = instruction.TargetBlockIndex;
+-                        return true;
+-                    }
+-                    _stack.Push(advanced.Value);
+-                    break;
+                 case ExecutableOpCode.Call:
+                     var call = _codeObject.CallSites[instruction.CallSiteIndex];
+                     var start = ReadExecutableCallTarget(call, ref _stack, out var callable);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index 88b066c4..1a068014 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -813,8 +813,24 @@ internal sealed partial class LythonRuntime
+                                         jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+                                     break;
+ 
++                                case ExecutableOpCode.ForNext:
++                                {
++                                    // Cursor movement already has a synchronous prefix. Await it
++                                    // here rather than entering another operation state machine.
++                                    var iterator = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
++                                    var advanced = await iterator.TryMoveNextAsync().ConfigureAwait(false);
++                                    if (!advanced.HasValue)
++                                    {
++                                        _ = Pop(ref _stack, instruction.Span);
++                                        await iterator.DisposeAsync().ConfigureAwait(false);
++                                        _currentBlockIndex = instruction.TargetBlockIndex;
++                                        jumped = true;
++                                    }
++                                    else _stack.Push(advanced.Value);
++                                    break;
++                                }
++
+                                 case ExecutableOpCode.GetIter or
+-                                     ExecutableOpCode.ForNext or
+                                      ExecutableOpCode.Call or
+                                      ExecutableOpCode.Slice:
+                                     jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);

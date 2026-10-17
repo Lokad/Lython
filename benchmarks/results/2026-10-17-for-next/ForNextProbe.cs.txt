@@ -1,0 +1,86 @@
+using System.Diagnostics;
+using System.Numerics;
+using System.Text.Json;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary bounded diagnostic; archive/remove before final qualification.
+public sealed class ForNextProbe(ITestOutputHelper output)
+{
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task NativeLoop(bool asynchronous, bool list)
+    {
+        var code = Compile("last=None\nfor value in values:last=value\nreturn last");
+        var budget = new LythonMemoryBudget(16 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        context.Variables["values"] = LythonRuntime.ExecuteExecutableCodeObject(
+            Compile(list ? "return list(range(4096))" : "return range(4096)"), context, default, null).RequireNotNull();
+        var bytes = new List<long>();
+        var ticks = new List<long>();
+        object? result = null;
+        for (var sample = -4; sample < 8; sample++)
+        {
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var started = Stopwatch.GetTimestamp();
+            var pending = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+            Assert.True(pending.IsCompleted);
+            result = await pending;
+            var elapsed = Stopwatch.GetTimestamp() - started;
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            if (sample >= 0) { bytes.Add(allocated); ticks.Add(elapsed); }
+        }
+        Assert.Equal(new BigInteger(4095), result);
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        output.WriteLine("FOR_NEXT_NATIVE:" + JsonSerializer.Serialize(new { asynchronous, list, iterations = 4096, bytes, ticks, frequency = Stopwatch.Frequency }));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FuelAndEffects(bool asynchronous)
+    {
+        var code = Compile("for value in values:events.append(value)\nreturn events");
+        var rows = new List<object>();
+        for (var fuel = 1; fuel <= 40; fuel++)
+        {
+            var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+            using var owner = budget.CreateScope();
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionSteps = fuel });
+            var events = new PyList([], context.MemoryGovernor, null);
+            context.Variables["events"] = events;
+            context.Variables["values"] = new PyList([new BigInteger(1), new BigInteger(2)], context.MemoryGovernor, null);
+            string? error = null;
+            try
+            {
+                var pending = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                    : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+                Assert.True(pending.IsCompleted);
+                Assert.Same(events, await pending);
+            }
+            catch (LythonRuntimeException e) { error = JsonSerializer.Serialize(new { e.ExceptionType, e.Message, e.Span }); }
+            Assert.Null(context.CurrentExecutableFrame);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            rows.Add(new { fuel, steps = context.Limits.ExecutionStepCount, error, effects = events.Cast<BigInteger>().Select(v => v.ToString()).ToArray() });
+            owner.Dispose();
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        output.WriteLine("FOR_NEXT_FUEL:" + JsonSerializer.Serialize(new { asynchronous, rows }));
+    }
+
+    private static ExecutableCodeObject Compile(string source)
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+}

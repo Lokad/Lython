@@ -1,0 +1,1508 @@
+{
+  "capturedAtUtc": "2026-10-17T21:20:34.651030+00:00",
+  "baselineRevision": "5b546b2edbeaba45f8fe1b79be0b542fba0b5444",
+  "candidate": "frozen two-file candidate.patch",
+  "boundary": "4096 range/list iterations in a native executable context; source,input,compilation,context precreated; four warmups,eight managed-allocation/elapsed samples; no host I/O/startup",
+  "baseline": {
+    "native": [
+      {
+        "asynchronous": false,
+        "list": false,
+        "iterations": 4096,
+        "bytes": [
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600
+        ],
+        "ticks": [
+          19808,
+          19753,
+          19743,
+          19853,
+          19800,
+          19967,
+          20128,
+          14772
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "list": true,
+        "iterations": 4096,
+        "bytes": [
+          480,
+          480,
+          480,
+          480,
+          480,
+          480,
+          480,
+          480
+        ],
+        "ticks": [
+          5240,
+          5206,
+          5211,
+          5259,
+          5266,
+          5161,
+          5277,
+          5251
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "list": false,
+        "iterations": 4096,
+        "bytes": [
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600
+        ],
+        "ticks": [
+          28122,
+          26877,
+          26739,
+          27062,
+          26448,
+          26631,
+          26472,
+          26418
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "list": true,
+        "iterations": 4096,
+        "bytes": [
+          456,
+          456,
+          456,
+          456,
+          456,
+          456,
+          456,
+          456
+        ],
+        "ticks": [
+          24775,
+          10704,
+          10497,
+          10596,
+          10453,
+          10497,
+          10563,
+          10425
+        ],
+        "frequency": 10000000
+      }
+    ],
+    "fuel": [
+      {
+        "asynchronous": false,
+        "rows": [
+          {
+            "fuel": 1,
+            "steps": 2,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (1)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 2,
+            "steps": 3,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (2)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 3,
+            "steps": 4,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (3)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": []
+          },
+          {
+            "fuel": 4,
+            "steps": 5,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (4)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 5,
+            "steps": 6,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (5)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 6,
+            "steps": 7,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (6)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": []
+          },
+          {
+            "fuel": 7,
+            "steps": 8,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (7)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": []
+          },
+          {
+            "fuel": 8,
+            "steps": 9,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (8)\",\"Span\":{\"Start\":20,\"Length\":6,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 9,
+            "steps": 10,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (9)\",\"Span\":{\"Start\":20,\"Length\":13,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 10,
+            "steps": 11,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (10)\",\"Span\":{\"Start\":34,\"Length\":5,\"Line\":1,\"Column\":35}}",
+            "effects": []
+          },
+          {
+            "fuel": 11,
+            "steps": 12,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (11)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 12,
+            "steps": 13,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (12)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 13,
+            "steps": 14,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (13)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 14,
+            "steps": 15,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (14)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 15,
+            "steps": 16,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (15)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 16,
+            "steps": 17,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (16)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 17,
+            "steps": 18,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (17)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 18,
+            "steps": 19,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (18)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 19,
+            "steps": 20,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (19)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 20,
+            "steps": 21,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (20)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 21,
+            "steps": 22,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (21)\",\"Span\":{\"Start\":20,\"Length\":6,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 22,
+            "steps": 23,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (22)\",\"Span\":{\"Start\":20,\"Length\":13,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 23,
+            "steps": 24,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (23)\",\"Span\":{\"Start\":34,\"Length\":5,\"Line\":1,\"Column\":35}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 24,
+            "steps": 25,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (24)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 25,
+            "steps": 26,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (25)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 26,
+            "steps": 27,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (26)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 27,
+            "steps": 28,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (27)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 28,
+            "steps": 29,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (28)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 29,
+            "steps": 30,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (29)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 30,
+            "steps": 31,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (30)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 31,
+            "steps": 32,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (31)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 32,
+            "steps": 33,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (32)\",\"Span\":{\"Start\":48,\"Length\":6,\"Line\":2,\"Column\":8}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 33,
+            "steps": 34,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (33)\",\"Span\":{\"Start\":41,\"Length\":13,\"Line\":2,\"Column\":1}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 34,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 35,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 36,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 37,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 38,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 39,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 40,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          }
+        ]
+      },
+      {
+        "asynchronous": true,
+        "rows": [
+          {
+            "fuel": 1,
+            "steps": 2,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (1)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 2,
+            "steps": 3,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (2)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 3,
+            "steps": 4,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (3)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": []
+          },
+          {
+            "fuel": 4,
+            "steps": 5,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (4)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 5,
+            "steps": 6,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (5)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 6,
+            "steps": 7,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (6)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": []
+          },
+          {
+            "fuel": 7,
+            "steps": 8,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (7)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": []
+          },
+          {
+            "fuel": 8,
+            "steps": 9,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (8)\",\"Span\":{\"Start\":20,\"Length\":6,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 9,
+            "steps": 10,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (9)\",\"Span\":{\"Start\":20,\"Length\":13,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 10,
+            "steps": 11,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (10)\",\"Span\":{\"Start\":34,\"Length\":5,\"Line\":1,\"Column\":35}}",
+            "effects": []
+          },
+          {
+            "fuel": 11,
+            "steps": 12,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (11)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 12,
+            "steps": 13,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (12)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 13,
+            "steps": 14,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (13)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 14,
+            "steps": 15,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (14)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 15,
+            "steps": 16,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (15)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 16,
+            "steps": 17,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (16)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 17,
+            "steps": 18,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (17)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 18,
+            "steps": 19,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (18)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 19,
+            "steps": 20,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (19)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 20,
+            "steps": 21,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (20)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 21,
+            "steps": 22,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (21)\",\"Span\":{\"Start\":20,\"Length\":6,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 22,
+            "steps": 23,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (22)\",\"Span\":{\"Start\":20,\"Length\":13,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 23,
+            "steps": 24,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (23)\",\"Span\":{\"Start\":34,\"Length\":5,\"Line\":1,\"Column\":35}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 24,
+            "steps": 25,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (24)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 25,
+            "steps": 26,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (25)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 26,
+            "steps": 27,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (26)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 27,
+            "steps": 28,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (27)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 28,
+            "steps": 29,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (28)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 29,
+            "steps": 30,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (29)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 30,
+            "steps": 31,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (30)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 31,
+            "steps": 32,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (31)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 32,
+            "steps": 33,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (32)\",\"Span\":{\"Start\":48,\"Length\":6,\"Line\":2,\"Column\":8}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 33,
+            "steps": 34,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (33)\",\"Span\":{\"Start\":41,\"Length\":13,\"Line\":2,\"Column\":1}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 34,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 35,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 36,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 37,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 38,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 39,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 40,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "candidateSamples": {
+    "native": [
+      {
+        "asynchronous": false,
+        "list": false,
+        "iterations": 4096,
+        "bytes": [
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600
+        ],
+        "ticks": [
+          20261,
+          20188,
+          20124,
+          20165,
+          20034,
+          20069,
+          20084,
+          20078
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "list": true,
+        "iterations": 4096,
+        "bytes": [
+          480,
+          480,
+          480,
+          480,
+          480,
+          480,
+          480,
+          480
+        ],
+        "ticks": [
+          5110,
+          5142,
+          5244,
+          5264,
+          5302,
+          5581,
+          5403,
+          5270
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "list": false,
+        "iterations": 4096,
+        "bytes": [
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600
+        ],
+        "ticks": [
+          9817,
+          9752,
+          9733,
+          10319,
+          14843,
+          9717,
+          9627,
+          9659
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "list": true,
+        "iterations": 4096,
+        "bytes": [
+          456,
+          456,
+          456,
+          456,
+          456,
+          456,
+          456,
+          456
+        ],
+        "ticks": [
+          8587,
+          8817,
+          8598,
+          8621,
+          8586,
+          8477,
+          8615,
+          8557
+        ],
+        "frequency": 10000000
+      }
+    ],
+    "fuel": [
+      {
+        "asynchronous": false,
+        "rows": [
+          {
+            "fuel": 1,
+            "steps": 2,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (1)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 2,
+            "steps": 3,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (2)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 3,
+            "steps": 4,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (3)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": []
+          },
+          {
+            "fuel": 4,
+            "steps": 5,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (4)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 5,
+            "steps": 6,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (5)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 6,
+            "steps": 7,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (6)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": []
+          },
+          {
+            "fuel": 7,
+            "steps": 8,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (7)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": []
+          },
+          {
+            "fuel": 8,
+            "steps": 9,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (8)\",\"Span\":{\"Start\":20,\"Length\":6,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 9,
+            "steps": 10,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (9)\",\"Span\":{\"Start\":20,\"Length\":13,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 10,
+            "steps": 11,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (10)\",\"Span\":{\"Start\":34,\"Length\":5,\"Line\":1,\"Column\":35}}",
+            "effects": []
+          },
+          {
+            "fuel": 11,
+            "steps": 12,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (11)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 12,
+            "steps": 13,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (12)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 13,
+            "steps": 14,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (13)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 14,
+            "steps": 15,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (14)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 15,
+            "steps": 16,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (15)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 16,
+            "steps": 17,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (16)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 17,
+            "steps": 18,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (17)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 18,
+            "steps": 19,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (18)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 19,
+            "steps": 20,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (19)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 20,
+            "steps": 21,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (20)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 21,
+            "steps": 22,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (21)\",\"Span\":{\"Start\":20,\"Length\":6,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 22,
+            "steps": 23,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (22)\",\"Span\":{\"Start\":20,\"Length\":13,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 23,
+            "steps": 24,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (23)\",\"Span\":{\"Start\":34,\"Length\":5,\"Line\":1,\"Column\":35}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 24,
+            "steps": 25,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (24)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 25,
+            "steps": 26,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (25)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 26,
+            "steps": 27,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (26)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 27,
+            "steps": 28,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (27)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 28,
+            "steps": 29,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (28)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 29,
+            "steps": 30,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (29)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 30,
+            "steps": 31,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (30)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 31,
+            "steps": 32,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (31)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 32,
+            "steps": 33,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (32)\",\"Span\":{\"Start\":48,\"Length\":6,\"Line\":2,\"Column\":8}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 33,
+            "steps": 34,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (33)\",\"Span\":{\"Start\":41,\"Length\":13,\"Line\":2,\"Column\":1}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 34,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 35,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 36,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 37,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 38,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 39,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 40,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          }
+        ]
+      },
+      {
+        "asynchronous": true,
+        "rows": [
+          {
+            "fuel": 1,
+            "steps": 2,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (1)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 2,
+            "steps": 3,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (2)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 3,
+            "steps": 4,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (3)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": []
+          },
+          {
+            "fuel": 4,
+            "steps": 5,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (4)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 5,
+            "steps": 6,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (5)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": []
+          },
+          {
+            "fuel": 6,
+            "steps": 7,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (6)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": []
+          },
+          {
+            "fuel": 7,
+            "steps": 8,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (7)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": []
+          },
+          {
+            "fuel": 8,
+            "steps": 9,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (8)\",\"Span\":{\"Start\":20,\"Length\":6,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 9,
+            "steps": 10,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (9)\",\"Span\":{\"Start\":20,\"Length\":13,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 10,
+            "steps": 11,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (10)\",\"Span\":{\"Start\":34,\"Length\":5,\"Line\":1,\"Column\":35}}",
+            "effects": []
+          },
+          {
+            "fuel": 11,
+            "steps": 12,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (11)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 12,
+            "steps": 13,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (12)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 13,
+            "steps": 14,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (13)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 14,
+            "steps": 15,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (14)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": []
+          },
+          {
+            "fuel": 15,
+            "steps": 16,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (15)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 16,
+            "steps": 17,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (16)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 17,
+            "steps": 18,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (17)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 18,
+            "steps": 19,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (18)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 19,
+            "steps": 20,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (19)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 20,
+            "steps": 21,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (20)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 21,
+            "steps": 22,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (21)\",\"Span\":{\"Start\":20,\"Length\":6,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 22,
+            "steps": 23,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (22)\",\"Span\":{\"Start\":20,\"Length\":13,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 23,
+            "steps": 24,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (23)\",\"Span\":{\"Start\":34,\"Length\":5,\"Line\":1,\"Column\":35}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 24,
+            "steps": 25,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (24)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 25,
+            "steps": 26,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (25)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 26,
+            "steps": 27,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (26)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 27,
+            "steps": 28,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (27)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1"
+            ]
+          },
+          {
+            "fuel": 28,
+            "steps": 29,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (28)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 29,
+            "steps": 30,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (29)\",\"Span\":{\"Start\":20,\"Length\":20,\"Line\":1,\"Column\":21}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 30,
+            "steps": 31,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (30)\",\"Span\":{\"Start\":0,\"Length\":40,\"Line\":1,\"Column\":1}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 31,
+            "steps": 32,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (31)\",\"Span\":{\"Start\":13,\"Length\":6,\"Line\":1,\"Column\":14}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 32,
+            "steps": 33,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (32)\",\"Span\":{\"Start\":48,\"Length\":6,\"Line\":2,\"Column\":8}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 33,
+            "steps": 34,
+            "error": "{\"ExceptionType\":\"RuntimeError\",\"Message\":\"maximum execution step count exceeded (33)\",\"Span\":{\"Start\":41,\"Length\":13,\"Line\":2,\"Column\":1}}",
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 34,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 35,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 36,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 37,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 38,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 39,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "fuel": 40,
+            "steps": 34,
+            "error": null,
+            "effects": [
+              "1",
+              "2"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "fuelOutcomesExactlyPreserved": 80,
+  "receipts": {
+    "baseline-fixed": {
+      "source": "for-next",
+      "production": "5b546b2e",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "BF74DCB62A3F8F1CF8356C0E88AB77ED8BE58ED8A5A1DA49E30E792EF57D5CB5",
+      "filter": "Category!=Stress&FullyQualifiedName~ForNextProbe",
+      "pid": 17744,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1872,
+      "stdoutSha256": "D796466F48E86F198BE734E8233875FE0CC0327387DFA32B932307B9C5FC0B8E",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "candidate": {
+      "source": "for-next",
+      "production": "lifted-for-next",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "FF1AE452E09EB397C48A6DC3C4C4F2B72D8E8E96FEA9FCCE5ACB336AAED47B75",
+      "filter": "Category!=Stress&FullyQualifiedName~ForNextProbe",
+      "pid": 54196,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1313,
+      "stdoutSha256": "E198011FFBAC5D4A5AE4BF9B0F48DCBDF00E28DFCB62285E15274FE432BA8107",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    }
+  },
+  "machine": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "sdk": "10.0.300-preview.0.26177.108",
+    "testRuntimePatch": "not captured; source-linked Release net10.0"
+  },
+  "limitations": [
+    "One unqualified local Windows capture; no CPython/full-job/RSS/embedding-latency claim",
+    "Wide candidate range and baseline list RunAsync distributions; every sample retained",
+    "Initial fixture setup assigned an unmirrored temporary module local; corrected to return the input then bind it explicitly before capture. Failed receipt retained privately."
+  ]
+}

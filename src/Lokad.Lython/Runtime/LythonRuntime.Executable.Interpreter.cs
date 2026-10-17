@@ -813,8 +813,24 @@ internal sealed partial class LythonRuntime
                                         jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                     break;
 
+                                case ExecutableOpCode.ForNext:
+                                {
+                                    // Cursor movement already has a synchronous prefix. Await it
+                                    // here rather than entering another operation state machine.
+                                    var iterator = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
+                                    var advanced = await iterator.TryMoveNextAsync().ConfigureAwait(false);
+                                    if (!advanced.HasValue)
+                                    {
+                                        _ = Pop(ref _stack, instruction.Span);
+                                        await iterator.DisposeAsync().ConfigureAwait(false);
+                                        _currentBlockIndex = instruction.TargetBlockIndex;
+                                        jumped = true;
+                                    }
+                                    else _stack.Push(advanced.Value);
+                                    break;
+                                }
+
                                 case ExecutableOpCode.GetIter or
-                                     ExecutableOpCode.ForNext or
                                      ExecutableOpCode.Call or
                                      ExecutableOpCode.Slice:
                                     jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);

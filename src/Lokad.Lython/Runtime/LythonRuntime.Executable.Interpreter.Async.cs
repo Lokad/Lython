@@ -64,18 +64,6 @@ internal sealed partial class LythonRuntime
                     try { _stack[iterableSlot] = await PyIteration.Cursor.CreateAsync(_stack[iterableSlot], instruction.Span, _context).ConfigureAwait(false); }
                     catch { _stack.RemoveTail(_stack.Count - iterableSlot); throw; }
                     break;
-                case ExecutableOpCode.ForNext:
-                    var iterator = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
-                    var advanced = await iterator.TryMoveNextAsync().ConfigureAwait(false);
-                    if (!advanced.HasValue)
-                    {
-                        _ = Pop(ref _stack, instruction.Span);
-                        await iterator.DisposeAsync().ConfigureAwait(false);
-                        _currentBlockIndex = instruction.TargetBlockIndex;
-                        return true;
-                    }
-                    _stack.Push(advanced.Value);
-                    break;
                 case ExecutableOpCode.Call:
                     var call = _codeObject.CallSites[instruction.CallSiteIndex];
                     var start = ReadExecutableCallTarget(call, ref _stack, out var callable);

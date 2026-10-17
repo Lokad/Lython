@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Execute asynchronous `for` movement directly in the main instruction loop, removing the extra per-step operation-helper state entry. Preserve exactly-once pulls, checkpoints, value publication, awaited disposal, protocol suspension and containment.
+
 - Pass already-prepared executable arguments directly through the shared async call entry, removing per-call capturing factories. Preserve deferred argument evaluation, call guards, exception translation and argument ownership through suspension; strengthen existing suspended-call buffer checks.
 
 - Bind named builtin arguments into their final storage after validation, removing temporary full-shape arrays, trimming copies and variadic value lists. Preserve argument effects, error precedence, omitted versus explicit `None`, optional gaps and presence-aware calls.
