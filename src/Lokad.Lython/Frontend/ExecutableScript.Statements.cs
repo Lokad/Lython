@@ -123,33 +123,27 @@ internal sealed partial class ExecutableScript
                     return currentBlock;
 
                 case LoweredAnnotatedAssignmentStatement annotated:
-                    if (_functionParameters is null)
-                    {
-                        AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(annotated), annotated.Span));
-                        return currentBlock;
-                    }
                     if (annotated.Expression is null)
                     {
-                        // Function-local annotations do not evaluate. Attribute
-                        // and item annotation targets still evaluate their reads.
+                        // Bare targets still evaluate receiver/index reads.
+                        // Only module scope evaluates the annotation below.
                         foreach (var read in AssignmentTargetFacts.Reads(annotated.Assignment.Target))
                         {
                             currentBlock = CompileExpression(LoweredScript.LowerExpression(read), currentBlock);
                             AddInstruction(currentBlock, ExecutableInstruction.PopTop(read.Span));
                         }
-                        return currentBlock;
                     }
-
-                    if (annotated.Assignment.Target is not NameAssignmentTargetSyntax targetName)
+                    else if (annotated.Assignment.Target is not NameAssignmentTargetSyntax targetName)
                     {
                         currentBlock = CompileExpression(annotated.Expression, currentBlock);
                         currentBlock = CompileStoreTarget(annotated.Assignment.Target, annotated.Span, currentBlock);
-                        return currentBlock;
                     }
-
-                    currentBlock = CompileExpression(annotated.Expression, currentBlock);
-                    CompileStoreBoundName(targetName.Name, annotated.Span, currentBlock);
-                    return currentBlock;
+                    else
+                    {
+                        currentBlock = CompileExpression(annotated.Expression, currentBlock);
+                        CompileStoreBoundName(targetName.Name, annotated.Span, currentBlock);
+                    }
+                    return _functionParameters is null ? CompileModuleAnnotation(annotated, currentBlock) : currentBlock;
 
                 case LoweredAugmentedAssignmentStatement augmented:
                     if (augmented.Target is LoweredSliceAugmentedAssignmentTarget augmentedSlice)

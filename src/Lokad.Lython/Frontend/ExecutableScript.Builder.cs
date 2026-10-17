@@ -129,8 +129,14 @@ internal sealed partial class ExecutableScript
 
             var normalizedBlocks = NormalizeBlocks(ordered, indexMap);
             var normalizedRegions = NormalizeRegions(ordered, indexMap);
+            // Annotation values can retain functions or deferred generators after
+            // module slots leave. Keep their existing global namespace lifetime
+            // conservatively; scalar-only declarations need no such mirror.
+            var moduleAnnotationNamespace = _functionParameters is null &&
+                _constants.Any(value => value is ExecutableAnnotationsEnabled) &&
+                (_functions.Count != 0 || _constants.Any(value => value is ExecutableCreateLambda or ExecutableCreateGeneratorExpression));
             var requiresLocalVariableMirroring =
-                (_generator && generatorExpression is null) || _expressionFallbacks.Count != 0 ||
+                moduleAnnotationNamespace || (_generator && generatorExpression is null) || _expressionFallbacks.Count != 0 ||
                 _statementFallbacks.Count != 0 ||
                 _functions.Any(function => function.CodeObject is null) ||
                 _functions.Any(function => function.CodeObject?.RequiresLocalVariableMirroring == true) ||

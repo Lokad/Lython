@@ -14,6 +14,14 @@ internal sealed partial class LythonRuntime
                 case ExecutableAnnotationsEnabled:
                     _stack.Push(!_context.PostponedAnnotations);
                     break;
+                case ExecutablePostponedAnnotation postponed:
+                    _stack.Push(CreatePostponedAnnotationValue(postponed.Annotation, _context));
+                    break;
+                case ExecutableStoreModuleAnnotation annotation:
+                    var value = Pop(ref _stack, span);
+                    await StoreAnnotationEntryAsync(ResolveName("__annotations__", span, _context),
+                        annotation.Name, value, _context, span, asynchronous).ConfigureAwait(false);
+                    break;
                 case ExecutableCreateFunction function:
                     using (var storage = _context.MemoryGovernor.ReserveTemporary(256L + 160L * function.Inputs.Count + 128L * function.Definition.Parameters.Count, span))
                     {

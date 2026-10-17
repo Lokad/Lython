@@ -66,6 +66,8 @@ internal sealed partial class LythonRuntime
 
         public bool RequiresLocalVariableMirroring => _codeObject.RequiresLocalVariableMirroring;
 
+        internal int LocalCapacity => _locals.Length;
+
 
 
         public bool TryResolveOwnLocal(string name, [MaybeNullWhen(false)] out object value)

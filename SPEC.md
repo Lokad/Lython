@@ -1488,6 +1488,9 @@ declarations, and updates respect a replacement mapping's item protocol.
 Deleting a class's annotation mapping follows class-name lookup into its module.
 String, collection and memory limits govern exposed annotation metadata.
 Admitted metadata remains conservatively owned by its execution or compiled owner.
+Functions and deferred generators stored in annotation metadata retain the final
+module bindings needed after executable slots leave. Module lambdas likewise
+keep their global namespace; compilation does not change that lifetime.
 
 The runtime must support:
 

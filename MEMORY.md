@@ -308,6 +308,18 @@ Guest values can share storage and escape through closures or containers.
 Eligible compiled functions use captured cells under both `Run` and `RunAsync`;
 selecting the asynchronous API does not by itself require retaining a mirrored
 whole local namespace. Supported lowered fallbacks can still require mirroring.
+Ordinary module variable annotations execute without a whole-statement fallback.
+Scalar-only declarations need no namespace mirror. When annotated modules can
+create functions, lambdas or deferred generators, Lython conservatively keeps the
+module namespace so metadata can outlive its executable slots. Lambdas defined
+directly in a module also retain its globals through the existing namespace
+mechanism, once per execution; their bodies remain compiled. Comprehension
+cells keep their existing ownership without forcing a caller namespace mirror.
+Closure admission includes unmirrored
+live slot capacity before namespace materialization, in addition to existing
+entries. This can overcount overlap and reject earlier under narrow allowances.
+Those estimates remain with the finite execution/result owner; no identity
+inventory, tracing or immediate refund after withdrawing a reference is added.
 Numeric container slots can each retain a conservative payload estimate even
 when they refer to the same integer. Python identity is preserved; identity-based
 charge deduplication is not promised. Alias-heavy collections can therefore be

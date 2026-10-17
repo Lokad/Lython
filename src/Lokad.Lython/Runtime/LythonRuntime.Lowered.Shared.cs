@@ -835,7 +835,10 @@ internal sealed partial class LythonRuntime
             : new PyFunction("<lambda>", parameters, lambda.FunctionBody, context.FunctionClosureContext,
                 defaults, lambda.ScopeFacts, PythonCallableKind.Lambda);
         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
-        if (code is null || code.RequiresLocalVariableMirroring)
+        // Module lambdas expose their globals after the executable slots leave.
+        // Retain the existing namespace once, without lowering a compiled body.
+        if (code is null || code.RequiresLocalVariableMirroring ||
+            context.FunctionClosureContext.ParentContext is null && !context.FunctionClosureContext.MirrorLocalStores)
             RetainLocalsForLambda(context.FunctionClosureContext);
         return function;
     }

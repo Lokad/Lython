@@ -472,6 +472,12 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        // An unmirrored frame's namespace may be retained by a closure. Admit
+        // its whole slot capacity before copying those bindings into Variables;
+        // adding the existing entries is deliberately conservative.
+        if (!context.MirrorsExecutableLocals && !context.MirrorLocalStores && context.CurrentExecutableFrame is { } frame)
+            owned = checked(owned + frame.LocalCapacity);
+
         return owned;
     }
 
