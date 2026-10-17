@@ -16,6 +16,11 @@ public sealed class CsvCompatibilityTests
     [InlineData("1,2,\"é,😀\",4", false, "extra", "{'a': '2', 'extra': ['é,😀', '4']}")]
     [InlineData("1,2,3", false, "a", "{'a': ['3']}")]
     [InlineData("1", false, "extra", "{'a': None}")]
+    [InlineData("1,2", true, "extra", "{'a': 2.0}")]
+    [InlineData("1,2,3", true, "extra", "{'a': 2.0, 'extra': [3.0]}")]
+    [InlineData("1,2,3,4,5,6,7,8,9,10", true, "extra", "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]}")]
+    [InlineData("1,2,3,4,5,6,7,8,9,10,11", true, "extra", "{'a': 2.0, 'extra': [3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0]}")]
+    [InlineData("1,2,3", true, "a", "{'a': [3.0]}")]
     public async Task DictReaderExcessFieldsPreserveOrderQuotingAndRetainedAliases(
         string input, bool numeric, string restKey, string expected)
     {

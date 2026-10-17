@@ -101,7 +101,9 @@ input and retained result keep their existing owners. Small bounded magnitudes
 retain the control-headroom policy; JSON's separate token path is unchanged.
 
 Float parsing from text or bytes admits decoded UTF-16 capacity and a possible
-underscore-removal copy before decoding. Trimming and nonfinite comparisons use
+normalization buffer before decoding. One buffer normalizes Unicode decimal
+digits/whitespace in text and removes valid underscores; bytes retain ASCII
+decoding rules. Trimming and nonfinite comparisons use
 spans. Successful conversion returns that scratch immediately; the input keeps
 its owner and the fixed-size result uses existing scalar headroom. Invalid input
 also admits repr/message overlap before constructing the error. Its message can
@@ -110,6 +112,12 @@ owner ends, even if Python catches the error. Long inputs and repeated invalid
 conversions can therefore reject earlier under tight allowances. Refused error
 construction is terminal and refunds its scratch; it never substitutes a shorter
 message or retries admission.
+
+`csv.reader` and `DictReader` reuse that parser for nonempty unquoted fields in
+`QUOTE_NONNUMERIC`. Their UTF-8 field payloads remain conservatively batch-owned
+after conversion; numeric row/container slots keep their ordinary funding.
+Conversion scratch ends immediately. Earlier rejection under narrow budgets is
+possible; bounded host batches remain the ownership boundary for long streams.
 
 Numeric conversion hooks share the existing type-slot/descriptor invocation
 paths. `RunAsync` keeps their owners alive until suspended callbacks and cleanup

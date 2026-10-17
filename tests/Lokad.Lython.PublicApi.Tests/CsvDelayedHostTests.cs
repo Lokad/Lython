@@ -14,6 +14,31 @@ public sealed class CsvDelayedHostTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task NumericRowsUseSharedConversionAfterDelayedInput(bool dictionary)
+    {
+        var access = dictionary ? "row['a']+row['b']" : "row[0]+row[1]";
+        var maker = dictionary ? "csv.DictReader" : "csv.reader";
+        var source = "import csv\nwith open('/numeric.csv') as f:\n total=0\n for row in " +
+            maker + "(f,quoting=csv.QUOTE_NONNUMERIC):\n  total+=" + access + "\nreturn total\n";
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/numeric.csv", (dictionary ? "\"a\",\"b\"\n" : "") + "1,2\n٣,4\n");
+        using var result = await script.RunAsync(host);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(10.0, Assert.IsType<double>(result.ReturnValue));
+        Assert.True(host.CompletedAsynchronously > 0);
+        result.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task DirectNextAwaitsDelayedInput(bool dictionary)
     {
         var maker = dictionary ? "csv.DictReader" : "csv.reader";

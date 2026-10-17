@@ -1284,6 +1284,12 @@ use existing operand storage and the same admitted text parser as general calls.
 Both call checkpoints and managed admission remain in place. Expanded/keyword
 calls, shadowed callables and guest/numeric conversions retain normal binding.
 
+Float text accepts Unicode decimal digits, including supplementary scalars,
+and Python whitespace; valid underscores separate decimal digits after
+normalization. Byte input retains ASCII numeric syntax. Invalid input reports
+`ValueError` with the original text or bytes. Signed zero, infinities, NaNs,
+underflow and overflow retain ordinary binary64 conversion behavior.
+
 The supported subset must support numeric operators with Python semantics, including:
 
 - `+`
@@ -2381,9 +2387,19 @@ The imported module must expose:
 - `csv.QUOTE_NONE`
 - `csv.QUOTE_NONNUMERIC`
 
-The object returned by `csv.reader(...)` is a single-pass iterator: `iter(reader)` and `reader.__iter__()` return the reader itself, and `next(reader)`/`reader.__next__()` advance the same cursor as for/list consumption. It yields each row once as an ordered list of strings and exposes `line_num`. Exhaustion raises `StopIteration`, or returns the supplied default for `next(reader, default)`. Indexing, slicing and `len(...)` are not supported; call `list(reader)` to materialize rows first. Truth testing always succeeds and rendering never pulls input. `RunAsync` awaits input acquisition for both ordinary iteration and direct next calls.
+The object returned by `csv.reader(...)` is a single-pass iterator: `iter(reader)` and `reader.__iter__()` return the reader itself, and `next(reader)`/`reader.__next__()` advance the same cursor as for/list consumption. It yields each row once as an ordered list and exposes `line_num`. With `QUOTE_NONNUMERIC`, nonempty unquoted fields become floats using ordinary `float` text semantics; quoted and empty fields remain strings. Other supported quoting modes yield strings. Escaped unquoted fields also undergo numeric conversion, and quoted state survives physical input fragments. Exhaustion raises `StopIteration`, or returns the supplied default for `next(reader, default)`. Indexing, slicing and `len(...)` are not supported; call `list(reader)` to materialize rows first. Truth testing always succeeds and rendering never pulls input. `RunAsync` awaits input acquisition for both ordinary iteration and direct next calls.
 
 The object returned by `csv.DictReader(...)` is its own single-pass iterator with the same iteration/next/exhaustion contract, yielding dictionaries keyed by field name. Indexing, slicing and `len(...)` are not supported; call `list(reader)` to materialize rows first. Truth testing always succeeds and rendering never pulls input. It must expose `fieldnames` and `line_num`. If `fieldnames` is omitted, the first row supplies the field names. `restkey` and `restval` must handle extra and missing fields.
+
+`DictReader` applies the same numeric conversion to data cells and excess fields;
+field names retain the supported strings-only contract. Use quoted header fields
+with `QUOTE_NONNUMERIC`. Invalid unquoted numeric text raises `ValueError` with
+the original field value. A caught conversion error discards the incomplete row
+and permits the next input record; refused memory admission remains terminal.
+CSV loop row-element facts are conservative because quoting can mix strings and
+floats. Some string-operation misuse is therefore reported by runtime `TypeError`
+instead of a compile-time diagnostic; reader iteration and sizing restrictions
+remain enforced.
 
 The object returned by `csv.writer()` without a file object accumulates output in memory. It must support:
 

@@ -337,7 +337,8 @@ internal static partial class StaticBindingEngine
                 return true;
 
             case AbstractValueKind.CsvReader:
-                itemValue = AbstractValue.ListOf(AbstractValue.StringType(expression.Span), expression.Span);
+                // Numeric quoting can mix floats with quoted or empty strings.
+                itemValue = AbstractValue.ListOf(AbstractValue.Unknown(expression.Span), expression.Span);
                 return true;
 
             case AbstractValueKind.CsvDictReader:

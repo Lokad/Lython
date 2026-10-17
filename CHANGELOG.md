@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Convert nonempty unquoted CSV fields to floats under `QUOTE_NONNUMERIC`, preserving quoted/empty strings, escaped fields, row recovery, retained aliases and delayed host I/O. Share the admitted float parser with Unicode decimal-digit normalization and validated underscores in one temporary buffer, removing the underscore-only string copy. Use conservative CSV row facts so numeric arithmetic remains valid; field names retain the supported strings-only contract.
+
 - Admit array-backed list replacement against the shared host allowance before allocation, keeping old backing funded through the copy and refunding failed reservations. Remove the check-only/post-allocation charge helpers. CSV dictionary readers fill admitted excess-field lists directly, removing their temporary array and copy; retained aliases keep their existing owners. Replacement overlap can cause earlier rejection without changing the final capacity estimate.
 
 - Reduce exact-byte `any`/`all` directly over existing byte storage, removing per-element integer boxing and iterator/truth conversion. Preserve short circuits, the established 64-pull checkpoint policy including exhaustion, retained input funding and general iterable behavior in both execution APIs.

@@ -812,6 +812,7 @@ internal sealed partial class LythonRuntime
         private int _readyHead;
         private bool _inQuotes;
         private bool _fieldStarted;
+        private bool _fieldWasQuoted;
         private bool _afterQuote;
         private bool _recordStarted;
 
@@ -917,6 +918,7 @@ internal sealed partial class LythonRuntime
                 if (MatchesQuoteAt(text, i) && !_fieldStarted)
                 {
                     _inQuotes = true;
+                    _fieldWasQuoted = true;
                     _fieldStarted = true;
                     _recordStarted = true;
                     i += _quoteCharacter.RequireNotNull().Length - 1;
@@ -1043,9 +1045,12 @@ internal sealed partial class LythonRuntime
         {
             // Fields remain batch-owned; row/table backing is admitted separately.
             var payload = PyString.FromString(_field.ToString(), _context.MemoryGovernor, _span);
-            AddRowCell(payload);
+            object cell = _options.Quoting == CsvQuotingMode.NonNumeric && !_fieldWasQuoted && _field.Length != 0
+                ? ParseOwnedFloatText(payload, _context, _span) : payload;
+            AddRowCell(cell);
             _field.Clear();
             _fieldStarted = false;
+            _fieldWasQuoted = false;
             _afterQuote = false;
         }
 
@@ -1080,6 +1085,7 @@ internal sealed partial class LythonRuntime
             _field.Clear();
             _inQuotes = false;
             _fieldStarted = false;
+            _fieldWasQuoted = false;
             _afterQuote = false;
             _recordStarted = false;
         }

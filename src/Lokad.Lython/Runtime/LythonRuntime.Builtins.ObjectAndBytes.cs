@@ -63,31 +63,58 @@ internal sealed partial class LythonRuntime
     private static double ParseOwnedFloatText(object source, ExecutionContext context, LythonSourceSpan span)
     {
         // UTF-8 input bytes bound decoded UTF-16 capacity. Fund decoding
-        // and an optional underscore-removal copy before either allocation.
+        // and an optional normalization buffer before either allocation.
         var length = source is PyString text ? text.Utf8Bytes.Length : ((PyBytes)source).Length;
         var decodeBytes = RuntimeMemoryEstimates.SaturatingAdd(32,
             RuntimeMemoryEstimates.SaturatingMultiply(2, length));
         using var working = context.MemoryGovernor.ReserveTemporary(
             RuntimeMemoryEstimates.SaturatingMultiply(2, decodeBytes), span);
         var decoded = source is PyString value ? value.AsString() : Encoding.ASCII.GetString(((PyBytes)source).Bytes);
-        var trimmed = decoded.AsSpan().Trim();
-        var hasUnderscore = false;
-        // Underscores must sit between two ASCII digits like CPython;
-        // lax stripping would otherwise accept leading, trailing,
-        // doubled or dot/exponent-adjacent separators.
-        for (var i = 0; i < trimmed.Length; i++)
+        var underscores = 0;
+        var nonAscii = false;
+        for (var i = 0; i < decoded.Length; i++)
         {
             // The CLR parser accepts trailing NULs; Python rejects them.
-            if (trimmed[i] == '\0' || (trimmed[i] == '_' &&
-                (i == 0 || i + 1 >= trimmed.Length || !char.IsAsciiDigit(trimmed[i - 1]) || !char.IsAsciiDigit(trimmed[i + 1]))))
-            {
-                throw FloatConversionError(source, context, span, working);
-            }
-            hasUnderscore |= trimmed[i] == '_';
+            if (decoded[i] == '\0') throw FloatConversionError(source, context, span, working);
+            if (decoded[i] == '_') underscores++;
+            nonAscii |= decoded[i] > '\x7f';
         }
 
-        var normalizedCopy = hasUnderscore ? decoded.Replace("_", string.Empty, StringComparison.Ordinal) : decoded;
-        var normalized = normalizedCopy.AsSpan().Trim();
+        ReadOnlySpan<char> normalized = decoded.AsSpan().Trim();
+        if (underscores != 0 || nonAscii)
+        {
+            // Decimal Unicode scalars shrink to ASCII; no per-rune strings or
+            // separate underscore-removal copy are needed. Bytes decoded above
+            // remain ASCII, including replacement characters for invalid input.
+            var buffer = new char[decoded.Length - underscores];
+            var written = 0;
+            var previousDigit = false;
+            var pendingUnderscore = false;
+            foreach (var rune in decoded.EnumerateRunes())
+            {
+                if (rune.Value == '_')
+                {
+                    if (!previousDigit || pendingUnderscore) throw FloatConversionError(source, context, span, working);
+                    pendingUnderscore = true;
+                    continue;
+                }
+
+                char character;
+                if (rune.IsAscii) character = (char)rune.Value;
+                else if (PyStringOps.IsPythonWhitespace(rune)) character = ' ';
+                else if (Rune.GetUnicodeCategory(rune) == UnicodeCategory.DecimalDigitNumber)
+                    character = (char)('0' + (int)Rune.GetNumericValue(rune));
+                else throw FloatConversionError(source, context, span, working);
+
+                var digit = char.IsAsciiDigit(character);
+                if (pendingUnderscore && !digit) throw FloatConversionError(source, context, span, working);
+                buffer[written++] = character;
+                previousDigit = digit;
+                pendingUnderscore = false;
+            }
+            if (pendingUnderscore) throw FloatConversionError(source, context, span, working);
+            normalized = buffer.AsSpan(0, written).Trim();
+        }
         var negative = !normalized.IsEmpty && normalized[0] == '-';
         var unsigned = !normalized.IsEmpty && normalized[0] is '+' or '-' ? normalized[1..] : normalized;
         if (unsigned.Equals("inf", StringComparison.OrdinalIgnoreCase) || unsigned.Equals("infinity", StringComparison.OrdinalIgnoreCase))
