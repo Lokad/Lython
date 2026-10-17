@@ -66,8 +66,8 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
-                SplitArguments(arguments, out var standard, out var extras);
-                var bound = CallBinder.BindNamedArgumentsWithPresence(standard, span, _signature, PythonCallableKind.Builtin);
+                var extras = CollectExtraArguments(arguments);
+                var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
                 var result = _implementation(bound, extras, span, context);
                 return result;
             }
@@ -75,31 +75,32 @@ internal sealed partial class LythonRuntime
             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
-                SplitArguments(arguments, out var standard, out var extras);
-                var bound = CallBinder.BindNamedArgumentsWithPresence(standard, span, _signature, PythonCallableKind.Builtin);
+                var extras = CollectExtraArguments(arguments);
+                var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
                 var result = _asyncImplementation is null
                     ? _implementation(bound, extras, span, context)
                     : await _asyncImplementation(bound, extras, span, context).ConfigureAwait(false);
                 return result;
             }
 
-            private void SplitArguments(CallArgumentValue[] arguments, out CallArgumentValue[] standard, out List<KeyValuePair<string, object>> extras)
+            // All four signatures allow extra keywords. The ordinary binder
+            // snapshots known values before any suspension; only constructor
+            // forwarding needs a separate collection of unknown keywords.
+            private IReadOnlyList<KeyValuePair<string, object>> CollectExtraArguments(CallArgumentValue[] arguments)
             {
                 var known = (NamedCallableParameterLayout)_signature.Parameters;
-                var standardList = new List<CallArgumentValue>(arguments.Length);
-                extras = new List<KeyValuePair<string, object>>();
+                List<KeyValuePair<string, object>>? extras = null;
                 foreach (var argument in arguments)
                 {
                     if (argument.IsPositional || (argument.KeywordName is not null && known.ParameterIndices.ContainsKey(argument.KeywordName)))
                     {
-                        standardList.Add(argument);
                         continue;
                     }
 
-                    extras.Add(new KeyValuePair<string, object>(argument.KeywordName ?? string.Empty, argument.Value));
+                    (extras ??= []).Add(new KeyValuePair<string, object>(argument.KeywordName ?? string.Empty, argument.Value));
                 }
 
-                standard = standardList.ToArray();
+                return extras is null ? Array.Empty<KeyValuePair<string, object>>() : extras;
             }
 
             public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
