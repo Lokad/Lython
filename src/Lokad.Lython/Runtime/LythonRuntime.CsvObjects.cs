@@ -106,6 +106,15 @@ internal sealed partial class LythonRuntime
             if (LineNum == 0) LineNum = Rows.PhysicalLineCount;
             if (Rows.TryMoveNext(out var row))
             {
+                LineNum = Rows.PhysicalLineCount;
+                while (row.Count == 0)
+                {
+                    if (!Rows.TryMoveNext(out row))
+                    {
+                        value = PyNone.Instance;
+                        return false;
+                    }
+                }
                 value = ConvertRow(row);
                 return true;
             }
@@ -118,7 +127,14 @@ internal sealed partial class LythonRuntime
         {
             if (LineNum == 0) LineNum = Rows.PhysicalLineCount;
             var row = await Rows.TryMoveNextAsync().ConfigureAwait(false);
-            return row is null ? PyIterationResult.End : PyIterationResult.Yield(ConvertRow(row));
+            if (row is null) return PyIterationResult.End;
+            LineNum = Rows.PhysicalLineCount;
+            while (row.Count == 0)
+            {
+                row = await Rows.TryMoveNextAsync().ConfigureAwait(false);
+                if (row is null) return PyIterationResult.End;
+            }
+            return PyIterationResult.Yield(ConvertRow(row));
         }
 
         public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);

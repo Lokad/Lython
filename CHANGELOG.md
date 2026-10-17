@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Skip empty records in `csv.DictReader` while retaining plain-reader empty rows, quoted empty fields and Python's count/error/EOF behavior. Preserve only supplied newlines inside quoted fragments, removing synthesized line breaks. Keep admission fixtures' original capacities and refusal amounts with explicit newline input, and retain bounded batch ownership and cancellation.
+
 - Preserve `csv.DictReader.line_num` after failed record acquisition, with Python's fieldname-access and initial-pull refresh behavior. Successful acquisition publishes the count before dictionary conversion; plain readers keep their physical count. Retain inferred-header timing and shared-budget ownership.
 
 - Defer data reads for `csv.DictReader` with explicit field names until the first pull. Preserve live source changes, start `line_num` at zero and report data errors on pull. Remove first-row prefetch/replay while preserving fieldname admission, retained row funding and awaited host cancellation; inferred headers retain their existing construction-time read.

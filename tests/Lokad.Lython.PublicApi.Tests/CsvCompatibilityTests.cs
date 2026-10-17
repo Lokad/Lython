@@ -186,7 +186,7 @@ with open("/input.csv", newline="") as handle:
 with open("/input.csv", newline="") as handle:
     rows = list(csv.reader(handle))
 
-manual = list(csv.reader(["name,note", "alpha,\"hello", "world\"", "beta,z"]))
+manual = list(csv.reader(["name,note\n", "alpha,\"hello\n", "world\"\n", "beta,z\n"]))
 __lython_file = open("/out.txt", "w")
 __lython_file.write(str(len(physical)) + "|" + rows[1][1] + "|" + manual[1][1] + "|" + str(rows[0]) + "|" + str(rows[2]))
 __lython_file.close()

@@ -19,8 +19,8 @@ public sealed class CsvMultilineFieldScenarioTests
         import csv
         import itertools
         q = chr(34)
-        pad = "x" * 100
-        lines = itertools.chain([q + "a"], itertools.repeat(pad, 16000), ["b" + q])
+        pad = "x" * 100 + "\n"
+        lines = itertools.chain([q + "a\n"], itertools.repeat(pad, 16000), ["b" + q])
         rows = list(csv.reader(lines))
         return len(rows[0][0])
         """;
@@ -47,8 +47,8 @@ public sealed class CsvMultilineFieldScenarioTests
             import csv
             import itertools
             q = chr(34)
-            pad = "x" * 5
-            lines = itertools.chain([q + "a"], itertools.repeat(pad, 3), ["b" + q])
+            pad = "x" * 5 + "\n"
+            lines = itertools.chain([q + "a\n"], itertools.repeat(pad, 3), ["b" + q])
             rows = list(csv.reader(lines))
             return rows
             """);

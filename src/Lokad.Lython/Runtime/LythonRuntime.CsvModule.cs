@@ -734,7 +734,7 @@ internal sealed partial class LythonRuntime
             finally
             {
                 // Keep the producer alive through disposal, then detach it even
-                // on cleanup failure. Queued/replayed records stay independently
+                // on cleanup failure. Queued records stay independently
                 // funded. Body errors never reach this terminal path.
                 try
                 {
@@ -907,11 +907,6 @@ internal sealed partial class LythonRuntime
 
             if (_inQuotes)
             {
-                if (text.Length == 0 || (text[^1] != '\n' && text[^1] != '\r'))
-                {
-                    AppendField('\n');
-                }
-
                 return;
             }
 

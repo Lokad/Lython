@@ -23,8 +23,8 @@ public sealed class CsvMultilineSixColumnScenarioTests
 
     private const string MultilineSixColumnScript = """
         import csv
-        la = chr(34) + "A" * 200
-        lb = "B" * 200
+        la = chr(34) + "A" * 200 + "\n"
+        lb = "B" * 200 + "\n"
         lc = "C" * 200 + chr(34) + ",c1,c2,c3,c4,c5"
         lines = ([la, lb, lc] * 400)
         r = csv.DictReader(lines, ["k0", "k1", "k2", "k3", "k4", "k5"])
@@ -73,8 +73,8 @@ public sealed class CsvMultilineSixColumnScenarioTests
     {
         var script = new LythonEngine().Compile("""
             import csv
-            la = chr(34) + "A" * 200
-            lb = "B" * 200
+            la = chr(34) + "A" * 200 + "\n"
+            lb = "B" * 200 + "\n"
             lc = "C" * 200 + chr(34) + ",c1,c2,c3,c4,c5"
             rows = list(csv.reader([la, lb, lc] * 2))
             return rows

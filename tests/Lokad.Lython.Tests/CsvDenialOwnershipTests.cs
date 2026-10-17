@@ -83,7 +83,7 @@ public sealed class CsvDenialOwnershipTests
         var context = Context();
         var source = new LythonRuntime.CsvRecordSource(new PyList([]), Options(), Span, context);
         var parser = Parser(source);
-        parser.Feed("\"" + new string('x', 15)); // newline fills the initial16 chars
+        parser.Feed("\"" + new string('x', 15) + "\n"); // supplied newline fills the initial16 chars
         var field = (StringBuilder)typeof(LythonRuntime.CsvRecordParser)
             .GetField("_field", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(parser)!;
         Assert.Equal(16, field.Length);
@@ -157,7 +157,7 @@ public sealed class CsvDenialOwnershipTests
         var governor = context.MemoryGovernor;
         var owner = new LythonRuntime.CsvRecordSource(new PyList([]), Options(), Span, context);
         var parser = Parser(owner);
-        parser.Feed("\""); // Pending quoted field contains one synthesized newline.
+        parser.Feed("\"\n"); // Pending quoted field contains one supplied newline.
         var committed = governor.CurrentCommittedBytes;
         var reserved = governor.CurrentReservedBytes;
         // Deny the 129-byte UTF-8 field before its storage is allocated.
@@ -185,7 +185,7 @@ public sealed class CsvDenialOwnershipTests
         var governor = context.MemoryGovernor;
         var owner = new LythonRuntime.CsvRecordSource(new PyList([]), Options(), Span, context);
         var parser = Parser(owner);
-        parser.Feed("x,\""); // Retained first field and pending newline field.
+        parser.Feed("x,\"\n"); // Retained first field and pending newline field.
         var committed = governor.CurrentCommittedBytes;
         var reserved = governor.CurrentReservedBytes;
         // Finish the field, then deny private row backing before publication.
@@ -266,7 +266,7 @@ public sealed class CsvDenialOwnershipTests
         var governor = context.MemoryGovernor;
         var owner = new LythonRuntime.CsvRecordSource(new PyList([]), Options(), Span, context);
         var parser = Parser(owner);
-        parser.Feed("a,b,c,d,\"");
+        parser.Feed("a,b,c,d,\"\n");
         var reserved = governor.CurrentReservedBytes;
         var pressure = Cap - governor.CurrentAccountedBytes - (129 + 128 + 127);
         governor.Reserve(pressure, Span);

@@ -2404,6 +2404,12 @@ reading `fieldnames` refreshes it from the underlying reader, as does starting a
 pull while the published count is zero. Plain `reader.line_num` remains the
 physical input count, including consumed malformed records.
 
+Plain readers yield an empty list for an empty physical record. Dictionary
+readers skip those empty rows, preserving Python's published count on a later
+error or exhaustion. Quoted empty fields, delimiter-only records and space-only
+fields are data. Inside quoted fields, fragments preserve the characters and
+line endings actually supplied; fragment boundaries never invent a newline.
+
 `DictReader` applies the same numeric conversion to data cells and excess fields;
 field names retain the supported strings-only contract. Use quoted header fields
 with `QUOTE_NONNUMERIC`. Invalid unquoted numeric text raises `ValueError` with
