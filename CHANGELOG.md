@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse synchronous `any`/`all` kernels for exact bytes and ranges under asynchronous hosting. Preserve native checkpoints, admission and short circuits while keeping general iterable and guest-truth loops awaited; avoid native async enumeration transport without adding kernels or ownership machinery.
+
 - Complete native truth testing without entering an async state machine. Reuse the existing truth kernel and keep guest slot binding/calls behind the unchanged awaited body, preserving effects, errors, cancellation, admission refusal and retained ownership.
 
 - Invoke one-positional-argument native text/bytes `float` calls from existing operand storage. Reuse the admitted parser and managed call guards, avoiding general argument packaging while preserving expanded/keyword calls, aliases/shadowing, guest protocols, cancellation and terminal refusal.

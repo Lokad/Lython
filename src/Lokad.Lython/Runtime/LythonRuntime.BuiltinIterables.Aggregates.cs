@@ -28,7 +28,12 @@ internal sealed partial class LythonRuntime
         return false;
     }
 
-    private static async ValueTask<object> AnyAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static ValueTask<object> AnyAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => arguments.Length == 1 && arguments[0] is PyBytes or PyRange
+            ? new(Any(arguments, span, context))
+            : AnyGeneralAsync(arguments, span, context);
+
+    private static async ValueTask<object> AnyGeneralAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length != 1)
         {
@@ -64,7 +69,12 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static async ValueTask<object> AllAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static ValueTask<object> AllAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => arguments.Length == 1 && arguments[0] is PyBytes or PyRange
+            ? new(All(arguments, span, context))
+            : AllGeneralAsync(arguments, span, context);
+
+    private static async ValueTask<object> AllGeneralAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length != 1)
         {

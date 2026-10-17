@@ -1,0 +1,402 @@
+{
+  "recipeSha256": "5f42a2bdf19b855761883bdf3bbcff9c2b3695e30b2b0b9e888497c489e2716f",
+  "comparisons": [
+    {
+      "asynchronous": true,
+      "kind": "list",
+      "callsPerSample": 128,
+      "beforeMedianMs": 0.02605,
+      "afterMedianMs": 0.02465,
+      "beforeSpreadPercent": 35.70057581573896,
+      "afterSpreadPercent": 25.557809330628807,
+      "beforeAllocated": 680.0,
+      "afterAllocated": 680.0,
+      "beforeSamples": {
+        "asynchronous": true,
+        "kind": "list",
+        "callsPerSample": 128,
+        "samples": [
+          680,
+          680,
+          680,
+          680,
+          680,
+          680,
+          680,
+          680
+        ],
+        "ticks": [
+          246,
+          249,
+          267,
+          291,
+          260,
+          303,
+          261,
+          210
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": true,
+        "kind": "list",
+        "callsPerSample": 128,
+        "samples": [
+          680,
+          680,
+          680,
+          680,
+          680,
+          680,
+          680,
+          680
+        ],
+        "ticks": [
+          210,
+          271,
+          249,
+          273,
+          233,
+          269,
+          219,
+          244
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": true,
+      "kind": "bytes",
+      "callsPerSample": 4096,
+      "beforeMedianMs": 0.89825,
+      "afterMedianMs": 0.27925,
+      "beforeSpreadPercent": 7.102699693849152,
+      "afterSpreadPercent": 19.301700984780663,
+      "beforeAllocated": 131824.0,
+      "afterAllocated": 131688.0,
+      "beforeSamples": {
+        "asynchronous": true,
+        "kind": "bytes",
+        "callsPerSample": 4096,
+        "samples": [
+          131824,
+          131824,
+          131824,
+          131824,
+          131824,
+          131824,
+          131824,
+          131824
+        ],
+        "ticks": [
+          8884,
+          8910,
+          8798,
+          8884,
+          9097,
+          9095,
+          9436,
+          9055
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": true,
+        "kind": "bytes",
+        "callsPerSample": 4096,
+        "samples": [
+          131688,
+          131688,
+          131688,
+          131688,
+          131688,
+          131688,
+          131688,
+          131688
+        ],
+        "ticks": [
+          2780,
+          2800,
+          2717,
+          2794,
+          3226,
+          2791,
+          2687,
+          2877
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": false,
+      "kind": "bytes",
+      "callsPerSample": 4096,
+      "beforeMedianMs": 0.3302,
+      "afterMedianMs": 0.33115,
+      "beforeSpreadPercent": 8.358570563294974,
+      "afterSpreadPercent": 8.183602597010418,
+      "beforeAllocated": 131600.0,
+      "afterAllocated": 131600.0,
+      "beforeSamples": {
+        "asynchronous": false,
+        "kind": "bytes",
+        "callsPerSample": 4096,
+        "samples": [
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600
+        ],
+        "ticks": [
+          3371,
+          3427,
+          3418,
+          3455,
+          3196,
+          3179,
+          3233,
+          3205
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": false,
+        "kind": "bytes",
+        "callsPerSample": 4096,
+        "samples": [
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600
+        ],
+        "ticks": [
+          3312,
+          3356,
+          3446,
+          3453,
+          3311,
+          3188,
+          3182,
+          3303
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": false,
+      "kind": "range",
+      "callsPerSample": 4096,
+      "beforeMedianMs": 0.4045,
+      "afterMedianMs": 0.41409999999999997,
+      "beforeSpreadPercent": 70.28430160692213,
+      "afterSpreadPercent": 9.104081139821298,
+      "beforeAllocated": 131640.0,
+      "afterAllocated": 131640.0,
+      "beforeSamples": {
+        "asynchronous": false,
+        "kind": "range",
+        "callsPerSample": 4096,
+        "samples": [
+          131640,
+          131640,
+          131640,
+          131640,
+          131640,
+          131640,
+          131640,
+          131640
+        ],
+        "ticks": [
+          4005,
+          4013,
+          4449,
+          4077,
+          3865,
+          3795,
+          5469,
+          6638
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": false,
+        "kind": "range",
+        "callsPerSample": 4096,
+        "samples": [
+          131640,
+          131640,
+          131640,
+          131640,
+          131640,
+          131640,
+          131640,
+          131640
+        ],
+        "ticks": [
+          3898,
+          3891,
+          4134,
+          4268,
+          4156,
+          4176,
+          4134,
+          4148
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": false,
+      "kind": "list",
+      "callsPerSample": 128,
+      "beforeMedianMs": 0.01455,
+      "afterMedianMs": 0.0121,
+      "beforeSpreadPercent": 29.553264604810998,
+      "afterSpreadPercent": 32.231404958677686,
+      "beforeAllocated": 520.0,
+      "afterAllocated": 520.0,
+      "beforeSamples": {
+        "asynchronous": false,
+        "kind": "list",
+        "callsPerSample": 128,
+        "samples": [
+          520,
+          520,
+          520,
+          520,
+          520,
+          520,
+          520,
+          520
+        ],
+        "ticks": [
+          113,
+          139,
+          154,
+          135,
+          150,
+          143,
+          148,
+          156
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": false,
+        "kind": "list",
+        "callsPerSample": 128,
+        "samples": [
+          520,
+          520,
+          520,
+          520,
+          520,
+          520,
+          520,
+          520
+        ],
+        "ticks": [
+          147,
+          130,
+          111,
+          108,
+          135,
+          130,
+          112,
+          109
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": true,
+      "kind": "range",
+      "callsPerSample": 4096,
+      "beforeMedianMs": 2.0352,
+      "afterMedianMs": 0.42105000000000004,
+      "beforeSpreadPercent": 250.44713050314465,
+      "afterSpreadPercent": 6.816292601828762,
+      "beforeAllocated": 131824.0,
+      "afterAllocated": 131728.0,
+      "beforeSamples": {
+        "asynchronous": true,
+        "kind": "range",
+        "callsPerSample": 4096,
+        "samples": [
+          131824,
+          131824,
+          131824,
+          131824,
+          131824,
+          131824,
+          131824,
+          131824
+        ],
+        "ticks": [
+          20483,
+          20232,
+          21304,
+          20340,
+          20236,
+          70911,
+          20364,
+          19940
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": true,
+        "kind": "range",
+        "callsPerSample": 4096,
+        "samples": [
+          131728,
+          131728,
+          131728,
+          131728,
+          131728,
+          131728,
+          131728,
+          131728
+        ],
+        "ticks": [
+          4284,
+          4046,
+          4067,
+          4333,
+          4233,
+          4148,
+          4209,
+          4212
+        ],
+        "frequency": 10000000
+      }
+    }
+  ],
+  "status": "Single short local diagnostic; unqualified timing; no CPython speed claim.",
+  "dateUTC": "2026-10-17",
+  "machine": "Intel Core i7-14700KF; Windows10.0.26200 x64; Release net10.0",
+  "baselineRevision": "c62b5e19b58891df546e00deee97176c2b123972",
+  "candidate": "One-file native-routing patch on c62b5e19 measured before commit; not an arbitrary later HEAD.",
+  "candidateSourceSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs": "a2fcd3c26c4a2c1f4d3db02a69c6f50cd5819eb7b4ea20d2209304f009161ee4"
+  },
+  "boundary": "Warm compiled return all(values); compilation/context/inputs outside counter;4096 exact bytes/range values or128 preboxed list values;4warmups/8samples;current-thread bytes and Stopwatch ticks;no actual I/O.",
+  "kernelBodies": {
+    "unchanged": true,
+    "bodies": {
+      "Any->Any": "399a435d53680dbf89b2d5e9204eb2733468a13eeed1f3ce2ef1e15628c36e8f",
+      "All->All": "ed18fdb519779a2b51e8948b00e9e9f1cffd24913ca7e0452d7b48c4c5aecfc2",
+      "AnyAsync->AnyGeneralAsync": "dbf1e8c977793130e4db4ea4afbd96d96c4fea9618473b84bc7bca04707be65f",
+      "AllAsync->AllGeneralAsync": "2ec0b35c28e819c4d7a519a21a9a28cc872c8839512ce0d37f01d363a876792e"
+    },
+    "file": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs"
+  }
+}
