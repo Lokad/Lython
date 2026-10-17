@@ -385,9 +385,9 @@ internal sealed partial class ExecutableScript
         {
             if (_generator && StatementSyntaxTraversal.EnumerateDirectExpressions(functionDefinition.Syntax).Any(GeneratorSyntaxFacts.ContainsYield))
                 throw new GeneratorLoweringException("Suspension in nested definition decorators, defaults or annotations is not supported.", functionDefinition.Span);
-            var codeObject = CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
+            var codeObject = functionDefinition.GeneratorCode ?? CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
                 functionDefinition.Parameters, functionDefinition.Body,
-                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax), functionDefinition.GeneratorCode);
+                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax));
 
             var defaultValues = functionDefinition.Parameters
                 .Where(parameter => parameter.DefaultValue is not null)
@@ -402,11 +402,10 @@ internal sealed partial class ExecutableScript
 
         private ExecutableCodeObject? CompileFunctionCode(string name,
             IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body,
-            ScopeDirectiveFacts scopeFacts, ExecutableCodeObject? generatorCode)
+            ScopeDirectiveFacts scopeFacts)
         {
             try
             {
-                if (generatorCode is not null) return generatorCode;
                 // Forward transitive free names as before. Comprehension names
                 // are inner bindings, even at module scope or when the caller
                 // declares a same-named global; add them after that exclusion.
