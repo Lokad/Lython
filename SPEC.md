@@ -828,6 +828,15 @@ snapshot. Argument rendering retains its existing synchronous boundary; this
 does not add async exception-message hooks. SystemExit's separate constructor
 and specialized module/native error factories retain their existing contracts.
 
+Immediate positional `str.replace(old,new[,count])` calls on native strings reuse
+the direct receiver operation and shared replacement kernel. The receiver is
+captured before argument effects; all arguments evaluate before string/count
+validation. Explicit `None` remains a supplied count. Exposed methods, keywords
+and guest receivers retain general binding and their ordinary behavior.
+Count hooks keep their existing synchronous conversion boundary; this change
+does not add asynchronous count-protocol suspension. Managed call checks,
+replacement admission/overlap and retained-result ownership remain unchanged.
+
 Asynchronous functions, `await`, `async for`, and `async with` are outside the
 current language subset. These forms must
 be rejected explicitly. `LythonEngine.RunAsync` is an embedding API that awaits

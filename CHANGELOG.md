@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Extend the existing direct `str.replace` call path to three positional arguments. Pass the raw count from operand storage through shared validation and replacement, avoiding immediate bound-method and argument packaging while preserving keyword/exposed/guest calls, allocation preflights and result ownership.
+
 - Preserve generic exception arguments without formatting them during construction. Reuse existing lazy args rendering for mutable values, KeyError repr and public diagnostics; `.message` now renders current arguments on access after custom shadows. Keep SystemExit and specialized native factories separate, with existing ownership, terminal admission and awaited diagnostic cleanup.
 
 - Keep ordinary module and function `raise` executable, reusing existing exception/cause evaluation, coercion, chaining and bare-reraise operations. Remove the generator-only lowering restriction while preserving handler restoration, protected cleanup, cancellation, admission refusal and retained exception arguments.

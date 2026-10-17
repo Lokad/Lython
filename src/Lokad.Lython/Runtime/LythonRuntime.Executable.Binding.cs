@@ -570,7 +570,9 @@ internal sealed partial class LythonRuntime
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringReplace))
             {
                 result = InvokeStringReplace((PyString)stack[start], stack[start + callSite.ArgumentOffset],
-                    stack[start + callSite.ArgumentOffset + 1], callSite.CallSpan, context);
+                    stack[start + callSite.ArgumentOffset + 1],
+                    callSite.ArgumentCount == 3 ? stack[start + callSite.ArgumentOffset + 2] : null,
+                    callSite.CallSpan, context);
             }
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectDictionaryGet))
             {

@@ -367,6 +367,14 @@ No new rendering owner, budget, object layout or reference-withdrawal reclamatio
 is introduced. Replacing args can conservatively retain original construction
 storage for the finite owner lifetime.
 
+Immediate three-positional-argument native string replacement forwards its raw
+count from existing operand storage, sharing the two-argument operation and
+replacement kernel. It removes immediate method/argument packaging for that form;
+the receiver and arguments stay under their existing execution owner. Native
+output-size/overlap preflights and result ownership remain authoritative. General
+keyword, exposed-method and guest dispatch keep their existing funding; no new
+cache, reservation class, budget or owner is introduced.
+
 An execution's first refusal is terminal even if guest code catches `MemoryError`,
 suppresses it in `__exit__`, or returns/raises from `finally`. Further guest work
 and host calls stop. Guest cleanup is not an emergency allocation budget and can
