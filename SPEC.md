@@ -1168,6 +1168,11 @@ bind once per attempted hook. Explicit bases and integral results of `__trunc__`
 use the type's `__index__` slot. Ordinary explicit member access keeps Python's
 attribute lookup rules.
 
+`RunAsync` awaits descriptor binding and hook bodies for `int(value)` and
+explicit-base `int(text, base)` conversions, including indexed legacy `__trunc__`
+results. Native conversions use the synchronous conversion body. Inputs and
+results keep their existing owners until suspended work and cleanup complete.
+
 Host globals admit all eight CLR integer types (`sbyte`, `byte`, `short`,
 `ushort`, `int`, `uint`, `long`, `ulong`) as exact Python integers, including
 when nested in supported collections. Python operations, type checks, numeric

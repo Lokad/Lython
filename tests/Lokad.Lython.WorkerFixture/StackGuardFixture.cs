@@ -28,6 +28,8 @@ internal static class StackGuardFixture
             "callback-finally" => "cleanup=0\nclass Loop:\n def __bool__(self):\n  global cleanup\n  try:return bool(self)\n  finally:cleanup+=1\nfailures=0\nfor _ in range(3):\n try:bool(Loop())\n except (RuntimeError,RecursionError):failures+=1\n assert bool([1])\nassert cleanup>0\nreturn failures\n",
             "length" => "class Loop:\n def __len__(self):return len(self)\nfailures=0\nfor _ in range(3):\n try:len(Loop())\n except (RuntimeError,RecursionError):failures+=1\n assert len([1])==1\nreturn failures\n",
             "length-finally" => "cleanup=0\nclass Loop:\n def __len__(self):\n  global cleanup\n  try:return len(self)\n  finally:cleanup+=1\nfailures=0\nfor _ in range(3):\n try:len(Loop())\n except (RuntimeError,RecursionError):failures+=1\n assert len([1])==1\nassert cleanup>0\nreturn failures\n",
+            "integer-finally" => "cleanup=0\nclass Loop:\n def __int__(self):\n  global cleanup\n  try:return int(self)\n  finally:cleanup+=1\nfailures=0\nfor _ in range(3):\n try:int(Loop())\n except (RuntimeError,RecursionError):failures+=1\n assert int('7')==7\nassert cleanup>0\nreturn failures\n",
+            "integer-base-finally" => "cleanup=0\nclass Loop:\n def __index__(self):\n  global cleanup\n  try:return int('1',self)\n  finally:cleanup+=1\nfailures=0\nfor _ in range(3):\n try:int('1',Loop())\n except (RuntimeError,RecursionError):failures+=1\n assert int('1',2)==1\nassert cleanup>0\nreturn failures\n",
             "cancellation" => lists + "while True:\n try:\n  equal = x == y\n except RecursionError:\n  pass\n",
             _ => throw new ArgumentOutOfRangeException(nameof(scenario))
         };

@@ -316,35 +316,37 @@ internal sealed partial class LythonRuntime
         if (arguments.Length == 2)
         {
             TryConvertIntegerIndex(arguments[1], context, span, out var indexedBase);
-            var requestedBase = indexedBase switch
-            {
-                _ when PyNumberOps.TryAsInteger(indexedBase, out var integerBase) => integerBase,
-                _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(arguments[1], context) + "' object cannot be interpreted as an integer", span),
-            };
-
-            if (requestedBase < 0 || requestedBase > 36 || requestedBase == 1)
-            {
-                throw new LythonRuntimeException("ValueError", "int() base must be >= 2 and <= 36, or 0", span);
-            }
-
-            numberBase = (int)requestedBase;
-            if (arguments[0] is not PyString and not PyBytes)
-            {
-                throw new LythonRuntimeException("TypeError", "int() can't convert non-string with explicit base", span);
-            }
+            numberBase = ValidateIntegerBase(indexedBase, arguments[1], arguments[0], context, span);
         }
 
+        return ConvertIntegerValue(arguments[0], numberBase, context, span);
+    }
+
+    private static int ValidateIntegerBase(object indexedBase, object originalBase, object value,
+        ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!PyNumberOps.TryAsInteger(indexedBase, out var requestedBase))
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(originalBase, context) + "' object cannot be interpreted as an integer", span);
+        if (requestedBase < 0 || requestedBase > 36 || requestedBase == 1)
+            throw new LythonRuntimeException("ValueError", "int() base must be >= 2 and <= 36, or 0", span);
+        if (value is not PyString and not PyBytes)
+            throw new LythonRuntimeException("TypeError", "int() can't convert non-string with explicit base", span);
+        return (int)requestedBase;
+    }
+
+    private static object ConvertIntegerValue(object value, int numberBase, ExecutionContext context, LythonSourceSpan span)
+    {
         try
         {
-            return arguments[0] switch
+            return value switch
             {
-                BigInteger => arguments[0],
-                _ when PyNumberOps.TryAsInteger(arguments[0], out var integer) => OwnFreshInteger(integer, context.MemoryGovernor, span),
+                BigInteger => value,
+                _ when PyNumberOps.TryAsInteger(value, out var integer) => OwnFreshInteger(integer, context.MemoryGovernor, span),
                 double floating => OwnFreshInteger(FloatToInteger(floating, span, Math.Truncate), context.MemoryGovernor, span),
                 PyDecimal decimalValue => OwnFreshInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span),
                 PyString text => OwnFreshInteger(ParsePythonIntegerText(text.AsString(), numberBase, span, text, context), context.MemoryGovernor, span),
                 PyBytes bytes => OwnFreshInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span, bytes, context), context.MemoryGovernor, span),
-                _ => throw new LythonRuntimeException("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
+                _ => throw new LythonRuntimeException("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(value, context) + "'", span)
             };
         }
         catch (FormatException ex)
@@ -791,13 +793,7 @@ internal sealed partial class LythonRuntime
                 throw NotCallableError(intMember, context, span);
             }
 
-            var converted = intCallable.Invoke([], span, context);
-            if (!PyNumberOps.TryAsInteger(converted, out var integer))
-            {
-                throw new LythonRuntimeException("TypeError", "__int__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
-            }
-
-            return converted is BigInteger ? converted : integer;
+            return ValidateIntegerConversionResult(intCallable.Invoke([], span, context), "__int__", context, span);
         }
 
         if (TryConvertIntegerIndex(instance, context, span, out var indexedValue))
@@ -814,17 +810,7 @@ internal sealed partial class LythonRuntime
 
             var truncated = truncCallable.Invoke([], span, context);
             TryConvertIntegerIndex(truncated, context, span, out var indexed);
-            BigInteger truncatedInteger;
-            if (indexed is int smallTrunc)
-            {
-                truncatedInteger = new BigInteger(smallTrunc);
-            }
-            else if (!PyNumberOps.TryAsInteger(indexed, out truncatedInteger))
-            {
-                throw new LythonRuntimeException("TypeError", "__trunc__ returned non-Integral (type " + UnboundTypeMethod.PythonTypeName(truncated, context) + ")", span);
-            }
-
-            return indexed is BigInteger ? indexed : truncatedInteger;
+            return ValidateTruncatedInteger(truncated, indexed, context, span);
         }
 
         throw IntegerConversionError(instance, context, span);
@@ -851,8 +837,15 @@ internal sealed partial class LythonRuntime
             !TryGetIntegerConversionMember(instance, "__index__", context, span, out var member))
             return false;
         if (member is not ICallable callable) throw NotCallableError(member, context, span);
-        converted = ValidateIndexProtocolResult(callable.Invoke([], span, context), context, span);
+        converted = ValidateIntegerConversionResult(callable.Invoke([], span, context), "__index__", context, span);
         return true;
+    }
+
+    private static object ValidateTruncatedInteger(object truncated, object indexed, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!PyNumberOps.TryAsInteger(indexed, out var integer))
+            throw new LythonRuntimeException("TypeError", "__trunc__ returned non-Integral (type " + UnboundTypeMethod.PythonTypeName(truncated, context) + ")", span);
+        return indexed is BigInteger ? indexed : integer;
     }
 
     internal static LythonRuntimeException NotCallableError(object member, ExecutionContext context, LythonSourceSpan span)

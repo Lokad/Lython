@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Await guest integer-conversion descriptors and callbacks under `RunAsync`, including explicit bases and indexed truncation results. Share scalar/base/result validation, keep native conversions synchronous, and preserve input/result ownership, cancellation and terminal admission refusal through suspension.
+
 - Resolve integer conversion hooks and explicit bases through type slots, ignoring instance shadows and ordinary attribute hooks. Bind fallback index descriptors once, share existing result validation and preserve returned integer aliases, admission and cleanup.
 
 - Reuse ten fixed numeric and text builtin definitions across executions, removing repeated wrapper and signature setup. Keep mutable types, dictionaries, modules, host bindings and result ownership private to each run.

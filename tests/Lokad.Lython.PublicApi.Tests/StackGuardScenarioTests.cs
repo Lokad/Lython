@@ -18,6 +18,8 @@ public sealed class StackGuardScenarioTests
     [InlineData("callback-finally")]
     [InlineData("length")]
     [InlineData("length-finally")]
+    [InlineData("integer-finally")]
+    [InlineData("integer-base-finally")]
     [InlineData("cancellation")]
     public void YieldedDeepWorkUnwindsAndRecoversInAnIsolatedProcess(string scenario)
     {

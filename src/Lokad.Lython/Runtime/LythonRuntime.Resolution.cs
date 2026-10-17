@@ -391,14 +391,14 @@ internal sealed partial class LythonRuntime
             return index;
         }
 
-        return ValidateIndexProtocolResult(callable.Invoke([], span, context), context, span);
+        return ValidateIntegerConversionResult(callable.Invoke([], span, context), "__index__", context, span);
     }
 
-    private static object ValidateIndexProtocolResult(object converted, ExecutionContext context, LythonSourceSpan span)
+    private static object ValidateIntegerConversionResult(object converted, string method, ExecutionContext context, LythonSourceSpan span)
     {
         if (!PyNumberOps.TryAsInteger(converted, out var integer))
         {
-            throw new LythonRuntimeException("TypeError", "__index__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
+            throw new LythonRuntimeException("TypeError", method + " returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
         }
 
         return converted is BigInteger ? converted : integer;
