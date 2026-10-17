@@ -139,41 +139,14 @@ internal sealed class GovernedByteBuilder
 
     public PyString ToPyString()
     {
-        if (_length == 0)
-        {
-            return PyString.Empty;
-        }
-
-        if (_memoryGovernor is not null)
-        {
-            _memoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(_length), _allocationSpan);
-        }
-
-        var exact = new byte[_length];
-        _buffer.AsSpan(0, _length).CopyTo(exact);
         return _memoryGovernor is null
-            ? PyString.FromOwnedUtf8(exact)
-            : PyString.FromOwnedUtf8(exact, _memoryGovernor, _allocationSpan);
+            ? PyString.FromOwnedUtf8(WrittenSpan.ToArray())
+            : PyString.CopyFromUtf8(WrittenSpan, _memoryGovernor, _allocationSpan);
     }
 
     public PyString ToPyStringAndRelease()
     {
-        if (_length == 0)
-        {
-            Release();
-            return PyString.Empty;
-        }
-
-        if (_memoryGovernor is not null)
-        {
-            _memoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(_length), _allocationSpan);
-        }
-
-        var exact = new byte[_length];
-        _buffer.AsSpan(0, _length).CopyTo(exact);
-        var result = _memoryGovernor is null
-            ? PyString.FromOwnedUtf8(exact)
-            : PyString.FromOwnedUtf8(exact, _memoryGovernor, _allocationSpan);
+        var result = ToPyString();
         Release();
         return result;
     }

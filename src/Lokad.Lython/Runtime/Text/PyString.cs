@@ -181,8 +181,14 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return new PyString(owned, governor, allocationSpan);
         }
 
+        return CopyFromUtf8(utf8.Span, governor, allocationSpan);
+    }
+
+    internal static PyString CopyFromUtf8(ReadOnlySpan<byte> utf8, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    {
+        if (utf8.IsEmpty) return Empty;
         var copy = AllocateGovernedUtf8(utf8.Length, governor, allocationSpan);
-        utf8.Span.CopyTo(copy);
+        utf8.CopyTo(copy);
         return new PyString(copy, governor, allocationSpan, prefunded: true);
     }
 

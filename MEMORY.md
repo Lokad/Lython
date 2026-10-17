@@ -62,6 +62,11 @@ lookup that previously happened first. Funded calls preserve Python binding and
 execution behavior. Modules and functions requiring namespace mirroring retain
 their separate local-storage route; this is not guest-reference tracing.
 
+String-builder materialization reserves its owned UTF-8 result before allocating
+the copy, while the working buffer remains charged. A failed conversion retains
+the builder and its funding. A successful consuming conversion releases only
+working storage; the result and its aliases remain funded under their owner.
+
 Ordinary integer addition and sums admit a conservative major-result estimate before the
 CLR computes it, including carry/sign headroom and computation overlap. The result
 commits its portion of that existing reservation without a second admission;
