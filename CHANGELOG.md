@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Call the twelve zero-argument string predicates directly from executable receiver storage, sharing their existing operations with exposed methods. Remove immediate bound-callable and empty-argument transport costs while preserving dynamic dispatch, method identity, guards, cancellation and retained receivers.
+
 - Return `True` for `''.isascii()`, matching Python while preserving nonempty UTF-8 classification.
 
 - Scan UTF-8 directly for `str.islower`, `str.isupper` and `str.istitle`, removing whole-input UTF-16 copies and sharing lower/upper classification. Preserve existing Unicode rules, early exits, cancellation and ownership.

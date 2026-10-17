@@ -47,13 +47,31 @@ public sealed class CasePredicateUtf8Tests(ITestOutputHelper output)
     }
 
     [Theory]
-    [InlineData("islower", false)]
-    [InlineData("islower", true)]
-    [InlineData("isupper", false)]
-    [InlineData("isupper", true)]
-    [InlineData("istitle", false)]
-    [InlineData("istitle", true)]
-    public async Task NativePredicateCallPreservesFuelAndSpans(string method, bool asynchronous)
+    [InlineData("islower", false, false)]
+    [InlineData("islower", false, true)]
+    [InlineData("isupper", false, false)]
+    [InlineData("isupper", false, true)]
+    [InlineData("istitle", true, false)]
+    [InlineData("istitle", true, true)]
+    [InlineData("isalpha", true, false)]
+    [InlineData("isalpha", true, true)]
+    [InlineData("isdigit", false, false)]
+    [InlineData("isdigit", false, true)]
+    [InlineData("isalnum", true, false)]
+    [InlineData("isalnum", true, true)]
+    [InlineData("isascii", false, false)]
+    [InlineData("isascii", false, true)]
+    [InlineData("isdecimal", false, false)]
+    [InlineData("isdecimal", false, true)]
+    [InlineData("isidentifier", true, false)]
+    [InlineData("isidentifier", true, true)]
+    [InlineData("isnumeric", false, false)]
+    [InlineData("isnumeric", false, true)]
+    [InlineData("isprintable", true, false)]
+    [InlineData("isprintable", true, true)]
+    [InlineData("isspace", false, false)]
+    [InlineData("isspace", false, true)]
+    public async Task NativePredicateCallPreservesFuelAndSpans(string method, bool expected, bool asynchronous)
     {
         var code = ExecutableScript.Compile(LoweredScript.Lower(
             LythonFrontend.Compile("return value." + method + "()").Script!)).EntryPoint;
@@ -62,7 +80,7 @@ public sealed class CasePredicateUtf8Tests(ITestOutputHelper output)
         using (var owner = budget.CreateScope())
         {
             var context = Prepare(owner);
-            Assert.Equal(method == "istitle", Assert.IsType<bool>(await Execute(context)));
+            Assert.Equal(expected, Assert.IsType<bool>(await Execute(context)));
             steps = context.Limits.ExecutionStepCount;
             Unwound(context);
         }
@@ -83,7 +101,9 @@ public sealed class CasePredicateUtf8Tests(ITestOutputHelper output)
             }
             Assert.Equal(0, budget.ReservedBytes);
         }
-        Assert.Equal(new[] { "-", "7,5,1,8", "7,13,1,8", "7,15,1,8", "7,15,1,8", "7,15,1,8", "7,15,1,8", "0,22,1,1" }, checkpoints);
+        var member = $"7,{6 + method.Length},1,8";
+        var call = $"7,{8 + method.Length},1,8";
+        Assert.Equal(new[] { "-", "7,5,1,8", member, call, call, call, call, $"0,{15 + method.Length},1,1" }, checkpoints);
         output.WriteLine("CASE_PREDICATE_MATRIX:" + JsonSerializer.Serialize(new { method, asynchronous, steps, checkpoints }));
 
         LythonRuntime.ExecutionContext Prepare(ILythonMemoryBudget owner)
