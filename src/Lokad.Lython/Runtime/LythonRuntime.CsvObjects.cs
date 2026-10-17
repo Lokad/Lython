@@ -82,6 +82,7 @@ internal sealed partial class LythonRuntime
             _restValue = restValue;
             _governor = governor;
             _span = span;
+            LineNum = rowLists.PhysicalLineCount;
         }
 
         private readonly MemoryGovernor _governor;
@@ -93,7 +94,7 @@ internal sealed partial class LythonRuntime
 
         public PyString[]? FieldNames { get; }
 
-        public int LineNum => Rows.PhysicalLineCount;
+        public int LineNum { get; private set; }
 
         // Readers stream single-pass: materialize with list(reader) for
         // indexing, slicing or a length. Truth testing and rendering never
@@ -102,6 +103,7 @@ internal sealed partial class LythonRuntime
 
         public bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
+            if (LineNum == 0) LineNum = Rows.PhysicalLineCount;
             if (Rows.TryMoveNext(out var row))
             {
                 value = ConvertRow(row);
@@ -114,6 +116,7 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
+            if (LineNum == 0) LineNum = Rows.PhysicalLineCount;
             var row = await Rows.TryMoveNextAsync().ConfigureAwait(false);
             return row is null ? PyIterationResult.End : PyIterationResult.Yield(ConvertRow(row));
         }
@@ -130,10 +133,17 @@ internal sealed partial class LythonRuntime
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public PyList BuildFieldNamesList() => new(FieldNames ?? [], _governor, _span);
+        public PyList BuildFieldNamesList()
+        {
+            LineNum = Rows.PhysicalLineCount;
+            return new(FieldNames ?? [], _governor, _span);
+        }
 
         private PyDict ConvertRow(PyList row)
         {
+            // Publish acquisition before mapping: source errors retain the
+            // previous count, while dictionary conversion errors expose this row.
+            LineNum = Rows.PhysicalLineCount;
             if (FieldNames is null)
             {
                 throw new LythonRuntimeException("TypeError", "csv.DictReader has no field names.", _span);

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Preserve `csv.DictReader.line_num` after failed record acquisition, with Python's fieldname-access and initial-pull refresh behavior. Successful acquisition publishes the count before dictionary conversion; plain readers keep their physical count. Retain inferred-header timing and shared-budget ownership.
+
 - Defer data reads for `csv.DictReader` with explicit field names until the first pull. Preserve live source changes, start `line_num` at zero and report data errors on pull. Remove first-row prefetch/replay while preserving fieldname admission, retained row funding and awaited host cancellation; inferred headers retain their existing construction-time read.
 
 - Convert nonempty unquoted CSV fields to floats under `QUOTE_NONNUMERIC`, preserving quoted/empty strings, escaped fields, row recovery, retained aliases and delayed host I/O. Share the admitted float parser with Unicode decimal-digit normalization and validated underscores in one temporary buffer, removing the underscore-only string copy. Use conservative CSV row facts so numeric arithmetic remains valid; field names retain the supported strings-only contract.

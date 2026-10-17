@@ -2398,6 +2398,12 @@ Malformed data and numeric conversion errors surface when the row is requested.
 Call `next(reader)` explicitly when eager data validation is required. Inferred
 field names retain Lython's existing header read during construction.
 
+`DictReader.line_num` updates after successful source acquisition, before mapping
+the row to a dictionary. A failed acquisition preserves its published count;
+reading `fieldnames` refreshes it from the underlying reader, as does starting a
+pull while the published count is zero. Plain `reader.line_num` remains the
+physical input count, including consumed malformed records.
+
 `DictReader` applies the same numeric conversion to data cells and excess fields;
 field names retain the supported strings-only contract. Use quoted header fields
 with `QUOTE_NONNUMERIC`. Invalid unquoted numeric text raises `ValueError` with
