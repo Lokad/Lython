@@ -946,6 +946,13 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "descriptor '" + _memberName + "' for '" + _ownerName + "' objects doesn't apply to a '" + PythonTypeName(receiver, context) + "' object", span);
             }
 
+            // A base dict descriptor keeps its implementation even when the
+            // receiver overrides it (notably Counter.__delitem__).
+            if (_ownerName == "dict" && _memberName is "__getitem__" or "__setitem__" or "__delitem__")
+            {
+                return DictMembers.BindItemMethod(receiver, _memberName);
+            }
+
             if (!TryResolveRuntimeMember(receiver, _memberName, context, span, out var bound) || bound is not ICallable)
             {
                 throw PyMemberAccess.CreateMissingMemberError(receiver, _memberName, span, context);

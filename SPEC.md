@@ -2039,6 +2039,12 @@ Native `dict.__getitem__(key)`, `dict.__setitem__(key, value)` and
 unbound and expanded calls. Argument expressions finish before a keyword-binding
 `TypeError`; rejected calls do not invoke stored-key equality or mutate the
 dictionary. Ordinary guest methods retain their declared keyword parameters.
+These item methods are also inherited by `collections.defaultdict`; `Counter`
+inherits the getter and setter. An explicit `dict.__delitem__(counter, key)`
+raises `KeyError` for an absent key, while `counter.__delitem__(elem=key)` accepts
+its declared keyword and ignores absent keys. Binding a base descriptor with
+`__get__` preserves that distinction. Base-dict getters still use the receiver's
+supported missing-key behavior (the default factory or a zero counter value).
 
 For builtin-string keys, `d[key]`, `d.__getitem__(key)` and
 `dict.__getitem__(d, key)` also await stored-key equality under `RunAsync`,

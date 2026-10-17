@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Preserve the declared `dict` owner when binding item descriptors to `defaultdict` and `Counter`, including `__get__`. Share inherited item handlers and positional-only signatures; base-dict deletion raises `KeyError` for missing Counter keys while Counter's own `__delitem__(elem=...)` retains its keyword and ignore-missing behavior. Remove five duplicated signatures/handlers and redundant arity checks.
 - Reject keywords for native `dict.__getitem__`, `dict.__setitem__` and `dict.__delitem__`, including extracted, unbound and expanded calls. Reuse positional-only signature binding so argument effects finish before `TypeError`, without invoking equality or mutating the dictionary. Remove three redundant body-level arity checks; preserve positional calls, asynchronous argument work, cancellation and retained ownership.
 
 - Keep protocol-free dictionary string-key reads on the ordinary execution handler under `RunAsync`, bypassing redundant async operation helpers. Reuse the existing async string-key lookup when stored-key equality can suspend, including exposed `__getitem__` calls; preserve missing-key errors, cancellation, terminal memory refusal and retained-result ownership. Remove the synchronous lowered-read forwarding wrapper.

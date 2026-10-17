@@ -1950,6 +1950,36 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature DictGtSignature = LythonCallableSignature.Create("dict.__gt__", ["value"]);
         private static readonly LythonCallableSignature DictGeSignature = LythonCallableSignature.Create("dict.__ge__", ["value"]);
         private static readonly LythonCallableSignature DictReversedSignature = LythonCallableSignature.Create("dict.__reversed__");
+
+        // defaultdict inherits all three descriptors; Counter inherits get/set
+        // but owns deletion. Explicit dict descriptors always use this binding.
+        internal static ICallable BindItemMethod(object receiver, string name)
+        {
+            return name switch
+            {
+                "__getitem__" => BoundCallable.Create(
+                    (arguments, span, context) => ReadSubscriptValue(receiver, arguments[0], span, context), DictGetItemSignature,
+                    (arguments, span, context) => ReadLoweredSubscriptAsync(receiver, arguments[0], span, context)),
+                "__setitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    SetSubscriptValue(receiver, arguments[0], arguments[1], span, context);
+                    return PyNone.Instance;
+                }, DictSetItemSignature),
+                "__delitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    var storage = receiver switch
+                    {
+                        PyDefaultDict dictionary => dictionary.InnerDict,
+                        PyCounter counter => counter.InnerDict,
+                        _ => receiver
+                    };
+                    DeleteSubscriptValue(storage, arguments[0], span, context);
+                    return PyNone.Instance;
+                }, DictDelItemSignature),
+                _ => throw new InvalidOperationException("Not a dict item method.")
+            };
+        }
+
         internal static object Get(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
         {
             using var ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -2081,19 +2111,7 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(dict, arguments[0], span);
                 }, DictContainsSignature),
-                "__getitem__" => BoundCallable.Create(
-                    (arguments, span, context) => ReadSubscriptValue(dict, arguments[0], span, context), DictGetItemSignature,
-                    (arguments, span, context) => ReadLoweredSubscriptAsync(dict, arguments[0], span, context)),
-                "__setitem__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    SetSubscriptValue(dict, arguments[0], arguments[1], span, context);
-                    return PyNone.Instance;
-                }, DictSetItemSignature),
-                "__delitem__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    DeleteSubscriptValue(dict, arguments[0], span, context);
-                    return PyNone.Instance;
-                }, DictDelItemSignature),
+                "__getitem__" or "__setitem__" or "__delitem__" => BindItemMethod(dict, name),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3292,9 +3310,6 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature DefaultDictPopSignature = LythonCallableSignature.Create("defaultdict.pop", ["key", "default"], 1);
         private static readonly LythonCallableSignature DefaultDictSetDefaultSignature = LythonCallableSignature.Create("defaultdict.setdefault", ["key", "default"], 1);
         private static readonly LythonCallableSignature DefaultDictContainsSignature = LythonCallableSignature.Create("defaultdict.__contains__", ["item"]);
-        private static readonly LythonCallableSignature DefaultDictGetItemSignature = LythonCallableSignature.Create("defaultdict.__getitem__", ["index"]);
-        private static readonly LythonCallableSignature DefaultDictSetItemSignature = LythonCallableSignature.Create("defaultdict.__setitem__", ["index", "value"]);
-        private static readonly LythonCallableSignature DefaultDictDelItemSignature = LythonCallableSignature.Create("defaultdict.__delitem__", ["index"]);
         private static readonly LythonCallableSignature DefaultDictOrSignature = LythonCallableSignature.Create("defaultdict.__or__", ["value"]);
         private static readonly LythonCallableSignature DefaultDictROrSignature = LythonCallableSignature.Create("defaultdict.__ror__", ["value"]);
         private static readonly LythonCallableSignature DefaultDictIOrSignature = LythonCallableSignature.Create("defaultdict.__ior__", ["value"]);
@@ -3431,35 +3446,7 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(dict, arguments[0], span);
                 }, DefaultDictContainsSignature),
-                "__getitem__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "defaultdict.__getitem__(index) expects one argument.", span);
-                    }
-
-                    return ReadSubscriptValue(dict, arguments[0], span, context);
-                }, DefaultDictGetItemSignature),
-                "__setitem__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 2)
-                    {
-                        throw new LythonRuntimeException("TypeError", "defaultdict.__setitem__(index, value) expects two arguments.", span);
-                    }
-
-                    SetSubscriptValue(dict, arguments[0], arguments[1], span, context);
-                    return PyNone.Instance;
-                }, DefaultDictSetItemSignature),
-                "__delitem__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "defaultdict.__delitem__(index) expects one argument.", span);
-                    }
-
-                    DeleteSubscriptValue(dict, arguments[0], span, context);
-                    return PyNone.Instance;
-                }, DefaultDictDelItemSignature),
+                "__getitem__" or "__setitem__" or "__delitem__" => DictMembers.BindItemMethod(dict, name),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3655,9 +3642,7 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature CounterMostCommonSignature = LythonCallableSignature.Create("Counter.most_common", ["n"], 0);
         private static readonly LythonCallableSignature CounterPopSignature = LythonCallableSignature.Create("Counter.pop", ["key", "default"], 1);
         private static readonly LythonCallableSignature CounterContainsSignature = LythonCallableSignature.Create("Counter.__contains__", ["item"]);
-        private static readonly LythonCallableSignature CounterGetItemSignature = LythonCallableSignature.Create("Counter.__getitem__", ["index"]);
-        private static readonly LythonCallableSignature CounterSetItemSignature = LythonCallableSignature.Create("Counter.__setitem__", ["index", "value"]);
-        private static readonly LythonCallableSignature CounterDelItemSignature = LythonCallableSignature.Create("Counter.__delitem__", ["index"]);
+        private static readonly LythonCallableSignature CounterDelItemSignature = LythonCallableSignature.Create("Counter.__delitem__", ["elem"]);
         private static readonly LythonCallableSignature CounterOrSignature = LythonCallableSignature.Create("Counter.__or__", ["value"]);
         private static readonly LythonCallableSignature CounterAndSignature = LythonCallableSignature.Create("Counter.__and__", ["value"]);
         private static readonly LythonCallableSignature CounterSubSignature = LythonCallableSignature.Create("Counter.__sub__", ["value"]);
@@ -3846,32 +3831,9 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(counter, arguments[0], span);
                 }, CounterContainsSignature),
-                "__getitem__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.__getitem__(index) expects one argument.", span);
-                    }
-
-                    return ReadSubscriptValue(counter, arguments[0], span, context);
-                }, CounterGetItemSignature),
-                "__setitem__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 2)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.__setitem__(index, value) expects two arguments.", span);
-                    }
-
-                    SetSubscriptValue(counter, arguments[0], arguments[1], span, context);
-                    return PyNone.Instance;
-                }, CounterSetItemSignature),
+                "__getitem__" or "__setitem__" => DictMembers.BindItemMethod(counter, name),
                 "__delitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.__delitem__(index) expects one argument.", span);
-                    }
-
                     DeleteSubscriptValue(counter, arguments[0], span, context);
                     return PyNone.Instance;
                 }, CounterDelItemSignature),
