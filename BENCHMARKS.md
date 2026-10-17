@@ -9,6 +9,7 @@
 | Complete CSV helper with annotation-only local [BT], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 19.745 ms | 17.014 ms | — | Local Windows, 3f799746 + one-line guard deletion; 48.9%/13.5% spreads, inconclusive |
 | Complete text-summary file job [BR], fresh compile/run | 3,072 lines / 35,840 UTF-8 bytes | 14.994–16.539 ms | 11.188 ms | — | Local Windows diagnostic at 877f20e2; identical controls; 49%/107%/39% spreads, inconclusive |
 | Complete JSON-lines aggregation [AU], fresh compile/run | 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
+| Complete JSON-lines aggregation with helper [BY], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 12.993 ms | 4.520 ms | — | Two frozen JSON runtime files on f728636a; nominal 2.875×, unqualified; 2.23%/1.02% spreads |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
 | File search with helper and early exit [P], fresh compile/run | 2,049 lines / 42,010 UTF-8 bytes; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
 | Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | Historical warm diagnostic; elapsed change within spread |
@@ -24,7 +25,7 @@ for changes against prior Lython versions.
 
 **Ratio convention:** Lython elapsed time divided by CPython elapsed time;
 above 1 means Lython takes longer. A dash means unavailable or unqualified,
-never zero. No workload ratio is qualified here. AF, AU, BO and BR ranges contain the medians
+never zero. No workload ratio is qualified here. AF, AU, BO, BR and BX ranges contain the medians
 of two identical Lython controls, not confidence intervals. Other entries show
 one diagnostic median. The jobs show performance gaps in those runs; their
 magnitudes and changes remain uncertain as marked.
@@ -53,6 +54,12 @@ median than earlier Lython is within spread. No whole-job gain or regression is
 established. The measured source hash is recorded; it is not an immutable HEAD
 build. BV remains visible below as the preceding snapshot.
 
+BX uses two identical clean f728636a workers for the complete JSON helper job.
+BY uses the same boundary/toolchains with two frozen JSON runtime files on that
+base. It removes default option-record allocations; the paired elapsed change
+is only 0.11%, within spread. External ratios remain unqualified. These separate
+captures cannot establish a trend between captures.
+
 BU executes frozen Release package binaries built with SDK
 10.0.300-preview.0.26177.108 on the VM's .NET 10.0.12 runtime. Its identical
 adapter was built at a35ee62c; only the packaged Lython DLL differs between
@@ -72,6 +79,8 @@ to infer a change from the quiet-VM measurements.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BY | 2026-10-17 UTC | Two frozen JSON runtime files on f728636a; complete helper job; warm public RunAsync | [Source identity, native allocations, CPython comparison and cleanup](benchmarks/results/2026-10-17-json-default-options/README.md) |
+| BX | 2026-10-17 UTC | f728636a; two identical clean Lython controls; complete JSON helper job | [Immutable controls, exact outputs, identities and cleanup](benchmarks/results/2026-10-17-json-helper-warm-async/README.md) |
 | BW | 2026-10-17 UTC | One frozen CSV runtime file on 1b6a1531; complete helper job; warm public RunAsync | [Working-source identity, CPython comparison, prior CPU attribution and cleanup](benchmarks/results/2026-10-17-csv-pull/README.md) |
 | BV | 2026-10-17 UTC | 1b6a1531; complete CSV helper job; dedicated VM warm public RunAsync | [CPython comparison, unchanged outputs, identities and cleanup](benchmarks/results/2026-10-17-csv-helper-warm-async/README.md) |
 | BU | 2026-10-17 UTC | 463b7a7a; complete CSV helper job; dedicated VM fresh compile/run | [CPython comparison, frozen package/build identities, earlier Lython and cleanup](benchmarks/results/2026-10-17-csv-checkpoint/README.md) |
@@ -163,6 +172,7 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Complete JSON-lines aggregation with helper [BX], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 12.223–12.340 ms | 4.309 ms | — | Identical f728636a controls differ by 0.95%; nominal 2.837–2.864×, unqualified |
 | Complete CSV summary with annotated helper [BV], warm `RunAsync` | 4,096 records / 57,361 UTF-8 bytes | 10.346 ms | 3.756 ms | — | Dedicated-VM diagnostic at 1b6a1531; nominal 2.755×, unqualified; 2.03%/0.51% spreads |
 | Complete CSV summary with annotated helper [BS], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 17.358 ms | 14.348 ms | — | Historical local Windows diagnostic at efccd974; 45.8%/29.8% spreads, inconclusive |
 | Same JSON configuration job [AQ], warm `Run` | 16 existing paths / 181 UTF-8 input bytes | 3.309 ms | 1.695 ms | — | Short diagnostic at 4846928c; 0.9% change within spread; no improvement established |
@@ -180,6 +190,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 | Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
 
 ## Improvements against earlier Lython revisions
+
+Shared JSON defaults [BY](benchmarks/results/2026-10-17-json-default-options/README.md)
+remove 11,264 → 0 bytes per 128 default option bindings in a separate local native
+diagnostic. False/custom strict values retain fresh records. The complete job
+measures 13.007 → 12.993 ms, spreads 2.39%/2.23%: no elapsed improvement established.
+The immutable BX controls are separate and must not be pooled with this capture.
 
 The CSV pull consolidation [BW](benchmarks/results/2026-10-17-csv-pull/README.md)
 removes one forwarding method and separately compares immutable 1b6a1531 with the

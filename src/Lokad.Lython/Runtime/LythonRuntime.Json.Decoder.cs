@@ -201,8 +201,8 @@ internal sealed partial class LythonRuntime
                 throw UnexpectedKeyword(extras[0].Key, span);
             }
 
-            return new JsonLoadOptions(objectHook, parseFloat, parseInt, parseConstant, objectPairsHook,
-                bound.Assigned[7] ? values[7] : true);
+            return JsonLoadOptions.Create(objectHook, parseFloat, parseInt, parseConstant, objectPairsHook,
+                bound.Assigned[7] ? values[7] : JsonLoadOptions.Default.Strict);
         }
 
         internal static JsonLoadOptions BindLoadOptions(CallArgumentValue[] arguments, LythonSourceSpan span)
@@ -212,7 +212,7 @@ internal sealed partial class LythonRuntime
             ICallable? parseInt = null;
             ICallable? parseConstant = null;
             ICallable? objectPairsHook = null;
-            object strict = true;
+            object strict = JsonLoadOptions.Default.Strict;
             var positional = 0;
             foreach (var argument in arguments)
             {
@@ -252,7 +252,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "JSONDecoder.__init__() takes 1 positional argument but " + (positional + 1) + " were given.", span);
             }
 
-            return new JsonLoadOptions(objectHook, parseFloat, parseInt, parseConstant, objectPairsHook, strict);
+            return JsonLoadOptions.Create(objectHook, parseFloat, parseInt, parseConstant, objectPairsHook, strict);
         }
 
         private static LythonRuntimeException UnexpectedKeyword(string keyword, LythonSourceSpan span)

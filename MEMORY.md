@@ -329,6 +329,9 @@ The fixed `len`, `repr`, `ascii`, `format`, `abs`, `pow`, `round`, `divmod`, `bi
 metadata covered by host/control headroom. They retain no execution context,
 guest storage or host; their module is resolved through the current caller.
 Builtin dictionaries, mutable type graphs and owned results remain per execution.
+Default JSON load options likewise share only null callbacks and native True,
+without retaining guest or execution state. Callback-bearing options and other
+strict values remain separate; writable decoder attributes stay per instance.
 Approximation deliberately leaves roughly 20% of minor objects, metadata and
 short-lived temporaries uninstrumented; this is a design allowance, not a
 measured coverage percentage. Keep additional host headroom for CLR/runtime

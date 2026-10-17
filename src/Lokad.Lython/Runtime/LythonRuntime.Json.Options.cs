@@ -16,7 +16,18 @@ internal sealed partial class LythonRuntime
         ICallable? ParseFloat,
         ICallable? ParseInt,
         ICallable? ParseConstant,
-        ICallable? ObjectPairsHook, object Strict);
+        ICallable? ObjectPairsHook, object Strict)
+    {
+        // Fixed runtime metadata: no guest callbacks, values or execution owners.
+        internal static readonly JsonLoadOptions Default = new(null, null, null, null, null, true);
+
+        internal static JsonLoadOptions Create(ICallable? objectHook, ICallable? parseFloat,
+            ICallable? parseInt, ICallable? parseConstant, ICallable? objectPairsHook, object strict)
+            => objectHook is null && parseFloat is null && parseInt is null
+                && parseConstant is null && objectPairsHook is null && strict is true
+                ? Default
+                : new(objectHook, parseFloat, parseInt, parseConstant, objectPairsHook, strict);
+    }
 
     internal sealed record JsonDumpOptions(
         bool SkipKeys,

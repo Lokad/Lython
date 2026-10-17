@@ -1,0 +1,28 @@
+{
+  "state": "Completed",
+  "baseRevision": "f728636a5283dcbeb21344629802c2468c5c0525",
+  "candidateKind": "two frozen runtime files on immutable base; working snapshot",
+  "startedUtc": "2026-10-17T22:28:13.179181+00:00",
+  "root": "/home/lokad/lython-bench-checks/json-default-options-f728636a/candidate",
+  "frozenSource": {
+    "baseRevision": "f728636a5283dcbeb21344629802c2468c5c0525",
+    "kind": "working two-file candidate; no immutable candidate build claim",
+    "files": {
+      "src/Lokad.Lython/Runtime/LythonRuntime.Json.Decoder.cs": {
+        "canonicalSha256": "40c8d4dcd74f8b1d96cd2cefb8bc8e681429c211cb92acafb0309ffbb2a10cfe",
+        "localSha256": "7ef26b1641d44e8915bec2dd2b52c47a419eabe4a1400702e2e66c57227abb9b"
+      },
+      "src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs": {
+        "canonicalSha256": "894a3a1dd50aa331c1312ed90467dcc04a472ccf9834869dd10e19f1be8d840f",
+        "localSha256": "894a3a1dd50aa331c1312ed90467dcc04a472ccf9834869dd10e19f1be8d840f"
+      }
+    }
+  },
+  "completedUtc": "2026-10-17T22:28:25.430852+00:00",
+  "worker": "/home/lokad/lython-bench-checks/json-default-options-f728636a/candidate/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+  "workerSha256": "86894b7c194a820e11452bc938515f3177902dec55416680b8baaf83bb927213",
+  "librarySha256": "44d1598f9067fbcaa7468ccc22fba256348401e32699de9d27f0c8d7641cc068",
+  "sourceStatus": "M src/Lokad.Lython/Runtime/LythonRuntime.Json.Decoder.cs\n M src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs",
+  "baselineWorker": "/home/lokad/lython-bench-checks/json-helper-f728636a/source-subject/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+  "catalog": "/home/lokad/lython-bench-checks/json-helper-f728636a/catalog.json"
+}

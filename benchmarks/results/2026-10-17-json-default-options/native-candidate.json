@@ -1,0 +1,37 @@
+{
+  "iterations": 128,
+  "rows": [
+    {
+      "name": "module-default",
+      "allocatedBytes": 0
+    },
+    {
+      "name": "constructor-default",
+      "allocatedBytes": 0
+    },
+    {
+      "name": "module-explicit-true",
+      "allocatedBytes": 0
+    },
+    {
+      "name": "constructor-explicit-true",
+      "allocatedBytes": 0
+    },
+    {
+      "name": "module-false",
+      "allocatedBytes": 8192
+    },
+    {
+      "name": "constructor-false",
+      "allocatedBytes": 8192
+    },
+    {
+      "name": "module-custom",
+      "allocatedBytes": 8192
+    },
+    {
+      "name": "constructor-custom",
+      "allocatedBytes": 8192
+    }
+  ]
+}

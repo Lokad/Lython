@@ -1,0 +1,19 @@
+{
+  "unit": "lython-json-helper-capture-f728636a-20261018",
+  "arguments": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-json-helper-capture-f728636a-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=30",
+    "--property=TimeoutStopSec=0",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/json-helper-f728636a/capture/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/json-helper-f728636a/capture/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/json-helper-f728636a/capture/run.py"
+  ],
+  "stdout": "",
+  "stderr": "Running as unit: lython-json-helper-capture-f728636a-20261018.service; invocation ID: b1b86c48cfa649bda04da884559d30e1\n"
+}

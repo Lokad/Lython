@@ -7,6 +7,17 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 JSON helper controls](results/2026-10-17-json-helper-warm-async/README.md)
+measure identical f728636a binaries through warm completed-host RunAsync:
+12.223–12.340 ms versus CPython 3.13.16 4.309 ms, unqualified. One 9.495 s run,
+37 responses / 466 invocations, independent full goldens and cleanup are retained.
+The separate [shared-defaults candidate](results/2026-10-17-json-default-options/README.md)
+removes 11,264 → 0 bytes per 128 native default bindings. Its one 9.945 s complete
+job records 13.007 → 12.993 ms versus CPython 4.520 ms, spreads 2.39%/2.23%:
+no elapsed gain established. All 37 responses / 442 invocations match goldens;
+twelve inputs and frozen sources unchanged, workers/fixtures gone. Native probes
+are removed; no recapture or variant campaign.
+
 The [2026-10-17 CSV pull consolidation](results/2026-10-17-csv-pull/README.md)
 deletes one single-use async forwarding method. The sole affected complete-job
 capture records 10.007 → 10.194 ms versus CPython 3.783 ms; 4.31%/2.43% spreads

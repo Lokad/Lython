@@ -1,0 +1,175 @@
+{
+  "baseRevision": "f728636a",
+  "focusedPassed": 583,
+  "checks": [
+    {
+      "stage": "candidate-bindings",
+      "passed": 114,
+      "process": {
+        "source": "json-default-options",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "10BE736143EE781846CA5F6870C5708A778715B48813E5401F4DE7C56A679CE3",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeJsonDecoderOptionTests|FullyQualifiedName~JsonBooleanOptionTests|FullyQualifiedName~JsonModuleCallBindingTests|FullyQualifiedName~JsonMutableInstanceTests|FullyQualifiedName~JsonDecoderScenarioTests|FullyQualifiedName~JsonSubclassScenarioTests|FullyQualifiedName~JsonSuspendingCallbackTests|FullyQualifiedName~JsonObjectGraphOwnershipTests)",
+        "pid": 28772,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 5308,
+        "stdoutSha256": "BF1B98B69065B31FA7C445886F400D1173DD102CB181A62B301D1CCE4CCE8A12",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "candidate-parsing",
+      "passed": 222,
+      "process": {
+        "source": "json-default-options",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "10BE736143EE781846CA5F6870C5708A778715B48813E5401F4DE7C56A679CE3",
+        "filter": "Category!=Stress&(FullyQualifiedName~JsonNumberExecutionTests|FullyQualifiedName~JsonPrefixValidationTests|FullyQualifiedName~JsonTokenExecutionTests|FullyQualifiedName~JsonTrailingDataTests|FullyQualifiedName~JsonTrailingCommaTests|FullyQualifiedName~EscapedJsonStringTests|FullyQualifiedName~JsonCollectionsMappingTests|FullyQualifiedName~JsonCoverageScenarioTests|FullyQualifiedName~JsonStrictnessScenarioTests|FullyQualifiedName~JsonRoundTripScenarioTests|FullyQualifiedName~JsonTextStreamTests|FullyQualifiedName~JsonBoundedGrowthScenarioTests)",
+        "pid": 72848,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 5075,
+        "stdoutSha256": "02400246AC4BFB99A77F2A322CD18D2A6F4AB1B76BF4412BC4B3ADBC5D85384C",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "candidate-white-json",
+      "passed": 68,
+      "process": {
+        "source": "json-default-options",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "77C6A9F992797177082A020D9181139B9789C9AEF2AC03D2471F610168C1C5F7",
+        "filter": "Category!=Stress&FullyQualifiedName~Json",
+        "pid": 53044,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2812,
+        "stdoutSha256": "E33986D3FF25D0ACE7D541F5A2FFEE327A06A9A164F95CB5DB46AF95DAA76914",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "candidate-owners",
+      "passed": 121,
+      "process": {
+        "source": "json-default-options",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "10BE736143EE781846CA5F6870C5708A778715B48813E5401F4DE7C56A679CE3",
+        "filter": "Category!=Stress&(FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~CsvBatchAliasLifetimeTests|FullyQualifiedName~CsvRetainedRowLifetimeTests|FullyQualifiedName~CsvFieldNameLifetimeTests|FullyQualifiedName~CsvSourceStorageLifetimeTests|FullyQualifiedName~CsvExhaustedInputLifetimeTests)",
+        "pid": 36452,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 9363,
+        "stdoutSha256": "FB19B24037197DFA8E791FC7E9E5A24AE7237E6D5BAD20B159E9BAE1BFAC2301",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "candidate-goldens",
+      "passed": 58,
+      "process": {
+        "source": "json-default-options",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "10BE736143EE781846CA5F6870C5708A778715B48813E5401F4DE7C56A679CE3",
+        "filter": "Category!=Stress&FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles",
+        "pid": 59808,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8710,
+        "stdoutSha256": "6502FAC5AF22F32EF99BF0A5EE2A3EB385103185FC4B94C4BA08BC54D960F1FA",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    }
+  ],
+  "independentProbes": {
+    "sync": {
+      "count": 6,
+      "allMatchCPython": true,
+      "process": {
+        "pid": 60292,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 991,
+        "asynchronous": false,
+        "production": "candidate",
+        "probeSha256": "CB64569C1E4E7F4006EAD4FC60F8E732B6B4D9303C0B0C000E1EC838BB1ABF4D",
+        "librarySha256": "F982369CB71B0EF641827659E82DA78E023CCB075A5D4F97FE6DCB5203DCF62B"
+      }
+    },
+    "async": {
+      "count": 6,
+      "allMatchCPython": true,
+      "process": {
+        "pid": 51552,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 635,
+        "asynchronous": true,
+        "production": "candidate",
+        "probeSha256": "CB64569C1E4E7F4006EAD4FC60F8E732B6B4D9303C0B0C000E1EC838BB1ABF4D",
+        "librarySha256": "F982369CB71B0EF641827659E82DA78E023CCB075A5D4F97FE6DCB5203DCF62B"
+      }
+    }
+  },
+  "nativeAllocations": [
+    {
+      "case": "module-default",
+      "beforeBytes": 11264,
+      "afterBytes": 0
+    },
+    {
+      "case": "constructor-default",
+      "beforeBytes": 11264,
+      "afterBytes": 0
+    },
+    {
+      "case": "module-explicit-true",
+      "beforeBytes": 8192,
+      "afterBytes": 0
+    },
+    {
+      "case": "constructor-explicit-true",
+      "beforeBytes": 11264,
+      "afterBytes": 0
+    },
+    {
+      "case": "module-false",
+      "beforeBytes": 8192,
+      "afterBytes": 8192
+    },
+    {
+      "case": "constructor-false",
+      "beforeBytes": 11264,
+      "afterBytes": 8192
+    },
+    {
+      "case": "module-custom",
+      "beforeBytes": 8192,
+      "afterBytes": 8192
+    },
+    {
+      "case": "constructor-custom",
+      "beforeBytes": 11264,
+      "afterBytes": 8192
+    }
+  ],
+  "temporaryProbeRemoved": true,
+  "decoderValidationAndMutableAttributesUnchanged": true,
+  "frozenSourceMatches": true,
+  "protectedRegexHistoryWorkflowUnchanged": true,
+  "fullStressRerun": false
+}
