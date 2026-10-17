@@ -50,7 +50,6 @@ internal enum ExecutableOpCode
     Unary,
     Jump,
     JumpIfFalse,
-    ChainLink,
     MatchException,
     BindException,
     ReraiseException,
@@ -200,7 +199,6 @@ internal readonly record struct ExecutableInstruction
     public int MatchCaseIndex => ReadOperand(_primaryOperand, OperandKind.MatchCaseIndex);
     public int FailureBlockIndex => ReadOperand(_secondaryOperand, OperandKind.BlockIndex);
     public int TargetBlockIndex => ReadOperand(_primaryOperand, OperandKind.BlockIndex);
-    public int ChainSlot => ReadOperand(_primaryOperand, OperandKind.LocalSlot);
     public int CallSiteIndex => ReadOperand(_primaryOperand, OperandKind.CallSiteIndex);
     public int CleanupId => ReadOperand(OpCode == ExecutableOpCode.EndFinally ? _secondaryOperand : _primaryOperand, OperandKind.CleanupId);
     public int ExceptionNameIndex => ReadOperand(_primaryOperand, OperandKind.ExceptionNameIndex);
@@ -349,9 +347,6 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction JumpIfFalse(int targetBlockIndex, LythonSourceSpan span)
         => CreateIndexed(ExecutableOpCode.JumpIfFalse, new Operand(OperandKind.BlockIndex, targetBlockIndex), span);
 
-    public static ExecutableInstruction ChainLink(int slot, ExecutableBinaryOperator op, int failBlockIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.ChainLink, span, new Operand(OperandKind.LocalSlot, slot), new Operand(OperandKind.BlockIndex, failBlockIndex), op, default, default, default);
-
     public static ExecutableInstruction ClearException(int exceptionNameIndex, LythonSourceSpan span)
         => CreateIndexed(ExecutableOpCode.ClearException, new Operand(OperandKind.ExceptionNameIndex, exceptionNameIndex), span);
 
@@ -392,7 +387,6 @@ internal readonly record struct ExecutableInstruction
         => OpCode switch
         {
             ExecutableOpCode.MatchCase => MatchCase(MatchCaseIndex, failureBlockIndex, Span),
-            ExecutableOpCode.ChainLink => ChainLink(ChainSlot, BinaryOperator, failureBlockIndex, Span),
             _ => throw new InvalidOperationException($"Instruction '{OpCode}' has no failure block.")
         };
 

@@ -310,15 +310,17 @@ internal sealed partial class LythonRuntime
         return EvaluateLoweredBinaryOperator(binary, left, right, context);
     }
 
-    private static bool EvaluateLoweredChainedComparison(LoweredChainedComparisonExpression chained, ExecutionContext context)
+    private static object EvaluateLoweredChainedComparison(LoweredChainedComparisonExpression chained, ExecutionContext context)
     {
         var left = EvaluateLoweredExpression(chained.Operands[0], context);
         for (var i = 0; i < chained.ChainedComparison.Operators.Count; i++)
         {
             var right = EvaluateLoweredExpression(chained.Operands[i + 1], context);
-            if (!EvaluateComparisonOperator(left, right, chained.ChainedComparison.Operators[i], context, chained.Span))
+            var result = EvaluateBinaryOperator(chained.ChainedComparison.Operators[i], left, right, context, chained.Span);
+            context.ObserveValue(result, chained.Span);
+            if (i == chained.ChainedComparison.Operators.Count - 1 || !IsTruthy(result, context, chained.Span))
             {
-                return false;
+                return result;
             }
 
             left = right;

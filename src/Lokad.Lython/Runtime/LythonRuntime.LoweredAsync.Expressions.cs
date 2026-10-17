@@ -327,15 +327,17 @@ internal sealed partial class LythonRuntime
         return await EvaluateBinaryOperatorAsync(binary.Binary.Operator, left, right, context, binary.Span).ConfigureAwait(false);
     }
 
-    private static async ValueTask<bool> EvaluateLoweredChainedComparisonAsync(LoweredChainedComparisonExpression chained, ExecutionContext context)
+    private static async ValueTask<object> EvaluateLoweredChainedComparisonAsync(LoweredChainedComparisonExpression chained, ExecutionContext context)
     {
         var left = await EvaluateLoweredExpressionAsync(chained.Operands[0], context).ConfigureAwait(false);
         for (var i = 0; i < chained.ChainedComparison.Operators.Count; i++)
         {
             var right = await EvaluateLoweredExpressionAsync(chained.Operands[i + 1], context).ConfigureAwait(false);
-            if (!await EvaluateComparisonOperatorAsync(left, right, chained.ChainedComparison.Operators[i], context, chained.Span).ConfigureAwait(false))
+            var result = await EvaluateBinaryOperatorAsync(chained.ChainedComparison.Operators[i], left, right, context, chained.Span).ConfigureAwait(false);
+            context.ObserveValue(result, chained.Span);
+            if (i == chained.ChainedComparison.Operators.Count - 1 || !await IsTruthyAsync(result, context, chained.Span).ConfigureAwait(false))
             {
-                return false;
+                return result;
             }
 
             left = right;

@@ -574,9 +574,6 @@ internal sealed partial class LythonRuntime
                     }
                     return false;
 
-                case ExecutableOpCode.ChainLink:
-                    return ExecuteChainLink(instruction);
-
                 case ExecutableOpCode.Jump:
                     _currentBlockIndex = instruction.TargetBlockIndex;
                     return true;
@@ -653,32 +650,6 @@ internal sealed partial class LythonRuntime
                 default:
                     throw new InvalidOperationException($"Unknown executable opcode: {instruction.OpCode}");
             }
-        }
-
-        // Fused compare-and-branch for one chained-comparison link: pops the
-        // fresh right operand, compares it against the retained left through
-        // the shared Binary path, retains the right for the next link, and
-        // jumps to the shared fail edge when the link is falsy. The transient
-        // link value is observed like a Binary result would be; the delivered
-        // chain value is observed at its own LoadConst.
-        private bool ExecuteChainLink(ExecutableInstruction instruction)
-        {
-            var right = Pop(ref _stack, instruction.Span);
-            var linkValue = EvaluateExecutableBinary(
-                instruction.BinaryOperator,
-                LoadLocal(_codeObject, _locals, instruction.ChainSlot, instruction.Span, _context),
-                right,
-                instruction.Span,
-                _context);
-            _context.ObserveValue(linkValue, instruction.Span);
-            StoreLocalValue(_codeObject, _locals, _localCells, _context, instruction.ChainSlot, right, instruction.Span);
-            if (!IsTruthy(linkValue, _context, instruction.Span))
-            {
-                _currentBlockIndex = instruction.FailureBlockIndex;
-                return true;
-            }
-
-            return false;
         }
 
         internal bool HasFrameReturn => _hasFrameReturn;
@@ -851,12 +822,11 @@ internal sealed partial class LythonRuntime
                                 case ExecutableOpCode.JumpIfFalse:
                                     if (_stack[_stack.Count - 1] is not PyInstance)
                                         jumped = ExecuteControlFlow(instruction);
-                                    else
-                                        jumped = await ExecuteControlFlowAsync(instruction).ConfigureAwait(false);
-                                    break;
-
-                                case ExecutableOpCode.ChainLink:
-                                    jumped = await ExecuteControlFlowAsync(instruction).ConfigureAwait(false);
+                                    else if (!await IsTruthyAsync(Pop(ref _stack, instruction.Span), _context, instruction.Span).ConfigureAwait(false))
+                                    {
+                                        _currentBlockIndex = instruction.TargetBlockIndex;
+                                        jumped = true;
+                                    }
                                     break;
 
                                 case ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or

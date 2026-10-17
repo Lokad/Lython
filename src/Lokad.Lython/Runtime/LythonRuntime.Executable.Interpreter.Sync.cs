@@ -126,7 +126,6 @@ internal sealed partial class LythonRuntime
                                     break;
 
                                 case ExecutableOpCode.AbruptJump or ExecutableOpCode.JumpIfFalse or
-                                     ExecutableOpCode.ChainLink or
                                      ExecutableOpCode.Jump or
                                      ExecutableOpCode.MatchException or
                                      ExecutableOpCode.BindException or

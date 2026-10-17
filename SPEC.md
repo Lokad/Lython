@@ -972,7 +972,10 @@ The supported subset must support Python comparison semantics, including:
 
 Chained comparisons are supported. Operands are evaluated from left to right,
 each middle operand is evaluated once, and evaluation stops at the first false
-comparison.
+comparison. Rich comparisons can return values other than booleans: a chain
+returns its first falsy intermediate result unchanged, or its final comparison
+result without truth-testing it. Identity and membership comparisons produce
+booleans. Static analysis must not assume an opaque rich result is a boolean.
 
 Membership semantics must follow Python for the supported subset:
 

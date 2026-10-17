@@ -318,8 +318,8 @@ internal sealed partial class LythonRuntime
         public ValueTask<object> EvaluateBinaryAsync(LoweredBinaryExpression expression, ExecutionContext context)
             => LythonRuntime.EvaluateLoweredBinaryAsync(expression, context);
 
-        public async ValueTask<object> EvaluateChainedComparisonAsync(LoweredChainedComparisonExpression expression, ExecutionContext context)
-            => await LythonRuntime.EvaluateLoweredChainedComparisonAsync(expression, context).ConfigureAwait(false);
+        public ValueTask<object> EvaluateChainedComparisonAsync(LoweredChainedComparisonExpression expression, ExecutionContext context)
+            => LythonRuntime.EvaluateLoweredChainedComparisonAsync(expression, context);
 
         public ValueTask<object> EvaluateUnaryAsync(LoweredUnaryExpression expression, ExecutionContext context)
             => LythonRuntime.EvaluateLoweredUnaryAsync(expression, context);

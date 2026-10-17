@@ -33,7 +33,10 @@ internal static partial class StaticAbstractValueResolver
             BinaryOperatorSyntax.In or
             BinaryOperatorSyntax.NotIn)
         {
-            value = AbstractValue.BooleanType(binary.Span);
+            value = ComparisonIsBoolean(binary.Operator,
+                ResolveOrUnknown(binary.Left, bindings), ResolveOrUnknown(binary.Right, bindings))
+                ? AbstractValue.BooleanType(binary.Span)
+                : AbstractValue.Unknown(binary.Span);
             return true;
         }
 
@@ -173,6 +176,19 @@ internal static partial class StaticAbstractValueResolver
         value = default;
         return false;
     }
+
+    // Rich comparison protocols may return any object. Identity/membership
+    // coerce to bool; ordinary builtin scalar pairs cannot invoke such a hook.
+    private static bool ComparisonIsBoolean(BinaryOperatorSyntax op, AbstractValue left, AbstractValue right)
+        => op is BinaryOperatorSyntax.Is or BinaryOperatorSyntax.IsNot or BinaryOperatorSyntax.In or BinaryOperatorSyntax.NotIn
+            || IsBuiltinScalar(left.Kind) && IsBuiltinScalar(right.Kind);
+
+    private static bool IsBuiltinScalar(AbstractValueKind kind)
+        => kind is AbstractValueKind.Integer or AbstractValueKind.IntegerType
+            or AbstractValueKind.Float or AbstractValueKind.FloatType
+            or AbstractValueKind.Boolean or AbstractValueKind.BooleanType
+            or AbstractValueKind.String or AbstractValueKind.StringType
+            or AbstractValueKind.Bytes or AbstractValueKind.BytesType or AbstractValueKind.None;
 
     private static bool TryResolveDateTimeBinaryAbstractValue(
         BinaryOperatorSyntax op,

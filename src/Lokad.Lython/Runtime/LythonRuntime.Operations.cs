@@ -478,6 +478,11 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateUnaryPlus(object operand, ExecutionContext context, LythonSourceSpan span)
     {
+        if (operand is bool boolean)
+        {
+            return OwnHeapInteger(boolean ? BigInteger.One : BigInteger.Zero, context.MemoryGovernor, span);
+        }
+
         if (operand is PyCounter positiveCounter)
         {
             return BuildCounterUnaryResult(positiveCounter, count => count, keepPositiveOnly: true, span, context);

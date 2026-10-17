@@ -205,6 +205,16 @@ internal static partial class StaticAbstractValueResolver
 
             case ChainedComparisonExpressionSyntax chainedComparison:
                 value = AbstractValue.BooleanType(chainedComparison.Span);
+                for (var i = 0; i < chainedComparison.Operators.Count; i++)
+                {
+                    if (!ComparisonIsBoolean(chainedComparison.Operators[i],
+                        ResolveOrUnknown(chainedComparison.Operands[i], bindings),
+                        ResolveOrUnknown(chainedComparison.Operands[i + 1], bindings)))
+                    {
+                        value = AbstractValue.Unknown(chainedComparison.Span);
+                        break;
+                    }
+                }
                 return true;
 
             case UnaryExpressionSyntax unary:

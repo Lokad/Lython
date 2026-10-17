@@ -196,26 +196,5 @@ internal sealed partial class LythonRuntime
             catch { _stack.RemoveTail(_stack.Count - first); throw; }
         }
 
-        private async ValueTask<bool> ExecuteControlFlowAsync(ExecutableInstruction instruction)
-        {
-            if (instruction.OpCode == ExecutableOpCode.JumpIfFalse)
-            {
-                if (await IsTruthyAsync(Pop(ref _stack, instruction.Span), _context, instruction.Span).ConfigureAwait(false)) return false;
-                _currentBlockIndex = instruction.TargetBlockIndex;
-                return true;
-            }
-            if (instruction.OpCode == ExecutableOpCode.ChainLink)
-            {
-                var right = Pop(ref _stack, instruction.Span);
-                var result = await EvaluateBinaryOperatorAsync(MapExecutableBinary(instruction.BinaryOperator),
-                    LoadLocal(_codeObject, _locals, instruction.ChainSlot, instruction.Span, _context), right, _context, instruction.Span).ConfigureAwait(false);
-                _context.ObserveValue(result, instruction.Span);
-                StoreLocalValue(_codeObject, _locals, _localCells, _context, instruction.ChainSlot, right, instruction.Span);
-                if (await IsTruthyAsync(result, _context, instruction.Span).ConfigureAwait(false)) return false;
-                _currentBlockIndex = instruction.FailureBlockIndex;
-                return true;
-            }
-            throw new InvalidOperationException($"Unexpected asynchronous control-flow opcode: {instruction.OpCode}");
-        }
     }
 }

@@ -202,15 +202,17 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static bool EvaluateChainedComparison(ChainedComparisonExpressionSyntax chainedComparison, ExecutionContext context)
+    private static object EvaluateChainedComparison(ChainedComparisonExpressionSyntax chainedComparison, ExecutionContext context)
     {
         var left = EvaluateExpression(chainedComparison.Operands[0], context);
         for (var i = 0; i < chainedComparison.Operators.Count; i++)
         {
             var right = EvaluateExpression(chainedComparison.Operands[i + 1], context);
-            if (!EvaluateComparisonOperator(left, right, chainedComparison.Operators[i], context, chainedComparison.Span))
+            var result = EvaluateBinaryOperator(chainedComparison.Operators[i], left, right, context, chainedComparison.Span);
+            context.ObserveValue(result, chainedComparison.Span);
+            if (i == chainedComparison.Operators.Count - 1 || !IsTruthy(result, context, chainedComparison.Span))
             {
-                return false;
+                return result;
             }
 
             left = right;
@@ -218,21 +220,6 @@ internal sealed partial class LythonRuntime
 
         return true;
     }
-
-    private static bool EvaluateComparisonOperator(object left, object right, BinaryOperatorSyntax op, ExecutionContext context, LythonSourceSpan span)
-    {
-        // N11: comparison operators return raw rich results; chains truth-test.
-        return IsTruthy(EvaluateBinaryOperator(op, left, right, context, span), context, span);
-    }
-
-    private static async ValueTask<bool> EvaluateComparisonOperatorAsync(
-        object left,
-        object right,
-        BinaryOperatorSyntax op,
-        ExecutionContext context,
-        LythonSourceSpan span)
-        // N11: comparison operators return raw rich results; chains truth-test.
-        => await IsTruthyAsync(await EvaluateBinaryOperatorAsync(op, left, right, context, span).ConfigureAwait(false), context, span).ConfigureAwait(false);
 
     private static object CreateLambda(LambdaExpressionSyntax lambda, ExecutionContext context)
         => CreateLoweredLambda(new LoweredLambdaExpression(lambda, LoweredScript.LowerStandaloneExpression(lambda.Body)), context);
