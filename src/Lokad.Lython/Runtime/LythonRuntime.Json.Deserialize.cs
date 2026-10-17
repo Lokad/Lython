@@ -298,18 +298,12 @@ internal sealed partial class LythonRuntime
                 var pairValueEnd = -1;
                 while (true)
                 {
-                    // A closer never needs comma verification: the previous
-                    // character decides between valid end and trailing comma.
+                    // A closer here follows an empty container or a completed value.
                     var pairPeek = pairValueEnd < 0
                         ? SkipJsonWhitespace(bytes.Span, openBrace + 1, context, span)
                         : SkipJsonWhitespace(bytes.Span, pairValueEnd, context, span);
                     if (pairPeek < bytes.Length && bytes.Span[pairPeek] == (byte)'}')
                     {
-                        if (IsJsonPreviousNonWhitespaceComma(bytes.Span, pairPeek))
-                        {
-                            throw CreateJsonExpectingError(input, pairPeek, JsonIncompleteExpectation.PropertyName, span, context);
-                        }
-
                         return (await InvokeJsonCallbackCoreAsync(options.ObjectPairsHook, pairs, context, span, asynchronous).ConfigureAwait(false), pairPeek + 1);
                     }
 
@@ -320,17 +314,17 @@ internal sealed partial class LythonRuntime
                     }
                     else
                     {
-                        pairKeyStart = SkipJsonWhitespace(bytes.Span, EnsureJsonComma(bytes.Span, pairValueEnd, input, span, context) + 1, context, span);
+                        var pairComma = EnsureJsonComma(bytes.Span, pairValueEnd, input, span, context);
+                        pairKeyStart = SkipJsonWhitespace(bytes.Span, pairComma + 1, context, span);
+                        if (pairKeyStart < bytes.Length && bytes.Span[pairKeyStart] == (byte)'}')
+                        {
+                            throw NewJsonDecodeFailure(input, "Illegal trailing comma before end of object", pairComma, innerException: null, span, context);
+                        }
                     }
 
                     if (pairKeyStart >= bytes.Length)
                     {
                         throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.PropertyName, span, context);
-                    }
-
-                    if (bytes.Span[pairKeyStart] == (byte)'}')
-                    {
-                        throw CreateJsonExpectingError(input, pairKeyStart, JsonIncompleteExpectation.PropertyName, span, context);
                     }
 
                     if (bytes.Span[pairKeyStart] != (byte)'"')
@@ -358,18 +352,12 @@ internal sealed partial class LythonRuntime
             var valueEnd = -1;
             while (true)
             {
-                // A closer never needs comma verification: the previous
-                // character decides between valid end and trailing comma.
+                // A closer here follows an empty container or a completed value.
                 var peek = valueEnd < 0
                     ? SkipJsonWhitespace(bytes.Span, openBrace + 1, context, span)
                     : SkipJsonWhitespace(bytes.Span, valueEnd, context, span);
                 if (peek < bytes.Length && bytes.Span[peek] == (byte)'}')
                 {
-                    if (IsJsonPreviousNonWhitespaceComma(bytes.Span, peek))
-                    {
-                        throw CreateJsonExpectingError(input, peek, JsonIncompleteExpectation.PropertyName, span, context);
-                    }
-
                     var end = peek + 1;
                     return options.ObjectHook is null
                         ? ((object)result, end)
@@ -383,17 +371,17 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    keyStart = SkipJsonWhitespace(bytes.Span, EnsureJsonComma(bytes.Span, valueEnd, input, span, context) + 1, context, span);
+                    var memberComma = EnsureJsonComma(bytes.Span, valueEnd, input, span, context);
+                    keyStart = SkipJsonWhitespace(bytes.Span, memberComma + 1, context, span);
+                    if (keyStart < bytes.Length && bytes.Span[keyStart] == (byte)'}')
+                    {
+                        throw NewJsonDecodeFailure(input, "Illegal trailing comma before end of object", memberComma, innerException: null, span, context);
+                    }
                 }
 
                 if (keyStart >= bytes.Length)
                 {
                     throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.PropertyName, span, context);
-                }
-
-                if (bytes.Span[keyStart] == (byte)'}')
-                {
-                    throw CreateJsonExpectingError(input, keyStart, JsonIncompleteExpectation.PropertyName, span, context);
                 }
 
                 if (bytes.Span[keyStart] != (byte)'"')
@@ -423,18 +411,12 @@ internal sealed partial class LythonRuntime
             var valueEnd = -1;
             while (true)
             {
-                // A closer never needs comma verification: the previous
-                // character decides between valid end and trailing comma.
+                // A closer here follows an empty container or a completed value.
                 var peek = valueEnd < 0
                     ? SkipJsonWhitespace(bytes.Span, openBracket + 1, context, span)
                     : SkipJsonWhitespace(bytes.Span, valueEnd, context, span);
                 if (peek < bytes.Length && bytes.Span[peek] == (byte)']')
                 {
-                    if (IsJsonPreviousNonWhitespaceComma(bytes.Span, peek))
-                    {
-                        throw CreateJsonExpectingError(input, peek, JsonIncompleteExpectation.Value, span, context);
-                    }
-
                     return ((object)result, peek + 1);
                 }
 
@@ -445,17 +427,17 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    elementStart = SkipJsonWhitespace(bytes.Span, EnsureJsonComma(bytes.Span, valueEnd, input, span, context) + 1, context, span);
+                    var elementComma = EnsureJsonComma(bytes.Span, valueEnd, input, span, context);
+                    elementStart = SkipJsonWhitespace(bytes.Span, elementComma + 1, context, span);
+                    if (elementStart < bytes.Length && bytes.Span[elementStart] == (byte)']')
+                    {
+                        throw NewJsonDecodeFailure(input, "Illegal trailing comma before end of array", elementComma, innerException: null, span, context);
+                    }
                 }
 
                 if (elementStart >= bytes.Length)
                 {
                     throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
-                }
-
-                if (bytes.Span[elementStart] == (byte)']')
-                {
-                    throw CreateJsonExpectingError(input, elementStart, JsonIncompleteExpectation.Value, span, context);
                 }
 
                 context.CheckExecution(span);
@@ -754,23 +736,6 @@ internal sealed partial class LythonRuntime
             }
 
             return position;
-        }
-
-        // Computes a scalar or string token end by raw scanning: the reader may
-        // have consumed past the token while classifying property names, so its
-        // consumed count is only trustworthy after container brackets (which need
-        // no lookahead). Strings walk with escape handling; numbers, literals and
-        // constants consume value characters. Never runs past unterminated input
-        // in practice (the reader rejects it first); the bounds guard is defensive.
-        private static bool IsJsonPreviousNonWhitespaceComma(ReadOnlySpan<byte> bytes, int tokenStart)
-        {
-            var position = tokenStart - 1;
-            while (position >= 0 && bytes[position] is (byte)' ' or (byte)'\t' or (byte)'\n' or (byte)'\r')
-            {
-                position--;
-            }
-
-            return position >= 0 && bytes[position] == (byte)',';
         }
     }
 }

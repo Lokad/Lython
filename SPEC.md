@@ -2217,6 +2217,10 @@ Parser-produced `JSONDecodeError` values retain the original document and expose
 message appends `: line L column C (char P)`, and `args` contains that one formatted
 message. Complete-document trailing data reports `msg == "Extra data"`;
 `raw_decode` still returns the prefix end without examining the suffix.
+An object or array trailing comma reports `Illegal trailing comma before end of
+object` or `Illegal trailing comma before end of array` at the comma's character
+position, following CPython 3.13. A comma followed by end of input retains the
+ordinary missing-property/value error at the end of the document.
 
 For `load`/`loads` with `cls=None` or the exact builtin `JSONDecoder`, Lython binds
 scanner options using the same constructor validation and calls its existing parser

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Report JSON object/array trailing commas at the comma, with CPython's error message and character coordinates. Reuse the forward delimiter position and remove redundant backwards scans; preserve incomplete-input errors, raw prefixes and hook ordering.
+
 - Keep ordinary annotated helper bodies executable under both execution APIs. Attach eager/postponed annotation metadata through the existing helpers before decorators and publication, removing annotation-only body deoptimization and parent mirroring. Preserve dynamic retention for escaping annotation lambdas and namespaces, closure cells, defaults, cancellation, managed stack admission and retained metadata funding; compiled call fuel remains implementation-defined.
 
 - Execute exact integer/float/boolean arithmetic, comparison and unary instructions through the ordinary handlers under `RunAsync`. Skip redundant asynchronous operation helpers for these native operands while preserving fuel, errors, admission and result ownership; custom/reflected/truth protocols still suspend and cancel through their existing paths.
