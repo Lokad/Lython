@@ -64,19 +64,19 @@ internal static class StaticStringContractFamily
     private static void AnalyzeStringStartsEndsWithCall(string memberName, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
         var parameterName = memberName == "startswith" ? "prefix" : "suffix";
-        if (!arguments.TryGetValue(0, parameterName, out var prefixExpression))
+        if (!arguments.TryGetValue(0, parameterName, out var prefixExpression) ||
+            !arguments.TryResolveValue(0, parameterName, bindings, out var prefixValue))
         {
             return;
         }
 
-        if (StaticAbstractValueResolver.TryResolveKnownString(prefixExpression, bindings, out _))
+        if (prefixValue.Kind == AbstractValueKind.String)
         {
             AnalyzeStringBoundsArguments(arguments, diagnostics, bindings);
             return;
         }
 
-        if (StaticAbstractValueResolver.TryResolveKnownValue(prefixExpression, bindings, out var prefixValue) &&
-            prefixValue.Kind == AbstractValueKind.Tuple)
+        if (prefixValue.Kind == AbstractValueKind.Tuple)
         {
             foreach (var item in prefixValue.RequireSequenceItems())
             {
@@ -96,7 +96,7 @@ internal static class StaticStringContractFamily
             return;
         }
 
-        if (StaticAbstractFacts.IsDefinitelyKnownLiteral(prefixExpression, bindings))
+        if (prefixValue.IsLiteralLike)
         {
             AddDiagnostic(
                 diagnostics,
@@ -157,35 +157,19 @@ internal static class StaticStringContractFamily
                 return;
         }
 
-        if (!arguments.TryGetValue(0, parameterName, out var expression))
-        {
-            return;
-        }
-
-        if (!StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out _) &&
-            StaticAbstractFacts.IsDefinitelyKnownLiteral(expression, bindings))
-        {
-            AddDiagnostic(diagnostics, "LA3075", message, expression.Span);
-        }
+        StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, parameterName, "LA3075", message, diagnostics, bindings);
 
         AnalyzeStringBoundsArguments(arguments, diagnostics, bindings);
     }
 
     private static void AnalyzeStringSplitCall(string memberName, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (arguments.TryGetValue(0, "sep", out var separatorExpression) &&
-            separatorExpression is not NoneLiteralExpressionSyntax &&
-            !StaticAbstractValueResolver.TryResolveKnownString(separatorExpression, bindings, out _) &&
-            StaticAbstractFacts.IsDefinitelyKnownLiteral(separatorExpression, bindings))
-        {
-            AddDiagnostic(
-                diagnostics,
-                "LA3091",
-                memberName == "split"
-                    ? "str.split([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit."
-                    : "str.rsplit([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.",
-                separatorExpression.Span);
-        }
+        StaticContractChecks.AnalyzeKnownStringOrNoneArgument(
+            arguments, 0, "sep", "LA3091",
+            memberName == "split"
+                ? "str.split([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit."
+                : "str.rsplit([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.",
+            diagnostics, bindings);
 
         StaticContractChecks.AnalyzeOptionalIntegerArgument(
             arguments,
@@ -202,57 +186,43 @@ internal static class StaticStringContractFamily
 
     private static void AnalyzeStringStripCall(string memberName, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (!arguments.TryGetValue(0, "chars", out var charsExpression))
-        {
-            return;
-        }
-
-        if (charsExpression is not NoneLiteralExpressionSyntax &&
-            !StaticAbstractValueResolver.TryResolveKnownString(charsExpression, bindings, out _) &&
-            StaticAbstractFacts.IsDefinitelyKnownLiteral(charsExpression, bindings))
-        {
-            AddDiagnostic(diagnostics, "LA3093", $"str.{memberName}([chars]) expects zero or one string argument.", charsExpression.Span);
-        }
+        StaticContractChecks.AnalyzeKnownStringOrNoneArgument(arguments, 0, "chars", "LA3093",
+            $"str.{memberName}([chars]) expects zero or one string argument.", diagnostics, bindings);
     }
 
     private static void AnalyzeStringReplaceCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (arguments.TryGetValue(0, "old", out var oldExpression) &&
-            !StaticAbstractValueResolver.TryResolveKnownString(oldExpression, bindings, out _) &&
-            StaticAbstractFacts.IsDefinitelyKnownLiteral(oldExpression, bindings))
-        {
-            AddDiagnostic(diagnostics, "LA3094", "str.replace(old, new[, count]) expects two string arguments and an optional integer count.", oldExpression.Span);
-        }
-
-        if (arguments.TryGetValue(1, "new", out var newExpression) &&
-            !StaticAbstractValueResolver.TryResolveKnownString(newExpression, bindings, out _) &&
-            StaticAbstractFacts.IsDefinitelyKnownLiteral(newExpression, bindings))
-        {
-            AddDiagnostic(diagnostics, "LA3094", "str.replace(old, new[, count]) expects two string arguments and an optional integer count.", newExpression.Span);
-        }
+        const string message = "str.replace(old, new[, count]) expects two string arguments and an optional integer count.";
+        StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "old", "LA3094", message, diagnostics, bindings);
+        StaticContractChecks.AnalyzeKnownStringArgument(arguments, 1, "new", "LA3094", message, diagnostics, bindings);
 
         StaticContractChecks.AnalyzeOptionalIntegerArgument(arguments, 2, "count", "LA3095", "str.replace(old, new[, count]) expects count to be an integer.", diagnostics, bindings, allowBoolean: true);
     }
 
     private static void AnalyzeStringJoinCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (!arguments.TryGetValue(0, "iterable", out var iterableExpression))
+        if (!arguments.TryGetValue(0, "iterable", out var iterableExpression) ||
+            !arguments.TryResolveValue(0, "iterable", bindings, out var iterable))
         {
             return;
         }
 
-        if (StaticAbstractValueResolver.TryResolveKnownString(iterableExpression, bindings, out _))
+        if (iterable.Kind == AbstractValueKind.String)
         {
             return;
         }
 
-        if (StaticAbstractValueResolver.TryResolveKnownSequenceItems(iterableExpression, bindings, out var sequenceItems))
+        if (iterable.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set)
         {
-            StaticContractChecks.AnalyzeIterableOfStringsLiteral(sequenceItems, "LA3102", "str.join(iterable) expects an iterable of strings.", diagnostics);
+            var sequenceItems = iterable.RequireSequenceItems();
+            if (sequenceItems.All(static item => item.IsLiteralLike))
+            {
+                StaticContractChecks.AnalyzeIterableOfStringsLiteral(sequenceItems, "LA3102", "str.join(iterable) expects an iterable of strings.", diagnostics);
+            }
             return;
         }
 
-        if (StaticAbstractFacts.IsDefinitelyKnownNonIterableLiteral(iterableExpression, bindings))
+        if (iterable.Kind is AbstractValueKind.Integer or AbstractValueKind.Float or AbstractValueKind.Boolean or AbstractValueKind.None)
         {
             AddDiagnostic(diagnostics, "LA3102", "str.join(iterable) expects an iterable of strings.", iterableExpression.Span);
         }
@@ -260,21 +230,13 @@ internal static class StaticStringContractFamily
 
     private static void AnalyzeStringFormatMapCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (!arguments.TryGetValue(0, "mapping", out var mappingExpression))
+        if (!arguments.TryGetValue(0, "mapping", out var mappingExpression) ||
+            !arguments.TryResolveValue(0, "mapping", bindings, out var value))
         {
             return;
         }
 
-        if (StaticAbstractValueResolver.TryResolveKnownValue(mappingExpression, bindings, out var value) &&
-            value.Kind != AbstractValueKind.Dict)
-        {
-            AddDiagnostic(diagnostics, "LA3103", "str.format_map(mapping) expects one dictionary argument.", mappingExpression.Span);
-            return;
-        }
-
-        if (StaticAbstractFacts.IsDefinitelyKnownLiteral(mappingExpression, bindings) &&
-            (!StaticAbstractValueResolver.TryResolveKnownValue(mappingExpression, bindings, out var knownValue) ||
-             knownValue.Kind != AbstractValueKind.Dict))
+        if (value.IsLiteralLike && value.Kind != AbstractValueKind.Dict)
         {
             AddDiagnostic(diagnostics, "LA3103", "str.format_map(mapping) expects one dictionary argument.", mappingExpression.Span);
         }
@@ -282,28 +244,9 @@ internal static class StaticStringContractFamily
 
     private static void AnalyzeStringBoundsArguments(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        AnalyzeStringBoundArgument(arguments, 1, "start", diagnostics, bindings);
-        AnalyzeStringBoundArgument(arguments, 2, "end", diagnostics, bindings);
-    }
-
-    private static void AnalyzeStringBoundArgument(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        if (!arguments.TryGetValue(position, keyword, out var expression))
-        {
-            return;
-        }
-
-        if (expression is NoneLiteralExpressionSyntax ||
-            StaticAbstractFacts.IsKnownIntegerLiteral(expression, bindings) ||
-            StaticAbstractFacts.IsKnownBooleanLiteral(expression, bindings))
-        {
-            return;
-        }
-
-        if (StaticAbstractFacts.IsDefinitelyKnownLiteral(expression, bindings))
-        {
-            AddDiagnostic(diagnostics, "LA3076", "slice indices must be integers or None or have an __index__ method", expression.Span);
-        }
+        const string message = "slice indices must be integers or None or have an __index__ method";
+        StaticContractChecks.AnalyzeOptionalIntegerArgument(arguments, 1, "start", "LA3076", message, diagnostics, bindings, allowBoolean: true);
+        StaticContractChecks.AnalyzeOptionalIntegerArgument(arguments, 2, "end", "LA3076", message, diagnostics, bindings, allowBoolean: true);
     }
 
 }

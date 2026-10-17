@@ -16,8 +16,8 @@ internal static class StaticContractChecks
             return;
         }
 
-        if (!StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out _) &&
-            StaticAbstractFacts.IsDefinitelyKnownLiteral(expression, bindings))
+        if (arguments.TryResolveValue(position, keyword, bindings, out var value) &&
+            value.IsLiteralLike && value.Kind != AbstractValueKind.String)
         {
             AddDiagnostic(diagnostics, code, message, expression.Span);
         }
@@ -32,14 +32,13 @@ internal static class StaticContractChecks
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (!arguments.TryGetValue(position, keyword, out var expression) ||
-            expression is NoneLiteralExpressionSyntax)
+        if (!arguments.TryGetValue(position, keyword, out var expression))
         {
             return;
         }
 
-        if (!StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out _) &&
-            StaticAbstractFacts.IsDefinitelyKnownLiteral(expression, bindings))
+        if (arguments.TryResolveValue(position, keyword, bindings, out var value) &&
+            value.IsLiteralLike && value.Kind is not AbstractValueKind.String and not AbstractValueKind.None)
         {
             AddDiagnostic(diagnostics, code, message, expression.Span);
         }
@@ -58,8 +57,8 @@ internal static class StaticContractChecks
             return;
         }
 
-        if (!StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out _) &&
-            StaticAbstractFacts.IsDefinitelyKnownLiteral(expression, bindings))
+        var value = arguments.ResolveKeywordValue(keyword, bindings);
+        if (value.IsLiteralLike && value.Kind != AbstractValueKind.String)
         {
             AddDiagnostic(diagnostics, code, message, expression.Span);
         }
@@ -73,14 +72,13 @@ internal static class StaticContractChecks
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (!arguments.Keywords.TryGetValue(keyword, out var expression) ||
-            expression is NoneLiteralExpressionSyntax)
+        if (!arguments.Keywords.TryGetValue(keyword, out var expression))
         {
             return;
         }
 
-        if (!StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out _) &&
-            StaticAbstractFacts.IsDefinitelyKnownLiteral(expression, bindings))
+        var value = arguments.ResolveKeywordValue(keyword, bindings);
+        if (value.IsLiteralLike && value.Kind is not AbstractValueKind.String and not AbstractValueKind.None)
         {
             AddDiagnostic(diagnostics, code, message, expression.Span);
         }
@@ -199,19 +197,19 @@ internal static class StaticContractChecks
         AbstractState bindings,
         bool allowBoolean)
     {
-        if (!arguments.TryGetValue(position, keyword, out var expression))
+        if (!arguments.TryGetValue(position, keyword, out var expression) ||
+            !arguments.TryResolveValue(position, keyword, bindings, out var value))
         {
             return;
         }
 
-        if (expression is NoneLiteralExpressionSyntax ||
-            StaticAbstractFacts.IsKnownIntegerLiteral(expression, bindings) ||
-            (allowBoolean && StaticAbstractFacts.IsKnownBooleanLiteral(expression, bindings)))
+        if (value.Kind is AbstractValueKind.None or AbstractValueKind.Integer ||
+            (allowBoolean && value.Kind == AbstractValueKind.Boolean))
         {
             return;
         }
 
-        if (StaticAbstractFacts.IsDefinitelyKnownLiteral(expression, bindings))
+        if (value.IsLiteralLike)
         {
             AddDiagnostic(diagnostics, code, message, expression.Span);
         }

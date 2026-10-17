@@ -1330,6 +1330,12 @@ The `collections` module supports the common contained container helpers:
 
 ### 9.7 Strings
 
+String replacement, splitting, trimming, searching, prefix checks, `join` and
+`format_map` accept normal argument expansion from stored sequences and supported
+keyword mappings. Static checks use each expanded argument's value, including
+integer and `None` aliases, rather than the source container's type. Proven
+invalid values still receive the corresponding argument diagnostic.
+
 Strings must behave as Python Unicode strings, not as byte arrays.
 
 `capitalize`, `title` and `swapcase` preserve contextual final Greek sigma,
