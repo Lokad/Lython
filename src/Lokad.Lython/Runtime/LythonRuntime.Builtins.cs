@@ -344,8 +344,7 @@ internal sealed partial class LythonRuntime
                 _ when PyNumberOps.TryAsInteger(value, out var integer) => OwnFreshInteger(integer, context.MemoryGovernor, span),
                 double floating => OwnFreshInteger(FloatToInteger(floating, span, Math.Truncate), context.MemoryGovernor, span),
                 PyDecimal decimalValue => OwnFreshInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span),
-                PyString text => OwnFreshInteger(ParsePythonIntegerText(text.AsString(), numberBase, span, text, context), context.MemoryGovernor, span),
-                PyBytes bytes => OwnFreshInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span, bytes, context), context.MemoryGovernor, span),
+                PyString or PyBytes => ParseOwnedIntegerText(value, numberBase, context, span),
                 _ => throw new LythonRuntimeException("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(value, context) + "'", span)
             };
         }
@@ -705,13 +704,33 @@ internal sealed partial class LythonRuntime
     private static string IntFailureDisplay(object source, ExecutionContext context)
         => PyRendering.ToReprPyString(source, new PyRenderingContext(context)).AsString();
 
+    private static object ParseOwnedIntegerText(object source, int numberBase, ExecutionContext context, LythonSourceSpan span)
+    {
+        // UTF-8 bytes upper-bound decoded UTF-16 units. Admit that copy and
+        // three overlapping magnitudes before decoding or arithmetic; raw
+        // whitespace/prefix capacity is deliberately conservative.
+        var length = source is PyString text ? text.Utf8Bytes.Length : ((PyBytes)source).Length;
+        var resultBits = RuntimeMemoryEstimates.SaturatingMultiply(length,
+            numberBase == 0 ? 4 : IntegerParseBitsPerDigit(numberBase));
+        var resultBytes = RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
+            RuntimeMemoryEstimates.SaturatingAdd(resultBits, 1));
+        var decodeBytes = RuntimeMemoryEstimates.SaturatingAdd(32,
+            RuntimeMemoryEstimates.SaturatingMultiply(2, length));
+        using var admission = context.MemoryGovernor.ReserveTemporary(RuntimeMemoryEstimates.SaturatingAdd(
+            decodeBytes, RuntimeMemoryEstimates.SaturatingMultiply(3, resultBytes)), span);
+        var decoded = source is PyString value ? value.AsString() : System.Text.Encoding.ASCII.GetString(((PyBytes)source).Bytes);
+        var result = ParsePythonIntegerText(decoded, numberBase, span, source, context);
+        object box = result;
+        if (RuntimeMemoryEstimates.GetMagnitudeBitLength(result) > 64)
+            admission.Commit(RuntimeMemoryEstimates.EstimateBigIntegerBytes(result));
+        return box;
+    }
+
     private static BigInteger ParsePythonIntegerText(string text, int numberBase, LythonSourceSpan span, object displaySource, ExecutionContext context)
     {
-        var value = text.Trim();
-        // Deny on digit scale before the conversion allocates the limbs.
-        using var integerAdmission = GuardIntegerParseBytes(value, numberBase == 0 ? 4 : IntegerParseBitsPerDigit(numberBase), context.MemoryGovernor, span);
+        var value = text.AsSpan().Trim();
         var negative = false;
-        if (value.StartsWith('+') || value.StartsWith('-'))
+        if (!value.IsEmpty && value[0] is '+' or '-')
         {
             negative = value[0] == '-';
             value = value[1..];
@@ -731,7 +750,7 @@ internal sealed partial class LythonRuntime
             {
                 detectedBase = prefixBase;
                 value = value[2..];
-                if (value.StartsWith('_'))
+                if (!value.IsEmpty && value[0] == '_')
                 {
                     value = value[1..];
                 }
@@ -739,7 +758,7 @@ internal sealed partial class LythonRuntime
         }
 
         detectedBase = detectedBase == 0 ? 10 : detectedBase;
-        if (value.Length == 0 || value.StartsWith('_') || value.EndsWith('_') || value.Contains("__", StringComparison.Ordinal))
+        if (value.IsEmpty || value[0] == '_' || value[^1] == '_' || value.IndexOf("__".AsSpan()) >= 0)
         {
             throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}: {IntFailureDisplay(displaySource, context)}", span);
         }

@@ -1173,6 +1173,11 @@ explicit-base `int(text, base)` conversions, including indexed legacy `__trunc__
 results. Native conversions use the synchronous conversion body. Inputs and
 results keep their existing owners until suspended work and cleanup complete.
 
+Text and bytes conversion reserves conservative decoded-text and arithmetic
+working capacity before allocation, including raw whitespace and prefixes.
+Tight allowances can therefore refuse earlier even for a small final integer.
+Retained major results commit from that reservation before scratch is released.
+
 Host globals admit all eight CLR integer types (`sbyte`, `byte`, `short`,
 `ushort`, `int`, `uint`, `long`, `ulong`) as exact Python integers, including
 when nested in supported collections. Python operations, type checks, numeric

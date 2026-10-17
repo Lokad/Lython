@@ -74,6 +74,15 @@ constructing scalar strings for the suffix. Oversized bounded results now use
 the same checked string-size `RuntimeError` guard as unlimited replacement,
 before partial construction. Admission refusals still fail the command.
 
+Integer parsing from text or bytes admits decoded UTF-16 capacity, result magnitude
+and computation overlap before decoding. Whitespace, sign and prefix processing
+uses spans rather than substring copies. A major result commits its portion of
+the existing reservation before scratch is refunded; there is no second admission
+after computation. Raw input capacity is deliberately conservative, so padded or
+prefix-heavy inputs can reject earlier even when their integer is small. The
+input and retained result keep their existing owners. Small bounded magnitudes
+retain the control-headroom policy; JSON's separate token path is unchanged.
+
 Ordinary integer addition and sums admit a conservative major-result estimate before the
 CLR computes it, including carry/sign headroom and computation overlap. The result
 commits its portion of that existing reservation without a second admission;
