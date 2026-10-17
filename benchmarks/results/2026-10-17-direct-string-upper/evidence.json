@@ -1,0 +1,193 @@
+{
+  "dateUtc": "2026-10-17",
+  "baselineRevision": "45fb28921c05257e1cf3322408fd51915b4ace9f",
+  "candidate": "frozen two-file direct-call patch applied to baseline;before the separate expansion-data correction",
+  "sourceHashFormat": "UTF-8 with LF line endings",
+  "sources": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": {
+      "baselineSha256Lf": "7fc5afc1cb54245c0b6d1a2111e7f76bce90f9c76f4d3189d8b5af862ede087c",
+      "candidateSha256Lf": "19d23ff16d945770404d11ced07b04a0a4fc384ee189ef5aa9544b0e9a814ab9"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs": {
+      "baselineSha256Lf": "80cf08a09b021414eb8f99e830edfc699760a907f3e258ec718c917dd3a37398",
+      "candidateSha256Lf": "9116047380b1f1cd394678c5339d2e83565f705f8bd241d8b7f0ad988eb0c88f"
+    }
+  },
+  "machine": {
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "architecture": "X64",
+    "processor": "Intel(R) Core(TM) i7-14700KF",
+    "logicalProcessors": 28,
+    "powerShellRuntime": "10.0.12",
+    "dotnetSdk": "10.0.300-preview.0.26177.108",
+    "installedDotnetHost": "10.0.13",
+    "exactTestRuntimePatch": "not captured in the original allocation samples"
+  },
+  "boundary": "warm Release executable interpreter;precreated 128 distinct UTF-8 receivers;compile/setup/input construction excluded;4 warmups and8 samples per API/call form;native async loop completes inline",
+  "measurement": "GC.GetAllocatedBytesForCurrentThread;managed allocation only;no time,RSS,host-I/O or CPython timing comparison",
+  "callsPerSample": 128,
+  "results": {
+    "baseline": [
+      {
+        "asynchronous": false,
+        "exposed": false,
+        "callsPerSample": 128,
+        "samples": [
+          48640,
+          48640,
+          48640,
+          48640,
+          48640,
+          48640,
+          48640,
+          48640
+        ],
+        "expected": "ROW127SS"
+      },
+      {
+        "asynchronous": false,
+        "exposed": true,
+        "callsPerSample": 128,
+        "samples": [
+          44552,
+          44552,
+          44552,
+          44552,
+          44552,
+          44552,
+          44552,
+          44552
+        ],
+        "expected": "ROW127SS"
+      },
+      {
+        "asynchronous": true,
+        "exposed": false,
+        "callsPerSample": 128,
+        "samples": [
+          60904,
+          60904,
+          60904,
+          60904,
+          60904,
+          60904,
+          60904,
+          60904
+        ],
+        "expected": "ROW127SS"
+      },
+      {
+        "asynchronous": true,
+        "exposed": true,
+        "callsPerSample": 128,
+        "samples": [
+          60912,
+          60912,
+          60912,
+          60912,
+          60912,
+          60912,
+          60912,
+          60912
+        ],
+        "expected": "ROW127SS"
+      }
+    ],
+    "candidate": [
+      {
+        "asynchronous": true,
+        "exposed": false,
+        "callsPerSample": 128,
+        "samples": [
+          32232,
+          32232,
+          32232,
+          32232,
+          32232,
+          32232,
+          32232,
+          32232
+        ],
+        "expected": "ROW127SS"
+      },
+      {
+        "asynchronous": false,
+        "exposed": false,
+        "callsPerSample": 128,
+        "samples": [
+          32256,
+          32256,
+          32256,
+          32256,
+          32256,
+          32256,
+          32256,
+          32256
+        ],
+        "expected": "ROW127SS"
+      },
+      {
+        "asynchronous": true,
+        "exposed": true,
+        "callsPerSample": 128,
+        "samples": [
+          60912,
+          60912,
+          60912,
+          60912,
+          60912,
+          60912,
+          60912,
+          60912
+        ],
+        "expected": "ROW127SS"
+      },
+      {
+        "asynchronous": false,
+        "exposed": true,
+        "callsPerSample": 128,
+        "samples": [
+          44552,
+          44552,
+          44552,
+          44552,
+          44552,
+          44552,
+          44552,
+          44552
+        ],
+        "expected": "ROW127SS"
+      }
+    ]
+  },
+  "receipts": {
+    "baseline-allocation": {
+      "source": "direct-string-upper",
+      "production": "45fb2892",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "FB9235D92106F58DBDD5581693B6CE9206DE143098968F3F6B16486579474D6F",
+      "filter": "FullyQualifiedName~UpperAllocationProbe",
+      "pid": 13652,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1227,
+      "stdoutSha256": "99D276E0F8DFB6ADA395BCDB4F1730142414FC931A1D7B309400ABE97A158A39",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "candidate-allocation": {
+      "source": "direct-string-upper",
+      "production": "45fb2892-plus-upper",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "53D204A73C3B5C9A10EEADD7F3541DBA732387737F092545264150E32E98D274",
+      "filter": "FullyQualifiedName~UpperAllocationProbe",
+      "pid": 60320,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1314,
+      "stdoutSha256": "9C9C4B7B5F07BD9FC5DA4BA0EE28C15339615842DECBB8345DFC72FEF3DB717A",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    }
+  }
+}

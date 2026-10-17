@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="e31f2c89-ee9a-47da-a6d2-d9614937259e" name="JoannesVermorel@LOKAD-0399 2026-10-17 21:19:56" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-17T21:19:56.8477101+02:00" queuing="2026-10-17T21:19:56.8477103+02:00" start="2026-10-17T21:19:55.8686256+02:00" finish="2026-10-17T21:19:56.8510574+02:00" />
+  <TestSettings name="default" id="415e33a5-4760-448c-a319-726e581f07b1">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-17_21_19_56" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="dacec361-36da-4b05-92f5-92a8445a01b3" testId="a291c75b-d5f8-4448-e937-51c9ab7653ae" testName="Lokad.Lython.Tests.UpperAllocationProbe.DistinctReceivers(asynchronous: False, exposed: False)" computerName="LOKAD-0399" duration="00:00:00.0043750" startTime="2026-10-17T21:19:56.7472624+02:00" endTime="2026-10-17T21:19:56.7473493+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dacec361-36da-4b05-92f5-92a8445a01b3">
+      <Output>
+        <StdOut>UPPER_ALLOCATION:{"asynchronous":false,"exposed":false,"callsPerSample":128,"samples":[48640,48640,48640,48640,48640,48640,48640,48640],"expected":"ROW127SS"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="44fea4f1-a8f9-41f8-a58e-6398eef00acc" testId="16ab12d1-2303-0a3b-17f1-ed8b7a1531a8" testName="Lokad.Lython.Tests.UpperAllocationProbe.DistinctReceivers(asynchronous: False, exposed: True)" computerName="LOKAD-0399" duration="00:00:00.1910903" startTime="2026-10-17T21:19:56.5465795+02:00" endTime="2026-10-17T21:19:56.7417427+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="44fea4f1-a8f9-41f8-a58e-6398eef00acc">
+      <Output>
+        <StdOut>UPPER_ALLOCATION:{"asynchronous":false,"exposed":true,"callsPerSample":128,"samples":[44552,44552,44552,44552,44552,44552,44552,44552],"expected":"ROW127SS"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4cc123bb-2eeb-43ec-b360-9cb9790d2990" testId="91254e82-f054-fa4c-34ab-970e5bc570f1" testName="Lokad.Lython.Tests.UpperAllocationProbe.DistinctReceivers(asynchronous: True, exposed: False)" computerName="LOKAD-0399" duration="00:00:00.0212381" startTime="2026-10-17T21:19:56.7476512+02:00" endTime="2026-10-17T21:19:56.7674113+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4cc123bb-2eeb-43ec-b360-9cb9790d2990">
+      <Output>
+        <StdOut>UPPER_ALLOCATION:{"asynchronous":true,"exposed":false,"callsPerSample":128,"samples":[60904,60904,60904,60904,60904,60904,60904,60904],"expected":"ROW127SS"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9a520673-29a9-419d-8115-f060469de9a4" testId="23e07293-51ec-9a79-b993-eb0e308048e5" testName="Lokad.Lython.Tests.UpperAllocationProbe.DistinctReceivers(asynchronous: True, exposed: True)" computerName="LOKAD-0399" duration="00:00:00.0036297" startTime="2026-10-17T21:19:56.7675072+02:00" endTime="2026-10-17T21:19:56.7710970+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9a520673-29a9-419d-8115-f060469de9a4">
+      <Output>
+        <StdOut>UPPER_ALLOCATION:{"asynchronous":true,"exposed":true,"callsPerSample":128,"samples":[60912,60912,60912,60912,60912,60912,60912,60912],"expected":"ROW127SS"}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.UpperAllocationProbe.DistinctReceivers(asynchronous: True, exposed: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="23e07293-51ec-9a79-b993-eb0e308048e5">
+      <Execution id="9a520673-29a9-419d-8115-f060469de9a4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.UpperAllocationProbe" name="DistinctReceivers" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.UpperAllocationProbe.DistinctReceivers(asynchronous: False, exposed: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="16ab12d1-2303-0a3b-17f1-ed8b7a1531a8">
+      <Execution id="44fea4f1-a8f9-41f8-a58e-6398eef00acc" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.UpperAllocationProbe" name="DistinctReceivers" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.UpperAllocationProbe.DistinctReceivers(asynchronous: False, exposed: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="a291c75b-d5f8-4448-e937-51c9ab7653ae">
+      <Execution id="dacec361-36da-4b05-92f5-92a8445a01b3" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.UpperAllocationProbe" name="DistinctReceivers" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.UpperAllocationProbe.DistinctReceivers(asynchronous: True, exposed: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="91254e82-f054-fa4c-34ab-970e5bc570f1">
+      <Execution id="4cc123bb-2eeb-43ec-b360-9cb9790d2990" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.UpperAllocationProbe" name="DistinctReceivers" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="a291c75b-d5f8-4448-e937-51c9ab7653ae" executionId="dacec361-36da-4b05-92f5-92a8445a01b3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="16ab12d1-2303-0a3b-17f1-ed8b7a1531a8" executionId="44fea4f1-a8f9-41f8-a58e-6398eef00acc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="91254e82-f054-fa4c-34ab-970e5bc570f1" executionId="4cc123bb-2eeb-43ec-b360-9cb9790d2990" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="23e07293-51ec-9a79-b993-eb0e308048e5" executionId="9a520673-29a9-419d-8115-f060469de9a4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="4" executed="4" passed="4" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.14]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.40]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.41]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.65]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

@@ -30,6 +30,8 @@ public sealed class ContextualCasingExecutionTests
     [InlineData(true, "title", "Aς")]
     [InlineData(false, "swapcase", "aς")]
     [InlineData(true, "swapcase", "aς")]
+    [InlineData(false, "upper", "AΣ")]
+    [InlineData(true, "upper", "AΣ")]
     public async Task RetainedCasingResultsKeepTheirFunding(bool asynchronous, string method, string expected)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);

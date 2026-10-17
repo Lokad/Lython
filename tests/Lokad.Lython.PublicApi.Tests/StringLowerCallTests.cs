@@ -5,13 +5,15 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class StringLowerCallTests
 {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RetainedMethodsAndResultsKeepTheirOwners(bool exposed)
+    [InlineData(false, "lower")]
+    [InlineData(true, "lower")]
+    [InlineData(false, "upper")]
+    [InlineData(true, "upper")]
+    public async Task RetainedMethodsAndResultsKeepTheirOwners(bool exposed, string method)
     {
-        var source = "text='A'*4096\n" + (exposed
-            ? "method=text.lower\ntext='changed'\nreturn method()"
-            : "return text.lower()");
+        var source = "text='" + (method == "lower" ? "A" : "a") + "'*4096\n" + (exposed
+            ? "method=text." + method + "\ntext='changed'\nreturn method()"
+            : "return text." + method + "()");
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
         var baseline = budget.ReservedBytes;
@@ -20,7 +22,7 @@ public sealed class StringLowerCallTests
             using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
             {
                 Assert.True(retained.Success, retained.Failure?.Message);
-                Assert.Equal(new string('a', 4096), Assert.IsType<string>(retained.ReturnValue));
+                Assert.Equal(new string(method == "lower" ? 'a' : 'A', 4096), Assert.IsType<string>(retained.ReturnValue));
                 var held = budget.ReservedBytes;
                 using (var next = script.Run(new MockLythonHost())) Assert.True(next.Success, next.Failure?.Message);
                 Assert.Equal(held, budget.ReservedBytes);
@@ -31,12 +33,14 @@ public sealed class StringLowerCallTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DeniedLowerDoesNotPublishTheResult(bool exposed)
+    [InlineData(false, "lower")]
+    [InlineData(true, "lower")]
+    [InlineData(false, "upper")]
+    [InlineData(true, "upper")]
+    public async Task DeniedCasingDoesNotPublishTheResult(bool exposed, string method)
     {
-        var source = "value='before'\ntext='A'*32768\n" + (exposed ? "method=text.lower\n" : "") +
-            "print('ready')\ntry: value=" + (exposed ? "method()" : "text.lower()") +
+        var source = "value='before'\ntext='" + (method == "lower" ? "A" : "a") + "'*32768\n" + (exposed ? "method=text." + method + "\n" : "") +
+            "print('ready')\ntry: value=" + (exposed ? "method()" : "text." + method + "()") +
             "\nexcept MemoryError: print(value,len(text))";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
@@ -56,12 +60,15 @@ public sealed class StringLowerCallTests
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("/bind.txt")]
-    [InlineData("/call.txt")]
-    public async Task CustomBindingAndCallsStillSuspendAndCancel(string? pausedPath)
+    [InlineData(null, "lower")]
+    [InlineData("/bind.txt", "lower")]
+    [InlineData("/call.txt", "lower")]
+    [InlineData(null, "upper")]
+    [InlineData("/bind.txt", "upper")]
+    [InlineData("/call.txt", "upper")]
+    public async Task CustomBindingAndCallsStillSuspendAndCancel(string? pausedPath, string method)
     {
-        const string source = "class Text:\n @property\n def lower(self):\n  with open('bind.txt','a') as output: output.write('bind')\n  def convert():\n   with open('call.txt','a') as output: output.write('call')\n   return 'custom'\n  return convert\nprint(Text().lower())";
+        var source = "class Text:\n @property\n def lower(self):\n  with open('bind.txt','a') as output: output.write('bind')\n  def convert():\n   with open('call.txt','a') as output: output.write('call')\n   return 'custom'\n  return convert\nprint(Text().lower())".Replace("lower", method, StringComparison.Ordinal);
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid);
@@ -80,7 +87,7 @@ public sealed class StringLowerCallTests
                 if (ReferenceEquals(first, pending))
                 {
                     using var early = await pending;
-                    Assert.Fail(early.Failure?.Message ?? "Execution completed before its custom lower operation suspended.");
+                    Assert.Fail(early.Failure?.Message ?? $"Execution completed before its custom {method} operation suspended.");
                 }
                 Assert.False(pending.IsCompleted);
                 Assert.True(budget.ReservedBytes > baseline);

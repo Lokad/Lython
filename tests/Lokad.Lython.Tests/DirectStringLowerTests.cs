@@ -10,8 +10,13 @@ using ICallable = Lokad.Lython.Runtime.LythonRuntime.ICallable;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class DirectStringLowerTests(ITestOutputHelper output)
+public class DirectStringLowerTests(ITestOutputHelper output)
 {
+    // Upper uses the same admission and suspension boundaries, without copying
+    // the fixtures or changing the existing lower cases and guard records.
+    protected virtual bool Uppercase => false;
+    private string Method => Uppercase ? "upper" : "lower";
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -20,15 +25,15 @@ public sealed class DirectStringLowerTests(ITestOutputHelper output)
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
-        var code = Compile("for text in [left,right]:\n result=text.lower()\n record()");
-        context.Variables["left"] = PyString.FromString("ALPHA", context.MemoryGovernor, null);
-        context.Variables["right"] = PyString.FromString("İΣ", context.MemoryGovernor, null);
+        var code = Compile("for text in [left,right]:\n result=text." + Method + "()\n record()");
+        context.Variables["left"] = PyString.FromString(Uppercase ? "alpha" : "ALPHA", context.MemoryGovernor, null);
+        context.Variables["right"] = PyString.FromString(Uppercase ? "iσß" : "İΣ", context.MemoryGovernor, null);
         var record = new Record();
         context.Variables["record"] = record;
         _ = await Execute(code, context, asynchronous);
         Assert.Equal(2, record.Values.Count);
-        Assert.Equal("alpha", record.Values[0].AsString());
-        Assert.Equal("i\u0307ς", record.Values[1].AsString());
+        Assert.Equal(Uppercase ? "ALPHA" : "alpha", record.Values[0].AsString());
+        Assert.Equal(Uppercase ? "IΣSS" : "i\u0307ς", record.Values[1].AsString());
         Assert.NotSame(record.Values[0], record.Values[1]);
         Assert.All(record.Values, value => Assert.Same(context.MemoryGovernor, value.OwnerMemoryGovernor));
         var caches = (Array)record.Frame!.GetType().GetField("_memberCaches", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(record.Frame)!;
@@ -49,11 +54,11 @@ public sealed class DirectStringLowerTests(ITestOutputHelper output)
         for (var fuel = 1; fuel <= 8; fuel++)
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionSteps = fuel });
-            context.Variables["text"] = PyString.FromString("WORD", context.MemoryGovernor, null);
-            var code = Compile("return text.lower()");
+            context.Variables["text"] = PyString.FromString(Uppercase ? "word" : "WORD", context.MemoryGovernor, null);
+            var code = Compile("return text." + Method + "()");
             if (fuel == 8)
             {
-                Assert.Equal("word", Assert.IsType<PyString>(await Execute(code, context, asynchronous)).AsString());
+                Assert.Equal(Uppercase ? "WORD" : "word", Assert.IsType<PyString>(await Execute(code, context, asynchronous)).AsString());
                 Assert.Equal(8, context.Limits.ExecutionStepCount);
             }
             else
@@ -69,7 +74,7 @@ public sealed class DirectStringLowerTests(ITestOutputHelper output)
             AssertUnwound(context);
         }
         Assert.Equal(new[] { "7,4,1,8", "7,10,1,8", "7,12,1,8", "7,12,1,8", "7,12,1,8", "7,12,1,8", "0,19,1,1" }, checkpoints);
-        output.WriteLine("DIRECT_LOWER_GUARDS:" + JsonSerializer.Serialize(new { asynchronous, checkpoints }));
+        output.WriteLine((Uppercase ? "DIRECT_UPPER_GUARDS:" : "DIRECT_LOWER_GUARDS:") + JsonSerializer.Serialize(new { asynchronous, checkpoints }));
     }
 
     [Theory]
@@ -85,7 +90,7 @@ public sealed class DirectStringLowerTests(ITestOutputHelper output)
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionMemoryBytes = limit });
         var allocationSpan = new LythonSourceSpan(0, 4, 1, 1);
-        var source = new string('A', 256);
+        var source = new string(Uppercase ? 'a' : 'A', 256);
         var text = PyString.FromString(source, context.MemoryGovernor, allocationSpan);
         var baseline = budget.ReservedBytes;
         // Leave control headroom so the refusal belongs to casing storage,
@@ -93,7 +98,7 @@ public sealed class DirectStringLowerTests(ITestOutputHelper output)
         using (var pad = new Pad(text, limit, lookupHeadroom))
         {
             context.Variables["fill"] = pad;
-            var code = Compile(exposed ? "text=fill()\nmethod=text.lower\nreturn method()" : "text=fill()\nreturn text.lower()");
+            var code = Compile(exposed ? "text=fill()\nmethod=text." + Method + "\nreturn method()" : "text=fill()\nreturn text." + Method + "()");
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Execute(code, context, asynchronous));
             Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
             Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
@@ -121,10 +126,11 @@ public sealed class DirectStringLowerTests(ITestOutputHelper output)
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
-        var text = PyString.FromString("ALPHA BETA", context.MemoryGovernor, null);
+        var source = Uppercase ? "alpha beta" : "ALPHA BETA";
+        var text = PyString.FromString(source, context.MemoryGovernor, null);
         var receiver = new Receiver(text);
         context.Variables["receive"] = receiver;
-        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(Compile("return receive().lower()"), context).AsTask();
+        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(Compile("return receive()." + Method + "()"), context).AsTask();
         try
         {
             await receiver.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -145,7 +151,7 @@ public sealed class DirectStringLowerTests(ITestOutputHelper output)
             receiver.Release.TrySetResult();
             _ = await Xunit.Record.ExceptionAsync(async () => await pending.WaitAsync(TimeSpan.FromSeconds(5)));
         }
-        if (route == "success") Assert.Equal("alpha beta", Assert.IsType<PyString>(await pending.WaitAsync(TimeSpan.FromSeconds(5))).AsString());
+        if (route == "success") Assert.Equal(Uppercase ? "ALPHA BETA" : "alpha beta", Assert.IsType<PyString>(await pending.WaitAsync(TimeSpan.FromSeconds(5))).AsString());
         else
         {
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await pending.WaitAsync(TimeSpan.FromSeconds(5)));
@@ -153,7 +159,7 @@ public sealed class DirectStringLowerTests(ITestOutputHelper output)
             else Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
         }
         Assert.Equal(1, receiver.Calls);
-        Assert.Equal("ALPHA BETA", text.AsString());
+        Assert.Equal(source, text.AsString());
         AssertUnwound(context);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);

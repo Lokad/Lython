@@ -10,6 +10,7 @@ internal sealed partial class LythonRuntime
         private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> SplitWhitespaceOperation =
             static (receiver, span, context) => PyStringOps.SplitWhitespace(receiver, context.MemoryGovernor, span);
         private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> LowerOperation = Lower;
+        private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> UpperOperation = Upper;
 
         internal static Func<PyString, LythonSourceSpan, ExecutionContext, object>? GetNoArgumentsOperation(string name)
             => name switch
@@ -17,6 +18,7 @@ internal sealed partial class LythonRuntime
                 "strip" => StripWhitespaceOperation,
                 "split" => SplitWhitespaceOperation,
                 "lower" => LowerOperation,
+                "upper" => UpperOperation,
                 "islower" => static (receiver, _, _) => PyStringOps.IsLower(receiver),
                 "isupper" => static (receiver, _, _) => PyStringOps.IsUpper(receiver),
                 "istitle" => static (receiver, _, _) => PyStringOps.IsTitle(receiver),
@@ -34,6 +36,9 @@ internal sealed partial class LythonRuntime
 
         internal static PyString Lower(PyString receiver, LythonSourceSpan span, ExecutionContext context)
             => OwnMethodResult(receiver.ToLowerInvariant(), receiver, context.MemoryGovernor, span);
+
+        internal static PyString Upper(PyString receiver, LythonSourceSpan span, ExecutionContext context)
+            => OwnMethodResult(receiver.ToUpperInvariant(), receiver, context.MemoryGovernor, span);
 
         internal static PyString Replace(PyString receiver, object oldArgument, object newArgument, object? countArgument,
             LythonSourceSpan span, ExecutionContext context)
@@ -108,7 +113,7 @@ internal sealed partial class LythonRuntime
                     "lower" => BoundCallable.CreateNoArguments(text, "str.lower", Lower),
                     "capitalize" => BoundCallable.CreateNoArguments(text, "str.capitalize", static (receiver, span, context) => OwnMethodResult(PyStringOps.Capitalize(receiver),receiver,context.MemoryGovernor,span)),
                     "islower" => BoundCallable.CreateNoArguments(text, "str.islower", GetNoArgumentsOperation(name)!),
-                    "upper" => BoundCallable.CreateNoArguments(text, "str.upper", static (receiver, span, context) => OwnMethodResult(receiver.ToUpperInvariant(),receiver,context.MemoryGovernor,span)),
+                    "upper" => BoundCallable.CreateNoArguments(text, "str.upper", Upper),
                     "swapcase" => BoundCallable.CreateNoArguments(text, "str.swapcase", static (receiver, span, context) => OwnMethodResult(PyStringOps.SwapCase(receiver),receiver,context.MemoryGovernor,span)),
                     "title" => BoundCallable.CreateNoArguments(text, "str.title", static (receiver, span, context) => OwnMethodResult(PyStringOps.Title(receiver),receiver,context.MemoryGovernor,span)),
                     "casefold" => BoundCallable.CreateNoArguments(text, "str.casefold", static (receiver, span, context) => OwnMethodResult(PyStringOps.CaseFold(receiver),receiver,context.MemoryGovernor,span)),

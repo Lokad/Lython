@@ -320,7 +320,7 @@ internal sealed partial class ExecutableScript
                     "get" => call.Arguments.Count is 1 or 2,
                     "append" => call.Arguments.Count == 1,
                     "replace" => call.Arguments.Count is 2 or 3,
-                    "strip" or "split" or "lower" or
+                    "strip" or "split" or "lower" or "upper" or
                     "islower" or "isupper" or "istitle" or "isalpha" or "isdigit" or "isalnum" or
                     "isascii" or "isdecimal" or "isidentifier" or "isnumeric" or "isprintable" or "isspace"
                         => call.Arguments.Count == 0,
