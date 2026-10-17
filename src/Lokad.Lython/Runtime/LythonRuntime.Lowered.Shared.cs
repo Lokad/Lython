@@ -694,15 +694,13 @@ internal sealed partial class LythonRuntime
         return collection;
     }
 
-    private static object ReadLoweredSubscript(
-        object target,
-        object index,
-        LythonSourceSpan span,
-        ExecutionContext context)
-        => ReadSubscriptValue(target, index, span, context);
-
     private static async ValueTask<object> ReadLoweredSubscriptAsync(object target, object index, LythonSourceSpan span, ExecutionContext context)
     {
+        if (target is PyDict { HasProtocolKeys: true } dictionary && index is PyString key)
+        {
+            var found = await dictionary.TryGetBuiltinStringAsync(key, context, span).ConfigureAwait(false);
+            return found.Found ? found.Value : throw RuntimeErrors.MissingKey(key, span);
+        }
         if (target is ElementTreeModule.Element element)
             return await ElementTreeModule.ReadIndexAsync(element, index, context, span, true).ConfigureAwait(false);
         if (target is ReMatchObject match)
@@ -721,7 +719,7 @@ internal sealed partial class LythonRuntime
         }
         if ((target is IPyIndexableValue or PyRange) && index is PyInstance)
             index = await CoerceTypeIndexAsync(index, context, span, true).ConfigureAwait(false) ?? PyNone.Instance;
-        return ReadLoweredSubscript(target, index, span, context);
+        return ReadSubscriptValue(target, index, span, context);
     }
 
     private static object ResolveLoweredMemberValue(

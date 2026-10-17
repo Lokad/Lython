@@ -2083,7 +2083,8 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ReadSubscriptValue(dict, arguments[0], span, context);
-                }, DictGetItemSignature),
+                }, DictGetItemSignature,
+                    (arguments, span, context) => ReadLoweredSubscriptAsync(dict, arguments[0], span, context)),
                 "__setitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)

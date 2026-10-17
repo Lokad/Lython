@@ -153,6 +153,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [native dictionary-read guard diagnostic](benchmarks/results/2026-10-17-native-dictionary-dispatch/README.md)
+records unchanged allocation: 320 bytes per 128 reads through both instruction
+runners, with unchanged list controls. Timing is unqualified and predates the
+related stored-key async correctness fix. Complete-job and CPython performance
+remain unmeasured for this change.
+
 The complete CSV helper job [BS](benchmarks/results/2026-10-17-csv-helper-fresh/README.md)
 measures a5a2fc0f → efccd974 separately: 14.818 → 17.358 ms, with 48.7%/45.8%
 spreads. No elapsed improvement or regression is established. This fresh-job

@@ -52,10 +52,18 @@ public sealed class DictionaryGetCallTests
     [InlineData("dict.get(d,'x',fallback)")]
     [InlineData("d.get(*('x',fallback))")]
     [InlineData("[d.get('x',fallback) for i in range(1)][0]")]
+    [InlineData("d['x']")]
+    [InlineData("d.__getitem__('x')")]
+    [InlineData("dict.__getitem__(d,'x')")]
+    [InlineData("d.__getitem__(*('x',))")]
+    [InlineData("[d['x'] for i in range(1)][0]")]
+    [InlineData("reader('x')")]
     public async Task StoredKeyEqualityCanYieldAcrossCallForms(string call)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(YieldingLookup.Replace("CALL", call), budget);
+        var source = YieldingLookup.Replace("CALL", call);
+        if (call == "reader('x')") source = source.Replace("method=d.get", "reader=d.__getitem__");
+        using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -104,11 +112,14 @@ public sealed class DictionaryGetCallTests
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task CancelledEqualityDrainsBeforeAllowanceReturns()
+    [Theory]
+    [InlineData("d.get('x',fallback)")]
+    [InlineData("d['x']")]
+    [InlineData("d.__getitem__('x')")]
+    public async Task CancelledEqualityDrainsBeforeAllowanceReturns(string call)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(YieldingLookup.Replace("CALL", "d.get('x',fallback)"), budget);
+        using var script = new LythonEngine().Compile(YieldingLookup.Replace("CALL", call), budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/events.txt", "before");

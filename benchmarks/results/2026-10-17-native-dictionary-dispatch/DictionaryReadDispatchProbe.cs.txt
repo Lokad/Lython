@@ -1,0 +1,61 @@
+using System.Diagnostics;
+using System.Numerics;
+using System.Text.Json;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary diagnostic; archived and removed before delivery.
+public sealed class DictionaryReadDispatchProbe(ITestOutputHelper output)
+{
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task RepeatedReads(bool asynchronous, bool dictionary)
+    {
+        var source = string.Concat(Enumerable.Repeat("value=table[key]\n", 128)) + "return value";
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var budget = new LythonMemoryBudget(32 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        if (dictionary)
+        {
+            var key = PyString.FromString("x", context.MemoryGovernor, null);
+            var table = new PyDict(context.MemoryGovernor);
+            table.SetItem(key, new BigInteger(7));
+            context.Variables["table"] = table;
+            context.Variables["key"] = key;
+        }
+        else
+        {
+            context.Variables["table"] = new PyList([new BigInteger(7)], context.MemoryGovernor, null);
+            context.Variables["key"] = BigInteger.Zero;
+        }
+        var samples = new List<object>();
+        for (var sample = -4; sample < 8; sample++)
+        {
+            var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
+            var started = Stopwatch.GetTimestamp();
+            var pending = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+            Assert.True(pending.IsCompletedSuccessfully);
+            var result = await pending;
+            var milliseconds = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
+            Assert.Equal(new BigInteger(7), result);
+            Assert.Null(context.CurrentExecutableFrame);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            if (sample >= 0) samples.Add(new { milliseconds, allocated });
+        }
+        output.WriteLine("DICTIONARY_READ_DIAGNOSTIC:" + JsonSerializer.Serialize(new { asynchronous, dictionary, reads = 128, samples }));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+}

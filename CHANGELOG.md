@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Keep protocol-free dictionary string-key reads on the ordinary execution handler under `RunAsync`, bypassing redundant async operation helpers. Reuse the existing async string-key lookup when stored-key equality can suspend, including exposed `__getitem__` calls; preserve missing-key errors, cancellation, terminal memory refusal and retained-result ownership. Remove the synchronous lowered-read forwarding wrapper.
+
 - Report JSON object/array trailing commas at the comma, with CPython's error message and character coordinates. Reuse the forward delimiter position and remove redundant backwards scans; preserve incomplete-input errors, raw prefixes and hook ordering.
 
 - Keep ordinary annotated helper bodies executable under both execution APIs. Attach eager/postponed annotation metadata through the existing helpers before decorators and publication, removing annotation-only body deoptimization and parent mirroring. Preserve dynamic retention for escaping annotation lambdas and namespaces, closure cells, defaults, cancellation, managed stack admission and retained metadata funding; compiled call fuel remains implementation-defined.

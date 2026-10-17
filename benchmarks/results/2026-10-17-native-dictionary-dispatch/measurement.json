@@ -1,0 +1,91 @@
+{
+  "dateUtc": "2026-10-17",
+  "performanceQualified": false,
+  "status": "Allocations unchanged;no qualified elapsed improvement or CPython ratio",
+  "baselineRevision": "2cb4a7863366cc48a1404ca46f624bf1fcfbdb31",
+  "candidate": "Same revision plus archivedguard-onlypatch;before the later stored-key async correction and forwarding-wrapper deletion",
+  "summaries": [
+    {
+      "asynchronous": true,
+      "dictionary": false,
+      "beforeAllocatedBytes": 320.0,
+      "afterAllocatedBytes": 320.0,
+      "beforeMilliseconds": 0.06985,
+      "afterMilliseconds": 0.0694
+    },
+    {
+      "asynchronous": false,
+      "dictionary": true,
+      "beforeAllocatedBytes": 320.0,
+      "afterAllocatedBytes": 320.0,
+      "beforeMilliseconds": 0.0696,
+      "afterMilliseconds": 0.08365
+    },
+    {
+      "asynchronous": false,
+      "dictionary": false,
+      "beforeAllocatedBytes": 320.0,
+      "afterAllocatedBytes": 320.0,
+      "beforeMilliseconds": 0.06185,
+      "afterMilliseconds": 0.0584
+    },
+    {
+      "asynchronous": true,
+      "dictionary": true,
+      "beforeAllocatedBytes": 320.0,
+      "afterAllocatedBytes": 320.0,
+      "beforeMilliseconds": 0.1127,
+      "afterMilliseconds": 0.0799
+    }
+  ],
+  "readsPerInvocation": 128,
+  "warmups": 4,
+  "samplesPerCase": 8,
+  "machine": {
+    "os": "Windows11Business10.0.26200 x64",
+    "cpu": "IntelCorei7-14700KF",
+    "physicalCores": 20,
+    "logicalProcessors": 28,
+    "sdk": "10.0.300-preview.0.26177.108",
+    "runtime": "10.0.13"
+  },
+  "boundary": "Native executable instruction runner; existing compiler/context initialized outside samples;128unrolled dictionary or list reads; result7 and cleanup asserted; same thread; no forcedGC;not a public whole-job or CPython performance comparison.",
+  "qualificationLimits": "Active local workstation. The five boundary regressions were also enabled in each test process, so timing can suffer concurrent-test interference. Same-class diagnostic cases are sequential. Per-thread allocation deltas have8equal320-byte samples. Not publicRunAsync scheduling/hostI/O/compile/startup/complete-job performance.",
+  "baselineProcess": {
+    "source": "2cb4a786-plus-new-test-fixtures",
+    "production": "2cb4a786",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+    "assemblySha256": "2238C09CB6C92053F8CEC45385A8FEC9D21AB031378EC73682AAC2A9EC5BFFCF",
+    "filter": "Category!=Stress&(FullyQualifiedName~DictionaryReadBoundaryTests|FullyQualifiedName~DictionaryReadDispatchProbe)",
+    "pid": 29636,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 1203,
+    "stdoutSha256": "EABBFDB61CDFE26A065BC6CFA1282BB30933D058FA76481C818CAB942101BE37",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "candidateProcess": {
+    "source": "2cb4a786-plus-native-dict-guard",
+    "production": "native-dict-guard",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+    "assemblySha256": "E119D8618702B3C9199A5406E715B78312CE71D50479F10434AA4B3EA0353C64",
+    "filter": "Category!=Stress&(FullyQualifiedName~DictionaryReadBoundaryTests|FullyQualifiedName~DictionaryReadDispatchProbe)",
+    "pid": 64260,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 1164,
+    "stdoutSha256": "1423D872282345AC306356C3ABC9AFFFE2040332C52EC19B2CA7A18F6474E450",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "baselineInterpreterSha256": "ff3c35dd4ccd150ffd3a6ede959b4653ca5a3d64b91a4003528f0ed5479f968b",
+  "candidateInterpreterSha256": "1f9a90bd4722320a3f897024be13c6f0daea5597f7390243205b99aa9f6da449",
+  "artifacts": {
+    "baseline-diagnostics.json": "7f9b044cc1c48821b169f1bc2943edc344143778963e70f9840ea7d0ed6045c2",
+    "candidate-diagnostics.json": "78c012196740587b262aa8704775596a5b9c3045468822fd3a0cab47b9564ffe",
+    "DictionaryReadDispatchProbe.cs.txt": "263fec46de04fccea38a8145bffb5710e5eda084c7d22fe77555e7ff534602a8",
+    "guard.patch.txt": "afd4c56d618cdf91ca9043523e93d38e39bf69621aef6d39276740f88a5b513e"
+  },
+  "sourcePolicy": "Ordinary GC/tiering,no forcedcollections or runtime overrides. Temporary diagnostic archived/removed. No recapture or retuning after unrelated protocol correction."
+}

@@ -802,8 +802,12 @@ internal sealed partial class LythonRuntime
                                     break;
 
                                 case ExecutableOpCode.Subscript:
-                                    if (_stack[_stack.Count - 1] is BigInteger &&
-                                        _stack[_stack.Count - 2] is PyList or PyTuple or PyBytes or PyString or PyRange)
+                                    // Check after evaluating the key: it may have added or
+                                    // withdrawn protocol keys while the receiver stayed on stack.
+                                    if ((_stack[_stack.Count - 1] is BigInteger &&
+                                         _stack[_stack.Count - 2] is PyList or PyTuple or PyBytes or PyString or PyRange) ||
+                                        (_stack[_stack.Count - 1] is PyString &&
+                                         _stack[_stack.Count - 2] is PyDict { HasProtocolKeys: false }))
                                         ExecuteObservedValueOperation(instruction);
                                     else
                                         jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);

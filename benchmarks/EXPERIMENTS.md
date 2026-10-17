@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 native dictionary-read diagnostic](results/2026-10-17-native-dictionary-dispatch/README.md)
+compares 2cb4a786 with the archived guard-only patch: allocation stays320bytes
+per128reads in all four native cases. Async dictionary median falls while its
+unchanged sync control rises20.2%; concurrent boundary tests and local timing
+leave elapsed benefit unqualified. This capture precedes the associated stored-key
+async correction and forwarder deletion; it supplies no complete-job/CPython ratio.
+Source and raw samples are preserved; temporary test source is removed, with no
+retuning or recapture after the later correctness change.
+
 The [2026-10-17 complete CSV helper snapshot](results/2026-10-17-csv-helper-fresh/README.md)
 adds the fresh compile/run boundary at efccd974:17.358ms, CPython3.13.2 14.348ms,
 spreads45.85%/29.76%. Earlier Lython a5a2fc0f measures14.818ms with48.73% spread;

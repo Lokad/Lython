@@ -238,7 +238,7 @@ internal sealed partial class LythonRuntime
     {
         var target = EvaluateLoweredExpression(subscript.Target, context);
         var index = EvaluateLoweredExpression(subscript.Index, context);
-        return ReadLoweredSubscript(target, index, subscript.Span, context);
+        return ReadSubscriptValue(target, index, subscript.Span, context);
     }
 
     private static object EvaluateLoweredSlice(LoweredSliceExpression slice, ExecutionContext context)

@@ -1,0 +1,158 @@
+[
+  {
+    "asynchronous": true,
+    "dictionary": false,
+    "reads": 128,
+    "samples": [
+      {
+        "milliseconds": 0.0691,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0748,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0743,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0764,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0662,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0653,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0659,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0706,
+        "allocated": 320
+      }
+    ]
+  },
+  {
+    "asynchronous": false,
+    "dictionary": true,
+    "reads": 128,
+    "samples": [
+      {
+        "milliseconds": 0.0691,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0697,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0695,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0771,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0705,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0702,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0688,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0685,
+        "allocated": 320
+      }
+    ]
+  },
+  {
+    "asynchronous": false,
+    "dictionary": false,
+    "reads": 128,
+    "samples": [
+      {
+        "milliseconds": 0.0578,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0604,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0649,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0615,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0677,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.061,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0629,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0622,
+        "allocated": 320
+      }
+    ]
+  },
+  {
+    "asynchronous": true,
+    "dictionary": true,
+    "reads": 128,
+    "samples": [
+      {
+        "milliseconds": 0.1124,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.0996,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.1004,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.1258,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.113,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.1236,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.1094,
+        "allocated": 320
+      },
+      {
+        "milliseconds": 0.1215,
+        "allocated": 320
+      }
+    ]
+  }
+]

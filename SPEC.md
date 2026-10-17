@@ -2034,6 +2034,13 @@ exposed, unbound and expanded call forms. Other key shapes keep the existing
 general key-protocol behavior; arbitrary asynchronous hashing is not added here.
 The evaluated receiver and default remain owned through suspension and cancellation.
 
+For builtin-string keys, `d[key]`, `d.__getitem__(key)` and
+`dict.__getitem__(d, key)` also await stored-key equality under `RunAsync`,
+including extracted methods, expanded calls and comprehensions. Receiver and key
+evaluation precede lookup; the evaluated receiver, key and lookup storage stay
+funded through suspension. A miss, including withdrawal of a matching entry
+during equality, raises `KeyError` with the original key.
+
 `str.format(...)` supports automatic and explicit positional fields, named
 fields, item and attribute traversal, and the supported format-spec
 mini-language. `str.format_map(...)` supports the corresponding mapping-based
