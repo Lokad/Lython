@@ -299,8 +299,11 @@ internal static partial class PyStringOps
     {
         var previousIsCased = false;
         var foundCased = false;
-        foreach (var rune in value.AsString().EnumerateRunes())
+        var source = value.Utf8Bytes.Span;
+        for (var offset = 0; offset < source.Length;)
         {
+            Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+            offset += consumed;
             switch (GetRuneCase(rune))
             {
                 case RuneCase.Upper:

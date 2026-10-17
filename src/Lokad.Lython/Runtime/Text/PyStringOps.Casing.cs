@@ -7,43 +7,29 @@ namespace Lokad.Lython.Runtime.Text;
 
 internal static partial class PyStringOps
 {
-    public static bool IsLower(PyString value)
+    public static bool IsLower(PyString value) => IsCase(value, RuneCase.Lower);
+
+    public static bool IsUpper(PyString value) => IsCase(value, RuneCase.Upper);
+
+    private static bool IsCase(PyString value, RuneCase expected)
     {
         var foundCased = false;
-        foreach (var rune in value.AsString().EnumerateRunes())
+        var source = value.Utf8Bytes.Span;
+        for (var offset = 0; offset < source.Length;)
         {
-            switch (GetRuneCase(rune))
+            Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+            var kind = GetRuneCase(rune);
+            if (kind != RuneCase.Uncased)
             {
-                case RuneCase.Lower:
-                    foundCased = true;
-                    break;
-                case RuneCase.Upper:
-                case RuneCase.Title:
+                if (kind != expected)
+                {
                     return false;
-                default:
-                    break;
-            }
-        }
+                }
 
-        return foundCased;
-    }
-
-    public static bool IsUpper(PyString value)
-    {
-        var foundCased = false;
-        foreach (var rune in value.AsString().EnumerateRunes())
-        {
-            switch (GetRuneCase(rune))
-            {
-                case RuneCase.Upper:
-                    foundCased = true;
-                    break;
-                case RuneCase.Lower:
-                case RuneCase.Title:
-                    return false;
-                default:
-                    break;
+                foundCased = true;
             }
+
+            offset += consumed;
         }
 
         return foundCased;
