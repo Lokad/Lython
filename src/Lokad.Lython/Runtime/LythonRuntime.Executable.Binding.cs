@@ -12,6 +12,7 @@ internal sealed partial class LythonRuntime
     private static readonly object DirectListAppend = new();
     private static readonly object DirectDictionaryGet = new();
     private static readonly object DirectStringStartsWith = new();
+    private static readonly object DirectStringReplace = new();
 
     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
     {
@@ -554,6 +555,11 @@ internal sealed partial class LythonRuntime
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringStartsWith))
             {
                 result = InvokeStringStartsWith((PyString)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+            }
+            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringReplace))
+            {
+                result = InvokeStringReplace((PyString)stack[start], stack[start + callSite.ArgumentOffset],
+                    stack[start + callSite.ArgumentOffset + 1], callSite.CallSpan, context);
             }
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectDictionaryGet))
             {

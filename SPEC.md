@@ -1338,6 +1338,12 @@ invalid values still receive the corresponding argument diagnostic.
 
 Strings must behave as Python Unicode strings, not as byte arrays.
 
+Ordinary two-positional-argument `text.replace(old, new)` executable calls use
+the same native replacement operation under `Run` and `RunAsync`, retaining the
+evaluated receiver through argument effects and suspension. Exposed methods,
+count arguments, keywords, expansion and custom receivers retain normal binding
+and result ownership.
+
 `capitalize`, `title` and `swapcase` preserve contextual final Greek sigma,
 titlecase digraphs and supported full case expansions. Capitalization title-cases
 the first scalar and lower-cases the rest; title casing uses input cased boundaries;

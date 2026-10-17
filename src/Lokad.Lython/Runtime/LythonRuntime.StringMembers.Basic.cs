@@ -35,6 +35,28 @@ internal sealed partial class LythonRuntime
         internal static PyString Lower(PyString receiver, LythonSourceSpan span, ExecutionContext context)
             => OwnMethodResult(receiver.ToLowerInvariant(), receiver, context.MemoryGovernor, span);
 
+        internal static PyString Replace(PyString receiver, object oldArgument, object newArgument, object? countArgument,
+            LythonSourceSpan span, ExecutionContext context)
+        {
+            if (!PyStringOps.TryAsString(oldArgument, out var oldValue))
+            {
+                // CPython numbers the bad argument, spelling a None value bare.
+                var oldType = oldArgument is PyNone ? "None" : RuntimeErrors.OperandTypeName(oldArgument);
+                throw new LythonRuntimeException("TypeError", $"replace() argument 1 must be str, not {oldType}", span);
+            }
+
+            if (!PyStringOps.TryAsString(newArgument, out var newValue))
+            {
+                var newType = newArgument is PyNone ? "None" : RuntimeErrors.OperandTypeName(newArgument);
+                throw new LythonRuntimeException("TypeError", $"replace() argument 2 must be str, not {newType}", span);
+            }
+
+            // Null is internal omission; an explicitly supplied Python None
+            // still reaches the existing count validation, after both strings.
+            var count = countArgument is null ? -1 : ParseStringOptionalInt(countArgument, "count", "str.replace(old, new[, count])", span, context);
+            return OwnMethodResult(receiver.Replace(oldValue, newValue, count), receiver, context.MemoryGovernor, span);
+        }
+
         private sealed class TextSemanticsMemberProvider : IStringMemberProvider
         {
             // N17: hot fixed signatures hoisted per family.
@@ -73,21 +95,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.replace(old, new[, count]) expects two string arguments and an optional integer count.", span);
                         }
 
-                        if (!PyStringOps.TryAsString(arguments[0], out var oldValue))
-                        {
-                            // CPython numbers the bad argument, spelling a None value bare.
-                            var oldType = arguments[0] is PyNone ? "None" : RuntimeErrors.OperandTypeName(arguments[0]);
-                            throw new LythonRuntimeException("TypeError", $"replace() argument 1 must be str, not {oldType}", span);
-                        }
-
-                        if (!PyStringOps.TryAsString(arguments[1], out var newValue))
-                        {
-                            var newType = arguments[1] is PyNone ? "None" : RuntimeErrors.OperandTypeName(arguments[1]);
-                            throw new LythonRuntimeException("TypeError", $"replace() argument 2 must be str, not {newType}", span);
-                        }
-
-                        var count = arguments.Length == 3 ? ParseStringOptionalInt(arguments[2], "count", "str.replace(old, new[, count])", span, context) : -1;
-                        return OwnMethodResult(text.Replace(oldValue, newValue, count),text,context.MemoryGovernor,span);
+                        return Replace(text, arguments[0], arguments[1], arguments.Length == 3 ? arguments[2] : null, span, context);
                     }, StrReplaceSignature),
                     "startswith" => BoundCallable.Create(
                         (arguments, span, context) => InvokeStringAffix(text, arguments, span, context, isStart: true, asynchronous: false).GetAwaiter().GetResult(),

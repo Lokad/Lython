@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Call ordinary two-positional-argument `str.replace` directly from executable operand storage under both execution APIs. Share validation and result ownership with exposed methods, removing immediate wrappers and argument repackaging while preserving receiver capture, dynamic dispatch, fuel, admission and asynchronous argument work.
+
 - Validate expanded string-method arguments using their existing element facts, fixing false errors for stored sequences, keyword mappings and `None` aliases. Share string and integer validation, remove duplicate checks, and retain invalid-argument diagnostic codes and locations.
 
 - Escape U+007F in JSON output when `ensure_ascii` is enabled, matching Python across module calls, encoders, dictionary keys and streamed chunks. Reuse bounded working storage for hexadecimal escapes instead of allocating a string per UTF-16 unit; preserve short escapes, Unicode, admission, cancellation and ownership.
