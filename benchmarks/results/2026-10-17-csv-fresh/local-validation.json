@@ -1,0 +1,89 @@
+{
+  "measuredRevision": "0f1cff1fd2ff945b086d19183e5bae497ef01f41",
+  "checks": [
+    {
+      "stage": "fresh-csv-delivery-full-white",
+      "passed": 2939,
+      "receipt": {
+        "source": "fresh-csv-and-plain-builtin-delivery",
+        "production": "0f1cff1f",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "E6AD70F3ADDE6996CC7E96EF07E21C63339CBD8BD3E24B31B55EAEC7DA84CA7C",
+        "filter": "Category!=Stress",
+        "pid": 46236,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 20613,
+        "stdoutSha256": "EB7767B69B971126D9267645C48BA191F0C02CB48F453E57AD7D3CD2254C5944",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "fresh-csv-delivery-stack",
+      "passed": 59,
+      "receipt": {
+        "source": "fresh-csv-original-stack",
+        "production": "0f1cff1f",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "98B242D4007A3A047CB31CE6AEA60A7C54117E543452B8D81AEE02BF937D600D",
+        "filter": "Category!=Stress&(FullyQualifiedName~StackGuardScenarioTests|FullyQualifiedName~RecursionDepthScenarioTests|FullyQualifiedName~RecursiveExceptionPropagationTests|FullyQualifiedName~FailureAttributionTests|FullyQualifiedName~CopyHookChainScenarioTests)",
+        "pid": 57428,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 9566,
+        "stdoutSha256": "3CAC106409CA951B80D7158458BA68005C47F6F4B5F95431B797267278C74E33",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "fresh-csv-delivery-public",
+      "passed": 483,
+      "receipt": {
+        "source": "plain-builtin-metadata-and-budget-checkpoint",
+        "production": "0f1cff1f",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "98B242D4007A3A047CB31CE6AEA60A7C54117E543452B8D81AEE02BF937D600D",
+        "filter": "Category!=Stress&(FullyQualifiedName~BuiltinDefinitionIsolationTests|FullyQualifiedName~BuiltinNumericTextFunctionTests|FullyQualifiedName~BuiltinObjectExceptionFunctionTests|FullyQualifiedName~BuiltinModulePolicyTests|FullyQualifiedName~BuiltinsModuleTests|FullyQualifiedName~IntegerBuiltinAccountingScenarioTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~.Json)",
+        "pid": 10540,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8384,
+        "stdoutSha256": "719E693B4284984E6FD4C03173D7C38AF945DCC8D2F7C06DC531E6B0F47D7C7F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "stage": "fresh-csv-delivery-representative",
+      "passed": 93,
+      "receipt": {
+        "source": "fresh-csv-and-plain-builtin-workloads",
+        "production": "0f1cff1f",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "98B242D4007A3A047CB31CE6AEA60A7C54117E543452B8D81AEE02BF937D600D",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests|FullyQualifiedName~RepresentativeFileRetentionTests|FullyQualifiedName~RepresentativeProtocolCancellationTests|FullyQualifiedName~CsvBatchAliasLifetimeTests)",
+        "pid": 61764,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 15081,
+        "stdoutSha256": "655B30BECE9094B04C8B80B5621D5E96CB6A5F118684F4D4A3D5116B3FE18905",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    }
+  ],
+  "frozenTracesMatched": 68,
+  "sourceAndGoldenGate": true,
+  "captureCount": 1,
+  "rounds": 7,
+  "captureSeconds": 8.399999,
+  "frozenFiles": 1954,
+  "productionFiles": 524,
+  "allFiveWorkersAndFixturesGone": true,
+  "servicesInactive": true,
+  "leaseFreeAfterCleanup": true,
+  "protectedHistorySha256": "F496A90B1D68A0B314367907D1967579230DB81BF40B6CC1D8A127325AC69E20",
+  "scope": "Local Release/ordinary/original-stack/workload gates; explicit package and platform CI qualified at the separate delivery revision. Native setup allocation evidence is separate from identical-control CSV timing."
+}

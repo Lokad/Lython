@@ -37,7 +37,7 @@ The fresh compile-run mode does not use identical-script caching as its result.
 
 `--lane warm-async` is a short diagnostic of Lython's public `RunAsync` API with
 the comparison host's completed operations. It reuses code and includes invocation
-setup, dedicated startup-thread creation, execution, output checks and prior-result
+setup, startup-worker dispatch, execution, output checks and prior-result
 cleanup. CPython executes the same ordinary warm job; no guest async syntax or
 artificial I/O delay is introduced. Initial verification uses the ordinary path;
 every async warmup/calibration/measured invocation must also match the complete
@@ -58,7 +58,9 @@ VM, enforce the complete **30-second hard limit** with a dedicated systemd servi
 using `RuntimeMaxSec=30`, `TimeoutStopSec=0` and `KillMode=control-group`.
 [run-micro-linux.sh](run-micro-linux.sh) supplies the shared VM lease and the
 core-loop manifest for loop/control cases, or the full catalog for other selected
-cases. Only the selected job is timed. It takes absolute dotnet/Python paths, the old worker DLL,
+cases. For `scripts.*` file jobs, generate the `representative` catalog and invoke
+`micro` directly under the same owned service and lease. Only the selected job is
+timed. The wrapper takes absolute dotnet/Python paths, the old worker DLL,
 a new evidence directory, the lease path and an optional case ID. The supervisor
 alone disables its tiered compilation; every worker removes that override.
 Build, test and transfer beforehand; preserve partial/failed receipts. Never
@@ -121,9 +123,11 @@ all existing eligibility checks. A local correctness/timer smoke does not qualif
 comparative timings. Old workers without file-digest support cannot be used as
 successful file-job baselines.
 
-The legacy identity phrase `no forced GC` describes the benchmark adapter: it
-does not force collections between samples. Lython's runtime exhaustion relief
-remains enabled under ordinary public limits; these file workers do not change it.
+The legacy identity phrase `no forced GC` describes the benchmark adapter's
+between-sample policy. The current governed runtime returns allowance when
+explicit ownership ends, independently of CLR collection, and forces no collections.
+Historical measurements retain the runtime and reclamation policy of their named
+revisions.
 
 Successful responses include a separate file SHA-256 alongside stdout SHA-256:
 32-bit big-endian file count, then each ordinal UTF-16-sorted path's UTF-8 length

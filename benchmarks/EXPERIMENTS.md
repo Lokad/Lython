@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 fresh CSV snapshot](results/2026-10-17-csv-fresh/README.md)
+fills compile-to-result for the complete 4,096-record file job at 0f1cff1f.
+Two identical Lython controls observed 8.114/8.133 ms, CPython 3.8777 ms,
+with 14.79%/7.15%/0.89% spread: one diagnostic, no qualified ratio.
+Independent three-size file/stdout goldens pass; 1,954 frozen files match;
+five workers/fixtures are gone and the lease is free. Separate native context
+setup allocation is 27,568 → 26,088 bytes; the CSV controls do not time that change.
+
 The [2026-10-17 replacement consolidation](results/2026-10-17-string-replacement/README.md)
 removes the duplicate bounded algorithm and per-scalar intermediates. A separate
 bounded Unicode member-call witness allocates 115,032 → 4,392 bytes; its 32 KiB

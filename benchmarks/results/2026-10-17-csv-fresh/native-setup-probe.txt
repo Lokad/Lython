@@ -1,0 +1,32 @@
+using System.Text.Json;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+
+namespace Lokad.Lython.Tests;
+
+public sealed class TemporaryBuiltinSetupAllocationProbe(ITestOutputHelper output)
+{
+    [Fact]
+    public void MeasureWarmContextConstruction()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        var host = new MockLythonHost();
+        var allocations = new List<long>();
+        for (var index = 0; index < 34; index++)
+        {
+            using (var owner = budget.CreateScope())
+            {
+                var options = new LythonRunOptions { MemoryBudget = owner };
+                var before = GC.GetAllocatedBytesForCurrentThread();
+                var context = new LythonRuntime.ExecutionContext(host, options);
+                var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+                Assert.True(context.Variables.ContainsKey("ord"));
+                Assert.True(context.Variables.ContainsKey("format"));
+                if (index >= 2) allocations.Add(allocated);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        output.WriteLine("BUILTIN_SETUP_ALLOCATIONS:" + JsonSerializer.Serialize(allocations));
+    }
+}

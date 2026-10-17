@@ -4,7 +4,8 @@
 | --- | --- | ---: | ---: | ---: | --- |
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Same JSON configuration job [AQ], warm `Run` | 16 existing paths / 181 UTF-8 input bytes | 3.309 ms | 1.695 ms | — | Short diagnostic at 4846928c; 0.9% change within spread; no improvement established |
-| Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
+| Complete CSV summary [C], warm | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
+| Same CSV job [BO], fresh compile/run | Same 4,096 records / 57,361 UTF-8 bytes | 8.114–8.133 ms | 3.8777 ms | — | Two identical Lython controls at 0f1cff1f; unqualified (14.8%/7.2% spread); startup excluded |
 | Complete text-summary file job [BF], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.118 ms | 1.2864 ms | — | Short diagnostic at c487cb70; bulk hashing; 30.5% lower median alongside 30.0% baseline spread, inconclusive |
 | In-memory JSON parse/edit/dump [BL], warm `RunAsync` | 1,024 records / 55,723 UTF-8 input bytes | 2.691 ms | 0.4439 ms | — | Short diagnostic at 35d99a88; container/prefix forwarding removed; 2.5% higher median within 8–13% spread, inconclusive |
 | Complete JSON-lines aggregation [BB], warm | 4,096 records / 110,592 UTF-8 bytes | 9.475 ms | 4.1751 ms | — | Short diagnostic at 5d5fd2e7; numeric forwarding; 6.1% higher median within 14.2% baseline spread; no benefit established |
@@ -31,7 +32,7 @@ for changes against prior Lython versions.
 
 **Ratio convention:** Lython elapsed time divided by CPython elapsed time;
 above 1 means Lython takes longer. A dash means unavailable or unqualified,
-never zero. No workload ratio is qualified here. AF and AU ranges contain the medians
+never zero. No workload ratio is qualified here. AF, AU and BO ranges contain the medians
 of two identical Lython controls, not confidence intervals. Other entries show
 one diagnostic median. The jobs show performance gaps in those runs; their
 magnitudes and changes remain uncertain as marked.
@@ -49,6 +50,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BO | 2026-10-17 UTC | 0f1cff1f; identical Lython controls; fresh compile/run of complete CSV job | [Compile-to-result boundary, independent file goldens and separate setup allocations](benchmarks/results/2026-10-17-csv-fresh/README.md) |
 | BN | 2026-10-17 UTC | b10b8e9e; shared bounded/unlimited UTF-8 replacement; both roles include copy-admission fix a03ef99e | [Separate allocation evidence and unlimited pipeline diagnostic](benchmarks/results/2026-10-17-string-replacement/README.md) |
 | BM | 2026-10-16 UTC | 2e4d0a34; ordinary cursor pulls reuse synchronous core; user/async iterator tasks forwarded directly | [Cursor dispatch, exact fuel/protocol controls and short diagnostic](benchmarks/results/2026-10-16-cursor-sync-dispatch/README.md) |
 | BL | 2026-10-16 UTC | 35d99a88; direct container forwarding and redundant prefix decoder removed; excludes later integer-admission correction | [JSON deletions, exact guards and short diagnostic](benchmarks/results/2026-10-16-json-container-forwarding/README.md) |
@@ -95,7 +97,7 @@ remain available behind the detailed diagnostic history.
 
 ## Execution, compilation and startup are separate
 
-Except for the explicitly marked fresh compile/run rows AF, AU, AZ and P, the leading table uses
+Except for the explicitly marked fresh compile/run rows AF, AU, BO and P, the leading table uses
 **warm execution**: both engines reuse compiled code,
 create fresh invocation state, execute the complete module, capture/project
 output and perform the cheap golden check inside the worker timer. Compilation,
@@ -111,10 +113,10 @@ CPython has no equivalent in-process containment. These are application costs
 under the two ordinary execution contracts; neither a bare arithmetic test nor
 a claim that the contracts provide identical protection.
 
-| Boundary | Historical observation at Q | Status |
+| Boundary | Observation | Status |
 | --- | --- | --- |
 | Warm invocation | See workload table above | No qualified workload ratios |
-| Compile and run | Compile source, then execute fresh state in persistent workers | Mostly incomplete after idle gates; [retained results](benchmarks/results/2026-10-09-quick/compile-run.md) |
+| Compile and run | Compile source, then execute fresh state in persistent workers | AF/AU/BO/P cover targeted configuration/JSON/CSV/search jobs above; broader historical Q collection remains incomplete ([retained results](benchmarks/results/2026-10-09-quick/compile-run.md)) |
 | Compilation only | Lython engine compilation versus CPython `compile()` | Mostly incomplete after idle gates; [retained results](benchmarks/results/2026-10-09-quick/compile.md) |
 | Fresh-process empty control | Lython 170.361–175.524 ms; CPython 29.628–29.947 ms | Startup control; [retained results](benchmarks/results/2026-10-09-quick/fresh-process.md) |
 
@@ -125,6 +127,11 @@ separation from startup; no workload ratio was published. Compilation samples
 and startup costs must not be folded into the warm table.
 
 ## Improvements against earlier Lython revisions
+
+Fixed builtin setup at 9e9135bb → 0f1cff1f has separate
+[native allocation evidence](benchmarks/results/2026-10-17-csv-fresh/README.md):
+27,568 → 26,088 bytes per warm context construction across 32 fresh owners.
+The CSV snapshot uses identical Lython controls; it does not measure a speedup.
 
 General-method receiver binding at 90be9683 has separate
 [allocation-only evidence](benchmarks/results/2026-10-16-general-method-binding/README.md):
