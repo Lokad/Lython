@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Complete native truth testing without entering an async state machine. Reuse the existing truth kernel and keep guest slot binding/calls behind the unchanged awaited body, preserving effects, errors, cancellation, admission refusal and retained ownership.
+
 - Invoke one-positional-argument native text/bytes `float` calls from existing operand storage. Reuse the admitted parser and managed call guards, avoiding general argument packaging while preserving expanded/keyword calls, aliases/shadowing, guest protocols, cancellation and terminal refusal.
 
 - Extend direct exact-string `startswith` calls to positional start/end bounds. Borrow existing operand storage through shared bounds validation and awaited guest index hooks, avoiding immediate bound-method and argument packaging while preserving tuple order, captured receivers, cancellation, terminal admission failure and ownership.

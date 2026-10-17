@@ -1,0 +1,271 @@
+{
+  "recipeSha256": "889b863e5a2f8d36e0809644c52aa343a91b6042556b4ec0ba1010d7e63af908",
+  "comparisons": [
+    {
+      "asynchronous": false,
+      "guest": true,
+      "callsPerSample": 128,
+      "beforeMedianMs": 0.12105,
+      "afterMedianMs": 0.1225,
+      "beforeSpreadPercent": 21.148285832300704,
+      "afterSpreadPercent": 45.30612244897959,
+      "beforeAllocated": 81416.0,
+      "afterAllocated": 81416.0,
+      "beforeSamples": {
+        "asynchronous": false,
+        "guest": true,
+        "callsPerSample": 128,
+        "samples": [
+          81416,
+          81416,
+          81416,
+          81416,
+          81416,
+          81416,
+          81416,
+          81416
+        ],
+        "ticks": [
+          1156,
+          1222,
+          1243,
+          1325,
+          1188,
+          1204,
+          1217,
+          1069
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": false,
+        "guest": true,
+        "callsPerSample": 128,
+        "samples": [
+          81416,
+          81416,
+          81416,
+          81416,
+          81416,
+          81416,
+          81416,
+          81416
+        ],
+        "ticks": [
+          1308,
+          1315,
+          1085,
+          1187,
+          1640,
+          1236,
+          1164,
+          1214
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": true,
+      "guest": false,
+      "callsPerSample": 4096,
+      "beforeMedianMs": 0.4489,
+      "afterMedianMs": 0.41409999999999997,
+      "beforeSpreadPercent": 2.740031187346848,
+      "afterSpreadPercent": 19.294856314899782,
+      "beforeAllocated": 680.0,
+      "afterAllocated": 680.0,
+      "beforeSamples": {
+        "asynchronous": true,
+        "guest": false,
+        "callsPerSample": 4096,
+        "samples": [
+          680,
+          680,
+          680,
+          680,
+          680,
+          680,
+          680,
+          680
+        ],
+        "ticks": [
+          4529,
+          4500,
+          4480,
+          4501,
+          4447,
+          4406,
+          4436,
+          4498
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": true,
+        "guest": false,
+        "callsPerSample": 4096,
+        "samples": [
+          680,
+          680,
+          680,
+          680,
+          680,
+          680,
+          680,
+          680
+        ],
+        "ticks": [
+          4819,
+          4170,
+          4194,
+          4177,
+          4094,
+          4058,
+          4020,
+          4112
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": false,
+      "guest": false,
+      "callsPerSample": 4096,
+      "beforeMedianMs": 0.16244999999999998,
+      "afterMedianMs": 0.16365,
+      "beforeSpreadPercent": 6.894429055093874,
+      "afterSpreadPercent": 17.048579285059578,
+      "beforeAllocated": 520.0,
+      "afterAllocated": 520.0,
+      "beforeSamples": {
+        "asynchronous": false,
+        "guest": false,
+        "callsPerSample": 4096,
+        "samples": [
+          520,
+          520,
+          520,
+          520,
+          520,
+          520,
+          520,
+          520
+        ],
+        "ticks": [
+          1636,
+          1630,
+          1690,
+          1619,
+          1578,
+          1590,
+          1654,
+          1609
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": false,
+        "guest": false,
+        "callsPerSample": 4096,
+        "samples": [
+          520,
+          520,
+          520,
+          520,
+          520,
+          520,
+          520,
+          520
+        ],
+        "ticks": [
+          1652,
+          1707,
+          1801,
+          1639,
+          1596,
+          1617,
+          1522,
+          1634
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": true,
+      "guest": true,
+      "callsPerSample": 128,
+      "beforeMedianMs": 0.20285,
+      "afterMedianMs": 0.20085,
+      "beforeSpreadPercent": 16.120285925560758,
+      "afterSpreadPercent": 23.40054767239233,
+      "beforeAllocated": 81576.0,
+      "afterAllocated": 81576.0,
+      "beforeSamples": {
+        "asynchronous": true,
+        "guest": true,
+        "callsPerSample": 128,
+        "samples": [
+          81576,
+          81576,
+          81576,
+          81576,
+          81576,
+          81576,
+          81576,
+          81576
+        ],
+        "ticks": [
+          1846,
+          2042,
+          2156,
+          2173,
+          2015,
+          1898,
+          1993,
+          2172
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": true,
+        "guest": true,
+        "callsPerSample": 128,
+        "samples": [
+          81576,
+          81576,
+          81576,
+          81576,
+          81576,
+          81576,
+          81576,
+          81576
+        ],
+        "ticks": [
+          1975,
+          2343,
+          1873,
+          2052,
+          2042,
+          1883,
+          1953,
+          2169
+        ],
+        "frequency": 10000000
+      }
+    }
+  ],
+  "status": "Single short local diagnostic; unqualified timing; allocation unchanged; no CPython speed claim.",
+  "dateUTC": "2026-10-17",
+  "machine": "Intel Core i7-14700KF; Windows10.0.26200 x64; Release net10.0",
+  "baselineRevision": "9133e9ed900385b2656680e480da8cda4b26813d",
+  "candidate": "One-file native-entry/unchanged-guest-body patch on9133e9ed measured before commit; not an arbitrary later HEAD.",
+  "candidateSourceSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs": "06941adbf02d241faa93783807966c39a76b1fa73bd1cfbb5364acfc07865bf0"
+  },
+  "boundary": "Warm compiled return all(values); compilation/context/inputs/guest construction outside counter; 4096 native or128 guest truth values; no actual I/O;4 warmups/8 samples; current-thread bytes and Stopwatch ticks.",
+  "guestBody": {
+    "unchanged": true,
+    "bodySha256": "e5d2ca23842eb163a4006fa5f6d26bd46343098ee955712687a9c120be85ba10",
+    "file": "src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs"
+  }
+}

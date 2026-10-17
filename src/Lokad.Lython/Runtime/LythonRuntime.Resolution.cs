@@ -216,13 +216,13 @@ internal sealed partial class LythonRuntime
                     .Invoke([], span, context), span);
     }
 
-    internal static async ValueTask<bool> IsTruthyAsync(object value, ExecutionContext context, LythonSourceSpan span)
-    {
-        if (value is not PyInstance instance)
-        {
-            return PyTruthiness.IsTruthy(value);
-        }
+    internal static ValueTask<bool> IsTruthyAsync(object value, ExecutionContext context, LythonSourceSpan span)
+        => value is PyInstance instance
+            ? IsInstanceTruthyAsync(instance, context, span)
+            : new(PyTruthiness.IsTruthy(value));
 
+    private static async ValueTask<bool> IsInstanceTruthyAsync(PyInstance instance, ExecutionContext context, LythonSourceSpan span)
+    {
         var protocol = ResolveTruthinessSlot(instance, out var rawMember);
         if (protocol == TruthinessProtocol.Default)
         {
