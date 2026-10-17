@@ -1,0 +1,11 @@
+Running as unit: lython-csv463-micro-20261017.service
+baseline: 8432.080 us/job, IQR/median 5.9 %
+candidate: 8581.446 us/job, IQR/median 4.4 %
+CPython: 3718.242 us/job, IQR/median 0.9 %
+Diagnostic microbenchmark completed; no qualified multiplier or confidence interval. Receipt: /home/lokad/lython-bench-checks/csv-checkpoint-463b7a7a-20261017/micro.json
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 8.602s
+CPU time consumed: 8.902s
+Memory peak: 2.1M
+Memory swap peak: 0B

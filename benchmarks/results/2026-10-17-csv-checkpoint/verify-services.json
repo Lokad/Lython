@@ -1,0 +1,16 @@
+[
+  {
+    "role": "baseline",
+    "unit": "lython-csv463-verify-baseline-20261017",
+    "exitCode": 0,
+    "elapsedSeconds": 1.7261975,
+    "observedAt": "2026-10-17T16:52:07.9975592+00:00"
+  },
+  {
+    "role": "candidate",
+    "unit": "lython-csv463-verify-candidate-20261017",
+    "exitCode": 0,
+    "elapsedSeconds": 1.5650165,
+    "observedAt": "2026-10-17T16:52:09.5726779+00:00"
+  }
+]

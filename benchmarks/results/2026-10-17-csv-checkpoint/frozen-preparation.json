@@ -1,0 +1,85 @@
+{
+  "observedAt": "2026-10-17T16:50:44.735716+00:00",
+  "roles": {
+    "baseline": {
+      "runtimeRevision": "a35ee62ceb712694e8b0d3fb79f85c4315628f7e",
+      "runtimeSha256": "9c9511c78e9fc694b4d57ac97cd8c78852f5cda8d1a599264058da37733f61cc",
+      "workerSha256": "89666c047025f6e5d0a596690832e0cfab144aa9893b3f86569d9124071ac419",
+      "files": 54
+    },
+    "candidate": {
+      "runtimeRevision": "463b7a7a847234396c695e2a214fbea05ab3300e",
+      "runtimeSha256": "642a18f2f61257423d728f397587f2f438d77f79d87631f3267252a64d2010be",
+      "workerSha256": "89666c047025f6e5d0a596690832e0cfab144aa9893b3f86569d9124071ac419",
+      "files": 54
+    }
+  },
+  "cases": [
+    {
+      "id": "scripts.csv-summary-helpers.empty",
+      "keys": [
+        "id",
+        "family",
+        "category",
+        "scale",
+        "size",
+        "source",
+        "fixtureJson",
+        "expectedOutput",
+        "sourceUtf8Bytes",
+        "expectedOutputUtf8Bytes",
+        "fixtureTextUtf8Bytes",
+        "fixtureTextCodePoints",
+        "sourceSha256",
+        "fixtureSha256",
+        "expectedOutputSha256",
+        "expectedFilesSha256"
+      ]
+    },
+    {
+      "id": "scripts.csv-summary-helpers.small",
+      "keys": [
+        "id",
+        "family",
+        "category",
+        "scale",
+        "size",
+        "source",
+        "fixtureJson",
+        "expectedOutput",
+        "sourceUtf8Bytes",
+        "expectedOutputUtf8Bytes",
+        "fixtureTextUtf8Bytes",
+        "fixtureTextCodePoints",
+        "sourceSha256",
+        "fixtureSha256",
+        "expectedOutputSha256",
+        "expectedFilesSha256"
+      ]
+    },
+    {
+      "id": "scripts.csv-summary-helpers.large",
+      "keys": [
+        "id",
+        "family",
+        "category",
+        "scale",
+        "size",
+        "source",
+        "fixtureJson",
+        "expectedOutput",
+        "sourceUtf8Bytes",
+        "expectedOutputUtf8Bytes",
+        "fixtureTextUtf8Bytes",
+        "fixtureTextCodePoints",
+        "sourceSha256",
+        "fixtureSha256",
+        "expectedOutputSha256",
+        "expectedFilesSha256"
+      ]
+    }
+  ],
+  "catalogSha256": "d67da764d3eea7ced5e030528019425d9bcfdff9442be421f8493e5d11c9dc49",
+  "pythonWorkerSha256": "887ece4480977fe10bd74862a510cc540a8ecfbd41229abcc291db7b9c32c639",
+  "status": "Frozen workers/hash/catalog preparation; timing not started."
+}

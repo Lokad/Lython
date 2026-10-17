@@ -4,7 +4,7 @@
 | --- | --- | ---: | ---: | ---: | --- |
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Complete CSV summary [BP], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 7.503 ms | 3.849 ms | — | Short diagnostic at27a61681; nominal8.3% below prior Lython,7.5%/6.4% spreads; inconclusive |
-| Complete CSV summary with annotated helper [BS], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 17.358 ms | 14.348 ms | — | Local Windows diagnostic at efccd974; 45.8%/29.8% spreads, inconclusive |
+| Complete CSV summary with annotated helper [BU], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 8.581 ms | 3.718 ms | — | Dedicated-VM diagnostic at 463b7a7a; nominal 2.308×, unqualified; 4.36%/0.85% spreads |
 | Complete CSV helper with annotation-only local [BT], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 19.745 ms | 17.014 ms | — | Local Windows, 3f799746 + one-line guard deletion; 48.9%/13.5% spreads, inconclusive |
 | Complete text-summary file job [BR], fresh compile/run | 3,072 lines / 35,840 UTF-8 bytes | 14.994–16.539 ms | 11.188 ms | — | Local Windows diagnostic at 877f20e2; identical controls; 49%/107%/39% spreads, inconclusive |
 | Complete JSON-lines aggregation [AU], fresh compile/run | 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
@@ -30,14 +30,21 @@ magnitudes and changes remain uncertain as marked.
 
 ## Which code and machine were measured?
 
-The quiet-VM snapshots (all leading rows except BQ/BR/BS/BT, and historical Q/L campaigns) used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
+The VM snapshots (all leading rows except BQ/BR/BT, and historical Q/L campaigns) used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
 x86_64, four AMD EPYC 9V45 vCPUs, one thread per core, 16 GiB RAM, no swap.
-Lython was a clean Release build using **.NET SDK 10.0.401 / runtime 10.0.12**.
+Earlier VM snapshots used clean Release builds with **.NET SDK 10.0.401 / runtime 10.0.12**.
 The primary external reference was **CPython 3.13.16**, built with GCC 13.3,
 PGO/LTO, ordinary GIL and cyclic GC, without debug mode or JIT, launched with
 `-I -S`. Workers kept ordinary GC/tiering and public Lython limits; optional
 instruction fuel was unset. Both engines ran sequentially on that machine.
 The linked receipts identify binaries, inputs, toolchains and sampling policies.
+
+BU executes frozen Release package binaries built with SDK
+10.0.300-preview.0.26177.108 on the VM's .NET 10.0.12 runtime. Its identical
+adapter was built at a35ee62c; only the packaged Lython DLL differs between
+roles. It observed low VM load under the shared lease, without milestone noise
+qualification. The older local Windows measurement of this job, BS, remains
+below; its timing cannot establish a change from BU.
 
 BQ, BR, BS and BT use the active Windows 11 development workstation: Intel Core i7-14700KF,
 28 logical processors, .NET SDK 10.0.300-preview.0.26177.108 / runtime 10.0.13
@@ -51,6 +58,7 @@ to infer a change from the quiet-VM measurements.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BU | 2026-10-17 UTC | 463b7a7a; complete CSV helper job; dedicated VM fresh compile/run | [CPython comparison, frozen package/build identities, earlier Lython and cleanup](benchmarks/results/2026-10-17-csv-checkpoint/README.md) |
 | BS | 2026-10-17 UTC | efccd974; complete CSV helper job; local Windows fresh compile/run | [Exact package roles, full outputs, earlier Lython and uncertainty](benchmarks/results/2026-10-17-csv-helper-fresh/README.md) |
 | BR | 2026-10-17 UTC | 877f20e2; identical Lython controls; local Windows fresh compile/run of complete text job | [Compile-to-result boundary, exact goldens, identities and uncertainty](benchmarks/results/2026-10-17-text-fresh/README.md) |
 | BQ | 2026-10-17 UTC | c9990b38; bounded short escaped JSON decoding; local Windows warm execution | [Earlier Lython, CPython, native allocation and uncertainty](benchmarks/results/2026-10-17-escaped-json-strings/README.md) |
@@ -102,9 +110,10 @@ remain available behind the detailed diagnostic history.
 
 ## Execution, compilation and startup are separate
 
-Except for the explicitly marked fresh compile/run rows AF, AU, BO and P, the leading table uses
-**warm execution**: both engines reuse compiled code,
-create fresh invocation state, execute the complete module, capture/project
+Rows marked **fresh compile/run** compile and invoke once per job in a warm
+worker, including complete file staging and output checks where applicable.
+Rows marked **warm** reuse compiled code: both engines create fresh invocation
+state, execute the complete module, capture/project
 output and perform the cheap golden check inside the worker timer. Compilation,
 worker launch, transport and full output hashing are outside it. For complete
 file-backed jobs, file reset/staging and exact output-file byte checks are
@@ -121,7 +130,7 @@ a claim that the contracts provide identical protection.
 | Boundary | Observation | Status |
 | --- | --- | --- |
 | Warm invocation | See workload table above | No qualified workload ratios |
-| Compile and run | Compile source, then execute fresh state in persistent workers | AF/AU/BO/P cover targeted configuration/JSON/CSV/search jobs above; broader historical Q collection remains incomplete ([retained results](benchmarks/results/2026-10-09-quick/compile-run.md)) |
+| Compile and run | Compile source, then execute fresh state in persistent workers | AF/AU/BP/BR/BT/BU/P cover targeted configuration/JSON/CSV/text/search jobs above; broader historical Q collection remains incomplete ([retained results](benchmarks/results/2026-10-09-quick/compile-run.md)) |
 | Compilation only | Lython engine compilation versus CPython `compile()` | Mostly incomplete after idle gates; [retained results](benchmarks/results/2026-10-09-quick/compile.md) |
 | Fresh-process empty control | Lython 170.361–175.524 ms; CPython 29.628–29.947 ms | Startup control; [retained results](benchmarks/results/2026-10-09-quick/fresh-process.md) |
 
@@ -138,6 +147,7 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Complete CSV summary with annotated helper [BS], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 17.358 ms | 14.348 ms | — | Historical local Windows diagnostic at efccd974; 45.8%/29.8% spreads, inconclusive |
 | Same JSON configuration job [AQ], warm `Run` | 16 existing paths / 181 UTF-8 input bytes | 3.309 ms | 1.695 ms | — | Short diagnostic at 4846928c; 0.9% change within spread; no improvement established |
 | Complete CSV summary [C], warm | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
 | Complete text-summary file job [BF], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.118 ms | 1.2864 ms | — | Short diagnostic at c487cb70; bulk hashing; 30.5% lower median alongside 30.0% baseline spread, inconclusive |
@@ -153,6 +163,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 | Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
 
 ## Improvements against earlier Lython revisions
+
+The complete CSV helper checkpoint
+[BU](benchmarks/results/2026-10-17-csv-checkpoint/README.md) separately measures
+a35ee62c → 463b7a7a: 8.432 → 8.581 ms, with 5.86%/4.36% spreads. The 1.77%
+median difference establishes no improvement or regression. It does not isolate
+the intervening byte-truth change, which the CSV script does not exercise.
 
 The annotation-only CSV helper [BT](benchmarks/results/2026-10-17-annotation-only-locals/README.md)
 compares 3f799746 with its one-line fallback-guard deletion: 21.677 → 19.745 ms,

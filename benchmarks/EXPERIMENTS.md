@@ -953,6 +953,8 @@ preserve the distinct CPython and earlier-Lython comparisons.
 
 ## Diagnostic comparisons by revision
 
+- [Complete CSV helper checkpoint](results/2026-10-17-csv-checkpoint/README.md): exact Release runtime 463b7a7a on the dedicated VM, fresh compile/run. Lython 8.581 ms versus CPython 3.13.16 at 3.718 ms, nominally 2.308× in one unqualified diagnostic. Earlier Lython at 8.432 ms is a separate control; the 1.77% median difference is within observed spread. Complete stdout/file checks and cleanup pass; no byte-kernel attribution or repeated capture.
+
 - [Ordinary function operand transport](results/2026-10-16-ordinary-function-transport/README.md): keyword/variadic Python calls consume existing operands through the shared binder, removing temporary transport and the async preparation closure. Mutable defaults and actual protocol suspension keep invocation-owned slots. Sixteen frozen guard/effect matrices match. One unchanged keyword loop has a 1.8% lower median within 13.3% baseline spread; inconclusive, no speedup established.
 
 - [Direct ordinary builtin len](results/2026-10-16-direct-length-call/README.md): existing operand storage bypasses pooled transport and a copied parameter array, sharing the string-entry guard. One existing constructed-text strip/length loop has a 26.4% lower median with 18.8% baseline spread; noisy and unqualified. Seven CPython controls, frozen guards, suspended input owners and terminal refusal pass. No timing repeat or complete-file-job claim.

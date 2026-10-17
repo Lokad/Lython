@@ -1,0 +1,3 @@
+# Keep raw receipt bytes and their recorded hashes identical on every platform.
+*.json -text whitespace=cr-at-eol
+*.log -text whitespace=cr-at-eol

@@ -1,0 +1,78 @@
+{
+  "utc": "2026-10-17T16:56:52.200112+00:00",
+  "host": "lython-bench",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "osRelease": {
+    "PRETTY_NAME": "\"Ubuntu 24.04.4 LTS\"",
+    "NAME": "\"Ubuntu\"",
+    "VERSION_ID": "\"24.04\"",
+    "VERSION": "\"24.04.4 LTS (Noble Numbat)\"",
+    "VERSION_CODENAME": "noble",
+    "ID": "ubuntu",
+    "ID_LIKE": "debian",
+    "HOME_URL": "\"https://www.ubuntu.com/\"",
+    "SUPPORT_URL": "\"https://help.ubuntu.com/\"",
+    "BUG_REPORT_URL": "\"https://bugs.launchpad.net/ubuntu/\"",
+    "PRIVACY_POLICY_URL": "\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"",
+    "UBUNTU_CODENAME": "noble",
+    "LOGO": "ubuntu-logo"
+  },
+  "cpuModel": "AMD EPYC 9V45 96-Core Processor",
+  "cpuCount": 4,
+  "memory": {
+    "MemTotal": "16373452 kB",
+    "SwapTotal": "0 kB"
+  },
+  "workers": [
+    {
+      "receipt": "baseline-verify.json",
+      "role": "lython",
+      "pid": 2430317,
+      "alive": false,
+      "fixtureExists": false
+    },
+    {
+      "receipt": "baseline-verify.json",
+      "role": "python",
+      "pid": 2430338,
+      "alive": false,
+      "fixtureExists": false
+    },
+    {
+      "receipt": "candidate-verify.json",
+      "role": "lython",
+      "pid": 2430443,
+      "alive": false,
+      "fixtureExists": false
+    },
+    {
+      "receipt": "candidate-verify.json",
+      "role": "python",
+      "pid": 2430463,
+      "alive": false,
+      "fixtureExists": false
+    },
+    {
+      "receipt": "micro.json",
+      "role": "baseline",
+      "pid": 2431098,
+      "alive": false,
+      "fixtureExists": false
+    },
+    {
+      "receipt": "micro.json",
+      "role": "candidate",
+      "pid": 2431119,
+      "alive": false,
+      "fixtureExists": false
+    },
+    {
+      "receipt": "micro.json",
+      "role": "CPython",
+      "pid": 2431134,
+      "alive": false,
+      "fixtureExists": false
+    }
+  ],
+  "leaseReusable": true
+}

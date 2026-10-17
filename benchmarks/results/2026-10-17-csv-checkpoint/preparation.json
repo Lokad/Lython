@@ -1,0 +1,24 @@
+{
+  "root": "/home/lokad/lython-bench-checks/csv-checkpoint-463b7a7a-20261017",
+  "observedAt": "2026-10-17T16:48:17.221382+00:00",
+  "lease": "/home/lokad/lython-bench-checks/comparison-vm.lock",
+  "leaseAvailableAtPreflight": true,
+  "identities": {
+    "dotnet": {
+      "path": "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+      "sha256": "01d89e0a0191052bfea616cd4ce624c8faf13b05bbddf7f64499c23e2a9d9269"
+    },
+    "python": {
+      "path": "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+      "sha256": "673525f3e1ac992831891979187e259c06bbd5e331ab50c0bb697f274ecb0f2a"
+    }
+  },
+  "cpus": 4,
+  "load": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "sudoNoninteractive": true,
+  "status": "Preparation only; no timed capture."
+}
