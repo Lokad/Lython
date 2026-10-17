@@ -1,0 +1,81 @@
+using System.Text.Json;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary source-frozen diagnostic; remove before delivery qualification.
+public sealed class EscapedJsonAllocationProbe(ITestOutputHelper output)
+{
+    [Theory]
+    [InlineData(false, "short")]
+    [InlineData(true, "short")]
+    [InlineData(false, "plain")]
+    [InlineData(true, "plain")]
+    [InlineData(false, "large")]
+    [InlineData(true, "large")]
+    public async Task MeasureNativeStringDecode(bool asynchronous, string kind)
+    {
+        var document = kind == "short" ? "\"a\\u03bb\\ud83d\\ude00\"" : kind == "plain" ? "\"aλ😀\"" :
+            "\"" + string.Concat(Enumerable.Repeat("\\u03bb\\ud83d\\ude00", 128)) + "\"";
+        var expected = kind == "large" ? string.Concat(Enumerable.Repeat("λ😀", 128)) : "aλ😀";
+        var expectedBytes = System.Text.Encoding.UTF8.GetByteCount(expected);
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var callable = EscapedJsonStorageTests.Load(context);
+        var source = PyString.FromString(document, context.MemoryGovernor, null);
+        var samples = new List<long>();
+        var checksum = 0;
+        PyString? result = null;
+        for (var sample = -4; sample < 8; sample++)
+        {
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            for (var call = 0; call < 128; call++)
+            {
+                var pending = EscapedJsonStorageTests.Invoke(callable, source, context, asynchronous);
+                if (!pending.IsCompleted) throw new Exception("Native string conversion must complete inline.");
+                result = (PyString)await pending;
+                checksum += result.Utf8Bytes.Length;
+            }
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            if (sample >= 0) samples.Add(allocated);
+        }
+        Assert.Equal(expected, result!.AsString());
+        Assert.Equal(12 * 128 * expectedBytes, checksum);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        output.WriteLine("JSON_ESCAPED_ALLOCATION:" + JsonSerializer.Serialize(new { kind, asynchronous, callsPerSample = 128, samples, checksum }));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CaptureLegacyErrors(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var callable = EscapedJsonStorageTests.Load(context);
+        var observations = new List<object>();
+        foreach (var bytes in new[] { "225C754438303022", "225C754443303022", "225C75443830307822", "225C7531325A3422", "22615C6EFF22" })
+        {
+            var source = PyString.FromUtf8(Convert.FromHexString(bytes), context.MemoryGovernor);
+            var error = await Record.ExceptionAsync(async () => await EscapedJsonStorageTests.Invoke(callable, source, context, asynchronous));
+            Assert.NotNull(error);
+            observations.Add(new { bytes, type = error.GetType().Name, error.Message,
+                pythonType = (error as LythonRuntimeException)?.ExceptionType, span = (error as LythonRuntimeException)?.Span });
+            Assert.Null(context.MemoryGovernor.AdmissionFailure);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Null(context.CurrentExecutableFrame);
+            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        }
+        output.WriteLine("JSON_ESCAPED_ERRORS:" + JsonSerializer.Serialize(new { asynchronous, observations }));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+}

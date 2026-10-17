@@ -1,0 +1,204 @@
+{
+  "baseline": "928066890e6199c64d8a44733116fe244ff342d1",
+  "candidate": "c9990b3850d20dca78d3780022769c28106d23ca",
+  "boundary": "Direct native json.loads callable; funded input/context/import/callable setup outside counter;128calls/sample,4warmups and8measured samples; no GC requests. All operations complete inline under both APIs; results consumed by UTF8 length then checked outside counter.",
+  "before": [
+    {
+      "kind": "large",
+      "asynchronous": false,
+      "callsPerSample": 128,
+      "samples": [
+        275456,
+        275456,
+        275456,
+        275456,
+        275456,
+        275456,
+        275456,
+        275456
+      ],
+      "checksum": 1179648
+    },
+    {
+      "kind": "large",
+      "asynchronous": true,
+      "callsPerSample": 128,
+      "samples": [
+        275456,
+        275456,
+        275456,
+        275456,
+        275456,
+        275456,
+        275456,
+        275456
+      ],
+      "checksum": 1179648
+    },
+    {
+      "kind": "plain",
+      "asynchronous": false,
+      "callsPerSample": 128,
+      "samples": [
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800
+      ],
+      "checksum": 10752
+    },
+    {
+      "kind": "plain",
+      "asynchronous": true,
+      "callsPerSample": 128,
+      "samples": [
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800
+      ],
+      "checksum": 10752
+    },
+    {
+      "kind": "short",
+      "asynchronous": false,
+      "callsPerSample": 128,
+      "samples": [
+        80896,
+        80896,
+        80896,
+        80896,
+        80896,
+        80896,
+        80896,
+        80896
+      ],
+      "checksum": 10752
+    },
+    {
+      "kind": "short",
+      "asynchronous": true,
+      "callsPerSample": 128,
+      "samples": [
+        80896,
+        80896,
+        80896,
+        80896,
+        80896,
+        80896,
+        80896,
+        80896
+      ],
+      "checksum": 10752
+    }
+  ],
+  "after": [
+    {
+      "kind": "large",
+      "asynchronous": false,
+      "callsPerSample": 128,
+      "samples": [
+        275456,
+        275456,
+        275456,
+        275456,
+        275456,
+        275456,
+        275456,
+        275456
+      ],
+      "checksum": 1179648
+    },
+    {
+      "kind": "large",
+      "asynchronous": true,
+      "callsPerSample": 128,
+      "samples": [
+        275456,
+        275456,
+        275456,
+        275456,
+        275456,
+        275456,
+        275456,
+        275456
+      ],
+      "checksum": 1179648
+    },
+    {
+      "kind": "plain",
+      "asynchronous": false,
+      "callsPerSample": 128,
+      "samples": [
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800
+      ],
+      "checksum": 10752
+    },
+    {
+      "kind": "plain",
+      "asynchronous": true,
+      "callsPerSample": 128,
+      "samples": [
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800
+      ],
+      "checksum": 10752
+    },
+    {
+      "kind": "short",
+      "asynchronous": false,
+      "callsPerSample": 128,
+      "samples": [
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800
+      ],
+      "checksum": 10752
+    },
+    {
+      "kind": "short",
+      "asynchronous": true,
+      "callsPerSample": 128,
+      "samples": [
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800,
+        76800
+      ],
+      "checksum": 10752
+    }
+  ],
+  "legacyErrorsExact": true,
+  "fourJsonFuelTracesExact": true,
+  "limitation": "Managed allocation totals only; no inference about RSS, latency, throughput or a CPython ratio."
+}

@@ -7,7 +7,8 @@
 | Complete CSV summary [C], warm | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
 | Complete CSV summary [BP], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 7.503 ms | 3.849 ms | — | Short diagnostic at27a61681; nominal8.3% below prior Lython,7.5%/6.4% spreads; inconclusive |
 | Complete text-summary file job [BF], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.118 ms | 1.2864 ms | — | Short diagnostic at c487cb70; bulk hashing; 30.5% lower median alongside 30.0% baseline spread, inconclusive |
-| In-memory JSON parse/edit/dump [BL], warm `RunAsync` | 1,024 records / 55,723 UTF-8 input bytes | 2.691 ms | 0.4439 ms | — | Short diagnostic at 35d99a88; container/prefix forwarding removed; 2.5% higher median within 8–13% spread, inconclusive |
+| In-memory JSON parse/edit/dump [BQ], warm `Run` | 1,024 records / 55,723 UTF-8 input bytes | 3.503 ms | 1.016 ms | — | Local Windows diagnostic at c9990b38; 4.6% higher median than earlier Lython; no elapsed benefit established |
+| Same JSON transform [BL], warm `RunAsync` | 1,024 records / 55,723 UTF-8 input bytes | 2.691 ms | 0.4439 ms | — | Quiet-VM diagnostic at 35d99a88; container/prefix forwarding removed; 2.5% higher median within 8–13% spread, inconclusive |
 | Complete JSON-lines aggregation [BB], warm | 4,096 records / 110,592 UTF-8 bytes | 9.475 ms | 4.1751 ms | — | Short diagnostic at 5d5fd2e7; numeric forwarding; 6.1% higher median within 14.2% baseline spread; no benefit established |
 | Same JSON aggregation [AU], fresh compile/run | Same 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
@@ -39,7 +40,7 @@ magnitudes and changes remain uncertain as marked.
 
 ## Which code and machine were measured?
 
-The leading rows and historical Q/L campaigns used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
+The leading rows except BQ, and historical Q/L campaigns, used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
 x86_64, four AMD EPYC 9V45 vCPUs, one thread per core, 16 GiB RAM, no swap.
 Lython was a clean Release build using **.NET SDK 10.0.401 / runtime 10.0.12**.
 The primary external reference was **CPython 3.13.16**, built with GCC 13.3,
@@ -48,8 +49,14 @@ PGO/LTO, ordinary GIL and cyclic GC, without debug mode or JIT, launched with
 instruction fuel was unset. Both engines ran sequentially on that machine.
 The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
+BQ uses the active Windows 11 development workstation: Intel Core i7-14700KF,
+28 logical processors, .NET SDK 10.0.300-preview.0.26177.108 / runtime 10.0.13
+and CPython 3.13.2. It is an unqualified local diagnostic and cannot be directly
+compared with quiet-VM timings. It establishes an allocation reduction only.
+
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BQ | 2026-10-17 UTC | c9990b38; bounded short escaped JSON decoding; local Windows warm execution | [Earlier Lython, CPython, native allocation and uncertainty](benchmarks/results/2026-10-17-escaped-json-strings/README.md) |
 | BP | 2026-10-17 UTC | 27a61681; bounded UTF-8 decimal parsing and no-op cache-hook cleanup; fresh compile/run of complete CSV job | [Unchanged workload/boundary, earlier Lython, exact goldens and separate allocation evidence](benchmarks/results/2026-10-17-utf8-small-integer/README.md) |
 | BO | 2026-10-17 UTC | 0f1cff1f; identical Lython controls; fresh compile/run of complete CSV job | [Compile-to-result boundary, independent file goldens and separate setup allocations](benchmarks/results/2026-10-17-csv-fresh/README.md) |
 | BN | 2026-10-17 UTC | b10b8e9e; shared bounded/unlimited UTF-8 replacement; both roles include copy-admission fix a03ef99e | [Separate allocation evidence and unlimited pipeline diagnostic](benchmarks/results/2026-10-17-string-replacement/README.md) |
@@ -157,6 +164,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Short escaped JSON strings, 2026-10-17 UTC | 92806689 → c9990b38; unchanged in-memory JSON transform | No elapsed benefit: 3.350 → 3.503 ms in one local Windows diagnostic. Separate native allocation 80,896 → 76,800 bytes per 128 calls | [Boundaries, controls and one capture](benchmarks/results/2026-10-17-escaped-json-strings/README.md) |
 | Bounded UTF-8 integer parsing, 2026-10-17 UTC | e01d45c6 → 27a61681; unchanged fresh compile/run CSV job | No qualified gain:8.181→7.503ms, nominal8.3% lower with7.5%/6.4% spreads. Separate native allocation11,576→4,408bytes per128calls | [Exact inputs, ownership contract and one short capture](benchmarks/results/2026-10-17-utf8-small-integer/README.md) |
 | Shared UTF-8 replacement, 2026-10-17 UTC | a03ef99e → b10b8e9e; unchanged unlimited Unicode pipeline | No elapsed benefit established: 3.621 → 2.981 ms; 17.7% lower median within 80.8% baseline spread. Separate bounded allocation witness: 115,032 → 4,392 bytes | [Admission, retained aliases and exact boundaries](benchmarks/results/2026-10-17-string-replacement/README.md) |
 | Synchronous cursor pulls under RunAsync, 2026-10-16 UTC | 86ef68e9 → 2e4d0a34; unchanged branch loop | No benefit established: 5.979 → 5.889 ms; 1.5% lower median within 4.7% baseline spread | [Shared core and genuine suspension preserved](benchmarks/results/2026-10-16-cursor-sync-dispatch/README.md) |
