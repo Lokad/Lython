@@ -12,9 +12,22 @@ public sealed class RepresentativeFileRetentionTests
     [InlineData("drop", true)]
     [InlineData("one", true)]
     [InlineData("all", true)]
-    public async Task CompleteFileJobBoundsDroppedAndEscapedBuffersButRejectsRetention(string retention, bool asynchronous)
+    public Task CompleteFileJobBoundsDroppedAndEscapedBuffersButRejectsRetention(string retention, bool asynchronous)
+        => Verify(retention, asynchronous, "file-manifest");
+
+    [Theory]
+    [InlineData("drop", false)]
+    [InlineData("one", false)]
+    [InlineData("all", false)]
+    [InlineData("drop", true)]
+    [InlineData("one", true)]
+    [InlineData("all", true)]
+    public Task AnnotatedFileJobBoundsDroppedAndEscapedBuffersButRejectsRetention(string retention, bool asynchronous)
+        => Verify(retention, asynchronous, "file-manifest-helpers");
+
+    private static async Task Verify(string retention, bool asynchronous, string scriptName)
     {
-        var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", "file-manifest.py"));
+        var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", scriptName + ".py"));
         if (retention == "one")
             source = "first = None\n" + source.Replace("        data = source.read()",
                 "        data = source.read()\n        if first is None:\n            first = data") + "\nreturn first\n";

@@ -4,6 +4,7 @@
 | --- | --- | ---: | ---: | ---: | --- |
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Complete CSV summary [BP], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 7.503 ms | 3.849 ms | — | Short diagnostic at27a61681; nominal8.3% below prior Lython,7.5%/6.4% spreads; inconclusive |
+| Complete CSV summary with annotated helper [BS], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 17.358 ms | 14.348 ms | — | Local Windows diagnostic at efccd974; 45.8%/29.8% spreads, inconclusive |
 | Complete text-summary file job [BR], fresh compile/run | 3,072 lines / 35,840 UTF-8 bytes | 14.994–16.539 ms | 11.188 ms | — | Local Windows diagnostic at 877f20e2; identical controls; 49%/107%/39% spreads, inconclusive |
 | Complete JSON-lines aggregation [AU], fresh compile/run | 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
@@ -28,7 +29,7 @@ magnitudes and changes remain uncertain as marked.
 
 ## Which code and machine were measured?
 
-The quiet-VM snapshots (all leading rows except BQ/BR, and historical Q/L campaigns) used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
+The quiet-VM snapshots (all leading rows except BQ/BR/BS, and historical Q/L campaigns) used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
 x86_64, four AMD EPYC 9V45 vCPUs, one thread per core, 16 GiB RAM, no swap.
 Lython was a clean Release build using **.NET SDK 10.0.401 / runtime 10.0.12**.
 The primary external reference was **CPython 3.13.16**, built with GCC 13.3,
@@ -37,15 +38,19 @@ PGO/LTO, ordinary GIL and cyclic GC, without debug mode or JIT, launched with
 instruction fuel was unset. Both engines ran sequentially on that machine.
 The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
-BQ and BR use the active Windows 11 development workstation: Intel Core i7-14700KF,
+BQ, BR and BS use the active Windows 11 development workstation: Intel Core i7-14700KF,
 28 logical processors, .NET SDK 10.0.300-preview.0.26177.108 / runtime 10.0.13
 and CPython 3.13.2. They are unqualified local diagnostics and cannot be directly
 compared with quiet-VM timings. BQ establishes an allocation reduction only.
 BR fills the fresh text boundary; its very large spread leaves the ratio
 unqualified and does not separate compilation, execution and file staging.
+BS adds a complete CSV job with an annotated parsing helper; its large spread
+also leaves the ratio unqualified. None of these local snapshots can be used
+to infer a change from the quiet-VM measurements.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BS | 2026-10-17 UTC | efccd974; complete CSV helper job; local Windows fresh compile/run | [Exact package roles, full outputs, earlier Lython and uncertainty](benchmarks/results/2026-10-17-csv-helper-fresh/README.md) |
 | BR | 2026-10-17 UTC | 877f20e2; identical Lython controls; local Windows fresh compile/run of complete text job | [Compile-to-result boundary, exact goldens, identities and uncertainty](benchmarks/results/2026-10-17-text-fresh/README.md) |
 | BQ | 2026-10-17 UTC | c9990b38; bounded short escaped JSON decoding; local Windows warm execution | [Earlier Lython, CPython, native allocation and uncertainty](benchmarks/results/2026-10-17-escaped-json-strings/README.md) |
 | BP | 2026-10-17 UTC | 27a61681; bounded UTF-8 decimal parsing and no-op cache-hook cleanup; fresh compile/run of complete CSV job | [Unchanged workload/boundary, earlier Lython, exact goldens and separate allocation evidence](benchmarks/results/2026-10-17-utf8-small-integer/README.md) |
@@ -147,6 +152,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 | Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
 
 ## Improvements against earlier Lython revisions
+
+The complete CSV helper job [BS](benchmarks/results/2026-10-17-csv-helper-fresh/README.md)
+measures a5a2fc0f → efccd974 separately: 14.818 → 17.358 ms, with 48.7%/45.8%
+spreads. No elapsed improvement or regression is established. This fresh-job
+comparison includes compilation and file staging; it does not isolate the helper
+implementation or qualify a CPython multiplier.
 
 Fixed builtin setup at 9e9135bb → 0f1cff1f has separate
 [native allocation evidence](benchmarks/results/2026-10-17-csv-fresh/README.md):

@@ -95,8 +95,11 @@ local regression diagnostics. They do not provide a CPython comparison.
 
 ### Complete file scripts
 
-The `representative` catalog adds the four existing CSV, text, JSON-lines and
-file-manifest scripts at 0, 16 and 1,024 fixture repeats. It reuses the existing
+The `representative` catalog includes the existing CSV, text, JSON-lines, file,
+search, uppercase and configuration jobs, plus four `-helpers` variants. Each
+variant adds one ordinary annotated helper to the corresponding CSV, text,
+JSON-lines or file-manifest job, preserving its independent output/file goldens.
+All catalog scripts have 0, 16 and 1,024 fixture repeats. It reuses the existing
 workers and verifier; it does not establish a timed baseline. Generate it with:
 
 ```text

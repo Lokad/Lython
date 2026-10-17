@@ -8,8 +8,9 @@ public sealed class RepresentativeScriptTests
 {
     public static IEnumerable<object[]> Cases()
     {
-        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit" })
-            foreach (var repetitions in new[] { 0, 16, 1024 })
+        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit",
+            "csv-summary-helpers", "text-summary-helpers", "json-summary-helpers", "file-manifest-helpers" })
+            foreach (var repetitions in name.EndsWith("-helpers", StringComparison.Ordinal) ? new[] { 0, 16 } : new[] { 0, 16, 1024 })
                 foreach (var asynchronous in new[] { false, true })
                     yield return [name, repetitions, asynchronous];
     }
@@ -19,6 +20,7 @@ public sealed class RepresentativeScriptTests
     public async Task CompleteJobPublishesIndependentGoldenFiles(string name, int repetitions, bool asynchronous)
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
+        name = ScriptKind(name);
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var inputs = new Dictionary<string, byte[]>();
@@ -111,6 +113,14 @@ public sealed class RepresentativeScriptTests
     [InlineData("text-summary", true)]
     [InlineData("json-summary", true)]
     [InlineData("file-manifest", true)]
+    [InlineData("csv-summary-helpers", false)]
+    [InlineData("text-summary-helpers", false)]
+    [InlineData("json-summary-helpers", false)]
+    [InlineData("file-manifest-helpers", false)]
+    [InlineData("csv-summary-helpers", true)]
+    [InlineData("text-summary-helpers", true)]
+    [InlineData("json-summary-helpers", true)]
+    [InlineData("file-manifest-helpers", true)]
     public Task HostBatchesReturnSharedAccountingToTheCompiledBaseline(string name, bool asynchronous)
         => VerifyHostBatches(name, asynchronous, 8);
 
@@ -126,6 +136,7 @@ public sealed class RepresentativeScriptTests
     private static async Task VerifyHostBatches(string name, bool asynchronous, int batches)
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
+        name = ScriptKind(name);
         var budget = new LythonMemoryBudget(512 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid);
@@ -174,6 +185,9 @@ public sealed class RepresentativeScriptTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    private static string ScriptKind(string name)
+        => name.EndsWith("-helpers", StringComparison.Ordinal) ? name[..^8] : name;
+
     private static byte[] ReadOutput(string path, Func<string, string> readText, Func<string, byte[]> readBytes)
         => path.StartsWith("/outbox/", StringComparison.Ordinal) ? readBytes(path) : Encoding.UTF8.GetBytes(readText(path));
 
@@ -183,9 +197,14 @@ public sealed class RepresentativeScriptTests
     [InlineData("json-summary", "/report.json")]
     [InlineData("file-manifest", "/manifest.json")]
     [InlineData("config-edit", "/config.json")]
+    [InlineData("csv-summary-helpers", "/report.csv")]
+    [InlineData("text-summary-helpers", "/report.txt")]
+    [InlineData("json-summary-helpers", "/report.json")]
+    [InlineData("file-manifest-helpers", "/manifest.json")]
     public async Task CancelledPendingPublicationPreservesPreviousFileBytes(string name, string reportPath)
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
+        name = ScriptKind(name);
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var host = new DelayedLythonHost();
@@ -237,9 +256,18 @@ public sealed class RepresentativeScriptTests
     [InlineData("text-summary", true)]
     [InlineData("file-manifest", false)]
     [InlineData("file-manifest", true)]
+    [InlineData("csv-summary-helpers", false)]
+    [InlineData("csv-summary-helpers", true)]
+    [InlineData("text-summary-helpers", false)]
+    [InlineData("text-summary-helpers", true)]
+    [InlineData("json-summary-helpers", false)]
+    [InlineData("json-summary-helpers", true)]
+    [InlineData("file-manifest-helpers", false)]
+    [InlineData("file-manifest-helpers", true)]
     public async Task InvalidOrMissingInputFailsBeforeReportPublication(string name, bool asynchronous)
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
+        name = ScriptKind(name);
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var delayed = asynchronous ? new DelayedLythonHost() : null;
@@ -278,14 +306,21 @@ public sealed class RepresentativeScriptTests
     [InlineData("csv-summary", true)]
     [InlineData("json-summary", false)]
     [InlineData("json-summary", true)]
+    [InlineData("csv-summary-helpers", false)]
+    [InlineData("csv-summary-helpers", true)]
+    [InlineData("json-summary-helpers", false)]
+    [InlineData("json-summary-helpers", true)]
     public async Task RetainedRecordsRejectUnderTheSameBudgetAsCompletedStreamingJobs(string name, bool asynchronous)
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"))
             .Replace("totals = {}", "totals = {}\nretained = []");
+        name = ScriptKind(name);
         string input, path;
         if (name == "csv-summary")
         {
-            source = source.Replace("        amount = int(row['amount'])", "        retained.append(row)\n        amount = int(row['amount'])");
+            const string loop = "    for row in csv.DictReader(source):";
+            Assert.Contains(loop, source, StringComparison.Ordinal);
+            source = source.Replace(loop, loop + "\n        retained.append(row)");
             input = "kind,amount,note\n" + string.Concat(Enumerable.Repeat("red,3,\"café,\nquoted\"\nblue,2,😀\nred,-1,skip\nblue,5,ok\n", 1024));
             path = "/input.csv";
         }
@@ -323,9 +358,14 @@ public sealed class RepresentativeScriptTests
     [InlineData("text-summary", "/input.txt")]
     [InlineData("json-summary", "/input.jsonl")]
     [InlineData("file-manifest", "/inbox/a.bin")]
+    [InlineData("csv-summary-helpers", "/input.csv")]
+    [InlineData("text-summary-helpers", "/input.txt")]
+    [InlineData("json-summary-helpers", "/input.jsonl")]
+    [InlineData("file-manifest-helpers", "/inbox/a.bin")]
     public async Task CancellationInterruptsActualHostReadBeforePublication(string name, string path)
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
+        name = ScriptKind(name);
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var host = new DelayedLythonHost();
@@ -356,9 +396,14 @@ public sealed class RepresentativeScriptTests
     [InlineData("csv-summary", true)]
     [InlineData("json-summary", false)]
     [InlineData("json-summary", true)]
+    [InlineData("csv-summary-helpers", false)]
+    [InlineData("csv-summary-helpers", true)]
+    [InlineData("json-summary-helpers", false)]
+    [InlineData("json-summary-helpers", true)]
     public async Task ConversionAndParseFailuresCloseTheirSourceBeforeGuestRecovery(string name, bool asynchronous)
     {
         var original = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py")).Replace("\r\n", "\n");
+        name = ScriptKind(name);
         var source = "try:\n" + string.Join('\n', original.Split('\n').Select(line => " " + line)) +
             "\nexcept ValueError:\n return source.closed\n";
         var script = new LythonEngine().Compile(source);

@@ -58,13 +58,15 @@ internal static class WorkloadCatalog
     {
         var cases = new List<ComparisonWorkload>();
         foreach (var n in new[] { 0, 16, 1024 })
-        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit" })
+        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit",
+            "csv-summary-helpers", "text-summary-helpers", "json-summary-helpers", "file-manifest-helpers" })
         {
             var inputs = new Dictionary<string, byte[]>();
             var outputs = new Dictionary<string, byte[]>();
             byte[] Utf8(string text) => ComparisonProtocol.Utf8.GetBytes(text);
             string stdout;
-            switch (name)
+            var kind = name.EndsWith("-helpers", StringComparison.Ordinal) ? name[..^8] : name;
+            switch (kind)
             {
                 case "config-edit":
                     var paths = Enumerable.Range(0, n).Select(i => "p" + i.ToString(Invariant)).ToArray();

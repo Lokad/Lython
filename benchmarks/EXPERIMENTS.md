@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 complete CSV helper snapshot](results/2026-10-17-csv-helper-fresh/README.md)
+adds the fresh compile/run boundary at efccd974:17.358ms, CPython3.13.2 14.348ms,
+spreads45.85%/29.76%. Earlier Lython a5a2fc0f measures14.818ms with48.73% spread;
+no direction or ratio is qualified. One10.119s capture,275correctness responses,
+100frozen files and seven removed workers/fixtures are recorded. BS is separate
+from the original CSV job and its quiet-VM history. Four helper variants now have
+maintained output, batch ownership, retention and cancellation regressions; the
+original scripts and their larger/stress fixtures remain unchanged.
+
 The [2026-10-17 complete text fresh snapshot](results/2026-10-17-text-fresh/README.md)
 fills compile-to-result at 877f20e2 with identical Lython controls: 16.539/14.994ms,
 CPython3.13.2 11.188ms; spreads48.87%/106.79%/39.21%. The9.34% control difference
