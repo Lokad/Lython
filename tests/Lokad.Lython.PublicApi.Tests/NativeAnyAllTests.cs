@@ -14,6 +14,8 @@ public sealed class NativeAnyAllTests
         { "guest-truth", "events=[]\nclass Value:\n def __bool__(self):events.append('guest');return True\nprint(any([0,Value()]),all([1,Value()]),events)", "True True ['guest', 'guest']\n" },
         { "binary-helper", "def valid(payload):return bool(payload) and all(payload)\nfor payload in [b'',b'\\x01\\x02',b'\\x01\\x00']:print(valid(payload))", "False\nTrue\nFalse\n" },
         { "one-shot-iterator", "values=iter(b'\\x00\\x01');print(any(values),list(values))\nvalues=iter(b'\\x01\\x00\\x02');print(all(values),list(values))", "True []\nFalse [2]\n" },
+        { "high-bytes", "for payload in [b'\\xff',b'\\x80\\xff',b'\\xff\\x00']:print(any(payload),all(payload))", "True True\nTrue True\nTrue False\n" },
+        { "boundary-short-circuit", "for position in [0,63,64]:\n zeros=bytes([0]*position+[1]+[0]*(64-position))\n ones=bytes([1]*position+[0]+[1]*(64-position))\n print(any(zeros),all(ones))", "True False\nTrue False\nTrue False\n" },
     };
 
     [Theory]

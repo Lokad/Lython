@@ -1,0 +1,403 @@
+{
+  "recipeSha256": "7a86a6eb12d2aea97b8da343b6c5e50db2b443b097ae3c1507f157d6ab165a5a",
+  "comparisons": [
+    {
+      "asynchronous": true,
+      "kind": "bytes",
+      "callsPerSample": 4096,
+      "beforeMedianMs": 0.32095,
+      "afterMedianMs": 0.0124,
+      "beforeSpreadPercent": 12.525315469699331,
+      "afterSpreadPercent": 87.09677419354838,
+      "beforeAllocated": 131688.0,
+      "afterAllocated": 456.0,
+      "beforeSamples": {
+        "asynchronous": true,
+        "kind": "bytes",
+        "callsPerSample": 4096,
+        "samples": [
+          131688,
+          131688,
+          131688,
+          131688,
+          131688,
+          131688,
+          131688,
+          131688
+        ],
+        "ticks": [
+          3445,
+          3508,
+          3487,
+          3242,
+          3132,
+          3177,
+          3107,
+          3106
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": true,
+        "kind": "bytes",
+        "callsPerSample": 4096,
+        "samples": [
+          456,
+          456,
+          456,
+          456,
+          456,
+          456,
+          456,
+          456
+        ],
+        "ticks": [
+          127,
+          197,
+          130,
+          125,
+          123,
+          94,
+          90,
+          89
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": false,
+      "kind": "bytes",
+      "callsPerSample": 4096,
+      "beforeMedianMs": 0.3256,
+      "afterMedianMs": 0.00965,
+      "beforeSpreadPercent": 13.206388206388207,
+      "afterSpreadPercent": 41.45077720207254,
+      "beforeAllocated": 131600.0,
+      "afterAllocated": 368.0,
+      "beforeSamples": {
+        "asynchronous": false,
+        "kind": "bytes",
+        "callsPerSample": 4096,
+        "samples": [
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600,
+          131600
+        ],
+        "ticks": [
+          3500,
+          3565,
+          3235,
+          3277,
+          3156,
+          3170,
+          3346,
+          3135
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": false,
+        "kind": "bytes",
+        "callsPerSample": 4096,
+        "samples": [
+          368,
+          368,
+          368,
+          368,
+          368,
+          368,
+          368,
+          368
+        ],
+        "ticks": [
+          120,
+          99,
+          81,
+          117,
+          105,
+          94,
+          80,
+          81
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": false,
+      "kind": "range",
+      "callsPerSample": 4096,
+      "beforeMedianMs": 0.42010000000000003,
+      "afterMedianMs": 0.3827,
+      "beforeSpreadPercent": 11.283027850511782,
+      "afterSpreadPercent": 16.723281944081524,
+      "beforeAllocated": 131640.0,
+      "afterAllocated": 131640.0,
+      "beforeSamples": {
+        "asynchronous": false,
+        "kind": "range",
+        "callsPerSample": 4096,
+        "samples": [
+          131640,
+          131640,
+          131640,
+          131640,
+          131640,
+          131640,
+          131640,
+          131640
+        ],
+        "ticks": [
+          4432,
+          4284,
+          4395,
+          4323,
+          4118,
+          3958,
+          4031,
+          3981
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": false,
+        "kind": "range",
+        "callsPerSample": 4096,
+        "samples": [
+          131640,
+          131640,
+          131640,
+          131640,
+          131640,
+          131640,
+          131640,
+          131640
+        ],
+        "ticks": [
+          3867,
+          3887,
+          3841,
+          3813,
+          3623,
+          3634,
+          3747,
+          4263
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": true,
+      "kind": "range",
+      "callsPerSample": 4096,
+      "beforeMedianMs": 0.39805,
+      "afterMedianMs": 0.40650000000000003,
+      "beforeSpreadPercent": 3.642758447431227,
+      "afterSpreadPercent": 5.682656826568266,
+      "beforeAllocated": 131728.0,
+      "afterAllocated": 131728.0,
+      "beforeSamples": {
+        "asynchronous": true,
+        "kind": "range",
+        "callsPerSample": 4096,
+        "samples": [
+          131728,
+          131728,
+          131728,
+          131728,
+          131728,
+          131728,
+          131728,
+          131728
+        ],
+        "ticks": [
+          3955,
+          4003,
+          4028,
+          3988,
+          3948,
+          3970,
+          3973,
+          4093
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": true,
+        "kind": "range",
+        "callsPerSample": 4096,
+        "samples": [
+          131728,
+          131728,
+          131728,
+          131728,
+          131728,
+          131728,
+          131728,
+          131728
+        ],
+        "ticks": [
+          4068,
+          3943,
+          4092,
+          4147,
+          4062,
+          4088,
+          3916,
+          3968
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": true,
+      "kind": "list",
+      "callsPerSample": 128,
+      "beforeMedianMs": 0.022099999999999998,
+      "afterMedianMs": 0.01965,
+      "beforeSpreadPercent": 25.339366515837103,
+      "afterSpreadPercent": 27.480916030534353,
+      "beforeAllocated": 680.0,
+      "afterAllocated": 680.0,
+      "beforeSamples": {
+        "asynchronous": true,
+        "kind": "list",
+        "callsPerSample": 128,
+        "samples": [
+          680,
+          680,
+          680,
+          680,
+          680,
+          680,
+          680,
+          680
+        ],
+        "ticks": [
+          253,
+          238,
+          217,
+          199,
+          225,
+          247,
+          213,
+          197
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": true,
+        "kind": "list",
+        "callsPerSample": 128,
+        "samples": [
+          680,
+          680,
+          680,
+          680,
+          680,
+          680,
+          680,
+          680
+        ],
+        "ticks": [
+          237,
+          209,
+          214,
+          207,
+          183,
+          186,
+          186,
+          183
+        ],
+        "frequency": 10000000
+      }
+    },
+    {
+      "asynchronous": false,
+      "kind": "list",
+      "callsPerSample": 128,
+      "beforeMedianMs": 0.0115,
+      "afterMedianMs": 0.01255,
+      "beforeSpreadPercent": 19.130434782608695,
+      "afterSpreadPercent": 35.85657370517929,
+      "beforeAllocated": 520.0,
+      "afterAllocated": 520.0,
+      "beforeSamples": {
+        "asynchronous": false,
+        "kind": "list",
+        "callsPerSample": 128,
+        "samples": [
+          520,
+          520,
+          520,
+          520,
+          520,
+          520,
+          520,
+          520
+        ],
+        "ticks": [
+          113,
+          121,
+          115,
+          114,
+          115,
+          135,
+          133,
+          114
+        ],
+        "frequency": 10000000
+      },
+      "afterSamples": {
+        "asynchronous": false,
+        "kind": "list",
+        "callsPerSample": 128,
+        "samples": [
+          520,
+          520,
+          520,
+          520,
+          520,
+          520,
+          520,
+          520
+        ],
+        "ticks": [
+          145,
+          148,
+          124,
+          103,
+          127,
+          123,
+          104,
+          129
+        ],
+        "frequency": 10000000
+      }
+    }
+  ],
+  "status": "Single short local diagnostic; unqualified timing; no CPython speed claim.",
+  "dateUTC": "2026-10-17",
+  "machine": "Intel Core i7-14700KF; Windows10.0.26200 x64; Release net10.0",
+  "baselineRevision": "a35ee62ceb712694e8b0d3fb79f85c4315628f7e",
+  "candidate": "One-file exact-byte predicate patch on a35ee62c measured before commit; not an arbitrary later HEAD.",
+  "candidateSourceSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs": "fa8dc9651c8c853a9341dc40d0c5eb8feeb85b732898bb43acea44dd5235f301"
+  },
+  "boundary": "Warm compiled return all(values); compilation/context/inputs outside counter;4096 native bytes/range values or128 preboxed list values;4warmups/8samples;current-thread bytes and Stopwatch ticks;no actual I/O.",
+  "bodyProof": {
+    "unchanged": true,
+    "bodies": {
+      "AnyGeneralAsync": "dbf1e8c977793130e4db4ea4afbd96d96c4fea9618473b84bc7bca04707be65f",
+      "AllGeneralAsync": "2ec0b35c28e819c4d7a519a21a9a28cc872c8839512ce0d37f01d363a876792e",
+      "Any remainder": "399a435d53680dbf89b2d5e9204eb2733468a13eeed1f3ce2ef1e15628c36e8f",
+      "All remainder": "ed18fdb519779a2b51e8948b00e9e9f1cffd24913ca7e0452d7b48c4c5aecfc2"
+    },
+    "file": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs",
+    "change": "Only byte dispatch and one primitive predicate loop; original range/general behavior retained."
+  }
+}

@@ -18,6 +18,11 @@ public sealed class NativeAnyAllTests(ITestOutputHelper output)
         foreach (var operation in new[] { "any", "all" })
         foreach (var count in new[] { 0, 1, 63, 64, 65 })
             yield return ["bytes-" + operation + "-" + count, "return " + operation + "(values)", "bytes-" + operation, count, operation == "all", null];
+        foreach (var position in new[] { 0, 63, 64 })
+        {
+            yield return ["bytes-any-exit-" + position, "return any(values)", "bytes-exit-any", position, true, null];
+            yield return ["bytes-all-exit-" + position, "return all(values)", "bytes-exit-all", position, false, null];
+        }
         foreach (var count in new[] { 0, 63, 64, 65 })
             yield return ["range-all-" + count, "return all(values)", "range-positive", count, true, null];
         foreach (var count in new[] { 0, 1, 2 })
@@ -97,7 +102,13 @@ public sealed class NativeAnyAllTests(ITestOutputHelper output)
         var effects = new List<string>();
         object values;
         if (input.StartsWith("bytes", StringComparison.Ordinal))
-            values = new PyBytes(Enumerable.Repeat((byte)(input == "bytes-any" ? 0 : 1), count).ToArray(), context.MemoryGovernor, null);
+        {
+            var earlyExit = input.StartsWith("bytes-exit", StringComparison.Ordinal);
+            var any = input is "bytes-any" or "bytes-exit-any";
+            var payload = Enumerable.Repeat((byte)(any ? 0 : 1), earlyExit ? 65 : count).ToArray();
+            if (earlyExit) payload[count] = (byte)(any ? 1 : 0);
+            values = new PyBytes(payload, context.MemoryGovernor, null);
+        }
         else
         {
             var start = input == "range-big" ? BigInteger.Pow(10, 30) : input == "range-zero" ? BigInteger.Zero : BigInteger.One;

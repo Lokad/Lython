@@ -17,6 +17,8 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "any() takes exactly one argument (" + arguments.Length + " given)", span);
         }
 
+        if (arguments[0] is PyBytes bytes) return ReduceBytesTruth(bytes, false, span, context);
+
         foreach (var item in ToSequence(arguments[0], span, context))
         {
             if (IsTruthy(item, context, span))
@@ -58,6 +60,8 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "all() takes exactly one argument (" + arguments.Length + " given)", span);
         }
 
+        if (arguments[0] is PyBytes bytes) return ReduceBytesTruth(bytes, true, span, context);
+
         foreach (var item in ToSequence(arguments[0], span, context))
         {
             if (!IsTruthy(item, context, span))
@@ -90,6 +94,18 @@ internal sealed partial class LythonRuntime
         }
 
         return true;
+    }
+
+    private static bool ReduceBytesTruth(PyBytes bytes, bool all, LythonSourceSpan span, ExecutionContext context)
+    {
+        var source = bytes.Bytes;
+        for (var i = 0; ; i++)
+        {
+            // Match checked iteration, including the final unsuccessful pull.
+            if ((i & 63) == 0) context.CheckExecution(span);
+            if (i == source.Length) return all;
+            if ((source[i] != 0) != all) return !all;
+        }
     }
 
     private static object Sum(object[] arguments, LythonSourceSpan span, ExecutionContext context)

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reduce exact-byte `any`/`all` directly over existing byte storage, removing per-element integer boxing and iterator/truth conversion. Preserve short circuits, the established 64-pull checkpoint policy including exhaustion, retained input funding and general iterable behavior in both execution APIs.
+
 - Reuse synchronous `any`/`all` kernels for exact bytes and ranges under asynchronous hosting. Preserve native checkpoints, admission and short circuits while keeping general iterable and guest-truth loops awaited; avoid native async enumeration transport without adding kernels or ownership machinery.
 
 - Complete native truth testing without entering an async state machine. Reuse the existing truth kernel and keep guest slot binding/calls behind the unchanged awaited body, preserving effects, errors, cancellation, admission refusal and retained ownership.

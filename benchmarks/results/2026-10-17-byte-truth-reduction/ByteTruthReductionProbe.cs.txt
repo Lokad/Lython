@@ -1,0 +1,62 @@
+using System.Numerics;
+using System.Text.Json;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary executable-loop diagnostic; archive/remove before final qualification.
+public sealed class ByteTruthReductionProbe(ITestOutputHelper output)
+{
+    [Theory]
+    [InlineData(false, "bytes")]
+    [InlineData(true, "bytes")]
+    [InlineData(false, "range")]
+    [InlineData(true, "range")]
+    [InlineData(false, "list")]
+    [InlineData(true, "list")]
+    public async Task NativeInputs(bool asynchronous, string kind)
+    {
+        const string source = "return all(values)";
+        static ExecutableCodeObject Compile(string text)
+            => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(text).Script!)).EntryPoint;
+        var code = Compile(source);
+        var budget = new LythonMemoryBudget(16 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var callsPerSample = kind == "list" ? 128 : 4096;
+        object values = kind switch
+        {
+            "bytes" => new PyBytes(Enumerable.Repeat((byte)1, callsPerSample).ToArray(), context.MemoryGovernor, null),
+            "range" => Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["range"]).Invoke(
+                [CallArgumentValue.Positional(BigInteger.One), CallArgumentValue.Positional(new BigInteger(callsPerSample + 1))], new(0, 1, 1, 1), context),
+            _ => new PyList(Enumerable.Repeat<object>(BigInteger.One, callsPerSample), context.MemoryGovernor, null),
+        };
+        context.Variables["values"] = values;
+        var ticks = new List<long>();
+        var samples = new List<long>();
+        object? result = null;
+        for (var sample = -4; sample < 8; sample++)
+        {
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var started = System.Diagnostics.Stopwatch.GetTimestamp();
+            var pending = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+            if (!pending.IsCompleted) throw new Exception("Native loop must complete inline.");
+            result = await pending;
+            var elapsed = System.Diagnostics.Stopwatch.GetTimestamp() - started;
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            if (sample >= 0) { samples.Add(allocated); ticks.Add(elapsed); }
+        }
+        Assert.True(Assert.IsType<bool>(result));
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        output.WriteLine("BYTE_TRUTH_DIAGNOSTIC:" + JsonSerializer.Serialize(new { asynchronous, kind, callsPerSample, samples, ticks, frequency = System.Diagnostics.Stopwatch.Frequency }));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+}
