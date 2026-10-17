@@ -7,41 +7,37 @@ namespace Lokad.Lython.PublicApi.Tests;
 // clear/regrowth and aliases preserve Python semantics within each batch.
 public sealed class SetShellAccountingScenarioTests
 :LifetimeScenario{
-    private const long ThreeMib = 3145728;
-
-    private static void AssertMemoryError(LythonExecutionResult result)
-    {
-        Assert.False(result.Success);
-        Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.True(result.PeakExecutionMemoryBytes <= ThreeMib);
-    }
-
     [Fact]
     public async Task ManyRetainedEmptySetsStayCharged()
-    {
-        var script = new LythonEngine().Compile(
-            "objs = []\ni = 0\nwhile i < 100000:\n    objs.append(set())\n    i = i + 1\nreturn 0\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        AssertMemoryError(script.Run(new MockLythonHost(), options));
-        AssertMemoryError(await script.RunAsync(new MockLythonHost(), options));
-    }
+        => await AssertRetainedCells(512, 32768, sets: true);
 
     [Fact]
     public async Task ManyRetainedNonesFitSameBudget()
-    {
-        var script = new LythonEngine().Compile(
-            "objs = []\ni = 0\nwhile i < 100000:\n    objs.append(None)\n    i = i + 1\nreturn len(objs)\n");
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(100000);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
+        => await AssertRetainedCells(512, 32768, sets: false);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+    internal static async Task AssertRetainedCells(int count, long budget, bool sets)
+    {
+        var cell = sets ? "set()" : "None";
+        using var script = new LythonEngine().Compile(
+            $"objs = []\ni = 0\nwhile i < {count}:\n    objs.append({cell})\n    i = i + 1\nreturn len(objs)\n");
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using var result = asynchronous
+                ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
+            Assert.InRange(result.PeakExecutionMemoryBytes, 1, budget);
+            if (sets)
+            {
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new BigInteger(count), result.ReturnValue);
+            }
+        }
     }
 
     [Fact]

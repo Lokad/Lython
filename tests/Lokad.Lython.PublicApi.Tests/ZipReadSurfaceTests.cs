@@ -187,31 +187,51 @@ return 1
 
     [Fact]
     public async Task WriterCancellationWithOpenMemberPropagatesCancellation()
+        => await AssertWriterCancellationWithOpenMember(1);
+
+    internal static async Task AssertWriterCancellationWithOpenMember(int writes)
     {
-        // Cancel from inside a long write loop so the member handle is still
-        // open when unwinding starts. Either interleaving (mid-loop abort or
-        // publish abort) must report cancellation, never a lifecycle error
-        // about the open handle.
-        var host = new DelayedLythonHost("/");
+        // Await a host operation inside the write loop with the member open.
+        // Cancellation must win over the open-handle lifecycle error.
+        var host = new MockLythonHost();
+        var opened = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        host.UseSubprocessHandler(async (_, token) =>
+        {
+            opened.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            return new LythonSubprocessResult(0, ReadOnlyMemory<byte>.Empty, ReadOnlyMemory<byte>.Empty);
+        });
         using var cancellation = new CancellationTokenSource();
         var task = new LythonEngine().RunAsync(
-            """
-import zipfile
+            $"""
+import zipfile, subprocess
 with zipfile.ZipFile("/out.zip", "w") as archive:
     handle = archive.open("a.txt", "w")
-    for i in range(1000000):
+    for i in range({writes}):
         handle.write(b"Z")
+        if i == {writes - 1}:
+            subprocess.run(["hold"])
     handle.close()
 return 1
 """,
             host,
             cancellationToken: cancellation.Token);
-        await Task.Delay(250);
-        cancellation.Cancel();
-        var result = await task.WaitAsync(TimeSpan.FromSeconds(60));
-        Assert.False(result.Success);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
+        LythonExecutionResult? result = null;
+        try
+        {
+            await opened.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(task.IsCompleted);
+            cancellation.Cancel();
+            result = await task.WaitAsync(TimeSpan.FromSeconds(60));
+            Assert.False(result.Success);
+            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+            Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            (result ?? await task.WaitAsync(TimeSpan.FromSeconds(60))).Dispose();
+        }
     }
 
     [Fact]

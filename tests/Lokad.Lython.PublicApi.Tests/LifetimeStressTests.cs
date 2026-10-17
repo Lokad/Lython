@@ -2,6 +2,28 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 [Collection("RuntimeStress")]
 [Trait("Category", "Stress")]
+public sealed class RetainedSetShellStressTests
+{
+    // Keep the original count and set-refusal cap. The None control's measured
+    // replacement peak is 3,540,064 bytes; 4MiB funds that successful growth.
+    [Theory]
+    [InlineData(true, 3145728)]
+    [InlineData(false, 4194304)]
+    public async Task OriginalRetainedCountRemainsCovered(bool sets, long budget)
+        => await SetShellAccountingScenarioTests.AssertRetainedCells(100000, budget, sets);
+}
+
+[Collection("RuntimeStress")]
+[Trait("Category", "Stress")]
+public sealed class ZipWriterOpenMemberCancellationStressTests
+{
+    [Fact]
+    public async Task MillionWritesStillPropagateOpenMemberCancellation()
+        => await ZipReadSurfaceTests.AssertWriterCancellationWithOpenMember(1000000);
+}
+
+[Collection("RuntimeStress")]
+[Trait("Category", "Stress")]
 public sealed class IntegerParseAccountingStressTests : IntegerParseAccountingScenarioTests
 {
     protected override int Digits => 30000;
