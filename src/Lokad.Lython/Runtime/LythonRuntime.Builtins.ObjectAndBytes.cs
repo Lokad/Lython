@@ -28,59 +28,31 @@ internal sealed partial class LythonRuntime
             // __int__ nor __trunc__). Every present hook is called like
             // CPython, so a non-callable hook raises the typed not-callable
             // error.
-            if (floatInstance.TryGetAttribute("__float__", context, span, out var member))
+            if (TryGetNumericConversionMember(floatInstance, "__float__", context, span, out var member))
             {
                 if (member is not ICallable callable)
                 {
                     throw NotCallableError(member, context, span);
                 }
 
-                var converted = callable.Invoke([], span, context);
-                if (converted is not double floating)
-                {
-                    throw new LythonRuntimeException("TypeError", floatInstance.Type.Name + ".__float__ returned non-float (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
-                }
-
-                return floating;
+                return ValidateFloatConversionResult(callable.Invoke([], span, context), floatInstance, context, span);
             }
 
-            if (floatInstance.TryGetAttribute("__index__", context, span, out var indexMember))
+            if (TryConvertIntegerIndex(floatInstance, context, span, out var indexed))
             {
-                if (indexMember is not ICallable)
-                {
-                    throw NotCallableError(indexMember, context, span);
-                }
-
-                // The shared choke either returns an integer or raises the
-                // shaped __index__ error; out-of-range magnitudes fail like
-                // CPython instead of saturating to infinity.
-                return FloatFromInteger((BigInteger)CoerceIndexProtocol(floatInstance, context, span), span);
+                return FloatFromInteger((BigInteger)indexed, span);
             }
 
-            throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(floatInstance, context) + "'", span);
-        }
-
-        // Like CPython, conversion rounds exactly and out-of-range integers
-        // fail instead of saturating.
-        static double FloatFromInteger(BigInteger integer, LythonSourceSpan span)
-        {
-            try
-            {
-                return PyNumberOps.BigIntegerToDouble(integer);
-            }
-            catch (OverflowException ex)
-            {
-                throw new LythonRuntimeException("OverflowError", ex.Message, span);
-            }
+            throw FloatArgumentError(floatInstance, context, span);
         }
 
         return arguments[0] switch
         {
-            double floating => floating,
+            double => arguments[0],
             _ when PyNumberOps.TryAsInteger(arguments[0], out var integer) => FloatFromInteger(integer, span),
             PyDecimal decimalValue => (double)decimalValue.Value,
             PyString or PyBytes => ParseOwnedFloatText(arguments[0], context, span),
-            _ => throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
+            _ => throw FloatArgumentError(arguments[0], context, span)
         };
 
         static double ParseOwnedFloatText(object source, ExecutionContext context, LythonSourceSpan span)
@@ -125,6 +97,26 @@ internal sealed partial class LythonRuntime
             {
                 throw FloatConversionError(source, context, span, working);
             }
+        }
+    }
+
+    private static object ValidateFloatConversionResult(object converted, PyInstance instance, ExecutionContext context, LythonSourceSpan span)
+        => converted is double ? converted : throw new LythonRuntimeException("TypeError", instance.Type.Name +
+            ".__float__ returned non-float (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
+
+    private static LythonRuntimeException FloatArgumentError(object value, ExecutionContext context, LythonSourceSpan span)
+        => new("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(value, context) + "'", span);
+
+    // Conversion rounds exactly; out-of-range integers fail instead of saturating.
+    private static double FloatFromInteger(BigInteger integer, LythonSourceSpan span)
+    {
+        try
+        {
+            return PyNumberOps.BigIntegerToDouble(integer);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
         }
     }
 

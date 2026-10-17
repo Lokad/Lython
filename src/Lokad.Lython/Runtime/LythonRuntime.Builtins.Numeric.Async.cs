@@ -1,7 +1,26 @@
+using System.Numerics;
+
 namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static ValueTask<object> FloatAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => arguments.Length == 1 && arguments[0] is PyInstance instance
+            ? ConvertInstanceToFloatAsync(instance, context, span)
+            : ValueTask.FromResult(Float(arguments, span, context));
+
+    private static async ValueTask<object> ConvertInstanceToFloatAsync(
+        PyInstance instance, ExecutionContext context, LythonSourceSpan span)
+    {
+        var protocol = await InvokeNumericConversionProtocolAsync(instance, "__float__", context, span).ConfigureAwait(false);
+        if (protocol.Kind == SpecialMethodInvocationKind.Invoked)
+            return ValidateFloatConversionResult(protocol.Value, instance, context, span);
+        protocol = await InvokeNumericConversionProtocolAsync(instance, "__index__", context, span).ConfigureAwait(false);
+        if (protocol.Kind == SpecialMethodInvocationKind.Invoked)
+            return FloatFromInteger((BigInteger)ValidateIntegerConversionResult(protocol.Value, "__index__", context, span), span);
+        throw FloatArgumentError(instance, context, span);
+    }
+
     private static ValueTask<object> IntAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length == 1 && arguments[0] is PyInstance instance)
@@ -15,21 +34,21 @@ internal sealed partial class LythonRuntime
         PyInstance instance, ExecutionContext context, LythonSourceSpan span)
     {
         object converted;
-        var protocol = await InvokeIntegerConversionProtocolAsync(instance, "__int__", context, span).ConfigureAwait(false);
+        var protocol = await InvokeNumericConversionProtocolAsync(instance, "__int__", context, span).ConfigureAwait(false);
         if (protocol.Kind == SpecialMethodInvocationKind.Invoked)
         {
             converted = ValidateIntegerConversionResult(protocol.Value, "__int__", context, span);
         }
         else
         {
-            protocol = await InvokeIntegerConversionProtocolAsync(instance, "__index__", context, span).ConfigureAwait(false);
+            protocol = await InvokeNumericConversionProtocolAsync(instance, "__index__", context, span).ConfigureAwait(false);
             if (protocol.Kind == SpecialMethodInvocationKind.Invoked)
             {
                 converted = ValidateIntegerConversionResult(protocol.Value, "__index__", context, span);
             }
             else
             {
-                protocol = await InvokeIntegerConversionProtocolAsync(instance, "__trunc__", context, span).ConfigureAwait(false);
+                protocol = await InvokeNumericConversionProtocolAsync(instance, "__trunc__", context, span).ConfigureAwait(false);
                 if (protocol.Kind != SpecialMethodInvocationKind.Invoked) throw IntegerConversionError(instance, context, span);
                 var indexed = await ConvertIntegerIndexAsync(protocol.Value, context, span).ConfigureAwait(false);
                 converted = ValidateTruncatedInteger(protocol.Value, indexed, context, span);
@@ -50,13 +69,13 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> ConvertIntegerIndexAsync(object value, ExecutionContext context, LythonSourceSpan span)
     {
         if (value is not PyInstance instance) return value;
-        var protocol = await InvokeIntegerConversionProtocolAsync(instance, "__index__", context, span).ConfigureAwait(false);
+        var protocol = await InvokeNumericConversionProtocolAsync(instance, "__index__", context, span).ConfigureAwait(false);
         return protocol.Kind == SpecialMethodInvocationKind.Invoked
             ? ValidateIntegerConversionResult(protocol.Value, "__index__", context, span)
             : value;
     }
 
-    private static async ValueTask<SpecialMethodInvocation> InvokeIntegerConversionProtocolAsync(
+    private static async ValueTask<SpecialMethodInvocation> InvokeNumericConversionProtocolAsync(
         PyInstance instance, string name, ExecutionContext context, LythonSourceSpan span)
     {
         if (!instance.Type.TryLookupInMro(name, 0, out var raw, out _)) return SpecialMethodInvocation.Missing;

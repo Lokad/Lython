@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resolve float conversion through type slots, bind fallback index descriptors once, and preserve existing float objects. Await descriptor and hook work through asynchronous hosting while keeping native conversion synchronous; reuse integer conversion helpers and preserve cancellation, terminal refusal, retained ownership and managed stack protection.
+
 - Admit float text/bytes decoding, underscore-removal capacity and error-message overlap before allocation. Refund parsing scratch while retaining escaped error funding; long inputs and repeated invalid conversions can reject earlier under tight allowances. Reuse shared repr rendering, fixing quoted control characters, and reject trailing NULs like Python.
 
 - Parse bounded decimal integer text/bytes directly from UTF-8, avoiding decoded strings, per-digit arbitrary-precision arithmetic and scratch reservations for signed 64-bit results. Preserve the integer representation, complete-input validation, terminal refusal and general-path admission/ownership for other forms or overflow.

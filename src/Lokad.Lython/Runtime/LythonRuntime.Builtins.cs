@@ -817,7 +817,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (TryGetIntegerConversionMember(instance, "__int__", context, span, out var intMember))
+        if (TryGetNumericConversionMember(instance, "__int__", context, span, out var intMember))
         {
             if (intMember is not ICallable intCallable)
             {
@@ -832,7 +832,7 @@ internal sealed partial class LythonRuntime
             return indexedValue;
         }
 
-        if (TryGetIntegerConversionMember(instance, "__trunc__", context, span, out var truncMember))
+        if (TryGetNumericConversionMember(instance, "__trunc__", context, span, out var truncMember))
         {
             if (truncMember is not ICallable truncCallable)
             {
@@ -847,7 +847,7 @@ internal sealed partial class LythonRuntime
         throw IntegerConversionError(instance, context, span);
     }
 
-    private static bool TryGetIntegerConversionMember(PyInstance instance, string name,
+    private static bool TryGetNumericConversionMember(PyInstance instance, string name,
         ExecutionContext context, LythonSourceSpan span, out object member)
     {
         if (instance.Type.TryLookupInMro(name, 0, out var raw, out _))
@@ -865,7 +865,7 @@ internal sealed partial class LythonRuntime
     {
         converted = value;
         if (value is not PyInstance instance ||
-            !TryGetIntegerConversionMember(instance, "__index__", context, span, out var member))
+            !TryGetNumericConversionMember(instance, "__index__", context, span, out var member))
             return false;
         if (member is not ICallable callable) throw NotCallableError(member, context, span);
         converted = ValidateIntegerConversionResult(callable.Invoke([], span, context), "__index__", context, span);

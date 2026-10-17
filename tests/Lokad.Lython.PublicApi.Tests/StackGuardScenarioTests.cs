@@ -20,6 +20,8 @@ public sealed class StackGuardScenarioTests
     [InlineData("length-finally")]
     [InlineData("integer-finally")]
     [InlineData("integer-base-finally")]
+    [InlineData("float-finally")]
+    [InlineData("float-index-finally")]
     [InlineData("cancellation")]
     public void YieldedDeepWorkUnwindsAndRecoversInAnIsolatedProcess(string scenario)
     {

@@ -102,6 +102,13 @@ conversions can therefore reject earlier under tight allowances. Refused error
 construction is terminal and refunds its scratch; it never substitutes a shorter
 message or retries admission.
 
+Numeric conversion hooks share the existing type-slot/descriptor invocation
+paths. `RunAsync` keeps their owners alive until suspended callbacks and cleanup
+finish, including cancellation or terminal admission refusal. Converting an
+existing float, or returning one through `__float__`, preserves that object and
+its existing storage ownership rather than copying it. No new owner or independent
+allowance is introduced for protocol dispatch.
+
 Ordinary integer addition and sums admit a conservative major-result estimate before the
 CLR computes it, including carry/sign headroom and computation overlap. The result
 commits its portion of that existing reservation without a second admission;

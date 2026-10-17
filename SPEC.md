@@ -1205,6 +1205,16 @@ An explicit `byteorder='big'` or `byteorder='little'` selects that order.
 
 `float` must have Python floating-point semantics for the supported subset.
 
+For guest instances, `float(value)` resolves the type's `__float__`, then
+`__index__`, binding each attempted descriptor once. Instance shadows and ordinary
+attribute hooks do not supply these protocols. A present invalid/noncallable hook
+or a descriptor exception does not fall through to the next hook. Integer results
+round exactly or raise `OverflowError` when outside the floating-point range.
+Native floats and valid `__float__` results preserve the original float object.
+`RunAsync` awaits descriptor binding and hook bodies through the existing async
+host boundary; native conversion remains synchronous. Inputs, returned aliases
+and their funding stay alive until suspended users and cleanup finish.
+
 The supported subset must support numeric operators with Python semantics, including:
 
 - `+`
