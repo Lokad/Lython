@@ -74,7 +74,15 @@ constructing scalar strings for the suffix. Oversized bounded results now use
 the same checked string-size `RuntimeError` guard as unlimited replacement,
 before partial construction. Admission refusals still fail the command.
 
-Integer parsing from text or bytes admits decoded UTF-16 capacity, result magnitude
+Short decimal text/bytes that parse completely into a signed 64-bit value use
+the existing bounded scalar control headroom. At most 20 UTF-8 bytes are examined
+without decoding or allocating major scratch; terminal admission state is still
+checked. Smaller real working storage can fit narrower allowances. The result
+remains a Python integer, with ordinary stored-slot/result ownership. Other forms,
+bases and overflow use the general path below; failed admission never selects an
+alternate parser or recovery path.
+
+General integer parsing from text or bytes admits decoded UTF-16 capacity, result magnitude
 and computation overlap before decoding. Whitespace, sign and prefix processing
 uses spans rather than substring copies. A major result commits its portion of
 the existing reservation before scratch is refunded; there is no second admission

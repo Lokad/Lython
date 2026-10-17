@@ -1173,7 +1173,12 @@ explicit-base `int(text, base)` conversions, including indexed legacy `__trunc__
 results. Native conversions use the synchronous conversion body. Inputs and
 results keep their existing owners until suspended work and cleanup complete.
 
-Text and bytes conversion reserves conservative decoded-text and arithmetic
+Short decimal text and bytes can parse directly from UTF-8 into the existing
+bounded integer tier, preserving the Python integer representation and exact
+results outside the machine range. Other supported forms keep the general
+conversion path. No text decoding or major scratch is needed for that small case.
+
+General text and bytes conversion reserves conservative decoded-text and arithmetic
 working capacity before allocation, including raw whitespace and prefixes.
 Tight allowances can therefore refuse earlier even for a small final integer.
 Retained major results commit from that reservation before scratch is released.

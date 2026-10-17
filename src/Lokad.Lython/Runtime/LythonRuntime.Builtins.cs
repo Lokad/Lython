@@ -709,10 +709,19 @@ internal sealed partial class LythonRuntime
 
     private static object ParseOwnedIntegerText(object source, int numberBase, ExecutionContext context, LythonSourceSpan span)
     {
+        context.MemoryGovernor.ThrowIfAdmissionFailed();
+        ReadOnlySpan<byte> utf8 = source is PyString text ? text.Utf8Bytes.Span : ((PyBytes)source).Bytes;
+        // A bounded native decimal needs neither decoded text nor major scratch.
+        // Complete consumption rejects suffixes/NULs; all other Python forms and
+        // overflow keep the admitted general path. Small boxes use control headroom.
+        if (numberBase == 10 && utf8.Length <= 20 &&
+            System.Buffers.Text.Utf8Parser.TryParse(utf8, out long integer, out var consumed) && consumed == utf8.Length)
+            return new BigInteger(integer);
+
         // UTF-8 bytes upper-bound decoded UTF-16 units. Admit that copy and
         // three overlapping magnitudes before decoding or arithmetic; raw
         // whitespace/prefix capacity is deliberately conservative.
-        var length = source is PyString text ? text.Utf8Bytes.Length : ((PyBytes)source).Length;
+        var length = utf8.Length;
         var resultBits = RuntimeMemoryEstimates.SaturatingMultiply(length,
             numberBase == 0 ? 4 : IntegerParseBitsPerDigit(numberBase));
         var resultBytes = RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
