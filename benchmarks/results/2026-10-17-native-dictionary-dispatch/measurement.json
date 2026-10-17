@@ -85,7 +85,8 @@
     "baseline-diagnostics.json": "7f9b044cc1c48821b169f1bc2943edc344143778963e70f9840ea7d0ed6045c2",
     "candidate-diagnostics.json": "78c012196740587b262aa8704775596a5b9c3045468822fd3a0cab47b9564ffe",
     "DictionaryReadDispatchProbe.cs.txt": "263fec46de04fccea38a8145bffb5710e5eda084c7d22fe77555e7ff534602a8",
-    "guard.patch.txt": "afd4c56d618cdf91ca9043523e93d38e39bf69621aef6d39276740f88a5b513e"
+    "guard.patch.txt": "97f5275c2ffa4bca7702b3baf05143e30058752e9085028b5b0dbbb222b8f78a"
   },
-  "sourcePolicy": "Ordinary GC/tiering,no forcedcollections or runtime overrides. Temporary diagnostic archived/removed. No recapture or retuning after unrelated protocol correction."
+  "sourcePolicy": "Ordinary GC/tiering,no forcedcollections or runtime overrides. Temporary diagnostic archived/removed. No recapture or retuning after unrelated protocol correction.",
+  "patchFormat": "Zero-context unified diff;apply with --unidiff-zero"
 }
