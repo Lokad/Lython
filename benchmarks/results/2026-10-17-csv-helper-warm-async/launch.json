@@ -1,0 +1,19 @@
+{
+  "unit": "lython-csv-async-capture-1b6a1531-20261017",
+  "arguments": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-csv-async-capture-1b6a1531-20261017",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=30",
+    "--property=TimeoutStopSec=0",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/capture/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/capture/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/capture/run.py"
+  ],
+  "stdout": "",
+  "stderr": "Running as unit: lython-csv-async-capture-1b6a1531-20261017.service; invocation ID: 6d429a3664bd469589f4863b42a1a5f1\n"
+}

@@ -1,0 +1,101 @@
+{
+  "capturedUtc": "2026-10-17T21:44:33.359183+00:00",
+  "preparation": {
+    "startedUtc": "2026-10-17T21:42:22.566493+00:00",
+    "phase": "complete",
+    "dotnetVersion": "10.0.401",
+    "loadBefore": [
+      0.080078125,
+      0.0166015625,
+      0.00537109375
+    ],
+    "workers": {
+      "old": {
+        "revision": "5b546b2edbeaba45f8fe1b79be0b542fba0b5444",
+        "root": "/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/source-old",
+        "worker": "/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/source-old/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+        "workerSha256": "b317ed2341134c4daeab87f6678542a640aa28cc2f8b31c2ef98e79f2b4bad30",
+        "librarySha256": "437719660364d1f16671811d7402225eb9c23eebff8e06fc8c8eb24b224b0055",
+        "sourceClean": true
+      },
+      "candidate": {
+        "revision": "1b6a15318b00ec056af02e23b72fa64f861964df",
+        "root": "/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/source-candidate",
+        "worker": "/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/source-candidate/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+        "workerSha256": "c5011cbe01157d6407339c22434618fac5e815c520f3077c532535bf508fe10f",
+        "librarySha256": "500fafeda98b8059fd6fdde3019f113ed3a38c3cd3eb3b6a8ff274b6e68843be",
+        "sourceClean": true
+      }
+    },
+    "completedUtc": "2026-10-17T21:42:47.354228+00:00",
+    "catalog": "/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/catalog.json",
+    "catalogSha256": "a2b51dfe71c890faeda7198687298f58b377f0c615bce2ecec065c20db16587f",
+    "loadAfter": [
+      0.92529296875,
+      0.224609375,
+      0.0751953125
+    ]
+  },
+  "python": {
+    "version": "3.13.16 (main, Oct  8 2026, 14:31:33) [GCC 13.3.0]",
+    "executable": "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+    "configArgs": "'--prefix=/home/lokad/lython-bench-toolchains/cpython/3.13.16' '--enable-optimizations' '--with-lto' '--enable-experimental-jit=no' '--with-ensurepip=no'",
+    "pgoFlags": "-fprofile-use -fprofile-correction",
+    "gcEnabled": true,
+    "flags": "sys.flags(debug=0, inspect=0, interactive=0, optimize=0, dont_write_bytecode=0, no_user_site=1, no_site=1, ignore_environment=1, verbose=0, bytes_warning=0, quiet=0, hash_randomization=1, isolated=1, dev_mode=False, utf8_mode=0, warn_default_encoding=0, safe_path=True, int_max_str_digits=4300)"
+  },
+  "dotnet": {
+    "sdk": "10.0.401",
+    "runtime": "10.0.12",
+    "executable": "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+    "sha256": "01d89e0a0191052bfea616cd4ce624c8faf13b05bbddf7f64499c23e2a9d9269"
+  },
+  "cpu": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "1",
+    "Core(s) per socket": "4",
+    "Socket(s)": "1",
+    "Hypervisor vendor": "Microsoft"
+  },
+  "load": [
+    0.17333984375,
+    0.166015625,
+    0.07080078125
+  ],
+  "catalogKeys": [
+    "schemaVersion",
+    "catalogVersion",
+    "fixtureEncoding",
+    "entropySeed",
+    "performanceQualified",
+    "cases"
+  ],
+  "case": {
+    "id": "scripts.csv-summary-helpers.large",
+    "family": "scripts",
+    "category": "whole-script",
+    "scale": "large",
+    "size": 1024,
+    "source": {
+      "type": "str",
+      "length": 599
+    },
+    "fixtureJson": {
+      "type": "str",
+      "length": 78316
+    },
+    "expectedOutput": "3072\n",
+    "sourceUtf8Bytes": 599,
+    "expectedOutputUtf8Bytes": 5,
+    "fixtureTextUtf8Bytes": 0,
+    "fixtureTextCodePoints": 0,
+    "sourceSha256": "7d421bd3c67892ea046f7e6be8dcbde2e47b5ac85e0f88911ed7f3b27fddc893",
+    "fixtureSha256": "fc82e829995d41c283a7da3dd6509c72d8fe3d390f9df19f04cc9c8a5b510175",
+    "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+    "expectedFilesSha256": "84ec50fc7f2391efd944abe727e896ca51095ef45ef7018b7aa53636102aa014"
+  },
+  "leaseAvailableAtPreflight": true,
+  "prepUnit": "MainPID=0\nResult=success\nExecMainStatus=0\nActiveState=inactive\n"
+}

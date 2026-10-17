@@ -32,3 +32,5 @@ benchmarks/results/2026-10-13-ownership-inventory/*.ps1 -text whitespace=cr-at-e
 benchmarks/results/2026-10-13-native-activation-rejected/*.json -text whitespace=cr-at-eol
 benchmarks/results/2026-10-13-native-activation-rejected/*.txt -text whitespace=cr-at-eol
 benchmarks/results/2026-10-13-native-activation-rejected/*.py -text whitespace=cr-at-eol
+# Preserve exact inputs, outputs and receipt hashes for the CSV RunAsync snapshot.
+benchmarks/results/2026-10-17-csv-helper-warm-async/** -text whitespace=cr-at-eol

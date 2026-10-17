@@ -1,0 +1,21 @@
+{
+  "capturedUtc": "2026-10-17T21:47:15.302959+00:00",
+  "unit": "lython-csv-async-capture-1b6a1531-20261017",
+  "properties": "MainPID=0\nResult=success\nExecMainStatus=0\nControlGroup=\nActiveState=inactive\nSubState=dead\n",
+  "sources": {
+    "old": {
+      "revision": "5b546b2edbeaba45f8fe1b79be0b542fba0b5444",
+      "status": "",
+      "workerSha256": "b317ed2341134c4daeab87f6678542a640aa28cc2f8b31c2ef98e79f2b4bad30",
+      "librarySha256": "437719660364d1f16671811d7402225eb9c23eebff8e06fc8c8eb24b224b0055"
+    },
+    "candidate": {
+      "revision": "1b6a15318b00ec056af02e23b72fa64f861964df",
+      "status": "",
+      "workerSha256": "c5011cbe01157d6407339c22434618fac5e815c520f3077c532535bf508fe10f",
+      "librarySha256": "500fafeda98b8059fd6fdde3019f113ed3a38c3cd3eb3b6a8ff274b6e68843be"
+    }
+  },
+  "leaseReleased": true,
+  "catalogSha256": "a2b51dfe71c890faeda7198687298f58b377f0c615bce2ecec065c20db16587f"
+}

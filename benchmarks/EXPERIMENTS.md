@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 complete CSV helper RunAsync snapshot](results/2026-10-17-csv-helper-warm-async/README.md)
+compares clean VM Release builds 5b546b2e → 1b6a1531 with CPython 3.13.16.
+Warm medians are 10.379/10.346/3.756 ms; the nominal 2.755× external ratio is
+unqualified and the 0.31% earlier-Lython change is within spread. All 37 responses /
+519 invocations preserve exact stdout/file goldens. The sole capture took 9.320 s;
+input hashes, clean sources, exited workers/fixtures and released lease are
+recorded. BV includes completed-host RunAsync setup and file work; compilation,
+startup, real suspending I/O, finite-budget/latency claims remain outside it.
+
 The [2026-10-17 declared-builtin operand experiment](results/2026-10-17-builtin-operands-rejected/README.md)
 is rejected. Both isolated variants preserve 4,686 binding records and save no
 allocations; synchronous sorting medians are worse, with some wide distributions.

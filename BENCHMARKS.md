@@ -5,6 +5,7 @@
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Complete CSV summary [BP], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 7.503 ms | 3.849 ms | — | Short diagnostic at27a61681; nominal8.3% below prior Lython,7.5%/6.4% spreads; inconclusive |
 | Complete CSV summary with annotated helper [BU], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 8.581 ms | 3.718 ms | — | Dedicated-VM diagnostic at 463b7a7a; nominal 2.308×, unqualified; 4.36%/0.85% spreads |
+| Complete CSV summary with annotated helper [BV], warm `RunAsync` | 4,096 records / 57,361 UTF-8 bytes | 10.346 ms | 3.756 ms | — | Dedicated-VM diagnostic at 1b6a1531; nominal 2.755×, unqualified; 2.03%/0.51% spreads |
 | Complete CSV helper with annotation-only local [BT], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 19.745 ms | 17.014 ms | — | Local Windows, 3f799746 + one-line guard deletion; 48.9%/13.5% spreads, inconclusive |
 | Complete text-summary file job [BR], fresh compile/run | 3,072 lines / 35,840 UTF-8 bytes | 14.994–16.539 ms | 11.188 ms | — | Local Windows diagnostic at 877f20e2; identical controls; 49%/107%/39% spreads, inconclusive |
 | Complete JSON-lines aggregation [AU], fresh compile/run | 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
@@ -39,6 +40,13 @@ PGO/LTO, ordinary GIL and cyclic GC, without debug mode or JIT, launched with
 instruction fuel was unset. Both engines ran sequentially on that machine.
 The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
+BV uses clean source builds with SDK 10.0.401 and the same VM/reference versions.
+It measures warm public `RunAsync` with completed host operations, including
+invocation setup, file staging/checks and prior-result cleanup. It does not measure
+suspended I/O. One short capture leaves the ratio unqualified; its 0.31% median
+change from earlier Lython is within sample spread. Compilation and startup are
+excluded, so BV cannot establish a change from the fresh/synchronous BU boundary.
+
 BU executes frozen Release package binaries built with SDK
 10.0.300-preview.0.26177.108 on the VM's .NET 10.0.12 runtime. Its identical
 adapter was built at a35ee62c; only the packaged Lython DLL differs between
@@ -58,6 +66,7 @@ to infer a change from the quiet-VM measurements.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BV | 2026-10-17 UTC | 1b6a1531; complete CSV helper job; dedicated VM warm public RunAsync | [CPython comparison, unchanged outputs, identities and cleanup](benchmarks/results/2026-10-17-csv-helper-warm-async/README.md) |
 | BU | 2026-10-17 UTC | 463b7a7a; complete CSV helper job; dedicated VM fresh compile/run | [CPython comparison, frozen package/build identities, earlier Lython and cleanup](benchmarks/results/2026-10-17-csv-checkpoint/README.md) |
 | BS | 2026-10-17 UTC | efccd974; complete CSV helper job; local Windows fresh compile/run | [Exact package roles, full outputs, earlier Lython and uncertainty](benchmarks/results/2026-10-17-csv-helper-fresh/README.md) |
 | BR | 2026-10-17 UTC | 877f20e2; identical Lython controls; local Windows fresh compile/run of complete text job | [Compile-to-result boundary, exact goldens, identities and uncertainty](benchmarks/results/2026-10-17-text-fresh/README.md) |
@@ -163,6 +172,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 | Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
 
 ## Improvements against earlier Lython revisions
+
+The complete CSV helper [BV](benchmarks/results/2026-10-17-csv-helper-warm-async/README.md)
+separately compares 5b546b2e → 1b6a1531 through warm `RunAsync`:
+10.379 → 10.346 ms, with 1.30%/2.03% spreads. The 0.31% lower median establishes
+no complete-job improvement. The native loop-step diagnostic below remains a
+separate boundary; its magnitude does not transfer to this CSV job.
 
 The [list admission / CSV-copy diagnostic](benchmarks/results/2026-10-17-list-capacity-admission/README.md)
 has separate native allocation evidence: 128 conversions of pre-read rows with
