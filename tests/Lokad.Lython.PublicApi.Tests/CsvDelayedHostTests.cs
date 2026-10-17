@@ -12,6 +12,78 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class CsvDelayedHostTests
 {
     [Theory]
+    [InlineData(0)]
+    [InlineData(2)]
+    public async Task ExplicitNamesConstructionDoesNotReadInput(int quoting)
+    {
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(
+            "import csv\nwith open('/r.csv') as f:\n print('opened')\n r=csv.DictReader(f,fieldnames=['a'],quoting=" +
+            quoting + ")\n return r.line_num", budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var reads = 0;
+        var readsAtOpen = -1;
+        var host = new DelayedLythonHost { OnTextReadCompleted = () => reads++ };
+        host.OnStandardOutputWrite = () => readsAtOpen = reads;
+        // Exceeds the opening window, so eager prefetch would perform more I/O.
+        host.SeedFile("/r.csv", "1" + new string('0', 20 * 1024) + "\n");
+        using var result = await script.RunAsync(host);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(BigInteger.Zero, result.ReturnValue);
+        // Isolate DictReader from the file's construction-time host access.
+        Assert.True(readsAtOpen >= 0);
+        Assert.Equal(readsAtOpen, reads);
+        result.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(2)]
+    public async Task ExplicitNamesFirstPullAwaitsAndHonorsCancellation(int quoting)
+    {
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(
+            "import csv\nwith open('/r.csv') as f:\n print('opened')\n r=csv.DictReader(f,fieldnames=['a'],quoting=" +
+            quoting + ")\n print('made',r.line_num)\n next(r)", budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost();
+        // The first row must acquire another window after open has primed one.
+        host.SeedFile("/r.csv", "1" + new string('0', 20 * 1024) + "\n");
+        var armed = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
+        host.OnStandardOutputWrite = () =>
+        {
+            if (!armed.Task.IsCompleted)
+                armed.SetResult(host.PauseReadUntilCancellation("/r.csv"));
+        };
+        using var cancellation = new CancellationTokenSource();
+        var run = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
+        try
+        {
+            var started = await armed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await started.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(run.IsCompleted);
+        }
+        finally
+        {
+            cancellation.Cancel();
+        }
+        using var result = await run.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.False(result.Success);
+        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+        Assert.Equal("opened\nmade 0\n", result.StandardOutput);
+        result.Dispose();
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task NumericRowsUseSharedConversionAfterDelayedInput(bool dictionary)

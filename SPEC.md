@@ -2391,6 +2391,13 @@ The object returned by `csv.reader(...)` is a single-pass iterator: `iter(reader
 
 The object returned by `csv.DictReader(...)` is its own single-pass iterator with the same iteration/next/exhaustion contract, yielding dictionaries keyed by field name. Indexing, slicing and `len(...)` are not supported; call `list(reader)` to materialize rows first. Truth testing always succeeds and rendering never pulls input. It must expose `fieldnames` and `line_num`. If `fieldnames` is omitted, the first row supplies the field names. `restkey` and `restval` must handle extra and missing fields.
 
+With explicit `fieldnames` (including an empty list), construction validates the
+source and copies the supported string field names without pulling data. Its
+`line_num` starts at zero; source changes before the first pull remain visible.
+Malformed data and numeric conversion errors surface when the row is requested.
+Call `next(reader)` explicitly when eager data validation is required. Inferred
+field names retain Lython's existing header read during construction.
+
 `DictReader` applies the same numeric conversion to data cells and excess fields;
 field names retain the supported strings-only contract. Use quoted header fields
 with `QUOTE_NONNUMERIC`. Invalid unquoted numeric text raises `ValueError` with

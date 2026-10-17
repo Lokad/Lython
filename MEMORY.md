@@ -119,6 +119,12 @@ after conversion; numeric row/container slots keep their ordinary funding.
 Conversion scratch ends immediately. Earlier rejection under narrow budgets is
 possible; bounded host batches remain the ownership boundary for long streams.
 
+With explicit field names, `DictReader` admits its source/parser and copied field
+names at construction without reading or retaining a first data row. Data-row
+admission and host I/O occur on pull. Returned rows and fields keep their batch
+owner after EOF; disposing or exhausting a reader does not refund live aliases.
+Inferred field names still require the existing header read during construction.
+
 Numeric conversion hooks share the existing type-slot/descriptor invocation
 paths. `RunAsync` keeps their owners alive until suspended callbacks and cleanup
 finish, including cancellation or terminal admission refusal. Converting an

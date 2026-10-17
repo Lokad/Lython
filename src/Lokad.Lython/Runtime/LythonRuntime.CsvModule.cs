@@ -82,13 +82,6 @@ internal sealed partial class LythonRuntime
             if (arguments.Length > 1 && arguments[1] is not PyNone)
             {
                 fieldNames = ToCsvFieldNames(arguments[1], "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", span, context);
-                // Validate (and surface malformed input) exactly like the
-                // historical eager first pull, then replay the record so
-                // iteration still yields every row.
-                if (records.TryMoveNext(out var first))
-                {
-                    records.PushBack(first);
-                }
             }
             else
             {
@@ -109,7 +102,7 @@ internal sealed partial class LythonRuntime
                 span);
         }
 
-        // Asynchronous twin: header inference and first-row validation pull
+        // Asynchronous twin: header inference pulls
         // through the async host boundary; everything else stays shared.
         // Plain reader construction pulls nothing, so it needs no twin.
         private async ValueTask<object> DictReaderAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -126,14 +119,6 @@ internal sealed partial class LythonRuntime
             if (arguments.Length > 1 && arguments[1] is not PyNone)
             {
                 fieldNames = ToCsvFieldNames(arguments[1], "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", span, context);
-                // Validate (and surface malformed input) exactly like the
-                // historical eager first pull, then replay the record so
-                // iteration still yields every row.
-                var first = await records.TryMoveNextAsync().ConfigureAwait(false);
-                if (first is not null)
-                {
-                    records.PushBack(first);
-                }
             }
             else
             {
@@ -498,7 +483,6 @@ internal sealed partial class LythonRuntime
         private int _position;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
-        private PyList? _pushedBack;
         private bool _completed;
 
         // Source/parser objects, builders and list shells; backing is charged
@@ -558,24 +542,10 @@ internal sealed partial class LythonRuntime
             return row;
         }
 
-        // Replays one pulled record (the validated first data row when explicit
-        // field names were supplied) so iteration still yields every row.
-        public void PushBack(PyList row)
-        {
-            _pushedBack = row;
-        }
-
         // Advances the shared cursor; every iterator over this source observes
         // the same position, matching CPython (a second pass sees nothing new).
         public bool TryMoveNext(out PyList row)
         {
-            if (_pushedBack is not null)
-            {
-                row = _pushedBack;
-                _pushedBack = null;
-                return true;
-            }
-
             while (true)
             {
                 if (_parser.TryTakeReady(out row))
@@ -595,13 +565,6 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask<PyList?> TryMoveNextAsync()
         {
-            if (_pushedBack is not null)
-            {
-                var replay = _pushedBack;
-                _pushedBack = null;
-                return replay;
-            }
-
             while (true)
             {
                 if (_parser.TryTakeReady(out var row))

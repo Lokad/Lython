@@ -88,7 +88,7 @@ public sealed class CsvExhaustedInputLifetimeTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task CompletedReaderCanReplayAnIndependentlyFundedRecord(bool asynchronous)
+    public async Task CompletedReaderKeepsReturnedRecordFundedAfterEof(bool asynchronous)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         var source = new LythonRuntime.CsvRecordSource(new PyList([PyString.FromString("kept,😀\n")]), Options(), new(0, 0, 0, 0), context);
@@ -96,13 +96,17 @@ public sealed class CsvExhaustedInputLifetimeTests
         Assert.NotNull(row);
         if (asynchronous) Assert.Null(await source.TryMoveNextAsync());
         else Assert.False(source.TryMoveNext(out _));
-        source.PushBack(row);
-        var replay = asynchronous ? await source.TryMoveNextAsync() : source.TryMoveNext(out var pushed) ? pushed : null;
-        Assert.Same(row, replay);
-        Assert.Equal("kept", ((PyString)replay![0]).AsString());
-        Assert.Equal("😀", ((PyString)replay[1]).AsString());
+        var funded = context.MemoryGovernor.CurrentCommittedBytes;
+        Collect();
+        Assert.Equal("kept", ((PyString)row[0]).AsString());
+        Assert.Equal("😀", ((PyString)row[1]).AsString());
+        Assert.True(funded >= source.OwnedBytes + Charge(row) + Charge(row[0]) + Charge(row[1]));
+        Assert.Equal(funded, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.False(source.TryMoveNext(out _));
         Assert.Null(await source.TryMoveNextAsync());
+        GC.KeepAlive(row);
+        GC.KeepAlive(source);
     }
 
     [Theory]
