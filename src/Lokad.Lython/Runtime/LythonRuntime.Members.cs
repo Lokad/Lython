@@ -1931,9 +1931,15 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature DictPopSignature = LythonCallableSignature.Create("dict.pop", ["key", "default"], 1);
         private static readonly LythonCallableSignature DictSetDefaultSignature = LythonCallableSignature.Create("dict.setdefault", ["key", "default"], 1);
         private static readonly LythonCallableSignature DictContainsSignature = LythonCallableSignature.Create("dict.__contains__", ["item"]);
-        private static readonly LythonCallableSignature DictGetItemSignature = LythonCallableSignature.Create("dict.__getitem__", ["index"]);
-        private static readonly LythonCallableSignature DictSetItemSignature = LythonCallableSignature.Create("dict.__setitem__", ["index", "value"]);
-        private static readonly LythonCallableSignature DictDelItemSignature = LythonCallableSignature.Create("dict.__delitem__", ["index"]);
+        private static readonly LythonCallableSignature DictGetItemSignature = LythonCallableSignature.Create(
+            "dict.__getitem__", ["index"], requiredCount: 1, maximumPositionalArgumentCount: 1,
+            variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature DictSetItemSignature = LythonCallableSignature.Create(
+            "dict.__setitem__", ["index", "value"], requiredCount: 2, maximumPositionalArgumentCount: 2,
+            variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 2);
+        private static readonly LythonCallableSignature DictDelItemSignature = LythonCallableSignature.Create(
+            "dict.__delitem__", ["index"], requiredCount: 1, maximumPositionalArgumentCount: 1,
+            variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
         private static readonly LythonCallableSignature DictOrSignature = LythonCallableSignature.Create("dict.__or__", ["value"]);
         private static readonly LythonCallableSignature DictROrSignature = LythonCallableSignature.Create("dict.__ror__", ["value"]);
         private static readonly LythonCallableSignature DictIOrSignature = LythonCallableSignature.Create("dict.__ior__", ["value"]);
@@ -2075,33 +2081,16 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(dict, arguments[0], span);
                 }, DictContainsSignature),
-                "__getitem__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict.__getitem__(index) expects one argument.", span);
-                    }
-
-                    return ReadSubscriptValue(dict, arguments[0], span, context);
-                }, DictGetItemSignature,
+                "__getitem__" => BoundCallable.Create(
+                    (arguments, span, context) => ReadSubscriptValue(dict, arguments[0], span, context), DictGetItemSignature,
                     (arguments, span, context) => ReadLoweredSubscriptAsync(dict, arguments[0], span, context)),
                 "__setitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    if (arguments.Length != 2)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict.__setitem__(index, value) expects two arguments.", span);
-                    }
-
                     SetSubscriptValue(dict, arguments[0], arguments[1], span, context);
                     return PyNone.Instance;
                 }, DictSetItemSignature),
                 "__delitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict.__delitem__(index) expects one argument.", span);
-                    }
-
                     DeleteSubscriptValue(dict, arguments[0], span, context);
                     return PyNone.Instance;
                 }, DictDelItemSignature),

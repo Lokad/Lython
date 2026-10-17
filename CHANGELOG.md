@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reject keywords for native `dict.__getitem__`, `dict.__setitem__` and `dict.__delitem__`, including extracted, unbound and expanded calls. Reuse positional-only signature binding so argument effects finish before `TypeError`, without invoking equality or mutating the dictionary. Remove three redundant body-level arity checks; preserve positional calls, asynchronous argument work, cancellation and retained ownership.
+
 - Keep protocol-free dictionary string-key reads on the ordinary execution handler under `RunAsync`, bypassing redundant async operation helpers. Reuse the existing async string-key lookup when stored-key equality can suspend, including exposed `__getitem__` calls; preserve missing-key errors, cancellation, terminal memory refusal and retained-result ownership. Remove the synchronous lowered-read forwarding wrapper.
 
 - Report JSON object/array trailing commas at the comma, with CPython's error message and character coordinates. Reuse the forward delimiter position and remove redundant backwards scans; preserve incomplete-input errors, raw prefixes and hook ordering.

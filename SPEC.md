@@ -2034,6 +2034,12 @@ exposed, unbound and expanded call forms. Other key shapes keep the existing
 general key-protocol behavior; arbitrary asynchronous hashing is not added here.
 The evaluated receiver and default remain owned through suspension and cancellation.
 
+Native `dict.__getitem__(key)`, `dict.__setitem__(key, value)` and
+`dict.__delitem__(key)` accept positional arguments only, including extracted,
+unbound and expanded calls. Argument expressions finish before a keyword-binding
+`TypeError`; rejected calls do not invoke stored-key equality or mutate the
+dictionary. Ordinary guest methods retain their declared keyword parameters.
+
 For builtin-string keys, `d[key]`, `d.__getitem__(key)` and
 `dict.__getitem__(d, key)` also await stored-key equality under `RunAsync`,
 including extracted methods, expanded calls and comprehensions. Receiver and key
