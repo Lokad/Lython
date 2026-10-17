@@ -2045,6 +2045,7 @@ raises `KeyError` for an absent key, while `counter.__delitem__(elem=key)` accep
 its declared keyword and ignores absent keys. Binding a base descriptor with
 `__get__` preserves that distinction. Base-dict getters still use the receiver's
 supported missing-key behavior (the default factory or a zero counter value).
+Argument diagnostics for inherited item methods name their defining `dict` method.
 
 For builtin-string keys, `d[key]`, `d.__getitem__(key)` and
 `dict.__getitem__(d, key)` also await stored-key equality under `RunAsync`,
