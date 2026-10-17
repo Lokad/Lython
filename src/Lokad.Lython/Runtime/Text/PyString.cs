@@ -349,8 +349,8 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         // Decodes stay transient: callers overwhelmingly read once (parsing,
         // rendering, host writes) while equality and hashing work on UTF-8
         // bytes, so retaining a UTF-16 copy per string would pin megabytes
-        // behind long-lived values for no hot-path gain. Only the large,
-        // rarely built rune-offset table below is charged.
+        // behind long-lived values for no hot-path gain. Persistent rune and
+        // offset caches below keep their own charges.
         return Utf8.GetString(_utf8);
     }
 
@@ -364,13 +364,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             _memoryGovernor.Commit(bytes);
             _committedCacheBytes += bytes;
         }
-    }
-
-    // Refreshes a tracked coupon after a cache build; untracked strings cost one
-    // lookup and no entry. Only successful builds re-snapshot: denied growth
-    // throws before mutating, leaving the old coupon (and retry headroom) intact.
-    private void NoteCacheBuilt()
-    {
     }
 
     public string AsString(int runeIndex)
@@ -678,7 +671,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
         offsets[runeIndex] = _utf8.Length;
         _runeByteOffsets = offsets;
-        NoteCacheBuilt();
         return offsets;
     }
 
@@ -738,9 +730,8 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         }
         catch (Exception)
         {
-            // Partial cache construction: release this build's charges so the next
-            // attempt re-charges from the pre-build coupon instead of stranding
-            // half a cache beside it.
+            // Refund unpublished partial storage during native cleanup. A denied
+            // admission still fails the command; retained cache storage stays funded.
             if (_memoryGovernor is not null)
             {
                 _memoryGovernor.Release(_committedCacheBytes - cacheBefore);
@@ -751,7 +742,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         }
 
         _cachedRunes = runes;
-        NoteCacheBuilt();
         return runes;
     }
     private static PyString[] CreateAsciiCharacters()

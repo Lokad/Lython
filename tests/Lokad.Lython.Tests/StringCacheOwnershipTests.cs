@@ -6,7 +6,7 @@ namespace Lokad.Lython.Tests;
 
 // Retained caches stay charged; a denied partial build refunds unpublished storage.
 [Collection("AllocationSensitive")]
-public sealed class StringCacheReclamationTests
+public sealed class StringCacheOwnershipTests
 {
     [Fact]
     public void OffsetTableRemainsFundedByItsExecutionOwner()
