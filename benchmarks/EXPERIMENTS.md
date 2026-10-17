@@ -7,6 +7,16 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 complete text fresh snapshot](results/2026-10-17-text-fresh/README.md)
+fills compile-to-result at 877f20e2 with identical Lython controls: 16.539/14.994ms,
+CPython3.13.2 11.188ms; spreads48.87%/106.79%/39.21%. The9.34% control difference
+and very large spread leave this local Windows result inconclusive. One8.788s
+capture; independent three-size stdout/report goldens,35micro responses and
+both50-file manifests pass; seven workers/fixtures gone. No optimization/VM-warm
+comparison, qualified ratio or repeat capture. BR adds the fresh row; the first
+comparison table now leads with complete jobs, retaining every prior warm/core
+row in a separate visible table.
+
 The [2026-10-17 bounded integer parser checkpoint](results/2026-10-17-utf8-small-integer/README.md)
 reuses the complete fresh CSV job at e01d45c6→27a61681:8.181→7.503ms, CPython
 3.849ms; spreads7.54%/6.44%/1.14%. The nominal8.3% lower median remains unqualified
@@ -163,7 +173,7 @@ replaces AS's warm row; the earlier string-token evidence remains:
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
-| AS | 2026-10-16 | b85fdde9 on f3e05ad9; one frozen parser source; unchanged JSON aggregation | [Owned UTF-8 tokens, preserved decoding and inconclusive timing](benchmarks/results/2026-10-16-json-utf8-tokens/README.md) |
+| AS | 2026-10-16 | b85fdde9 on f3e05ad9; one frozen parser source; unchanged JSON aggregation | [Owned UTF-8 tokens, preserved decoding and inconclusive timing](results/2026-10-16-json-utf8-tokens/README.md) |
 
 The [2026-10-16 JSON token delivery](results/2026-10-16-json-utf8-tokens/README.md)
 removes the CLR string/re-encoding round trip for well-formed unescaped values
@@ -181,7 +191,7 @@ and lease free. No repeat or tuning. AS replaces AC's warm row; original evidenc
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
-| AC | 2026-10-15 | Working JSON value-forwarding candidate on 50583327; one frozen production source; unchanged script/tooling | [Complete JSON file job and callback/ownership checks](benchmarks/results/2026-10-15-json-value-dispatch/README.md) |
+| AC | 2026-10-15 | Working JSON value-forwarding candidate on 50583327; one frozen production source; unchanged script/tooling | [Complete JSON file job and callback/ownership checks](results/2026-10-15-json-value-dispatch/README.md) |
 
 The [2026-10-16 prefix-call delivery](results/2026-10-16-string-prefix-calls/README.md)
 shares existing receiver/argument slots and the Unicode/tuple kernel for ordinary

@@ -3,25 +3,13 @@
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
-| Same JSON configuration job [AQ], warm `Run` | 16 existing paths / 181 UTF-8 input bytes | 3.309 ms | 1.695 ms | — | Short diagnostic at 4846928c; 0.9% change within spread; no improvement established |
-| Complete CSV summary [C], warm | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
 | Complete CSV summary [BP], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 7.503 ms | 3.849 ms | — | Short diagnostic at27a61681; nominal8.3% below prior Lython,7.5%/6.4% spreads; inconclusive |
-| Complete text-summary file job [BF], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.118 ms | 1.2864 ms | — | Short diagnostic at c487cb70; bulk hashing; 30.5% lower median alongside 30.0% baseline spread, inconclusive |
-| In-memory JSON parse/edit/dump [BQ], warm `Run` | 1,024 records / 55,723 UTF-8 input bytes | 3.503 ms | 1.016 ms | — | Local Windows diagnostic at c9990b38; 4.6% higher median than earlier Lython; no elapsed benefit established |
-| Same JSON transform [BL], warm `RunAsync` | 1,024 records / 55,723 UTF-8 input bytes | 2.691 ms | 0.4439 ms | — | Quiet-VM diagnostic at 35d99a88; container/prefix forwarding removed; 2.5% higher median within 8–13% spread, inconclusive |
-| Complete JSON-lines aggregation [BB], warm | 4,096 records / 110,592 UTF-8 bytes | 9.475 ms | 4.1751 ms | — | Short diagnostic at 5d5fd2e7; numeric forwarding; 6.1% higher median within 14.2% baseline spread; no benefit established |
-| Same JSON aggregation [AU], fresh compile/run | Same 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
+| Complete text-summary file job [BR], fresh compile/run | 3,072 lines / 35,840 UTF-8 bytes | 14.994–16.539 ms | 11.188 ms | — | Local Windows diagnostic at 877f20e2; identical controls; 49%/107%/39% spreads, inconclusive |
+| Complete JSON-lines aggregation [AU], fresh compile/run | 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
-| File search with helper and protected early exit [AR], warm | 2,049 lines / 42,010 UTF-8 bytes | 3.223 ms | 0.2845 ms | — | Short diagnostic at 473aa396; inconclusive (57%/64% Lython spread); no improvement established |
-| Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
+| File search with helper and early exit [P], fresh compile/run | 2,049 lines / 42,010 UTF-8 bytes; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
 | Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | Historical warm diagnostic; elapsed change within spread |
-| Starred-list helper loop [BJ], warm `RunAsync` | 16,384 calls / 264 UTF-8 source bytes | 27.550 ms | 2.9739 ms | — | Short diagnostic at 527ff833; admitted local buffers; 3.6% higher median, unqualified; no benefit established |
-| Keyword helper-call loop [BI], warm `RunAsync` | 16,384 calls / 134 UTF-8 source bytes | 6.680 ms | 1.0849 ms | — | Short diagnostic at 60961196; direct function transport; 1.8% lower median within 13.3% baseline spread, inconclusive |
-| Constructed-text strip/length loop [BH], warm `RunAsync` | 32,768 lines / 425,984 UTF-8 bytes constructed in execution | 17.832 ms | 3.1868 ms | — | Short diagnostic at d4ac39db; direct len transport; 26.4% lower median with 18.8% baseline spread, unqualified |
-| Branch/integer loop [BM], warm `RunAsync` | 16,384 iterations / 119 UTF-8 source bytes; modulo/comparison/add/subtract | 5.889 ms | 1.0203 ms | — | Short diagnostic at 2e4d0a34; synchronous cursor dispatch; 1.5% lower median within 4.7% baseline spread, inconclusive |
-| Unicode replace/split/join pipeline [BN], warm `RunAsync` | 8,192 blocks / 139,264 UTF-8 input bytes | 2.981 ms | 0.5404 ms | — | Short diagnostic at b10b8e9e; shared replacement kernel; 17.7% lower median within 80.8% baseline spread, inconclusive |
-| Instance-method accumulator [BC], warm `Run` | 2,048 calls / 207 UTF-8 source bytes | 1.060 ms | 0.11428 ms | — | Short diagnostic at d88d6440; direct lowered-method transport; 7.4% lower median, unqualified |
-| Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
+| In-memory JSON parse/edit/dump [BQ], warm `Run` | 1,024 records / 55,723 UTF-8 input bytes | 3.503 ms | 1.016 ms | — | Local Windows diagnostic at c9990b38; 4.6% higher median than earlier Lython; no elapsed benefit established |
 
 The rejected class prototype [AZ](benchmarks/results/2026-10-16-compiled-class-methods/README.md) remains in the experimental archive.
 
@@ -33,14 +21,14 @@ for changes against prior Lython versions.
 
 **Ratio convention:** Lython elapsed time divided by CPython elapsed time;
 above 1 means Lython takes longer. A dash means unavailable or unqualified,
-never zero. No workload ratio is qualified here. AF, AU and BO ranges contain the medians
+never zero. No workload ratio is qualified here. AF, AU, BO and BR ranges contain the medians
 of two identical Lython controls, not confidence intervals. Other entries show
 one diagnostic median. The jobs show performance gaps in those runs; their
 magnitudes and changes remain uncertain as marked.
 
 ## Which code and machine were measured?
 
-The leading rows except BQ, and historical Q/L campaigns, used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
+The quiet-VM snapshots (all leading rows except BQ/BR, and historical Q/L campaigns) used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
 x86_64, four AMD EPYC 9V45 vCPUs, one thread per core, 16 GiB RAM, no swap.
 Lython was a clean Release build using **.NET SDK 10.0.401 / runtime 10.0.12**.
 The primary external reference was **CPython 3.13.16**, built with GCC 13.3,
@@ -49,13 +37,16 @@ PGO/LTO, ordinary GIL and cyclic GC, without debug mode or JIT, launched with
 instruction fuel was unset. Both engines ran sequentially on that machine.
 The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
-BQ uses the active Windows 11 development workstation: Intel Core i7-14700KF,
+BQ and BR use the active Windows 11 development workstation: Intel Core i7-14700KF,
 28 logical processors, .NET SDK 10.0.300-preview.0.26177.108 / runtime 10.0.13
-and CPython 3.13.2. It is an unqualified local diagnostic and cannot be directly
-compared with quiet-VM timings. It establishes an allocation reduction only.
+and CPython 3.13.2. They are unqualified local diagnostics and cannot be directly
+compared with quiet-VM timings. BQ establishes an allocation reduction only.
+BR fills the fresh text boundary; its very large spread leaves the ratio
+unqualified and does not separate compilation, execution and file staging.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BR | 2026-10-17 UTC | 877f20e2; identical Lython controls; local Windows fresh compile/run of complete text job | [Compile-to-result boundary, exact goldens, identities and uncertainty](benchmarks/results/2026-10-17-text-fresh/README.md) |
 | BQ | 2026-10-17 UTC | c9990b38; bounded short escaped JSON decoding; local Windows warm execution | [Earlier Lython, CPython, native allocation and uncertainty](benchmarks/results/2026-10-17-escaped-json-strings/README.md) |
 | BP | 2026-10-17 UTC | 27a61681; bounded UTF-8 decimal parsing and no-op cache-hook cleanup; fresh compile/run of complete CSV job | [Unchanged workload/boundary, earlier Lython, exact goldens and separate allocation evidence](benchmarks/results/2026-10-17-utf8-small-integer/README.md) |
 | BO | 2026-10-17 UTC | 0f1cff1f; identical Lython controls; fresh compile/run of complete CSV job | [Compile-to-result boundary, independent file goldens and separate setup allocations](benchmarks/results/2026-10-17-csv-fresh/README.md) |
@@ -133,6 +124,27 @@ pipe drain and exit, with OS file caches retained. It must not be compared with
 warm execution. Its controls qualified, but workloads failed the required
 separation from startup; no workload ratio was published. Compilation samples
 and startup costs must not be folded into the warm table.
+
+## Other measured boundaries
+
+Historical warm forms and core diagnostics remain visible below. They retain
+their original revision, boundary and uncertainty; none describes today's HEAD.
+
+| Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
+| --- | --- | ---: | ---: | ---: | --- |
+| Same JSON configuration job [AQ], warm `Run` | 16 existing paths / 181 UTF-8 input bytes | 3.309 ms | 1.695 ms | — | Short diagnostic at 4846928c; 0.9% change within spread; no improvement established |
+| Complete CSV summary [C], warm | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
+| Complete text-summary file job [BF], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.118 ms | 1.2864 ms | — | Short diagnostic at c487cb70; bulk hashing; 30.5% lower median alongside 30.0% baseline spread, inconclusive |
+| Same JSON transform [BL], warm `RunAsync` | 1,024 records / 55,723 UTF-8 input bytes | 2.691 ms | 0.4439 ms | — | Quiet-VM diagnostic at 35d99a88; container/prefix forwarding removed; 2.5% higher median within 8–13% spread, inconclusive |
+| Complete JSON-lines aggregation [BB], warm | 4,096 records / 110,592 UTF-8 bytes | 9.475 ms | 4.1751 ms | — | Short diagnostic at 5d5fd2e7; numeric forwarding; 6.1% higher median within 14.2% baseline spread; no benefit established |
+| File search with helper and protected early exit [AR], warm | 2,049 lines / 42,010 UTF-8 bytes | 3.223 ms | 0.2845 ms | — | Short diagnostic at 473aa396; inconclusive (57%/64% Lython spread); no improvement established |
+| Starred-list helper loop [BJ], warm `RunAsync` | 16,384 calls / 264 UTF-8 source bytes | 27.550 ms | 2.9739 ms | — | Short diagnostic at 527ff833; admitted local buffers; 3.6% higher median, unqualified; no benefit established |
+| Keyword helper-call loop [BI], warm `RunAsync` | 16,384 calls / 134 UTF-8 source bytes | 6.680 ms | 1.0849 ms | — | Short diagnostic at 60961196; direct function transport; 1.8% lower median within 13.3% baseline spread, inconclusive |
+| Constructed-text strip/length loop [BH], warm `RunAsync` | 32,768 lines / 425,984 UTF-8 bytes constructed in execution | 17.832 ms | 3.1868 ms | — | Short diagnostic at d4ac39db; direct len transport; 26.4% lower median with 18.8% baseline spread, unqualified |
+| Branch/integer loop [BM], warm `RunAsync` | 16,384 iterations / 119 UTF-8 source bytes; modulo/comparison/add/subtract | 5.889 ms | 1.0203 ms | — | Short diagnostic at 2e4d0a34; synchronous cursor dispatch; 1.5% lower median within 4.7% baseline spread, inconclusive |
+| Unicode replace/split/join pipeline [BN], warm `RunAsync` | 8,192 blocks / 139,264 UTF-8 input bytes | 2.981 ms | 0.5404 ms | — | Short diagnostic at b10b8e9e; shared replacement kernel; 17.7% lower median within 80.8% baseline spread, inconclusive |
+| Instance-method accumulator [BC], warm `Run` | 2,048 calls / 207 UTF-8 source bytes | 1.060 ms | 0.11428 ms | — | Short diagnostic at d88d6440; direct lowered-method transport; 7.4% lower median, unqualified |
+| Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
 
 ## Improvements against earlier Lython revisions
 
