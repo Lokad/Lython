@@ -109,7 +109,7 @@ internal sealed partial class LythonRuntime
                 context.EnterInterpreterFrame(span);
                 try
                 {
-                    if (first == (byte)'"') return new(ReadJsonString(input, options.Strict, position, context, span));
+                    if (first == (byte)'"') return new(ReadJsonString(input, IsTruthy(options.Strict), position, context, span));
                     if (TryMatchJsonLiteral(bytes.Span, position, "true", out var trueEnd))
                     {
                         return new(((object)true, trueEnd));

@@ -190,7 +190,7 @@ internal sealed partial class LythonRuntime
             ICallable? parseInt = null;
             ICallable? parseConstant = null;
             ICallable? objectPairsHook = null;
-            var strict = true;
+            object strict = true;
             var positional = 0;
             foreach (var argument in arguments)
             {
@@ -215,7 +215,7 @@ internal sealed partial class LythonRuntime
                         parseConstant = JsonModule.OptionalJsonCallable(argument.Value, "parse_constant", span);
                         break;
                     case "strict":
-                        strict = JsonModule.ParseJsonBoolOption(argument.Value, defaultValue: true);
+                        strict = argument.Value;
                         break;
                     case "object_pairs_hook":
                         objectPairsHook = JsonModule.OptionalJsonCallable(argument.Value, "object_pairs_hook", span);

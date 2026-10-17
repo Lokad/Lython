@@ -59,15 +59,15 @@ internal static partial class StaticDataModuleContractFamily
         AbstractState bindings,
         int optionOffset)
     {
-        AnalyzeBooleanArgument(arguments, optionOffset, "skipkeys", "json.dumps(skipkeys=...) expects a bool.", diagnostics, bindings);
-        AnalyzeBooleanArgument(arguments, optionOffset + 1, "ensure_ascii", "json.dumps(ensure_ascii=...) expects a bool.", diagnostics, bindings);
-        AnalyzeBooleanArgument(arguments, optionOffset + 2, "check_circular", "json.dumps(check_circular=...) expects a bool.", diagnostics, bindings);
-        AnalyzeBooleanArgument(arguments, optionOffset + 3, "allow_nan", "json.dumps(allow_nan=...) expects a bool.", diagnostics, bindings);
+        AnalyzeBooleanOrNoneArgument(arguments, optionOffset, "skipkeys", "json.dumps(skipkeys=...) expects a bool or None.", diagnostics, bindings);
+        AnalyzeBooleanOrNoneArgument(arguments, optionOffset + 1, "ensure_ascii", "json.dumps(ensure_ascii=...) expects a bool or None.", diagnostics, bindings);
+        AnalyzeBooleanOrNoneArgument(arguments, optionOffset + 2, "check_circular", "json.dumps(check_circular=...) expects a bool or None.", diagnostics, bindings);
+        AnalyzeBooleanOrNoneArgument(arguments, optionOffset + 3, "allow_nan", "json.dumps(allow_nan=...) expects a bool or None.", diagnostics, bindings);
         AnalyzeJsonClsNone(arguments, optionOffset + 4, "cls", diagnostics, bindings);
         AnalyzeJsonIndent(arguments, optionOffset + 5, "indent", diagnostics, bindings);
         AnalyzeJsonSeparators(arguments, optionOffset + 6, "separators", diagnostics, bindings);
         AnalyzeCallableOrNoneArgument(arguments, optionOffset + 7, "default", "json.dumps(default=...) expects a callable or None.", diagnostics, bindings);
-        AnalyzeBooleanArgument(arguments, optionOffset + 8, "sort_keys", "json.dumps(sort_keys=...) expects a bool.", diagnostics, bindings);
+        AnalyzeBooleanOrNoneArgument(arguments, optionOffset + 8, "sort_keys", "json.dumps(sort_keys=...) expects a bool or None.", diagnostics, bindings);
     }
 
     private static bool AnalyzeJsonReadableFileArgument(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)

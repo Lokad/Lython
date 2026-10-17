@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
         ICallable? ParseFloat,
         ICallable? ParseInt,
         ICallable? ParseConstant,
-        ICallable? ObjectPairsHook, bool Strict);
+        ICallable? ObjectPairsHook, object Strict);
 
     internal sealed record JsonDumpOptions(
         bool SkipKeys,
@@ -276,9 +276,6 @@ internal sealed partial class LythonRuntime
 
             throw new LythonRuntimeException("TypeError", $"json option {parameterName}=... expects a callable or None.", span);
         }
-
-        internal static bool ParseJsonBoolOption(object value, bool defaultValue)
-            => ReferenceEquals(value, PyNone.Instance) ? defaultValue : IsTruthy(value);
 
         internal static string? ParseJsonIndent(object value, LythonSourceSpan span)
         {

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Treat explicit `None` as false for JSON boolean options while preserving omitted defaults. Reuse argument presence through module/class forwarding, retain raw decoder `strict` attributes and captured scanner behavior, and remove the obsolete None-as-default helper. This corrects prior `strict`, `ensure_ascii` and `allow_nan` behavior; managed recursion and ownership safeguards remain.
+
 - Decode short escaped JSON strings directly into bounded UTF-8 working storage, removing temporary CLR strings and re-encoding. Reuse the existing token reservation and governed result copy; preserve larger-token decoding, errors, offsets, hooks and managed stack protection.
 
 - Resolve float conversion through type slots, bind fallback index descriptors once, and preserve existing float objects. Await descriptor and hook work through asynchronous hosting while keeping native conversion synchronous; reuse integer conversion helpers and preserve cancellation, terminal refusal, retained ownership and managed stack protection.

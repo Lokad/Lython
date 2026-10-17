@@ -2147,6 +2147,15 @@ The imported module must expose the following JSON helpers:
 - `json.JSONEncoder`
 - `json.JSONDecoder`
 
+Omitted JSON boolean options use their documented defaults. Explicit `None`
+has a false value for `strict`, `ensure_ascii`, `check_circular`, `allow_nan`,
+`skipkeys` and `sort_keys`; it does not request the default. Encoder/decoder
+constructor attributes retain the supplied values. Decoder scanning captures its
+constructor options, so replacing a decoder's public `strict` attribute does not
+reconfigure that scanner. Encoder operations continue to read their mutable
+options. Disabling circular checks retains independent managed recursion and
+stack safeguards.
+
 `load` and `dump` use text-stream protocols: Lython text file handles,
 host-mediated `sys.stdin`/`sys.stdout`/`sys.stderr`, and guest objects with
 `read()` returning text or `write(chunk)` are supported. `load` reads once,

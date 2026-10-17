@@ -43,20 +43,20 @@ internal sealed partial class LythonRuntime
         private sealed class JsonModuleCallable : ICallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyBoundEngineMethod, IPyHashableValue
         {
             private readonly LythonCallableSignature _signature;
-            private readonly Func<object[], IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> _implementation;
-            private readonly Func<object[], IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
+            private readonly Func<BoundCallArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> _implementation;
+            private readonly Func<BoundCallArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
 
             public JsonModuleCallable(
                 LythonCallableSignature signature,
-                Func<object[], IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> implementation)
+                Func<BoundCallArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> implementation)
                 : this(signature, implementation, null)
             {
             }
 
             public JsonModuleCallable(
                 LythonCallableSignature signature,
-                Func<object[], IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> implementation,
-                Func<object[], IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
+                Func<BoundCallArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, object> implementation,
+                Func<BoundCallArguments, IReadOnlyList<KeyValuePair<string, object>>, LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
             {
                 _signature = signature;
                 _implementation = implementation;
@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
             {
                 context.CheckExecution(span);
                 SplitArguments(arguments, out var standard, out var extras);
-                var bound = CallBinder.BindNamedArguments(standard, span, _signature, PythonCallableKind.Builtin);
+                var bound = CallBinder.BindNamedArgumentsWithPresence(standard, span, _signature, PythonCallableKind.Builtin);
                 var result = _implementation(bound, extras, span, context);
                 return result;
             }
@@ -76,7 +76,7 @@ internal sealed partial class LythonRuntime
             {
                 context.CheckExecution(span);
                 SplitArguments(arguments, out var standard, out var extras);
-                var bound = CallBinder.BindNamedArguments(standard, span, _signature, PythonCallableKind.Builtin);
+                var bound = CallBinder.BindNamedArgumentsWithPresence(standard, span, _signature, PythonCallableKind.Builtin);
                 var result = _asyncImplementation is null
                     ? _implementation(bound, extras, span, context)
                     : await _asyncImplementation(bound, extras, span, context).ConfigureAwait(false);
@@ -161,59 +161,59 @@ internal sealed partial class LythonRuntime
         }
 
         private object Load(
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            var text = PyTextStream.ReadAll(bound[0], span, context);
-            return DecodeWithClass(text, ResolveDecoderClass(GetOptional(bound, 1), span), bound, extras, span, context);
+            var text = PyTextStream.ReadAll(bound.Values[0], span, context);
+            return DecodeWithClass(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context);
         }
 
         private async ValueTask<object> LoadAsync(
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            var text = await PyTextStream.ReadAllAsync(bound[0], span, context).ConfigureAwait(false);
-            return await DecodeWithClassAsync(text, ResolveDecoderClass(GetOptional(bound, 1), span), bound, extras, span, context).ConfigureAwait(false);
+            var text = await PyTextStream.ReadAllAsync(bound.Values[0], span, context).ConfigureAwait(false);
+            return await DecodeWithClassAsync(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context).ConfigureAwait(false);
         }
 
         private object Loads(
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            if (bound.Length < 1 || !PyStringOps.TryAsString(bound[0], out var text))
+            if (bound.Values.Length < 1 || !PyStringOps.TryAsString(bound.Values[0], out var text))
             {
                 throw new LythonRuntimeException("TypeError", "json.loads(s, *, ...) expects a string argument.", span);
             }
 
-            return DecodeWithClass(text, ResolveDecoderClass(GetOptional(bound, 1), span), bound, extras, span, context);
+            return DecodeWithClass(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context);
         }
 
         private async ValueTask<object> LoadsAsync(
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            if (bound.Length < 1 || !PyStringOps.TryAsString(bound[0], out var text))
+            if (bound.Values.Length < 1 || !PyStringOps.TryAsString(bound.Values[0], out var text))
             {
                 throw new LythonRuntimeException("TypeError", "json.loads(s, *, ...) expects a string argument.", span);
             }
 
-            return await DecodeWithClassAsync(text, ResolveDecoderClass(GetOptional(bound, 1), span), bound, extras, span, context).ConfigureAwait(false);
+            return await DecodeWithClassAsync(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context).ConfigureAwait(false);
         }
 
         private object Dump(
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -223,69 +223,69 @@ internal sealed partial class LythonRuntime
             foreach (var chunk in PyIteration.ToSequence(chunks, span, context))
             {
                 context.CheckExecution(span);
-                PyTextStream.Write(bound[1], chunk, span, context);
+                PyTextStream.Write(bound.Values[1], chunk, span, context);
             }
             return PyNone.Instance;
         }
 
         private async ValueTask<object> DumpAsync(
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            var cls = ResolveEncoderClass(GetOptional(bound, 6), span);
+            var cls = ResolveEncoderClass(GetOptional(bound.Values, 6), span);
             var forwarded = BuildEncoderForwardArgs(bound, extras, JsonDumpCallForm.Dump).ToArray();
             var instance = await ((ICallable)cls).InvokeAsync(forwarded, span, context).ConfigureAwait(false);
             var method = await PyTextStream.ResolveMemberAsync(instance, "iterencode", span, context).ConfigureAwait(false);
             var chunks = await InvokeCallableTargetAsync(method, span, span, context,
-                () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(bound[0])])).ConfigureAwait(false);
+                () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(bound.Values[0])])).ConfigureAwait(false);
             await foreach (var chunk in PyIteration.ToSequenceAsync(chunks, span, context).ConfigureAwait(false))
             {
                 context.CheckExecution(span);
-                await PyTextStream.WriteAsync(bound[1], chunk, span, context).ConfigureAwait(false);
+                await PyTextStream.WriteAsync(bound.Values[1], chunk, span, context).ConfigureAwait(false);
             }
             return PyNone.Instance;
         }
 
-        private static object IterateWithClass(object[] bound, IReadOnlyList<KeyValuePair<string, object>> extras,
+        private static object IterateWithClass(BoundCallArguments bound, IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span, ExecutionContext context)
         {
-            var cls = ResolveEncoderClass(GetOptional(bound, 6), span);
+            var cls = ResolveEncoderClass(GetOptional(bound.Values, 6), span);
             var instance = ConstructEncoderClass(cls, bound, extras, JsonDumpCallForm.Dump, span, context);
             var method = PyTextStream.ResolveMember(instance, "iterencode", span, context);
-            return InvokeCallableTarget(method, span, span, context, () => [CallArgumentValue.Positional(bound[0])]);
+            return InvokeCallableTarget(method, span, span, context, () => [CallArgumentValue.Positional(bound.Values[0])]);
         }
 
         private object Dumps(
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            if (bound.Length < 1)
+            if (bound.Values.Length < 1)
             {
                 throw new LythonRuntimeException("TypeError", "json.dumps(obj, *, ...) expects one object argument.", span);
             }
 
-            return EncodeWithClass(bound[0], ResolveEncoderClass(GetOptional(bound, 5), span), bound, extras, JsonDumpCallForm.Dumps, span, context);
+            return EncodeWithClass(bound.Values[0], ResolveEncoderClass(GetOptional(bound.Values, 5), span), bound, extras, JsonDumpCallForm.Dumps, span, context);
         }
 
         private async ValueTask<object> DumpsAsync(
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            if (bound.Length < 1)
+            if (bound.Values.Length < 1)
             {
                 throw new LythonRuntimeException("TypeError", "json.dumps(obj, *, ...) expects one object argument.", span);
             }
 
-            return await EncodeWithClassAsync(bound[0], ResolveEncoderClass(GetOptional(bound, 5), span), bound, extras, JsonDumpCallForm.Dumps, span, context).ConfigureAwait(false);
+            return await EncodeWithClassAsync(bound.Values[0], ResolveEncoderClass(GetOptional(bound.Values, 5), span), bound, extras, JsonDumpCallForm.Dumps, span, context).ConfigureAwait(false);
         }
 
         // Every entry point dispatches through the selected class like
@@ -335,7 +335,7 @@ internal sealed partial class LythonRuntime
         private object DecodeWithClass(
             PyString text,
             object clsValue,
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -363,7 +363,7 @@ internal sealed partial class LythonRuntime
         private async ValueTask<object> DecodeWithClassAsync(
             PyString text,
             object clsValue,
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -390,7 +390,7 @@ internal sealed partial class LythonRuntime
 
         private static object ConstructDecoderClass(
             object clsValue,
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -401,7 +401,7 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask<object> ConstructDecoderClassAsync(
             object clsValue,
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -411,19 +411,18 @@ internal sealed partial class LythonRuntime
         }
 
         private static List<CallArgumentValue> BuildDecoderForwardArgs(
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras)
         {
             var forwarded = new List<CallArgumentValue>();
-            AddDecoderOption(forwarded, "object_hook", GetOptional(bound, 2));
-            AddDecoderOption(forwarded, "parse_float", GetOptional(bound, 3));
-            AddDecoderOption(forwarded, "parse_int", GetOptional(bound, 4));
-            AddDecoderOption(forwarded, "parse_constant", GetOptional(bound, 5));
-            AddDecoderOption(forwarded, "object_pairs_hook", GetOptional(bound, 6));
-            var strict = GetOptional(bound, 7);
-            if (!ReferenceEquals(strict, PyNone.Instance))
+            AddDecoderOption(forwarded, "object_hook", GetOptional(bound.Values, 2));
+            AddDecoderOption(forwarded, "parse_float", GetOptional(bound.Values, 3));
+            AddDecoderOption(forwarded, "parse_int", GetOptional(bound.Values, 4));
+            AddDecoderOption(forwarded, "parse_constant", GetOptional(bound.Values, 5));
+            AddDecoderOption(forwarded, "object_pairs_hook", GetOptional(bound.Values, 6));
+            if (bound.Assigned[7])
             {
-                forwarded.Add(CallArgumentValue.Keyword("strict", strict));
+                forwarded.Add(CallArgumentValue.Keyword("strict", bound.Values[7]));
             }
 
             foreach (var extra in extras)
@@ -445,7 +444,7 @@ internal sealed partial class LythonRuntime
         private object EncodeWithClass(
             object value,
             object clsValue,
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             JsonDumpCallForm callForm,
             LythonSourceSpan span,
@@ -468,7 +467,7 @@ internal sealed partial class LythonRuntime
         private async ValueTask<object> EncodeWithClassAsync(
             object value,
             object clsValue,
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             JsonDumpCallForm callForm,
             LythonSourceSpan span,
@@ -491,7 +490,7 @@ internal sealed partial class LythonRuntime
 
         private static object ConstructEncoderClass(
             object clsValue,
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             JsonDumpCallForm callForm,
             LythonSourceSpan span,
@@ -502,21 +501,21 @@ internal sealed partial class LythonRuntime
         }
 
         private static List<CallArgumentValue> BuildEncoderForwardArgs(
-            object[] bound,
+            BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             JsonDumpCallForm callForm)
         {
             var offset = callForm == JsonDumpCallForm.Dumps ? 0 : 1;
             var forwarded = new List<CallArgumentValue>
             {
-                CallArgumentValue.Keyword("skipkeys", GetOptional(bound, offset + 1)),
-                CallArgumentValue.Keyword("ensure_ascii", GetOptional(bound, offset + 2)),
-                CallArgumentValue.Keyword("check_circular", GetOptional(bound, offset + 3)),
-                CallArgumentValue.Keyword("allow_nan", GetOptional(bound, offset + 4)),
-                CallArgumentValue.Keyword("indent", GetOptional(bound, offset + 6)),
-                CallArgumentValue.Keyword("separators", GetOptional(bound, offset + 7)),
-                CallArgumentValue.Keyword("default", GetOptional(bound, offset + 8)),
-                CallArgumentValue.Keyword("sort_keys", GetOptional(bound, offset + 9)),
+                CallArgumentValue.Keyword("skipkeys", bound.Assigned[offset + 1] ? bound.Values[offset + 1] : false),
+                CallArgumentValue.Keyword("ensure_ascii", bound.Assigned[offset + 2] ? bound.Values[offset + 2] : true),
+                CallArgumentValue.Keyword("check_circular", bound.Assigned[offset + 3] ? bound.Values[offset + 3] : true),
+                CallArgumentValue.Keyword("allow_nan", bound.Assigned[offset + 4] ? bound.Values[offset + 4] : true),
+                CallArgumentValue.Keyword("indent", GetOptional(bound.Values, offset + 6)),
+                CallArgumentValue.Keyword("separators", GetOptional(bound.Values, offset + 7)),
+                CallArgumentValue.Keyword("default", GetOptional(bound.Values, offset + 8)),
+                CallArgumentValue.Keyword("sort_keys", bound.Assigned[offset + 9] ? bound.Values[offset + 9] : false),
             };
 
             foreach (var extra in extras)

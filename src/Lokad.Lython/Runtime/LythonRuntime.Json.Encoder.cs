@@ -84,15 +84,15 @@ internal sealed partial class LythonRuntime
                 JsonEncoderMembers.TryGetMember(this, "default", out defaultMethod!);
             }
             return new JsonDumpOptions(
-                JsonModule.ParseJsonBoolOption(Read("skipkeys", Options.SkipKeys), false),
-                JsonModule.ParseJsonBoolOption(Read("ensure_ascii", Options.EnsureAscii), true),
-                JsonModule.ParseJsonBoolOption(Read("check_circular", Options.CheckCircular), true),
-                JsonModule.ParseJsonBoolOption(Read("allow_nan", Options.AllowNan), true),
+                LythonRuntime.IsTruthy(Read("skipkeys", Options.SkipKeys)),
+                LythonRuntime.IsTruthy(Read("ensure_ascii", Options.EnsureAscii)),
+                LythonRuntime.IsTruthy(Read("check_circular", Options.CheckCircular)),
+                LythonRuntime.IsTruthy(Read("allow_nan", Options.AllowNan)),
                 JsonModule.ParseJsonIndent(Read("indent", Options.Indent), span),
                 Separator("item_separator", ItemSeparator),
                 Separator("key_separator", KeySeparator),
                 defaultMethod as ICallable ?? new JsonInvalidDefaultCallable(defaultMethod),
-                JsonModule.ParseJsonBoolOption(Read("sort_keys", Options.SortKeys), false));
+                LythonRuntime.IsTruthy(Read("sort_keys", Options.SortKeys)));
         }
 
         private sealed class JsonInvalidDefaultCallable(object value) : ICallable

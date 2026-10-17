@@ -201,7 +201,7 @@ public sealed class JsonStrictnessScenarioTests
     }
 
     [Fact]
-    public async Task LoadsStrictNoneUsesDefaultRejection()
+    public async Task LoadsStrictNoneAcceptsControlCharactersLikePython()
     {
         var script = new LythonEngine().Compile(
             """
@@ -211,12 +211,12 @@ public sealed class JsonStrictnessScenarioTests
             """);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
-        Assert.False(sync.Success);
-        Assert.Equal("JSONDecodeError", sync.Failure?.ExceptionType);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("a" + char.ToString((char)1) + "b", sync.ReturnValue);
 
         var asyncResult = await script.RunAsync(new MockLythonHost());
-        Assert.False(asyncResult.Success);
-        Assert.Equal("JSONDecodeError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("a" + char.ToString((char)1) + "b", asyncResult.ReturnValue);
     }
 
     [Fact]
