@@ -373,6 +373,12 @@ The interpreter keeps the receiver and arguments until completion or awaited
 cleanup, then uses its ordinary transfer/unwind. Exposed methods retain their
 existing ownership; no extra reservation, argument array or owner is introduced.
 
+Native string/bytes `float` calls with one positional argument reuse operand
+storage and the existing parser's decoding, underscore-copy and error-preview
+admission. Working reservations still end after conversion or error cleanup;
+retained input aliases keep their existing owners. Removing argument packaging
+adds no owner or cache and does not change the general protocol route.
+
 Immediate three-positional-argument native string replacement forwards its raw
 count from existing operand storage, sharing the two-argument operation and
 replacement kernel. It removes immediate method/argument packaging for that form;

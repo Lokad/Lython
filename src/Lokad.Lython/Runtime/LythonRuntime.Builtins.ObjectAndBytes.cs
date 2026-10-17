@@ -10,6 +10,9 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> FloatTextOperation
+        = static (value, span, context) => ParseOwnedFloatText(value, context, span);
+
     private static object Float(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length > 1)
@@ -55,48 +58,49 @@ internal sealed partial class LythonRuntime
             _ => throw FloatArgumentError(arguments[0], context, span)
         };
 
-        static double ParseOwnedFloatText(object source, ExecutionContext context, LythonSourceSpan span)
-        {
-            // UTF-8 input bytes bound decoded UTF-16 capacity. Fund decoding
-            // and an optional underscore-removal copy before either allocation.
-            var length = source is PyString text ? text.Utf8Bytes.Length : ((PyBytes)source).Length;
-            var decodeBytes = RuntimeMemoryEstimates.SaturatingAdd(32,
-                RuntimeMemoryEstimates.SaturatingMultiply(2, length));
-            using var working = context.MemoryGovernor.ReserveTemporary(
-                RuntimeMemoryEstimates.SaturatingMultiply(2, decodeBytes), span);
-            var decoded = source is PyString value ? value.AsString() : Encoding.ASCII.GetString(((PyBytes)source).Bytes);
-            var trimmed = decoded.AsSpan().Trim();
-            var hasUnderscore = false;
-            // Underscores must sit between two ASCII digits like CPython;
-            // lax stripping would otherwise accept leading, trailing,
-            // doubled or dot/exponent-adjacent separators.
-            for (var i = 0; i < trimmed.Length; i++)
-            {
-                // The CLR parser accepts trailing NULs; Python rejects them.
-                if (trimmed[i] == '\0' || (trimmed[i] == '_' &&
-                    (i == 0 || i + 1 >= trimmed.Length || !char.IsAsciiDigit(trimmed[i - 1]) || !char.IsAsciiDigit(trimmed[i + 1]))))
-                {
-                    throw FloatConversionError(source, context, span, working);
-                }
-                hasUnderscore |= trimmed[i] == '_';
-            }
+    }
 
-            var normalizedCopy = hasUnderscore ? decoded.Replace("_", string.Empty, StringComparison.Ordinal) : decoded;
-            var normalized = normalizedCopy.AsSpan().Trim();
-            var negative = !normalized.IsEmpty && normalized[0] == '-';
-            var unsigned = !normalized.IsEmpty && normalized[0] is '+' or '-' ? normalized[1..] : normalized;
-            if (unsigned.Equals("inf", StringComparison.OrdinalIgnoreCase) || unsigned.Equals("infinity", StringComparison.OrdinalIgnoreCase))
-                return negative ? double.NegativeInfinity : double.PositiveInfinity;
-            if (unsigned.Equals("nan", StringComparison.OrdinalIgnoreCase))
-                return negative ? -PythonNaN : PythonNaN;
-            try
-            {
-                return double.Parse(normalized, NumberStyles.Float, CultureInfo.InvariantCulture);
-            }
-            catch (FormatException)
+    private static double ParseOwnedFloatText(object source, ExecutionContext context, LythonSourceSpan span)
+    {
+        // UTF-8 input bytes bound decoded UTF-16 capacity. Fund decoding
+        // and an optional underscore-removal copy before either allocation.
+        var length = source is PyString text ? text.Utf8Bytes.Length : ((PyBytes)source).Length;
+        var decodeBytes = RuntimeMemoryEstimates.SaturatingAdd(32,
+            RuntimeMemoryEstimates.SaturatingMultiply(2, length));
+        using var working = context.MemoryGovernor.ReserveTemporary(
+            RuntimeMemoryEstimates.SaturatingMultiply(2, decodeBytes), span);
+        var decoded = source is PyString value ? value.AsString() : Encoding.ASCII.GetString(((PyBytes)source).Bytes);
+        var trimmed = decoded.AsSpan().Trim();
+        var hasUnderscore = false;
+        // Underscores must sit between two ASCII digits like CPython;
+        // lax stripping would otherwise accept leading, trailing,
+        // doubled or dot/exponent-adjacent separators.
+        for (var i = 0; i < trimmed.Length; i++)
+        {
+            // The CLR parser accepts trailing NULs; Python rejects them.
+            if (trimmed[i] == '\0' || (trimmed[i] == '_' &&
+                (i == 0 || i + 1 >= trimmed.Length || !char.IsAsciiDigit(trimmed[i - 1]) || !char.IsAsciiDigit(trimmed[i + 1]))))
             {
                 throw FloatConversionError(source, context, span, working);
             }
+            hasUnderscore |= trimmed[i] == '_';
+        }
+
+        var normalizedCopy = hasUnderscore ? decoded.Replace("_", string.Empty, StringComparison.Ordinal) : decoded;
+        var normalized = normalizedCopy.AsSpan().Trim();
+        var negative = !normalized.IsEmpty && normalized[0] == '-';
+        var unsigned = !normalized.IsEmpty && normalized[0] is '+' or '-' ? normalized[1..] : normalized;
+        if (unsigned.Equals("inf", StringComparison.OrdinalIgnoreCase) || unsigned.Equals("infinity", StringComparison.OrdinalIgnoreCase))
+            return negative ? double.NegativeInfinity : double.PositiveInfinity;
+        if (unsigned.Equals("nan", StringComparison.OrdinalIgnoreCase))
+            return negative ? -PythonNaN : PythonNaN;
+        try
+        {
+            return double.Parse(normalized, NumberStyles.Float, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException)
+        {
+            throw FloatConversionError(source, context, span, working);
         }
     }
 

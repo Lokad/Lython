@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Invoke one-positional-argument native text/bytes `float` calls from existing operand storage. Reuse the admitted parser and managed call guards, avoiding general argument packaging while preserving expanded/keyword calls, aliases/shadowing, guest protocols, cancellation and terminal refusal.
+
 - Extend direct exact-string `startswith` calls to positional start/end bounds. Borrow existing operand storage through shared bounds validation and awaited guest index hooks, avoiding immediate bound-method and argument packaging while preserving tuple order, captured receivers, cancellation, terminal admission failure and ownership.
 
 - Extend the existing direct `str.replace` call path to three positional arguments. Pass the raw count from operand storage through shared validation and replacement, avoiding immediate bound-method and argument packaging while preserving keyword/exposed/guest calls, allocation preflights and result ownership.

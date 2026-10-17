@@ -1279,6 +1279,11 @@ Native floats and valid `__float__` results preserve the original float object.
 host boundary; native conversion remains synchronous. Inputs, returned aliases
 and their funding stay alive until suspended users and cleanup finish.
 
+One-positional-argument calls to the builtin `float` with native strings or bytes
+use existing operand storage and the same admitted text parser as general calls.
+Both call checkpoints and managed admission remain in place. Expanded/keyword
+calls, shadowed callables and guest/numeric conversions retain normal binding.
+
 The supported subset must support numeric operators with Python semantics, including:
 
 - `+`
