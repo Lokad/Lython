@@ -1,0 +1,776 @@
+{
+  "capturedAtUtc": "2026-10-17T21:10:27.413478+00:00",
+  "baselineRevision": "5b546b2edbeaba45f8fe1b79be0b542fba0b5444",
+  "status": "rejected; no runtime changes retained",
+  "boundary": "128 native sorted or helper calls plus one range construction; precreated source/input/context/compilation; four warmups,eight samples; isolated final comparisons select only the diagnostic class",
+  "observations": {
+    "isolated-baseline": [
+      {
+        "asynchronous": true,
+        "keyword": false,
+        "helper": false,
+        "callsPerSample": 128,
+        "bytes": [
+          142976,
+          142976,
+          142976,
+          142976,
+          142976,
+          142976,
+          142976,
+          142976
+        ],
+        "ticks": [
+          7573,
+          9516,
+          7862,
+          6612,
+          6784,
+          99530,
+          6865,
+          6678
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "keyword": true,
+        "helper": false,
+        "callsPerSample": 128,
+        "bytes": [
+          145024,
+          145024,
+          145024,
+          145024,
+          145024,
+          145024,
+          145024,
+          145024
+        ],
+        "ticks": [
+          7097,
+          7228,
+          7018,
+          7106,
+          7078,
+          7316,
+          7271,
+          7355
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "keyword": false,
+        "helper": true,
+        "callsPerSample": 128,
+        "bytes": [
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288
+        ],
+        "ticks": [
+          1549,
+          1558,
+          1569,
+          1556,
+          1522,
+          1602,
+          1545,
+          1568
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "keyword": true,
+        "helper": false,
+        "callsPerSample": 128,
+        "bytes": [
+          135808,
+          135808,
+          135808,
+          135808,
+          135808,
+          135808,
+          135808,
+          135808
+        ],
+        "ticks": [
+          4431,
+          4596,
+          4496,
+          4452,
+          4450,
+          4648,
+          4620,
+          4546
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "keyword": false,
+        "helper": false,
+        "callsPerSample": 128,
+        "bytes": [
+          133760,
+          133760,
+          133760,
+          133760,
+          133760,
+          133760,
+          133760,
+          133760
+        ],
+        "ticks": [
+          4085,
+          4128,
+          4193,
+          4161,
+          4048,
+          4332,
+          4070,
+          4084
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "keyword": true,
+        "helper": true,
+        "callsPerSample": 128,
+        "bytes": [
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288
+        ],
+        "ticks": [
+          1641,
+          1644,
+          1635,
+          1638,
+          1633,
+          36356,
+          1792,
+          1723
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "keyword": true,
+        "helper": true,
+        "callsPerSample": 128,
+        "bytes": [
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288
+        ],
+        "ticks": [
+          2927,
+          2777,
+          3446,
+          3651,
+          2935,
+          5308,
+          3411,
+          2752
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "keyword": false,
+        "helper": true,
+        "callsPerSample": 128,
+        "bytes": [
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288
+        ],
+        "ticks": [
+          2554,
+          2696,
+          2473,
+          2435,
+          2459,
+          2487,
+          2453,
+          2539
+        ],
+        "frequency": 10000000
+      }
+    ],
+    "isolated-candidate": [
+      {
+        "asynchronous": true,
+        "keyword": false,
+        "helper": false,
+        "callsPerSample": 128,
+        "bytes": [
+          142976,
+          142976,
+          142976,
+          142976,
+          142976,
+          142976,
+          142976,
+          142976
+        ],
+        "ticks": [
+          6347,
+          6382,
+          6421,
+          6369,
+          6331,
+          102539,
+          6653,
+          6345
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "keyword": false,
+        "helper": true,
+        "callsPerSample": 128,
+        "bytes": [
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288
+        ],
+        "ticks": [
+          2656,
+          2554,
+          2543,
+          2521,
+          2526,
+          2561,
+          2534,
+          2549
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "keyword": false,
+        "helper": true,
+        "callsPerSample": 128,
+        "bytes": [
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288
+        ],
+        "ticks": [
+          1541,
+          1660,
+          1578,
+          1551,
+          1586,
+          1714,
+          1563,
+          1566
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "keyword": true,
+        "helper": true,
+        "callsPerSample": 128,
+        "bytes": [
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288
+        ],
+        "ticks": [
+          3023,
+          2889,
+          2850,
+          2887,
+          3272,
+          2881,
+          2862,
+          2970
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "keyword": true,
+        "helper": false,
+        "callsPerSample": 128,
+        "bytes": [
+          145024,
+          145024,
+          145024,
+          145024,
+          145024,
+          145024,
+          145024,
+          145024
+        ],
+        "ticks": [
+          6719,
+          6781,
+          6845,
+          6807,
+          6818,
+          7121,
+          7093,
+          8028
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "keyword": true,
+        "helper": false,
+        "callsPerSample": 128,
+        "bytes": [
+          135808,
+          135808,
+          135808,
+          135808,
+          135808,
+          135808,
+          135808,
+          135808
+        ],
+        "ticks": [
+          5184,
+          5130,
+          5172,
+          5208,
+          5126,
+          5154,
+          5347,
+          5210
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "keyword": false,
+        "helper": false,
+        "callsPerSample": 128,
+        "bytes": [
+          133760,
+          133760,
+          133760,
+          133760,
+          133760,
+          133760,
+          133760,
+          133760
+        ],
+        "ticks": [
+          4376,
+          4330,
+          4573,
+          4786,
+          4699,
+          4669,
+          4736,
+          4827
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "keyword": true,
+        "helper": true,
+        "callsPerSample": 128,
+        "bytes": [
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288
+        ],
+        "ticks": [
+          5643,
+          1933,
+          1673,
+          1661,
+          2322,
+          37875,
+          1796,
+          1765
+        ],
+        "frequency": 10000000
+      }
+    ],
+    "isolated-final-forms": [
+      {
+        "asynchronous": false,
+        "keyword": false,
+        "helper": true,
+        "callsPerSample": 128,
+        "bytes": [
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288
+        ],
+        "ticks": [
+          1658,
+          1585,
+          1565,
+          1537,
+          1562,
+          1537,
+          1559,
+          1516
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "keyword": true,
+        "helper": true,
+        "callsPerSample": 128,
+        "bytes": [
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288
+        ],
+        "ticks": [
+          1730,
+          1650,
+          1632,
+          1646,
+          1646,
+          37017,
+          1786,
+          1700
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "keyword": true,
+        "helper": true,
+        "callsPerSample": 128,
+        "bytes": [
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288
+        ],
+        "ticks": [
+          2912,
+          2866,
+          2877,
+          2848,
+          2903,
+          2863,
+          2983,
+          2935
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "keyword": false,
+        "helper": false,
+        "callsPerSample": 128,
+        "bytes": [
+          142976,
+          142976,
+          142976,
+          142976,
+          142976,
+          142976,
+          142976,
+          142976
+        ],
+        "ticks": [
+          6290,
+          6652,
+          6406,
+          6324,
+          6806,
+          102456,
+          6426,
+          6520
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "keyword": false,
+        "helper": false,
+        "callsPerSample": 128,
+        "bytes": [
+          133760,
+          133760,
+          133760,
+          133760,
+          133760,
+          133760,
+          133760,
+          133760
+        ],
+        "ticks": [
+          4729,
+          10825,
+          5217,
+          4806,
+          4796,
+          4755,
+          4690,
+          4746
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "keyword": true,
+        "helper": false,
+        "callsPerSample": 128,
+        "bytes": [
+          145024,
+          145024,
+          145024,
+          145024,
+          145024,
+          145024,
+          145024,
+          145024
+        ],
+        "ticks": [
+          6687,
+          6901,
+          6868,
+          6963,
+          6952,
+          7690,
+          7198,
+          7196
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": true,
+        "keyword": false,
+        "helper": true,
+        "callsPerSample": 128,
+        "bytes": [
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288,
+          28288
+        ],
+        "ticks": [
+          2542,
+          2644,
+          2573,
+          2473,
+          2544,
+          2497,
+          2518,
+          2574
+        ],
+        "frequency": 10000000
+      },
+      {
+        "asynchronous": false,
+        "keyword": true,
+        "helper": false,
+        "callsPerSample": 128,
+        "bytes": [
+          135808,
+          135808,
+          135808,
+          135808,
+          135808,
+          135808,
+          135808,
+          135808
+        ],
+        "ticks": [
+          5067,
+          5121,
+          5002,
+          5115,
+          5023,
+          5269,
+          5154,
+          6704
+        ],
+        "frequency": 10000000
+      }
+    ]
+  },
+  "receipts": {
+    "baseline": {
+      "source": "builtin-operands",
+      "production": "5b546b2e",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "BEA8B1CBDB22BB3E4C3A5BCA865CCDC9444383ABC535B00B31CAD0CE6474B006",
+      "filter": "Category!=Stress&(FullyQualifiedName~BuiltinOperandProbe|FullyQualifiedName~DeclaredBuiltinOperandTests|FullyQualifiedName~ExecutableCallTransferTests)",
+      "pid": 22344,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1261,
+      "stdoutSha256": "9E0C129331ED8FADD4109DA6E48E5912B938A2BA255441306A258941AA2F7A67",
+      "stderrSha256": "C1C35F2688327BD8D88FA961AC825BCA6237A2E981494B69052451C74BF9044F"
+    },
+    "candidate-first": {
+      "source": "builtin-operands",
+      "production": "direct-binding",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "CA655DA0B522853AC8F2575F3EFEE5424E757296BCDB2C02F2848FE679D32F67",
+      "filter": "Category!=Stress&(FullyQualifiedName~BuiltinOperandProbe|FullyQualifiedName~DeclaredBuiltinOperandTests|FullyQualifiedName~ExecutableCallTransferTests|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~PositionalCallTransportTests)",
+      "pid": 69956,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1285,
+      "stdoutSha256": "826275706C6799F68A4FB0D4323184DEA1DE9F60AE239F4D71D909EC981582EC",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "isolated-baseline": {
+      "source": "builtin-operands",
+      "production": "5b546b2e-isolated",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "6425BD927E8DB0FB8E70703EDDF4478DBE957E161B9882011FF51A23C784259E",
+      "filter": "Category!=Stress&FullyQualifiedName~BuiltinOperandProbe",
+      "pid": 59520,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1344,
+      "stdoutSha256": "578CE16234ED3826DDE0FB57736F3018578C8928BC931C9CEA83D09A7ADFC4D3",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "isolated-candidate": {
+      "source": "builtin-operands",
+      "production": "direct-binding-final",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "7DF11249F8BA26DE10D1BA86C6F7855CDDC94EA4B9FD7E50CCD4D479DD46B935",
+      "filter": "Category!=Stress&FullyQualifiedName~BuiltinOperandProbe",
+      "pid": 24032,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1303,
+      "stdoutSha256": "5310E726A112A3B08498F8040BD20E0145CC3C04AE26C8F7119869CE20626CB7",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "isolated-final-forms": {
+      "source": "builtin-operands",
+      "production": "direct-forms",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "03CF49A4F510A88361D63B8CF22C495A469F29E6399E22476C23748DFAEB4CA6",
+      "filter": "Category!=Stress&FullyQualifiedName~BuiltinOperandProbe",
+      "pid": 28760,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1296,
+      "stdoutSha256": "B10A8DEC4C0E2EE0EC68003CBC0CDBB3EB3FC57E47647A2E5ED00A982938EF0C",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "final-form-semantics": {
+      "source": "builtin-operands",
+      "production": "direct-forms",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "03CF49A4F510A88361D63B8CF22C495A469F29E6399E22476C23748DFAEB4CA6",
+      "filter": "Category!=Stress&(FullyQualifiedName~DeclaredBuiltinOperandTests|FullyQualifiedName~BuiltinOperandBindingProbe|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~ExecutableCallTransferTests|FullyQualifiedName~PositionalCallTransportTests)",
+      "pid": 77284,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1261,
+      "stdoutSha256": "C975DD452D387A6BA86627A8F754E54B1DDBB000B4BEF3FEE3A8757139399E13",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "candidate-host-io": {
+      "source": "builtin-operands",
+      "production": "direct-binding-final",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "5E728B2EB076BD29BFE231161C76B588C4890474F9DF6E356BD9B034AC0AB134",
+      "filter": "Category!=Stress&FullyQualifiedName~DeclaredBuiltinOperandTests",
+      "pid": 56424,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 2750,
+      "stdoutSha256": "0DC22E4B1E082258E132B0EDD70AB37300F147A0EA643844BF469C5B2D4B5C3D",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    }
+  },
+  "bindingCorpus": {
+    "recordsPerSource": 4686,
+    "bothSourcesMatchHistoricalCanonical": true,
+    "canonicalSha256": "2bce84f9889b564e7c82778919c716a96d89d5e8a0b498404e8d10793221b804",
+    "canonicalPayload": "../2026-10-17-named-binding/binding-traces.json.gz"
+  },
+  "machine": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "sdk": "10.0.300-preview.0.26177.108",
+    "testRuntimePatch": "not captured; source-linked Release net10.0"
+  },
+  "decision": "No allocation savings; synchronous sorted medians worse in both isolated variants; async/helper distributions inconclusive. Do not add an operand protocol and branchier binder without a demonstrated workload benefit. No iteration/settings tuning or more variants.",
+  "retained": "Four public delayed-I/O callback/retained-result/cancellation/refund controls; no discarded internal-route assertions retained."
+}

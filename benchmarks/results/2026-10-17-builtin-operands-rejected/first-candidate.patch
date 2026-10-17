@@ -1,0 +1,321 @@
+diff --git a/src/Lokad.Lython/Runtime/Calls/CallBinder.cs b/src/Lokad.Lython/Runtime/Calls/CallBinder.cs
+index 4e5453a8..95cebaed 100644
+--- a/src/Lokad.Lython/Runtime/Calls/CallBinder.cs
++++ b/src/Lokad.Lython/Runtime/Calls/CallBinder.cs
+@@ -1,3 +1,5 @@
++using Lokad.Lython.Frontend;
++
+ namespace Lokad.Lython.Runtime;
+ 
+ internal readonly record struct BoundCallArguments(
+@@ -113,28 +115,51 @@ internal static class CallBinder
+             preservePresence: true);
+     }
+ 
+-    private static BoundCallArguments BindNamedArgumentsCore(
++    public static BoundCallArguments BindNamedArguments(
+         CallArgumentValue[] arguments,
+         LythonSourceSpan span,
++        LythonCallableSignature signature,
++        PythonCallableKind callableKind,
++        bool preservePresence)
++        => BindNamedArgumentsCore(arguments, span, signature.Name, callableKind, signature.Parameters, preservePresence);
++
++    public static BoundCallArguments BindNamedArgumentsFromOperands(
++        ReadOnlySpan<object?> operands,
++        ExecutableCallSite? callSite,
++        LythonSourceSpan span,
++        LythonCallableSignature signature,
++        PythonCallableKind callableKind,
++        bool preservePresence,
++        object? receiver = null)
++        => BindNamedArgumentsCore(null, span, signature.Name, callableKind, signature.Parameters,
++            preservePresence, callSite, operands, receiver);
++
++    private static BoundCallArguments BindNamedArgumentsCore(
++        CallArgumentValue[]? arguments,
++        LythonSourceSpan span,
+         string callableName,
+         PythonCallableKind callableKind,
+         CallableParameterLayout parameters,
+-        bool preservePresence = false)
++        bool preservePresence = false,
++        ExecutableCallSite? callSite = null,
++        ReadOnlySpan<object?> operands = default,
++        object? receiver = null)
+     {
++        var argumentCount = (arguments?.Length ?? operands.Length) + (receiver is null ? 0 : 1);
+         if (parameters is PositionalCallableParameterLayout)
+         {
+-            for (var i = 0; i < arguments.Length; i++)
++            for (var i = 0; i < argumentCount; i++)
+             {
+-                if (arguments[i].IsKeyword)
++                if (ReadArgument(arguments, callSite, operands, receiver, i).IsKeyword)
+                 {
+                     throw CallErrors.NoKeywordArguments(callableKind, callableName, span);
+                 }
+             }
+ 
+-            var positionalOnly = new object[arguments.Length];
+-            for (var i = 0; i < arguments.Length; i++)
++            var positionalOnly = new object[argumentCount];
++            for (var i = 0; i < argumentCount; i++)
+             {
+-                positionalOnly[i] = arguments[i].Value;
++                positionalOnly[i] = ReadArgument(arguments, callSite, operands, receiver, i).Value;
+             }
+ 
+             return new BoundCallArguments(positionalOnly, ArgumentPresence.Empty);
+@@ -149,8 +174,9 @@ internal static class CallBinder
+         // Validate the already-expanded arguments before allocating their final
+         // shape. No guest code runs during either pass, so the second pass can
+         // place values directly without a full temporary array or extra list.
+-        foreach (var argument in arguments)
++        for (var argumentIndex = 0; argumentIndex < argumentCount; argumentIndex++)
+         {
++            var argument = ReadArgument(arguments, callSite, operands, receiver, argumentIndex);
+             if (argument.IsPositional)
+             {
+                 if (!named.MaximumPositionalArgumentCount.Accepts(positionalIndex + 1))
+@@ -230,8 +256,9 @@ internal static class CallBinder
+         Array.Fill(result, PyNone.Instance);
+         positionalIndex = 0;
+         var extraIndex = count;
+-        foreach (var argument in arguments)
++        for (var argumentIndex = 0; argumentIndex < argumentCount; argumentIndex++)
+         {
++            var argument = ReadArgument(arguments, callSite, operands, receiver, argumentIndex);
+             if (argument.IsPositional)
+             {
+                 result[positionalIndex < parameterNames.Length ? positionalIndex++ : extraIndex++] = argument.Value;
+@@ -247,4 +274,18 @@ internal static class CallBinder
+         return new BoundCallArguments(result, resultAssigned);
+     }
+ 
++    private static CallArgumentValue ReadArgument(
++        CallArgumentValue[]? arguments, ExecutableCallSite? callSite,
++        ReadOnlySpan<object?> operands, object? receiver, int index)
++    {
++        if (receiver is not null)
++        {
++            if (index == 0) return CallArgumentValue.Positional(receiver);
++            index--;
++        }
++        if (arguments is not null) return arguments[index];
++        var value = operands[index].RequireNotNull();
++        return callSite is null ? CallArgumentValue.Positional(value)
++            : LythonRuntime.CreateExecutableCallArgument(callSite.Arguments[index], value);
++    }
+ }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+index 38ce7708..aabc83e8 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+@@ -129,8 +129,8 @@ internal sealed partial class LythonRuntime
+         }
+     }
+ 
+-    private static object InvokeFunctionFromOperands(
+-        PyFunctionBase function, ReadOnlySpan<object?> arguments, LythonSourceSpan span, ExecutionContext context,
++    private static object InvokeCallableFromOperands(
++        IPyOperandCallable function, ReadOnlySpan<object?> arguments, LythonSourceSpan span, ExecutionContext context,
+         object? receiver = null, ExecutableCallSite? callSite = null)
+     {
+         context.EnterInterpreterFrame(span);
+@@ -143,8 +143,8 @@ internal sealed partial class LythonRuntime
+         finally { context.LeaveInterpreterFrame(); }
+     }
+ 
+-    private static async ValueTask<object> InvokeFunctionFromOperandsAsync(
+-        PyFunctionBase function, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
++    private static async ValueTask<object> InvokeCallableFromOperandsAsync(
++        IPyOperandCallable function, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
+         object? receiver = null, ExecutableCallSite? callSite = null)
+     {
+         context.EnterInterpreterFrame(span);
+@@ -455,7 +455,7 @@ internal sealed partial class LythonRuntime
+             => ValueTask.FromResult(Invoke(arguments, span, context));
+     }
+ 
+-    private abstract class BoundArgumentsCallable : ICallable
++    private abstract class BoundArgumentsCallable : IPyOperandCallable
+     {
+         private readonly PythonCallableKind _callableKind;
+ 
+@@ -472,9 +472,42 @@ internal sealed partial class LythonRuntime
+         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+         {
+             context.CheckExecution(span);
+-            object result = PreservePresence
+-                ? InvokeBoundWithPresence(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context)
+-                : InvokeBound(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
++            var presence = PreservePresence;
++            return InvokeBoundResult(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind, presence), span, context, presence);
++        }
++
++        public object InvokeFromOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
++            ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
++        {
++            context.CheckExecution(span);
++            var presence = PreservePresence;
++            return InvokeBoundResult(CallBinder.BindNamedArgumentsFromOperands(arguments, callSite, span, Signature,
++                _callableKind, presence, receiver), span, context, presence);
++        }
++
++        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
++        {
++            try
++            {
++                context.CheckExecution(span);
++                var presence = PreservePresence;
++                return InvokeBoundResultAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind, presence), span, context, presence);
++            }
++            catch (Exception error) { return ValueTask.FromException<object>(error); }
++        }
++
++        public ValueTask<object> InvokeFromOperandsAsync(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
++            ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
++        {
++            context.CheckExecution(span);
++            var presence = PreservePresence;
++            return InvokeBoundResultAsync(CallBinder.BindNamedArgumentsFromOperands(arguments, callSite, span, Signature,
++                _callableKind, presence, receiver), span, context, presence);
++        }
++
++        private object InvokeBoundResult(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context, bool presence)
++        {
++            var result = presence ? InvokeBoundWithPresence(bound, span, context) : InvokeBound(bound.Values, span, context);
+             if (result is NativeIterableOperation aggregate)
+             {
+                 try
+@@ -487,12 +520,11 @@ internal sealed partial class LythonRuntime
+             return result;
+         }
+ 
+-        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
++        private async ValueTask<object> InvokeBoundResultAsync(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context, bool presence)
+         {
+-            context.CheckExecution(span);
+-            object result = PreservePresence
+-                ? await InvokeBoundWithPresenceAsync(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false)
+-                : await InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false);
++            var result = presence
++                ? await InvokeBoundWithPresenceAsync(bound, span, context).ConfigureAwait(false)
++                : await InvokeBoundAsync(bound.Values, span, context).ConfigureAwait(false);
+             if (result is NativeIterableOperation aggregate)
+             {
+                 try
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 6e5faa7d..e148b9f1 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -521,7 +521,7 @@ internal sealed partial class LythonRuntime
+         }
+     }
+ 
+-    private static CallArgumentValue CreateExecutableCallArgument(ExecutableCallArgumentSpec spec, object value)
++    internal static CallArgumentValue CreateExecutableCallArgument(ExecutableCallArgumentSpec spec, object value)
+         => spec.Kind switch
+         {
+             CallArgumentKind.Positional => CallArgumentValue.Positional(value),
+@@ -598,16 +598,21 @@ internal sealed partial class LythonRuntime
+             }
+             else if (target is PyFunctionBase function)
+             {
+-                result = InvokeFunctionFromOperands(function, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span,
++                result = InvokeCallableFromOperands(function, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span,
+                     callSite.CallSpan, context, callSite: callSite.IsPositionalOnly && function is PyExecutableFunction { SupportsDirectPositional: true }
+                         ? null : callSite);
+             }
+             else if (target is PyBoundMethod { Function: PyFunctionBase method } bound)
+             {
+-                result = InvokeFunctionFromOperands(method, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span,
++                result = InvokeCallableFromOperands(method, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span,
+                     callSite.CallSpan, context, bound.Receiver,
+                     callSite.IsPositionalOnly && method is PyFunction { SupportsPositionalBinding: true } ? null : callSite);
+             }
++            else if (target is IPyOperandCallable callable)
++            {
++                result = InvokeCallableFromOperands(callable, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span,
++                    callSite.CallSpan, context, callSite: callSite);
++            }
+             else
+             {
+                 var arguments = PrepareExecutableCallArguments(callSite, ref stack, start);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 3f39b162..29657d20 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -136,16 +136,21 @@ internal sealed partial class LythonRuntime
+                         }
+                         else if (callable is PyFunctionBase function)
+                         {
+-                            result = await InvokeFunctionFromOperandsAsync(function, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
++                            result = await InvokeCallableFromOperandsAsync(function, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
+                                 call.CallSpan, _context, callSite: call.IsPositionalOnly && function is PyExecutableFunction { SupportsDirectPositional: true }
+                                     ? null : call).ConfigureAwait(false);
+                         }
+                         else if (callable is PyBoundMethod { Function: PyFunctionBase method } bound)
+                         {
+-                            result = await InvokeFunctionFromOperandsAsync(method, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
++                            result = await InvokeCallableFromOperandsAsync(method, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
+                                 call.CallSpan, _context, bound.Receiver,
+                                 call.IsPositionalOnly && method is PyFunction { SupportsPositionalBinding: true } ? null : call).ConfigureAwait(false);
+                         }
++                        else if (callable is IPyOperandCallable operandCallable)
++                        {
++                            result = await InvokeCallableFromOperandsAsync(operandCallable, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
++                                call.CallSpan, _context, callSite: call).ConfigureAwait(false);
++                        }
+                         else
+                         {
+                             var arguments = PrepareExecutableCallArguments(call, ref _stack, start);
+diff --git a/src/Lokad.Lython/Runtime/PyFunctionBase.cs b/src/Lokad.Lython/Runtime/PyFunctionBase.cs
+index f15e0b56..4eb4a751 100644
+--- a/src/Lokad.Lython/Runtime/PyFunctionBase.cs
++++ b/src/Lokad.Lython/Runtime/PyFunctionBase.cs
+@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
+ 
+ namespace Lokad.Lython.Runtime;
+ 
+-internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyHashableValue
++internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable, IPyOperandCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyHashableValue
+ {
+     private static readonly PyString LambdaName = PyString.FromString("<lambda>");
+ 
+@@ -58,7 +58,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+ 
+     // Copy operands (and an optional bound receiver) straight into the existing
+     // invocation-owned values. Frame entry, mirroring and body dispatch stay shared.
+-    internal object InvokeFromOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
++    public object InvokeFromOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+         LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
+     {
+         context.CheckExecution(span);
+@@ -68,7 +68,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+         return InvokeBound(bound, span);
+     }
+ 
+-    internal ValueTask<object> InvokeFromOperandsAsync(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
++    public ValueTask<object> InvokeFromOperandsAsync(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+         LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
+     {
+         context.CheckExecution(span);
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/IPyOperandCallable.cs
+@@ -0,0 +1,14 @@
++using Lokad.Lython.Frontend;
++
++namespace Lokad.Lython.Runtime;
++
++// Binding consumes borrowed operands synchronously into owned parameter storage.
++// The caller retains its operand storage until invocation and cleanup finish.
++internal interface IPyOperandCallable : LythonRuntime.ICallable
++{
++    object InvokeFromOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
++        LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null);
++
++    ValueTask<object> InvokeFromOperandsAsync(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
++        LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null);
++}

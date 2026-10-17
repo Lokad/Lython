@@ -1,0 +1,62 @@
+using System.Diagnostics;
+using System.Numerics;
+using System.Text.Json;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary bounded diagnostic; archive and remove before final qualification.
+public sealed class BuiltinOperandProbe(ITestOutputHelper output)
+{
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(true, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(true, true, true)]
+    public async Task NativeCalls(bool asynchronous, bool keyword, bool helper)
+    {
+        var source = "for i in range(128): result=target(values" + (keyword ? ",reverse=True" : "") + ")\nreturn result";
+        var code = Compile(source);
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        if (helper)
+            LythonRuntime.ExecuteExecutableCodeObject(Compile("def target(value,reverse=False):return value"), context, default, null);
+        else context.Variables["target"] = context.Variables["sorted"];
+        context.Variables["values"] = new PyList([new BigInteger(3), new BigInteger(1), new BigInteger(2)], context.MemoryGovernor, null);
+        var bytes = new List<long>();
+        var ticks = new List<long>();
+        object? result = null;
+        for (var sample = -4; sample < 8; sample++)
+        {
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var started = Stopwatch.GetTimestamp();
+            var pending = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+            Assert.True(pending.IsCompleted);
+            result = await pending;
+            var elapsed = Stopwatch.GetTimestamp() - started;
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            if (sample >= 0) { bytes.Add(allocated); ticks.Add(elapsed); }
+        }
+        Assert.Equal(helper ? [new BigInteger(3), new BigInteger(1), new BigInteger(2)]
+            : keyword ? [new BigInteger(3), new BigInteger(2), new BigInteger(1)]
+            : new[] { new BigInteger(1), new BigInteger(2), new BigInteger(3) }, Assert.IsType<PyList>(result).Cast<BigInteger>());
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        output.WriteLine("BUILTIN_OPERANDS:" + JsonSerializer.Serialize(new { asynchronous, keyword, helper, callsPerSample = 128, bytes, ticks, frequency = Stopwatch.Frequency }));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private static ExecutableCodeObject Compile(string source)
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+}

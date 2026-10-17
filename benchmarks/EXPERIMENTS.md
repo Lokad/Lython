@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 declared-builtin operand experiment](results/2026-10-17-builtin-operands-rejected/README.md)
+is rejected. Both isolated variants preserve 4,686 binding records and save no
+allocations; synchronous sorting medians are worse, with some wide distributions.
+The interface, binder branches and prototype assertions were removed. Four public
+delayed-I/O callback/cancellation/refund regressions remain. Raw data and both
+patches are archived; no job-level/CPython/host-latency benefit is established.
+
 The [annotation-only local CSV diagnostic](results/2026-10-17-annotation-only-locals/README.md)
 compares 3f799746 and one guard deletion with CPython 3.13.2 on Windows.
 Fresh-job medians 21.677/19.745/17.014 ms have 38.0%/48.9%/13.5% spread;

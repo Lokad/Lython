@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="696c8a11-c9e0-4f1a-a659-ec039017ee39" name="JoannesVermorel@LOKAD-0399 2026-10-17 23:08:59" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-17T23:08:59.5733981+02:00" queuing="2026-10-17T23:08:59.5733985+02:00" start="2026-10-17T23:08:58.5431526+02:00" finish="2026-10-17T23:08:59.5769577+02:00" />
+  <TestSettings name="default" id="c9d30b9d-6576-46c9-87fd-a8924e442a18">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-17_23_08_59" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="f193ddc3-7bfe-4b44-ab44-02efc1661faa" testId="ee014057-7fe7-ea19-5643-9119194bbbb4" testName="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: False, keyword: False, helper: True)" computerName="LOKAD-0399" duration="00:00:00.0023045" startTime="2026-10-17T23:08:59.5003468+02:00" endTime="2026-10-17T23:08:59.5026451+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f193ddc3-7bfe-4b44-ab44-02efc1661faa">
+      <Output>
+        <StdOut>BUILTIN_OPERANDS:{"asynchronous":false,"keyword":false,"helper":true,"callsPerSample":128,"bytes":[28288,28288,28288,28288,28288,28288,28288,28288],"ticks":[1658,1585,1565,1537,1562,1537,1559,1516],"frequency":10000000}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="cd8c140e-be70-48b7-bfed-4a2afa437b9b" testId="02305053-406d-d81d-0cf2-d3ace25deca0" testName="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: False, keyword: True, helper: True)" computerName="LOKAD-0399" duration="00:00:00.0280835" startTime="2026-10-17T23:08:59.4453951+02:00" endTime="2026-10-17T23:08:59.4674420+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cd8c140e-be70-48b7-bfed-4a2afa437b9b">
+      <Output>
+        <StdOut>BUILTIN_OPERANDS:{"asynchronous":false,"keyword":true,"helper":true,"callsPerSample":128,"bytes":[28288,28288,28288,28288,28288,28288,28288,28288],"ticks":[1730,1650,1632,1646,1646,37017,1786,1700],"frequency":10000000}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a848cc45-e2ab-49be-853e-f2b8a8ebebe1" testId="5a36bddb-9b9f-3546-1497-dbd99a8c5d96" testName="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: True, keyword: True, helper: True)" computerName="LOKAD-0399" duration="00:00:00.0041191" startTime="2026-10-17T23:08:59.4962244+02:00" endTime="2026-10-17T23:08:59.5003009+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a848cc45-e2ab-49be-853e-f2b8a8ebebe1">
+      <Output>
+        <StdOut>BUILTIN_OPERANDS:{"asynchronous":true,"keyword":true,"helper":true,"callsPerSample":128,"bytes":[28288,28288,28288,28288,28288,28288,28288,28288],"ticks":[2912,2866,2877,2848,2903,2863,2983,2935],"frequency":10000000}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5be9c542-5cb9-46ee-8ab7-99f6f023a412" testId="9f1e80f4-73a4-4a22-e51c-eb4433de7ce9" testName="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: True, keyword: False, helper: False)" computerName="LOKAD-0399" duration="00:00:00.1772136" startTime="2026-10-17T23:08:59.2580346+02:00" endTime="2026-10-17T23:08:59.4393527+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5be9c542-5cb9-46ee-8ab7-99f6f023a412">
+      <Output>
+        <StdOut>BUILTIN_OPERANDS:{"asynchronous":true,"keyword":false,"helper":false,"callsPerSample":128,"bytes":[142976,142976,142976,142976,142976,142976,142976,142976],"ticks":[6290,6652,6406,6324,6806,102456,6426,6520],"frequency":10000000}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="69f5d0b2-cd46-49f5-b953-bb791ddb7d5f" testId="f46892f6-acfa-fa2a-a3dd-543f7681195e" testName="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: False, keyword: False, helper: False)" computerName="LOKAD-0399" duration="00:00:00.0079726" startTime="2026-10-17T23:08:59.4765860+02:00" endTime="2026-10-17T23:08:59.4845118+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="69f5d0b2-cd46-49f5-b953-bb791ddb7d5f">
+      <Output>
+        <StdOut>BUILTIN_OPERANDS:{"asynchronous":false,"keyword":false,"helper":false,"callsPerSample":128,"bytes":[133760,133760,133760,133760,133760,133760,133760,133760],"ticks":[4729,10825,5217,4806,4796,4755,4690,4746],"frequency":10000000}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0654d33c-45d3-445a-b614-d74fffe73a12" testId="74e922ed-7cce-f420-19ad-aa1a7110b0c4" testName="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: True, keyword: True, helper: False)" computerName="LOKAD-0399" duration="00:00:00.0090461" startTime="2026-10-17T23:08:59.4678770+02:00" endTime="2026-10-17T23:08:59.4765185+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0654d33c-45d3-445a-b614-d74fffe73a12">
+      <Output>
+        <StdOut>BUILTIN_OPERANDS:{"asynchronous":true,"keyword":true,"helper":false,"callsPerSample":128,"bytes":[145024,145024,145024,145024,145024,145024,145024,145024],"ticks":[6687,6901,6868,6963,6952,7690,7198,7196],"frequency":10000000}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="49c7964f-1914-423b-87b8-92ba9f6e6f40" testId="efc47a84-e207-3926-1eac-12ff4b1a187a" testName="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: True, keyword: False, helper: True)" computerName="LOKAD-0399" duration="00:00:00.0049564" startTime="2026-10-17T23:08:59.4912461+02:00" endTime="2026-10-17T23:08:59.4961731+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="49c7964f-1914-423b-87b8-92ba9f6e6f40">
+      <Output>
+        <StdOut>BUILTIN_OPERANDS:{"asynchronous":true,"keyword":false,"helper":true,"callsPerSample":128,"bytes":[28288,28288,28288,28288,28288,28288,28288,28288],"ticks":[2542,2644,2573,2473,2544,2497,2518,2574],"frequency":10000000}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="31c2b497-1440-475d-8964-7fd27dd20654" testId="cf23834c-2162-fbe0-17e1-7cc4be07770d" testName="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: False, keyword: True, helper: False)" computerName="LOKAD-0399" duration="00:00:00.0066389" startTime="2026-10-17T23:08:59.4845692+02:00" endTime="2026-10-17T23:08:59.4911927+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="31c2b497-1440-475d-8964-7fd27dd20654">
+      <Output>
+        <StdOut>BUILTIN_OPERANDS:{"asynchronous":false,"keyword":true,"helper":false,"callsPerSample":128,"bytes":[135808,135808,135808,135808,135808,135808,135808,135808],"ticks":[5067,5121,5002,5115,5023,5269,5154,6704],"frequency":10000000}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: True, keyword: True, helper: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="5a36bddb-9b9f-3546-1497-dbd99a8c5d96">
+      <Execution id="a848cc45-e2ab-49be-853e-f2b8a8ebebe1" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BuiltinOperandProbe" name="NativeCalls" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: False, keyword: True, helper: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="cf23834c-2162-fbe0-17e1-7cc4be07770d">
+      <Execution id="31c2b497-1440-475d-8964-7fd27dd20654" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BuiltinOperandProbe" name="NativeCalls" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: False, keyword: False, helper: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="ee014057-7fe7-ea19-5643-9119194bbbb4">
+      <Execution id="f193ddc3-7bfe-4b44-ab44-02efc1661faa" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BuiltinOperandProbe" name="NativeCalls" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: True, keyword: True, helper: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="74e922ed-7cce-f420-19ad-aa1a7110b0c4">
+      <Execution id="0654d33c-45d3-445a-b614-d74fffe73a12" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BuiltinOperandProbe" name="NativeCalls" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: False, keyword: True, helper: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="02305053-406d-d81d-0cf2-d3ace25deca0">
+      <Execution id="cd8c140e-be70-48b7-bfed-4a2afa437b9b" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BuiltinOperandProbe" name="NativeCalls" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: False, keyword: False, helper: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="f46892f6-acfa-fa2a-a3dd-543f7681195e">
+      <Execution id="69f5d0b2-cd46-49f5-b953-bb791ddb7d5f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BuiltinOperandProbe" name="NativeCalls" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: True, keyword: False, helper: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="9f1e80f4-73a4-4a22-e51c-eb4433de7ce9">
+      <Execution id="5be9c542-5cb9-46ee-8ab7-99f6f023a412" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BuiltinOperandProbe" name="NativeCalls" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.BuiltinOperandProbe.NativeCalls(asynchronous: True, keyword: False, helper: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="efc47a84-e207-3926-1eac-12ff4b1a187a">
+      <Execution id="49c7964f-1914-423b-87b8-92ba9f6e6f40" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BuiltinOperandProbe" name="NativeCalls" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="ee014057-7fe7-ea19-5643-9119194bbbb4" executionId="f193ddc3-7bfe-4b44-ab44-02efc1661faa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="02305053-406d-d81d-0cf2-d3ace25deca0" executionId="cd8c140e-be70-48b7-bfed-4a2afa437b9b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5a36bddb-9b9f-3546-1497-dbd99a8c5d96" executionId="a848cc45-e2ab-49be-853e-f2b8a8ebebe1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9f1e80f4-73a4-4a22-e51c-eb4433de7ce9" executionId="5be9c542-5cb9-46ee-8ab7-99f6f023a412" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f46892f6-acfa-fa2a-a3dd-543f7681195e" executionId="69f5d0b2-cd46-49f5-b953-bb791ddb7d5f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="74e922ed-7cce-f420-19ad-aa1a7110b0c4" executionId="0654d33c-45d3-445a-b614-d74fffe73a12" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="efc47a84-e207-3926-1eac-12ff4b1a187a" executionId="49c7964f-1914-423b-87b8-92ba9f6e6f40" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cf23834c-2162-fbe0-17e1-7cc4be07770d" executionId="31c2b497-1440-475d-8964-7fd27dd20654" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="8" executed="8" passed="8" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.42]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.45]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.71]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

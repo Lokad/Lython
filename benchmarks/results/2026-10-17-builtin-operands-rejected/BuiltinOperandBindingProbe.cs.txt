@@ -1,0 +1,77 @@
+using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Xunit.Abstractions;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary semantic witness; archive/remove before final qualification.
+public sealed class BuiltinOperandBindingProbe(ITestOutputHelper output)
+{
+    [Fact]
+    public void ArrayAndOperandBindingMatchFrozenCorpus()
+    {
+        var tokens = new[] { CallArgumentValue.Positional("p"), CallArgumentValue.Keyword("first", PyNone.Instance),
+            CallArgumentValue.Keyword("second", "s"), CallArgumentValue.Keyword("third", "t"), CallArgumentValue.Keyword("unknown", "u") };
+        var signatures = new[] {
+            LythonCallableSignature.Create("demo", ["first", "second", "third"], requiredCount: 1),
+            LythonCallableSignature.Create("demo", ["first", "second", "third"], 1, ArgumentCountLimit.Unbounded,
+                LythonVariadicParameters.Positional | LythonVariadicParameters.Keywords, 1),
+            LythonCallableSignature.Create("demo") };
+        var arrays = new List<object>();
+        var operands = new List<object>();
+        foreach (var signature in signatures)
+        foreach (var presence in new[] { false, true })
+        for (var length = 0; length <= 4; length++)
+        for (var vector = 0; vector < (int)Math.Pow(tokens.Length, length); vector++)
+        {
+            var arguments = new CallArgumentValue[length];
+            var code = vector;
+            for (var i = 0; i < length; i++) { arguments[i] = tokens[code % tokens.Length]; code /= tokens.Length; }
+            arrays.Add(Observe(arguments, signature, presence, false));
+            operands.Add(Observe(arguments, signature, presence, true));
+        }
+        using var stream = File.OpenRead(@"D:\code\Lython\benchmarks\results\2026-10-17-named-binding\binding-traces.json.gz");
+        using var gzip = new GZipStream(stream, CompressionMode.Decompress);
+        using var reader = new StreamReader(gzip);
+        var expected = Hash(reader.ReadToEnd());
+        var arrayJson = JsonSerializer.Serialize(arrays);
+        var operandJson = JsonSerializer.Serialize(operands);
+        File.WriteAllText(@"D:\code\Lython\.git\agent-notes\builtin-operands-20261017\binding-arrays.json", arrayJson);
+        File.WriteAllText(@"D:\code\Lython\.git\agent-notes\builtin-operands-20261017\binding-operands.json", operandJson);
+        Assert.Equal(4686, arrays.Count);
+        Assert.Equal(expected, Hash(arrayJson));
+        Assert.Equal(expected, Hash(operandJson));
+        output.WriteLine("BORROWED_BINDING_CORPUS:" + JsonSerializer.Serialize(new { count = arrays.Count, sha256 = expected, bothSourcesExact = true }));
+    }
+
+    private static string Hash(string text) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
+
+    private static object Observe(CallArgumentValue[] arguments, LythonCallableSignature signature, bool presence, bool borrowed)
+    {
+        var span = new LythonSourceSpan(0, 1, 1, 1);
+        try
+        {
+            BoundCallArguments bound;
+            if (borrowed)
+            {
+                var specs = arguments.Select(a => new ExecutableCallArgumentSpec(a.IsKeyword
+                    ? CallArgumentForm.Keyword(a.KeywordName) : CallArgumentForm.Positional)).ToArray();
+                var site = new ExecutableCallSite(arguments.Length, specs, span, span);
+                bound = CallBinder.BindNamedArgumentsFromOperands(arguments.Select(a => a.Value).ToArray(), site, span,
+                    signature, PythonCallableKind.Builtin, presence);
+                // Plain bodies consume values, not presence: match the existing
+                // array API's observation rather than introducing a new contract.
+                if (!presence) bound = bound with { Assigned = ArgumentPresence.Empty };
+            }
+            else bound = presence ? CallBinder.BindNamedArgumentsWithPresence(arguments, span, signature, PythonCallableKind.Builtin)
+                : new BoundCallArguments(CallBinder.BindNamedArguments(arguments, span, signature, PythonCallableKind.Builtin), ArgumentPresence.Empty);
+            return new { values = bound.Values.Select(v => ReferenceEquals(v, PyNone.Instance) ? "None" : v.ToString()).ToArray(),
+                assigned = Enumerable.Range(0, bound.Assigned.Length).Select(i => bound.Assigned[i]).ToArray() };
+        }
+        catch (LythonRuntimeException e) { return new { e.ExceptionType, e.Message, e.Span }; }
+    }
+}
