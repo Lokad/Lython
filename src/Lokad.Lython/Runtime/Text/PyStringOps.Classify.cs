@@ -218,7 +218,7 @@ internal static partial class PyStringOps
     }
 
     public static bool IsAscii(PyString value)
-        => CheckAllRunes(value, static rune => rune.Value < 128);
+        => value.Utf8Bytes.Length == 0 || CheckAllRunes(value, static rune => rune.Value < 128);
 
     public static bool IsDecimal(PyString value)
         => CheckAllRunes(value, static rune => Rune.GetUnicodeCategory(rune) == UnicodeCategory.DecimalDigitNumber);
