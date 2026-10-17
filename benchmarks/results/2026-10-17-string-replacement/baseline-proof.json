@@ -1,0 +1,42 @@
+{
+  "revision": "4a50440009247e650df3ca4566267325d09c32fe",
+  "counters": {
+    "total": "7",
+    "executed": "7",
+    "passed": "4",
+    "failed": "3",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "observations": [
+    "STRING_BUILDER_ADMISSION:True:True:66648",
+    "STRING_BUILDER_ADMISSION:False:False:824",
+    "STRING_BUILDER_ADMISSION:False:True:66648",
+    "STRING_BUILDER_ADMISSION:True:False:824",
+    "BOUNDED_REPLACE_ALLOCATION:115000"
+  ],
+  "failures": [
+    {
+      "test": "Lokad.Lython.Tests.StringBuilderAdmissionTests.RefusalPrecedesExactStringCopyAndKeepsBuilderFunded(consume: True, shared: True)",
+      "message": "Refused string copy allocated 66648 bytes."
+    },
+    {
+      "test": "Lokad.Lython.Tests.StringBuilderAdmissionTests.RefusalPrecedesExactStringCopyAndKeepsBuilderFunded(consume: False, shared: True)",
+      "message": "Refused string copy allocated 66648 bytes."
+    },
+    {
+      "test": "Lokad.Lython.Tests.StringReplacementBulkTests.BoundedEmptyPatternDoesNotAllocateScalarStringsThroughTheSuffix",
+      "message": "Bounded replacement allocated 115000 bytes."
+    }
+  ]
+}

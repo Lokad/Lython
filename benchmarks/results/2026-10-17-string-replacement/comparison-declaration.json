@@ -1,0 +1,30 @@
+{
+  "baselineRevision": "a03ef99e50c40ccd73533b2dd22e5cb6808ecffe",
+  "candidateRevision": "b10b8e9e4753dffc8eeb983141f788dc1781ccb1",
+  "caseId": "strings.pipeline-supplementary.large",
+  "expectedCaseSize": 8192,
+  "expectedBlocks": 8192,
+  "expectedSourceUtf8Bytes": 139335,
+  "expectedSourceSha256": "f514e27a1b27180ea855f564e268b41d8bd0ee3c753540441d0383df3d8653e3",
+  "expectedFixtureUtf8Bytes": 139264,
+  "expectedFixtureCodePoints": 90112,
+  "lane": "warm-async",
+  "captures": 1,
+  "retries": false,
+  "normalWorkerGCAndTiering": true,
+  "supervisorTiering": false,
+  "boundary": "Warm public RunAsync of unchanged supplementary-Unicode replace/split/join pipeline;8192blocks,139264UTF8input bytes,reused compilation,fresh invocation state,execution/projection and prior-result cleanup timed. Compilation/startup/transport excluded. Both roles include copy-admission fix; this unlimited-path control is separate from bounded replacement allocation diagnostics.",
+  "stoppingRule": "One existing Unicode pipeline capture, no retries/retuning/new producers/full lane; report uncertainty and bounded allocation evidence separately.",
+  "baseline": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "54360925605110b09af340b47f3fa147dba2dd45215a48e1d86f64ddc77e90eb",
+    "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+    "sourceArchiveSha256": "1371c9fd1a901103f56ed72f7d58cf39bbf4de68f0ba8afcd23ecec6d459d339"
+  },
+  "candidate": {
+    "productionSourceCount": 524,
+    "productionManifestSha256": "570fdd18a04a256929354f1b0608f71b5776f9850d635cc7632094dbeef497a1",
+    "comparisonManifestSha256": "44b29f122916dcb880f7bae0fc4a4498c1c62e64115285fda5cef422a8b1ac57",
+    "sourceArchiveSha256": "e0c4ec19067cadc8e6d0707125a4a8078d3ace838a0d6415c6844b725b439e95"
+  }
+}

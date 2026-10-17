@@ -7,6 +7,17 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 replacement consolidation](results/2026-10-17-string-replacement/README.md)
+removes the duplicate bounded algorithm and per-scalar intermediates. A separate
+bounded Unicode member-call witness allocates 115,032 → 4,392 bytes; its 32 KiB
+both-API working-set script now passes. Existing unlimited Unicode pipeline:
+3.621 → 2.981 ms, CPython 0.5404 ms; spreads 80.79%/12.69%/0.52%. The 17.7%
+lower median is inconclusive within baseline spread, with no elapsed benefit or
+qualified ratio. One 7.759 s capture; no retry/retuning/new producer. Frozen
+sources/independent three-size goldens match; seven workers/fixtures gone,
+services inactive, lease free. BN replaces the rejected AZ prototype in the
+leading table; AZ's original evidence and historical identities remain here.
+
 The [2026-10-16 cursor dispatch change](results/2026-10-16-cursor-sync-dispatch/README.md)
 removes async forwarding for synchronous builtin pulls and existing user/async
 iterator tasks. One unchanged branch loop observed 5.979 → 5.889 ms, CPython

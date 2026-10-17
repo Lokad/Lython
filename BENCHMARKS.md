@@ -17,9 +17,11 @@
 | Keyword helper-call loop [BI], warm `RunAsync` | 16,384 calls / 134 UTF-8 source bytes | 6.680 ms | 1.0849 ms | — | Short diagnostic at 60961196; direct function transport; 1.8% lower median within 13.3% baseline spread, inconclusive |
 | Constructed-text strip/length loop [BH], warm `RunAsync` | 32,768 lines / 425,984 UTF-8 bytes constructed in execution | 17.832 ms | 3.1868 ms | — | Short diagnostic at d4ac39db; direct len transport; 26.4% lower median with 18.8% baseline spread, unqualified |
 | Branch/integer loop [BM], warm `RunAsync` | 16,384 iterations / 119 UTF-8 source bytes; modulo/comparison/add/subtract | 5.889 ms | 1.0203 ms | — | Short diagnostic at 2e4d0a34; synchronous cursor dispatch; 1.5% lower median within 4.7% baseline spread, inconclusive |
-| Instance-method accumulator [AZ], fresh compile/run | 16,384 calls / 208 UTF-8 source bytes | 11.494 ms | 0.9783 ms | — | Rejected c3db3ca2 prototype: Linux stack overflow; median 23.3% higher, unqualified; setup erratum linked |
+| Unicode replace/split/join pipeline [BN], warm `RunAsync` | 8,192 blocks / 139,264 UTF-8 input bytes | 2.981 ms | 0.5404 ms | — | Short diagnostic at b10b8e9e; shared replacement kernel; 17.7% lower median within 80.8% baseline spread, inconclusive |
 | Instance-method accumulator [BC], warm `Run` | 2,048 calls / 207 UTF-8 source bytes | 1.060 ms | 0.11428 ms | — | Short diagnostic at d88d6440; direct lowered-method transport; 7.4% lower median, unqualified |
 | Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
+
+The rejected class prototype [AZ](benchmarks/results/2026-10-16-compiled-class-methods/README.md) remains in the experimental archive.
 
 These representative snapshots come from the named revisions below; they are
 not measurements of today's HEAD. Inconclusive cases remain visible. See
@@ -47,6 +49,7 @@ The linked receipts identify binaries, inputs, toolchains and sampling policies.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| BN | 2026-10-17 UTC | b10b8e9e; shared bounded/unlimited UTF-8 replacement; both roles include copy-admission fix a03ef99e | [Separate allocation evidence and unlimited pipeline diagnostic](benchmarks/results/2026-10-17-string-replacement/README.md) |
 | BM | 2026-10-16 UTC | 2e4d0a34; ordinary cursor pulls reuse synchronous core; user/async iterator tasks forwarded directly | [Cursor dispatch, exact fuel/protocol controls and short diagnostic](benchmarks/results/2026-10-16-cursor-sync-dispatch/README.md) |
 | BL | 2026-10-16 UTC | 35d99a88; direct container forwarding and redundant prefix decoder removed; excludes later integer-admission correction | [JSON deletions, exact guards and short diagnostic](benchmarks/results/2026-10-16-json-container-forwarding/README.md) |
 | BK | 2026-10-16 UTC | 4b930ca5; synchronous true/false/null dispatch; both roles include error correction 2a2ebada | [JSON transformation, exact guards and error correction](benchmarks/results/2026-10-16-json-literal-dispatch/README.md) |
@@ -135,6 +138,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Shared UTF-8 replacement, 2026-10-17 UTC | a03ef99e → b10b8e9e; unchanged unlimited Unicode pipeline | No elapsed benefit established: 3.621 → 2.981 ms; 17.7% lower median within 80.8% baseline spread. Separate bounded allocation witness: 115,032 → 4,392 bytes | [Admission, retained aliases and exact boundaries](benchmarks/results/2026-10-17-string-replacement/README.md) |
 | Synchronous cursor pulls under RunAsync, 2026-10-16 UTC | 86ef68e9 → 2e4d0a34; unchanged branch loop | No benefit established: 5.979 → 5.889 ms; 1.5% lower median within 4.7% baseline spread | [Shared core and genuine suspension preserved](benchmarks/results/2026-10-16-cursor-sync-dispatch/README.md) |
 | JSON container/prefix forwarding, 2026-10-16 UTC | 73426010 → 35d99a88; unchanged in-memory JSON transform | No benefit established: 2.626 → 2.691 ms; 2.5% higher median within 8–13% spread | [Removed wrappers and preserved checkpoints](benchmarks/results/2026-10-16-json-container-forwarding/README.md) |
 | Synchronous JSON literals, 2026-10-16 UTC | 2a2ebada → 4b930ca5; unchanged in-memory JSON transform | No benefit established: 2.365 → 2.380 ms; 0.6% higher median within 17–22% spread | [Shared scalar admission and unchanged hooks](benchmarks/results/2026-10-16-json-literal-dispatch/README.md) |

@@ -1,0 +1,11 @@
+{
+  "tests": 8,
+  "observations": [
+    "STRING_BUILDER_ADMISSION:False:True:1592",
+    "STRING_BUILDER_ADMISSION:False:False:1704",
+    "STRING_BUILDER_ADMISSION:True:False:1704",
+    "STRING_BUILDER_ADMISSION:True:True:1592"
+  ],
+  "baselineSharedRefusalAllocationBytes": 66648,
+  "contract": "Both successful result-copy and failure builder funding preserved; shared admission precedes allocation."
+}
