@@ -307,15 +307,15 @@ internal sealed partial class LythonRuntime
 
         if (arguments.Length == 1 && arguments[0] is PyInstance intInstance)
         {
-            // Guest-produced boxes adopt first ownership here when untracked;
-            // already-owned aliases dedup instead of double-charging.
+            // Preserve the returned box; major aliases remain conservatively
+            // charged without a scalar identity ledger.
             return OwnFreshInteger(ConvertInstanceToInteger(intInstance, context, span), context.MemoryGovernor, span);
         }
 
         var numberBase = 10;
         if (arguments.Length == 2)
         {
-            var indexedBase = CoerceIndexProtocol(arguments[1], context, span);
+            TryConvertIntegerIndex(arguments[1], context, span, out var indexedBase);
             var requestedBase = indexedBase switch
             {
                 _ when PyNumberOps.TryAsInteger(indexedBase, out var integerBase) => integerBase,
@@ -784,7 +784,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (instance.TryGetAttribute("__int__", context, span, out var intMember))
+        if (TryGetIntegerConversionMember(instance, "__int__", context, span, out var intMember))
         {
             if (intMember is not ICallable intCallable)
             {
@@ -800,20 +800,12 @@ internal sealed partial class LythonRuntime
             return converted is BigInteger ? converted : integer;
         }
 
-        if (instance.TryGetAttribute("__index__", context, span, out var indexMember))
+        if (TryConvertIntegerIndex(instance, context, span, out var indexedValue))
         {
-            if (indexMember is not ICallable)
-            {
-                throw NotCallableError(indexMember, context, span);
-            }
-
-            // The shared choke either returns an integer or raises the shaped
-            // __index__ error; the callable check above rules out its
-            // missing-hook passthrough.
-            return CoerceIndexProtocol(instance, context, span);
+            return indexedValue;
         }
 
-        if (instance.TryGetAttribute("__trunc__", context, span, out var truncMember))
+        if (TryGetIntegerConversionMember(instance, "__trunc__", context, span, out var truncMember))
         {
             if (truncMember is not ICallable truncCallable)
             {
@@ -821,7 +813,7 @@ internal sealed partial class LythonRuntime
             }
 
             var truncated = truncCallable.Invoke([], span, context);
-            var indexed = truncated is PyInstance ? CoerceIndexProtocol(truncated, context, span) : truncated;
+            TryConvertIntegerIndex(truncated, context, span, out var indexed);
             BigInteger truncatedInteger;
             if (indexed is int smallTrunc)
             {
@@ -836,6 +828,31 @@ internal sealed partial class LythonRuntime
         }
 
         throw IntegerConversionError(instance, context, span);
+    }
+
+    private static bool TryGetIntegerConversionMember(PyInstance instance, string name,
+        ExecutionContext context, LythonSourceSpan span, out object member)
+    {
+        if (instance.Type.TryLookupInMro(name, 0, out var raw, out _))
+        {
+            member = PyAttributeLookup.BindForInstance(instance, raw, context, span);
+            return true;
+        }
+
+        member = PyNone.Instance;
+        return false;
+    }
+
+    private static bool TryConvertIntegerIndex(object value, ExecutionContext context,
+        LythonSourceSpan span, out object converted)
+    {
+        converted = value;
+        if (value is not PyInstance instance ||
+            !TryGetIntegerConversionMember(instance, "__index__", context, span, out var member))
+            return false;
+        if (member is not ICallable callable) throw NotCallableError(member, context, span);
+        converted = ValidateIndexProtocolResult(callable.Invoke([], span, context), context, span);
+        return true;
     }
 
     internal static LythonRuntimeException NotCallableError(object member, ExecutionContext context, LythonSourceSpan span)

@@ -391,7 +391,11 @@ internal sealed partial class LythonRuntime
             return index;
         }
 
-        var converted = callable.Invoke([], span, context);
+        return ValidateIndexProtocolResult(callable.Invoke([], span, context), context, span);
+    }
+
+    private static object ValidateIndexProtocolResult(object converted, ExecutionContext context, LythonSourceSpan span)
+    {
         if (!PyNumberOps.TryAsInteger(converted, out var integer))
         {
             throw new LythonRuntimeException("TypeError", "__index__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);

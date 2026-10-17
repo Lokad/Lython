@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resolve integer conversion hooks and explicit bases through type slots, ignoring instance shadows and ordinary attribute hooks. Bind fallback index descriptors once, share existing result validation and preserve returned integer aliases, admission and cleanup.
+
 - Reuse ten fixed numeric and text builtin definitions across executions, removing repeated wrapper and signature setup. Keep mutable types, dictionaries, modules, host bindings and result ownership private to each run.
 
 - Call the twelve zero-argument string predicates directly from executable receiver storage, sharing their existing operations with exposed methods. Remove immediate bound-callable and empty-argument transport costs while preserving dynamic dispatch, method identity, guards, cancellation and retained receivers.

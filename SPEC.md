@@ -1161,6 +1161,13 @@ The supported subset includes integer, floating-point, boolean and complex value
 - exact integer comparisons
 - exact integer string conversion
 
+For guest instances, `int(value)` resolves `__int__`, then `__index__`, then the
+supported legacy `__trunc__` hook through the type's MRO. Instance shadows and
+ordinary attribute hooks do not supply these implicit protocols. Type descriptors
+bind once per attempted hook. Explicit bases and integral results of `__trunc__`
+use the type's `__index__` slot. Ordinary explicit member access keeps Python's
+attribute lookup rules.
+
 Host globals admit all eight CLR integer types (`sbyte`, `byte`, `short`,
 `ushort`, `int`, `uint`, `long`, `ulong`) as exact Python integers, including
 when nested in supported collections. Python operations, type checks, numeric
