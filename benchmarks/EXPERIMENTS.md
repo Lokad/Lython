@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 CSV pull consolidation](results/2026-10-17-csv-pull/README.md)
+deletes one single-use async forwarding method. The sole affected complete-job
+capture records 10.007 → 10.194 ms versus CPython 3.783 ms; 4.31%/2.43% spreads
+leave the 1.87% higher median inconclusive. BW retains the working file/patch,
+all 36 responses / 510 invocations, unchanged inputs and terminal cleanup. A
+preceding ten-second all-thread profile of immutable 1b6a1531 supplies attribution,
+not a gain prediction. Two staging failures occurred before timing; evidence is
+preserved. No repeated timing or profiling campaign ran.
+
 The [2026-10-17 complete CSV helper RunAsync snapshot](results/2026-10-17-csv-helper-warm-async/README.md)
 compares clean VM Release builds 5b546b2e → 1b6a1531 with CPython 3.13.16.
 Warm medians are 10.379/10.346/3.756 ms; the nominal 2.755× external ratio is

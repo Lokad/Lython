@@ -1,0 +1,19 @@
+{
+  "unit": "lython-csv-pull-capture-584b09d1-20261017",
+  "command": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-csv-pull-capture-584b09d1-20261017",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=30",
+    "--property=TimeoutStopSec=0",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/csv-pull-584b09d1/capture/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/csv-pull-584b09d1/capture/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/csv-pull-584b09d1/capture/run.py"
+  ],
+  "stdout": "",
+  "stderr": "Running as unit: lython-csv-pull-capture-584b09d1-20261017.service; invocation ID: 4ce16be638b247d494dd207d84a79c6e\n"
+}

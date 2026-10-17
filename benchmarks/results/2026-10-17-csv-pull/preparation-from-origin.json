@@ -1,0 +1,18 @@
+{
+  "state": "Completed",
+  "baseRevision": "1b6a15318b00ec056af02e23b72fa64f861964df",
+  "startedUtc": "2026-10-17T22:00:47.151684+00:00",
+  "candidateKind": "one frozen runtime file on immutable base; not an immutable candidate build",
+  "root": "/home/lokad/lython-bench-checks/csv-pull-584b09d1/candidate-from-origin",
+  "sourceFile": "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs",
+  "sourceSha256": "ddc0a48a4d13177580f767f0276e7378b5fbb8feb4af022036298aa6f1947f1c",
+  "sourceStatus": "M src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs",
+  "completedUtc": "2026-10-17T22:00:59.939047+00:00",
+  "buildSdk": "10.0.401",
+  "worker": "/home/lokad/lython-bench-checks/csv-pull-584b09d1/candidate-from-origin/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+  "workerSha256": "18bae8abcb26c4ac3c17a4f979fc60d7e3d1ede3cd9a9b4a6a78c2369fbb255a",
+  "librarySha256": "4a0ccdb7126334e0b04cb84622b012047db372e356ef5f312dff982a05257897",
+  "catalog": "/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/catalog.json",
+  "baselineWorker": "/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/source-candidate/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+  "sourceStatusAfter": "M src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs"
+}

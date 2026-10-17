@@ -1,0 +1,40 @@
+{
+  "collectionCount": 1,
+  "state": "Completed",
+  "startedUtc": "2026-10-17T22:01:40.367135+00:00",
+  "command": [
+    "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+    "/home/lokad/lython-bench-checks/csv-pull-584b09d1/candidate-from-origin/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+    "--compare",
+    "micro",
+    "--catalog",
+    "/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/catalog.json",
+    "--dotnet",
+    "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+    "--baseline-worker",
+    "/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/source-candidate/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+    "--python",
+    "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+    "--python-worker",
+    "/home/lokad/lython-bench-checks/csv-pull-584b09d1/candidate-from-origin/benchmarks/cpython-worker.py",
+    "--out",
+    "/home/lokad/lython-bench-checks/csv-pull-584b09d1/capture/micro.json",
+    "--case",
+    "scripts.csv-summary-helpers.large",
+    "--lane",
+    "warm-async"
+  ],
+  "loadBefore": [
+    0.19091796875,
+    0.0703125,
+    0.02294921875
+  ],
+  "supervisorTieredCompilation": "0",
+  "exitCode": 0,
+  "loadAfter": [
+    0.2353515625,
+    0.08447265625,
+    0.02783203125
+  ],
+  "stoppedUtc": "2026-10-17T22:01:49.786321+00:00"
+}

@@ -577,7 +577,46 @@ internal sealed partial class LythonRuntime
                     return null;
                 }
 
-                await PullAsync().ConfigureAwait(false);
+                if (_indexed is not null)
+                {
+                    // Indexed lists never touch the host, so the async pull shares
+                    // the live-index read exactly, including advancing past the
+                    // element before feeding it: the failed line is consumed
+                    // either way so catching a mid-stream error and continuing
+                    // resumes at the following element.
+                    if (_position >= _indexed.Count)
+                    {
+                        await FinishExhaustedAsync().ConfigureAwait(false);
+                        continue;
+                    }
+
+                    var current = _indexed[_position];
+                    _position++;
+                    FeedPulledLine(current);
+                    continue;
+                }
+
+                _asyncCursor ??= ToSequenceAsync(_origin!, _span, _context).GetAsyncEnumerator();
+                bool moved;
+                try
+                {
+                    moved = await _asyncCursor.MoveNextAsync().ConfigureAwait(false);
+                }
+                catch (InvalidOperationException)
+                {
+                    // Version-checked iterators (large-list storage, views)
+                    // surface concurrent modification as a CLR failure; fail
+                    // explicitly instead of leaking it.
+                    throw new LythonRuntimeException("RuntimeError", "csv source mutated during iteration.", _span);
+                }
+
+                if (!moved)
+                {
+                    await FinishExhaustedAsync().ConfigureAwait(false);
+                    continue;
+                }
+
+                FeedPulledLine(_asyncCursor.Current);
             }
         }
 
@@ -645,50 +684,6 @@ internal sealed partial class LythonRuntime
                 throw;
             }
 
-        }
-
-        private async ValueTask PullAsync()
-        {
-            if (_indexed is not null)
-            {
-                // Indexed lists never touch the host, so the async pull shares
-                // the live-index read exactly, including advancing past the
-                // element before feeding it: the failed line is consumed
-                // either way so catching a mid-stream error and continuing
-                // resumes at the following element.
-                if (_position >= _indexed.Count)
-                {
-                    await FinishExhaustedAsync().ConfigureAwait(false);
-                    return;
-                }
-
-                var current = _indexed[_position];
-                _position++;
-                FeedPulledLine(current);
-                return;
-            }
-
-            _asyncCursor ??= ToSequenceAsync(_origin!, _span, _context).GetAsyncEnumerator();
-            bool moved;
-            try
-            {
-                moved = await _asyncCursor.MoveNextAsync().ConfigureAwait(false);
-            }
-            catch (InvalidOperationException)
-            {
-                // Version-checked iterators (large-list storage, views)
-                // surface concurrent modification as a CLR failure; fail
-                // explicitly instead of leaking it.
-                throw new LythonRuntimeException("RuntimeError", "csv source mutated during iteration.", _span);
-            }
-
-            if (!moved)
-            {
-                await FinishExhaustedAsync().ConfigureAwait(false);
-                return;
-            }
-
-            FeedPulledLine(_asyncCursor.Current);
         }
 
         private void FeedPulledLine(object current)

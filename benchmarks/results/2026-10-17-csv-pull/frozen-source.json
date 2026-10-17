@@ -1,0 +1,8 @@
+{
+  "localBase": "584b09d10de8f5714a83deb6c459efb66ff30486",
+  "runtimeBase": "1b6a15318b00ec056af02e23b72fa64f861964df",
+  "sourceFile": "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs",
+  "localSha256": "4b1ef9a9c3c223485a5a359e1563e6e1222321c0b7db5395beade0af6b5123f3",
+  "canonicalSha256": "ddc0a48a4d13177580f767f0276e7378b5fbb8feb4af022036298aa6f1947f1c",
+  "sourceKind": "working candidate; one runtime source file; no immutable candidate revision claim"
+}
