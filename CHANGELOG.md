@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse ten fixed numeric and text builtin definitions across executions, removing repeated wrapper and signature setup. Keep mutable types, dictionaries, modules, host bindings and result ownership private to each run.
+
 - Call the twelve zero-argument string predicates directly from executable receiver storage, sharing their existing operations with exposed methods. Remove immediate bound-callable and empty-argument transport costs while preserving dynamic dispatch, method identity, guards, cancellation and retained receivers.
 
 - Return `True` for `''.isascii()`, matching Python while preserving nonempty UTF-8 classification.

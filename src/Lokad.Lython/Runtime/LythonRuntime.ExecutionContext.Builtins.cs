@@ -10,6 +10,16 @@ internal sealed partial class LythonRuntime
         private static readonly BuiltinCallable SharedLen = BuiltinCallable.Create("len", Len, LenAsync);
         private static readonly BuiltinCallable SharedRepr = BuiltinCallable.Create("repr", Repr, ["value"]);
         private static readonly BuiltinCallable SharedAscii = BuiltinCallable.Create("ascii", Ascii, ["value"]);
+        private static readonly BuiltinCallable SharedFormat = BuiltinCallable.Create("format", Format, ["value", "format_spec"], requiredCount: 1);
+        private static readonly BuiltinCallable SharedAbs = BuiltinCallable.Create("abs", Abs, ["x"]);
+        private static readonly BuiltinCallable SharedPow = BuiltinCallable.Create("pow", Pow, ["base", "exp", "mod"], requiredCount: 2);
+        private static readonly BuiltinCallable SharedRound = BuiltinCallable.Create("round", Round, ["number", "ndigits"], requiredCount: 1);
+        private static readonly BuiltinCallable SharedDivMod = BuiltinCallable.Create("divmod", DivMod, ["a", "b"]);
+        private static readonly BuiltinCallable SharedBin = BuiltinCallable.Create("bin", Bin, ["number"]);
+        private static readonly BuiltinCallable SharedOct = BuiltinCallable.Create("oct", Oct, ["number"]);
+        private static readonly BuiltinCallable SharedHex = BuiltinCallable.Create("hex", Hex, ["number"]);
+        private static readonly BuiltinCallable SharedChr = BuiltinCallable.Create("chr", Chr, ["i"]);
+        private static readonly BuiltinCallable SharedOrd = BuiltinCallable.Create("ord", Ord, ["c"]);
 
         internal static bool IsLengthBuiltin(object value) => ReferenceEquals(value, SharedLen);
 
@@ -58,7 +68,7 @@ internal sealed partial class LythonRuntime
                 ["str"] = BuiltinCallable.Create(LythonCallableSignature.Create("str", ["object", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Str),
                 ["repr"] = SharedRepr,
                 ["ascii"] = SharedAscii,
-                ["format"] = BuiltinCallable.Create("format", Format, ["value", "format_spec"], requiredCount: 1),
+                ["format"] = SharedFormat,
                 ["len"] = SharedLen,
                 ["sorted"] = BuiltinCallable.Create(LythonCallableSignature.Create("sorted", ["iterable", "key", "reverse"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sorted, SortedAsync),
                 ["any"] = BuiltinCallable.Create("any", Any, AnyAsync),
@@ -66,15 +76,15 @@ internal sealed partial class LythonRuntime
                 ["min"] = new MinMaxCallable(ExtremumOperation.Minimum),
                 ["max"] = new MinMaxCallable(ExtremumOperation.Maximum),
                 ["sum"] = BuiltinCallable.Create(LythonCallableSignature.Create("sum", ["iterable", "start"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sum, SumAsync),
-                ["abs"] = BuiltinCallable.Create("abs", Abs, ["x"]),
-                ["pow"] = BuiltinCallable.Create("pow", Pow, ["base", "exp", "mod"], requiredCount: 2),
-                ["round"] = BuiltinCallable.Create("round", Round, ["number", "ndigits"], requiredCount: 1),
-                ["divmod"] = BuiltinCallable.Create("divmod", DivMod, ["a", "b"]),
-                ["bin"] = BuiltinCallable.Create("bin", Bin, ["number"]),
-                ["oct"] = BuiltinCallable.Create("oct", Oct, ["number"]),
-                ["hex"] = BuiltinCallable.Create("hex", Hex, ["number"]),
-                ["chr"] = BuiltinCallable.Create("chr", Chr, ["i"]),
-                ["ord"] = BuiltinCallable.Create("ord", Ord, ["c"]),
+                ["abs"] = SharedAbs,
+                ["pow"] = SharedPow,
+                ["round"] = SharedRound,
+                ["divmod"] = SharedDivMod,
+                ["bin"] = SharedBin,
+                ["oct"] = SharedOct,
+                ["hex"] = SharedHex,
+                ["chr"] = SharedChr,
+                ["ord"] = SharedOrd,
                 ["range"] = BuiltinCallable.Create("range", Range),
                 ["enumerate"] = BuiltinCallable.Create(LythonCallableSignature.Create("enumerate", ["iterable", "start"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Enumerate),
                 ["zip"] = new ZipCallable(),
