@@ -384,13 +384,6 @@ internal sealed partial class LythonRuntime
                 }
                 catch (LythonRuntimeException ex)
                 {
-                    // Preserve the publication failure while closing any other
-                    // writers, just as the ordinary failure path does.
-                    if (context is not null && !context.Services.State.CancellationRequested)
-                    {
-                        context.Services.State.TryCloseOpenFileWriters(context!);
-                    }
-
                     return CreateRuntimeFailureResult(ex, context, options);
                 }
 
@@ -398,14 +391,6 @@ internal sealed partial class LythonRuntime
             }
             catch (LythonRuntimeException ex)
             {
-                // Preserve the original failure while still attempting publication
-                // (CPython publishes buffered writes even when execution fails).
-                // Cancellation skips publication: a cancelled run leaves no file behind.
-                if (context is not null && !context.Services.State.CancellationRequested)
-                {
-                    context.Services.State.TryCloseOpenFileWriters(context!);
-                }
-
                 return CreateRuntimeFailureResult(ex, context, options);
             }
         });

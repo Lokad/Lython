@@ -789,6 +789,18 @@ variadic arguments, default parameter values, and conditional expressions are
 part of the supported subset. Their feature-specific limitations are normative
 where described elsewhere in this document.
 
+Ordinary module and function assertions reuse executable condition/branch and
+failure operations, including inside protected regions. Evaluate truth once and
+the optional message only on failure. `AssertionError.args` holds the original
+message object (including explicit `None`); raising/catching does not render it.
+Deliberate string rendering observes current argument values and their protocols.
+Unhandled assertion messages use the existing synchronous, best-effort failure
+renderer after guest cleanup and before final stdout/stderr capture. This does
+not add asynchronous exception-message rendering. A refused admission during
+that diagnostic work retains its first resource-limit origin and fails the run.
+Any buffered writer opened by diagnostic work joins existing final cleanup;
+`RunAsync` awaits its publication before returning. Cancellation still skips it.
+
 Asynchronous functions, `await`, `async for`, and `async with` are outside the
 current language subset. These forms must
 be rejected explicitly. `LythonEngine.RunAsync` is an embedding API that awaits

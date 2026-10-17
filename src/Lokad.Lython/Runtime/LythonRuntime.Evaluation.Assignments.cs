@@ -30,11 +30,14 @@ internal sealed partial class LythonRuntime
     private static void ThrowAssertionError(object? message, ExecutionContext context, LythonSourceSpan span)
     {
         var args = new PyTuple(message is null ? [] : [message], context.MemoryGovernor, span);
-        throw new LythonRuntimeException("AssertionError",
-            message is null ? string.Empty : ToInterpolatedPyString(message, context).AsString(), span)
+        var error = new LythonRuntimeException("AssertionError", string.Empty, span)
         {
             PythonExplicitArgs = args,
         };
+        // Raising does not render the argument. Reuse the existing authoritative
+        // args path so later str() sees mutations and invokes protocols lazily.
+        CreatePythonExceptionInstance(error).ArgsOverride = args;
+        throw error;
     }
 
     private static void ExecuteDeleteStatement(DeleteStatementSyntax statement, ExecutionContext context)

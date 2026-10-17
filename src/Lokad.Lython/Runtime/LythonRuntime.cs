@@ -292,11 +292,6 @@ internal sealed partial class LythonRuntime
                 }
                 catch (LythonRuntimeException ex)
                 {
-                    if (context is not null && !context.Services.State.CancellationRequested)
-                    {
-                        context.Services.State.TryCloseOpenFileWriters(context!);
-                    }
-
                     return CreateRuntimeFailureResult(ex, context, options);
                 }
 
@@ -304,14 +299,6 @@ internal sealed partial class LythonRuntime
             }
             catch (LythonRuntimeException ex)
             {
-                // Preserve the original failure while still attempting publication
-                // (CPython publishes buffered writes even when execution fails).
-                // Cancellation skips publication: a cancelled run leaves no file behind.
-                if (context is not null && !context.Services.State.CancellationRequested)
-                {
-                    context.Services.State.TryCloseOpenFileWriters(context!);
-                }
-
                 return CreateRuntimeFailureResult(ex, context, options);
             }
         });
@@ -419,9 +406,35 @@ internal sealed partial class LythonRuntime
             diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
     }
 
-    private static LythonExecutionResult CreateRuntimeFailureResult(LythonRuntimeException exception, ExecutionContext? context, LythonRunOptions? options)
+    private static async ValueTask<LythonExecutionResult> CreateRuntimeFailureResultAsync(
+        LythonRuntimeException exception, ExecutionContext? context, LythonRunOptions? options)
     {
         exception = context?.MemoryGovernor.AdmissionFailure ?? exception;
+        var message = RuntimeFailureProjection.RenderFailureMessage(exception, context);
+        if (context is not null && !context.Services.State.CancellationRequested)
+            await context.Services.State.TryCloseOpenFileWritersAsync(context).ConfigureAwait(false);
+        return CreateRuntimeFailureResult(exception, context, options, message);
+    }
+
+    private static LythonExecutionResult CreateRuntimeFailureResult(
+        LythonRuntimeException exception, ExecutionContext? context, LythonRunOptions? options, string? renderedMessage = null)
+    {
+        exception = context?.MemoryGovernor.AdmissionFailure ?? exception;
+        // Diagnostics may run a lazy assertion/key protocol. Finish it before
+        // closing their writers/capturing output. The async path already awaited
+        // that cleanup and supplies its message. Cancellation skips publication.
+        var message = renderedMessage;
+        if (message is null)
+        {
+            message = RuntimeFailureProjection.RenderFailureMessage(exception, context);
+            if (context is not null && !context.Services.State.CancellationRequested)
+                context.Services.State.TryCloseOpenFileWriters(context);
+        }
+        if (context?.MemoryGovernor.AdmissionFailure is { } refusal)
+        {
+            exception = refusal;
+            message = refusal.Message;
+        }
         exception.SetSourcePathIfMissing(context?.SourcePath);
         // Failure details share the run budget with the retained output copies
         // below (MG23): oversized messages truncate with an explicit marker and
@@ -449,7 +462,7 @@ internal sealed partial class LythonRuntime
         LythonRuntimeFailure failure;
         try
         {
-            failure = RuntimeFailureProjection.ToPublicFailure(exception, budget, context);
+            failure = RuntimeFailureProjection.ToPublicFailure(exception, budget, context, message);
         }
         catch (ProjectionException)
         {
@@ -637,27 +650,14 @@ internal sealed partial class LythonRuntime
             }
             catch (LythonRuntimeException ex)
             {
-                if (context is not null && !context.Services.State.CancellationRequested)
-                {
-                    await context.Services.State.TryCloseOpenFileWritersAsync(context).ConfigureAwait(false);
-                }
-
-                return CreateRuntimeFailureResult(ex, context, options);
+                return await CreateRuntimeFailureResultAsync(ex, context, options).ConfigureAwait(false);
             }
 
             return CreateReturnedResult(signal, context, options);
         }
         catch (LythonRuntimeException ex)
         {
-            // Preserve the original failure while still attempting publication
-            // (CPython publishes buffered writes even when execution fails).
-            // Cancellation skips publication: a cancelled run leaves no file behind.
-            if (context is not null && !context.Services.State.CancellationRequested)
-            {
-                await context.Services.State.TryCloseOpenFileWritersAsync(context).ConfigureAwait(false);
-            }
-
-            return CreateRuntimeFailureResult(ex, context, options);
+            return await CreateRuntimeFailureResultAsync(ex, context, options).ConfigureAwait(false);
         }
     }
 

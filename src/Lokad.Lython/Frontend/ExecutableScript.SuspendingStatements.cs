@@ -8,7 +8,7 @@ internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
     {
-        private int CompileSuspendingAssert(LoweredAssertStatement statement, int block)
+        private int CompileAssert(LoweredAssertStatement statement, int block)
         {
             block = CompileExpression(statement.Condition, block);
             var failure = CreateBlock();

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Keep ordinary assertions on the executable path. Preserve lazy message arguments and identity instead of rendering while raising; deliberate rendering observes later mutations. Render unhandled assertion diagnostics after guest cleanup and before final output capture, preserving terminal admission refusal and existing ownership.
+
 - Lower ordinary module annotated assignments through executable value/target operations and existing metadata helpers, removing their whole-statement fallback. Preserve eager/postponed ordering, asynchronous annotation setters and escaping values. Keep module namespaces conservatively for callable/deferred metadata, retain module-lambda globals once, and admit live slot capacity before namespace materialization.
 
 - Resolve implicit formatting through type slots and honor `__format__` in empty `str.format` / `format_map` fields. Share guest-format binding and validation, returning its string directly instead of decoding and re-encoding it. Root `format` and default `object.__format__` now await protocol I/O under `RunAsync`, preserving specifier order, cancellation, terminal admission refusal, managed stack protection and retained ownership.

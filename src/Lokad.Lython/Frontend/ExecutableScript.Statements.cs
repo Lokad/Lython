@@ -52,8 +52,8 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.DefineFunction(InternFunction(functionDefinition), functionDefinition.Span));
                     return currentBlock;
 
-                case LoweredAssertStatement assertion when _generator:
-                    return CompileSuspendingAssert(assertion, currentBlock);
+                case LoweredAssertStatement assertion:
+                    return CompileAssert(assertion, currentBlock);
                 case LoweredRaiseStatement raised when _generator:
                     return CompileSuspendingRaise(raised, currentBlock);
                 case LoweredDeleteStatement deleted when _generator:

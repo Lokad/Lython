@@ -337,6 +337,17 @@ the first admission's structured attribution. Projection refusal also prevents
 a successful outcome, including `SystemExit(0)`. An already failed command keeps
 its original nonzero failure when diagnostic projection cannot fit.
 
+Assertion arguments reuse the existing governed tuple and transient exception
+shell. Raising does not allocate a rendered copy of the message or call its
+protocols. Retained arguments continue to use the execution/result owner.
+Unhandled-message rendering runs before final output capture, under the existing
+execution allowance and best-effort diagnostic policy; an admission refusal there
+is terminal and preserves its first structured origin. This adds no budget,
+scope, object inventory or separate rendering owner.
+Existing failure-writer cleanup runs after diagnostic rendering too; RunAsync
+awaits outstanding publication before returning the result or refunding its
+execution scope. Cancellation continues to skip publication.
+
 An execution's first refusal is terminal even if guest code catches `MemoryError`,
 suppresses it in `__exit__`, or returns/raises from `finally`. Further guest work
 and host calls stop. Guest cleanup is not an emergency allocation budget and can
