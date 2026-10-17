@@ -35,10 +35,10 @@ internal sealed partial class ExecutableScript
             return block;
         }
 
-        private int CompileSuspendingDelete(ExpressionSyntax expression, int block)
+        private int CompileDelete(ExpressionSyntax expression, int block)
         {
             if (expression is ParenthesizedExpressionSyntax parenthesized)
-                return CompileSuspendingDelete(parenthesized.Inner, block);
+                return CompileDelete(parenthesized.Inner, block);
             var items = expression switch
             {
                 TupleLiteralExpressionSyntax tuple => tuple.Items,
@@ -47,7 +47,7 @@ internal sealed partial class ExecutableScript
             };
             if (items is not null)
             {
-                foreach (var item in items) block = CompileSuspendingDelete(item.Expression, block);
+                foreach (var item in items) block = CompileDelete(item.Expression, block);
                 return block;
             }
             AssignmentTargetSyntax target = expression switch

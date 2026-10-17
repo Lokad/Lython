@@ -801,6 +801,15 @@ that diagnostic work retains its first resource-limit origin and fails the run.
 Any buffered writer opened by diagnostic work joins existing final cleanup;
 `RunAsync` awaits its publication before returning. Cancellation still skips it.
 
+Ordinary module/function deletion reuses executable target sequencing and existing
+name, member, item and slice deletion kernels. Targets execute left to right;
+earlier mutations survive a later target failure. Names use their existing
+local/global/nonlocal storage, and deleting one target does not reset unrelated
+locals or closure cells. Receiver, raw key and slice bounds remain retained on
+the operand stack until that target's deletion finishes, including actual protocol
+I/O under `RunAsync`. Native mutation/key construction keeps its allocation
+preflights; deleting a binding does not refund an alias that remains retained.
+
 Asynchronous functions, `await`, `async for`, and `async with` are outside the
 current language subset. These forms must
 be rejected explicitly. `LythonEngine.RunAsync` is an embedding API that awaits

@@ -116,14 +116,7 @@ internal sealed partial class LythonRuntime
                     ThrowRaisedValue(Pop(ref _stack, span), raised.HasCause, cause, _context, span);
                     break;
                 case ExecutableDeletePreparedTarget deleted:
-                    using (var storage = _context.MemoryGovernor.ReserveTemporary(1024, span))
-                    {
-                        var reads = AssignmentTargetFacts.Reads(deleted.Target).ToArray();
-                        var values = CaptureTargetReads(reads, _stack.Count - reads.Length);
-                        _stack.RemoveTail(reads.Length);
-                        await DeletePreparedTargetAsync(deleted.Target, values, _context, span, asynchronous).ConfigureAwait(false);
-                        SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, _context);
-                    }
+                    await DeletePreparedTargetAsync(deleted.Target, span, asynchronous).ConfigureAwait(false);
                     break;
                 case ExecutableUnpackValues unpack:
                     using (var materialized = asynchronous
@@ -150,42 +143,56 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private Dictionary<ExpressionSyntax, object> CaptureTargetReads(IReadOnlyList<ExpressionSyntax> reads, int first)
+        private async ValueTask DeletePreparedTargetAsync(AssignmentTargetSyntax target, LythonSourceSpan span, bool asynchronous)
         {
-            var result = new Dictionary<ExpressionSyntax, object>(reads.Count);
-            for (var i = 0; i < reads.Count; i++) result[reads[i]] = _stack[first + i];
-            return result;
-        }
-    }
-
-    private static async ValueTask DeletePreparedTargetAsync(AssignmentTargetSyntax target,
-        IReadOnlyDictionary<ExpressionSyntax, object> reads, ExecutionContext _context, LythonSourceSpan span, bool asynchronous)
-    {
-        switch (target)
-        {
-            case NameAssignmentTargetSyntax name:
-                if (!DeleteName(name.Name, _context, span))
-                    throw MissingDeletedName(name.Name, _context, span);
-                break;
-            case MemberAssignmentTargetSyntax member:
-                var receiver = reads[member.Target];
-                var deleted = asynchronous ? await PyMemberAccess.TryDeleteAsync(receiver, member.MemberName, _context, span).ConfigureAwait(false)
-                    : PyMemberAccess.TryDelete(receiver, member.MemberName, _context, span);
-                if (!deleted) throw PyMemberAccess.CreateMissingMemberError(receiver, member.MemberName, span, _context, operation: MissingMemberOperation.Delete);
-                break;
-            case SubscriptAssignmentTargetSyntax item:
-                if (asynchronous) await ExecuteResolvedSubscriptDeletionAsync(reads[item.Target], reads[item.Index], span, _context).ConfigureAwait(false);
-                else DeleteSubscriptValue(reads[item.Target], reads[item.Index], span, _context);
-                break;
-            case SliceAssignmentTargetSyntax slice:
-                var sequence = reads[slice.Target];
-                var start = slice.Start is null ? null : reads[slice.Start];
-                var end = slice.End is null ? null : reads[slice.End];
-                var step = slice.Step is null ? null : reads[slice.Step];
-                if (asynchronous) await ExecuteSliceDeletionAsync(sequence, start, end, step, span, _context).ConfigureAwait(false);
-                else ExecuteSliceDeletion(sequence, start, end, step, span, _context);
-                break;
-            default: throw new InvalidOperationException("Invalid prepared delete target.");
+            switch (target)
+            {
+                case NameAssignmentTargetSyntax name:
+                    if (!DeleteName(name.Name, _context, span))
+                        throw MissingDeletedName(name.Name, _context, span);
+                    break;
+                case MemberAssignmentTargetSyntax member:
+                    try
+                    {
+                        var receiver = _stack[_stack.Count - 1];
+                        var deleted = asynchronous ? await PyMemberAccess.TryDeleteAsync(receiver, member.MemberName, _context, span).ConfigureAwait(false)
+                            : PyMemberAccess.TryDelete(receiver, member.MemberName, _context, span);
+                        if (!deleted) throw PyMemberAccess.CreateMissingMemberError(receiver, member.MemberName, span, _context, operation: MissingMemberOperation.Delete);
+                    }
+                    finally { _stack.RemoveTail(1); }
+                    break;
+                case SubscriptAssignmentTargetSyntax:
+                {
+                    var first = _stack.Count - 2;
+                    try
+                    {
+                        if (asynchronous) await ExecuteResolvedSubscriptDeletionAsync(_stack[first], _stack[first + 1], span, _context).ConfigureAwait(false);
+                        else DeleteSubscriptValue(_stack[first], _stack[first + 1], span, _context);
+                    }
+                    finally { _stack.RemoveTail(2); }
+                    break;
+                }
+                case SliceAssignmentTargetSyntax slice:
+                {
+                    // Match the compiler's read order and retain every raw operand
+                    // until deletion (including protocol I/O) has finished.
+                    var count = 1 + (slice.Start is null ? 0 : 1) + (slice.End is null ? 0 : 1) + (slice.Step is null ? 0 : 1);
+                    var first = _stack.Count - count;
+                    try
+                    {
+                        var sequence = _stack[first];
+                        var next = first + 1;
+                        var start = slice.Start is null ? null : _stack[next++];
+                        var end = slice.End is null ? null : _stack[next++];
+                        var step = slice.Step is null ? null : _stack[next];
+                        if (asynchronous) await ExecuteSliceDeletionAsync(sequence, start, end, step, span, _context).ConfigureAwait(false);
+                        else ExecuteSliceDeletion(sequence, start, end, step, span, _context);
+                    }
+                    finally { _stack.RemoveTail(count); }
+                    break;
+                }
+                default: throw new InvalidOperationException("Invalid prepared delete target.");
+            }
         }
     }
 }

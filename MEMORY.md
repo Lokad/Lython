@@ -253,6 +253,14 @@ RHS, receiver, start, stop and step. Native list replacement keeps its existing
 temporary-capacity and destination-overlap preflights; user/mapping slice keys
 keep their shell admission. No per-store owner or read dictionary is added.
 Additional header instructions can change narrow memory/fuel failure thresholds.
+Executable deletion similarly retains receiver, raw key and optional slice bounds
+in the existing operand frame until the awaited deletion ends, then clears them
+in finally. Name deletion uses existing frame-aware storage directly. It removes
+the read-array/dictionary capture and its fixed working reservation; no new
+storage, scope or ownership fee replaces them. Native deletion/key-construction
+preflights remain, and deleting a binding does not refund retained aliases.
+Instruction fuel, target spans and narrow admission thresholds can differ from
+the lowered path; no arbitrary-reference-withdrawal reclamation is promised.
 Native list-slice replacement uses the existing owned iteration lease through
 destination mutation, including suspended iterator callbacks. It no longer keeps
 an extra final array or duplicates the slice-specific capacity-growth accounting.
