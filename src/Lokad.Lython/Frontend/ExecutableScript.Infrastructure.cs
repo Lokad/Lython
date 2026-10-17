@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Globalization;
 using System.Numerics;
 using Lokad.Lython.Runtime;
@@ -389,14 +390,18 @@ internal sealed partial class ExecutableScript
                 functionDefinition.Parameters, functionDefinition.Body,
                 ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax));
 
-            var defaultValues = functionDefinition.Parameters
-                .Where(parameter => parameter.DefaultValue is not null)
-                .ToDictionary(
-                    parameter => parameter.Name,
-                    parameter => parameter.DefaultValue.RequireNotNull(),
-                    StringComparer.Ordinal);
+            Dictionary<string, LoweredExpression>? defaultValues = null;
+            for (var index = 0; index < functionDefinition.Parameters.Count; index++)
+            {
+                var parameter = functionDefinition.Parameters[index];
+                if (parameter.DefaultValue is { } defaultValue)
+                {
+                    (defaultValues ??= new(StringComparer.Ordinal)).Add(parameter.Name, defaultValue);
+                }
+            }
 
-            _functions.Add(new ExecutableFunctionBinding(functionDefinition, codeObject, defaultValues));
+            _functions.Add(new ExecutableFunctionBinding(functionDefinition, codeObject,
+                defaultValues is null ? FrozenDictionary<string, LoweredExpression>.Empty : defaultValues));
             return _functions.Count - 1;
         }
 

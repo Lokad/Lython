@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="957a375e-fd5e-4d4f-bac9-c49f1c07caad" name="JoannesVermorel@LOKAD-0399 2026-10-17 21:56:25" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-17T21:56:25.8084404+02:00" queuing="2026-10-17T21:56:25.8084405+02:00" start="2026-10-17T21:56:24.7346477+02:00" finish="2026-10-17T21:56:25.8130437+02:00" />
+  <TestSettings name="default" id="18f66176-5de2-46d5-968e-932f675f204f">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-17_21_56_25" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="5414a8a2-7f2c-42f7-ac3e-d1aa7d22bb69" testId="60daa952-7c47-8110-ae86-416dca4efa1e" testName="Lokad.Lython.Tests.GeneratorCompileAllocationProbe.RepeatedFreshCompilation(form: &quot;ordinary&quot;, source: &quot;def stream(value):\n local=value\n return local\np&quot;···)" computerName="LOKAD-0399" duration="00:00:00.1935434" startTime="2026-10-17T21:56:25.4584463+02:00" endTime="2026-10-17T21:56:25.6567317+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5414a8a2-7f2c-42f7-ac3e-d1aa7d22bb69">
+      <Output>
+        <StdOut>GENERATOR_COMPILE_ALLOCATION:{"form":"ordinary","compilationsPerSample":16,"samples":[1579392,1579392,1579392,1579392,1579392,1579392,1579392,1579520]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2da51035-dfa8-41f7-9dc1-f1230070163a" testId="50960236-8e9b-51b8-4f98-8058d346229d" testName="Lokad.Lython.Tests.GeneratorCompileAllocationProbe.RepeatedFreshCompilation(form: &quot;generator-lambda&quot;, source: &quot;factory=lambda value: (yield value)\nprint(list(fa&quot;···)" computerName="LOKAD-0399" duration="00:00:00.0273742" startTime="2026-10-17T21:56:25.7143439+02:00" endTime="2026-10-17T21:56:25.7417223+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2da51035-dfa8-41f7-9dc1-f1230070163a">
+      <Output>
+        <StdOut>GENERATOR_COMPILE_ALLOCATION:{"form":"generator-lambda","compilationsPerSample":16,"samples":[1407872,1407872,1407872,1407872,1407872,1407872,1407872,1407872]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1399c57c-22dc-4aad-9d46-0507edd56550" testId="c422a418-cd2d-0be5-ee1d-acc234c6e6aa" testName="Lokad.Lython.Tests.GeneratorCompileAllocationProbe.RepeatedFreshCompilation(form: &quot;generator&quot;, source: &quot;def stream(value):\n local=value\n yield local\npr&quot;···)" computerName="LOKAD-0399" duration="00:00:00.0326042" startTime="2026-10-17T21:56:25.6820842+02:00" endTime="2026-10-17T21:56:25.7142890+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1399c57c-22dc-4aad-9d46-0507edd56550">
+      <Output>
+        <StdOut>GENERATOR_COMPILE_ALLOCATION:{"form":"generator","compilationsPerSample":16,"samples":[1764608,1764608,1764608,1764608,1764608,1764608,1764608,1764608]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="498bae6c-01ed-4b41-bc13-cb73a780562f" testId="8e49096f-36ff-ecdf-c94a-0c44f0354bd9" testName="Lokad.Lython.Tests.GeneratorCompileAllocationProbe.RepeatedFreshCompilation(form: &quot;ordinary-lambda&quot;, source: &quot;factory=lambda value: value\nprint(factory(7))&quot;)" computerName="LOKAD-0399" duration="00:00:00.0249073" startTime="2026-10-17T21:56:25.6621893+02:00" endTime="2026-10-17T21:56:25.6816559+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="498bae6c-01ed-4b41-bc13-cb73a780562f">
+      <Output>
+        <StdOut>GENERATOR_COMPILE_ALLOCATION:{"form":"ordinary-lambda","compilationsPerSample":16,"samples":[1145728,1145728,1145728,1145728,1145728,1145728,1145728,1145728]}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.GeneratorCompileAllocationProbe.RepeatedFreshCompilation(form: &quot;ordinary-lambda&quot;, source: &quot;factory=lambda value: value\nprint(factory(7))&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="8e49096f-36ff-ecdf-c94a-0c44f0354bd9">
+      <Execution id="498bae6c-01ed-4b41-bc13-cb73a780562f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.GeneratorCompileAllocationProbe" name="RepeatedFreshCompilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.GeneratorCompileAllocationProbe.RepeatedFreshCompilation(form: &quot;generator&quot;, source: &quot;def stream(value):\n local=value\n yield local\npr&quot;···)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c422a418-cd2d-0be5-ee1d-acc234c6e6aa">
+      <Execution id="1399c57c-22dc-4aad-9d46-0507edd56550" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.GeneratorCompileAllocationProbe" name="RepeatedFreshCompilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.GeneratorCompileAllocationProbe.RepeatedFreshCompilation(form: &quot;ordinary&quot;, source: &quot;def stream(value):\n local=value\n return local\np&quot;···)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="60daa952-7c47-8110-ae86-416dca4efa1e">
+      <Execution id="5414a8a2-7f2c-42f7-ac3e-d1aa7d22bb69" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.GeneratorCompileAllocationProbe" name="RepeatedFreshCompilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.GeneratorCompileAllocationProbe.RepeatedFreshCompilation(form: &quot;generator-lambda&quot;, source: &quot;factory=lambda value: (yield value)\nprint(list(fa&quot;···)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="50960236-8e9b-51b8-4f98-8058d346229d">
+      <Execution id="2da51035-dfa8-41f7-9dc1-f1230070163a" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.GeneratorCompileAllocationProbe" name="RepeatedFreshCompilation" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="60daa952-7c47-8110-ae86-416dca4efa1e" executionId="5414a8a2-7f2c-42f7-ac3e-d1aa7d22bb69" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="50960236-8e9b-51b8-4f98-8058d346229d" executionId="2da51035-dfa8-41f7-9dc1-f1230070163a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c422a418-cd2d-0be5-ee1d-acc234c6e6aa" executionId="1399c57c-22dc-4aad-9d46-0507edd56550" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8e49096f-36ff-ecdf-c94a-0c44f0354bd9" executionId="498bae6c-01ed-4b41-bc13-cb73a780562f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="4" executed="4" passed="4" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.43]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.45]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.75]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

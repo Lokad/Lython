@@ -1,0 +1,321 @@
+{
+  "dateUtc": "2026-10-17",
+  "baselineRevision": "d95638bab24b66b819d083b15d0a5c35885a6325",
+  "scopeOnlyCommit": "72feb124",
+  "combinedCandidate": "frozen final two-file patch;single-pass default metadata construction",
+  "sources": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": {
+      "baselineSha256Lf": "a45e4617268628c11719237995b00b8750bc64589fa9664b033db26f94307dbf",
+      "scopeOnlySha256Lf": "1ff8dac5e8e2ff504ef805a8ac293eacd96ba9c03a2dc966601193841654befe",
+      "combinedSha256Lf": "bf52703a1b6027eecfbfccf5960024cba0f07ca29d6421c7e8a83cfa17c81279"
+    },
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs": {
+      "baselineSha256Lf": "1e4f2e6ef6918a549e4dea3d64350b3dd2364b3fb280a0e48955ab2b20d30f63",
+      "scopeOnlySha256Lf": "1458b2abb9fe94fd38c1da2351a299e5f54921eb2903edbd81b1c49dbe7a32a3",
+      "combinedSha256Lf": "1458b2abb9fe94fd38c1da2351a299e5f54921eb2903edbd81b1c49dbe7a32a3"
+    }
+  },
+  "machine": {
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "architecture": "X64",
+    "processor": "Intel(R) Core(TM) i7-14700KF",
+    "logicalProcessors": 28,
+    "powerShellRuntime": "10.0.12",
+    "dotnetSdk": "10.0.300-preview.0.26177.108",
+    "exactTestRuntimePatch": "not captured in original samples"
+  },
+  "boundary": "source-linked Release test assembly;16 fresh public Compile calls per sample including validity checks and disposal;source/engine/shared allowance precreated;4 warmups and8 samples;no execution,startup or host I/O",
+  "results": {
+    "baseline-allocation": [
+      {
+        "form": "ordinary-lambda",
+        "compilationsPerSample": 16,
+        "samples": [
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728
+        ]
+      },
+      {
+        "form": "generator",
+        "compilationsPerSample": 16,
+        "samples": [
+          1803520,
+          1803520,
+          1803520,
+          1803520,
+          1803520,
+          1803520,
+          1803520,
+          1803520
+        ]
+      },
+      {
+        "form": "generator-lambda",
+        "compilationsPerSample": 16,
+        "samples": [
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872
+        ]
+      },
+      {
+        "form": "ordinary",
+        "compilationsPerSample": 16,
+        "samples": [
+          1579392,
+          1579392,
+          1579392,
+          1579392,
+          1579392,
+          1579392,
+          1579392,
+          1579584
+        ]
+      }
+    ],
+    "scope-candidate-allocation": [
+      {
+        "form": "ordinary",
+        "compilationsPerSample": 16,
+        "samples": [
+          1579392,
+          1579392,
+          1579392,
+          1579392,
+          1579392,
+          1579392,
+          1579392,
+          1579520
+        ]
+      },
+      {
+        "form": "generator-lambda",
+        "compilationsPerSample": 16,
+        "samples": [
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872
+        ]
+      },
+      {
+        "form": "generator",
+        "compilationsPerSample": 16,
+        "samples": [
+          1764608,
+          1764608,
+          1764608,
+          1764608,
+          1764608,
+          1764608,
+          1764608,
+          1764608
+        ]
+      },
+      {
+        "form": "ordinary-lambda",
+        "compilationsPerSample": 16,
+        "samples": [
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728
+        ]
+      }
+    ],
+    "metadata-candidate-allocation": [
+      {
+        "form": "ordinary-lambda",
+        "compilationsPerSample": 16,
+        "samples": [
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728
+        ]
+      },
+      {
+        "form": "generator",
+        "compilationsPerSample": 16,
+        "samples": [
+          1762560,
+          1762560,
+          1762560,
+          1762560,
+          1762560,
+          1762560,
+          1762560,
+          1762560
+        ]
+      },
+      {
+        "form": "generator-lambda",
+        "compilationsPerSample": 16,
+        "samples": [
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872
+        ]
+      },
+      {
+        "form": "ordinary",
+        "compilationsPerSample": 16,
+        "samples": [
+          1577344,
+          1577344,
+          1577344,
+          1577344,
+          1577344,
+          1577344,
+          1577344,
+          1577344
+        ]
+      }
+    ],
+    "final-allocation": [
+      {
+        "form": "ordinary",
+        "compilationsPerSample": 16,
+        "samples": [
+          1577344,
+          1577344,
+          1577344,
+          1577344,
+          1577344,
+          1577344,
+          1577344,
+          1577400
+        ]
+      },
+      {
+        "form": "generator-lambda",
+        "compilationsPerSample": 16,
+        "samples": [
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872,
+          1407872
+        ]
+      },
+      {
+        "form": "generator",
+        "compilationsPerSample": 16,
+        "samples": [
+          1762560,
+          1762560,
+          1762560,
+          1762560,
+          1762560,
+          1762560,
+          1762560,
+          1762560
+        ]
+      },
+      {
+        "form": "ordinary-lambda",
+        "compilationsPerSample": 16,
+        "samples": [
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728,
+          1145728
+        ]
+      }
+    ]
+  },
+  "receipts": {
+    "baseline-allocation": {
+      "source": "generator-scope",
+      "production": "d95638ba",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "D06D79A2370EA1EC525784F43C6FF71743716464486AD3BF84E426D84308A019",
+      "filter": "FullyQualifiedName~GeneratorCompileAllocationProbe",
+      "pid": 43956,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1309,
+      "stdoutSha256": "7306EC1599F8879FF3A7FE21931C1C4995821006F00E7495A5751BDCD5A2C022",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "scope-candidate-allocation": {
+      "source": "generator-scope",
+      "production": "d95638ba-plus-scope-removal",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "AB9A21C7CAA4EA62417FBE5F05CE7E877505B23B49DCB4F17AF0EF555C335F1D",
+      "filter": "FullyQualifiedName~GeneratorCompileAllocationProbe",
+      "pid": 56936,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1337,
+      "stdoutSha256": "73C279C8397026AE6708D6B730B4B72DB2954C16FB7763BC7B54DE5C51426782",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "metadata-candidate-allocation": {
+      "source": "generator-scope",
+      "production": "72feb124-plus-empty-default-metadata",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "ED102427F55B2F13375511F6953E90D546B6AE6CA8D02B85FDD72C22AB79AFD0",
+      "filter": "FullyQualifiedName~GeneratorCompileAllocationProbe",
+      "pid": 23808,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1341,
+      "stdoutSha256": "E63FB95D09F4DD4BD094C1F8944D5CDD277E4D3E152F1871C1E8577D01A6526A",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "final-allocation": {
+      "source": "generator-scope",
+      "production": "72feb124-plus-single-pass-metadata",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "1937D0A6B23CA8561321525DC881E87AC41BE2CE7EC0D0BE516CF8A93B8E9B15",
+      "filter": "FullyQualifiedName~GeneratorCompileAllocationProbe",
+      "pid": 51104,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1332,
+      "stdoutSha256": "F9C2DE6952E4A54DCCCACF9E84EF76191B63769638917512EA69F2998C61580C",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    }
+  },
+  "metric": "GC.GetAllocatedBytesForCurrentThread;not elapsed time,RSS or a CPython comparison"
+}

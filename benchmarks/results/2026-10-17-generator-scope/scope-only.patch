@@ -1,0 +1,44 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+index 30de5488..8a16e423 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+@@ -385,9 +385,9 @@ internal sealed partial class ExecutableScript
+         {
+             if (_generator && StatementSyntaxTraversal.EnumerateDirectExpressions(functionDefinition.Syntax).Any(GeneratorSyntaxFacts.ContainsYield))
+                 throw new GeneratorLoweringException("Suspension in nested definition decorators, defaults or annotations is not supported.", functionDefinition.Span);
+-            var codeObject = CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
++            var codeObject = functionDefinition.GeneratorCode ?? CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
+                 functionDefinition.Parameters, functionDefinition.Body,
+-                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax), functionDefinition.GeneratorCode);
++                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax));
+ 
+             var defaultValues = functionDefinition.Parameters
+                 .Where(parameter => parameter.DefaultValue is not null)
+@@ -402,11 +402,10 @@ internal sealed partial class ExecutableScript
+ 
+         private ExecutableCodeObject? CompileFunctionCode(string name,
+             IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body,
+-            ScopeDirectiveFacts scopeFacts, ExecutableCodeObject? generatorCode)
++            ScopeDirectiveFacts scopeFacts)
+         {
+             try
+             {
+-                if (generatorCode is not null) return generatorCode;
+                 // Forward transitive free names as before. Comprehension names
+                 // are inner bindings, even at module scope or when the caller
+                 // declares a same-named global; add them after that exclusion.
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs b/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs
+index 542c7478..a46df0a7 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs
+@@ -39,8 +39,8 @@ internal sealed partial class ExecutableScript
+         {
+             foreach (var parameter in lambda.Parameters)
+                 if (parameter.DefaultValue is not null) block = CompileExpression(parameter.DefaultValue, block);
+-            var code = CompileFunctionCode("<lambda>", lambda.Parameters, lambda.FunctionBody,
+-                lambda.ScopeFacts, lambda.GeneratorCode);
++            var code = lambda.GeneratorCode ?? CompileFunctionCode("<lambda>", lambda.Parameters, lambda.FunctionBody,
++                lambda.ScopeFacts);
+             EmitOperation(new ExecutableCreateLambda(lambda, code), lambda.Span, block);
+             return block;
+         }

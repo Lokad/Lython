@@ -1,0 +1,34 @@
+using System.Text.Json;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary full-compilation allocation diagnostic; archive/remove before final qualification.
+public sealed class GeneratorCompileAllocationProbe(ITestOutputHelper output)
+{
+    [Theory]
+    [InlineData("generator", "def stream(value):\n local=value\n yield local\nprint(list(stream(7)))")]
+    [InlineData("ordinary", "def stream(value):\n local=value\n return local\nprint(stream(7))")]
+    [InlineData("generator-lambda", "factory=lambda value: (yield value)\nprint(list(factory(7)))")]
+    [InlineData("ordinary-lambda", "factory=lambda value: value\nprint(factory(7))")]
+    public void RepeatedFreshCompilation(string form, string source)
+    {
+        var engine = new LythonEngine();
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        var samples = new List<long>();
+        for (var sample = -4; sample < 8; sample++)
+        {
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            for (var index = 0; index < 16; index++)
+            {
+                using var script = engine.Compile(source, budget);
+                Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
+            }
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            Assert.Equal(0, budget.ReservedBytes);
+            if (sample >= 0) samples.Add(allocated);
+        }
+        output.WriteLine("GENERATOR_COMPILE_ALLOCATION:" + JsonSerializer.Serialize(new { form, compilationsPerSample = 16, samples }));
+    }
+}

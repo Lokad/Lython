@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- Reuse already compiled generator and generator-lambda code before preparing helper arguments. Remove the compiler helper's ignored generator-code parameter and avoid collecting a second, unused set of function scope facts; preserve defaults, closures and diagnostics.
+- Reuse already compiled generator and generator-lambda code before preparing helper arguments. Remove the compiler helper's redundant generator-code parameter and avoid collecting a second, unused set of function scope facts; preserve defaults, closures and diagnostics.
+
+- Reuse immutable empty compiler metadata for functions without defaults, removing per-definition dictionary and filtering allocations. Preserve ordered default-expression metadata and each execution's mutable default values.
 
 - Complete the finite Unicode 15.1 uppercase/title expansion data, including Greek multi-scalar mappings used by `upper`, `capitalize`, `title` and `swapcase`. Replace the incomplete handpicked switch and dead duplicate lowercase-İ branch; preserve the existing UTF-8 casing loop, preflights, ownership, cancellation and contextual rules. Add a pinned CPython generator and complete finite-set goldens.
 
