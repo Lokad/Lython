@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Bind named builtin arguments into their final storage after validation, removing temporary full-shape arrays, trimming copies and variadic value lists. Preserve argument effects, error precedence, omitted versus explicit `None`, optional gaps and presence-aware calls.
+
 - Reuse already compiled generator and generator-lambda code before preparing helper arguments. Remove the compiler helper's redundant generator-code parameter and avoid collecting a second, unused set of function scope facts; preserve defaults, closures and diagnostics.
 
 - Reuse immutable empty compiler metadata for functions without defaults, removing per-definition dictionary and filtering allocations. Preserve ordered default-expression metadata and each execution's mutable default values.

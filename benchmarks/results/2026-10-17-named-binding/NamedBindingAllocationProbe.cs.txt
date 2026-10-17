@@ -1,0 +1,83 @@
+using System.Numerics;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary bounded diagnostic; archive and remove before final qualification.
+public sealed class NamedBindingAllocationProbe(ITestOutputHelper output)
+{
+    [Fact]
+    public void FrozenBindingShapes()
+    {
+        var span = new LythonSourceSpan(0, 1, 1, 1);
+        var tokens = new[] { CallArgumentValue.Positional("p"), CallArgumentValue.Keyword("first", PyNone.Instance),
+            CallArgumentValue.Keyword("second", "s"), CallArgumentValue.Keyword("third", "t"), CallArgumentValue.Keyword("unknown", "u") };
+        var signatures = new[] {
+            LythonCallableSignature.Create("demo", ["first", "second", "third"], requiredCount: 1),
+            LythonCallableSignature.Create("demo", ["first", "second", "third"], 1, ArgumentCountLimit.Unbounded,
+                LythonVariadicParameters.Positional | LythonVariadicParameters.Keywords, 1),
+            LythonCallableSignature.Create("demo") };
+        var traces = new List<object>();
+        foreach (var signature in signatures)
+        foreach (var presence in new[] { false, true })
+        for (var length = 0; length <= 4; length++)
+        for (var vector = 0; vector < (int)Math.Pow(tokens.Length, length); vector++)
+        {
+            var arguments = new CallArgumentValue[length];
+            var code = vector;
+            for (var i = 0; i < length; i++) { arguments[i] = tokens[code % tokens.Length]; code /= tokens.Length; }
+            try
+            {
+                var bound = presence ? CallBinder.BindNamedArgumentsWithPresence(arguments, span, signature, PythonCallableKind.Builtin)
+                    : new BoundCallArguments(CallBinder.BindNamedArguments(arguments, span, signature, PythonCallableKind.Builtin), ArgumentPresence.Empty);
+                traces.Add(new { values = bound.Values.Select(v => ReferenceEquals(v, PyNone.Instance) ? "None" : v.ToString()).ToArray(),
+                    assigned = Enumerable.Range(0, bound.Assigned.Length).Select(i => bound.Assigned[i]).ToArray() });
+            }
+            catch (LythonRuntimeException e) { traces.Add(new { e.ExceptionType, e.Message, e.Span }); }
+        }
+        var json = JsonSerializer.Serialize(traces);
+        File.WriteAllText(@"D:\code\Lython\.git\agent-notes\named-binding-20261017\binding-traces-latest.json", json);
+        output.WriteLine("BINDING_TRACES:" + JsonSerializer.Serialize(new { count = traces.Count, sha256 = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))) }));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task NativeSortedLoop(bool asynchronous, bool keyword)
+    {
+        var source = "for i in range(128): result=sorted(values" + (keyword ? ",reverse=True" : "") + ")\nreturn result";
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        context.Variables["values"] = new PyList([new BigInteger(3), new BigInteger(1), new BigInteger(2)], context.MemoryGovernor, null);
+        var samples = new List<long>();
+        object? result = null;
+        for (var sample = -4; sample < 8; sample++)
+        {
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var pending = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+            Assert.True(pending.IsCompleted);
+            result = await pending;
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            if (sample >= 0) samples.Add(allocated);
+        }
+        Assert.Equal(keyword ? [new BigInteger(3), new BigInteger(2), new BigInteger(1)] : new[] { new BigInteger(1), new BigInteger(2), new BigInteger(3) },
+            Assert.IsType<PyList>(result).Cast<BigInteger>());
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        output.WriteLine("SORTED_BINDING_ALLOCATION:" + JsonSerializer.Serialize(new { asynchronous, keyword, callsPerSample = 128, samples }));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+}

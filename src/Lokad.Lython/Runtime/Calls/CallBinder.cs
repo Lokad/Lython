@@ -142,12 +142,13 @@ internal static class CallBinder
 
         var named = (NamedCallableParameterLayout)parameters;
         var parameterNames = named.ParameterNames;
-        var bound = new object[parameterNames.Length];
-        Array.Fill(bound, PyNone.Instance);
         var assigned = new ArgumentPresence(parameterNames.Length);
-        List<object>? extraPositional = null;
+        var extraPositionalCount = 0;
         var positionalIndex = 0;
 
+        // Validate the already-expanded arguments before allocating their final
+        // shape. No guest code runs during either pass, so the second pass can
+        // place values directly without a full temporary array or extra list.
         foreach (var argument in arguments)
         {
             if (argument.IsPositional)
@@ -162,19 +163,17 @@ internal static class CallBinder
                     throw CallErrors.MultipleValues(callableKind, callableName, parameterNames[positionalIndex], span);
                 }
 
-                if (positionalIndex >= bound.Length)
+                if (positionalIndex >= parameterNames.Length)
                 {
                     if (!named.AllowsExtraPositional)
                     {
                         throw CallErrors.TooManyPositional(callableKind, callableName, span);
                     }
 
-                    extraPositional ??= [];
-                    extraPositional.Add(argument.Value);
+                    extraPositionalCount++;
                     continue;
                 }
 
-                bound[positionalIndex] = argument.Value;
                 assigned[positionalIndex] = true;
                 positionalIndex++;
                 continue;
@@ -201,7 +200,6 @@ internal static class CallBinder
                 throw CallErrors.MultipleValues(callableKind, callableName, keywordName, span);
             }
 
-            bound[index] = argument.Value;
             assigned[index] = true;
         }
 
@@ -226,29 +224,26 @@ internal static class CallBinder
             throw CallErrors.TooManyPositional(callableKind, callableName, span);
         }
 
-        if (extraPositional is null || extraPositional.Count == 0)
+        var length = preservePresence && extraPositionalCount == 0
+            ? parameterNames.Length : count + extraPositionalCount;
+        var result = length == 0 ? Array.Empty<object>() : new object[length];
+        Array.Fill(result, PyNone.Instance);
+        positionalIndex = 0;
+        var extraIndex = count;
+        foreach (var argument in arguments)
         {
-            // Presence-aware bodies borrow the original full shape. Trimming
-            // then reconstructing it creates discarded arrays and briefly
-            // retains another copy of every argument.
-            if (preservePresence) return new BoundCallArguments(bound, assigned);
-            if (count != bound.Length)
+            if (argument.IsPositional)
             {
-                Array.Resize(ref bound, count);
+                result[positionalIndex < parameterNames.Length ? positionalIndex++ : extraIndex++] = argument.Value;
             }
-
-            return new BoundCallArguments(bound, assigned.WithLength(count));
+            else if (named.ParameterIndices.TryGetValue(argument.KeywordName, out var index))
+            {
+                result[index] = argument.Value;
+            }
         }
 
-        var result = new object[count + extraPositional.Count];
-        Array.Copy(bound, result, count);
-        for (var i = 0; i < extraPositional.Count; i++)
-        {
-            result[count + i] = extraPositional[i];
-        }
-
-        var resultAssigned = assigned.WithLength(result.Length);
-        resultAssigned.MarkRange(count, extraPositional.Count);
+        var resultAssigned = assigned.WithLength(length);
+        resultAssigned.MarkRange(count, extraPositionalCount);
         return new BoundCallArguments(result, resultAssigned);
     }
 

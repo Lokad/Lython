@@ -1,0 +1,174 @@
+{
+  "capturedAtUtc": "2026-10-17T20:29:27.786246+00:00",
+  "baseRevision": "49b6b65e774fae665fee08c3eaee9908ba955915",
+  "candidate": "frozen candidate.patch",
+  "boundary": "128 warm native sorted calls; source,input,engine context/setup precreated; no host I/O/compilation/startup",
+  "samples": "four warmups, eight measured samples; current-thread managed allocation; no forced GC",
+  "baseline": [
+    {
+      "asynchronous": false,
+      "keyword": false,
+      "callsPerSample": 128,
+      "samples": [
+        139904,
+        139904,
+        139904,
+        139904,
+        139904,
+        139904,
+        139904,
+        139904
+      ]
+    },
+    {
+      "asynchronous": true,
+      "keyword": false,
+      "callsPerSample": 128,
+      "samples": [
+        160472,
+        160472,
+        160472,
+        160472,
+        160472,
+        160472,
+        160472,
+        160472
+      ]
+    },
+    {
+      "asynchronous": true,
+      "keyword": true,
+      "callsPerSample": 128,
+      "samples": [
+        156376,
+        156376,
+        156376,
+        156376,
+        156376,
+        156376,
+        156376,
+        156376
+      ]
+    },
+    {
+      "asynchronous": false,
+      "keyword": true,
+      "callsPerSample": 128,
+      "samples": [
+        135808,
+        135808,
+        135808,
+        135808,
+        135808,
+        135808,
+        135808,
+        135808
+      ]
+    }
+  ],
+  "candidateSamples": [
+    {
+      "asynchronous": true,
+      "keyword": false,
+      "callsPerSample": 128,
+      "samples": [
+        154328,
+        154328,
+        154328,
+        154328,
+        154328,
+        154328,
+        154328,
+        154328
+      ]
+    },
+    {
+      "asynchronous": true,
+      "keyword": true,
+      "callsPerSample": 128,
+      "samples": [
+        156376,
+        156376,
+        156376,
+        156376,
+        156376,
+        159040,
+        156376,
+        156376
+      ]
+    },
+    {
+      "asynchronous": false,
+      "keyword": false,
+      "callsPerSample": 128,
+      "samples": [
+        133760,
+        133760,
+        133760,
+        133760,
+        133760,
+        133760,
+        133760,
+        133760
+      ]
+    },
+    {
+      "asynchronous": false,
+      "keyword": true,
+      "callsPerSample": 128,
+      "samples": [
+        135808,
+        135808,
+        135808,
+        135808,
+        135808,
+        135808,
+        135808,
+        135808
+      ]
+    }
+  ],
+  "bindingRecords": 4686,
+  "bindingTraceSha256": "2bce84f9889b564e7c82778919c716a96d89d5e8a0b498404e8d10793221b804",
+  "machine": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "dotnetSdk": "10.0.300-preview.0.26177.108",
+    "testRuntimePatch": "not captured; source-linked Release net10.0 assembly"
+  },
+  "receipts": {
+    "baseline-actual": {
+      "source": "named-binding",
+      "production": "49b6b65e",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "0CD8A6F1BD906E40AA17F87520BD97C425255D9BC8090D4BFCFBCD3174C16C6B",
+      "filter": "Category!=Stress&(FullyQualifiedName~NamedBindingAllocationProbe|FullyQualifiedName~CallBindingSubsystemTests)",
+      "pid": 47996,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1357,
+      "stdoutSha256": "FAA61AB557C150E070C869FD7E26670ABFFC300B63FE8E24C32DE26425E8A5B1",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "candidate": {
+      "source": "named-binding",
+      "production": "final-array",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "A9BA83F6D70F7714F55EBA1F3643CE0B755388E91C169B3DBA14192C3CF84BAA",
+      "filter": "Category!=Stress&(FullyQualifiedName~NamedBindingAllocationProbe|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~LythonCallableSignatureTests|FullyQualifiedName~PositionalCallTransportTests)",
+      "pid": 41376,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1312,
+      "stdoutSha256": "A0F6550D7AB4BD0FCB7F35619FF65A2FDBEF5C6E8D6D656F84B0C65949C29371",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    }
+  },
+  "limitations": [
+    "No elapsed-time/CPython/RSS/embedding-latency improvement established",
+    "Keyword binding replays parameter-name lookups; cost not timed",
+    "One candidate async-keyword allocation sample has a 2664-byte high outlier; other samples equal median"
+  ]
+}

@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="5a7f7ac8-004a-4724-bbe8-dbecf0d640b5" name="JoannesVermorel@LOKAD-0399 2026-10-17 22:27:57" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-17T22:27:57.6415288+02:00" queuing="2026-10-17T22:27:57.6415291+02:00" start="2026-10-17T22:27:56.6482981+02:00" finish="2026-10-17T22:27:57.7241622+02:00" />
+  <TestSettings name="default" id="d5a111d1-7a29-4d20-99e5-ea75ec031456">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-17_22_27_57" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="360c1edf-48ce-462c-b06b-aac03dfa7418" testId="b3d1454a-3f42-47dc-6cd0-16cc21f12db1" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_RejectsUnexpectedKeyword" computerName="LOKAD-0399" duration="00:00:00.0002185" startTime="2026-10-17T22:27:57.6074465+02:00" endTime="2026-10-17T22:27:57.6074769+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="360c1edf-48ce-462c-b06b-aac03dfa7418" />
+    <UnitTestResult executionId="9293cb3b-b5a7-4ef1-ba1d-908f5b37c667" testId="41ee3499-05f5-f9c3-b109-29dfd73696a2" testName="Lokad.Lython.Tests.NamedBindingAllocationProbe.NativeSortedLoop(asynchronous: False, keyword: False)" computerName="LOKAD-0399" duration="00:00:00.0061577" startTime="2026-10-17T22:27:57.6397320+02:00" endTime="2026-10-17T22:27:57.6457652+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9293cb3b-b5a7-4ef1-ba1d-908f5b37c667">
+      <Output>
+        <StdOut>SORTED_BINDING_ALLOCATION:{"asynchronous":false,"keyword":false,"callsPerSample":128,"samples":[139904,139904,139904,139904,139904,139904,139904,139904]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0e20887d-8fb3-467a-adb0-357abef7793f" testId="1756b4c8-825f-45aa-baa0-0aec0c2baaa5" testName="Lokad.Lython.Tests.NamedBindingAllocationProbe.FrozenBindingShapes" computerName="LOKAD-0399" duration="00:00:00.0246240" startTime="2026-10-17T22:27:57.6458609+02:00" endTime="2026-10-17T22:27:57.6704802+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0e20887d-8fb3-467a-adb0-357abef7793f">
+      <Output>
+        <StdOut>BINDING_TRACES:{"count":4686,"sha256":"2BCE84F9889B564E7C82778919C716A96D89D5E8A0B498404E8D10793221B804"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3288a5a5-7d0f-41ce-ba82-70c6220118c2" testId="0ae3ce3e-85c7-d5b0-d8af-efebc154418d" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.PresenceBindingHasNoDiscardedPositionalArrays" computerName="LOKAD-0399" duration="00:00:00.0002506" startTime="2026-10-17T22:27:57.6250146+02:00" endTime="2026-10-17T22:27:57.6250277+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3288a5a5-7d0f-41ce-ba82-70c6220118c2" />
+    <UnitTestResult executionId="2ef82696-ce5e-465e-8e60-3f655093f7a2" testId="14c459a3-c4c5-f1af-5acd-a56037ada75a" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.KeywordOnlyParameters_RejectUnexpectedPositionalBinding" computerName="LOKAD-0399" duration="00:00:00.0052389" startTime="2026-10-17T22:27:57.6062507+02:00" endTime="2026-10-17T22:27:57.6062754+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2ef82696-ce5e-465e-8e60-3f655093f7a2" />
+    <UnitTestResult executionId="9c704b85-1c00-4448-833b-6f38fd11f0b8" testId="edf5b985-85e3-09ab-7368-bcdc26268792" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_RejectsPositionalCollisionWithAnEarlierKeyword" computerName="LOKAD-0399" duration="00:00:00.0004817" startTime="2026-10-17T22:27:57.6063414+02:00" endTime="2026-10-17T22:27:57.6067745+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9c704b85-1c00-4448-833b-6f38fd11f0b8" />
+    <UnitTestResult executionId="bf497693-0ce1-417c-8286-e79281893134" testId="319b56e6-1865-f856-aa18-cf0606aecd93" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_RejectsKeywordWhenParameterNamesAreMissing" computerName="LOKAD-0399" duration="00:00:00.0002390" startTime="2026-10-17T22:27:57.6248718+02:00" endTime="2026-10-17T22:27:57.6248862+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bf497693-0ce1-417c-8286-e79281893134" />
+    <UnitTestResult executionId="4e35a064-7cd6-49a6-a41c-5d3dd0f16803" testId="36174f51-a42f-1fb6-3f69-0c298643f04e" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_KeepsPositionalSlotsWhenALaterKeywordArrivesFirst" computerName="LOKAD-0399" duration="00:00:00.0000926" startTime="2026-10-17T22:27:57.6245019+02:00" endTime="2026-10-17T22:27:57.6245333+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4e35a064-7cd6-49a6-a41c-5d3dd0f16803" />
+    <UnitTestResult executionId="5eb7bd53-1db6-4a89-93cd-596d875740d6" testId="864efcef-df81-5fea-7e64-6f4ea2900827" testName="Lokad.Lython.Tests.NamedBindingAllocationProbe.NativeSortedLoop(asynchronous: True, keyword: False)" computerName="LOKAD-0399" duration="00:00:00.0093963" startTime="2026-10-17T22:27:57.6313166+02:00" endTime="2026-10-17T22:27:57.6396535+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5eb7bd53-1db6-4a89-93cd-596d875740d6">
+      <Output>
+        <StdOut>SORTED_BINDING_ALLOCATION:{"asynchronous":true,"keyword":false,"callsPerSample":128,"samples":[160472,160472,160472,160472,160472,160472,160472,160472]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5ef2b79a-acc1-4f30-9fbc-25a11b4a8d7b" testId="2f2a669c-d4e3-bf16-4e82-51a0907fc418" testName="Lokad.Lython.Tests.NamedBindingAllocationProbe.NativeSortedLoop(asynchronous: True, keyword: True)" computerName="LOKAD-0399" duration="00:00:00.0310969" startTime="2026-10-17T22:27:57.6054106+02:00" endTime="2026-10-17T22:27:57.6302412+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5ef2b79a-acc1-4f30-9fbc-25a11b4a8d7b">
+      <Output>
+        <StdOut>SORTED_BINDING_ALLOCATION:{"asynchronous":true,"keyword":true,"callsPerSample":128,"samples":[156376,156376,156376,156376,156376,156376,156376,156376]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="fd712ff0-5f84-44c2-a477-caa0e3c0e14e" testId="1c869410-2f67-2653-355d-088b7a38166b" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.UnpackedDuplicateKeywordArgumentsAreRejected" computerName="LOKAD-0399" duration="00:00:00.1755818" startTime="2026-10-17T22:27:57.4196912+02:00" endTime="2026-10-17T22:27:57.5989003+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fd712ff0-5f84-44c2-a477-caa0e3c0e14e" />
+    <UnitTestResult executionId="cc5b8a1b-b1c9-4f98-83f6-2f8d2c34343d" testId="5b64bb3a-aaf5-611a-c4e0-57ca50556d25" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.CallExpansion_ProducesSameArgumentsForRawAndLoweredCalls" computerName="LOKAD-0399" duration="00:00:00.0076698" startTime="2026-10-17T22:27:57.6247733+02:00" endTime="2026-10-17T22:27:57.6247884+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cc5b8a1b-b1c9-4f98-83f6-2f8d2c34343d" />
+    <UnitTestResult executionId="9dedbafe-05b8-43b5-8055-90c1f1b0a533" testId="516176d0-919e-ba60-94e8-b81fefacc58b" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.KeywordOnlyParameters_RejectMissingKeywordOnlyArgument" computerName="LOKAD-0399" duration="00:00:00.0040511" startTime="2026-10-17T22:27:57.6248233+02:00" endTime="2026-10-17T22:27:57.6248377+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9dedbafe-05b8-43b5-8055-90c1f1b0a533" />
+    <UnitTestResult executionId="944dfee6-2eea-44b5-8de8-0584ed7c3d7e" testId="d443aaf7-bc0f-abaf-7479-679b33447237" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_CombinesPositionalKeywordAndOptionalTail" computerName="LOKAD-0399" duration="00:00:00.0003496" startTime="2026-10-17T22:27:57.6068543+02:00" endTime="2026-10-17T22:27:57.6073880+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="944dfee6-2eea-44b5-8de8-0584ed7c3d7e" />
+    <UnitTestResult executionId="8790423f-4473-4d2f-b7f3-d65b0dce1192" testId="cff2d54c-70b5-cc4f-607f-0066adaf3e8f" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.PresenceBindingKeepsOptionalSlotsAndDistinguishesExplicitNone" computerName="LOKAD-0399" duration="00:00:00.0001741" startTime="2026-10-17T22:27:57.6247071+02:00" endTime="2026-10-17T22:27:57.6247262+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8790423f-4473-4d2f-b7f3-d65b0dce1192" />
+    <UnitTestResult executionId="99e41a32-26b8-4b94-bfc1-51b6aa0009b8" testId="e4b0bd83-c5a6-c7c8-ad49-e3b0bae9af1f" testName="Lokad.Lython.Tests.NamedBindingAllocationProbe.NativeSortedLoop(asynchronous: False, keyword: True)" computerName="LOKAD-0399" duration="00:00:00.1743521" startTime="2026-10-17T22:27:57.4205484+02:00" endTime="2026-10-17T22:27:57.6010210+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="99e41a32-26b8-4b94-bfc1-51b6aa0009b8">
+      <Output>
+        <StdOut>SORTED_BINDING_ALLOCATION:{"asynchronous":false,"keyword":true,"callsPerSample":128,"samples":[135808,135808,135808,135808,135808,135808,135808,135808]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3a654fde-ee54-420d-9bc6-f3db16e91466" testId="aa1396d1-4538-1f74-eb36-7e6b5d0d2c77" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.CallExpansion_RejectsNonStringDictionaryKeysForRawAndLoweredCalls" computerName="LOKAD-0399" duration="00:00:00.0006179" startTime="2026-10-17T22:27:57.6249687+02:00" endTime="2026-10-17T22:27:57.6249825+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3a654fde-ee54-420d-9bc6-f3db16e91466" />
+    <UnitTestResult executionId="f46d8d6a-1c2b-44e6-9440-c627be579a5f" testId="cbf7c86e-1c15-f462-0527-0cc317d41f0e" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_RejectsDuplicateKeywordBinding" computerName="LOKAD-0399" duration="00:00:00.0001285" startTime="2026-10-17T22:27:57.6249217+02:00" endTime="2026-10-17T22:27:57.6249364+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f46d8d6a-1c2b-44e6-9440-c627be579a5f" />
+    <UnitTestResult executionId="de64e7a1-e672-4ff5-81cb-bf55e4398a5f" testId="64d59b06-ae47-1943-756f-f8b5a47eabb3" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.KeywordOnlyParametersRejectPositionalCalls" computerName="LOKAD-0399" duration="00:00:00.0003913" startTime="2026-10-17T22:27:57.6075524+02:00" endTime="2026-10-17T22:27:57.6078096+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="de64e7a1-e672-4ff5-81cb-bf55e4398a5f" />
+    <UnitTestResult executionId="ecd554d0-9187-4e0f-b9f9-5ade77b3b212" testId="60c2ebd8-db2f-3574-ce66-7f07b7f14ded" testName="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_TracksParametersBeyondInlinePresenceCapacity" computerName="LOKAD-0399" duration="00:00:00.0018568" startTime="2026-10-17T22:27:57.6059510+02:00" endTime="2026-10-17T22:27:57.6059974+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ecd554d0-9187-4e0f-b9f9-5ade77b3b212" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_TracksParametersBeyondInlinePresenceCapacity" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="60c2ebd8-db2f-3574-ce66-7f07b7f14ded">
+      <Execution id="ecd554d0-9187-4e0f-b9f9-5ade77b3b212" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="BindNamedArguments_TracksParametersBeyondInlinePresenceCapacity" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.CallExpansion_RejectsNonStringDictionaryKeysForRawAndLoweredCalls" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="aa1396d1-4538-1f74-eb36-7e6b5d0d2c77">
+      <Execution id="3a654fde-ee54-420d-9bc6-f3db16e91466" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="CallExpansion_RejectsNonStringDictionaryKeysForRawAndLoweredCalls" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.PresenceBindingHasNoDiscardedPositionalArrays" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="0ae3ce3e-85c7-d5b0-d8af-efebc154418d">
+      <Execution id="3288a5a5-7d0f-41ce-ba82-70c6220118c2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="PresenceBindingHasNoDiscardedPositionalArrays" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_RejectsUnexpectedKeyword" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="b3d1454a-3f42-47dc-6cd0-16cc21f12db1">
+      <Execution id="360c1edf-48ce-462c-b06b-aac03dfa7418" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="BindNamedArguments_RejectsUnexpectedKeyword" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.NamedBindingAllocationProbe.FrozenBindingShapes" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="1756b4c8-825f-45aa-baa0-0aec0c2baaa5">
+      <Execution id="0e20887d-8fb3-467a-adb0-357abef7793f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.NamedBindingAllocationProbe" name="FrozenBindingShapes" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_KeepsPositionalSlotsWhenALaterKeywordArrivesFirst" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="36174f51-a42f-1fb6-3f69-0c298643f04e">
+      <Execution id="4e35a064-7cd6-49a6-a41c-5d3dd0f16803" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="BindNamedArguments_KeepsPositionalSlotsWhenALaterKeywordArrivesFirst" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_RejectsDuplicateKeywordBinding" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="cbf7c86e-1c15-f462-0527-0cc317d41f0e">
+      <Execution id="f46d8d6a-1c2b-44e6-9440-c627be579a5f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="BindNamedArguments_RejectsDuplicateKeywordBinding" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_RejectsPositionalCollisionWithAnEarlierKeyword" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="edf5b985-85e3-09ab-7368-bcdc26268792">
+      <Execution id="9c704b85-1c00-4448-833b-6f38fd11f0b8" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="BindNamedArguments_RejectsPositionalCollisionWithAnEarlierKeyword" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_RejectsKeywordWhenParameterNamesAreMissing" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="319b56e6-1865-f856-aa18-cf0606aecd93">
+      <Execution id="bf497693-0ce1-417c-8286-e79281893134" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="BindNamedArguments_RejectsKeywordWhenParameterNamesAreMissing" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.NamedBindingAllocationProbe.NativeSortedLoop(asynchronous: True, keyword: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="864efcef-df81-5fea-7e64-6f4ea2900827">
+      <Execution id="5eb7bd53-1db6-4a89-93cd-596d875740d6" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.NamedBindingAllocationProbe" name="NativeSortedLoop" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.KeywordOnlyParametersRejectPositionalCalls" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="64d59b06-ae47-1943-756f-f8b5a47eabb3">
+      <Execution id="de64e7a1-e672-4ff5-81cb-bf55e4398a5f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="KeywordOnlyParametersRejectPositionalCalls" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.NamedBindingAllocationProbe.NativeSortedLoop(asynchronous: True, keyword: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="2f2a669c-d4e3-bf16-4e82-51a0907fc418">
+      <Execution id="5ef2b79a-acc1-4f30-9fbc-25a11b4a8d7b" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.NamedBindingAllocationProbe" name="NativeSortedLoop" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.KeywordOnlyParameters_RejectUnexpectedPositionalBinding" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="14c459a3-c4c5-f1af-5acd-a56037ada75a">
+      <Execution id="2ef82696-ce5e-465e-8e60-3f655093f7a2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="KeywordOnlyParameters_RejectUnexpectedPositionalBinding" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.NamedBindingAllocationProbe.NativeSortedLoop(asynchronous: False, keyword: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="41ee3499-05f5-f9c3-b109-29dfd73696a2">
+      <Execution id="9293cb3b-b5a7-4ef1-ba1d-908f5b37c667" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.NamedBindingAllocationProbe" name="NativeSortedLoop" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.KeywordOnlyParameters_RejectMissingKeywordOnlyArgument" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="516176d0-919e-ba60-94e8-b81fefacc58b">
+      <Execution id="9dedbafe-05b8-43b5-8055-90c1f1b0a533" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="KeywordOnlyParameters_RejectMissingKeywordOnlyArgument" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.PresenceBindingKeepsOptionalSlotsAndDistinguishesExplicitNone" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="cff2d54c-70b5-cc4f-607f-0066adaf3e8f">
+      <Execution id="8790423f-4473-4d2f-b7f3-d65b0dce1192" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="PresenceBindingKeepsOptionalSlotsAndDistinguishesExplicitNone" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.CallExpansion_ProducesSameArgumentsForRawAndLoweredCalls" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="5b64bb3a-aaf5-611a-c4e0-57ca50556d25">
+      <Execution id="cc5b8a1b-b1c9-4f98-83f6-2f8d2c34343d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="CallExpansion_ProducesSameArgumentsForRawAndLoweredCalls" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.BindNamedArguments_CombinesPositionalKeywordAndOptionalTail" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="d443aaf7-bc0f-abaf-7479-679b33447237">
+      <Execution id="944dfee6-2eea-44b5-8de8-0584ed7c3d7e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="BindNamedArguments_CombinesPositionalKeywordAndOptionalTail" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.NamedBindingAllocationProbe.NativeSortedLoop(asynchronous: False, keyword: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="e4b0bd83-c5a6-c7c8-ad49-e3b0bae9af1f">
+      <Execution id="99e41a32-26b8-4b94-bfc1-51b6aa0009b8" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.NamedBindingAllocationProbe" name="NativeSortedLoop" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CallBindingSubsystemTests.UnpackedDuplicateKeywordArgumentsAreRejected" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="1c869410-2f67-2653-355d-088b7a38166b">
+      <Execution id="fd712ff0-5f84-44c2-a477-caa0e3c0e14e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CallBindingSubsystemTests" name="UnpackedDuplicateKeywordArgumentsAreRejected" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="b3d1454a-3f42-47dc-6cd0-16cc21f12db1" executionId="360c1edf-48ce-462c-b06b-aac03dfa7418" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="41ee3499-05f5-f9c3-b109-29dfd73696a2" executionId="9293cb3b-b5a7-4ef1-ba1d-908f5b37c667" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1756b4c8-825f-45aa-baa0-0aec0c2baaa5" executionId="0e20887d-8fb3-467a-adb0-357abef7793f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0ae3ce3e-85c7-d5b0-d8af-efebc154418d" executionId="3288a5a5-7d0f-41ce-ba82-70c6220118c2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="14c459a3-c4c5-f1af-5acd-a56037ada75a" executionId="2ef82696-ce5e-465e-8e60-3f655093f7a2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="edf5b985-85e3-09ab-7368-bcdc26268792" executionId="9c704b85-1c00-4448-833b-6f38fd11f0b8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="319b56e6-1865-f856-aa18-cf0606aecd93" executionId="bf497693-0ce1-417c-8286-e79281893134" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="36174f51-a42f-1fb6-3f69-0c298643f04e" executionId="4e35a064-7cd6-49a6-a41c-5d3dd0f16803" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="864efcef-df81-5fea-7e64-6f4ea2900827" executionId="5eb7bd53-1db6-4a89-93cd-596d875740d6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2f2a669c-d4e3-bf16-4e82-51a0907fc418" executionId="5ef2b79a-acc1-4f30-9fbc-25a11b4a8d7b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1c869410-2f67-2653-355d-088b7a38166b" executionId="fd712ff0-5f84-44c2-a477-caa0e3c0e14e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5b64bb3a-aaf5-611a-c4e0-57ca50556d25" executionId="cc5b8a1b-b1c9-4f98-83f6-2f8d2c34343d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="516176d0-919e-ba60-94e8-b81fefacc58b" executionId="9dedbafe-05b8-43b5-8055-90c1f1b0a533" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d443aaf7-bc0f-abaf-7479-679b33447237" executionId="944dfee6-2eea-44b5-8de8-0584ed7c3d7e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cff2d54c-70b5-cc4f-607f-0066adaf3e8f" executionId="8790423f-4473-4d2f-b7f3-d65b0dce1192" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e4b0bd83-c5a6-c7c8-ad49-e3b0bae9af1f" executionId="99e41a32-26b8-4b94-bfc1-51b6aa0009b8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="aa1396d1-4538-1f74-eb36-7e6b5d0d2c77" executionId="3a654fde-ee54-420d-9bc6-f3db16e91466" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cbf7c86e-1c15-f462-0527-0cc317d41f0e" executionId="f46d8d6a-1c2b-44e6-9440-c627be579a5f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="64d59b06-ae47-1943-756f-f8b5a47eabb3" executionId="de64e7a1-e672-4ff5-81cb-bf55e4398a5f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="60c2ebd8-db2f-3574-ce66-7f07b7f14ded" executionId="ecd554d0-9187-4e0f-b9f9-5ade77b3b212" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="20" executed="20" passed="20" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.17]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.45]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.48]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.75]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
