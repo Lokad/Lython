@@ -1,0 +1,180 @@
+{
+  "dateUtc": "2026-10-17",
+  "baselineProductionRevision": "57275bf238482f9068dc1383f671d2a54198e01c",
+  "candidateProductionRevision": "27a616815e3bb8ce738e9609417964a008ea7ff8",
+  "measurementStatus": "Source-frozen native allocation diagnostic; separate CSV timing has a different baseline and machine.",
+  "environment": {
+    "machine": "Shared Windows11 x64/i7-14700KF/28logical processors/64GiB",
+    "sdk": "10.0.300-preview.0.26177.108",
+    "runtime": "10.0.13",
+    "ordinaryGCAndTiering": true
+  },
+  "boundary": "Same temporary128unrolled int(value) probe, preconstructed governed value7, four warmups/eight samples, native text/bytes and both APIs. Compilation/context/input creation and owner disposal excluded; checks/parser/boxing/frame cleanup included.",
+  "comparisons": [
+    {
+      "bytes": false,
+      "asynchronous": true,
+      "calls": 128,
+      "before": [
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576
+      ],
+      "after": [
+        4408,
+        4408,
+        4408,
+        4408,
+        4408,
+        4408,
+        4408,
+        4408
+      ]
+    },
+    {
+      "bytes": true,
+      "asynchronous": true,
+      "calls": 128,
+      "before": [
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576
+      ],
+      "after": [
+        4408,
+        4408,
+        4408,
+        4408,
+        4408,
+        4408,
+        4408,
+        4408
+      ]
+    },
+    {
+      "bytes": true,
+      "asynchronous": false,
+      "calls": 128,
+      "before": [
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576
+      ],
+      "after": [
+        4408,
+        4408,
+        4408,
+        4408,
+        4408,
+        4408,
+        4408,
+        4408
+      ]
+    },
+    {
+      "bytes": false,
+      "asynchronous": false,
+      "calls": 128,
+      "before": [
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576,
+        11576
+      ],
+      "after": [
+        4408,
+        4408,
+        4408,
+        4408,
+        4408,
+        4408,
+        4408,
+        4408
+      ]
+    }
+  ],
+  "sourceManifests": {
+    "57275bf238482f9068dc1383f671d2a54198e01c": {
+      "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "8748919f99de979c6845f319ab35f3797612e91158598d4b4a2ec6385f3277b1"
+    },
+    "27a616815e3bb8ce738e9609417964a008ea7ff8": {
+      "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "5628021c309e847c92ef4b7ab044b08c0feedc34ebed3f872cf26e5659ffeea0"
+    }
+  },
+  "measuredRawSourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "fd4b1434d37fbaee87f95ee216afc74a24da5ee0fb3feb89c0997093d7389683"
+  },
+  "probeSha256": "fd8b196d01fd69b305d914454e88d4bcc46f07668dd5f90d217604534eab2319",
+  "probeSource": "../2026-10-17-integer-text-calls/native-allocation-probe.txt",
+  "processes": [
+    {
+      "label": "white",
+      "count": 192,
+      "receipt": {
+        "source": "57275bf2-plus-controlled-fixtures",
+        "production": "57275bf2",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "8F919B3F104AE9B99AE1B3A651D23D60F3C871989C5F900FFB42239D7E956A16",
+        "filter": "Category!=Stress&(FullyQualifiedName~Lokad.Lython.Tests.CursorDispatchTests|FullyQualifiedName~Lokad.Lython.Tests.GeneralBoundMethodTransportTests|FullyQualifiedName~Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests|FullyQualifiedName~Lokad.Lython.Tests.JsonStringDispatchBoundaryTests|FullyQualifiedName~Lokad.Lython.Tests.OrdinaryFunctionTransportTests|FullyQualifiedName~Lokad.Lython.Tests.PositionalCallTransportTests|FullyQualifiedName~SliceValueDispatchTests|FullyQualifiedName~CasePredicateUtf8Tests|FullyQualifiedName~StringPredicateCallTests|FullyQualifiedName~IntegerConversionSlotTests|FullyQualifiedName~IntegerProtocolAsyncTests|FullyQualifiedName~LenProtocolAsyncTests|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~PyNumberPrimitiveTests|FullyQualifiedName~NumericArchitectureSubsystemTests|FullyQualifiedName~IntegerTextAdmissionTests|FullyQualifiedName~DirectIntegerTextCallTests|FullyQualifiedName~DirectIntegerTextAllocationProbe|FullyQualifiedName~DirectLengthCallTests|FullyQualifiedName~StringCacheOwnershipTests)",
+        "pid": 420,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1287,
+        "stdoutSha256": "5B44D6DE1C85CB3BA2E0A7A8BB14C90A54C6DF9985820DA29BBF1146CB383E2A",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    },
+    {
+      "label": "white",
+      "count": 192,
+      "receipt": {
+        "source": "57275bf2-plus-bounded-UTF8-integer-parser",
+        "production": "AP05h-candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "79656018B807157D3330B918D8659623D216364FB8C9E42CDDC8CB08AB0ECF6A",
+        "filter": "Category!=Stress&(FullyQualifiedName~Lokad.Lython.Tests.CursorDispatchTests|FullyQualifiedName~Lokad.Lython.Tests.GeneralBoundMethodTransportTests|FullyQualifiedName~Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests|FullyQualifiedName~Lokad.Lython.Tests.JsonStringDispatchBoundaryTests|FullyQualifiedName~Lokad.Lython.Tests.OrdinaryFunctionTransportTests|FullyQualifiedName~Lokad.Lython.Tests.PositionalCallTransportTests|FullyQualifiedName~SliceValueDispatchTests|FullyQualifiedName~CasePredicateUtf8Tests|FullyQualifiedName~StringPredicateCallTests|FullyQualifiedName~IntegerConversionSlotTests|FullyQualifiedName~IntegerProtocolAsyncTests|FullyQualifiedName~LenProtocolAsyncTests|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~PyNumberPrimitiveTests|FullyQualifiedName~NumericArchitectureSubsystemTests|FullyQualifiedName~IntegerTextAdmissionTests|FullyQualifiedName~DirectIntegerTextCallTests|FullyQualifiedName~DirectIntegerTextAllocationProbe|FullyQualifiedName~DirectLengthCallTests|FullyQualifiedName~StringCacheOwnershipTests)",
+        "pid": 24920,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1257,
+        "stdoutSha256": "3571392484651EBC3FB30949C2F2D6D3B911996A180C6FF0366121C7BCD7AB78",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    }
+  ],
+  "validation": {
+    "focusedWhite": 192,
+    "focusedPublic": 644,
+    "independentCPythonCases": 86,
+    "frozenFuelSpanTraces": 80,
+    "temporaryProbeRemoved": true
+  },
+  "identityCaveat": "Measurements compile production into white-box assemblies before candidate commit; informational metadata alone does not identify candidate. Source manifests and raw DLL hashes identify actual snapshots. Public fixture formatting later changed without changing sources/expected outputs.",
+  "contract": "At most20bytes/base10/signed64/full consumption; existing scalar headroom and BigInteger type. Cached refusal checked first. All other forms/overflow keep admitted major fallback; no new owner/ledger/parser framework. Narrow working thresholds may improve because storage disappears.",
+  "limitations": [
+    "Allocation counts do not establish physical heap or host pauses.",
+    "This counts one native operation shape, not a public complete-script allocation profile.",
+    "No CPython or elapsed speedup follows from this allocation diagnostic."
+  ]
+}

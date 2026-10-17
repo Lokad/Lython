@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-17 bounded integer parser checkpoint](results/2026-10-17-utf8-small-integer/README.md)
+reuses the complete fresh CSV job at e01d45c6→27a61681:8.181→7.503ms, CPython
+3.849ms; spreads7.54%/6.44%/1.14%. The nominal8.3% lower median remains unqualified
+and inconclusive. One8.197s capture; independent three-size goldens and both604-file
+source manifests pass, seven workers/fixtures gone and lease free. Separate native
+128-call allocation is11,576→4,408bytes through both APIs/text/bytes.86CPython
+cases and80frozen traces pass; temporary probe removed. No elapsed gain is inferred
+from allocations. BP refreshes the fresh CSV row; BO remains historical.
+
 The [2026-10-17 native integer-text call diagnostic](results/2026-10-17-integer-text-calls/README.md)
 compares8505c40d with production sources committed asdada7c9c. For128fixed native
 calls, allocation is20,792→11,576bytes synchronously and32,056→11,576bytes through

@@ -1,0 +1,435 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "label": "00-text",
+      "source": "value='0'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "0 int\n"
+    },
+    {
+      "label": "00-bytes",
+      "source": "value=b'0'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "0 int\n"
+    },
+    {
+      "label": "01-text",
+      "source": "value='7'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "7 int\n"
+    },
+    {
+      "label": "01-bytes",
+      "source": "value=b'7'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "7 int\n"
+    },
+    {
+      "label": "02-text",
+      "source": "value='-7'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "-7 int\n"
+    },
+    {
+      "label": "02-bytes",
+      "source": "value=b'-7'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "-7 int\n"
+    },
+    {
+      "label": "03-text",
+      "source": "value='+7'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "7 int\n"
+    },
+    {
+      "label": "03-bytes",
+      "source": "value=b'+7'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "7 int\n"
+    },
+    {
+      "label": "04-text",
+      "source": "value='-0'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "0 int\n"
+    },
+    {
+      "label": "04-bytes",
+      "source": "value=b'-0'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "0 int\n"
+    },
+    {
+      "label": "05-text",
+      "source": "value='+0'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "0 int\n"
+    },
+    {
+      "label": "05-bytes",
+      "source": "value=b'+0'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "0 int\n"
+    },
+    {
+      "label": "06-text",
+      "source": "value='0007'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "7 int\n"
+    },
+    {
+      "label": "06-bytes",
+      "source": "value=b'0007'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "7 int\n"
+    },
+    {
+      "label": "07-text",
+      "source": "value='00000000000000000001'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "1 int\n"
+    },
+    {
+      "label": "07-bytes",
+      "source": "value=b'00000000000000000001'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "1 int\n"
+    },
+    {
+      "label": "08-text",
+      "source": "value='+0000000000000000000'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "0 int\n"
+    },
+    {
+      "label": "08-bytes",
+      "source": "value=b'+0000000000000000000'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "0 int\n"
+    },
+    {
+      "label": "09-text",
+      "source": "value='-0000000000000000000'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "0 int\n"
+    },
+    {
+      "label": "09-bytes",
+      "source": "value=b'-0000000000000000000'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "0 int\n"
+    },
+    {
+      "label": "10-text",
+      "source": "value='9223372036854775807'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "9223372036854775807 int\n"
+    },
+    {
+      "label": "10-bytes",
+      "source": "value=b'9223372036854775807'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "9223372036854775807 int\n"
+    },
+    {
+      "label": "11-text",
+      "source": "value='-9223372036854775808'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "-9223372036854775808 int\n"
+    },
+    {
+      "label": "11-bytes",
+      "source": "value=b'-9223372036854775808'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "-9223372036854775808 int\n"
+    },
+    {
+      "label": "12-text",
+      "source": "value='+9223372036854775807'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "9223372036854775807 int\n"
+    },
+    {
+      "label": "12-bytes",
+      "source": "value=b'+9223372036854775807'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "9223372036854775807 int\n"
+    },
+    {
+      "label": "13-text",
+      "source": "value='9223372036854775808'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "9223372036854775808 int\n"
+    },
+    {
+      "label": "13-bytes",
+      "source": "value=b'9223372036854775808'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "9223372036854775808 int\n"
+    },
+    {
+      "label": "14-text",
+      "source": "value='-9223372036854775809'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "-9223372036854775809 int\n"
+    },
+    {
+      "label": "14-bytes",
+      "source": "value=b'-9223372036854775809'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "-9223372036854775809 int\n"
+    },
+    {
+      "label": "15-text",
+      "source": "value='18446744073709551615'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "18446744073709551615 int\n"
+    },
+    {
+      "label": "15-bytes",
+      "source": "value=b'18446744073709551615'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "18446744073709551615 int\n"
+    },
+    {
+      "label": "16-text",
+      "source": "value='18446744073709551616'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "18446744073709551616 int\n"
+    },
+    {
+      "label": "16-bytes",
+      "source": "value=b'18446744073709551616'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "18446744073709551616 int\n"
+    },
+    {
+      "label": "17-text",
+      "source": "value='000000000000000000001'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "1 int\n"
+    },
+    {
+      "label": "17-bytes",
+      "source": "value=b'000000000000000000001'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "1 int\n"
+    },
+    {
+      "label": "18-text",
+      "source": "value='99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999 int\n"
+    },
+    {
+      "label": "18-bytes",
+      "source": "value=b'99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999 int\n"
+    },
+    {
+      "label": "19-text",
+      "source": "value=' \\t+7\\r\\n'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "7 int\n"
+    },
+    {
+      "label": "19-bytes",
+      "source": "value=b' \\t+7\\r\\n'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "7 int\n"
+    },
+    {
+      "label": "20-text",
+      "source": "value='1_000'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "1000 int\n"
+    },
+    {
+      "label": "20-bytes",
+      "source": "value=b'1_000'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "1000 int\n"
+    },
+    {
+      "label": "21-text",
+      "source": "value=' 1_2\\t'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "12 int\n"
+    },
+    {
+      "label": "21-bytes",
+      "source": "value=b' 1_2\\t'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "12 int\n"
+    },
+    {
+      "label": "22-text",
+      "source": "value='7\\x00'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '7\\x00'\n"
+    },
+    {
+      "label": "22-bytes",
+      "source": "value=b'7\\x00'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'7\\x00'\n"
+    },
+    {
+      "label": "23-text",
+      "source": "value='7\\x00\\x00'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '7\\x00\\x00'\n"
+    },
+    {
+      "label": "23-bytes",
+      "source": "value=b'7\\x00\\x00'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'7\\x00\\x00'\n"
+    },
+    {
+      "label": "24-text",
+      "source": "value='7\\x001'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '7\\x001'\n"
+    },
+    {
+      "label": "24-bytes",
+      "source": "value=b'7\\x001'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'7\\x001'\n"
+    },
+    {
+      "label": "25-text",
+      "source": "value='7x'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '7x'\n"
+    },
+    {
+      "label": "25-bytes",
+      "source": "value=b'7x'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'7x'\n"
+    },
+    {
+      "label": "26-text",
+      "source": "value='7e0'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '7e0'\n"
+    },
+    {
+      "label": "26-bytes",
+      "source": "value=b'7e0'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'7e0'\n"
+    },
+    {
+      "label": "27-text",
+      "source": "value='7.0'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '7.0'\n"
+    },
+    {
+      "label": "27-bytes",
+      "source": "value=b'7.0'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'7.0'\n"
+    },
+    {
+      "label": "28-text",
+      "source": "value=''\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: ''\n"
+    },
+    {
+      "label": "28-bytes",
+      "source": "value=b''\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b''\n"
+    },
+    {
+      "label": "29-text",
+      "source": "value='+'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '+'\n"
+    },
+    {
+      "label": "29-bytes",
+      "source": "value=b'+'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'+'\n"
+    },
+    {
+      "label": "30-text",
+      "source": "value='-'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '-'\n"
+    },
+    {
+      "label": "30-bytes",
+      "source": "value=b'-'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'-'\n"
+    },
+    {
+      "label": "31-text",
+      "source": "value='--7'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '--7'\n"
+    },
+    {
+      "label": "31-bytes",
+      "source": "value=b'--7'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'--7'\n"
+    },
+    {
+      "label": "32-text",
+      "source": "value='+-7'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '+-7'\n"
+    },
+    {
+      "label": "32-bytes",
+      "source": "value=b'+-7'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'+-7'\n"
+    },
+    {
+      "label": "33-text",
+      "source": "value='0x10'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '0x10'\n"
+    },
+    {
+      "label": "33-bytes",
+      "source": "value=b'0x10'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'0x10'\n"
+    },
+    {
+      "label": "34-text",
+      "source": "value='7\u00e9'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '7\u00e9'\n"
+    },
+    {
+      "label": "34-bytes",
+      "source": "value=b'7\\xc3\\xa9'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'7\\xc3\\xa9'\n"
+    },
+    {
+      "label": "35-text",
+      "source": "value='\u22127'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: '\u22127'\n"
+    },
+    {
+      "label": "35-bytes",
+      "source": "value=b'\\xe2\\x88\\x927'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'\\xe2\\x88\\x927'\n"
+    },
+    {
+      "label": "36-text",
+      "source": "value='\\u2003-7\\u2003'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "-7 int\n"
+    },
+    {
+      "label": "36-bytes",
+      "source": "value=b'\\xe2\\x80\\x83-7\\xe2\\x80\\x83'\ntry:\n result=int(value)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\x83-7\\xe2\\x80\\x83'\n"
+    },
+    {
+      "label": "base10-text-7",
+      "source": "value='7'\ntry:\n result=int(value,10)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "7 int\n"
+    },
+    {
+      "label": "base10-bytes-7",
+      "source": "value=b'7'\ntry:\n result=int(value,10)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "7 int\n"
+    },
+    {
+      "label": "base10-text--9223372036854775808",
+      "source": "value='-9223372036854775808'\ntry:\n result=int(value,10)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "-9223372036854775808 int\n"
+    },
+    {
+      "label": "base10-bytes--9223372036854775808",
+      "source": "value=b'-9223372036854775808'\ntry:\n result=int(value,10)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "-9223372036854775808 int\n"
+    },
+    {
+      "label": "base0-text-0xff",
+      "source": "value='0xff'\ntry:\n result=int(value,0)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "255 int\n"
+    },
+    {
+      "label": "base0-bytes-0xff",
+      "source": "value=b'0xff'\ntry:\n result=int(value,0)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "255 int\n"
+    },
+    {
+      "label": "base2-text-101",
+      "source": "value='101'\ntry:\n result=int(value,2)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "5 int\n"
+    },
+    {
+      "label": "base2-bytes-101",
+      "source": "value=b'101'\ntry:\n result=int(value,2)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "5 int\n"
+    },
+    {
+      "label": "base16-text-ff",
+      "source": "value='ff'\ntry:\n result=int(value,16)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "255 int\n"
+    },
+    {
+      "label": "base16-bytes-ff",
+      "source": "value=b'ff'\ntry:\n result=int(value,16)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "255 int\n"
+    },
+    {
+      "label": "base36-text-z",
+      "source": "value='z'\ntry:\n result=int(value,36)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "35 int\n"
+    },
+    {
+      "label": "base36-bytes-z",
+      "source": "value=b'z'\ntry:\n result=int(value,36)\n print(result,type(result).__name__)\nexcept (ValueError,TypeError) as error:\n print(type(error).__name__,str(error))",
+      "stdout": "35 int\n"
+    }
+  ]
+}

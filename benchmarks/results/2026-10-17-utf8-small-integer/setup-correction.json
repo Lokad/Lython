@@ -1,0 +1,10 @@
+{
+  "initialUnit": "lython-utf8-small-prepare-20261017",
+  "initialState": "failed,exit2",
+  "cause": "CRLF shell-script transfer; set failed before source extraction/build or any worker.",
+  "correction": "LF-only shell script, syntax checked; prepare-control completes both builds and catalog.",
+  "limitsUnchanged": true,
+  "timingAttempts": 1,
+  "noTimingRetry": true,
+  "evidence": "Original journal/line-ending audit preserved privately; control source manifests and correctness receipts are public."
+}
