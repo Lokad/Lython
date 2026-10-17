@@ -3186,6 +3186,15 @@ The runtime may approximate memory pressure conservatively rather than measuring
 
 Such approximations must lean on the safe side: it is acceptable to reject scripts earlier than a perfect memory model would require if doing so better protects the host.
 
+`float(str)` and `float(bytes)` admit decoded UTF-16 capacity and an optional
+underscore-removal copy before allocation. Successful parsing refunds its scratch
+while preserving input ownership. Invalid input also admits repr/message overlap;
+escaped message storage remains conservatively funded until its execution/result
+owner ends, including caught errors. Long inputs or repeated errors can reject
+earlier under tight allowances. Refused error construction is terminal and still
+refunds scratch. All NULs are invalid, and error messages use ordinary Python repr
+quoting and escaping.
+
 Numeric storage allowances include Boolean, all supported CLR integer ingress
 types, double and decimal values. Containers share the same numeric type rule;
 Boolean object identity and integer/Boolean equality remain unchanged. Repeated

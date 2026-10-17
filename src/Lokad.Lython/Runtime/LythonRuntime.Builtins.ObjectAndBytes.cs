@@ -74,89 +74,79 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        try
+        return arguments[0] switch
         {
-            return arguments[0] switch
-            {
-                double floating => floating,
-                _ when PyNumberOps.TryAsInteger(arguments[0], out var integer) => FloatFromInteger(integer, span),
-                PyDecimal decimalValue => (double)decimalValue.Value,
-                PyString text => ParsePythonFloatText(text.AsString(), text, context, span),
-                PyBytes bytesValue => ParsePythonFloatBytes(bytesValue, context, span),
-                _ => throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
-            };
-        }
-        catch (FormatException)
-        {
-            // Only string/bytes parsing can fail this way.
-            throw FloatConversionError(arguments[0], context, span);
-        }
+            double floating => floating,
+            _ when PyNumberOps.TryAsInteger(arguments[0], out var integer) => FloatFromInteger(integer, span),
+            PyDecimal decimalValue => (double)decimalValue.Value,
+            PyString or PyBytes => ParseOwnedFloatText(arguments[0], context, span),
+            _ => throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
+        };
 
-        // CPython parses ascii bytes like str but quotes the bytes form on failure.
-        static double ParsePythonFloatBytes(PyBytes bytesValue, ExecutionContext context, LythonSourceSpan span)
-            => ParsePythonFloatText(Encoding.ASCII.GetString(bytesValue.Bytes), bytesValue, context, span);
-
-        static double ParsePythonFloatText(string text, object displaySource, ExecutionContext context, LythonSourceSpan span)
+        static double ParseOwnedFloatText(object source, ExecutionContext context, LythonSourceSpan span)
         {
+            // UTF-8 input bytes bound decoded UTF-16 capacity. Fund decoding
+            // and an optional underscore-removal copy before either allocation.
+            var length = source is PyString text ? text.Utf8Bytes.Length : ((PyBytes)source).Length;
+            var decodeBytes = RuntimeMemoryEstimates.SaturatingAdd(32,
+                RuntimeMemoryEstimates.SaturatingMultiply(2, length));
+            using var working = context.MemoryGovernor.ReserveTemporary(
+                RuntimeMemoryEstimates.SaturatingMultiply(2, decodeBytes), span);
+            var decoded = source is PyString value ? value.AsString() : Encoding.ASCII.GetString(((PyBytes)source).Bytes);
+            var trimmed = decoded.AsSpan().Trim();
+            var hasUnderscore = false;
             // Underscores must sit between two ASCII digits like CPython;
             // lax stripping would otherwise accept leading, trailing,
             // doubled or dot/exponent-adjacent separators.
-            var trimmed = text.Trim();
             for (var i = 0; i < trimmed.Length; i++)
             {
-                if (trimmed[i] != '_')
+                // The CLR parser accepts trailing NULs; Python rejects them.
+                if (trimmed[i] == '\0' || (trimmed[i] == '_' &&
+                    (i == 0 || i + 1 >= trimmed.Length || !char.IsAsciiDigit(trimmed[i - 1]) || !char.IsAsciiDigit(trimmed[i + 1]))))
                 {
-                    continue;
+                    throw FloatConversionError(source, context, span, working);
                 }
-
-                if (i == 0 || i + 1 >= trimmed.Length || !char.IsAsciiDigit(trimmed[i - 1]) || !char.IsAsciiDigit(trimmed[i + 1]))
-                {
-                    throw FloatConversionError(displaySource, context, span);
-                }
+                hasUnderscore |= trimmed[i] == '_';
             }
 
-            var normalized = trimmed.Replace("_", string.Empty, StringComparison.Ordinal);
-            return normalized.ToLowerInvariant() switch
+            var normalizedCopy = hasUnderscore ? decoded.Replace("_", string.Empty, StringComparison.Ordinal) : decoded;
+            var normalized = normalizedCopy.AsSpan().Trim();
+            var negative = !normalized.IsEmpty && normalized[0] == '-';
+            var unsigned = !normalized.IsEmpty && normalized[0] is '+' or '-' ? normalized[1..] : normalized;
+            if (unsigned.Equals("inf", StringComparison.OrdinalIgnoreCase) || unsigned.Equals("infinity", StringComparison.OrdinalIgnoreCase))
+                return negative ? double.NegativeInfinity : double.PositiveInfinity;
+            if (unsigned.Equals("nan", StringComparison.OrdinalIgnoreCase))
+                return negative ? -PythonNaN : PythonNaN;
+            try
             {
-                "inf" or "+inf" or "infinity" or "+infinity" => double.PositiveInfinity,
-                "-inf" or "-infinity" => double.NegativeInfinity,
-                "nan" or "+nan" => PythonNaN,
-                "-nan" => -PythonNaN,
-                _ => double.Parse(normalized, NumberStyles.Float, CultureInfo.InvariantCulture),
-            };
+                return double.Parse(normalized, NumberStyles.Float, CultureInfo.InvariantCulture);
+            }
+            catch (FormatException)
+            {
+                throw FloatConversionError(source, context, span, working);
+            }
         }
     }
 
-    // Shared float() conversion failure: quotes the offending source like
-    // CPython (str form for strings, bytes form for bytes) with repr quote choice.
-    private static LythonRuntimeException FloatConversionError(object source, ExecutionContext context, LythonSourceSpan span)
-        => new("ValueError", "could not convert string to float: " + FloatFailureDisplay(source, context), span);
-
-    private static string FloatFailureDisplay(object source, ExecutionContext context)
+    private static LythonRuntimeException FloatConversionError(object source, ExecutionContext context,
+        LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation working)
     {
-        if (source is PyBytes bytesValue)
-        {
-            foreach (var octet in bytesValue.Bytes)
-            {
-                if (octet > 127)
-                {
-                    return PyRendering.ToReprPyString(bytesValue, new PyRenderingContext(context)).AsString();
-                }
-            }
-
-            return "b" + QuoteFloatFailureText(Encoding.ASCII.GetString(bytesValue.Bytes), context);
-        }
-
-        return QuoteFloatFailureText(((PyString)source).AsString(), context);
+        const string prefix = "could not convert string to float: ";
+        var length = source is PyString text ? text.Utf8Bytes.Length : ((PyBytes)source).Length;
+        // Repr expands each input byte to at most four UTF-16 units (\xNN).
+        // Admit both the decoded repr and the final message while they overlap.
+        var messageChars = RuntimeMemoryEstimates.SaturatingAdd(prefix.Length + 4,
+            RuntimeMemoryEstimates.SaturatingMultiply(4, length));
+        var messageBytes = RuntimeMemoryEstimates.SaturatingAdd(32,
+            RuntimeMemoryEstimates.SaturatingMultiply(2, messageChars));
+        working.Grow(RuntimeMemoryEstimates.SaturatingMultiply(2, messageBytes), span);
+        var message = prefix + PyRendering.ToReprPyString(source, new PyRenderingContext(context)).AsString();
+        var error = new LythonRuntimeException("ValueError", message, span);
+        // The exception can escape after parsing scratch ends. Keep its message
+        // conservatively owned by this execution, even if Python catches it.
+        working.Commit(messageBytes);
+        return error;
     }
-
-    // CPython repr quote choice for a pre-rendered failure message: double
-    // quotes only when the text holds a single quote but no double quote,
-    // otherwise the shared single-quote renderer.
-    private static string QuoteFloatFailureText(string text, ExecutionContext context)
-        => text.Contains((char)39) && !text.Contains((char)34)
-            ? "\"" + text + "\""
-            : PyRendering.ToReprPyString(PyString.FromString(text, context.MemoryGovernor), new PyRenderingContext(context)).AsString();
 
     private static object Bytes(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {

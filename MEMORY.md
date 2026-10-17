@@ -91,6 +91,17 @@ prefix-heavy inputs can reject earlier even when their integer is small. The
 input and retained result keep their existing owners. Small bounded magnitudes
 retain the control-headroom policy; JSON's separate token path is unchanged.
 
+Float parsing from text or bytes admits decoded UTF-16 capacity and a possible
+underscore-removal copy before decoding. Trimming and nonfinite comparisons use
+spans. Successful conversion returns that scratch immediately; the input keeps
+its owner and the fixed-size result uses existing scalar headroom. Invalid input
+also admits repr/message overlap before constructing the error. Its message can
+escape, so a conservative estimate remains charged until the execution/result
+owner ends, even if Python catches the error. Long inputs and repeated invalid
+conversions can therefore reject earlier under tight allowances. Refused error
+construction is terminal and refunds its scratch; it never substitutes a shorter
+message or retries admission.
+
 Ordinary integer addition and sums admit a conservative major-result estimate before the
 CLR computes it, including carry/sign headroom and computation overlap. The result
 commits its portion of that existing reservation without a second admission;

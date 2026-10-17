@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Admit float text/bytes decoding, underscore-removal capacity and error-message overlap before allocation. Refund parsing scratch while retaining escaped error funding; long inputs and repeated invalid conversions can reject earlier under tight allowances. Reuse shared repr rendering, fixing quoted control characters, and reject trailing NULs like Python.
+
 - Parse bounded decimal integer text/bytes directly from UTF-8, avoiding decoded strings, per-digit arbitrary-precision arithmetic and scratch reservations for signed 64-bit results. Preserve the integer representation, complete-input validation, terminal refusal and general-path admission/ownership for other forms or overflow.
 
 - Call ordinary one-argument `int(text)` and `int(bytes)` directly from executable operand storage through both execution APIs. Remove argument packaging while preserving existing checkpoints, conversion admission, mutable constructors, aliases and dynamic/protocol fallbacks.
