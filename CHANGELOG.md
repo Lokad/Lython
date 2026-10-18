@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Share the existing direct string-affix operand path with ordinary positional `str.endswith` calls, removing eligible bound-method and argument packaging. Preserve character bounds, tuple matching, error/fuel order, dynamic/exposed calls, suspended index hooks, cancellation and retained ownership.
+
 - Remove private sum/list operation shells, source/current reference bookkeeping and general binder return wrappers. Keep results in managed locals with deterministic awaited iteration; retain capacity preflights, unpublished-list rollback, integer admission and funding for retained aliases/results. Control headroom can decrease.
 
 - Share the native file-write operand path with ordinary binary writes, removing eligible bound-method construction, argument packaging and async forwarding. Preserve checkpoints, closed/read-only/type error order, storage preflights, buffered positions, retained funding and awaited host publication.

@@ -1,0 +1,53 @@
+using System.Numerics;
+using System.Text.Json;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary reuse of the bounded-startswith executable-loop diagnostic.
+[Collection("AllocationSensitive")]
+public sealed class StringSuffixAllocationDiagnostic(ITestOutputHelper output)
+{
+    [Theory]
+    [InlineData(false, false, "endswith")]
+    [InlineData(true, false, "endswith")]
+    [InlineData(false, true, "endswith")]
+    [InlineData(true, true, "endswith")]
+    [InlineData(false, false, "startswith")]
+    [InlineData(true, false, "startswith")]
+    public async Task DistinctReceivers(bool asynchronous, bool exposed, string method)
+    {
+        var invocation = exposed ? $"method=text.{method}\n checksum+=method('😀',1,2)" : $"checksum+=text.{method}('😀',1,2)";
+        var source = "checksum=0\nfor text in values:\n " + invocation + "\nreturn checksum";
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var values = Enumerable.Range(0, 128).Select(i => (object)PyString.FromString("a😀" + i + "a", context.MemoryGovernor, null));
+        context.Variables["values"] = new PyList(values, context.MemoryGovernor, null);
+        var samples = new List<long>();
+        for (var sample = -4; sample < 8; sample++)
+        {
+            var thread = Environment.CurrentManagedThreadId;
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var pending = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+            Assert.True(pending.IsCompletedSuccessfully);
+            var result = await pending;
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            Assert.Equal(thread, Environment.CurrentManagedThreadId);
+            Assert.Equal(new BigInteger(128), Assert.IsType<BigInteger>(result));
+            Assert.Null(context.CurrentExecutableFrame);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            if (sample >= 0) samples.Add(allocated);
+        }
+        output.WriteLine("STRING_SUFFIX_ALLOCATION:" + JsonSerializer.Serialize(new { asynchronous, exposed, method, callsPerSample = 128, samples }));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+}

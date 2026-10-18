@@ -27,6 +27,7 @@ internal sealed partial class LythonRuntime
                 CsvWriterObject when name == "writerow" => DirectCsvWriterow,
                 PyDict when name == "get" => DirectDictionaryGet,
                 Text.PyString when name == "startswith" => DirectStringStartsWith,
+                Text.PyString when name == "endswith" => DirectStringEndsWith,
                 Text.PyString when name == "replace" => DirectStringReplace,
                 Text.PyString => StringMembers.GetNoArgumentsOperation(name),
                 _ => null

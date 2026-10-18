@@ -1,0 +1,247 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "015ee44a8713223484196f94b9e65424728ad1dd",
+  "candidate": "Frozen five-file affix operand patch on baseline; no backend or dependency change.",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": {
+      "before": "9f8634c78fd50203f6699bd9d8c41454204c73541dadfd6b9c37641ff7804a84",
+      "after": "08aa9cd77b0bc571a00db3712d1ba73099ddacb41fe961b373f343593a0d4b25",
+      "normalizedAfter": "52c45db71d1e6785cb8b08e27b704ebcdb4c6fe9b2684b03a504d4ffc555330a"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": {
+      "before": "d94d6183baafb1f3ce82014f665031a5791186a58e9d885b0ff7d8fd0f04c94e",
+      "after": "fe05d01e70ccd3d3037db17268744349eca9be6431b3a13d3b7de2842a2e28dd",
+      "normalizedAfter": "7142c53b120cb88a1c9545550fa25c1f5fc80ab673d7d577ae35dbf421e0d529"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": {
+      "before": "08a63faeafc74176af0097c9394ba70f425c6816443639d55500960f98abc1c8",
+      "after": "c496dbf844a3744b51912b6400ce856567329d8733d475d84ce7eff30a42f950",
+      "normalizedAfter": "884f4a0661d7e44433204897c189ade459673ce0701ffec09ae285e69960e12f"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": {
+      "before": "081f4a2dfe60812aedef93487f918c52104b1da14b9c333a869fedc48b30f205",
+      "after": "3ba1370691c3a8af4dc9194903644ca7b5c23bfed71f187893f54e421b1f9424",
+      "normalizedAfter": "c435c06cd9b23890e0082259419be3f35648f0bca4b2d0d2f0e0067109d8acea"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": {
+      "before": "43d695bae1180fad9046246971c5f1bdb16415589a4ee437596a788cb87c79f7",
+      "after": "775531fbca5b805c0cfb53b2f94b1946f5b59a85c7905601123492c57c7febe0",
+      "normalizedAfter": "142a22bd36a9206950b2271c988ceca2c25bbc1107a759db26127d11d0cecda5"
+    }
+  },
+  "sourceProof": "Exact checked substitutions only: add eligible suffix form/marker, share existing dispatch and two affix wrappers with the existing semantic isStart flag. General/exposed method and UTF-8 affix bodies remain byte-identical.",
+  "focusedFinalPassed": 1065,
+  "completeJobs": 58,
+  "exactGuardMatrices": 40,
+  "groups": {
+    "baseline-behavior": {
+      "passed": 36,
+      "process": {
+        "source": "string-suffix",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "B366379B180039F1972062D438EE6A08FB29ABB5513C2D87A1E729C8831BA221",
+        "filter": "Category!=Stress&(FullyQualifiedName~BoundedStartsWithBoundaryTests|FullyQualifiedName~DirectStringStartsWithTests|FullyQualifiedName~StringAffixBoundsExecutionTests)",
+        "pid": 71516,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1423,
+        "stdoutSha256": "76FA4FB70A9E94CC6A4746DE4FD3EEEE7C6D41DFE165E46C301E02F71024653D",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "4b6b099950c3e0c54b7cd2025b2ae350bdf80f1d341b660f24cb70f720ebba72"
+    },
+    "baseline-allocation": {
+      "passed": 6,
+      "process": {
+        "source": "string-suffix",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "B366379B180039F1972062D438EE6A08FB29ABB5513C2D87A1E729C8831BA221",
+        "filter": "Category!=Stress&FullyQualifiedName~StringSuffixAllocationDiagnostic",
+        "pid": 72752,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1317,
+        "stdoutSha256": "6847C37E5116B7F7AF8DA3F6218823399DA8401345451ED7FF6A3F9EFDAB7FE2",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "b8094231bd59683d72aefc45f45a752b9798a533af7e5cb2e99549d202dc9344"
+    },
+    "candidate-behavior": {
+      "passed": 50,
+      "process": {
+        "source": "string-suffix",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "2F009D3652847ADBD1D4700326EA3328485B9B59B5A0263C0AFF75CCF6A54243",
+        "filter": "Category!=Stress&(FullyQualifiedName~BoundedStartsWithBoundaryTests|FullyQualifiedName~DirectStringStartsWithTests|FullyQualifiedName~StringAffixBoundsExecutionTests|FullyQualifiedName~BoundedStartsWithExecutionTests)",
+        "pid": 75448,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1453,
+        "stdoutSha256": "2662CEBAE6D3451E8037193A042B0C1883A86C41C106182DA2BEC2E6ED25E7C6",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "5983fdef5d305491b43da8e97d1b1abc4c31e2d4efcde51aa780e7b55703016c"
+    },
+    "candidate-allocation": {
+      "passed": 6,
+      "process": {
+        "source": "string-suffix",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "2F009D3652847ADBD1D4700326EA3328485B9B59B5A0263C0AFF75CCF6A54243",
+        "filter": "Category!=Stress&FullyQualifiedName~StringSuffixAllocationDiagnostic",
+        "pid": 72880,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1317,
+        "stdoutSha256": "2414D38DD0E1262429E8BBAA69A7BA2F8A0202E6416648431CCB7205336E7899",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "dee83eb1975c10e7666b9d3cf592b6169f8314590196cd8db0c78b3bfdcd6c2c"
+    },
+    "final-white": {
+      "passed": 104,
+      "process": {
+        "source": "string-suffix",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "6A6F113CBA1CF561403B7BA4BF1174376A54487BFCC0F524C3EED8F05973906C",
+        "filter": "Category!=Stress&(FullyQualifiedName~BoundedStartsWith|FullyQualifiedName~DirectStringStartsWithTests|FullyQualifiedName~StringAffixBoundsExecutionTests|FullyQualifiedName~LoweringArchitectureSubsystemTests|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission)",
+        "pid": 69596,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1467,
+        "stdoutSha256": "06E6E28735EF6975B76FE5AE50B4D6432F41203181BC23A270003C0C922B337E",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "e6dcc0b9d14e4f89a97815a997d2638d8c10a712768e28be99dee38a689e15f3"
+    },
+    "final-semantics": {
+      "passed": 810,
+      "process": {
+        "source": "string-suffix",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "151DC134A078201DCCE65540397C76D95B2F0BC62747113169B1F3A54A098F89",
+        "filter": "Category!=Stress&(FullyQualifiedName~StringAffixBoundsTests|FullyQualifiedName~StringAffixBoundsSuspensionTests|FullyQualifiedName~StringMethodCompatibilityTests|FullyQualifiedName~StringValidationScenarioTests|FullyQualifiedName~ExpandedStringArgumentTests|FullyQualifiedName~PrefixCallCompatibilityTests|FullyQualifiedName~BuiltinValidationScenarioTests|FullyQualifiedName~BoundedSearchScenarioTests)",
+        "pid": 78232,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 6511,
+        "stdoutSha256": "6E3A1CC6AD44F119E8BCE20BE13DDD3D8EBEB62876F3A619D8856F5BEDFF104F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "a4b754c256e457672d547e5f85f9a28946064646fe71319b2e3fd8d8bf852db4"
+    },
+    "final-owners": {
+      "passed": 89,
+      "process": {
+        "source": "string-suffix",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "151DC134A078201DCCE65540397C76D95B2F0BC62747113169B1F3A54A098F89",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 29468,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2676,
+        "stdoutSha256": "A8B293FB633EFACFFE166EBA90907E330C628884A1482464FB6C5E1565053225",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "abdd05b93242e1d4962016783ccf37b60c238b0f924a97555b7d0721b723d813"
+    },
+    "final-goldens": {
+      "passed": 62,
+      "process": {
+        "source": "string-suffix",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "151DC134A078201DCCE65540397C76D95B2F0BC62747113169B1F3A54A098F89",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 67348,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8827,
+        "stdoutSha256": "9673C9B8655D55DC28D1D27363EE77C826F1C0C227BDC3493288A87E639AFD6F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "d04418b68174af287e26909aaea28e05657cedcd162dfc4ea77fc5dad7058704"
+    }
+  },
+  "comparison": {
+    "exactMatrices": 40,
+    "matricesIdentical": true,
+    "boundary": "Warm 128-call executable Unicode loop; completed inline; compile/setup/startup/scheduler/actual suspension excluded. No elapsed, CPython, physical-heap or embedding-latency claim.",
+    "rows": [
+      {
+        "method": "startswith",
+        "asynchronous": true,
+        "exposed": false,
+        "before": 7656.0,
+        "after": 7656.0,
+        "savedPerCall": 0.0
+      },
+      {
+        "method": "startswith",
+        "asynchronous": false,
+        "exposed": false,
+        "before": 7680.0,
+        "after": 7680.0,
+        "savedPerCall": 0.0
+      },
+      {
+        "method": "endswith",
+        "asynchronous": true,
+        "exposed": true,
+        "before": 44528.0,
+        "after": 44528.0,
+        "savedPerCall": 0.0
+      },
+      {
+        "method": "endswith",
+        "asynchronous": false,
+        "exposed": true,
+        "before": 44552.0,
+        "after": 44552.0,
+        "savedPerCall": 0.0
+      },
+      {
+        "method": "endswith",
+        "asynchronous": false,
+        "exposed": false,
+        "before": 48640.0,
+        "after": 7680.0,
+        "savedPerCall": 320.0
+      },
+      {
+        "method": "endswith",
+        "asynchronous": true,
+        "exposed": false,
+        "before": 44520.0,
+        "after": 7656.0,
+        "savedPerCall": 288.0
+      }
+    ]
+  },
+  "coreAndPublicCopyEqualBeforePack": true,
+  "testedCoreSha256": "866621e1508d70f73d8c1f3318e8f124dd1ae5cb67b21bc2d8c48a859c55669e",
+  "temporaryDiagnosticRemoved": true,
+  "existingTimeoutsAssertionsAndStressScalesPreserved": true,
+  "protectedSourceHashes": {
+    "PLAN-GOVERNOR-HISTORY-2026-10-12.md": "f496a90b1d68a0b314367907d1967579230db81bf40b6cc1d8a127325ac69e20",
+    ".github/workflows/ci.yml": "57374fe244f4db07af1241a94df23242e5f948ac152f02747d4546b19ae683ad"
+  },
+  "regexPlanningOnlySuffixUnchanged": true,
+  "platformAndPackage": "Delivery qualification is separate; no completion claim in this precommit diagnostic artifact."
+}

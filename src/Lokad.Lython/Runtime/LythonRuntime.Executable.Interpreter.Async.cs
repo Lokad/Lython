@@ -89,15 +89,17 @@ internal sealed partial class LythonRuntime
                         {
                             result = InvokeSingleInput(stringReceiver, stringOperation, call.CallSpan, _context);
                         }
-                        else if (call.HasReceiver && ReferenceEquals(callable, DirectStringStartsWith))
+                        else if (call.HasReceiver && (ReferenceEquals(callable, DirectStringStartsWith) || ReferenceEquals(callable, DirectStringEndsWith)))
                         {
                             var arguments = _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
                             // Native bounds stay synchronous; only guest index
                             // protocols need the awaited call wrapper.
                             result = (arguments.Length >= 2 && arguments.Span[1] is PyInstance) ||
                                 (arguments.Length == 3 && arguments.Span[2] is PyInstance)
-                                ? await InvokeStringStartsWithAsync((Text.PyString)_stack[start], arguments, call.CallSpan, _context).ConfigureAwait(false)
-                                : InvokeStringStartsWith((Text.PyString)_stack[start], arguments, call.CallSpan, _context);
+                                ? await InvokeStringAffixFromOperandsAsync((Text.PyString)_stack[start], arguments, call.CallSpan, _context,
+                                    isStart: ReferenceEquals(callable, DirectStringStartsWith)).ConfigureAwait(false)
+                                : InvokeStringAffixFromOperands((Text.PyString)_stack[start], arguments, call.CallSpan, _context,
+                                    isStart: ReferenceEquals(callable, DirectStringStartsWith));
                         }
                         else if (call.HasReceiver && ReferenceEquals(callable, DirectStringReplace))
                         {

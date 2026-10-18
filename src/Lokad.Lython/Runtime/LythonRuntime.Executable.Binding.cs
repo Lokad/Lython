@@ -14,6 +14,7 @@ internal sealed partial class LythonRuntime
     private static readonly object DirectCsvWriterow = new();
     private static readonly object DirectDictionaryGet = new();
     private static readonly object DirectStringStartsWith = new();
+    private static readonly object DirectStringEndsWith = new();
     private static readonly object DirectStringReplace = new();
 
     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
@@ -575,10 +576,11 @@ internal sealed partial class LythonRuntime
             {
                 result = InvokeSingleInput(stringReceiver, stringOperation, callSite.CallSpan, context);
             }
-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringStartsWith))
+            else if (callSite.HasReceiver && (ReferenceEquals(target, DirectStringStartsWith) || ReferenceEquals(target, DirectStringEndsWith)))
             {
-                result = InvokeStringStartsWith((PyString)stack[start],
-                    stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount), callSite.CallSpan, context);
+                result = InvokeStringAffixFromOperands((PyString)stack[start],
+                    stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount), callSite.CallSpan, context,
+                    isStart: ReferenceEquals(target, DirectStringStartsWith));
             }
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringReplace))
             {

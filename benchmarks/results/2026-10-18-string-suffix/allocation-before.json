@@ -1,0 +1,98 @@
+[
+  {
+    "asynchronous": true,
+    "exposed": false,
+    "method": "startswith",
+    "callsPerSample": 128,
+    "samples": [
+      7656,
+      7656,
+      7656,
+      7656,
+      7656,
+      7656,
+      7656,
+      7656
+    ]
+  },
+  {
+    "asynchronous": false,
+    "exposed": false,
+    "method": "startswith",
+    "callsPerSample": 128,
+    "samples": [
+      7680,
+      7680,
+      7680,
+      7680,
+      7680,
+      7680,
+      7680,
+      7680
+    ]
+  },
+  {
+    "asynchronous": true,
+    "exposed": true,
+    "method": "endswith",
+    "callsPerSample": 128,
+    "samples": [
+      44528,
+      44528,
+      44528,
+      44528,
+      44528,
+      44528,
+      44528,
+      44528
+    ]
+  },
+  {
+    "asynchronous": false,
+    "exposed": true,
+    "method": "endswith",
+    "callsPerSample": 128,
+    "samples": [
+      44552,
+      44552,
+      44552,
+      44552,
+      44552,
+      44552,
+      44552,
+      44552
+    ]
+  },
+  {
+    "asynchronous": false,
+    "exposed": false,
+    "method": "endswith",
+    "callsPerSample": 128,
+    "samples": [
+      48640,
+      48640,
+      48640,
+      48640,
+      48640,
+      48640,
+      48640,
+      48640
+    ]
+  },
+  {
+    "asynchronous": true,
+    "exposed": false,
+    "method": "endswith",
+    "callsPerSample": 128,
+    "samples": [
+      44520,
+      44520,
+      44520,
+      44520,
+      44520,
+      44520,
+      44520,
+      44520
+    ]
+  }
+]

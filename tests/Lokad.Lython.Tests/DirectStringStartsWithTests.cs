@@ -9,11 +9,13 @@ namespace Lokad.Lython.Tests;
 public sealed class DirectStringStartsWithTests
 {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task OrdinaryCallsLeaveTheArgumentPoolUntouched(bool asynchronous)
+    [InlineData(false, "startswith")]
+    [InlineData(true, "startswith")]
+    [InlineData(false, "endswith")]
+    [InlineData(true, "endswith")]
+    public async Task OrdinaryCallsLeaveTheArgumentPoolUntouched(bool asynchronous, string method)
     {
-        var (code, context) = Prepare("return text.startswith(prefix)");
+        var (code, context) = Prepare("return text.startswith(prefix)", method: method);
         context.Variables["text"] = PyString.FromString("alpha", context.MemoryGovernor, null);
         context.Variables["prefix"] = PyString.FromString("a", context.MemoryGovernor, null);
         var pool = typeof(LythonRuntime).GetField("_pooledOneCallArgument", BindingFlags.Static | BindingFlags.NonPublic)!;
@@ -39,11 +41,13 @@ public sealed class DirectStringStartsWithTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DistinctStringsDoNotConstructBoundMethodCaches(bool asynchronous)
+    [InlineData(false, "startswith")]
+    [InlineData(true, "startswith")]
+    [InlineData(false, "endswith")]
+    [InlineData(true, "endswith")]
+    public async Task DistinctStringsDoNotConstructBoundMethodCaches(bool asynchronous, string method)
     {
-        var (code, context) = Prepare("for text in [left,right]:\n    result=text.startswith(prefix)\n    record()\n");
+        var (code, context) = Prepare("for text in [left,right]:\n    result=text.startswith(prefix)\n    record()\n", method: method);
         var left = PyString.FromString("alpha", context.MemoryGovernor, null);
         var right = PyString.FromString(" café😀 ", context.MemoryGovernor, null);
         var record = new Record();
@@ -70,16 +74,18 @@ public sealed class DirectStringStartsWithTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task GuardFuelAndSourceSpansMatchTheOrdinaryCallBoundary(bool asynchronous)
+    [InlineData(false, "startswith")]
+    [InlineData(true, "startswith")]
+    [InlineData(false, "endswith")]
+    [InlineData(true, "endswith")]
+    public async Task GuardFuelAndSourceSpansMatchTheOrdinaryCallBoundary(bool asynchronous, string method)
     {
         for (var fuel = 1; fuel <= 9; fuel++)
         {
-            var (code, context) = Prepare("return text.startswith(prefix)\n", new LythonRunOptions { MaxExecutionSteps = fuel });
+            var (code, context) = Prepare("return text.startswith(prefix)\n", new LythonRunOptions { MaxExecutionSteps = fuel }, method);
             var text = PyString.FromString("word", context.MemoryGovernor, null);
             context.Variables["text"] = text;
-            context.Variables["prefix"] = PyString.FromString("w", context.MemoryGovernor, null);
+            context.Variables["prefix"] = PyString.FromString(method == "startswith" ? "w" : "d", context.MemoryGovernor, null);
             if (fuel == 9)
                 Assert.Equal(true, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
                     : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
@@ -100,11 +106,13 @@ public sealed class DirectStringStartsWithTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task SuspendedArgumentKeepsTheEvaluatedReceiver(bool cancel)
+    [InlineData(false, "startswith")]
+    [InlineData(true, "startswith")]
+    [InlineData(false, "endswith")]
+    [InlineData(true, "endswith")]
+    public async Task SuspendedArgumentKeepsTheEvaluatedReceiver(bool cancel, string method)
     {
-        var (code, context) = Prepare("return text.startswith(argument())\n");
+        var (code, context) = Prepare("return text.startswith(argument())\n", method: method);
         var receiver = PyString.FromString("alpha", context.MemoryGovernor, null);
         var replacement = PyString.FromString("other", context.MemoryGovernor, null);
         var argument = new SuspendedArgument();
@@ -146,11 +154,13 @@ public sealed class DirectStringStartsWithTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task FallbackLookupCanSuspendBeforeArguments(bool cancel)
+    [InlineData(false, "startswith")]
+    [InlineData(true, "startswith")]
+    [InlineData(false, "endswith")]
+    [InlineData(true, "endswith")]
+    public async Task FallbackLookupCanSuspendBeforeArguments(bool cancel, string memberName)
     {
-        var (code, context) = Prepare("class C:\n    @property\n    def startswith(self): return lookup()\nreturn C().startswith(argument())\n");
+        var (code, context) = Prepare("class C:\n    @property\n    def startswith(self): return lookup()\nreturn C().startswith(argument())\n", method: memberName);
         var method = new ArgumentProbe();
         var argument = new ArgumentProbe();
         var lookup = new SuspendedArgument { Value = method };
@@ -193,9 +203,9 @@ public sealed class DirectStringStartsWithTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    private static (ExecutableScript, LythonRuntime.ExecutionContext) Prepare(string source, LythonRunOptions? options = null)
+    private static (ExecutableScript, LythonRuntime.ExecutionContext) Prepare(string source, LythonRunOptions? options = null, string method = "startswith")
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source.Replace("startswith", method, StringComparison.Ordinal));
         return (ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())), new(new MockLythonHost(), options ?? new()));
     }
 

@@ -326,7 +326,7 @@ internal sealed partial class ExecutableScript
                     "islower" or "isupper" or "istitle" or "isalpha" or "isdigit" or "isalnum" or
                     "isascii" or "isdecimal" or "isidentifier" or "isnumeric" or "isprintable" or "isspace"
                         => call.Arguments.Count == 0,
-                    "startswith" => call.Arguments.Count is >= 1 and <= 3,
+                    "startswith" or "endswith" => call.Arguments.Count is >= 1 and <= 3,
                     _ => false
                 };
             if (callTarget is LoweredMemberExpression member)
