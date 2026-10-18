@@ -233,7 +233,7 @@ internal sealed partial class LythonRuntime
         public void AppendText(string text) => _builder.AppendString(text);
 
         public void AppendValue(PyString value)
-            => _builder.Append(PyRendering.OwnJoinItem(value, _context));
+            => _builder.Append(value);
 
         public PyString Complete()
         {

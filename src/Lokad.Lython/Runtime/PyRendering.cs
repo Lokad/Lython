@@ -147,11 +147,6 @@ internal static class PyRendering
     public static PyString ToReprPyString(object value, PyRenderingContext context)
         => ToReprPyStringCore(value, context, null);
 
-    internal static PyString OwnJoinItem(PyString rendered, LythonRuntime.ExecutionContext context)
-    {
-        return rendered;
-    }
-
     public static PyString JoinRenderedReprValues(
         string prefix,
         IEnumerable<object> values,
@@ -168,7 +163,7 @@ internal static class PyRendering
                 builder.AppendAscii(", ");
             }
 
-            builder.Append(OwnJoinItem(ToReprPyString(value, context), context.Context));
+            builder.Append(ToReprPyString(value, context));
             first = false;
         }
 
@@ -188,7 +183,7 @@ internal static class PyRendering
                 builder.AppendAscii(", ");
             }
 
-            builder.Append(OwnJoinItem(item, context.Context));
+            builder.Append(item);
             first = false;
         }
 
@@ -213,7 +208,7 @@ internal static class PyRendering
                 builder.AppendAscii(", ");
             }
 
-            builder.Append(OwnJoinItem(interpolated ? ToInterpolatedPyString(value, context) : ToPythonPyString(value, context), context.Context));
+            builder.Append(interpolated ? ToInterpolatedPyString(value, context) : ToPythonPyString(value, context));
             first = false;
         }
 
@@ -243,18 +238,18 @@ internal static class PyRendering
                 builder.AppendAscii(", ");
             }
 
-            builder.Append(OwnJoinItem(RenderDictionaryKey(pair.Key, context, interpolated), context.Context));
+            builder.Append(RenderDictionaryKey(pair.Key, context, interpolated));
             builder.AppendAscii(": ");
             // String values render through repr like CPython on the
             // non-interpolated path; every other value already renders
             // identically through the value renderer.
             if (pair.Value is PyString text && !interpolated)
             {
-                builder.Append(OwnJoinItem(ToReprPyString(text, context), context.Context));
+                builder.Append(ToReprPyString(text, context));
             }
             else
             {
-                builder.Append(OwnJoinItem(interpolated ? ToInterpolatedPyString(pair.Value, context) : ToPythonPyString(pair.Value, context), context.Context));
+                builder.Append(interpolated ? ToInterpolatedPyString(pair.Value, context) : ToPythonPyString(pair.Value, context));
             }
             first = false;
         }
@@ -327,7 +322,7 @@ internal static class PyRendering
         builder.AppendAscii(", ");
         builder.AppendString(match.End.ToString());
         builder.AppendAscii("), match=");
-        builder.Append(OwnJoinItem(ToReprPyStringCore(match.Value, context, activeContainers), context.Context));
+        builder.Append(ToReprPyStringCore(match.Value, context, activeContainers));
         builder.AppendAscii(">");
         return builder.ToPyStringAndRelease();
     }
@@ -397,7 +392,7 @@ internal static class PyRendering
         try
         {
             return tuple.Count == 1
-                ? RenderSingletonTuple(OwnJoinItem(ToReprPyStringCore(tuple[0], context, activeContainers), context.Context), context.Context.MemoryGovernor)
+                ? RenderSingletonTuple(ToReprPyStringCore(tuple[0], context, activeContainers), context.Context.MemoryGovernor)
                 : RenderReprItems(tuple, "(", ")", context, activeContainers);
         }
         finally
@@ -447,7 +442,7 @@ internal static class PyRendering
                 builder.AppendAscii(", ");
             }
 
-            builder.Append(OwnJoinItem(ToReprPyStringCore(item, context, activeContainers), context.Context));
+            builder.Append(ToReprPyStringCore(item, context, activeContainers));
             first = false;
         }
 
@@ -475,9 +470,9 @@ internal static class PyRendering
                     builder.AppendAscii(", ");
                 }
 
-                builder.Append(OwnJoinItem(ToReprPyStringCore(pair.Key, context, activeContainers), context.Context));
+                builder.Append(ToReprPyStringCore(pair.Key, context, activeContainers));
                 builder.AppendAscii(": ");
-                builder.Append(OwnJoinItem(ToReprPyStringCore(pair.Value, context, activeContainers), context.Context));
+                builder.Append(ToReprPyStringCore(pair.Value, context, activeContainers));
                 first = false;
             }
 
@@ -542,7 +537,7 @@ internal static class PyRendering
                 builder.AppendAscii(", ");
             }
 
-            builder.Append(OwnJoinItem(ToReprPyString(args[i], context), context.Context));
+            builder.Append(ToReprPyString(args[i], context));
         }
         builder.AppendAscii(")");
         return builder.ToPyStringAndRelease();

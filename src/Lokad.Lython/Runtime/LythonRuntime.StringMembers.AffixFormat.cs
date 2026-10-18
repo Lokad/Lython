@@ -97,15 +97,14 @@ internal sealed partial class LythonRuntime
                                 }
                             }
 
-                            // Own each rendered part (it dies inside the join) and the
-                            // governed result: CustomMethodCallable bypasses the call funnel
-                            // that OwnMethodResult assumes will adopt governed results.
+                            // Parts retain their existing funding; keep the final
+                            // result governed when a formatter returns unowned text.
                             var formatted = OwnMethodResult(PyStringOps.Format(
                                 text,
                                 positional,
                                 keywords,
                                 (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
-                                (value, conversion, spec) => PyRendering.OwnJoinItem(FormatInterpolatedStringPart(value, conversion, spec, context, span), context)),text,context.MemoryGovernor,span);
+                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span)),text,context.MemoryGovernor,span);
                             return formatted;
                         }
                         catch (InvalidOperationException ex)
@@ -137,7 +136,7 @@ internal sealed partial class LythonRuntime
                                 positional,
                                 keywords,
                                 (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
-                                (value, conversion, spec) => PyRendering.OwnJoinItem(FormatInterpolatedStringPart(value, conversion, spec, context, span), context),
+                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span),
                                 forbidPositionalFields: true),text,context.MemoryGovernor,span);
                         }
                         catch (InvalidOperationException ex)

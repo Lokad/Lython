@@ -37,12 +37,12 @@ internal sealed partial class LythonRuntime
                     var formatSpecifier = expression.FormatSpecifierParts is null
                         ? expression.FormatSpecifier
                         : EvaluateFormattedStringParts(expression.FormatSpecifierParts, context, span).AsString();
-                    builder.Append(PyRendering.OwnJoinItem(FormatInterpolatedStringPart(
+                    builder.Append(FormatInterpolatedStringPart(
                         fieldValue,
                         null,
                         formatSpecifier,
                         context,
-                        span), context));
+                        span));
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown formatted string part: {part.GetType().Name}");
@@ -121,7 +121,7 @@ internal sealed partial class LythonRuntime
 
     private static PyString EscapeNonAsciiPyString(PyString text, ExecutionContext context, LythonSourceSpan span)
     {
-        var input = PyRendering.OwnJoinItem(text, context).Utf8Bytes.Span;
+        var input = text.Utf8Bytes.Span;
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         const string hex = "0123456789abcdef";
         try

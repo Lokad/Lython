@@ -165,20 +165,20 @@ internal sealed partial class LythonRuntime
 
         private void AppendText(object value, PercentSpecifier specifier)
         {
-            var rendered = PyRendering.OwnJoinItem(specifier.Conversion switch
+            var rendered = specifier.Conversion switch
             {
                 's' => ToInterpolatedPyString(value, _context),
                 'r' => ToReprPyString(value, _context),
                 'a' => PyString.FromString(
-                    EscapeNonAscii(PyRendering.OwnJoinItem(ToReprPyString(value, _context), _context).AsString()),
+                    EscapeNonAscii(ToReprPyString(value, _context).AsString()),
                     _context.MemoryGovernor,
                     _span),
                 _ => PyString.Empty
-            }, _context);
+            };
 
             if (specifier.Precision is { } precision && rendered.Length > precision)
             {
-                rendered = PyRendering.OwnJoinItem(rendered.Slice(new PyIndexing.SliceBounds(0, precision, 1)), _context);
+                rendered = rendered.Slice(new PyIndexing.SliceBounds(0, precision, 1));
             }
 
             AppendPadded(rendered, specifier.Width, specifier.LeftAdjust);
@@ -359,7 +359,7 @@ internal sealed partial class LythonRuntime
                 _builder.AppendRepeated((byte)' ', padding);
             }
 
-            _builder.Append(PyRendering.OwnJoinItem(value, _context));
+            _builder.Append(value);
             if (leftAdjust)
             {
                 _builder.AppendRepeated((byte)' ', padding);
