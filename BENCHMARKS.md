@@ -6,6 +6,7 @@
 | Complete CSV summary with annotated helper [CE], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 8.549 ms | 3.962 ms | 2.158× diagnostic | Immutable `34d4da35`; one capture, unqualified; 6.72%/0.63% spreads |
 | Complete CSV summary with annotated helper [CF], warm `RunAsync` | 4,096 records / 57,361 UTF-8 bytes | 9.321 ms | 3.759 ms | 2.480× diagnostic | Immutable `34d4da35`; completed host operations, one capture, unqualified; 3.84%/0.59% spreads |
 | JSON file round-trip [CD], warm `RunAsync` | One file / 42 UTF-8 input bytes | 1.571 ms | 0.16484 ms | — | Four frozen runtime files on 22648c5a; nominal 9.533×, unqualified; 7.24%/1.07% spreads |
+| JSON configuration read/edit/write [CH], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.584–2.769 ms | 1.399 ms | 1.847–1.980× diagnostic | Immutable `348998dc`; identical controls; 16.63%/9.79% Lython spreads, 8.93% CPython; unqualified |
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Complete CSV summary [BP], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 7.503 ms | 3.849 ms | — | Short diagnostic at27a61681; nominal8.3% below prior Lython,7.5%/6.4% spreads; inconclusive |
 | Complete CSV helper with annotation-only local [BT], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 19.745 ms | 17.014 ms | — | Local Windows, 3f799746 + one-line guard deletion; 48.9%/13.5% spreads, inconclusive |
@@ -29,12 +30,22 @@ for changes against prior Lython versions.
 above 1 means Lython takes longer. Ratios marked diagnostic are unqualified point
 estimates. A dash means unavailable or not reported, never zero; historical
 unqualified observations retain their original notation. No workload ratio has
-completed milestone qualification here. AF, AU, BO, BR, BX and CG ranges contain the medians
+completed milestone qualification here. AF, AU, BO, BR, BX, CG and CH ranges contain the medians
 of two identical Lython controls, not confidence intervals. Other entries show
 one diagnostic median. The jobs show performance gaps in those runs; their
 magnitudes and changes remain uncertain as marked.
 
 ## Which code and machine were measured?
+
+CH measures immutable `348998dc` on 2026-10-18 UTC, using the existing complete
+configuration read/edit/write script, two identical Lython controls and CPython
+3.13.16. Every job compiles afresh in an already-running host, including file
+setup/reset and full output checks; startup/transport are excluded. The sole
+8.074-second collection gives 2.584–2.769 ms versus 1.399 ms, a diagnostic 1.847–1.980×
+gap. The identical controls differ by 6.69% and one Lython spread is 16.63%; the
+ratio remains unqualified. It is not a measured gain from an individual setup
+change, nor a trend against historical AF. [Source, boundaries, samples and
+cleanup](benchmarks/results/2026-10-18-config-checkpoint/README.md) are retained.
 
 CG measures immutable `4acd532f` on 2026-10-18 UTC, whose runtime source is
 identical to qualified `73deb8dc`. Two distinct workers load identical Lython
@@ -140,6 +151,7 @@ to infer a change from the quiet-VM measurements.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| CH | 2026-10-18 UTC | Immutable `348998dc`; complete configuration job, fresh compile/run, identical controls | [CPython comparison, independent complete goldens, raw samples and cleanup](benchmarks/results/2026-10-18-config-checkpoint/README.md) |
 | CG | 2026-10-18 UTC | Immutable `4acd532f`; same runtime sources as `73deb8dc`; complete text helper, fresh compile/run, identical controls | [CPython comparison, full goldens, raw samples and cleanup](benchmarks/results/2026-10-18-text-milestone/README.md) |
 | CE/CF | 2026-10-18 UTC | Immutable `34d4da35`; complete CSV helper job, fresh compile/run and warm RunAsync | [CPython comparison, raw samples, immutable controls and cleanup](benchmarks/results/2026-10-18-csv-milestone/README.md) |
 | CD | 2026-10-18 UTC | Four frozen runtime files on 22648c5a; existing bridge JSON file job; warm public RunAsync | [Default-call allocation, checkpoints, CPython comparison and cleanup](benchmarks/results/2026-10-18-json-default-dumps/README.md) |

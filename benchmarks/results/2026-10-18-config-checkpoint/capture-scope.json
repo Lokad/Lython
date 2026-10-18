@@ -1,0 +1,24 @@
+{
+  "remoteStage": "/home/lokad/lython-bench-checks/config-checkpoint-348998dc",
+  "revision": "348998dc05d9a562c7b14691accb4a566824ebbb",
+  "case": "scripts.config-edit.small",
+  "lane": "compile-run",
+  "timingCaptureCount": 1,
+  "workLimitSeconds": 28,
+  "cleanupLimitSeconds": 1,
+  "recipes": {
+    "inspect.py": "b657c0e1422fc831776dbd8d05e9341766e5004dd5dbaa2e8d25f684516db687",
+    "prepare.py": "103655779a8c3af5a3927fffaf6f5553586e70cbd65bde7050e6f4532bf92c09",
+    "preflight.py": "021d6879b1ff3f75fe4f30119b2ac276d923dfa77c11200e4a33edfdffb34c81",
+    "run-capture.py": "9c1ca804e9335a9b2452461f5fe8ea74662176f26b25ca33f7563ba98b310ceb",
+    "observe.py": "c4d62a9d653e488795f159279026827795f960e5ed20a8db9369b58a3d0038f5",
+    "finish.py": "89f317a92fb938574389b8aa478130f80b082fb44466936800b1d47784ff8772"
+  },
+  "priorRecipeDirectory": "text-milestone-4acd532f",
+  "sourceAndBenchmarkImplementationChanges": false,
+  "initialExecutionScopeSha256": "a6abd4c699bd83ef7b6e6925c5288338ec0c3d92589912af536a6825d198ddba",
+  "additionalPreCaptureChecks": "Selected catalog source/input/output/stdout must match independent pinned goldens before any timing.",
+  "expectedStdoutSha256": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5",
+  "initialScopeStdoutHashNote": "Initial scope stdoutSha256 covers local Windows captured17CRLF. The frozen expected-stdout.txt and worker comparison are17LF, matching preflight; this field pins the canonical LF hash before collection.",
+  "sealedBeforeCaptureUtc": "2026-10-18T11:57:35.208469+00:00"
+}

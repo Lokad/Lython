@@ -1,0 +1,169 @@
+{
+  "dateUtc": "2026-10-18",
+  "candidate": "348998dc05d9a562c7b14691accb4a566824ebbb",
+  "baseline": "348998dc05d9a562c7b14691accb4a566824ebbb",
+  "performanceQualified": false,
+  "case": "scripts.config-edit.small",
+  "inputPaths": 16,
+  "inputUtf8Bytes": 181,
+  "sourceUtf8Bytes": 357,
+  "outputConfigBytes": 192,
+  "independentConfigGoldenMatches": true,
+  "twoIdenticalLythonControls": true,
+  "lanes": {
+    "compile-run": {
+      "summaries": {
+        "baseline": {
+          "engine": "baseline",
+          "medianMicroseconds": 2768.9035384615386,
+          "iqrFraction": 0.09787146792290413
+        },
+        "candidate": {
+          "engine": "candidate",
+          "medianMicroseconds": 2583.725928571429,
+          "iqrFraction": 0.16625787625694372
+        },
+        "CPython": {
+          "engine": "CPython",
+          "medianMicroseconds": 1398.7353125,
+          "iqrFraction": 0.08928399717333939
+        }
+      },
+      "sortedSampleMicroseconds": {
+        "baseline": [
+          2456.760923076923,
+          2580.9970769230767,
+          2607.7687692307686,
+          2768.9035384615386,
+          2855.1471538461537,
+          2875.612,
+          3389.3366923076924
+        ],
+        "candidate": [
+          2411.4930000000004,
+          2553.581,
+          2559.947,
+          2583.725928571429,
+          2879.9559285714286,
+          3092.701642857143,
+          3385.1150714285714
+        ],
+        "CPython": [
+          1271.34809375,
+          1326.218046875,
+          1391.99053125,
+          1398.7353125,
+          1449.0056875,
+          1518.97225,
+          1543.5716875
+        ]
+      },
+      "candidateVsCPython": 1.8471871736429255,
+      "identicalLythonControlDifferencePercent": -6.687759516281244,
+      "responseCount": 39,
+      "completedInvocations": 2456,
+      "ownedElapsedSeconds": 8.074056,
+      "allResponsesAndInputDigestsMatch": true,
+      "mediansAndIqrRecomputed": true,
+      "allWorkersAndFixturesGone": true
+    }
+  },
+  "diagnosticLythonToCPythonRatioRange": [
+    1.8471871736429255,
+    1.9795764886443008
+  ],
+  "rangeIsTwoControlMediansNotConfidenceInterval": true,
+  "runtimeChangedForThisMeasurement": false,
+  "singleCapturePerBoundary": true,
+  "archiveSha256": "ab3e93ae2c85271c654c8a77cac946e6d666f4b2bb811718e93b93bce99e4269",
+  "artifacts": {
+    "build-candidate.log": {
+      "bytes": 753,
+      "sha256": "3a0c89880f99b26a121724994757d26603c87d8d781d516d101c0de1d16e50e7"
+    },
+    "capture-scope.json": {
+      "bytes": 1587,
+      "sha256": "aeb686ac04a06838acf0c0b63078dafc5b09e9ed8583dc04c9a211ca8eaa2827"
+    },
+    "execution-scope.json": {
+      "bytes": 949,
+      "sha256": "a6abd4c699bd83ef7b6e6925c5288338ec0c3d92589912af536a6825d198ddba"
+    },
+    "expected-config.json": {
+      "bytes": 192,
+      "sha256": "0e83649b07b0708ec80ea9ebf2b79219a7d353bb651e8057c11c9a36d0c6ba8e"
+    },
+    "expected-stdout.txt": {
+      "bytes": 3,
+      "sha256": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5"
+    },
+    "final-cleanup.json": {
+      "bytes": 2425,
+      "sha256": "694af31a9b72b0622a92d9534701b273d6e08951289d4eea4a75d8539475c46d"
+    },
+    "input-config.json": {
+      "bytes": 181,
+      "sha256": "008c2534722107d8e8fdbd41beaa74032fdf010c777a596bed23e4f7688dd5c0"
+    },
+    "inspection.json": {
+      "bytes": 38804,
+      "sha256": "f16c1d89f0a0a6f12f72191689b545d3de402a8799c94610dbd789d84475456d"
+    },
+    "preflight.json": {
+      "bytes": 33354,
+      "sha256": "4bf24c242da45d42a48007c96614c1a3f9f4bef54a6f2dc6542b61a3ab64e51c"
+    },
+    "preparation.json": {
+      "bytes": 1609,
+      "sha256": "ec18fd6860f10c6e437f4be281f3502c4d99aa6af9dd24154940c4bc8e9d8520"
+    },
+    "prepare-launch.json": {
+      "bytes": 890,
+      "sha256": "9443cd2c066d5eac6d1b1732ebf004aa183534ce4cb92926533844cc34bed285"
+    },
+    "prepare.py": {
+      "bytes": 4177,
+      "sha256": "103655779a8c3af5a3927fffaf6f5553586e70cbd65bde7050e6f4532bf92c09"
+    },
+    "raw-evidence.tar.gz": {
+      "bytes": 55646,
+      "sha256": "ab3e93ae2c85271c654c8a77cac946e6d666f4b2bb811718e93b93bce99e4269"
+    },
+    "run-capture.py": {
+      "bytes": 2337,
+      "sha256": "9c1ca804e9335a9b2452461f5fe8ea74662176f26b25ca33f7563ba98b310ceb"
+    },
+    "scope.json": {
+      "bytes": 2718,
+      "sha256": "d460e98d8bc8fbdc7a4a05b5a79a30a424fd6d659a8447c0c243edcf7e26b2ef"
+    },
+    "source.py": {
+      "bytes": 357,
+      "sha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4"
+    },
+    "compile-run/launch.json": {
+      "bytes": 933,
+      "sha256": "7cdc2df758adfde970ca0c4505f19b645e2a5666fdcd73ffe66579dc39fbe55a"
+    },
+    "compile-run/micro.json": {
+      "bytes": 47323,
+      "sha256": "1c3626e6486fbdff5ba526f11b209f074ba8b7461a662840eb2c982dc7fdaabd"
+    },
+    "compile-run/micro.log": {
+      "bytes": 309,
+      "sha256": "c2efa6132f1130ab1fc0853c2a26b10951e9630341b9f4b5d56a8f19dbbf9c29"
+    },
+    "compile-run/ownership.json": {
+      "bytes": 1440,
+      "sha256": "e209d885c414131553487f758070e8a2008b8c26318516a00e87ec53be6e63ed"
+    },
+    "compile-run/service.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "compile-run/terminal.json": {
+      "bytes": 1424,
+      "sha256": "dabdd3753a6ad7ca506a9fddd430153526648aa97fa8d23190c85f00c454e49e"
+    }
+  }
+}

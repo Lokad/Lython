@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 complete configuration comparison](results/2026-10-18-config-checkpoint/README.md)
+uses immutable 348998dc, two identical Lython controls and CPython 3.13.16. Fresh
+compile/run takes 2.584–2.769 ms versus 1.399 ms; nominal 1.847–1.980× remains diagnostic
+with 6.69% control divergence and 16.63% spread in one control. All 39 responses/
+2,456 invocations match independent complete goldens; source/inputs, all workers/
+fixtures and shared lease are verified. One 8.074-second capture, no runtime or
+framework change, repeated timing, profile or ten-minute lane. Historical AF stays
+separate; no individual optimization gain is inferred.
+
 The [2026-10-18 module/builtin separation](results/2026-10-18-builtin-namespace/README.md)
 corrects six public runtime probe failures across both APIs and removes duplicate
 builtin storage and identity-based alias compensation. Fresh/child context allocation

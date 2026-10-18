@@ -1,0 +1,41 @@
+{
+  "revision": "348998dc05d9a562c7b14691accb4a566824ebbb",
+  "sourceSha256": {
+    "benchmarks/scripts/config-edit.py": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "9f756ed5cabd3b6d0e2a7d2954163b14d55881ae8ab9b558560215594b68cd1a",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonMicroCommand.cs": "c94517c052799b925bb203a2bf398f8c55ac80e01a7bd2b6652dffa196f4f497",
+    "benchmarks/COMPARISON.md": "5f1891bb1dbe910895a14cb471a8f179963a55ed2324b0426a7bea4168501df9"
+  },
+  "case": "scripts.config-edit.small",
+  "lane": "compile-run",
+  "fixturePaths": 16,
+  "inputBytes": 181,
+  "scriptUtf8Bytes": 357,
+  "expectedOutputBytes": 192,
+  "independentGoldenPassed": true,
+  "goldenReference": "Python 3.13.2",
+  "inputSha256": "008c2534722107d8e8fdbd41beaa74032fdf010c777a596bed23e4f7688dd5c0",
+  "outputSha256": "0e83649b07b0708ec80ea9ebf2b79219a7d353bb651e8057c11c9a36d0c6ba8e",
+  "stdoutSha256": "5b677464f4941a4c274964d723bf47e3cd7cdcb5d53379a3b7176f0c456cf9a0",
+  "vmReadiness": {
+    "host": "lython-bench",
+    "kernel": "6.17.0-1022-azure",
+    "loadavg": [
+      0.01220703125,
+      0.0068359375,
+      0.0
+    ],
+    "leaseAvailable": true,
+    "memory": [
+      "MemTotal:       16373452 kB",
+      "MemAvailable:   15415108 kB",
+      "SwapTotal:             0 kB"
+    ]
+  },
+  "readinessIsNotLeaseOwnership": true,
+  "captureStarted": false,
+  "comparison": "Two identical immutable current Lython controls and CPython primary baseline. Do not attribute a difference against historical AF to a single optimization.",
+  "boundary": "Fresh compilation plus one synchronous execution per job in an already-running worker. Existing shared allowance, prior-result/fresh-compilation cleanup,input staging/reset and complete output checks included. Startup/transport/response hashing excluded. Warm-only/compile-only separate.",
+  "stopping": "Build/verify inputs before collection; reacquire existing shared VM lease. One existing15s micro capture under28s work+1s cleanup owned service, seven rotating batches/25ms calibration with ordinary worker GC/tiering and all response hashes. Stop on bad identity/golden, unavailable lease, failed ownership/cleanup or stale/ambiguous boundary. Preserve failed/noisy first capture; no retries, new framework, profiles or ten-minute lane.",
+  "materialGap": "Primary configuration row AF is historical654b4f5a, inconclusive two-control divergence11.5%,181B input. Invocation setup and many runtime paths changed since. Fresh compile-to-result remains a product boundary, not a sum of native allocation/elapsed medians."
+}

@@ -1,0 +1,41 @@
+{
+  "collectionCount": 1,
+  "lane": "compile-run",
+  "startedUtc": "2026-10-18T11:57:36.424541+00:00",
+  "state": "Completed",
+  "loadBefore": [
+    0.123046875,
+    0.0693359375,
+    0.0224609375
+  ],
+  "command": [
+    "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+    "/home/lokad/lython-bench-checks/config-checkpoint-348998dc/source-candidate/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+    "--compare",
+    "micro",
+    "--catalog",
+    "/home/lokad/lython-bench-checks/config-checkpoint-348998dc/catalog.json",
+    "--dotnet",
+    "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+    "--baseline-worker",
+    "/home/lokad/lython-bench-checks/config-checkpoint-348998dc/source-candidate/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+    "--python",
+    "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+    "--python-worker",
+    "/home/lokad/lython-bench-checks/config-checkpoint-348998dc/source-candidate/benchmarks/cpython-worker.py",
+    "--out",
+    "/home/lokad/lython-bench-checks/config-checkpoint-348998dc/compile-run/micro.json",
+    "--case",
+    "scripts.config-edit.small",
+    "--lane",
+    "compile-run"
+  ],
+  "supervisorTieredCompilation": "0",
+  "exitCode": 0,
+  "loadAfter": [
+    0.177734375,
+    0.08349609375,
+    0.02734375
+  ],
+  "stoppedUtc": "2026-10-18T11:57:44.498597+00:00"
+}

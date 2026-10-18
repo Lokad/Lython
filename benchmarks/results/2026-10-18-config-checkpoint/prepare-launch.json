@@ -1,0 +1,21 @@
+{
+  "unit": "lython-config-checkpoint-prepare-348998dc-20261018",
+  "arguments": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-config-checkpoint-prepare-348998dc-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=28",
+    "--property=TimeoutStopSec=1",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/config-checkpoint-348998dc/prepare-service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/config-checkpoint-348998dc/prepare-service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/config-checkpoint-348998dc/prepare.py"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Running as unit: lython-config-checkpoint-prepare-348998dc-20261018.service; invocation ID: e63858c9d812457693029a2f0020e4cf\n",
+  "launchedUtc": "2026-10-18T11:55:40.392566+00:00"
+}

@@ -1,0 +1,22 @@
+{
+  "unit": "lython-config-checkpoint-compile-run-348998dc-20261018",
+  "arguments": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-config-checkpoint-compile-run-348998dc-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=28",
+    "--property=TimeoutStopSec=1",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/config-checkpoint-348998dc/compile-run/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/config-checkpoint-348998dc/compile-run/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/config-checkpoint-348998dc/run-capture.py",
+    "compile-run"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Running as unit: lython-config-checkpoint-compile-run-348998dc-20261018.service; invocation ID: 3ca2b9fff4f64ab1bda2a379d327cb52\n",
+  "launchedUtc": "2026-10-18T11:57:36.408576+00:00"
+}
