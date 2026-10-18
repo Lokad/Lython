@@ -1,0 +1,14 @@
+{
+  "source": "15b4bc03-plus-json-static-dictionary",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "A3DEB03A3F6623A66AF6177DC587DE568CA901C369B8F8521D58ECE3E3844600",
+  "filter": "Category!=Stress&FullyQualifiedName~JsonDictionaryCaptureDiagnostic",
+  "pid": 53836,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1616,
+  "stdoutSha256": "C5867996E9EE3C4B1945A50A0AB72DC32F25139F6004BBBC8A833FCDFA52F4F8",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

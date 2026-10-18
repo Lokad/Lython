@@ -1,0 +1,158 @@
+{
+  "accepted": true,
+  "comparisons": [
+    {
+      "route": "default",
+      "asynchronous": false,
+      "beforeBytes": 74280.0,
+      "afterBytes": 58840.0,
+      "savedBytes": 15440.0,
+      "steps": 848.0,
+      "resultHash": "7a2f5c3e7762371d05f6c219eee019eee3d919724a4b9cf1d1747ac106ee92f7"
+    },
+    {
+      "route": "default",
+      "asynchronous": true,
+      "beforeBytes": 78400.0,
+      "afterBytes": 62960.0,
+      "savedBytes": 15440.0,
+      "steps": 848.0,
+      "resultHash": "7a2f5c3e7762371d05f6c219eee019eee3d919724a4b9cf1d1747ac106ee92f7"
+    },
+    {
+      "route": "dictionaries",
+      "asynchronous": false,
+      "beforeBytes": 32016.0,
+      "afterBytes": 16576.0,
+      "savedBytes": 15440.0,
+      "steps": 719.0,
+      "resultHash": "8e91f51ae051e84251a9c80514b996d2c26c3a69a2d5de58c62c11c1826e201a"
+    },
+    {
+      "route": "dictionaries",
+      "asynchronous": true,
+      "beforeBytes": 32040.0,
+      "afterBytes": 16600.0,
+      "savedBytes": 15440.0,
+      "steps": 719.0,
+      "resultHash": "8e91f51ae051e84251a9c80514b996d2c26c3a69a2d5de58c62c11c1826e201a"
+    },
+    {
+      "route": "encoder",
+      "asynchronous": false,
+      "beforeBytes": 32976.0,
+      "afterBytes": 17536.0,
+      "savedBytes": 15440.0,
+      "steps": 721.0,
+      "resultHash": "8e91f51ae051e84251a9c80514b996d2c26c3a69a2d5de58c62c11c1826e201a"
+    },
+    {
+      "route": "encoder",
+      "asynchronous": true,
+      "beforeBytes": 32968.0,
+      "afterBytes": 17528.0,
+      "savedBytes": 15440.0,
+      "steps": 721.0,
+      "resultHash": "8e91f51ae051e84251a9c80514b996d2c26c3a69a2d5de58c62c11c1826e201a"
+    },
+    {
+      "route": "incremental-control",
+      "asynchronous": false,
+      "beforeBytes": 111312.0,
+      "afterBytes": 111312.0,
+      "savedBytes": 0.0,
+      "steps": 1449.0,
+      "resultHash": "8e91f51ae051e84251a9c80514b996d2c26c3a69a2d5de58c62c11c1826e201a"
+    },
+    {
+      "route": "incremental-control",
+      "asynchronous": true,
+      "beforeBytes": 111384.0,
+      "afterBytes": 111384.0,
+      "savedBytes": 0.0,
+      "steps": 1449.0,
+      "resultHash": "8e91f51ae051e84251a9c80514b996d2c26c3a69a2d5de58c62c11c1826e201a"
+    },
+    {
+      "route": "loads-control",
+      "asynchronous": false,
+      "beforeBytes": 1008.0,
+      "afterBytes": 1008.0,
+      "savedBytes": 0.0,
+      "steps": 34.0,
+      "resultHash": null
+    },
+    {
+      "route": "loads-control",
+      "asynchronous": true,
+      "beforeBytes": 1032.0,
+      "afterBytes": 1032.0,
+      "savedBytes": 0.0,
+      "steps": 34.0,
+      "resultHash": null
+    },
+    {
+      "route": "scalar",
+      "asynchronous": false,
+      "beforeBytes": 968.0,
+      "afterBytes": 888.0,
+      "savedBytes": 80.0,
+      "steps": 17.0,
+      "resultHash": "7902699be42c8a8e46fbbb4501726517e86b22c56a189f7625a6da49081b2451"
+    },
+    {
+      "route": "scalar",
+      "asynchronous": true,
+      "beforeBytes": 992.0,
+      "afterBytes": 912.0,
+      "savedBytes": 80.0,
+      "steps": 17.0,
+      "resultHash": "7902699be42c8a8e46fbbb4501726517e86b22c56a189f7625a6da49081b2451"
+    },
+    {
+      "route": "sequence",
+      "asynchronous": false,
+      "beforeBytes": 7768.0,
+      "afterBytes": 2568.0,
+      "savedBytes": 5200.0,
+      "steps": 207.0,
+      "resultHash": "ccf91e2b960f51464b77d855d580f583fe4e1cf0472832315bad6d855cf732f6"
+    },
+    {
+      "route": "sequence",
+      "asynchronous": true,
+      "beforeBytes": 7792.0,
+      "afterBytes": 2592.0,
+      "savedBytes": 5200.0,
+      "steps": 207.0,
+      "resultHash": "ccf91e2b960f51464b77d855d580f583fe4e1cf0472832315bad6d855cf732f6"
+    },
+    {
+      "route": "sorted",
+      "asynchronous": false,
+      "beforeBytes": 54248.0,
+      "afterBytes": 38808.0,
+      "savedBytes": 15440.0,
+      "steps": 848.0,
+      "resultHash": "b7001ed5c21b83271513df3508bb089091c89466b8ab0c987aa090acf29dfd03"
+    },
+    {
+      "route": "sorted",
+      "asynchronous": true,
+      "beforeBytes": 54272.0,
+      "afterBytes": 38832.0,
+      "savedBytes": 15440.0,
+      "steps": 848.0,
+      "resultHash": "b7001ed5c21b83271513df3508bb089091c89466b8ab0c987aa090acf29dfd03"
+    }
+  ],
+  "exactSemanticGuardRecords": 70,
+  "guardAllocationChanges": {
+    "affected": 32,
+    "bytesSavedEach": 80
+  },
+  "unchangedControlArrays": true,
+  "allStepArraysIdentical": true,
+  "elapsedMeasured": false,
+  "allocationOutlier": "Baseline default/async sample4 allocates627264 rather than627200B per8 invocations;raw data retained,medians reported,no recapture."
+}

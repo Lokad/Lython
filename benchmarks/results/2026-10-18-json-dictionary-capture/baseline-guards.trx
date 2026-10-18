@@ -1,0 +1,884 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="a2afec48-e1b4-4f25-b7a4-3d4adb6329c8" name="JoannesVermorel@LOKAD-0399 2026-10-18 18:35:03" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T18:35:03.0537241+02:00" queuing="2026-10-18T18:35:03.0537244+02:00" start="2026-10-18T18:35:02.0316044+02:00" finish="2026-10-18T18:35:03.1373923+02:00" />
+  <TestSettings name="default" id="61ff67af-0841-42aa-8f7c-230d51b35262">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_18_35_03" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="23291d1c-6f51-4da1-8e1f-0b2c5dd77648" testId="c40561d1-db1f-724b-e11e-6c7980709c13" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;encode&quot;, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0001539" startTime="2026-10-18T18:35:03.0555958+02:00" endTime="2026-10-18T18:35:03.0556817+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="23291d1c-6f51-4da1-8e1f-0b2c5dd77648" />
+    <UnitTestResult executionId="9e02ed57-28eb-4787-949c-103b4a26e320" testId="47610c2d-f4c5-8b5e-4ca1-d914a009d22c" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: False, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0005652" startTime="2026-10-18T18:35:03.0484891+02:00" endTime="2026-10-18T18:35:03.0490385+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9e02ed57-28eb-4787-949c-103b4a26e320">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"iterator","key":false,"asynchronous":true,"shared":true,"allocated":5648,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="dd9cc8ea-fb31-4e01-b780-5f029b16e63c" testId="d746e69c-15f7-829b-79b4-4b039ad91bfb" testName="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: False, shape: &quot;unsupported&quot;)" computerName="LOKAD-0399" duration="00:00:00.0010931" startTime="2026-10-18T18:35:03.0388833+02:00" endTime="2026-10-18T18:35:03.0389193+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dd9cc8ea-fb31-4e01-b780-5f029b16e63c">
+      <Output>
+        <StdOut>JSON_DUMPS_MATRIX:{"asynchronous":false,"shape":"unsupported","steps":21,"outcome":"TypeError:Object of type set is not JSON serializable","effects":["make:2,0"],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,4,2,19:","30,6,2,19:","30,6,2,19:","30,6,2,19:","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8788bb64-bb7d-498b-b454-48b4c551aee3" testId="7e862edf-799a-41a6-5861-fbc9d034e1b4" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: False, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0071183" startTime="2026-10-18T18:35:03.0390720+02:00" endTime="2026-10-18T18:35:03.0417694+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8788bb64-bb7d-498b-b454-48b4c551aee3">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"iterator","key":false,"asynchronous":false,"shared":false,"allocated":5760,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="822a6897-2887-4188-b93d-8cd4ea98c451" testId="8376b755-95af-bd5b-0c05-5f18285066c9" testName="Lokad.Lython.Tests.JsonStringDispatchBoundaryTests.EveryStringCheckpointPreservesEffectsAndUnwinds(asynchronous: False, pairs: True)" computerName="LOKAD-0399" duration="00:00:00.0018852" startTime="2026-10-18T18:35:03.0194647+02:00" endTime="2026-10-18T18:35:03.0194844+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="822a6897-2887-4188-b93d-8cd4ea98c451">
+      <Output>
+        <StdOut>JSON_STRING_MATRIX:{"asynchronous":false,"pairs":true,"steps":29,"fullEffects":["hook:3,0"],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,6,2,19:","55,4,2,44:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","12,48,2,1:hook:3,0"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2e604939-bba3-4031-91e5-9ddaf1c6aad1" testId="3ce98d29-8eab-5137-3aee-9117ba0070d6" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusedOutputRefundsAdmittedInputDecode(iterator: False, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0001510" startTime="2026-10-18T18:35:03.0582852+02:00" endTime="2026-10-18T18:35:03.0584214+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2e604939-bba3-4031-91e5-9ddaf1c6aad1" />
+    <UnitTestResult executionId="b90d01ea-05fc-41c1-9d08-de8680cc8460" testId="7bb4e6df-3bc2-3f79-74c0-782a11caabd3" testName="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: True, pairs: False, padded: False)" computerName="LOKAD-0399" duration="00:00:00.0008428" startTime="2026-10-18T18:35:03.0372907+02:00" endTime="2026-10-18T18:35:03.0373774+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b90d01ea-05fc-41c1-9d08-de8680cc8460">
+      <Output>
+        <StdOut>JSON_LITERAL_MATRIX:{"asynchronous":true,"pairs":false,"steps":15,"fullEffects":[],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,6,2,19:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","12,25,2,1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e2a4cc65-e40a-4666-92e0-c18810869697" testId="111b7169-e8cc-a401-3861-e53e3e8cf070" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: True, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0003098" startTime="2026-10-18T18:35:03.0709354+02:00" endTime="2026-10-18T18:35:03.0712287+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e2a4cc65-e40a-4666-92e0-c18810869697">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"iterator","key":true,"asynchronous":false,"shared":false,"allocated":5048,"denied":175032,"chunks":1}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="314e4cf9-8ad4-4449-8a70-568123729ef4" testId="89c91399-7a60-2cdb-6db9-4f4802e3c92b" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: False, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0002409" startTime="2026-10-18T18:35:03.0706755+02:00" endTime="2026-10-18T18:35:03.0709035+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="314e4cf9-8ad4-4449-8a70-568123729ef4">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"dumps","key":false,"asynchronous":true,"shared":false,"allocated":6768,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0f107ed3-5b5c-4b8d-a4b4-4573c5cc5a0d" testId="3c4e686a-7848-f6c6-4df1-f44d2037782d" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.YieldedStringKeepsFundingAfterDecodeAndIteratorEnd(asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0020185" startTime="2026-10-18T18:35:03.0584693+02:00" endTime="2026-10-18T18:35:03.0604843+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0f107ed3-5b5c-4b8d-a4b4-4573c5cc5a0d" />
+    <UnitTestResult executionId="4e55730a-87c3-410a-82c5-c0d45977f0f8" testId="d1111e00-0bfc-9199-aa23-166a75458cb6" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: False, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0002669" startTime="2026-10-18T18:35:03.0689611+02:00" endTime="2026-10-18T18:35:03.0690978+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4e55730a-87c3-410a-82c5-c0d45977f0f8">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"encode","key":false,"asynchronous":false,"shared":false,"allocated":4752,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="98346b49-8ecf-4c50-8393-231dcbf435ec" testId="c1715f9f-3e3e-ad32-a3c9-a0adcc3fd661" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: False, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0002806" startTime="2026-10-18T18:35:03.0660045+02:00" endTime="2026-10-18T18:35:03.0662431+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="98346b49-8ecf-4c50-8393-231dcbf435ec">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"dumps","key":false,"asynchronous":false,"shared":false,"allocated":5384,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c30c0e92-42a2-498e-b081-833f9adab20f" testId="1faf0dfb-a161-f2b6-b226-06bf81316612" testName="Lokad.Lython.Tests.JsonStringDispatchBoundaryTests.EveryStringCheckpointPreservesEffectsAndUnwinds(asynchronous: True, pairs: False)" computerName="LOKAD-0399" duration="00:00:00.0013884" startTime="2026-10-18T18:35:03.0185672+02:00" endTime="2026-10-18T18:35:03.0191195+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c30c0e92-42a2-498e-b081-833f9adab20f">
+      <Output>
+        <StdOut>JSON_STRING_MATRIX:{"asynchronous":true,"pairs":false,"steps":15,"fullEffects":[],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,6,2,19:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","12,25,2,1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="bd5607b2-da4a-4edf-b56b-9bb5ea227154" testId="44badca8-7fb4-c290-8e66-9502cc9f37ed" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: False, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0005790" startTime="2026-10-18T18:35:03.0461165+02:00" endTime="2026-10-18T18:35:03.0466703+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bd5607b2-da4a-4edf-b56b-9bb5ea227154">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"encode","key":false,"asynchronous":false,"shared":false,"allocated":4752,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c165029d-2932-414d-af93-1ca9f08a3e84" testId="34e5f90a-1e73-8c7c-d0e6-fcb16c2d1184" testName="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: True, pairs: False, padded: True)" computerName="LOKAD-0399" duration="00:00:00.2081934" startTime="2026-10-18T18:35:02.8003938+02:00" endTime="2026-10-18T18:35:03.0148015+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c165029d-2932-414d-af93-1ca9f08a3e84">
+      <Output>
+        <StdOut>JSON_WHITESPACE_MATRIX:{"asynchronous":true,"pairs":false,"steps":17,"fullEffects":[],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,6,2,19:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","12,25,2,1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="26119afe-9a4b-4a3c-8d4f-bb3499ddfd99" testId="9f42caa3-e9cb-2417-81bd-47c3d6476e95" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusedAppendRefundsAdmittedConversion(iterator: False, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0010241" startTime="2026-10-18T18:35:03.0941952+02:00" endTime="2026-10-18T18:35:03.0952616+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="26119afe-9a4b-4a3c-8d4f-bb3499ddfd99" />
+    <UnitTestResult executionId="3a4e1156-fabe-40cc-88f6-aa9a1f2b694e" testId="c499d724-4918-d2b2-4881-ba7402d0268c" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: False, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0023651" startTime="2026-10-18T18:35:03.0632554+02:00" endTime="2026-10-18T18:35:03.0652992+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3a4e1156-fabe-40cc-88f6-aa9a1f2b694e">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"encode","key":false,"asynchronous":true,"shared":false,"allocated":5624,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="23617468-19c5-45e4-abcf-9ddae75b6068" testId="11d75120-49f2-32c0-4f2d-4482be438e3c" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: True, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0004998" startTime="2026-10-18T18:35:03.0516052+02:00" endTime="2026-10-18T18:35:03.0520764+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="23617468-19c5-45e4-abcf-9ddae75b6068">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"iterator","key":true,"asynchronous":true,"shared":false,"allocated":5048,"denied":131136,"chunks":1}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b7e9b561-f882-48f8-8fa6-cd34ee966d4d" testId="da1ca53d-f6cf-120a-25cb-1999698565d8" testName="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: False, shape: &quot;scalar&quot;)" computerName="LOKAD-0399" duration="00:00:00.0009369" startTime="2026-10-18T18:35:03.0376893+02:00" endTime="2026-10-18T18:35:03.0377101+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b7e9b561-f882-48f8-8fa6-cd34ee966d4d">
+      <Output>
+        <StdOut>JSON_DUMPS_MATRIX:{"asynchronous":false,"shape":"scalar","steps":21,"outcome":"7","effects":["make:2,0"],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,4,2,19:","30,6,2,19:","30,6,2,19:","30,6,2,19:","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","12,25,2,1:make:2,0"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a5bd3b4d-eaa9-4f8b-b2e5-4e9ae825dd3c" testId="1b02dc95-315b-b537-55e3-41b5ffec747c" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: True, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0003116" startTime="2026-10-18T18:35:03.0720212+02:00" endTime="2026-10-18T18:35:03.0723166+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a5bd3b4d-eaa9-4f8b-b2e5-4e9ae825dd3c">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"encode","key":true,"asynchronous":false,"shared":true,"allocated":5736,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3fc9b412-6ac1-4b58-a09e-56b7b257b016" testId="b4d15139-7581-5de1-90d1-872b9cd22b6e" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: True, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0010972" startTime="2026-10-18T18:35:03.0445393+02:00" endTime="2026-10-18T18:35:03.0456077+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3fc9b412-6ac1-4b58-a09e-56b7b257b016">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"iterator","key":true,"asynchronous":false,"shared":false,"allocated":5048,"denied":131136,"chunks":1}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5190fe1f-3221-4db6-b858-9fd76b58b074" testId="3c6aec8c-70b6-98c4-4ebe-8cf0933e52de" testName="Lokad.Lython.Tests.JsonStringDispatchBoundaryTests.EveryStringCheckpointPreservesEffectsAndUnwinds(asynchronous: True, pairs: True)" computerName="LOKAD-0399" duration="00:00:00.2081849" startTime="2026-10-18T18:35:02.7995372+02:00" endTime="2026-10-18T18:35:03.0126934+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5190fe1f-3221-4db6-b858-9fd76b58b074">
+      <Output>
+        <StdOut>JSON_STRING_MATRIX:{"asynchronous":true,"pairs":true,"steps":29,"fullEffects":["hook:3,0"],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,6,2,19:","55,4,2,44:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","12,48,2,1:hook:3,0"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="56bd816d-e714-4ed3-ae75-af5027d176d6" testId="11626a11-adc5-1d79-c795-e175633cbb5e" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.NumericChunksKeepFundingAfterIteratorWorkingStorageEnds(asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0015701" startTime="2026-10-18T18:35:03.0730257+02:00" endTime="2026-10-18T18:35:03.0745869+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="56bd816d-e714-4ed3-ae75-af5027d176d6" />
+    <UnitTestResult executionId="ba401183-a966-49c7-a036-d5afdf212eee" testId="f2c9d722-1fa7-5ee4-921a-838cd4ae60c6" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusedOutputRefundsAdmittedInputDecode(iterator: False, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0011241" startTime="2026-10-18T18:35:03.0567773+02:00" endTime="2026-10-18T18:35:03.0576465+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ba401183-a966-49c7-a036-d5afdf212eee" />
+    <UnitTestResult executionId="3c1db811-ebec-40ef-87ad-c8240ddc46f8" testId="fe79bbe0-92ba-568f-5ecf-d1dd6acf05bd" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: True, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0005045" startTime="2026-10-18T18:35:03.0499329+02:00" endTime="2026-10-18T18:35:03.0503978+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3c1db811-ebec-40ef-87ad-c8240ddc46f8">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"dumps","key":true,"asynchronous":true,"shared":true,"allocated":8264,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1a627f54-9592-4aa5-9ae6-36a61c813b48" testId="ec5c13f6-6a59-64ee-a7bc-ec12aacf4c5b" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;iterator&quot;, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0001617" startTime="2026-10-18T18:35:03.0567029+02:00" endTime="2026-10-18T18:35:03.0567248+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1a627f54-9592-4aa5-9ae6-36a61c813b48" />
+    <UnitTestResult executionId="52f292fd-c0f2-40c1-9504-4b8bbbed239b" testId="43c1dde0-660a-0882-a1e1-7a11c2656bfe" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: True, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0003210" startTime="2026-10-18T18:35:03.0726725+02:00" endTime="2026-10-18T18:35:03.0729796+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="52f292fd-c0f2-40c1-9504-4b8bbbed239b">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"iterator","key":true,"asynchronous":true,"shared":true,"allocated":4936,"denied":175032,"chunks":1}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="fbcc180c-0c6a-4129-b02c-7971b6228511" testId="b6d9abcc-7613-9580-2b75-003565866aa3" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;encode&quot;, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0011761" startTime="2026-10-18T18:35:03.0533721+02:00" endTime="2026-10-18T18:35:03.0545155+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fbcc180c-0c6a-4129-b02c-7971b6228511" />
+    <UnitTestResult executionId="981d3b08-b561-4e14-9d2e-5553923a7c19" testId="8f0ef90e-e7b6-c0ca-f45d-902f50388aa6" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.YieldedStringKeepsFundingAfterDecodeAndIteratorEnd(asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0003640" startTime="2026-10-18T18:35:03.0605373+02:00" endTime="2026-10-18T18:35:03.0608597+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="981d3b08-b561-4e14-9d2e-5553923a7c19" />
+    <UnitTestResult executionId="a02fa124-177d-4c86-bd58-00dfbc800b40" testId="011825a0-d425-5181-e486-b51d86a7e6a0" testName="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: False, shape: &quot;sequence&quot;)" computerName="LOKAD-0399" duration="00:00:00.0067472" startTime="2026-10-18T18:35:03.0185286+02:00" endTime="2026-10-18T18:35:03.0203427+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a02fa124-177d-4c86-bd58-00dfbc800b40">
+      <Output>
+        <StdOut>JSON_DUMPS_MATRIX:{"asynchronous":false,"shape":"sequence","steps":22,"outcome":"[\u0022\\u00e9\\ud83d\\ude00\u0022, null]","effects":["make:2,0"],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,4,2,19:","30,6,2,19:","30,6,2,19:","30,6,2,19:","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","12,25,2,1:make:2,0"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2f3ea317-7a3b-4e17-bcf6-9ac2f77fcb27" testId="1c695e33-0b5a-f800-685a-51c71496567b" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;iterator&quot;, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0003572" startTime="2026-10-18T18:35:03.0545542+02:00" endTime="2026-10-18T18:35:03.0549523+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2f3ea317-7a3b-4e17-bcf6-9ac2f77fcb27" />
+    <UnitTestResult executionId="b1fae96b-0131-426f-beb8-98c52d57d62d" testId="927d4d9b-406b-a760-0ed0-121184443b7c" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.NumericKeysPreserveEveryCheckpointAndChunk(iterator: False, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0010345" startTime="2026-10-18T18:35:03.0923206+02:00" endTime="2026-10-18T18:35:03.0933039+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b1fae96b-0131-426f-beb8-98c52d57d62d">
+      <Output>
+        <StdOut>JSON_INTEGER_GUARDS:{"iterator":false,"asynchronous":true,"steps":21,"chunks":["{\u00229223372036854775807\u0022: 1208925819614629174706176}"],"checkpoints":["-","0,11,1,1","-","19,4,2,8","19,10,2,8","30,6,2,19","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","12,25,2,1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b454da3b-bc5e-4557-8d66-635ae4951385" testId="4ae3938c-106c-9260-fcb6-e3b67c967f0d" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: False, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0004114" startTime="2026-10-18T18:35:03.0674318+02:00" endTime="2026-10-18T18:35:03.0678837+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b454da3b-bc5e-4557-8d66-635ae4951385">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"iterator","key":false,"asynchronous":false,"shared":false,"allocated":5760,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a7a076e1-639f-4af7-9f6a-17acb3213ac6" testId="c23f2c72-a667-643d-7626-4549abc798fd" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: True, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0002502" startTime="2026-10-18T18:35:03.0717613+02:00" endTime="2026-10-18T18:35:03.0719888+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a7a076e1-639f-4af7-9f6a-17acb3213ac6">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"dumps","key":true,"asynchronous":true,"shared":false,"allocated":8376,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="09f84064-426a-4b48-8f21-02953595dc7c" testId="c9be58a4-2373-b5d8-5894-e11a955fc51b" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: False, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0003088" startTime="2026-10-18T18:35:03.0512800+02:00" endTime="2026-10-18T18:35:03.0515618+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="09f84064-426a-4b48-8f21-02953595dc7c">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"dumps","key":false,"asynchronous":false,"shared":true,"allocated":5272,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8dea00e8-229f-4bc8-b618-205330439562" testId="1e3c38dd-1050-745b-f359-006ecfea08e7" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;iterator&quot;, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0001577" startTime="2026-10-18T18:35:03.0561950+02:00" endTime="2026-10-18T18:35:03.0563124+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8dea00e8-229f-4bc8-b618-205330439562" />
+    <UnitTestResult executionId="6590d162-15d6-42be-8431-4697f0b2911f" testId="7d836e39-110b-3496-9b1f-9f41417c812a" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: False, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0003325" startTime="2026-10-18T18:35:03.0662793+02:00" endTime="2026-10-18T18:35:03.0666006+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6590d162-15d6-42be-8431-4697f0b2911f">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"iterator","key":false,"asynchronous":false,"shared":true,"allocated":5648,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3a00505e-c4e2-45c7-88bd-14fcb6892712" testId="64eca57a-ebfc-237f-45bd-19de75359181" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: False, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0003859" startTime="2026-10-18T18:35:03.0494808+02:00" endTime="2026-10-18T18:35:03.0498991+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3a00505e-c4e2-45c7-88bd-14fcb6892712">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"iterator","key":false,"asynchronous":false,"shared":true,"allocated":5648,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2c7e4c57-04e6-423a-9ef5-83d837a28471" testId="f0893de8-9e52-91a5-80c1-030057cb495a" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: False, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0003320" startTime="2026-10-18T18:35:03.0679162+02:00" endTime="2026-10-18T18:35:03.0681890+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2c7e4c57-04e6-423a-9ef5-83d837a28471">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"iterator","key":false,"asynchronous":true,"shared":false,"allocated":5760,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="62aeae66-996b-48e8-bcfb-4ceca51b2e56" testId="1d769a34-4f69-6fea-eb28-dfb37823c644" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: True, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0003716" startTime="2026-10-18T18:35:03.0474094+02:00" endTime="2026-10-18T18:35:03.0477469+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="62aeae66-996b-48e8-bcfb-4ceca51b2e56">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"encode","key":true,"asynchronous":false,"shared":false,"allocated":5848,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0ce60756-d06a-40a0-9d38-f32fe67490ad" testId="344e9c5d-47e3-b174-dd55-14b50f9008ec" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusedAppendRefundsAdmittedConversion(iterator: True, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0001786" startTime="2026-10-18T18:35:03.0958172+02:00" endTime="2026-10-18T18:35:03.0959830+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0ce60756-d06a-40a0-9d38-f32fe67490ad" />
+    <UnitTestResult executionId="d9dd9086-f788-4bfb-8ee5-e03e0e063c15" testId="8cd6c4e9-ff99-504d-1676-b9077b41d267" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: True, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0003874" startTime="2026-10-18T18:35:03.0490713+02:00" endTime="2026-10-18T18:35:03.0494474+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d9dd9086-f788-4bfb-8ee5-e03e0e063c15">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"encode","key":true,"asynchronous":true,"shared":false,"allocated":7232,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c8708d74-ebe1-4adf-995e-8984fb6b9703" testId="538059cc-27ac-279f-b95c-84a9a4c74438" testName="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: False, shape: &quot;cycle&quot;)" computerName="LOKAD-0399" duration="00:00:00.0009413" startTime="2026-10-18T18:35:03.0374812+02:00" endTime="2026-10-18T18:35:03.0375064+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c8708d74-ebe1-4adf-995e-8984fb6b9703">
+      <Output>
+        <StdOut>JSON_DUMPS_MATRIX:{"asynchronous":false,"shape":"cycle","steps":19,"outcome":"ValueError:Circular reference detected.","effects":["make:2,0"],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,4,2,19:","30,6,2,19:","30,6,2,19:","30,6,2,19:","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f2c2ac20-615c-4d09-80a8-bc9346845f83" testId="fc45194f-73fb-094f-996b-d2c39fc20a89" testName="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: True, shape: &quot;unsupported&quot;)" computerName="LOKAD-0399" duration="00:00:00.0022724" startTime="2026-10-18T18:35:03.0363733+02:00" endTime="2026-10-18T18:35:03.0373168+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f2c2ac20-615c-4d09-80a8-bc9346845f83">
+      <Output>
+        <StdOut>JSON_DUMPS_MATRIX:{"asynchronous":true,"shape":"unsupported","steps":21,"outcome":"TypeError:Object of type set is not JSON serializable","effects":["make:2,0"],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,4,2,19:","30,6,2,19:","30,6,2,19:","30,6,2,19:","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d0b9deb9-884a-48f7-825e-68a929de899b" testId="8e6b2c13-1f67-40d0-0431-a7f75c96153d" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: False, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0003428" startTime="2026-10-18T18:35:03.0471897+02:00" endTime="2026-10-18T18:35:03.0473661+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d0b9deb9-884a-48f7-825e-68a929de899b">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"encode","key":false,"asynchronous":true,"shared":true,"allocated":5512,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="bc30d625-97b4-430b-9c26-a96068847612" testId="adfbf8dc-6a79-6d39-03c9-19e8e58fe7b9" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: True, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0019180" startTime="2026-10-18T18:35:03.0418245+02:00" endTime="2026-10-18T18:35:03.0437083+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bc30d625-97b4-430b-9c26-a96068847612">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"encode","key":true,"asynchronous":true,"shared":true,"allocated":7120,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9ef41fb0-c40f-4349-bbf4-adfb0052a2fd" testId="371b0686-ce21-ce35-fbfd-b98867abd1dd" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: True, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0003149" startTime="2026-10-18T18:35:03.0703436+02:00" endTime="2026-10-18T18:35:03.0706435+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9ef41fb0-c40f-4349-bbf4-adfb0052a2fd">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"iterator","key":true,"asynchronous":true,"shared":false,"allocated":5048,"denied":175032,"chunks":1}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="028fbe9c-de21-4dfa-9bbf-6df4a565a8d4" testId="24b42c7a-ee21-e7ee-1bae-3040e526fb26" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusedAppendRefundsAdmittedConversion(iterator: False, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0003277" startTime="2026-10-18T18:35:03.0953131+02:00" endTime="2026-10-18T18:35:03.0955729+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="028fbe9c-de21-4dfa-9bbf-6df4a565a8d4" />
+    <UnitTestResult executionId="c97c9dfe-c278-48aa-ab61-3cc3044c035c" testId="3456b0b3-3fec-1bae-fe21-7435b67488dc" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;iterator&quot;, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0001544" startTime="2026-10-18T18:35:03.0558611+02:00" endTime="2026-10-18T18:35:03.0559957+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c97c9dfe-c278-48aa-ab61-3cc3044c035c" />
+    <UnitTestResult executionId="9e766153-d1cd-41d9-8486-b2cf95712f2c" testId="a4ffea68-9f04-b504-5d39-e4070c7f9914" testName="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: True, pairs: True, padded: False)" computerName="LOKAD-0399" duration="00:00:00.0026349" startTime="2026-10-18T18:35:03.0374162+02:00" endTime="2026-10-18T18:35:03.0375733+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9e766153-d1cd-41d9-8486-b2cf95712f2c">
+      <Output>
+        <StdOut>JSON_LITERAL_MATRIX:{"asynchronous":true,"pairs":true,"steps":40,"fullEffects":["hook:3,0"],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,6,2,19:","55,4,2,44:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","12,48,2,1:hook:3,0"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2852d3ea-27f1-4128-bc2e-8359bb98c304" testId="73badd4e-e2f3-d846-2fb6-29cb637de061" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusedAppendRefundsAdmittedConversion(iterator: True, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0001990" startTime="2026-10-18T18:35:03.0956212+02:00" endTime="2026-10-18T18:35:03.0957834+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2852d3ea-27f1-4128-bc2e-8359bb98c304" />
+    <UnitTestResult executionId="54f376e1-2875-4624-b0f0-263bf18195f7" testId="67e6e7cd-b37d-3d31-7d30-68dc0bb48fcc" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.NumericKeysPreserveEveryCheckpointAndChunk(iterator: True, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0051850" startTime="2026-10-18T18:35:03.0875230+02:00" endTime="2026-10-18T18:35:03.0922656+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="54f376e1-2875-4624-b0f0-263bf18195f7">
+      <Output>
+        <StdOut>JSON_INTEGER_GUARDS:{"iterator":true,"asynchronous":true,"steps":40,"chunks":["{","\u00229223372036854775807\u0022: 1208925819614629174706176","}"],"checkpoints":["-","0,11,1,1","-","19,4,2,8","24,4,2,13","24,16,2,13","24,18,2,13","24,18,2,13","24,18,2,13","24,18,2,13","24,29,2,13","54,6,2,43","24,37,2,13","24,37,2,13","24,37,2,13","24,37,2,13","24,37,2,13","19,43,2,8","19,43,2,8","19,43,2,8","19,43,2,8","19,43,2,8","24,37,2,13","24,37,2,13","24,37,2,13","24,37,2,13","19,43,2,8","24,37,2,13","24,37,2,13","24,37,2,13","24,37,2,13","24,37,2,13","24,37,2,13","19,43,2,8","24,37,2,13","24,37,2,13","19,43,2,8","24,37,2,13","24,37,2,13","12,50,2,1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2331ce2c-04ef-4d21-814a-9567ea8c425b" testId="5bbd9442-ac14-6401-663b-52a6e2af92a1" testName="Lokad.Lython.Tests.JsonStringDispatchBoundaryTests.EveryStringCheckpointPreservesEffectsAndUnwinds(asynchronous: False, pairs: False)" computerName="LOKAD-0399" duration="00:00:00.0022994" startTime="2026-10-18T18:35:03.0193364+02:00" endTime="2026-10-18T18:35:03.0194194+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2331ce2c-04ef-4d21-814a-9567ea8c425b">
+      <Output>
+        <StdOut>JSON_STRING_MATRIX:{"asynchronous":false,"pairs":false,"steps":15,"fullEffects":[],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,6,2,19:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","12,25,2,1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8b921518-2f14-43a0-852c-d05fc2836341" testId="c9d41227-1ad9-c58a-3f07-90d133dab70e" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: True, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0004067" startTime="2026-10-18T18:35:03.0529112+02:00" endTime="2026-10-18T18:35:03.0533145+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8b921518-2f14-43a0-852c-d05fc2836341">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"encode","key":true,"asynchronous":false,"shared":true,"allocated":5736,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="107a0507-3f32-487b-90b5-9c759ca41f4f" testId="c4c56047-8b9f-b27d-988d-0e8247f7d0f3" testName="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: True, shape: &quot;cycle&quot;)" computerName="LOKAD-0399" duration="00:00:00.0011217" startTime="2026-10-18T18:35:03.0375508+02:00" endTime="2026-10-18T18:35:03.0376566+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="107a0507-3f32-487b-90b5-9c759ca41f4f">
+      <Output>
+        <StdOut>JSON_DUMPS_MATRIX:{"asynchronous":true,"shape":"cycle","steps":19,"outcome":"ValueError:Circular reference detected.","effects":["make:2,0"],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,4,2,19:","30,6,2,19:","30,6,2,19:","30,6,2,19:","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="63c43e98-327f-47ec-8ece-6225b2512092" testId="88f21a6f-8e12-b96e-599e-20c5cc0ea11d" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;dumps&quot;, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0001151" startTime="2026-10-18T18:35:03.0554783+02:00" endTime="2026-10-18T18:35:03.0554938+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="63c43e98-327f-47ec-8ece-6225b2512092" />
+    <UnitTestResult executionId="fc58ed18-ef41-46c8-8ebd-c2da0f5f1cd8" testId="ddc8db96-bef1-af0f-2eff-b17dea0ebb40" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: True, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0004449" startTime="2026-10-18T18:35:03.0508327+02:00" endTime="2026-10-18T18:35:03.0508585+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fc58ed18-ef41-46c8-8ebd-c2da0f5f1cd8">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"iterator","key":true,"asynchronous":true,"shared":true,"allocated":4936,"denied":131136,"chunks":1}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9c1632c6-e844-4425-b6a9-4583bfc68d11" testId="f72b2209-da22-8e80-b6a3-d6d93ccb1e41" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: True, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0003059" startTime="2026-10-18T18:35:03.0697004+02:00" endTime="2026-10-18T18:35:03.0699888+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9c1632c6-e844-4425-b6a9-4583bfc68d11">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"encode","key":true,"asynchronous":true,"shared":true,"allocated":7120,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e39f3664-2192-4d6d-bb87-cb533331d664" testId="68a90f38-0f68-b2c1-9733-923f0e96e31f" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: True, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0004359" startTime="2026-10-18T18:35:03.0456543+02:00" endTime="2026-10-18T18:35:03.0460713+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e39f3664-2192-4d6d-bb87-cb533331d664">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"iterator","key":true,"asynchronous":false,"shared":true,"allocated":4936,"denied":131136,"chunks":1}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1180a304-b6f5-420b-b024-5f8b5cfd1fab" testId="abb000d0-278d-eaea-2cef-7aa2a31f5736" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: True, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0003160" startTime="2026-10-18T18:35:03.0471292+02:00" endTime="2026-10-18T18:35:03.0471552+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1180a304-b6f5-420b-b024-5f8b5cfd1fab">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"dumps","key":true,"asynchronous":false,"shared":true,"allocated":6880,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b6c20cb7-a4a7-4e13-8781-f2f8e755d7ef" testId="6cc80b40-6e27-53f0-2cd8-a9c077607fd6" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.NumericChunksKeepFundingAfterIteratorWorkingStorageEnds(asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0003388" startTime="2026-10-18T18:35:03.0746251+02:00" endTime="2026-10-18T18:35:03.0749523+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b6c20cb7-a4a7-4e13-8781-f2f8e755d7ef" />
+    <UnitTestResult executionId="94fb3b38-baf1-4d2e-8f5a-2f8d52418d04" testId="b98c34fb-1a04-4426-180d-637e7f4df9d8" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.NumericKeysPreserveEveryCheckpointAndChunk(iterator: True, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0120226" startTime="2026-10-18T18:35:03.0749998+02:00" endTime="2026-10-18T18:35:03.0870590+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="94fb3b38-baf1-4d2e-8f5a-2f8d52418d04">
+      <Output>
+        <StdOut>JSON_INTEGER_GUARDS:{"iterator":true,"asynchronous":false,"steps":40,"chunks":["{","\u00229223372036854775807\u0022: 1208925819614629174706176","}"],"checkpoints":["-","0,11,1,1","-","19,4,2,8","24,4,2,13","24,16,2,13","24,18,2,13","24,18,2,13","24,18,2,13","24,18,2,13","24,29,2,13","54,6,2,43","24,37,2,13","24,37,2,13","24,37,2,13","24,37,2,13","24,37,2,13","19,43,2,8","19,43,2,8","19,43,2,8","19,43,2,8","19,43,2,8","24,37,2,13","24,37,2,13","24,37,2,13","24,37,2,13","19,43,2,8","24,37,2,13","24,37,2,13","24,37,2,13","24,37,2,13","24,37,2,13","24,37,2,13","19,43,2,8","24,37,2,13","24,37,2,13","19,43,2,8","24,37,2,13","24,37,2,13","12,50,2,1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="81463070-5f30-46df-8999-6bd5d86c8bcc" testId="c42a11c4-6829-7cd2-7510-49b029cb2e92" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: True, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0003058" startTime="2026-10-18T18:35:03.0723503+02:00" endTime="2026-10-18T18:35:03.0726403+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="81463070-5f30-46df-8999-6bd5d86c8bcc">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"encode","key":true,"asynchronous":false,"shared":false,"allocated":5848,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f205278d-72e4-4d22-bffd-97786027ed4d" testId="52772506-8ec6-030b-87dc-33bc1fa6ffac" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: False, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0003900" startTime="2026-10-18T18:35:03.0441299+02:00" endTime="2026-10-18T18:35:03.0444923+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f205278d-72e4-4d22-bffd-97786027ed4d">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"encode","key":false,"asynchronous":true,"shared":false,"allocated":5624,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="dd70a037-36eb-46a3-a786-4a9e77622fb0" testId="9d0676d4-80c0-7e05-bafd-885be48b5c35" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusedOutputRefundsAdmittedInputDecode(iterator: True, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0003586" startTime="2026-10-18T18:35:03.0576880+02:00" endTime="2026-10-18T18:35:03.0580331+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dd70a037-36eb-46a3-a786-4a9e77622fb0" />
+    <UnitTestResult executionId="1115d390-5b56-4402-87b9-b8dee84d00b2" testId="c0212bc8-302c-c492-4499-9912018a10f3" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: False, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0002412" startTime="2026-10-18T18:35:03.0715744+02:00" endTime="2026-10-18T18:35:03.0715991+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1115d390-5b56-4402-87b9-b8dee84d00b2">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"dumps","key":false,"asynchronous":true,"shared":true,"allocated":6656,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1d69a953-394d-42a2-b9ca-33d1812b3809" testId="4c13f604-4358-6fab-669f-d1a86fae0041" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: True, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0006608" startTime="2026-10-18T18:35:03.0653421+02:00" endTime="2026-10-18T18:35:03.0659491+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1d69a953-394d-42a2-b9ca-33d1812b3809">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"dumps","key":true,"asynchronous":false,"shared":false,"allocated":6992,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="348c43bd-f87b-47cf-8297-5b06b093d532" testId="a5544d81-6ad9-ea31-6ba1-1750bd8d544e" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusedOutputRefundsAdmittedInputDecode(iterator: True, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0001955" startTime="2026-10-18T18:35:03.0580700+02:00" endTime="2026-10-18T18:35:03.0582507+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="348c43bd-f87b-47cf-8297-5b06b093d532" />
+    <UnitTestResult executionId="6b8aee60-7099-47ce-983f-d2d1309a3e4b" testId="2cb4bef8-4557-e25d-8415-69abba80c868" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.NumericKeysPreserveEveryCheckpointAndChunk(iterator: False, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0008204" startTime="2026-10-18T18:35:03.0933390+02:00" endTime="2026-10-18T18:35:03.0941473+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6b8aee60-7099-47ce-983f-d2d1309a3e4b">
+      <Output>
+        <StdOut>JSON_INTEGER_GUARDS:{"iterator":false,"asynchronous":false,"steps":21,"chunks":["{\u00229223372036854775807\u0022: 1208925819614629174706176}"],"checkpoints":["-","0,11,1,1","-","19,4,2,8","19,10,2,8","30,6,2,19","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","19,18,2,8","12,25,2,1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9eb0626c-6318-416a-aaef-3254486f9365" testId="608b9e0f-da65-ae28-bf15-b4dcfc1fbffb" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: True, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0003047" startTime="2026-10-18T18:35:03.0700217+02:00" endTime="2026-10-18T18:35:03.0703119+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9eb0626c-6318-416a-aaef-3254486f9365">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"encode","key":true,"asynchronous":true,"shared":false,"allocated":7232,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="6f73edf5-ec6f-4235-895b-c8b359910ab1" testId="7385794f-ee50-170e-febf-4c688bc3d0c9" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: False, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0003466" startTime="2026-10-18T18:35:03.0437586+02:00" endTime="2026-10-18T18:35:03.0440816+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6f73edf5-ec6f-4235-895b-c8b359910ab1">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"dumps","key":false,"asynchronous":true,"shared":true,"allocated":6656,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b7ff0281-6741-4df0-94d6-0e545bdb5a08" testId="61c7f97c-ecaa-31d6-b2f9-e19dc6368a92" testName="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: False, pairs: True, padded: False)" computerName="LOKAD-0399" duration="00:00:00.0032891" startTime="2026-10-18T18:35:03.0194402+02:00" endTime="2026-10-18T18:35:03.0370445+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b7ff0281-6741-4df0-94d6-0e545bdb5a08">
+      <Output>
+        <StdOut>JSON_LITERAL_MATRIX:{"asynchronous":false,"pairs":true,"steps":40,"fullEffects":["hook:3,0"],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,6,2,19:","55,4,2,44:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","19,41,2,8:","12,48,2,1:hook:3,0"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="19fc7b1a-7f2a-476b-8606-c982e7a6b780" testId="952b8e25-3791-7ea6-3391-706dc2fed7fe" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: False, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0004261" startTime="2026-10-18T18:35:03.0521172+02:00" endTime="2026-10-18T18:35:03.0525409+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="19fc7b1a-7f2a-476b-8606-c982e7a6b780">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"iterator","key":false,"asynchronous":true,"shared":false,"allocated":5760,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="099216a2-a08b-4f55-b549-3706123a7486" testId="94a19ea9-2d3c-924d-6b83-6ccedb6035cd" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: False, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0003351" startTime="2026-10-18T18:35:03.0525862+02:00" endTime="2026-10-18T18:35:03.0528757+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="099216a2-a08b-4f55-b549-3706123a7486">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"dumps","key":false,"asynchronous":false,"shared":false,"allocated":5384,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9e389bfd-64fd-4a41-8ed2-35db225945d9" testId="3784b7aa-cefe-f120-a355-844ae8efbe0e" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;encode&quot;, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0001423" startTime="2026-10-18T18:35:03.0555585+02:00" endTime="2026-10-18T18:35:03.0555727+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9e389bfd-64fd-4a41-8ed2-35db225945d9" />
+    <UnitTestResult executionId="cba994f5-1570-4dfe-9805-c0ba8650a11a" testId="cf20187c-dc9b-8a97-f102-e1b0bf05a562" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.InvalidUtf8UsesTheStrictDecoderAndRefundsWorkingStorage(length: 1)" computerName="LOKAD-0399" duration="00:00:00.0014957" startTime="2026-10-18T18:35:03.0609083+02:00" endTime="2026-10-18T18:35:03.0624024+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cba994f5-1570-4dfe-9805-c0ba8650a11a" />
+    <UnitTestResult executionId="54e7d616-3f1a-4fe6-b659-c485719e3aa0" testId="eddb99bb-ff93-2772-8770-a9727f6474ab" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: True, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0069125" startTime="2026-10-18T18:35:03.0390168+02:00" endTime="2026-10-18T18:35:03.0390411+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="54e7d616-3f1a-4fe6-b659-c485719e3aa0">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"dumps","key":true,"asynchronous":true,"shared":false,"allocated":8376,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="77547c0d-f79d-4302-aefe-446b3c6887b6" testId="75bf62d2-52a2-de0b-bb67-83f136259e5f" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: False, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0003327" startTime="2026-10-18T18:35:03.0691408+02:00" endTime="2026-10-18T18:35:03.0693892+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="77547c0d-f79d-4302-aefe-446b3c6887b6">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"encode","key":false,"asynchronous":true,"shared":true,"allocated":5512,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2be389d2-a8e2-43ca-affc-408bcb6a9de3" testId="eaf0a5f2-a678-f752-4107-43eaf8ad6b05" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;encode&quot;, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0001458" startTime="2026-10-18T18:35:03.0555196+02:00" endTime="2026-10-18T18:35:03.0555349+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2be389d2-a8e2-43ca-affc-408bcb6a9de3" />
+    <UnitTestResult executionId="f1d5af42-cd34-4f88-9b8e-bcd59b83f001" testId="65a7f6ff-792a-99a7-93ce-5926191a6b5b" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: True, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0004730" startTime="2026-10-18T18:35:03.0669456+02:00" endTime="2026-10-18T18:35:03.0673973+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f1d5af42-cd34-4f88-9b8e-bcd59b83f001">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"iterator","key":true,"asynchronous":false,"shared":true,"allocated":4936,"denied":175032,"chunks":1}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c2c4c394-e176-4ef9-88a1-a623f7ed2c96" testId="8c94cc1c-91bc-2faa-1dd8-c48f66d22f7c" testName="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: True, shape: &quot;sequence&quot;)" computerName="LOKAD-0399" duration="00:00:00.0013337" startTime="2026-10-18T18:35:03.0373502+02:00" endTime="2026-10-18T18:35:03.0374436+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c2c4c394-e176-4ef9-88a1-a623f7ed2c96">
+      <Output>
+        <StdOut>JSON_DUMPS_MATRIX:{"asynchronous":true,"shape":"sequence","steps":22,"outcome":"[\u0022\\u00e9\\ud83d\\ude00\u0022, null]","effects":["make:2,0"],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,4,2,19:","30,6,2,19:","30,6,2,19:","30,6,2,19:","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","12,25,2,1:make:2,0"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c5ce0093-5f7a-4971-887f-7e99123ef0b7" testId="00914487-e95b-96d7-77a5-10b5f7239c9c" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: True, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0003136" startTime="2026-10-18T18:35:03.0477830+02:00" endTime="2026-10-18T18:35:03.0480973+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c5ce0093-5f7a-4971-887f-7e99123ef0b7">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"dumps","key":true,"asynchronous":false,"shared":false,"allocated":6992,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="914720c9-761d-4ff5-8915-2a76b7246e57" testId="7ec38c05-58f1-f9cc-c0ae-0185e9995398" testName="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: True, shape: &quot;scalar&quot;)" computerName="LOKAD-0399" duration="00:00:00.2081978" startTime="2026-10-18T18:35:02.8004199+02:00" endTime="2026-10-18T18:35:03.0148444+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="914720c9-761d-4ff5-8915-2a76b7246e57">
+      <Output>
+        <StdOut>JSON_DUMPS_MATRIX:{"asynchronous":true,"shape":"scalar","steps":21,"outcome":"7","effects":["make:2,0"],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,4,2,19:","30,6,2,19:","30,6,2,19:","30,6,2,19:","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","19,18,2,8:make:2,0","12,25,2,1:make:2,0"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="ced09975-4620-4289-b00c-f5c52a51be1d" testId="68d1b928-22cb-3a9c-8463-8f3ccd7a3727" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: False, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0003484" startTime="2026-10-18T18:35:03.0508911+02:00" endTime="2026-10-18T18:35:03.0512344+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ced09975-4620-4289-b00c-f5c52a51be1d">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"dumps","key":false,"asynchronous":true,"shared":false,"allocated":6768,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="543e600c-622a-41bf-92a2-7852b3845bb6" testId="5e291384-3de8-a329-9ce3-9388699c2289" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: False, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0003459" startTime="2026-10-18T18:35:03.0481382+02:00" endTime="2026-10-18T18:35:03.0484544+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="543e600c-622a-41bf-92a2-7852b3845bb6">
+      <Output>
+        <StdOut>JSON_STRING_REFUSAL:{"route":"encode","key":false,"asynchronous":false,"shared":true,"allocated":4640,"denied":131136,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="831bd9f1-d612-42e6-8351-972390ea2014" testId="28d90ad5-da05-7578-a964-bd8f954e89fa" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;dumps&quot;, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0001228" startTime="2026-10-18T18:35:03.0560346+02:00" endTime="2026-10-18T18:35:03.0561467+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="831bd9f1-d612-42e6-8351-972390ea2014" />
+    <UnitTestResult executionId="d72db4b7-07b5-405a-9e56-63286c0ef60f" testId="1d33fff6-7569-d9c9-26b4-41d8a3175902" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: False, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0002999" startTime="2026-10-18T18:35:03.0682219+02:00" endTime="2026-10-18T18:35:03.0685088+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d72db4b7-07b5-405a-9e56-63286c0ef60f">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"encode","key":false,"asynchronous":false,"shared":true,"allocated":4640,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2a65d821-c59d-4c7a-9e7e-ddaa0e534479" testId="987e7e4f-3573-b70b-7c30-5ba9cb052453" testName="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: False, pairs: False, padded: True)" computerName="LOKAD-0399" duration="00:00:00.0014610" startTime="2026-10-18T18:35:03.0371957+02:00" endTime="2026-10-18T18:35:03.0372356+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2a65d821-c59d-4c7a-9e7e-ddaa0e534479">
+      <Output>
+        <StdOut>JSON_WHITESPACE_MATRIX:{"asynchronous":false,"pairs":false,"steps":17,"fullEffects":[],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,6,2,19:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","12,25,2,1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d941a436-d6f4-44cf-a2a1-e7b3b2fb45ee" testId="dfbd47e8-2d17-d22c-f579-cc914cc29391" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;dumps&quot;, asynchronous: True, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0001271" startTime="2026-10-18T18:35:03.0557155+02:00" endTime="2026-10-18T18:35:03.0558247+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d941a436-d6f4-44cf-a2a1-e7b3b2fb45ee" />
+    <UnitTestResult executionId="73c7e998-7653-40be-9294-82833abc5c69" testId="dc3eda37-ffd9-5c1e-9db4-307c92c81267" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;dumps&quot;, asynchronous: False, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0001436" startTime="2026-10-18T18:35:03.0554173+02:00" endTime="2026-10-18T18:35:03.0554392+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="73c7e998-7653-40be-9294-82833abc5c69" />
+    <UnitTestResult executionId="bf0fc728-f0aa-4cf3-98ec-bd9100492042" testId="26d57f53-f58c-8e33-e67e-edd57c7b21f1" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: True, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0002109" startTime="2026-10-18T18:35:03.0716321+02:00" endTime="2026-10-18T18:35:03.0717251+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bf0fc728-f0aa-4cf3-98ec-bd9100492042">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"dumps","key":true,"asynchronous":false,"shared":true,"allocated":6880,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b3c50961-4589-47fa-a6e9-e1ab346a3e2e" testId="096dfb99-dcbd-0c19-2361-c4f47327414f" testName="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.InvalidUtf8UsesTheStrictDecoderAndRefundsWorkingStorage(length: 129)" computerName="LOKAD-0399" duration="00:00:00.0003257" startTime="2026-10-18T18:35:03.0624513+02:00" endTime="2026-10-18T18:35:03.0627416+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b3c50961-4589-47fa-a6e9-e1ab346a3e2e" />
+    <UnitTestResult executionId="bc1d48fd-8f61-4c68-a47c-dabf650e8152" testId="453c56a2-066c-b1f7-36eb-9649396d4206" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: False, asynchronous: False, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0002298" startTime="2026-10-18T18:35:03.0689014+02:00" endTime="2026-10-18T18:35:03.0689272+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bc1d48fd-8f61-4c68-a47c-dabf650e8152">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"dumps","key":false,"asynchronous":false,"shared":true,"allocated":5272,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="db9c56b4-5388-408f-b876-f96db62d7489" testId="c8f066ce-df75-374d-6bd1-6b0fafa6c781" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: True, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0002603" startTime="2026-10-18T18:35:03.0694231+02:00" endTime="2026-10-18T18:35:03.0696675+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="db9c56b4-5388-408f-b876-f96db62d7489">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"dumps","key":true,"asynchronous":true,"shared":true,"allocated":8264,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c3718ea5-c3bf-4bbe-9d2c-676498fe44cc" testId="84e34bb9-ab07-7475-7a21-096b7a9f49b1" testName="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: False, pairs: False, padded: False)" computerName="LOKAD-0399" duration="00:00:00.0036932" startTime="2026-10-18T18:35:03.0185577+02:00" endTime="2026-10-18T18:35:03.0193713+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c3718ea5-c3bf-4bbe-9d2c-676498fe44cc">
+      <Output>
+        <StdOut>JSON_LITERAL_MATRIX:{"asynchronous":false,"pairs":false,"steps":15,"fullEffects":[],"checkpoints":["-:","0,11,1,1:","-:","19,4,2,8:","19,10,2,8:","30,6,2,19:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","19,18,2,8:","12,25,2,1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="40249227-7f65-4062-a618-c787510bfba1" testId="5fab703f-8bad-3fb2-34f6-ed5c85af35d4" testName="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: False, asynchronous: True, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0003039" startTime="2026-10-18T18:35:03.0666438+02:00" endTime="2026-10-18T18:35:03.0669118+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="40249227-7f65-4062-a618-c787510bfba1">
+      <Output>
+        <StdOut>JSON_INTEGER_REFUSAL:{"route":"iterator","key":false,"asynchronous":true,"shared":true,"allocated":5648,"denied":175032,"chunks":0}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: True, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c42a11c4-6829-7cd2-7510-49b029cb2e92">
+      <Execution id="81463070-5f30-46df-8999-6bd5d86c8bcc" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: True, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="eddb99bb-ff93-2772-8770-a9727f6474ab">
+      <Execution id="54e7d616-3f1a-4fe6-b659-c485719e3aa0" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringDispatchBoundaryTests.EveryStringCheckpointPreservesEffectsAndUnwinds(asynchronous: True, pairs: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="1faf0dfb-a161-f2b6-b226-06bf81316612">
+      <Execution id="c30c0e92-42a2-498e-b081-833f9adab20f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringDispatchBoundaryTests" name="EveryStringCheckpointPreservesEffectsAndUnwinds" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: False, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="7d836e39-110b-3496-9b1f-9f41417c812a">
+      <Execution id="6590d162-15d6-42be-8431-4697f0b2911f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: True, pairs: False, padded: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="34e5f90a-1e73-8c7c-d0e6-fcb16c2d1184">
+      <Execution id="c165029d-2932-414d-af93-1ca9f08a3e84" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests" name="LiteralCheckpointsPreserveEffectsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: False, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c1715f9f-3e3e-ad32-a3c9-a0adcc3fd661">
+      <Execution id="98346b49-8ecf-4c50-8393-231dcbf435ec" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: False, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c499d724-4918-d2b2-4881-ba7402d0268c">
+      <Execution id="3a4e1156-fabe-40cc-88f6-aa9a1f2b694e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: True, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c23f2c72-a667-643d-7626-4549abc798fd">
+      <Execution id="a7a076e1-639f-4af7-9f6a-17acb3213ac6" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: True, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="1b02dc95-315b-b537-55e3-41b5ffec747c">
+      <Execution id="a5bd3b4d-eaa9-4f8b-b2e5-4e9ae825dd3c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: False, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="94a19ea9-2d3c-924d-6b83-6ccedb6035cd">
+      <Execution id="099216a2-a08b-4f55-b549-3706123a7486" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusedAppendRefundsAdmittedConversion(iterator: False, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="24b42c7a-ee21-e7ee-1bae-3040e526fb26">
+      <Execution id="028fbe9c-de21-4dfa-9bbf-6df4a565a8d4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusedAppendRefundsAdmittedConversion" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: False, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="64eca57a-ebfc-237f-45bd-19de75359181">
+      <Execution id="3a00505e-c4e2-45c7-88bd-14fcb6892712" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: False, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c0212bc8-302c-c492-4499-9912018a10f3">
+      <Execution id="1115d390-5b56-4402-87b9-b8dee84d00b2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: False, shape: &quot;sequence&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="011825a0-d425-5181-e486-b51d86a7e6a0">
+      <Execution id="a02fa124-177d-4c86-bd58-00dfbc800b40" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests" name="DefaultCallPreservesCheckpointsErrorsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;encode&quot;, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="b6d9abcc-7613-9580-2b75-003565866aa3">
+      <Execution id="fbcc180c-0c6a-4129-b02c-7971b6228511" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="SmallResultStillRequiresAdmissionForRetainedUtf8" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringDispatchBoundaryTests.EveryStringCheckpointPreservesEffectsAndUnwinds(asynchronous: True, pairs: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="3c6aec8c-70b6-98c4-4ebe-8cf0933e52de">
+      <Execution id="5190fe1f-3221-4db6-b858-9fd76b58b074" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringDispatchBoundaryTests" name="EveryStringCheckpointPreservesEffectsAndUnwinds" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.NumericKeysPreserveEveryCheckpointAndChunk(iterator: False, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="927d4d9b-406b-a760-0ed0-121184443b7c">
+      <Execution id="b1fae96b-0131-426f-beb8-98c52d57d62d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="NumericKeysPreserveEveryCheckpointAndChunk" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: True, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="371b0686-ce21-ce35-fbfd-b98867abd1dd">
+      <Execution id="9ef41fb0-c40f-4349-bbf4-adfb0052a2fd" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: True, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="f72b2209-da22-8e80-b6a3-d6d93ccb1e41">
+      <Execution id="9c1632c6-e844-4425-b6a9-4583bfc68d11" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: True, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="fe79bbe0-92ba-568f-5ecf-d1dd6acf05bd">
+      <Execution id="3c1db811-ebec-40ef-87ad-c8240ddc46f8" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;dumps&quot;, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="28d90ad5-da05-7578-a964-bd8f954e89fa">
+      <Execution id="831bd9f1-d612-42e6-8351-972390ea2014" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="SmallResultStillRequiresAdmissionForRetainedUtf8" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusedAppendRefundsAdmittedConversion(iterator: True, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="344e9c5d-47e3-b174-dd55-14b50f9008ec">
+      <Execution id="0ce60756-d06a-40a0-9d38-f32fe67490ad" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusedAppendRefundsAdmittedConversion" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.YieldedStringKeepsFundingAfterDecodeAndIteratorEnd(asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="8f0ef90e-e7b6-c0ca-f45d-902f50388aa6">
+      <Execution id="981d3b08-b561-4e14-9d2e-5553923a7c19" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="YieldedStringKeepsFundingAfterDecodeAndIteratorEnd" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: True, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="11d75120-49f2-32c0-4f2d-4482be438e3c">
+      <Execution id="23617468-19c5-45e4-abcf-9ddae75b6068" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: True, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="adfbf8dc-6a79-6d39-03c9-19e8e58fe7b9">
+      <Execution id="bc30d625-97b4-430b-9c26-a96068847612" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: True, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="608b9e0f-da65-ae28-bf15-b4dcfc1fbffb">
+      <Execution id="9eb0626c-6318-416a-aaef-3254486f9365" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;encode&quot;, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="eaf0a5f2-a678-f752-4107-43eaf8ad6b05">
+      <Execution id="2be389d2-a8e2-43ca-affc-408bcb6a9de3" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="SmallResultStillRequiresAdmissionForRetainedUtf8" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: False, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="75bf62d2-52a2-de0b-bb67-83f136259e5f">
+      <Execution id="77547c0d-f79d-4302-aefe-446b3c6887b6" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: False, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="7385794f-ee50-170e-febf-4c688bc3d0c9">
+      <Execution id="6f73edf5-ec6f-4235-895b-c8b359910ab1" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusedAppendRefundsAdmittedConversion(iterator: True, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="73badd4e-e2f3-d846-2fb6-29cb637de061">
+      <Execution id="2852d3ea-27f1-4128-bc2e-8359bb98c304" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusedAppendRefundsAdmittedConversion" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.NumericKeysPreserveEveryCheckpointAndChunk(iterator: True, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="b98c34fb-1a04-4426-180d-637e7f4df9d8">
+      <Execution id="94fb3b38-baf1-4d2e-8f5a-2f8d52418d04" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="NumericKeysPreserveEveryCheckpointAndChunk" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.InvalidUtf8UsesTheStrictDecoderAndRefundsWorkingStorage(length: 129)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="096dfb99-dcbd-0c19-2361-c4f47327414f">
+      <Execution id="b3c50961-4589-47fa-a6e9-e1ab346a3e2e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="InvalidUtf8UsesTheStrictDecoderAndRefundsWorkingStorage" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: True, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="111b7169-e8cc-a401-3861-e53e3e8cf070">
+      <Execution id="e2a4cc65-e40a-4666-92e0-c18810869697" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: True, pairs: True, padded: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="a4ffea68-9f04-b504-5d39-e4070c7f9914">
+      <Execution id="9e766153-d1cd-41d9-8486-b2cf95712f2c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests" name="LiteralCheckpointsPreserveEffectsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: True, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="68a90f38-0f68-b2c1-9733-923f0e96e31f">
+      <Execution id="e39f3664-2192-4d6d-bb87-cb533331d664" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: False, pairs: True, padded: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="61c7f97c-ecaa-31d6-b2f9-e19dc6368a92">
+      <Execution id="b7ff0281-6741-4df0-94d6-0e545bdb5a08" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests" name="LiteralCheckpointsPreserveEffectsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: True, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="00914487-e95b-96d7-77a5-10b5f7239c9c">
+      <Execution id="c5ce0093-5f7a-4971-887f-7e99123ef0b7" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: True, shape: &quot;scalar&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="7ec38c05-58f1-f9cc-c0ae-0185e9995398">
+      <Execution id="914720c9-761d-4ff5-8915-2a76b7246e57" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests" name="DefaultCallPreservesCheckpointsErrorsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: False, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="453c56a2-066c-b1f7-36eb-9649396d4206">
+      <Execution id="bc1d48fd-8f61-4c68-a47c-dabf650e8152" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringDispatchBoundaryTests.EveryStringCheckpointPreservesEffectsAndUnwinds(asynchronous: False, pairs: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="5bbd9442-ac14-6401-663b-52a6e2af92a1">
+      <Execution id="2331ce2c-04ef-4d21-814a-9567ea8c425b" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringDispatchBoundaryTests" name="EveryStringCheckpointPreservesEffectsAndUnwinds" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: False, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="44badca8-7fb4-c290-8e66-9502cc9f37ed">
+      <Execution id="bd5607b2-da4a-4edf-b56b-9bb5ea227154" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: True, shape: &quot;sequence&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="8c94cc1c-91bc-2faa-1dd8-c48f66d22f7c">
+      <Execution id="c2c4c394-e176-4ef9-88a1-a623f7ed2c96" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests" name="DefaultCallPreservesCheckpointsErrorsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;iterator&quot;, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="1c695e33-0b5a-f800-685a-51c71496567b">
+      <Execution id="2f3ea317-7a3b-4e17-bcf6-9ac2f77fcb27" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="SmallResultStillRequiresAdmissionForRetainedUtf8" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: True, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="1d769a34-4f69-6fea-eb28-dfb37823c644">
+      <Execution id="62aeae66-996b-48e8-bcfb-4ceca51b2e56" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: True, shape: &quot;cycle&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c4c56047-8b9f-b27d-988d-0e8247f7d0f3">
+      <Execution id="107a0507-3f32-487b-90b5-9c759ca41f4f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests" name="DefaultCallPreservesCheckpointsErrorsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: False, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="952b8e25-3791-7ea6-3391-706dc2fed7fe">
+      <Execution id="19fc7b1a-7f2a-476b-8606-c982e7a6b780" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringDispatchBoundaryTests.EveryStringCheckpointPreservesEffectsAndUnwinds(asynchronous: False, pairs: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="8376b755-95af-bd5b-0c05-5f18285066c9">
+      <Execution id="822a6897-2887-4188-b93d-8cd4ea98c451" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringDispatchBoundaryTests" name="EveryStringCheckpointPreservesEffectsAndUnwinds" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: True, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c9d41227-1ad9-c58a-3f07-90d133dab70e">
+      <Execution id="8b921518-2f14-43a0-852c-d05fc2836341" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.InvalidUtf8UsesTheStrictDecoderAndRefundsWorkingStorage(length: 1)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="cf20187c-dc9b-8a97-f102-e1b0bf05a562">
+      <Execution id="cba994f5-1570-4dfe-9805-c0ba8650a11a" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="InvalidUtf8UsesTheStrictDecoderAndRefundsWorkingStorage" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: False, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="52772506-8ec6-030b-87dc-33bc1fa6ffac">
+      <Execution id="f205278d-72e4-4d22-bffd-97786027ed4d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;iterator&quot;, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="3456b0b3-3fec-1bae-fe21-7435b67488dc">
+      <Execution id="c97c9dfe-c278-48aa-ab61-3cc3044c035c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="SmallResultStillRequiresAdmissionForRetainedUtf8" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: True, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="ddc8db96-bef1-af0f-2eff-b17dea0ebb40">
+      <Execution id="fc58ed18-ef41-46c8-8ebd-c2da0f5f1cd8" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusedOutputRefundsAdmittedInputDecode(iterator: True, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="a5544d81-6ad9-ea31-6ba1-1750bd8d544e">
+      <Execution id="348c43bd-f87b-47cf-8297-5b06b093d532" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusedOutputRefundsAdmittedInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: False, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="5fab703f-8bad-3fb2-34f6-ed5c85af35d4">
+      <Execution id="40249227-7f65-4062-a618-c787510bfba1" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: False, pairs: False, padded: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="987e7e4f-3573-b70b-7c30-5ba9cb052453">
+      <Execution id="2a65d821-c59d-4c7a-9e7e-ddaa0e534479" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests" name="LiteralCheckpointsPreserveEffectsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: False, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="7e862edf-799a-41a6-5861-fbc9d034e1b4">
+      <Execution id="8788bb64-bb7d-498b-b454-48b4c551aee3" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;iterator&quot;, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="1e3c38dd-1050-745b-f359-006ecfea08e7">
+      <Execution id="8dea00e8-229f-4bc8-b618-205330439562" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="SmallResultStillRequiresAdmissionForRetainedUtf8" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: False, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c9be58a4-2373-b5d8-5894-e11a955fc51b">
+      <Execution id="09f84064-426a-4b48-8f21-02953595dc7c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: False, shape: &quot;scalar&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="da1ca53d-f6cf-120a-25cb-1999698565d8">
+      <Execution id="b7e9b561-f882-48f8-8fa6-cd34ee966d4d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests" name="DefaultCallPreservesCheckpointsErrorsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: False, shape: &quot;cycle&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="538059cc-27ac-279f-b95c-84a9a4c74438">
+      <Execution id="c8708d74-ebe1-4adf-995e-8984fb6b9703" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests" name="DefaultCallPreservesCheckpointsErrorsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: False, shape: &quot;unsupported&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="d746e69c-15f7-829b-79b4-4b039ad91bfb">
+      <Execution id="dd9cc8ea-fb31-4e01-b780-5f029b16e63c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests" name="DefaultCallPreservesCheckpointsErrorsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: False, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="8e6b2c13-1f67-40d0-0431-a7f75c96153d">
+      <Execution id="d0b9deb9-884a-48f7-825e-68a929de899b" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusedAppendRefundsAdmittedConversion(iterator: False, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="9f42caa3-e9cb-2417-81bd-47c3d6476e95">
+      <Execution id="26119afe-9a4b-4a3c-8d4f-bb3499ddfd99" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusedAppendRefundsAdmittedConversion" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;encode&quot;, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="3784b7aa-cefe-f120-a355-844ae8efbe0e">
+      <Execution id="9e389bfd-64fd-4a41-8ed2-35db225945d9" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="SmallResultStillRequiresAdmissionForRetainedUtf8" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: True, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="abb000d0-278d-eaea-2cef-7aa2a31f5736">
+      <Execution id="1180a304-b6f5-420b-b024-5f8b5cfd1fab" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: False, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="89c91399-7a60-2cdb-6db9-4f4802e3c92b">
+      <Execution id="314e4cf9-8ad4-4449-8a70-568123729ef4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusedOutputRefundsAdmittedInputDecode(iterator: False, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="f2c9d722-1fa7-5ee4-921a-838cd4ae60c6">
+      <Execution id="ba401183-a966-49c7-a036-d5afdf212eee" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusedOutputRefundsAdmittedInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;iterator&quot;, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="ec5c13f6-6a59-64ee-a7bc-ec12aacf4c5b">
+      <Execution id="1a627f54-9592-4aa5-9ae6-36a61c813b48" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="SmallResultStillRequiresAdmissionForRetainedUtf8" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;dumps&quot;, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="dc3eda37-ffd9-5c1e-9db4-307c92c81267">
+      <Execution id="73c7e998-7653-40be-9294-82833abc5c69" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="SmallResultStillRequiresAdmissionForRetainedUtf8" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: True, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="8cd6c4e9-ff99-504d-1676-b9077b41d267">
+      <Execution id="d9dd9086-f788-4bfb-8ee5-e03e0e063c15" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.YieldedStringKeepsFundingAfterDecodeAndIteratorEnd(asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="3c4e686a-7848-f6c6-4df1-f44d2037782d">
+      <Execution id="0f107ed3-5b5c-4b8d-a4b4-4573c5cc5a0d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="YieldedStringKeepsFundingAfterDecodeAndIteratorEnd" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: True, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="b4d15139-7581-5de1-90d1-872b9cd22b6e">
+      <Execution id="3fc9b412-6ac1-4b58-a09e-56b7b257b016" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.NumericChunksKeepFundingAfterIteratorWorkingStorageEnds(asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="6cc80b40-6e27-53f0-2cd8-a9c077607fd6">
+      <Execution id="b6c20cb7-a4a7-4e13-8781-f2f8e755d7ef" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="NumericChunksKeepFundingAfterIteratorWorkingStorageEnds" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests.DefaultCallPreservesCheckpointsErrorsAndUnwind(asynchronous: True, shape: &quot;unsupported&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="fc45194f-73fb-094f-996b-d2c39fc20a89">
+      <Execution id="f2c2ac20-615c-4d09-80a8-bc9346845f83" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDefaultDumpsBoundaryTests" name="DefaultCallPreservesCheckpointsErrorsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: False, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="d1111e00-0bfc-9199-aa23-166a75458cb6">
+      <Execution id="4e55730a-87c3-410a-82c5-c0d45977f0f8" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;encode&quot;, key: False, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="1d33fff6-7569-d9c9-26b4-41d8a3175902">
+      <Execution id="d72db4b7-07b5-405a-9e56-63286c0ef60f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: True, pairs: False, padded: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="7bb4e6df-3bc2-3f79-74c0-782a11caabd3">
+      <Execution id="b90d01ea-05fc-41c1-9d08-de8680cc8460" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests" name="LiteralCheckpointsPreserveEffectsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: False, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="4ae3938c-106c-9260-fcb6-e3b67c967f0d">
+      <Execution id="b454da3b-bc5e-4557-8d66-635ae4951385" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.NumericKeysPreserveEveryCheckpointAndChunk(iterator: False, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="2cb4bef8-4557-e25d-8415-69abba80c868">
+      <Execution id="6b8aee60-7099-47ce-983f-d2d1309a3e4b" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="NumericKeysPreserveEveryCheckpointAndChunk" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.NumericChunksKeepFundingAfterIteratorWorkingStorageEnds(asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="11626a11-adc5-1d79-c795-e175633cbb5e">
+      <Execution id="56bd816d-e714-4ed3-ae75-af5027d176d6" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="NumericChunksKeepFundingAfterIteratorWorkingStorageEnds" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;dumps&quot;, key: False, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="68d1b928-22cb-3a9c-8463-8f3ccd7a3727">
+      <Execution id="ced09975-4620-4289-b00c-f5c52a51be1d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;iterator&quot;, key: False, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="47610c2d-f4c5-8b5e-4ca1-d914a009d22c">
+      <Execution id="9e02ed57-28eb-4787-949c-103b4a26e320" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusedOutputRefundsAdmittedInputDecode(iterator: False, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="3ce98d29-8eab-5137-3aee-9117ba0070d6">
+      <Execution id="2e604939-bba3-4031-91e5-9ddaf1c6aad1" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusedOutputRefundsAdmittedInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests.LiteralCheckpointsPreserveEffectsAndUnwind(asynchronous: False, pairs: False, padded: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="84e34bb9-ab07-7475-7a21-096b7a9f49b1">
+      <Execution id="c3718ea5-c3bf-4bbe-9d2c-676498fe44cc" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonLiteralDispatchBoundaryTests" name="LiteralCheckpointsPreserveEffectsAndUnwind" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.NumericKeysPreserveEveryCheckpointAndChunk(iterator: True, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="67e6e7cd-b37d-3d31-7d30-68dc0bb48fcc">
+      <Execution id="54f376e1-2875-4624-b0f0-263bf18195f7" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="NumericKeysPreserveEveryCheckpointAndChunk" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;dumps&quot;, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="dfbd47e8-2d17-d22c-f579-cc914cc29391">
+      <Execution id="d941a436-d6f4-44cf-a2a1-e7b3b2fb45ee" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="SmallResultStillRequiresAdmissionForRetainedUtf8" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: True, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="43c1dde0-660a-0882-a1e1-7a11c2656bfe">
+      <Execution id="52f292fd-c0f2-40c1-9504-4b8bbbed239b" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusedOutputRefundsAdmittedInputDecode(iterator: True, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="9d0676d4-80c0-7e05-bafd-885be48b5c35">
+      <Execution id="dd70a037-36eb-46a3-a786-4a9e77622fb0" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusedOutputRefundsAdmittedInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: True, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="26d57f53-f58c-8e33-e67e-edd57c7b21f1">
+      <Execution id="bf0fc728-f0aa-4cf3-98ec-bd9100492042" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;encode&quot;, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c40561d1-db1f-724b-e11e-6c7980709c13">
+      <Execution id="23291d1c-6f51-4da1-8e1f-0b2c5dd77648" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="SmallResultStillRequiresAdmissionForRetainedUtf8" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.RefusalPrecedesProportionalInputDecode(route: &quot;encode&quot;, key: False, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="5e291384-3de8-a329-9ce3-9388699c2289">
+      <Execution id="543e600c-622a-41bf-92a2-7852b3845bb6" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="RefusalPrecedesProportionalInputDecode" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: True, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c8f066ce-df75-374d-6bd1-6b0fafa6c781">
+      <Execution id="db9c56b4-5388-408f-b876-f96db62d7489" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: False, asynchronous: True, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="f0893de8-9e52-91a5-80c1-030057cb495a">
+      <Execution id="2c7e4c57-04e6-423a-9ef5-83d837a28471" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;dumps&quot;, key: True, asynchronous: False, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="4c13f604-4358-6fab-669f-d1a86fae0041">
+      <Execution id="1d69a953-394d-42a2-b9ca-33d1812b3809" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: &quot;iterator&quot;, key: True, asynchronous: False, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="65a7f6ff-792a-99a7-93ce-5926191a6b5b">
+      <Execution id="f1d5af42-cd34-4f88-9b8e-bcd59b83f001" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests" name="RefusalPrecedesProportionalIntegerText" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: &quot;dumps&quot;, asynchronous: True, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="88f21a6f-8e12-b96e-599e-20c5cc0ea11d">
+      <Execution id="63c43e98-327f-47ec-8ece-6225b2512092" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonStringEmissionAdmissionTests" name="SmallResultStillRequiresAdmissionForRetainedUtf8" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="c40561d1-db1f-724b-e11e-6c7980709c13" executionId="23291d1c-6f51-4da1-8e1f-0b2c5dd77648" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="47610c2d-f4c5-8b5e-4ca1-d914a009d22c" executionId="9e02ed57-28eb-4787-949c-103b4a26e320" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d746e69c-15f7-829b-79b4-4b039ad91bfb" executionId="dd9cc8ea-fb31-4e01-b780-5f029b16e63c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7e862edf-799a-41a6-5861-fbc9d034e1b4" executionId="8788bb64-bb7d-498b-b454-48b4c551aee3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8376b755-95af-bd5b-0c05-5f18285066c9" executionId="822a6897-2887-4188-b93d-8cd4ea98c451" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3ce98d29-8eab-5137-3aee-9117ba0070d6" executionId="2e604939-bba3-4031-91e5-9ddaf1c6aad1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7bb4e6df-3bc2-3f79-74c0-782a11caabd3" executionId="b90d01ea-05fc-41c1-9d08-de8680cc8460" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="111b7169-e8cc-a401-3861-e53e3e8cf070" executionId="e2a4cc65-e40a-4666-92e0-c18810869697" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="89c91399-7a60-2cdb-6db9-4f4802e3c92b" executionId="314e4cf9-8ad4-4449-8a70-568123729ef4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3c4e686a-7848-f6c6-4df1-f44d2037782d" executionId="0f107ed3-5b5c-4b8d-a4b4-4573c5cc5a0d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d1111e00-0bfc-9199-aa23-166a75458cb6" executionId="4e55730a-87c3-410a-82c5-c0d45977f0f8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c1715f9f-3e3e-ad32-a3c9-a0adcc3fd661" executionId="98346b49-8ecf-4c50-8393-231dcbf435ec" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1faf0dfb-a161-f2b6-b226-06bf81316612" executionId="c30c0e92-42a2-498e-b081-833f9adab20f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="44badca8-7fb4-c290-8e66-9502cc9f37ed" executionId="bd5607b2-da4a-4edf-b56b-9bb5ea227154" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="34e5f90a-1e73-8c7c-d0e6-fcb16c2d1184" executionId="c165029d-2932-414d-af93-1ca9f08a3e84" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9f42caa3-e9cb-2417-81bd-47c3d6476e95" executionId="26119afe-9a4b-4a3c-8d4f-bb3499ddfd99" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c499d724-4918-d2b2-4881-ba7402d0268c" executionId="3a4e1156-fabe-40cc-88f6-aa9a1f2b694e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="11d75120-49f2-32c0-4f2d-4482be438e3c" executionId="23617468-19c5-45e4-abcf-9ddae75b6068" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="da1ca53d-f6cf-120a-25cb-1999698565d8" executionId="b7e9b561-f882-48f8-8fa6-cd34ee966d4d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1b02dc95-315b-b537-55e3-41b5ffec747c" executionId="a5bd3b4d-eaa9-4f8b-b2e5-4e9ae825dd3c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b4d15139-7581-5de1-90d1-872b9cd22b6e" executionId="3fc9b412-6ac1-4b58-a09e-56b7b257b016" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3c6aec8c-70b6-98c4-4ebe-8cf0933e52de" executionId="5190fe1f-3221-4db6-b858-9fd76b58b074" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="11626a11-adc5-1d79-c795-e175633cbb5e" executionId="56bd816d-e714-4ed3-ae75-af5027d176d6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f2c9d722-1fa7-5ee4-921a-838cd4ae60c6" executionId="ba401183-a966-49c7-a036-d5afdf212eee" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fe79bbe0-92ba-568f-5ecf-d1dd6acf05bd" executionId="3c1db811-ebec-40ef-87ad-c8240ddc46f8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ec5c13f6-6a59-64ee-a7bc-ec12aacf4c5b" executionId="1a627f54-9592-4aa5-9ae6-36a61c813b48" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="43c1dde0-660a-0882-a1e1-7a11c2656bfe" executionId="52f292fd-c0f2-40c1-9504-4b8bbbed239b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b6d9abcc-7613-9580-2b75-003565866aa3" executionId="fbcc180c-0c6a-4129-b02c-7971b6228511" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8f0ef90e-e7b6-c0ca-f45d-902f50388aa6" executionId="981d3b08-b561-4e14-9d2e-5553923a7c19" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="011825a0-d425-5181-e486-b51d86a7e6a0" executionId="a02fa124-177d-4c86-bd58-00dfbc800b40" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1c695e33-0b5a-f800-685a-51c71496567b" executionId="2f3ea317-7a3b-4e17-bcf6-9ac2f77fcb27" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="927d4d9b-406b-a760-0ed0-121184443b7c" executionId="b1fae96b-0131-426f-beb8-98c52d57d62d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4ae3938c-106c-9260-fcb6-e3b67c967f0d" executionId="b454da3b-bc5e-4557-8d66-635ae4951385" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c23f2c72-a667-643d-7626-4549abc798fd" executionId="a7a076e1-639f-4af7-9f6a-17acb3213ac6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c9be58a4-2373-b5d8-5894-e11a955fc51b" executionId="09f84064-426a-4b48-8f21-02953595dc7c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1e3c38dd-1050-745b-f359-006ecfea08e7" executionId="8dea00e8-229f-4bc8-b618-205330439562" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7d836e39-110b-3496-9b1f-9f41417c812a" executionId="6590d162-15d6-42be-8431-4697f0b2911f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="64eca57a-ebfc-237f-45bd-19de75359181" executionId="3a00505e-c4e2-45c7-88bd-14fcb6892712" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f0893de8-9e52-91a5-80c1-030057cb495a" executionId="2c7e4c57-04e6-423a-9ef5-83d837a28471" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1d769a34-4f69-6fea-eb28-dfb37823c644" executionId="62aeae66-996b-48e8-bcfb-4ceca51b2e56" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="344e9c5d-47e3-b174-dd55-14b50f9008ec" executionId="0ce60756-d06a-40a0-9d38-f32fe67490ad" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8cd6c4e9-ff99-504d-1676-b9077b41d267" executionId="d9dd9086-f788-4bfb-8ee5-e03e0e063c15" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="538059cc-27ac-279f-b95c-84a9a4c74438" executionId="c8708d74-ebe1-4adf-995e-8984fb6b9703" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fc45194f-73fb-094f-996b-d2c39fc20a89" executionId="f2c2ac20-615c-4d09-80a8-bc9346845f83" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8e6b2c13-1f67-40d0-0431-a7f75c96153d" executionId="d0b9deb9-884a-48f7-825e-68a929de899b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="adfbf8dc-6a79-6d39-03c9-19e8e58fe7b9" executionId="bc30d625-97b4-430b-9c26-a96068847612" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="371b0686-ce21-ce35-fbfd-b98867abd1dd" executionId="9ef41fb0-c40f-4349-bbf4-adfb0052a2fd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="24b42c7a-ee21-e7ee-1bae-3040e526fb26" executionId="028fbe9c-de21-4dfa-9bbf-6df4a565a8d4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3456b0b3-3fec-1bae-fe21-7435b67488dc" executionId="c97c9dfe-c278-48aa-ab61-3cc3044c035c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a4ffea68-9f04-b504-5d39-e4070c7f9914" executionId="9e766153-d1cd-41d9-8486-b2cf95712f2c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="73badd4e-e2f3-d846-2fb6-29cb637de061" executionId="2852d3ea-27f1-4128-bc2e-8359bb98c304" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="67e6e7cd-b37d-3d31-7d30-68dc0bb48fcc" executionId="54f376e1-2875-4624-b0f0-263bf18195f7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5bbd9442-ac14-6401-663b-52a6e2af92a1" executionId="2331ce2c-04ef-4d21-814a-9567ea8c425b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c9d41227-1ad9-c58a-3f07-90d133dab70e" executionId="8b921518-2f14-43a0-852c-d05fc2836341" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c4c56047-8b9f-b27d-988d-0e8247f7d0f3" executionId="107a0507-3f32-487b-90b5-9c759ca41f4f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="88f21a6f-8e12-b96e-599e-20c5cc0ea11d" executionId="63c43e98-327f-47ec-8ece-6225b2512092" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ddc8db96-bef1-af0f-2eff-b17dea0ebb40" executionId="fc58ed18-ef41-46c8-8ebd-c2da0f5f1cd8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f72b2209-da22-8e80-b6a3-d6d93ccb1e41" executionId="9c1632c6-e844-4425-b6a9-4583bfc68d11" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="68a90f38-0f68-b2c1-9733-923f0e96e31f" executionId="e39f3664-2192-4d6d-bb87-cb533331d664" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="abb000d0-278d-eaea-2cef-7aa2a31f5736" executionId="1180a304-b6f5-420b-b024-5f8b5cfd1fab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6cc80b40-6e27-53f0-2cd8-a9c077607fd6" executionId="b6c20cb7-a4a7-4e13-8781-f2f8e755d7ef" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b98c34fb-1a04-4426-180d-637e7f4df9d8" executionId="94fb3b38-baf1-4d2e-8f5a-2f8d52418d04" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c42a11c4-6829-7cd2-7510-49b029cb2e92" executionId="81463070-5f30-46df-8999-6bd5d86c8bcc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="52772506-8ec6-030b-87dc-33bc1fa6ffac" executionId="f205278d-72e4-4d22-bffd-97786027ed4d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9d0676d4-80c0-7e05-bafd-885be48b5c35" executionId="dd70a037-36eb-46a3-a786-4a9e77622fb0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c0212bc8-302c-c492-4499-9912018a10f3" executionId="1115d390-5b56-4402-87b9-b8dee84d00b2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4c13f604-4358-6fab-669f-d1a86fae0041" executionId="1d69a953-394d-42a2-b9ca-33d1812b3809" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a5544d81-6ad9-ea31-6ba1-1750bd8d544e" executionId="348c43bd-f87b-47cf-8297-5b06b093d532" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2cb4bef8-4557-e25d-8415-69abba80c868" executionId="6b8aee60-7099-47ce-983f-d2d1309a3e4b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="608b9e0f-da65-ae28-bf15-b4dcfc1fbffb" executionId="9eb0626c-6318-416a-aaef-3254486f9365" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7385794f-ee50-170e-febf-4c688bc3d0c9" executionId="6f73edf5-ec6f-4235-895b-c8b359910ab1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="61c7f97c-ecaa-31d6-b2f9-e19dc6368a92" executionId="b7ff0281-6741-4df0-94d6-0e545bdb5a08" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="952b8e25-3791-7ea6-3391-706dc2fed7fe" executionId="19fc7b1a-7f2a-476b-8606-c982e7a6b780" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="94a19ea9-2d3c-924d-6b83-6ccedb6035cd" executionId="099216a2-a08b-4f55-b549-3706123a7486" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3784b7aa-cefe-f120-a355-844ae8efbe0e" executionId="9e389bfd-64fd-4a41-8ed2-35db225945d9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cf20187c-dc9b-8a97-f102-e1b0bf05a562" executionId="cba994f5-1570-4dfe-9805-c0ba8650a11a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="eddb99bb-ff93-2772-8770-a9727f6474ab" executionId="54e7d616-3f1a-4fe6-b659-c485719e3aa0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="75bf62d2-52a2-de0b-bb67-83f136259e5f" executionId="77547c0d-f79d-4302-aefe-446b3c6887b6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="eaf0a5f2-a678-f752-4107-43eaf8ad6b05" executionId="2be389d2-a8e2-43ca-affc-408bcb6a9de3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="65a7f6ff-792a-99a7-93ce-5926191a6b5b" executionId="f1d5af42-cd34-4f88-9b8e-bcd59b83f001" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8c94cc1c-91bc-2faa-1dd8-c48f66d22f7c" executionId="c2c4c394-e176-4ef9-88a1-a623f7ed2c96" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="00914487-e95b-96d7-77a5-10b5f7239c9c" executionId="c5ce0093-5f7a-4971-887f-7e99123ef0b7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7ec38c05-58f1-f9cc-c0ae-0185e9995398" executionId="914720c9-761d-4ff5-8915-2a76b7246e57" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="68d1b928-22cb-3a9c-8463-8f3ccd7a3727" executionId="ced09975-4620-4289-b00c-f5c52a51be1d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5e291384-3de8-a329-9ce3-9388699c2289" executionId="543e600c-622a-41bf-92a2-7852b3845bb6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="28d90ad5-da05-7578-a964-bd8f954e89fa" executionId="831bd9f1-d612-42e6-8351-972390ea2014" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1d33fff6-7569-d9c9-26b4-41d8a3175902" executionId="d72db4b7-07b5-405a-9e56-63286c0ef60f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="987e7e4f-3573-b70b-7c30-5ba9cb052453" executionId="2a65d821-c59d-4c7a-9e7e-ddaa0e534479" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dfbd47e8-2d17-d22c-f579-cc914cc29391" executionId="d941a436-d6f4-44cf-a2a1-e7b3b2fb45ee" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dc3eda37-ffd9-5c1e-9db4-307c92c81267" executionId="73c7e998-7653-40be-9294-82833abc5c69" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="26d57f53-f58c-8e33-e67e-edd57c7b21f1" executionId="bf0fc728-f0aa-4cf3-98ec-bd9100492042" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="096dfb99-dcbd-0c19-2361-c4f47327414f" executionId="b3c50961-4589-47fa-a6e9-e1ab346a3e2e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="453c56a2-066c-b1f7-36eb-9649396d4206" executionId="bc1d48fd-8f61-4c68-a47c-dabf650e8152" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c8f066ce-df75-374d-6bd1-6b0fafa6c781" executionId="db9c56b4-5388-408f-b876-f96db62d7489" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="84e34bb9-ab07-7475-7a21-096b7a9f49b1" executionId="c3718ea5-c3bf-4bbe-9d2c-676498fe44cc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5fab703f-8bad-3fb2-34f6-ed5c85af35d4" executionId="40249227-7f65-4062-a618-c787510bfba1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="96" executed="96" passed="96" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.45]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.49]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.80]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

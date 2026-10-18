@@ -1,0 +1,23 @@
+{
+  "head": "15b4bc031d5c7d2c474d448968f4c20c1a00cca8",
+  "candidateSourceSha256": "ED4A1A390083AB0EF5BEFE619315B6E21D10BC0B196345CF2A46C4F35BEAB458",
+  "assemblySha256": "A3DEB03A3F6623A66AF6177DC587DE568CA901C369B8F8521D58ECE3E3844600",
+  "method": "AppendJsonValueAsync",
+  "stateMachine": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+<AppendJsonValueAsync>d__54",
+  "displayClassFields": 0,
+  "discardedLocalHelpers": 0,
+  "replacementStaticHelper": "AppendJsonDictionaryAsync",
+  "explicitInputs": [
+    "StringBuilder builder",
+    "PyDict dict",
+    "JsonDumpOptions options",
+    "ExecutionContext context",
+    "LythonSourceSpan span",
+    "Int32 depth",
+    "Int32 defaultDepth",
+    "HashSet`1 active",
+    "JsonGrowthCharge charge",
+    "Boolean asynchronous"
+  ],
+  "finding": "The compiler-generated captured dictionary-helper type/method and value-state-machine capture reference are absent;ordinary static helper takes the same inputs explicitly. Native before/after confirms80B per value removed."
+}

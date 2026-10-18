@@ -1,0 +1,188 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="c6d1c756-7987-40d0-8c89-43c44a18260f" name="JoannesVermorel@LOKAD-0399 2026-10-18 18:37:16" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T18:37:16.9548646+02:00" queuing="2026-10-18T18:37:16.9548649+02:00" start="2026-10-18T18:37:15.6688354+02:00" finish="2026-10-18T18:37:17.0087858+02:00" />
+  <TestSettings name="default" id="56a9f25b-07c6-4737-8d18-35d5b2b91066">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_18_37_16" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="d4129497-8b2b-4b18-bacd-c5588dd64816" testId="dd678ce2-a598-24d1-ac16-f4151bd5ff48" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;default&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0137394" startTime="2026-10-18T18:37:16.9462556+02:00" endTime="2026-10-18T18:37:16.9600300+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d4129497-8b2b-4b18-bacd-c5588dd64816">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"default","asynchronous":false,"callsPerSample":8,"elements":64,"resultHash":"7a2f5c3e7762371d05f6c219eee019eee3d919724a4b9cf1d1747ac106ee92f7","samples":[470720,470720,470720,470720,470720,470720,470720,470720],"steps":[6784,6784,6784,6784,6784,6784,6784,6784]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e5fcd2ed-37ce-4130-8bda-9bd595309ef4" testId="c5a05972-4f4f-0897-6b56-00a2d64650e1" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;incremental-control&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0323719" startTime="2026-10-18T18:37:16.8776527+02:00" endTime="2026-10-18T18:37:16.9100276+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e5fcd2ed-37ce-4130-8bda-9bd595309ef4">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"incremental-control","asynchronous":true,"callsPerSample":8,"elements":64,"resultHash":"8e91f51ae051e84251a9c80514b996d2c26c3a69a2d5de58c62c11c1826e201a","samples":[891072,891072,891072,891072,891072,891072,891072,891072],"steps":[11592,11592,11592,11592,11592,11592,11592,11592]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7bea73d5-2e5d-4865-86c7-6c382a1cd2a1" testId="53217613-cf10-eadf-423f-2b721e26651e" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;scalar&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0007750" startTime="2026-10-18T18:37:16.9368264+02:00" endTime="2026-10-18T18:37:16.9368508+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7bea73d5-2e5d-4865-86c7-6c382a1cd2a1">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"scalar","asynchronous":true,"callsPerSample":8,"elements":64,"resultHash":"7902699be42c8a8e46fbbb4501726517e86b22c56a189f7625a6da49081b2451","samples":[7296,7296,7296,7296,7296,7296,7296,7296],"steps":[136,136,136,136,136,136,136,136]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c974c8d9-bf85-4bf7-a856-6b028a60aea4" testId="7ef61ec3-093e-f361-1279-0e5c52b39558" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;sequence&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0032635" startTime="2026-10-18T18:37:16.9366763+02:00" endTime="2026-10-18T18:37:16.9367081+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c974c8d9-bf85-4bf7-a856-6b028a60aea4">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"sequence","asynchronous":false,"callsPerSample":8,"elements":64,"resultHash":"ccf91e2b960f51464b77d855d580f583fe4e1cf0472832315bad6d855cf732f6","samples":[20544,20544,20544,20544,20544,20544,20544,20544],"steps":[1656,1656,1656,1656,1656,1656,1656,1656]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8cfce769-09ad-4fce-8d47-d42a9975e782" testId="4cf3a1b7-3272-db02-1629-7b0bcc6589f2" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;encoder&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0083797" startTime="2026-10-18T18:37:16.8602885+02:00" endTime="2026-10-18T18:37:16.8686841+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8cfce769-09ad-4fce-8d47-d42a9975e782">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"encoder","asynchronous":false,"callsPerSample":8,"elements":64,"resultHash":"8e91f51ae051e84251a9c80514b996d2c26c3a69a2d5de58c62c11c1826e201a","samples":[140288,140288,140288,140288,140288,140288,140288,140288],"steps":[5768,5768,5768,5768,5768,5768,5768,5768]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a45345b5-1d0f-416d-be27-d697e039929f" testId="a6a3e4e8-42cf-adc8-dbcd-df71d47476bd" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;encoder&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0087744" startTime="2026-10-18T18:37:16.8514267+02:00" endTime="2026-10-18T18:37:16.8602163+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a45345b5-1d0f-416d-be27-d697e039929f">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"encoder","asynchronous":true,"callsPerSample":8,"elements":64,"resultHash":"8e91f51ae051e84251a9c80514b996d2c26c3a69a2d5de58c62c11c1826e201a","samples":[140224,140224,140224,140224,140224,140224,140224,140224],"steps":[5768,5768,5768,5768,5768,5768,5768,5768]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="bf612989-fedb-41fb-bda9-675991eaf873" testId="04d1c70a-1d49-72a6-9205-a2631e2ebe34" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;dictionaries&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0076606" startTime="2026-10-18T18:37:16.8699100+02:00" endTime="2026-10-18T18:37:16.8775788+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bf612989-fedb-41fb-bda9-675991eaf873">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"dictionaries","asynchronous":false,"callsPerSample":8,"elements":64,"resultHash":"8e91f51ae051e84251a9c80514b996d2c26c3a69a2d5de58c62c11c1826e201a","samples":[132608,132608,132608,132608,132608,132608,132608,132608],"steps":[5752,5752,5752,5752,5752,5752,5752,5752]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d7a0fedc-869c-48e2-8bf4-64702dee8e50" testId="6b796d33-129b-3912-4762-ed83c8ac1249" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;default&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0832248" startTime="2026-10-18T18:37:16.7612556+02:00" endTime="2026-10-18T18:37:16.8372369+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d7a0fedc-869c-48e2-8bf4-64702dee8e50">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"default","asynchronous":true,"callsPerSample":8,"elements":64,"resultHash":"7a2f5c3e7762371d05f6c219eee019eee3d919724a4b9cf1d1747ac106ee92f7","samples":[503680,503680,503680,503680,508904,503680,503680,503680],"steps":[6784,6784,6784,6784,6784,6784,6784,6784]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8e852d25-185c-46c7-a861-2f4f34baa623" testId="e4b42721-39bd-2935-6840-f32b7de37e2f" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;dictionaries&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0080220" startTime="2026-10-18T18:37:16.9101022+02:00" endTime="2026-10-18T18:37:16.9180885+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8e852d25-185c-46c7-a861-2f4f34baa623">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"dictionaries","asynchronous":true,"callsPerSample":8,"elements":64,"resultHash":"8e91f51ae051e84251a9c80514b996d2c26c3a69a2d5de58c62c11c1826e201a","samples":[132800,132800,132800,132800,132800,132800,132800,132800],"steps":[5752,5752,5752,5752,5752,5752,5752,5752]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="345d6e0e-947d-4550-a1ba-874db0b0444c" testId="13d90e33-ef76-0c40-7ccd-df1defac6b3c" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;sequence&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0031514" startTime="2026-10-18T18:37:16.9367451+02:00" endTime="2026-10-18T18:37:16.9367809+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="345d6e0e-947d-4550-a1ba-874db0b0444c">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"sequence","asynchronous":true,"callsPerSample":8,"elements":64,"resultHash":"ccf91e2b960f51464b77d855d580f583fe4e1cf0472832315bad6d855cf732f6","samples":[20736,20736,20736,20736,20736,20736,20736,20736],"steps":[1656,1656,1656,1656,1656,1656,1656,1656]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f1105bd7-5a43-4e64-8e46-74d0be67bd51" testId="3f630c18-e8ad-9d54-2732-c7b62889a2d9" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;sorted&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0141377" startTime="2026-10-18T18:37:16.8377167+02:00" endTime="2026-10-18T18:37:16.8513514+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f1105bd7-5a43-4e64-8e46-74d0be67bd51">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"sorted","asynchronous":true,"callsPerSample":8,"elements":64,"resultHash":"b7001ed5c21b83271513df3508bb089091c89466b8ab0c987aa090acf29dfd03","samples":[310656,310656,310656,310656,310656,310656,310656,310656],"steps":[6784,6784,6784,6784,6784,6784,6784,6784]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a032d289-c274-45df-ab37-5f3ddb3ab679" testId="cb9c7a9a-b726-88de-52dd-a2522d3e3d6d" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;loads-control&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0009742" startTime="2026-10-18T18:37:16.9453270+02:00" endTime="2026-10-18T18:37:16.9462070+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a032d289-c274-45df-ab37-5f3ddb3ab679">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"loads-control","asynchronous":true,"callsPerSample":8,"elements":64,"resultHash":null,"samples":[8256,8256,8256,8256,8256,8256,8256,8256],"steps":[272,272,272,272,272,272,272,272]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="6852988c-4e31-45da-8c9a-cc29269ad166" testId="ea961a0a-3674-78a8-c223-35fa71d2c1f1" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;incremental-control&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.2550937" startTime="2026-10-18T18:37:16.4945248+02:00" endTime="2026-10-18T18:37:16.7538240+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6852988c-4e31-45da-8c9a-cc29269ad166">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"incremental-control","asynchronous":false,"callsPerSample":8,"elements":64,"resultHash":"8e91f51ae051e84251a9c80514b996d2c26c3a69a2d5de58c62c11c1826e201a","samples":[890496,890496,890496,890496,890496,890496,890496,890496],"steps":[11592,11592,11592,11592,11592,11592,11592,11592]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="dac0d557-5846-47d2-8788-25c0ce41a004" testId="5d799156-5398-5d78-683d-2d3ee4125286" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;scalar&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0011714" startTime="2026-10-18T18:37:16.8687546+02:00" endTime="2026-10-18T18:37:16.8698748+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dac0d557-5846-47d2-8788-25c0ce41a004">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"scalar","asynchronous":false,"callsPerSample":8,"elements":64,"resultHash":"7902699be42c8a8e46fbbb4501726517e86b22c56a189f7625a6da49081b2451","samples":[7104,7104,7104,7104,7104,7104,7104,7104],"steps":[136,136,136,136,136,136,136,136]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="70d68b9e-17b4-4e46-9957-4c02bc89d4f4" testId="49d1a5a4-0b6f-34a9-0c5e-de6e934ac461" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;sorted&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0118975" startTime="2026-10-18T18:37:16.9368825+02:00" endTime="2026-10-18T18:37:16.9452480+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="70d68b9e-17b4-4e46-9957-4c02bc89d4f4">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"sorted","asynchronous":false,"callsPerSample":8,"elements":64,"resultHash":"b7001ed5c21b83271513df3508bb089091c89466b8ab0c987aa090acf29dfd03","samples":[310464,310464,310464,310464,310464,310464,310464,310464],"steps":[6784,6784,6784,6784,6784,6784,6784,6784]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a8032de5-1f1a-4f54-bb8c-07726ea8106d" testId="1b9e8c5f-503f-fbe6-3642-9891aef28528" testName="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;loads-control&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0078055" startTime="2026-10-18T18:37:16.9364427+02:00" endTime="2026-10-18T18:37:16.9365017+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a8032de5-1f1a-4f54-bb8c-07726ea8106d">
+      <Output>
+        <StdOut>JSON_CAPTURE_ALLOCATION:{"route":"loads-control","asynchronous":false,"callsPerSample":8,"elements":64,"resultHash":null,"samples":[8064,8064,8064,8064,8064,8064,8064,8064],"steps":[272,272,272,272,272,272,272,272]}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;scalar&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="5d799156-5398-5d78-683d-2d3ee4125286">
+      <Execution id="dac0d557-5846-47d2-8788-25c0ce41a004" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;sorted&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="3f630c18-e8ad-9d54-2732-c7b62889a2d9">
+      <Execution id="f1105bd7-5a43-4e64-8e46-74d0be67bd51" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;incremental-control&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c5a05972-4f4f-0897-6b56-00a2d64650e1">
+      <Execution id="e5fcd2ed-37ce-4130-8bda-9bd595309ef4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;scalar&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="53217613-cf10-eadf-423f-2b721e26651e">
+      <Execution id="7bea73d5-2e5d-4865-86c7-6c382a1cd2a1" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;sequence&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="7ef61ec3-093e-f361-1279-0e5c52b39558">
+      <Execution id="c974c8d9-bf85-4bf7-a856-6b028a60aea4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;sorted&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="49d1a5a4-0b6f-34a9-0c5e-de6e934ac461">
+      <Execution id="70d68b9e-17b4-4e46-9957-4c02bc89d4f4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;encoder&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="a6a3e4e8-42cf-adc8-dbcd-df71d47476bd">
+      <Execution id="a45345b5-1d0f-416d-be27-d697e039929f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;incremental-control&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="ea961a0a-3674-78a8-c223-35fa71d2c1f1">
+      <Execution id="6852988c-4e31-45da-8c9a-cc29269ad166" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;dictionaries&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="04d1c70a-1d49-72a6-9205-a2631e2ebe34">
+      <Execution id="bf612989-fedb-41fb-bda9-675991eaf873" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;dictionaries&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="e4b42721-39bd-2935-6840-f32b7de37e2f">
+      <Execution id="8e852d25-185c-46c7-a861-2f4f34baa623" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;loads-control&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="cb9c7a9a-b726-88de-52dd-a2522d3e3d6d">
+      <Execution id="a032d289-c274-45df-ab37-5f3ddb3ab679" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;sequence&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="13d90e33-ef76-0c40-7ccd-df1defac6b3c">
+      <Execution id="345d6e0e-947d-4550-a1ba-874db0b0444c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;default&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="6b796d33-129b-3912-4762-ed83c8ac1249">
+      <Execution id="d7a0fedc-869c-48e2-8bf4-64702dee8e50" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;default&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="dd678ce2-a598-24d1-ac16-f4151bd5ff48">
+      <Execution id="d4129497-8b2b-4b18-bacd-c5588dd64816" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;loads-control&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="1b9e8c5f-503f-fbe6-3642-9891aef28528">
+      <Execution id="a8032de5-1f1a-4f54-bb8c-07726ea8106d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic.Allocation(route: &quot;encoder&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="4cf3a1b7-3272-db02-1629-7b0bcc6589f2">
+      <Execution id="8cfce769-09ad-4fce-8d47-d42a9975e782" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JsonDictionaryCaptureDiagnostic" name="Allocation" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="dd678ce2-a598-24d1-ac16-f4151bd5ff48" executionId="d4129497-8b2b-4b18-bacd-c5588dd64816" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c5a05972-4f4f-0897-6b56-00a2d64650e1" executionId="e5fcd2ed-37ce-4130-8bda-9bd595309ef4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="53217613-cf10-eadf-423f-2b721e26651e" executionId="7bea73d5-2e5d-4865-86c7-6c382a1cd2a1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7ef61ec3-093e-f361-1279-0e5c52b39558" executionId="c974c8d9-bf85-4bf7-a856-6b028a60aea4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4cf3a1b7-3272-db02-1629-7b0bcc6589f2" executionId="8cfce769-09ad-4fce-8d47-d42a9975e782" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a6a3e4e8-42cf-adc8-dbcd-df71d47476bd" executionId="a45345b5-1d0f-416d-be27-d697e039929f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="04d1c70a-1d49-72a6-9205-a2631e2ebe34" executionId="bf612989-fedb-41fb-bda9-675991eaf873" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6b796d33-129b-3912-4762-ed83c8ac1249" executionId="d7a0fedc-869c-48e2-8bf4-64702dee8e50" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e4b42721-39bd-2935-6840-f32b7de37e2f" executionId="8e852d25-185c-46c7-a861-2f4f34baa623" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="13d90e33-ef76-0c40-7ccd-df1defac6b3c" executionId="345d6e0e-947d-4550-a1ba-874db0b0444c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3f630c18-e8ad-9d54-2732-c7b62889a2d9" executionId="f1105bd7-5a43-4e64-8e46-74d0be67bd51" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cb9c7a9a-b726-88de-52dd-a2522d3e3d6d" executionId="a032d289-c274-45df-ab37-5f3ddb3ab679" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ea961a0a-3674-78a8-c223-35fa71d2c1f1" executionId="6852988c-4e31-45da-8c9a-cc29269ad166" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5d799156-5398-5d78-683d-2d3ee4125286" executionId="dac0d557-5846-47d2-8788-25c0ce41a004" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="49d1a5a4-0b6f-34a9-0c5e-de6e934ac461" executionId="70d68b9e-17b4-4e46-9957-4c02bc89d4f4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1b9e8c5f-503f-fbe6-3642-9891aef28528" executionId="a8032de5-1f1a-4f54-bb8c-07726ea8106d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="16" executed="16" passed="16" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.18]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.51]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.53]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:01.02]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

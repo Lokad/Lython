@@ -286,6 +286,13 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [JSON dictionary-helper capture removal](benchmarks/results/2026-10-18-json-dictionary-capture/README.md)
+at `15b4bc03` plus its frozen one-file patch avoids an 80-byte capture per value.
+A 64-value sequence saves 5,200 B and 64 small dictionaries save 15,440 B in
+both modes. Output/fuel/guard semantics match; incremental encoding and parsing
+controls are unchanged. This is allocation evidence only: elapsed was not measured,
+and no CPython, fresh-compilation or complete-job speedup is claimed.
+
 The [dictionary view call change](benchmarks/results/2026-10-18-dict-view-call/README.md)
 at `c362a081` plus its frozen patch avoids receiver wrappers for immediate
 zero-argument `items`/`keys`/`values`. A 64-distinct-dictionary diagnostic allocates

@@ -1,0 +1,18 @@
+{
+  "head": "15b4bc031d5c7d2c474d448968f4c20c1a00cca8",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs": "8076b63f25aa53bf6091b2b0f84cb7758047bf25896575c5ffe830b68cb7e068",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs": "60a65854b4b928cda511af84ff0b2e1a76afd161eca5ab0ed60b8e1d4ab5c035",
+    "src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs": "9745f2d8eea6e574a706af2066fcc663e8298f37b9ee6a5b7aa55c049a5ff57f",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "9f756ed5cabd3b6d0e2a7d2954163b14d55881ae8ab9b558560215594b68cd1a",
+    "tests/Lokad.Lython.Tests/JsonDefaultDumpsBoundaryTests.cs": "d72a8d2a4a7455803d7f34143e28e17e1c9b8f888af678912197cb7b367086e7",
+    "tests/Lokad.Lython.PublicApi.Tests/JsonSuspendingCallbackTests.cs": "91e1df06389eec959d5c7b5f0b3f314a8861a9bb069e68e99ea9c27330c4edb2"
+  },
+  "finding": "IL-screen proves one nine-field dictionary-helper display class is allocated at MoveNext offset42,before CheckExecution227 and scalar integer dispatch725. Source inputs are not reassigned;normal explicit helper parameters can replace the closure.",
+  "workload": "Comparison WorkloadCatalog has a json.dumps(values,ensure_ascii=True,separators=...) caller;JSONEncoder.encode also shares SerializeJsonText. Complete config/JSON/manifest scripts use json.dump incremental encoder and are controls,not evidence of an affected representative-job gain.",
+  "proposal": "Move only the capturing AppendDictionaryAsync local function into an ordinary static JsonModule helper with the same nine inputs plus dictionary;keep code/order/await/finally/cycle-set/scratch funding unchanged. Remove captured display-class allocation and state-machine reference;no new parser,encoder,owner or sync/async split.",
+  "acceptance": "Before editing,freeze one native allocation/work comparison scalar,64-value sequence,and64 small dictionaries with sorted/unsorted and callbacks/encoder controls,both APIs. Require affected allocation reduction,exact text/fuel/error/span/admission cleanup. Preserve actual paused default callback,cancel/exception/refusal,cycle removal and retained owners. Reuse existing JSON regressions and58 full jobs;any missing paused dictionary/default funding witness gets one focused external regression. Inspect Release IL removal as diagnostic evidence,not a permanent architecture test.",
+  "stopping": "Only this local-function capture removal. No recursive parser rewrite,blanket async hoist,output buffer retuning,new dispatcher/cache/owner or repeated timing. Reject if correctness needs new ownership state. Do not attribute to json.dump paths or CPython gap.",
+  "runtimeEdits": false,
+  "measurements": false
+}

@@ -1,0 +1,28 @@
+{
+  "baseline": "15b4bc031d5c7d2c474d448968f4c20c1a00cca8",
+  "nativeBoundary": "Warm compiled json.dumps/JSONEncoder.encode execution with prepared payload/context. Excludes compilation/context preparation,scheduling,projection,startup/I/O. Pure async values complete on measured thread.",
+  "routes": [
+    "scalar",
+    "sequence",
+    "dictionaries",
+    "sorted",
+    "default",
+    "encoder",
+    "incremental-control",
+    "loads-control"
+  ],
+  "modes": [
+    "sync",
+    "async"
+  ],
+  "warmups": 2,
+  "samples": 8,
+  "invocationsPerSample": 8,
+  "elements": 64,
+  "elapsedMeasured": false,
+  "gate": "Affected allocation reduction and exact native result UTF8 hash/step arrays;incremental and loads control allocation arrays unchanged. Reuse existing default-dumps/literal/string/integer emission fuel/admission records. No recapture or new buffer/ownership changes.",
+  "sourceCandidateOnly": false,
+  "diagnosticNotBuilt": false,
+  "diagnosticSha256": "004b07c2beb38f94be543b4306e0a12b83a4ff66d5a8201b9330b4c3a6da2ec4",
+  "fixtureCorrection": "Initial16 routes failed before producing allocation records because compiled setup values were lexical locals;publish intended shared fixture bindings explicitly as globals. No runtime edits or allocation tuning. Initial capture/scope/source retained."
+}

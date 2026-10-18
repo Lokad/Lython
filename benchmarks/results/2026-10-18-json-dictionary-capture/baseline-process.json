@@ -1,0 +1,14 @@
+{
+  "source": "15b4bc03",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "C7BE573427471048B9F7345EFA3E1136FE8A6BCF0B548965D0D7733013A2491E",
+  "filter": "Category!=Stress&FullyQualifiedName~JsonDictionaryCaptureDiagnostic",
+  "pid": 43032,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1511,
+  "stdoutSha256": "2A2D3CA123813CCBA0FF0FCA581CBD4280163B5476732BD3030B8ABF02ED9791",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

@@ -1,0 +1,58 @@
+{
+  "head": "15b4bc031d5c7d2c474d448968f4c20c1a00cca8",
+  "assemblySha256": "189D605C96170DAFA2EE60F8C75A4737DA3BFA22291D30932FA8AE85369ED3A9",
+  "sourceSha256": "8076B63F25AA53BF6091B2B0F84CB7758047BF25896575C5FFE830B68CB7E068",
+  "method": "AppendJsonValueAsync",
+  "stateMachine": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+<AppendJsonValueAsync>d__53",
+  "closure": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+<>c__DisplayClass53_0",
+  "closureFields": [
+    "System.Collections.Generic.HashSet`1[[System.Object, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]] active",
+    "Lokad.Lython.LythonSourceSpan span",
+    "Lokad.Lython.Runtime.LythonRuntime+JsonDumpOptions options",
+    "System.Text.StringBuilder builder",
+    "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext context",
+    "Lokad.Lython.Runtime.LythonRuntime+JsonModule+JsonGrowthCharge charge",
+    "System.Int32 depth",
+    "System.Int32 defaultDepth",
+    "System.Boolean asynchronous"
+  ],
+  "relevantInstructions": [
+    {
+      "offset": 42,
+      "opcode": "newobj",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+<>c__DisplayClass53_0..ctor"
+    },
+    {
+      "offset": 227,
+      "opcode": "callvirt",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.CheckExecution"
+    },
+    {
+      "offset": 725,
+      "opcode": "call",
+      "method": "Lokad.Lython.Runtime.Numbers.PyNumberOps.TryAsInteger"
+    },
+    {
+      "offset": 757,
+      "opcode": "callvirt",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.CheckExecution"
+    },
+    {
+      "offset": 1406,
+      "opcode": "callvirt",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+<>c__DisplayClass53_0.<AppendJsonValueAsync>g__AppendDictionaryAsync|0"
+    },
+    {
+      "offset": 1535,
+      "opcode": "callvirt",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+<>c__DisplayClass53_0.<AppendJsonValueAsync>g__AppendDictionaryAsync|0"
+    },
+    {
+      "offset": 1664,
+      "opcode": "callvirt",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+JsonModule+<>c__DisplayClass53_0.<AppendJsonValueAsync>g__AppendDictionaryAsync|0"
+    }
+  ],
+  "finding": "MoveNext constructs the capturing dictionary-helper display class before the common value checks and scalar dispatch. Its nine fields duplicate existing method inputs, including active-owner references. Source helper has no captured-variable reassignment.",
+  "limitation": "IL structure establishes eager object creation,not per-job allocation amount,elapsed impact or an accepted optimization. No runtime edits or measurement."
+}

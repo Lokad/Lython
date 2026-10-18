@@ -127,6 +127,104 @@ internal sealed partial class LythonRuntime
             public void Dispose() => _reservation.Dispose();
         }
 
+        private static async ValueTask AppendJsonDictionaryAsync(
+            StringBuilder builder,
+            PyDict dict,
+            JsonDumpOptions options,
+            ExecutionContext context,
+            LythonSourceSpan span,
+            int depth,
+            int defaultDepth,
+            HashSet<object>? active,
+            JsonGrowthCharge charge,
+            bool asynchronous)
+        {
+            if (active is not null && !active.Add(dict))
+            {
+                throw new LythonRuntimeException("ValueError", "Circular reference detected.", span);
+            }
+
+            try
+            {
+                if (!options.SortKeys)
+                {
+                    // Stream entries in dictionary order without copying them
+                    // aside; only the sorted path below pays for scratch.
+                    builder.Append("{");
+                    var index = 0;
+                    foreach (var pair in dict)
+                    {
+                        context.CheckExecution(span);
+                        if (!IsSupportedJsonObjectKey(pair.Key))
+                        {
+                            if (options.SkipKeys)
+                            {
+                                continue;
+                            }
+
+                            throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
+                        }
+
+                        if (index > 0)
+                        {
+                            AppendSeparator(builder, options.ItemSeparator, charge);
+                        }
+
+                        AppendJsonValuePrefix(builder, options, depth + 1, index, charge, context, span);
+                        AppendJsonObjectKey(builder, pair.Key, options.EnsureAscii, charge, context, span);
+                        AppendSeparator(builder, options.KeySeparator, charge);
+                        await AppendJsonValueAsync(builder, pair.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
+                        index++;
+                    }
+
+                    if (index > 0)
+                    {
+                        AppendJsonContainerSuffix(builder, options, depth, charge, context, span);
+                    }
+
+                    builder.Append("}");
+                    return;
+                }
+
+                // Sorting retains one reference pair per entry beside the live
+                // dict: fund that scratch (pairs plus backing) before building
+                // it instead of growing uncharged.
+                charge.GrowBytes(checked(32L * dict.Count));
+                var entries = CollectSortedJsonEntries(dict, context, span);
+                builder.Append("{");
+                var emitted = 0;
+                foreach (var entry in entries)
+                {
+                    if (!IsSupportedJsonObjectKey(entry.OriginalKey))
+                    {
+                        if (options.SkipKeys) continue;
+                        throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
+                    }
+                    if (emitted > 0)
+                    {
+                        AppendSeparator(builder, options.ItemSeparator, charge);
+                    }
+
+                    AppendJsonValuePrefix(builder, options, depth + 1, emitted, charge, context, span);
+                    AppendJsonObjectKey(builder, entry.OriginalKey, options.EnsureAscii, charge, context, span);
+                    AppendSeparator(builder, options.KeySeparator, charge);
+                    await AppendJsonValueAsync(builder, entry.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
+                    emitted++;
+                }
+
+                if (emitted > 0)
+                {
+                    AppendJsonContainerSuffix(builder, options, depth, charge, context, span);
+                }
+
+                builder.Append("}");
+            }
+            finally
+            {
+                _ = active?.Remove(dict);
+            }
+        }
+
         private static async ValueTask AppendJsonValueAsync(
             StringBuilder builder,
             object value,
@@ -139,94 +237,6 @@ internal sealed partial class LythonRuntime
             JsonGrowthCharge charge,
             bool asynchronous)
         {
-            async ValueTask AppendDictionaryAsync(PyDict dict)
-            {
-                if (active is not null && !active.Add(dict))
-                {
-                    throw new LythonRuntimeException("ValueError", "Circular reference detected.", span);
-                }
-
-                try
-                {
-                    if (!options.SortKeys)
-                    {
-                        // Stream entries in dictionary order without copying them
-                        // aside; only the sorted path below pays for scratch.
-                        builder.Append("{");
-                        var index = 0;
-                        foreach (var pair in dict)
-                        {
-                            context.CheckExecution(span);
-                            if (!IsSupportedJsonObjectKey(pair.Key))
-                            {
-                                if (options.SkipKeys)
-                                {
-                                    continue;
-                                }
-
-                                throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
-                            }
-
-                            if (index > 0)
-                            {
-                                AppendSeparator(builder, options.ItemSeparator, charge);
-                            }
-
-                            AppendJsonValuePrefix(builder, options, depth + 1, index, charge, context, span);
-                            AppendJsonObjectKey(builder, pair.Key, options.EnsureAscii, charge, context, span);
-                            AppendSeparator(builder, options.KeySeparator, charge);
-                            await AppendJsonValueAsync(builder, pair.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
-                            index++;
-                        }
-
-                        if (index > 0)
-                        {
-                            AppendJsonContainerSuffix(builder, options, depth, charge, context, span);
-                        }
-
-                        builder.Append("}");
-                        return;
-                    }
-
-                    // Sorting retains one reference pair per entry beside the live
-                    // dict: fund that scratch (pairs plus backing) before building
-                    // it instead of growing uncharged.
-                    charge.GrowBytes(checked(32L * dict.Count));
-                    var entries = CollectSortedJsonEntries(dict, context, span);
-                    builder.Append("{");
-                    var emitted = 0;
-                    foreach (var entry in entries)
-                    {
-                        if (!IsSupportedJsonObjectKey(entry.OriginalKey))
-                        {
-                            if (options.SkipKeys) continue;
-                            throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
-                        }
-                        if (emitted > 0)
-                        {
-                            AppendSeparator(builder, options.ItemSeparator, charge);
-                        }
-
-                        AppendJsonValuePrefix(builder, options, depth + 1, emitted, charge, context, span);
-                        AppendJsonObjectKey(builder, entry.OriginalKey, options.EnsureAscii, charge, context, span);
-                        AppendSeparator(builder, options.KeySeparator, charge);
-                        await AppendJsonValueAsync(builder, entry.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
-                        emitted++;
-                    }
-
-                    if (emitted > 0)
-                    {
-                        AppendJsonContainerSuffix(builder, options, depth, charge, context, span);
-                    }
-
-                    builder.Append("}");
-                }
-                finally
-                {
-                    _ = active?.Remove(dict);
-                }
-            }
-
             context.CheckExecution(span);
             charge.Observe(builder.Length);
             if (depth >= ExecutionLimits.MaxInterpreterDepth || defaultDepth >= ExecutionLimits.MaxInterpreterDepth)
@@ -267,13 +277,13 @@ internal sealed partial class LythonRuntime
                     await AppendJsonSequenceAsync(builder, tuple, options, context, span, depth, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                     return;
                 case PyDict dict:
-                    await AppendDictionaryAsync(dict).ConfigureAwait(false);
+                    await AppendJsonDictionaryAsync(builder, dict, options, context, span, depth, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                     return;
                 case PyCounter counter:
-                    await AppendDictionaryAsync(counter.InnerDict).ConfigureAwait(false);
+                    await AppendJsonDictionaryAsync(builder, counter.InnerDict, options, context, span, depth, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                     return;
                 case PyDefaultDict defaultDict:
-                    await AppendDictionaryAsync(defaultDict.InnerDict).ConfigureAwait(false);
+                    await AppendJsonDictionaryAsync(builder, defaultDict.InnerDict, options, context, span, depth, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                     return;
                 default:
                     if (options.DefaultCallable is not null)

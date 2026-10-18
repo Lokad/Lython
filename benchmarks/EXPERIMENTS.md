@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 JSON dictionary-helper capture removal](results/2026-10-18-json-dictionary-capture/README.md)
+moves one captured local function into a static helper with explicit inputs.
+The same helper body, awaits, cycle tracking and funding remain; 80 B per value
+disappears, saving 5,200 B for 64 scalars or 15,440 B for 64 small dictionaries.
+All 465 focused checks, 58 complete jobs, six CPython goldens and two new baseline/
+candidate lifetime cases pass. Semantic guard fields and controls match; affected
+refusal allocations drop 80 B. Initial fixture errors and one raw allocation
+outlier remain documented. No elapsed measurement, recapture or new memory machinery.
+
 The [2026-10-18 dictionary view calls](results/2026-10-18-dict-view-call/README.md)
 reuse existing receiver operations and view admission. One allocation-only pair
 saves 6,656/7,168 B per 64 distinct-dictionary calls sync/async. Raw controls and

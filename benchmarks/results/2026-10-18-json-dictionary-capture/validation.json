@@ -1,0 +1,57 @@
+{
+  "baseline": "15b4bc031d5c7d2c474d448968f4c20c1a00cca8",
+  "focusedDistinctPassed": 465,
+  "groups": {
+    "final-white": {
+      "count": 169,
+      "filter": "Category!=Stress&(FullyQualifiedName~JsonDefaultDumpsBoundaryTests|FullyQualifiedName~JsonLiteralDispatchBoundaryTests|FullyQualifiedName~JsonStringDispatchBoundaryTests|FullyQualifiedName~JsonStringEmissionAdmissionTests|FullyQualifiedName~JsonIntegerEmissionAdmissionTests|FullyQualifiedName~JsonIterencodeAbandonedScratchAccountingTests|FullyQualifiedName~EscapedJsonStorageTests|FullyQualifiedName~JsonNumberTokenStorageTests|FullyQualifiedName~JsonStringTokenStorageTests|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~ExecutableStackAdmissionTests)",
+      "assemblySha256": "C0AA67757BB279885FAE147BEEE3BC9AF8ED696C0FEA218219DDF0DF8B96E236",
+      "elapsedMilliseconds": 1417,
+      "trxSha256": "43e6c1a3778f2896e5586407a3a106f7eabf05f48af5bb00161397da90700b29"
+    },
+    "final-json": {
+      "count": 144,
+      "filter": "Category!=Stress&(FullyQualifiedName~JsonDictionaryCallbackLifetimeTests|FullyQualifiedName~JsonSuspendingCallbackTests|FullyQualifiedName~JsonEncoderScenarioTests|FullyQualifiedName~JsonBooleanOptionTests|FullyQualifiedName~JsonCollectionsMappingTests|FullyQualifiedName~JsonSortingBeforeSkipTests|FullyQualifiedName~JsonMutableInstanceTests|FullyQualifiedName~JsonModuleCallBindingTests|FullyQualifiedName~JsonBoundedGrowthScenarioTests)",
+      "assemblySha256": "C1B992CC4F99874A13D98DB5CD9C9AB6AC0957D9CFDFDF89D518E22675F88C32",
+      "elapsedMilliseconds": 5480,
+      "trxSha256": "b862840eb49bec22318b5d96332fbefdb9082e2bc9a3925fbcc70f5564d45a45"
+    },
+    "final-owners": {
+      "count": 90,
+      "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+      "assemblySha256": "C1B992CC4F99874A13D98DB5CD9C9AB6AC0957D9CFDFDF89D518E22675F88C32",
+      "elapsedMilliseconds": 2833,
+      "trxSha256": "782fab6a653218441650bad07816a8e9fe8958fae92c5cde0ea79e96ab348405"
+    },
+    "final-goldens": {
+      "count": 62,
+      "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+      "assemblySha256": "C1B992CC4F99874A13D98DB5CD9C9AB6AC0957D9CFDFDF89D518E22675F88C32",
+      "elapsedMilliseconds": 8035,
+      "trxSha256": "3663754707865ca1b89f2fbfce042f7f4e0d3a607ca6ce3c24031231ce5bf020"
+    }
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs": "ed4a1a390083ab0ef5befe619315b6e21d10bc0b196345cf2a46c4f35beab458"
+  },
+  "newTests": {
+    "tests/Lokad.Lython.PublicApi.Tests/JsonDictionaryCallbackLifetimeTests.cs": "17cbc0f9d03d215ce00a8f7a11e050f9b6ed96ea7479807e6765630f71a9aa06"
+  },
+  "newBaselineCasesPassed": 2,
+  "independentCPythonPrograms": 6,
+  "completeJobs": 58,
+  "exactSemanticGuardRecords": 70,
+  "guardAllocationChanges": {
+    "affected": 32,
+    "bytesSavedEach": 80
+  },
+  "temporaryDiagnosticRemoved": true,
+  "allNativeStepArraysIdentical": true,
+  "controlAllocationArraysIdentical": true,
+  "helperBodyUnchangedModuloIndentation": true,
+  "discardedCaptureVerified": true,
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "regexPlanningOnly": true,
+  "contracts": "Same output/scratch admission,cycle set,sort/skip order,callbacks,await/finally and managed stack guards. No new owner or contract change.",
+  "fixtureCorrections": "Before runtime edits:lifetime cancellation row reread a disposed result;diagnostic setup lexical locals were not published to the measured context. Corrected fixture ownership/globals;original failures/source/scope kept in private notes. One successful frozen before/after pair,no allocation tuning."
+}
