@@ -1,0 +1,295 @@
+{
+  "accepted": true,
+  "baseline": "Existing8f00a1c3 capture;no remeasurement",
+  "captureCountForCorrection": 1,
+  "all34AllocationFundingOutputArraysIdentical": true,
+  "exactScalarFuelRecords": 190,
+  "exactScalarAdmissionRecords": 48,
+  "all64AdmissionOutcomesChargesErrorsIdentical": true,
+  "containerFuelRecordsIntentionallyChanged": 114,
+  "additionalChecks": {
+    "list-control": 2,
+    "tuple-control": 2,
+    "dict-control": 2,
+    "set-control": 2,
+    "list-cycle-control": 1,
+    "tuple-cycle-control": 2,
+    "view-cycle-control": 3
+  },
+  "rows": [
+    {
+      "shape": "ascii",
+      "asynchronous": false,
+      "bytesPerCall": 1000.0,
+      "oldStepsPerCall": 10.0,
+      "newStepsPerCall": 10.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "ascii",
+      "asynchronous": true,
+      "bytesPerCall": 1000.0,
+      "oldStepsPerCall": 10.0,
+      "newStepsPerCall": 10.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "boolean",
+      "asynchronous": false,
+      "bytesPerCall": 344.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 9.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "boolean",
+      "asynchronous": true,
+      "bytesPerCall": 344.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 9.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "conversion",
+      "asynchronous": false,
+      "bytesPerCall": 608.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 9.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "conversion",
+      "asynchronous": true,
+      "bytesPerCall": 608.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 9.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "dict-control",
+      "asynchronous": false,
+      "bytesPerCall": 1272.0,
+      "oldStepsPerCall": 10.0,
+      "newStepsPerCall": 12.0,
+      "additionalChecksPerCall": 2
+    },
+    {
+      "shape": "dict-control",
+      "asynchronous": true,
+      "bytesPerCall": 1272.0,
+      "oldStepsPerCall": 10.0,
+      "newStepsPerCall": 12.0,
+      "additionalChecksPerCall": 2
+    },
+    {
+      "shape": "direct-integer",
+      "asynchronous": false,
+      "bytesPerCall": 144.0,
+      "oldStepsPerCall": 1.0,
+      "newStepsPerCall": 1.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "direct-integer",
+      "asynchronous": true,
+      "bytesPerCall": 144.0,
+      "oldStepsPerCall": 1.0,
+      "newStepsPerCall": 1.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "direct-text",
+      "asynchronous": false,
+      "bytesPerCall": 296.0,
+      "oldStepsPerCall": 2.0,
+      "newStepsPerCall": 2.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "direct-text",
+      "asynchronous": true,
+      "bytesPerCall": 296.0,
+      "oldStepsPerCall": 2.0,
+      "newStepsPerCall": 2.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "empty-set",
+      "asynchronous": false,
+      "bytesPerCall": 344.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 9.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "empty-set",
+      "asynchronous": true,
+      "bytesPerCall": 344.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 9.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "float",
+      "asynchronous": false,
+      "bytesPerCall": 520.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 9.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "float",
+      "asynchronous": true,
+      "bytesPerCall": 520.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 9.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "integer",
+      "asynchronous": false,
+      "bytesPerCall": 488.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 9.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "integer",
+      "asynchronous": true,
+      "bytesPerCall": 488.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 9.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "list-control",
+      "asynchronous": false,
+      "bytesPerCall": 1096.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 11.0,
+      "additionalChecksPerCall": 2
+    },
+    {
+      "shape": "list-control",
+      "asynchronous": true,
+      "bytesPerCall": 1096.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 11.0,
+      "additionalChecksPerCall": 2
+    },
+    {
+      "shape": "list-cycle-control",
+      "asynchronous": false,
+      "bytesPerCall": 920.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 10.0,
+      "additionalChecksPerCall": 1
+    },
+    {
+      "shape": "list-cycle-control",
+      "asynchronous": true,
+      "bytesPerCall": 920.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 10.0,
+      "additionalChecksPerCall": 1
+    },
+    {
+      "shape": "none",
+      "asynchronous": false,
+      "bytesPerCall": 344.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 9.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "none",
+      "asynchronous": true,
+      "bytesPerCall": 344.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 9.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "set-control",
+      "asynchronous": false,
+      "bytesPerCall": 1440.0,
+      "oldStepsPerCall": 11.0,
+      "newStepsPerCall": 13.0,
+      "additionalChecksPerCall": 2
+    },
+    {
+      "shape": "set-control",
+      "asynchronous": true,
+      "bytesPerCall": 1440.0,
+      "oldStepsPerCall": 11.0,
+      "newStepsPerCall": 13.0,
+      "additionalChecksPerCall": 2
+    },
+    {
+      "shape": "text",
+      "asynchronous": false,
+      "bytesPerCall": 640.0,
+      "oldStepsPerCall": 10.0,
+      "newStepsPerCall": 10.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "text",
+      "asynchronous": true,
+      "bytesPerCall": 640.0,
+      "oldStepsPerCall": 10.0,
+      "newStepsPerCall": 10.0,
+      "additionalChecksPerCall": 0
+    },
+    {
+      "shape": "tuple-control",
+      "asynchronous": false,
+      "bytesPerCall": 1088.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 11.0,
+      "additionalChecksPerCall": 2
+    },
+    {
+      "shape": "tuple-control",
+      "asynchronous": true,
+      "bytesPerCall": 1088.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 11.0,
+      "additionalChecksPerCall": 2
+    },
+    {
+      "shape": "tuple-cycle-control",
+      "asynchronous": false,
+      "bytesPerCall": 1216.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 11.0,
+      "additionalChecksPerCall": 2
+    },
+    {
+      "shape": "tuple-cycle-control",
+      "asynchronous": true,
+      "bytesPerCall": 1216.0,
+      "oldStepsPerCall": 9.0,
+      "newStepsPerCall": 11.0,
+      "additionalChecksPerCall": 2
+    },
+    {
+      "shape": "view-cycle-control",
+      "asynchronous": false,
+      "bytesPerCall": 1808.0,
+      "oldStepsPerCall": 10.0,
+      "newStepsPerCall": 13.0,
+      "additionalChecksPerCall": 3
+    },
+    {
+      "shape": "view-cycle-control",
+      "asynchronous": true,
+      "bytesPerCall": 1808.0,
+      "oldStepsPerCall": 10.0,
+      "newStepsPerCall": 13.0,
+      "additionalChecksPerCall": 3
+    }
+  ],
+  "elapsedMeasured": false,
+  "saved64BytesPerAffectedCallRetained": true
+}

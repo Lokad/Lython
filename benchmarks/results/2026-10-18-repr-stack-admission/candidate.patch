@@ -1,0 +1,82 @@
+diff --git a/src/Lokad.Lython/Runtime/PyRendering.cs b/src/Lokad.Lython/Runtime/PyRendering.cs
+index c6996b91..4b62a36e 100644
+--- a/src/Lokad.Lython/Runtime/PyRendering.cs
++++ b/src/Lokad.Lython/Runtime/PyRendering.cs
+@@ -145,18 +145,7 @@ internal static class PyRendering
+     public static string ToInterpolatedString(object value, PyRenderingContext context) => ToInterpolatedPyString(value, context).AsString();
+ 
+     public static PyString ToReprPyString(object value, PyRenderingContext context)
+-    {
+-        context.Context.EnterInterpreterFrame(null);
+-        try
+-        {
+-            // Only container entries need cycle-tracking storage.
+-            return ToReprPyStringCore(value, context, null);
+-        }
+-        finally
+-        {
+-            context.Context.LeaveInterpreterFrame();
+-        }
+-    }
++        => ToReprPyStringCore(value, context, null);
+ 
+     internal static PyString OwnJoinItem(PyString rendered, LythonRuntime.ExecutionContext context)
+     {
+@@ -292,29 +281,37 @@ internal static class PyRendering
+ 
+     private static PyString ToReprPyStringCore(object value, PyRenderingContext context, HashSet<object>? activeContainers)
+     {
+-        if (PyStringOps.TryAsString(value, out var text))
++        context.Context.EnterInterpreterFrame(null);
++        try
+         {
+-            return RenderStringLiteral(text, context);
+-        }
++            if (PyStringOps.TryAsString(value, out var text))
++            {
++                return RenderStringLiteral(text, context);
++            }
+ 
+-        return value switch
++            return value switch
++            {
++                PyList list => RenderReprSequence(list, "[", "]", "[...]", context, activeContainers),
++                PyTuple tuple => RenderReprTuple(tuple, context, activeContainers),
++                PyDict dict => RenderReprDictionary(dict, context, activeContainers),
++                PySet set => RenderReprSet(set, context, activeContainers),
++                PyNone => PyStringOps.NoneLiteral,
++                bool boolean => boolean ? TrueLiteral : FalseLiteral,
++                _ when PyNumberOps.TryAsInteger(value, out var integer) => RenderInteger(integer, context),
++                double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
++                LythonRuntime.DictKeysView view => RenderReprSequence(view, "dict_keys([", "])", "dict_keys([...])", context, activeContainers),
++                LythonRuntime.DictValuesView view => RenderReprSequence(view, "dict_values([", "])", "dict_values([...])", context, activeContainers),
++                LythonRuntime.DictItemsView view => RenderReprSequence(view, "dict_items([", "])", "dict_items([...])", context, activeContainers),
++                PyException exception => RenderExceptionRepr(exception, context),
++                LythonRuntime.ReMatchObject match => RenderMatchRepr(match, context, activeContainers),
++                IPyRenderableValue renderable => renderable.RenderPython(context),
++                _ => RenderOpaqueObject()
++            };
++        }
++        finally
+         {
+-            PyList list => RenderReprSequence(list, "[", "]", "[...]", context, activeContainers),
+-            PyTuple tuple => RenderReprTuple(tuple, context, activeContainers),
+-            PyDict dict => RenderReprDictionary(dict, context, activeContainers),
+-            PySet set => RenderReprSet(set, context, activeContainers),
+-            PyNone => PyStringOps.NoneLiteral,
+-            bool boolean => boolean ? TrueLiteral : FalseLiteral,
+-            _ when PyNumberOps.TryAsInteger(value, out var integer) => RenderInteger(integer, context),
+-            double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
+-            LythonRuntime.DictKeysView view => RenderReprSequence(view, "dict_keys([", "])", "dict_keys([...])", context, activeContainers),
+-            LythonRuntime.DictValuesView view => RenderReprSequence(view, "dict_values([", "])", "dict_values([...])", context, activeContainers),
+-            LythonRuntime.DictItemsView view => RenderReprSequence(view, "dict_items([", "])", "dict_items([...])", context, activeContainers),
+-            PyException exception => RenderExceptionRepr(exception, context),
+-            LythonRuntime.ReMatchObject match => RenderMatchRepr(match, context, activeContainers),
+-            IPyRenderableValue renderable => renderable.RenderPython(context),
+-            _ => RenderOpaqueObject()
+-        };
++            context.Context.LeaveInterpreterFrame();
++        }
+     }
+ 
+     private static PyString RenderOpaqueObject() => ObjectLiteral;

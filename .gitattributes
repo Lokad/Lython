@@ -148,3 +148,5 @@ benchmarks/results/2026-10-18-single-part-fstring/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-single-part-fstring/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-repr-cycle-storage/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-repr-cycle-storage/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-repr-stack-admission/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-repr-stack-admission/candidate.patch -text -whitespace

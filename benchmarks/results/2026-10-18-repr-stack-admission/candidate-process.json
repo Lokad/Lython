@@ -1,0 +1,14 @@
+{
+  "source": "recursive-repr-admission",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "3EDFAE4C11A8FB8CCC78BBB3AEA157F447BC6815A9997A69338E3C34F4FC923A",
+  "filter": "Category!=Stress&(FullyQualifiedName~ReprCycleDiagnostic|FullyQualifiedName~RenderingStackAdmissionTests|FullyQualifiedName~RenderingSubsystemTests|FullyQualifiedName~StringProtocolBoundaryTests|FullyQualifiedName~IntegerRenderingAdmissionTests|FullyQualifiedName~ExecutableStackAdmissionTests|FullyQualifiedName~FormattedStringExecutableTests|FullyQualifiedName~StringFormatPrimitiveTests)",
+  "pid": 8640,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1487,
+  "stdoutSha256": "42FE7FE60BF320025DE8AEAFC3E572187F958F79CBBE7B7979FF5A9018C065A5",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

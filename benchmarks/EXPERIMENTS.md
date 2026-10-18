@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 recursive repr correction](results/2026-10-18-repr-stack-admission/README.md)
+supersedes unsafe intermediate8f00a1c3:its exact Release package overflows the CLR
+stack on a bounded acyclic-container witness despite green ordinary CI. Moving
+the existing managed guard to recursive descent fixes the witness and preserves
+the64B scalar saving/all34 allocation and funding arrays. Container fuel gains
+explicit safety checks;336 focused cases/58 jobs pass. Full fault traces retained.
+
 The [2026-10-18 repr cycle-storage change](results/2026-10-18-repr-cycle-storage/README.md)
 defers the existing per-call set until a container needs it. One frozen pair
 saves64B per affected rendering call;14 container arrays,funding and368 boundary

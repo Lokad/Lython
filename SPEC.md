@@ -3397,6 +3397,11 @@ Each nesting entry also checks the current thread's stack through the managed
 runtime's `TryEnsureSufficientExecutionStack` result before descending or
 publishing traversal state. This includes host continuations after genuine async
 suspension; the runtime does not sample native stack addresses or cache OS ranges.
+Recursive `repr` rendering admits each value descent through that same policy,
+including repeated container references. Cycle detection alone does not bound
+acyclic nesting. Each child consumes an execution checkpoint; historical
+container-rendering fuel thresholds can change. Refused entries unwind their
+managed frames, and subsequent funded executions remain usable.
 
 The CLR stack backstop reports `RuntimeError` with the interpreter-stack-depth
 message. Explicit configured recursion exhaustion retains `RecursionError`, as

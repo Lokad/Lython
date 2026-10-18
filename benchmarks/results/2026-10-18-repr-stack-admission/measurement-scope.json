@@ -1,0 +1,23 @@
+{
+  "base": "8f00a1c343e0666ec44a3a017605b405a2a7a33a",
+  "diagnosticSha256": "8e9d21b869f359165d3c27143838d22f0a2dde271eb875adc0f30f1c2f8b982c",
+  "baseline": "Reused ../2026-10-18-repr-cycle-storage/candidate.trx;no new baseline capture",
+  "newCaptureCount": 1,
+  "allocationRows": 34,
+  "scalarFuelRecords": 190,
+  "scalarAdmissionRecords": 48,
+  "containerFuelRecords": 114,
+  "admissionRecords": 64,
+  "boundary": "Prepared warm native rendering/executable execution. Excludes compilation,startup scheduling,projection and IO;allocation only. Direct-native rows remain synchronous under either harness mode.",
+  "intentionalWorkDelta": {
+    "list-control": 2,
+    "tuple-control": 2,
+    "dict-control": 2,
+    "set-control": 2,
+    "list-cycle-control": 1,
+    "tuple-cycle-control": 2,
+    "view-cycle-control": 3
+  },
+  "nativeCandidateTrxContains": "36 diagnostic cases plus46 regressions;final focused count excludes diagnostic cases",
+  "faultBoundary": "Owned subprocesses only;25000 lists,64MiB accounted execution cap. The committed8f package crashes;corrected sync/async children return structured RuntimeError. No timing claim."
+}

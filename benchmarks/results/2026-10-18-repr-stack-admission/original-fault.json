@@ -1,0 +1,65 @@
+{
+  "source": "chain=[]\nfor index in range(25000):chain=[chain]\ntry:\n text=repr(chain)\n print('rendered',len(text))\nexcept RecursionError:\n print('recursion')",
+  "depth": 25000,
+  "executionBudgetBytes": 67108864,
+  "subprocessOnly": true,
+  "baselinePackageCommit": "b0ac7c603e4a235d9aab0bab5b37cb46fa5aa436",
+  "records": [
+    {
+      "label": "immutable-b0ac7c60",
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedSeconds": 1.0834318999550305,
+      "librarySha256": "95137e6e5a02d2149910e38062fab55995f09a17c4b305acbc27ffefbc671f4c",
+      "stdoutSha256": "08d7ec1531b967b3f230ce6c2cdcb372f7ad81b351919058aee6f22720c714bd",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stackOverflowReported": false,
+      "report": {
+        "Index": 0,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 67098796,
+          "PeakProjectionMemoryBytes": 166,
+          "DeniedReservationBytes": 31274,
+          "Failure": {
+            "ExceptionType": "MemoryError",
+            "Message": "execution memory budget exceeded (67108864)",
+            "Span": null,
+            "Frames": [
+              "<module>"
+            ]
+          }
+        },
+        "CPython": null,
+        "Matches": true,
+        "Note": null,
+        "Compared": false,
+        "Options": {
+          "MaxMemoryBytes": 67108864,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "current-repr-patch",
+      "exitCode": 3221225725,
+      "timedOut": false,
+      "elapsedSeconds": 1.4839357000309974,
+      "librarySha256": "037a0329af0ff8558dbbdd1a68354033420c06ef4d80c512b200ab4a9fddf920",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "24e4ed7955d65f6087ff4a4ab15543271c02dc80cff7bab3767a4e33ee25c23c",
+      "stackOverflowReported": true,
+      "report": null
+    }
+  ],
+  "cpython": {
+    "exitCode": 0,
+    "stdout": "recursion\n",
+    "stderr": ""
+  },
+  "noRuntimeChange": true
+}

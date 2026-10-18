@@ -1,0 +1,99 @@
+{
+  "base": "8f00a1c343e0666ec44a3a017605b405a2a7a33a",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/PyRendering.cs": "2ef4a20b1bb0cff75a38e02a27e894f354eed2e72eb17b3e4d31ab32925336d5"
+  },
+  "newTests": {
+    "tests/Lokad.Lython.Tests/RenderingStackAdmissionTests.cs": "1671cc4f7f9915336761ee0d5581712e27785a13a0335e64992b03db268a17ad",
+    "tests/Lokad.Lython.PublicApi.Tests/RenderingStackAdmissionTests.cs": "920153ab822c60900eb94d9e936e501ecb3a5c16d99a38c0d0a7354d228025bf"
+  },
+  "focusedDistinctPassed": 336,
+  "groups": {
+    "final-white": {
+      "count": 46,
+      "process": {
+        "source": "recursive-repr-admission",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "9D1540116DC4EF8507B4F981CE4F5BE16205180824DAB34661AE40C889154B1C",
+        "filter": "Category!=Stress&(FullyQualifiedName~RenderingStackAdmissionTests|FullyQualifiedName~RenderingSubsystemTests|FullyQualifiedName~StringProtocolBoundaryTests|FullyQualifiedName~IntegerRenderingAdmissionTests|FullyQualifiedName~ExecutableStackAdmissionTests|FullyQualifiedName~FormattedStringExecutableTests|FullyQualifiedName~StringFormatPrimitiveTests)",
+        "pid": 43780,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1463,
+        "stdoutSha256": "2E8D630B921CBC1506BDD47A9CEEAC3D13A2B75DCFDC2A7B695392F15F095CFC",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "f91e82a67935d2fc317a3659d205eba0afd36f0b38bbb7f006a49e2e01a3e003"
+    },
+    "candidate-public": {
+      "count": 138,
+      "process": {
+        "source": "recursive-repr-admission",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "B005F6D0464E06A66840172C6F2BDE41E4FA51CEC9C17E70BDFFC5D8244CF72D",
+        "filter": "Category!=Stress&(FullyQualifiedName~StringProtocolTests|FullyQualifiedName~UnicodeReprCompatibilityTests|FullyQualifiedName~IntegerRenderingTests|FullyQualifiedName~FormatProtocolTests|FullyQualifiedName~SinglePartFormattedStringTests|FullyQualifiedName~BytesReprAccountingScenarioTests|FullyQualifiedName~RenderingStackAdmissionTests)",
+        "pid": 34800,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4505,
+        "stdoutSha256": "F26B61AC0A41075CB3A7FFCB585C2112D7B34AD52E679238FF6131558E22A0AF",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "8082dc7e86ec7d4776996713694aa4af262b7e102a2f181e866df4d8dd86b6a1"
+    },
+    "candidate-owners": {
+      "count": 90,
+      "process": {
+        "source": "recursive-repr-admission",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "B005F6D0464E06A66840172C6F2BDE41E4FA51CEC9C17E70BDFFC5D8244CF72D",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 68536,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2741,
+        "stdoutSha256": "8B4A8EB01C5ED277D9273C79820AAF236BEA780F76A3679184606142B8CE7806",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "12419b6bead434473ddb135c7643d93bdf90aa01de3c4df8f627c78ba141f9a9"
+    },
+    "candidate-goldens": {
+      "count": 62,
+      "process": {
+        "source": "recursive-repr-admission",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "B005F6D0464E06A66840172C6F2BDE41E4FA51CEC9C17E70BDFFC5D8244CF72D",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 67236,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 7866,
+        "stdoutSha256": "4775FE970C35047C2486CD65484914502FB36ABE38C60E8E18D93C29D8ACBF9F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "739ae06f61cfccbc2282624cff40ae4ac196821d829971541f636fca5f62b7a4"
+    }
+  },
+  "completeJobs": 58,
+  "newPermanentCases": 9,
+  "independentCPythonProgramsMatched": 6,
+  "matchedPublicProbeRuns": 12,
+  "all34AllocationFundingOutputArraysIdentical": true,
+  "exactScalarFuelRecords": 190,
+  "exactScalarAdmissionRecords": 48,
+  "containerFuelRecordsIntentionallyChanged": 114,
+  "all64AdmissionOutcomesChargesErrorsIdentical": true,
+  "elapsedMeasured": false,
+  "temporaryDiagnosticRemoved": true,
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "regexPlanningOnly": true,
+  "contracts": "Move the existing managed frame guard from repr root to recursive core. Per-value admission bounds acyclic recursion on startup/continuation stacks. Existing512 logical ceiling and managed TryEnsureSufficientExecutionStack remain;no new protection policy. Scalar fuel/allocation unchanged;children add checkpoints. Output/ownership and64B scalar saving remain. Unsafe intermediate8f00a1c3 is superseded by this correction despite its green ordinary CI."
+}
