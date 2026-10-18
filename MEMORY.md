@@ -67,6 +67,19 @@ the copy, while the working buffer remains charged. A failed conversion retains
 the builder and its funding. A successful consuming conversion releases only
 working storage; the result and its aliases remain funded under their owner.
 
+Accumulated text-file reads use the same governed UTF-8 working builder. Growth
+admits replacement capacity while the old buffer is still charged; materializing
+the returned string admits its copy before releasing that buffer. Each read
+releases working storage in finally after completion or awaited failure/cancellation.
+No duplicate retained UTF-16 window or ungoverned CLR accumulator is maintained.
+The bounded input codec/newline/carry paths retain their existing implementation.
+A refused append does not advance its cursor; earlier consumed windows remain
+consumed and refusal still fails the command. This is not transactional rewind.
+Closing a reader does not refund returned strings or their retained aliases.
+Capacity overlap can require more unused headroom and reject earlier. Long streams
+still require bounded host-driven execution batches; dropping guest references
+does not release arbitrary output ownership.
+
 Array-backed list growth reserves full replacement capacity against both the
 execution limit and shared host allowance before allocation. The old backing
 remains charged until the copy finishes. Failed admission leaves its contents

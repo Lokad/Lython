@@ -1,0 +1,6 @@
+{
+  "baseRevision": "565262377d81d8b1042341f3606911429af26322",
+  "kind": "working one-file runtime candidate; tests excluded from benchmark build",
+  "sourceFile": "src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Read.cs",
+  "canonicalSha256": "38752d9a1d1faebce9f3b44d4ac0073b049b4670604086f5b4101e9c374f5660"
+}

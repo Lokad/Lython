@@ -10,14 +10,11 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        // Streams host text in fixed byte windows instead of loading the whole file
-        // at open: only the current decoded window, a small raw carry and emitted
-        // values stay charged, so full scans no longer scale with discarded content.
-        // Windows decode through the same helpers as buffered reads and emit values
-        // through the same governed slicing, so values and per-value charges match;
-        // window charges release on replacement and the carry releases at close.
-        // Window scratch (decoded strings, transient byte arrays) stays bounded by
-        // the window, so it needs no reservation beyond the held infrastructure.
+        // Input storage is bounded by the current decoded UTF-8 window and raw
+        // carry. Accumulated reads admit UTF-8 working capacity before growth;
+        // returned values retain their execution/result funding after close.
+        // Long streams use bounded host-driven execution batches, not collection
+        // of discarded guest values. Input decoding keeps its existing codec path.
         internal sealed class ChunkedTextFileReadState : TextFileState, IPyOwnershipSnapshot
         {
             // The decoded Python window is stored beside byte/carry backing.
@@ -39,10 +36,8 @@ internal sealed partial class LythonRuntime
             private byte[]? _raw;
             private int _rawLength;
             private PyString _window = PyString.Empty;
-            private string _decoded = string.Empty;
             private long _windowCharge;
             private int _windowConsumed;
-            private int _charConsumed;
             private long _position;
             private long _nextOffset;
             private long _cumulativeBytes;
@@ -53,8 +48,6 @@ internal sealed partial class LythonRuntime
 
             bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
                 => OwnershipSnapshot.Owned(_services.MemoryGovernor, OwnedBytes, out chargeBytes);
-
-            private void RefreshOwnership() { }
 
             internal ChunkedTextFileReadState(
                 string path,
@@ -111,42 +104,48 @@ internal sealed partial class LythonRuntime
                     return PyString.Empty;
                 }
 
-                StringBuilder? builder = null;
-                while (true)
+                GovernedByteBuilder? builder = null;
+                try
                 {
-                    Refill();
-                    if (Drained())
+                    var remaining = size;
+                    while (true)
                     {
-                        return EmitAccumulated(builder);
-                    }
-
-                    var bytes = _window.Utf8Bytes.Span;
-                    var end = TextLineScanning.FindLineEndByte(bytes, _windowConsumed, _newline);
-                    if (size >= 0)
-                    {
-                        end = Math.Min(end, _window.GetByteIndexAfterRunes(_windowConsumed, size));
-                    }
-
-                    // A line ending exactly at the window edge may continue past it;
-                    // appending and pulling more stays correct, costing one extra
-                    // pull in a rare alignment.
-                    if (end < bytes.Length || EndsWithTerminator())
-                    {
-                        if (builder is null)
+                        Refill();
+                        if (Drained())
                         {
-                            var line = _window.SliceByByteRange(_windowConsumed, end);
-                            Advance(end);
-                            _services.ObserveString(line, null); TrackEmission(line);
-                            return line;
+                            return EmitAccumulated(builder);
                         }
 
-                        AppendRange(builder, _windowConsumed, end);
-                        return EmitAccumulated(builder);
-                    }
+                        var bytes = _window.Utf8Bytes.Span;
+                        var end = TextLineScanning.FindLineEndByte(bytes, _windowConsumed, _newline);
+                        if (remaining >= 0)
+                        {
+                            end = Math.Min(end, _window.GetByteIndexAfterRunes(_windowConsumed, remaining));
+                            remaining -= CountRunes(_windowConsumed, end);
+                        }
 
-                    builder ??= new StringBuilder();
-                    AppendRange(builder, _windowConsumed, bytes.Length);
+                        // A line ending exactly at the window edge may continue past it;
+                        // appending and pulling more stays correct, costing one extra
+                        // pull in a rare alignment.
+                        if (end < bytes.Length || EndsWithTerminator() || remaining == 0)
+                        {
+                            if (builder is null)
+                            {
+                                var line = _window.SliceByByteRange(_windowConsumed, end);
+                                Advance(end);
+                                _services.ObserveString(line, null);
+                                return line;
+                            }
+
+                            AppendRange(builder, _windowConsumed, end);
+                            return EmitAccumulated(builder);
+                        }
+
+                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
+                        AppendRange(builder, _windowConsumed, bytes.Length);
+                    }
                 }
+                finally { builder?.Release(); }
             }
 
             public async ValueTask<PyString> ReadLineAsync(int size)
@@ -156,39 +155,45 @@ internal sealed partial class LythonRuntime
                     return PyString.Empty;
                 }
 
-                StringBuilder? builder = null;
-                while (true)
+                GovernedByteBuilder? builder = null;
+                try
                 {
-                    await RefillAsync().ConfigureAwait(false);
-                    if (Drained())
+                    var remaining = size;
+                    while (true)
                     {
-                        return EmitAccumulated(builder);
-                    }
-
-                    var bytes = _window.Utf8Bytes.Span;
-                    var end = TextLineScanning.FindLineEndByte(bytes, _windowConsumed, _newline);
-                    if (size >= 0)
-                    {
-                        end = Math.Min(end, _window.GetByteIndexAfterRunes(_windowConsumed, size));
-                    }
-
-                    if (end < bytes.Length || EndsWithTerminator())
-                    {
-                        if (builder is null)
+                        await RefillAsync().ConfigureAwait(false);
+                        if (Drained())
                         {
-                            var line = _window.SliceByByteRange(_windowConsumed, end);
-                            Advance(end);
-                            _services.ObserveString(line, null); TrackEmission(line);
-                            return line;
+                            return EmitAccumulated(builder);
                         }
 
-                        AppendRange(builder, _windowConsumed, end);
-                        return EmitAccumulated(builder);
-                    }
+                        var bytes = _window.Utf8Bytes.Span;
+                        var end = TextLineScanning.FindLineEndByte(bytes, _windowConsumed, _newline);
+                        if (remaining >= 0)
+                        {
+                            end = Math.Min(end, _window.GetByteIndexAfterRunes(_windowConsumed, remaining));
+                            remaining -= CountRunes(_windowConsumed, end);
+                        }
 
-                    builder ??= new StringBuilder();
-                    AppendRange(builder, _windowConsumed, bytes.Length);
+                        if (end < bytes.Length || EndsWithTerminator() || remaining == 0)
+                        {
+                            if (builder is null)
+                            {
+                                var line = _window.SliceByByteRange(_windowConsumed, end);
+                                Advance(end);
+                                _services.ObserveString(line, null);
+                                return line;
+                            }
+
+                            AppendRange(builder, _windowConsumed, end);
+                            return EmitAccumulated(builder);
+                        }
+
+                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
+                        AppendRange(builder, _windowConsumed, bytes.Length);
+                    }
                 }
+                finally { builder?.Release(); }
             }
 
             public void Release()
@@ -205,7 +210,6 @@ internal sealed partial class LythonRuntime
                     _services.MemoryGovernor.Release(_raw.Length);
                     _raw = null;
                 }
-                RefreshOwnership();
             }
 
             // Construction has exposed no state or emitted values to guest code.
@@ -217,141 +221,140 @@ internal sealed partial class LythonRuntime
 
             private PyString ReadBounded(int size)
             {
-                StringBuilder? builder = null;
-                var remaining = size;
-                while (true)
+                GovernedByteBuilder? builder = null;
+                try
                 {
-                    Refill();
-                    if (Drained())
+                    var remaining = size;
+                    while (true)
                     {
-                        return EmitAccumulated(builder);
-                    }
-
-                    var take = _window.GetByteIndexAfterRunes(_windowConsumed, remaining);
-                    if (take < _window.Utf8Bytes.Length)
-                    {
-                        if (builder is null)
+                        Refill();
+                        if (Drained())
                         {
-                            var piece = _window.SliceByByteRange(_windowConsumed, take);
-                            Advance(take);
-                            _services.ObserveString(piece, null); TrackEmission(piece);
-                            return piece;
+                            return EmitAccumulated(builder);
                         }
 
+                        var take = _window.GetByteIndexAfterRunes(_windowConsumed, remaining);
+                        if (take < _window.Utf8Bytes.Length)
+                        {
+                            if (builder is null)
+                            {
+                                var piece = _window.SliceByByteRange(_windowConsumed, take);
+                                Advance(take);
+                                _services.ObserveString(piece, null);
+                                return piece;
+                            }
+
+                            AppendRange(builder, _windowConsumed, take);
+                            return EmitAccumulated(builder);
+                        }
+
+                        // Reaching the window end may mean an exact fit or a shortfall;
+                        // counting runes disambiguates without an extra pull.
+                        var got = CountRunes(_windowConsumed, take);
+                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
                         AppendRange(builder, _windowConsumed, take);
-                        return EmitAccumulated(builder);
-                    }
+                        if (got >= remaining)
+                        {
+                            return EmitAccumulated(builder);
+                        }
 
-                    // Reaching the window end may mean an exact fit or a shortfall;
-                    // counting runes disambiguates without an extra pull.
-                    var got = CountRunes(_windowConsumed, take);
-                    builder ??= new StringBuilder();
-                    AppendRange(builder, _windowConsumed, take);
-                    if (got >= remaining)
-                    {
-                        return EmitAccumulated(builder);
+                        remaining -= got;
                     }
-
-                    remaining -= got;
                 }
+                finally { builder?.Release(); }
             }
 
             private async ValueTask<PyString> ReadBoundedAsync(int size)
             {
-                StringBuilder? builder = null;
-                var remaining = size;
-                while (true)
+                GovernedByteBuilder? builder = null;
+                try
                 {
-                    await RefillAsync().ConfigureAwait(false);
-                    if (Drained())
+                    var remaining = size;
+                    while (true)
                     {
-                        return EmitAccumulated(builder);
-                    }
-
-                    var take = _window.GetByteIndexAfterRunes(_windowConsumed, remaining);
-                    if (take < _window.Utf8Bytes.Length)
-                    {
-                        if (builder is null)
+                        await RefillAsync().ConfigureAwait(false);
+                        if (Drained())
                         {
-                            var piece = _window.SliceByByteRange(_windowConsumed, take);
-                            Advance(take);
-                            _services.ObserveString(piece, null); TrackEmission(piece);
-                            return piece;
+                            return EmitAccumulated(builder);
                         }
 
+                        var take = _window.GetByteIndexAfterRunes(_windowConsumed, remaining);
+                        if (take < _window.Utf8Bytes.Length)
+                        {
+                            if (builder is null)
+                            {
+                                var piece = _window.SliceByByteRange(_windowConsumed, take);
+                                Advance(take);
+                                _services.ObserveString(piece, null);
+                                return piece;
+                            }
+
+                            AppendRange(builder, _windowConsumed, take);
+                            return EmitAccumulated(builder);
+                        }
+
+                        var got = CountRunes(_windowConsumed, take);
+                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
                         AppendRange(builder, _windowConsumed, take);
-                        return EmitAccumulated(builder);
-                    }
+                        if (got >= remaining)
+                        {
+                            return EmitAccumulated(builder);
+                        }
 
-                    var got = CountRunes(_windowConsumed, take);
-                    builder ??= new StringBuilder();
-                    AppendRange(builder, _windowConsumed, take);
-                    if (got >= remaining)
-                    {
-                        return EmitAccumulated(builder);
+                        remaining -= got;
                     }
-
-                    remaining -= got;
                 }
+                finally { builder?.Release(); }
             }
 
             private PyString ReadAll()
             {
-                StringBuilder? builder = null;
-                while (true)
+                GovernedByteBuilder? builder = null;
+                try
                 {
-                    Refill();
-                    if (Drained())
+                    while (true)
                     {
-                        return EmitAccumulated(builder);
-                    }
+                        Refill();
+                        if (Drained())
+                        {
+                            return EmitAccumulated(builder);
+                        }
 
-                    builder ??= new StringBuilder();
-                    var bytes = _window.Utf8Bytes.Span;
-                    AppendRange(builder, _windowConsumed, bytes.Length);
+                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
+                        var bytes = _window.Utf8Bytes.Span;
+                        AppendRange(builder, _windowConsumed, bytes.Length);
+                    }
                 }
+                finally { builder?.Release(); }
             }
 
             private async ValueTask<PyString> ReadAllAsync()
             {
-                StringBuilder? builder = null;
-                while (true)
+                GovernedByteBuilder? builder = null;
+                try
                 {
-                    await RefillAsync().ConfigureAwait(false);
-                    if (Drained())
+                    while (true)
                     {
-                        return EmitAccumulated(builder);
+                        await RefillAsync().ConfigureAwait(false);
+                        if (Drained())
+                        {
+                            return EmitAccumulated(builder);
+                        }
+
+                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
+                        var bytes = _window.Utf8Bytes.Span;
+                        AppendRange(builder, _windowConsumed, bytes.Length);
                     }
-
-                    builder ??= new StringBuilder();
-                    var bytes = _window.Utf8Bytes.Span;
-                    AppendRange(builder, _windowConsumed, bytes.Length);
                 }
+                finally { builder?.Release(); }
             }
 
-            private PyString EmitAccumulated(StringBuilder? builder)
+            private PyString EmitAccumulated(GovernedByteBuilder? builder)
             {
-                if (builder is null || builder.Length == 0)
-                {
-                    return PyString.Empty;
-                }
-
-                // Multi-window emissions carry the same 128-plus-length charge as
-                // whole-buffer slices of the same content, then observe the same
-                // string-length limit that open-time observation enforced before.
-                // Growth reserves up front like materializing drains elsewhere.
-                using var reservation = _services.MemoryGovernor.ReserveTemporary(0, null);
-                reservation.Grow(32L + (4L * builder.Length), null);
-                var text = PyString.FromString(builder.ToString(), _services.MemoryGovernor, null);
+                if (builder is null || builder.Length == 0) return PyString.Empty;
+                var text = builder.ToPyStringAndRelease();
                 _services.ObserveString(text, null);
-                TrackEmission(text);
                 return text;
-            }
-
-            // Returned values own independent payloads; the shared pool retains
-            // them after this reader closes or is abandoned.
-            private void TrackEmission(PyString value)
-            {
             }
 
             private bool Drained()
@@ -379,41 +382,23 @@ internal sealed partial class LythonRuntime
                 };
             }
 
-            // Advances both cursors over a rune-aligned byte range. Callers derive
-            // ends from line scanning or rune indexing, which always land on
-            // boundaries; the assertion pins that contract during development.
-            private int Advance(int byteEnd)
+            // Line scanning and rune indexing supply boundaries in the translated
+            // UTF-8 window; no second UTF-16 cursor or decoding pass is needed.
+            private void Advance(int byteEnd)
             {
-                var span = _decoded.AsSpan();
-                var ci = _charConsumed;
-                var bi = _windowConsumed;
-                var start = bi;
-                while (bi < byteEnd)
-                {
-                    if (Rune.DecodeFromUtf16(span[ci..], out var rune, out var consumed) != OperationStatus.Done)
-                    {
-                        ci++;
-                        bi++;
-                        continue;
-                    }
-
-                    ci += consumed;
-                    bi += rune.Utf8SequenceLength;
-                }
-
-                Debug.Assert(bi == byteEnd, "chunked reader crossed a rune boundary");
-                _windowConsumed = bi;
-                _charConsumed = ci;
-                _position += bi - start;
-                return ci;
+                var bytes = _window.Utf8Bytes.Span;
+                Debug.Assert(byteEnd >= _windowConsumed && byteEnd <= bytes.Length, "chunked reader advanced outside its window");
+                Debug.Assert(byteEnd == bytes.Length || (bytes[byteEnd] & 0xC0) != 0x80, "chunked reader crossed a rune boundary");
+                _position += byteEnd - _windowConsumed;
+                _windowConsumed = byteEnd;
             }
 
-            private void AppendRange(StringBuilder builder, int byteStart, int byteEnd)
+            private void AppendRange(GovernedByteBuilder builder, int byteStart, int byteEnd)
             {
                 Debug.Assert(byteStart == _windowConsumed, "chunked reader appends out of order");
-                var charStart = _charConsumed;
-                var charEnd = Advance(byteEnd);
-                builder.Append(_decoded, charStart, charEnd - charStart);
+                // Admission and copying finish before this append changes the cursor.
+                builder.Append(_window.Utf8Bytes.Span.Slice(byteStart, byteEnd - byteStart));
+                Advance(byteEnd);
             }
 
             private int CountRunes(int byteStart, int byteEnd)
@@ -683,7 +668,6 @@ internal sealed partial class LythonRuntime
                     var raw = new byte[length];
                     _services.MemoryGovernor.Commit(length);
                     _raw = raw;
-                    RefreshOwnership();
                 }
                 catch
                 {
@@ -722,13 +706,12 @@ internal sealed partial class LythonRuntime
                 if (head == 0)
                 {
                     _window = PyString.Empty;
-                    _decoded = string.Empty;
                     return;
                 }
 
                 Debug.Assert(_raw is not null, "window installs from buffered bytes");
                 var source = new ReadOnlySpan<byte>(_raw!, 0, head);
-                string decoded;
+                var decoded = string.Empty;
                 var ownsDecodedWindow = _encoding is TextEncodingMode.Ascii or TextEncodingMode.Windows1252 || IsUtf16Encoding(_encoding);
                 if (ownsDecodedWindow)
                 {
@@ -738,19 +721,6 @@ internal sealed partial class LythonRuntime
                             ? DecodeWindows1252Text(source, _services, null, _errors, _newline)
                             : DecodeUtf16Text(source, _decodingEncoding, _services, null, _errors, _newline);
                     _windowCharge = _window.OwnerMemoryGovernor is null ? 0 : _window.CommittedOwnedBytes;
-                    try
-                    {
-                        var decodedCharge = _window.Length == 0 ? 0 : 32L + 2L * Encoding.UTF8.GetCharCount(_window.Utf8Bytes.Span);
-                        _services.MemoryGovernor.Reserve(decodedCharge, null);
-                        _services.MemoryGovernor.Commit(decodedCharge);
-                        _windowCharge += decodedCharge;
-                        decoded = Encoding.UTF8.GetString(_window.Utf8Bytes.Span);
-                    }
-                    catch
-                    {
-                        ReleaseWindow();
-                        throw;
-                    }
                 }
                 else if (_encoding == TextEncodingMode.Latin1)
                 {
@@ -767,18 +737,12 @@ internal sealed partial class LythonRuntime
 
                 if (!ownsDecodedWindow)
                 {
-                    var utf8 = Encoding.UTF8.GetBytes(decoded);
-                    _window = utf8.Length == 0
-                        ? PyString.Empty
-                        : PyString.FromOwnedUtf8(utf8, _services.MemoryGovernor, null);
-                    _windowCharge = utf8.Length == 0 ? 0 : PyString.EstimateApproximateBytes(utf8.Length);
+                    _window = PyString.FromString(decoded, _services.MemoryGovernor, null);
+                    _windowCharge = _window.OwnerMemoryGovernor is null ? 0 : _window.CommittedOwnedBytes;
                 }
-                _decoded = decoded;
                 _windowConsumed = 0;
-                _charConsumed = 0;
                 Buffer.BlockCopy(_raw!, head, _raw!, 0, _rawLength - head);
                 _rawLength -= head;
-                RefreshOwnership();
             }
 
             private void ReleaseWindow()
@@ -790,10 +754,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 _window = PyString.Empty;
-                _decoded = string.Empty;
                 _windowConsumed = 0;
-                _charConsumed = 0;
-                RefreshOwnership();
             }
 
             private string TextReadKind() => UsesBinaryTextTransport(_encoding) ? "binary" : "text";

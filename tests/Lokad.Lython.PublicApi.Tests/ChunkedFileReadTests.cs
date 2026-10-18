@@ -5,12 +5,9 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG01/MG21: open() streams fixed windows through ranged host reads instead of
-/// loading the whole file, so full scans no longer scale with discarded content.
-/// Values, line boundaries, positions and per-value charges match buffered
-/// reads; windows that split UTF-8 sequences, CRLF pairs or quoted records
-/// reassemble exactly, and bounded acquisition trips small budgets only when
-/// retained content genuinely exceeds them.
+/// Ranged host reads bound input acquisition. Values, positions and UTF-8,
+/// newline and quoted-record boundaries agree with buffered reads. Emitted
+/// values remain batch-owned; sustained streams use bounded host executions.
 /// </summary>
 public sealed class ChunkedFileReadTests
 {

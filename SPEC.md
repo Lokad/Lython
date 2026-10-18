@@ -1840,6 +1840,15 @@ and ValueError. Sequential handles report seekable=False; seek and other random
 access operations fail explicitly. Binary read1/readinto/truncate/raw/descriptor
 APIs are outside this inventory.
 
+Text `read(size)` and `readline(size)` count Python characters across input
+windows, including non-BMP characters; `readline` also stops at the selected line
+terminator. A size reached exactly at a window boundary does not consume more
+text. Accumulated reads admit UTF-8 working capacity and replacement/result overlap
+before allocation. A refused append leaves its window cursor unchanged, while
+earlier consumed windows are not rewound. Refusal fails the command. Working
+storage releases after completion or awaited failure/cancellation; returned values
+retain their owners. Conservative capacity admission can reject earlier.
+
 Text handles admit a conservative64-byte shell before publication. Successful
 close releases owned read/write buffers once; shells and returned payloads remain
 conservatively owned by their batch. Failed unpublished construction refunds the

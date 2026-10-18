@@ -1,0 +1,50 @@
+{
+  "baseline": "565262377d81d8b1042341f3606911429af26322",
+  "failedRegressions": 10,
+  "process": {
+    "source": "56526237",
+    "production": "baseline",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+    "assemblySha256": "574B5FD6A9AE2BFFCD8687AAF08C147C6C33547ABAEEB1E83ABF34433695B901",
+    "filter": "FullyQualifiedName~ChunkedReadWorkingStorageTests",
+    "pid": 76192,
+    "hasExited": true,
+    "exitCode": 1,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 1074,
+    "stdoutSha256": "78CD219634A700AF89C3BB9EAA85E994AAA0442EE25153363BFFDC7B9BB248B3",
+    "stderrSha256": "5E9F7D8E1FDB4EBA7996D02DBBE4133BC779E1A4E63D77D0D0EAD0BA4727A677"
+  },
+  "failures": {
+    "Lokad.Lython.Tests.ChunkedReadWorkingStorageTests.SizedReadlineCountsRunesAcrossWindows(asynchronous: True, content: \"abcdefghijklmnop\\nZ\", window: 4, size: 4, expected: \"abcd\", tail: \"efghijklmnop\\n\")": "Assert.Equal() Failure: Strings differ\r\nExpected: \"abcd\"\r\nActual:   \"abcdefghijklmnop\\n\"\r\n               \u2191 (pos 4)",
+    "Lokad.Lython.Tests.ChunkedReadWorkingStorageTests.SizedReadlineCountsRunesAcrossWindows(asynchronous: False, content: \"\u00e9\\ud83d\\ude00abc\u00e9\\ud83d\\ude00def\\nZ\", window: 4, size: 2, expected: \"\u00e9\\ud83d\\ude00\", tail: \"abc\u00e9\\ud83d\\ude00def\\n\")": "Assert.Equal() Failure: Strings differ\r\nExpected: \"\u00e9\\ud83d\\ude00\"\r\nActual:   \"\u00e9\\ud83d\\ude00a\"\r\n              \u2191 (pos 3)",
+    "Lokad.Lython.Tests.ChunkedReadWorkingStorageTests.DeniedWorkingGrowthDoesNotConsumeItsWindow(asynchronous: True, line: True)": "Assert.Equal() Failure: Values differ\r\nExpected: 32\r\nActual:   128",
+    "Lokad.Lython.Tests.ChunkedReadWorkingStorageTests.SizedReadlineCountsRunesAcrossWindows(asynchronous: False, content: \"abcdefghijklmnop\\nZ\", window: 4, size: 5, expected: \"abcde\", tail: \"fghijklmnop\\n\")": "Assert.Equal() Failure: Strings differ\r\nExpected: \"abcde\"\r\nActual:   \"abcdefghijklmnop\\n\"\r\n                \u2191 (pos 5)",
+    "Lokad.Lython.Tests.ChunkedReadWorkingStorageTests.DeniedWorkingGrowthDoesNotConsumeItsWindow(asynchronous: False, line: True)": "Assert.Equal() Failure: Values differ\r\nExpected: 32\r\nActual:   128",
+    "Lokad.Lython.Tests.ChunkedReadWorkingStorageTests.DeniedWorkingGrowthDoesNotConsumeItsWindow(asynchronous: False, line: False)": "Assert.Equal() Failure: Values differ\r\nExpected: 32\r\nActual:   128",
+    "Lokad.Lython.Tests.ChunkedReadWorkingStorageTests.SizedReadlineCountsRunesAcrossWindows(asynchronous: False, content: \"abcdefghijklmnop\\nZ\", window: 4, size: 4, expected: \"abcd\", tail: \"efghijklmnop\\n\")": "Assert.Equal() Failure: Strings differ\r\nExpected: \"abcd\"\r\nActual:   \"abcdefghijklmnop\\n\"\r\n               \u2191 (pos 4)",
+    "Lokad.Lython.Tests.ChunkedReadWorkingStorageTests.SizedReadlineCountsRunesAcrossWindows(asynchronous: True, content: \"\u00e9\\ud83d\\ude00abc\u00e9\\ud83d\\ude00def\\nZ\", window: 4, size: 2, expected: \"\u00e9\\ud83d\\ude00\", tail: \"abc\u00e9\\ud83d\\ude00def\\n\")": "Assert.Equal() Failure: Strings differ\r\nExpected: \"\u00e9\\ud83d\\ude00\"\r\nActual:   \"\u00e9\\ud83d\\ude00a\"\r\n              \u2191 (pos 3)",
+    "Lokad.Lython.Tests.ChunkedReadWorkingStorageTests.DeniedWorkingGrowthDoesNotConsumeItsWindow(asynchronous: True, line: False)": "Assert.Equal() Failure: Values differ\r\nExpected: 32\r\nActual:   128",
+    "Lokad.Lython.Tests.ChunkedReadWorkingStorageTests.SizedReadlineCountsRunesAcrossWindows(asynchronous: True, content: \"abcdefghijklmnop\\nZ\", window: 4, size: 5, expected: \"abcde\", tail: \"fghijklmnop\\n\")": "Assert.Equal() Failure: Strings differ\r\nExpected: \"abcde\"\r\nActual:   \"abcdefghijklmnop\\n\"\r\n                \u2191 (pos 5)"
+  },
+  "CPythonOracle": [
+    {
+      "size": 4,
+      "first": "abcd",
+      "tail": "efghijklmnop\n",
+      "last": "Z"
+    },
+    {
+      "size": 5,
+      "first": "abcde",
+      "tail": "fghijklmnop\n",
+      "last": "Z"
+    },
+    {
+      "size": 2,
+      "first": "\u00e9\ud83d\ude00",
+      "tail": "abc\u00e9\ud83d\ude00def\n",
+      "last": "Z"
+    }
+  ]
+}

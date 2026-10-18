@@ -9,7 +9,7 @@
 | Complete CSV helper with annotation-only local [BT], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 19.745 ms | 17.014 ms | — | Local Windows, 3f799746 + one-line guard deletion; 48.9%/13.5% spreads, inconclusive |
 | Complete text-summary file job [BR], fresh compile/run | 3,072 lines / 35,840 UTF-8 bytes | 14.994–16.539 ms | 11.188 ms | — | Local Windows diagnostic at 877f20e2; identical controls; 49%/107%/39% spreads, inconclusive |
 | Complete JSON-lines aggregation [AU], fresh compile/run | 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
-| Complete JSON-lines aggregation with helper [CB], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 10.953 ms | 4.259 ms | — | One frozen key-comparer file on aa9fc0ea; nominal 2.572×, unqualified; 1.99%/1.05% spreads |
+| Complete JSON-lines aggregation with helper [CC], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 10.854 ms | 4.283 ms | — | One frozen text-reader file on 56526237; nominal 2.534×, unqualified; 1.77%/1.06% spreads |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
 | File search with helper and early exit [P], fresh compile/run | 2,049 lines / 42,010 UTF-8 bytes; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
 | Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | Historical warm diagnostic; elapsed change within spread |
@@ -78,6 +78,12 @@ without general equality/suppression. The final-source diagnostic records a
 nominal 6.4% lower median, unqualified. A preceding string-only prototype and its
 failed independent NaN probe remain separate evidence; no captures are pooled.
 
+CC uses the same boundary/toolchains with one frozen text-reader file on
+56526237. It governs accumulated reads and removes duplicate text storage and
+empty ownership hooks. The 1.71% lower median is within sample spread; no elapsed
+benefit or embedding-latency improvement is established. The unchanged JSON-lines
+job exercises ranged text reads; dedicated regressions cover long accumulation.
+
 BU executes frozen Release package binaries built with SDK
 10.0.300-preview.0.26177.108 on the VM's .NET 10.0.12 runtime. Its identical
 adapter was built at a35ee62c; only the packaged Lython DLL differs between
@@ -97,6 +103,7 @@ to infer a change from the quiet-VM measurements.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| CC | 2026-10-18 UTC | One frozen text-reader file on 56526237; complete helper job; warm public RunAsync | [Admission, character limits, CPython comparison and cleanup](benchmarks/results/2026-10-18-text-read/README.md) |
 | CB | 2026-10-17 UTC | One frozen key-comparer file on aa9fc0ea; complete helper job; warm public RunAsync | [Key identity correction, string dispatch, CPython controls and final-source comparison](benchmarks/results/2026-10-17-string-key-identity/README.md) |
 | CA | 2026-10-17 UTC | One frozen JSON module file on 6c9a51df; complete helper job; warm public RunAsync | [Ordinary call binding, preceding CPU attribution, native allocations and CPython comparison](benchmarks/results/2026-10-17-json-default-call/README.md) |
 | BZ | 2026-10-17 UTC | One frozen JSON runtime file on e470ccc2; complete helper job; warm public RunAsync | [Scratch placement, allocation controls, CPython comparison and cleanup](benchmarks/results/2026-10-17-json-number-scratch/README.md) |
@@ -193,6 +200,7 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Complete JSON-lines aggregation with helper [CB], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 10.953 ms | 4.259 ms | — | One frozen key-comparer file on aa9fc0ea; nominal 2.572×, unqualified; 1.99%/1.05% spreads |
 | Complete JSON-lines aggregation with helper [CA], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 11.631 ms | 4.245 ms | — | One frozen JSON module file on 6c9a51df; nominal 2.740×, unqualified; 1.67%/0.83% spreads |
 | Complete JSON-lines aggregation with helper [BZ], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 12.438 ms | 4.288 ms | — | One frozen JSON runtime file on e470ccc2; nominal 2.901×, unqualified; 5.45%/0.92% spreads |
 | Complete JSON-lines aggregation with helper [BY], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 12.993 ms | 4.520 ms | — | Two frozen JSON runtime files on f728636a; nominal 2.875×, unqualified; 2.23%/1.02% spreads |
@@ -214,6 +222,13 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 | Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
 
 ## Improvements against earlier Lython revisions
+
+Governed text reads [CC](benchmarks/results/2026-10-18-text-read/README.md)
+remove empty ownership hooks, duplicate UTF-16 window/cursor tracking and CLR
+accumulation/re-encoding. Working capacity and final-result overlap use existing
+admission and deterministic cleanup. The complete-job diagnostic records
+11.042 → 10.854 ms, spreads 2.62%/1.77%: nominal 1.71% lower, within spread.
+No elapsed benefit or allocation magnitude is established.
 
 Builtin string-key comparison [CB](benchmarks/results/2026-10-17-string-key-identity/README.md)
 omits thread-local guest-dispatch suppression and general numeric/structural

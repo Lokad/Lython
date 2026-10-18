@@ -45,3 +45,5 @@ benchmarks/results/2026-10-17-json-default-call/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-17-json-default-call/candidate.patch -text -whitespace
 benchmarks/results/2026-10-17-string-key-identity/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-17-string-key-identity/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-text-read/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-text-read/candidate.patch -text -whitespace

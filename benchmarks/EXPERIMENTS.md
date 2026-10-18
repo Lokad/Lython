@@ -7,6 +7,16 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 governed text reads](results/2026-10-18-text-read/README.md)
+admit accumulated working storage before growth and correct cross-window
+readline character limits. Empty ownership hooks, duplicate UTF-16 storage/cursor
+traversal and CLR accumulation/re-encoding are removed. One 9.309 s capture
+records 11.042 → 10.854 ms versus CPython 4.283 ms; the 1.71% decrease is within
+spread, with no qualified speedup. All 35 responses / 441 invocations match
+goldens; input/frozen-file hashes and cleanup are verified. Ten failed baseline
+witnesses, isolated CPython controls and 428 passing focused checks are retained.
+No repeat capture or broad codec/ownership investigation ran.
+
 The [2026-10-17 key identity/string comparison](results/2026-10-17-string-key-identity/README.md)
 accepts identical keys and omits general equality/suppression for builtin strings.
 Independent probes exposed an existing NaN-key bug in the immutable aa9fc0ea
