@@ -59,6 +59,14 @@ generator row acquisition retains the generic asynchronous path. This removes
 unneeded async iteration wrappers from native conversion without changing row,
 history, result or callback ownership, preflights, cleanup or supported cell types.
 
+Single and bulk CSV writers share native-row selection in the existing async
+converter. Synchronous `writerows` reuses the raw-row helper; its async body keeps
+conversion and publication inline to preserve its awaited frame count. The outer
+acquisition, checkpoints, stop-on-failure behavior and ignored callback returns
+remain unchanged. Each row/output operation is awaited, and retained history and
+callback aliases keep their funding. No batch materialization or ownership layer
+is added.
+
 Each invocation owns its working storage. Projection allocates under a result
 owner established before execution; this owner is a sibling of the invocation
 owner and survives execution cleanup. Disposing `LythonExecutionResult` clears

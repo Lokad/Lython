@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Centralize native CSV row selection in the existing converter for single and bulk writers, removing duplicated selection/plumbing and reusing the synchronous bulk helper. Preserve inline awaited bulk publication, outer checkpoints, ignored callback returns, failure prefixes, retained funding and custom row/output suspension.
+
 - Reuse synchronous scalar conversion for native list/tuple rows in asynchronous `csv.writerow`, removing unnecessary async iteration wrappers. Keep output callbacks awaited and retain the generic async route for custom/generator rows, preserving checkpoints, supported cell types, storage preflights, ownership and cancellation.
 
 - Execute ordinary single-positional native CSV `writerow` calls from existing receiver/argument operands. Share the row-conversion bodies with general bound calls and remove eligible member wrappers and argument binding. Preserve Python results, error/fuel boundaries, row/history/result funding, asynchronous iteration/publication, cancellation and explicit rejection of unsupported cell types.

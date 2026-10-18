@@ -1,0 +1,21 @@
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs
+@@ -394,7 +394,7 @@
+                     var written = 0;
+                     foreach (var row in ToSequence(arguments[0], span, context))
+                     {
+-                        WriteRow(writer, ToCsvRow(row, span, context, out var convertedBytes), span, context, convertedBytes);
++                        WriteRowFromValue(writer, row, span, context);
+                         if ((++written & 63) == 0)
+                         {
+                             context.CheckExecution(span);
+@@ -407,8 +407,7 @@
+                     var written = 0;
+                     await foreach (var row in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+                     {
+-                        var (cells, convertedBytes) = await ToCsvRowAsync(row, span, context).ConfigureAwait(false);
+-                        await WriteRowAsync(writer, cells, span, context, convertedBytes).ConfigureAwait(false);
++                        await WriteRowFromValueAsync(writer, row, span, context).ConfigureAwait(false);
+                         if ((++written & 63) == 0)
+                         {
+                             context.CheckExecution(span);
