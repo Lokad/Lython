@@ -240,7 +240,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
     {
         var frontend = LythonFrontend.Compile("def scan(source):\n" + body);
         Assert.NotNull(frontend.Script);
-        var definition = Assert.Single(LoweredScript.Lower(frontend.Script).TopLevelFunctions);
+        var definition = Assert.Single(LoweredScript.Lower(frontend.Script).Statements.OfType<LoweredFunctionDefinitionStatement>());
         var frame = new Context(context, ScopeDirectiveFactsCollector.ForFunction(definition.Syntax))
         { FunctionName = "scan", FirstPositionalParameterName = "source" };
         frame.Variables["source"] = sources[0];

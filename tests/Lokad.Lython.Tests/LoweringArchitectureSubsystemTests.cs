@@ -8,7 +8,7 @@ namespace Lokad.Lython.Tests;
 public sealed class LoweringArchitectureSubsystemTests
 {
     [Fact]
-    public void LoweredScript_CapturesTopLevelImportsAndFunctions()
+    public void LoweredScript_PreservesStatementOrderAndFunctionBodies()
     {
         var frontend = LythonFrontend.Compile("""
 import json
@@ -23,8 +23,6 @@ value = 2
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
-        Assert.Single(lowered.TopLevelImports);
-        Assert.Single(lowered.TopLevelFunctions);
         Assert.Equal(lowered.Syntax.Statements.Count, lowered.Statements.Count);
         Assert.IsType<LoweredImportStatement>(lowered.Statements[0]);
         var function = Assert.IsType<LoweredFunctionDefinitionStatement>(lowered.Statements[1]);

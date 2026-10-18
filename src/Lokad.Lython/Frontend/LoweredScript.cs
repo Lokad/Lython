@@ -4,36 +4,20 @@ internal sealed class LoweredScript
 {
     private LoweredScript(
         ScriptSyntax syntax,
-        IReadOnlyList<LoweredStatement> statements,
-        IReadOnlyList<LoweredImportStatement> topLevelImports,
-        IReadOnlyList<LoweredFunctionDefinitionStatement> topLevelFunctions)
+        IReadOnlyList<LoweredStatement> statements)
     {
         Syntax = syntax;
         Statements = statements;
-        TopLevelImports = topLevelImports;
-        TopLevelFunctions = topLevelFunctions;
     }
 
     public ScriptSyntax Syntax { get; }
 
     public IReadOnlyList<LoweredStatement> Statements { get; }
 
-    public IReadOnlyList<LoweredImportStatement> TopLevelImports { get; }
-
-    public IReadOnlyList<LoweredFunctionDefinitionStatement> TopLevelFunctions { get; }
-
     public static LoweredScript Lower(ScriptSyntax syntax)
     {
-
         var statements = LowerStatements(syntax.Statements);
-        var imports = statements.OfType<LoweredImportStatement>().ToArray();
-        var functions = statements.OfType<LoweredFunctionDefinitionStatement>().ToArray();
-
-        return new LoweredScript(
-            syntax,
-            statements,
-            imports,
-            functions);
+        return new LoweredScript(syntax, statements);
     }
 
     internal static LoweredExpression LowerStandaloneExpression(ExpressionSyntax expression)
