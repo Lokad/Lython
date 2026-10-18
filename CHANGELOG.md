@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Pre-size the two fixed per-execution builtin dictionaries to avoid repeated backing-array growth during setup. Keep builtin entries, private callable/type/module state and conservative memory accounting unchanged.
+
 - Share the existing direct string-affix operand path with ordinary positional `str.endswith` calls, removing eligible bound-method and argument packaging. Preserve character bounds, tuple matching, error/fuel order, dynamic/exposed calls, suspended index hooks, cancellation and retained ownership.
 
 - Remove private sum/list operation shells, source/current reference bookkeeping and general binder return wrappers. Keep results in managed locals with deterministic awaited iteration; retain capacity preflights, unpublished-list rollback, integer admission and funding for retained aliases/results. Control headroom can decrease.

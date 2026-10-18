@@ -27,7 +27,9 @@ internal sealed partial class LythonRuntime
         // its own connected object/type graph instead of sharing a cached table.
         private static Dictionary<string, object> CreateBuiltinVariables()
         {
-            var objectMembers = new Dictionary<string, object>(StringComparer.Ordinal)
+            // Fixed entries: pre-size these per-run tables instead of growing
+            // their storage on insertion. The builtin hint allows additions.
+            var objectMembers = new Dictionary<string, object>(17, StringComparer.Ordinal)
             {
                 ["__new__"] = new PyStaticMethod(new ObjectNewMethod()),
                 ["__init__"] = new ObjectInitMethod(),
@@ -58,7 +60,7 @@ internal sealed partial class LythonRuntime
 
             var osErrorType = new ExceptionTypeValue("OSError");
 
-            var builtins = new Dictionary<string, object>(StringComparer.Ordinal)
+            var builtins = new Dictionary<string, object>(128, StringComparer.Ordinal)
             {
                 ["object"] = objectType,
                 ["type"] = typeType,

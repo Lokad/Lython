@@ -1,0 +1,108 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "b818855bf07b37e077ec7d43215aea0ba182eab3",
+  "candidate": "Frozen one-file, two-constructor capacity patch on baseline.",
+  "source": {
+    "head": "b818855bf07b37e077ec7d43215aea0ba182eab3",
+    "path": "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs",
+    "sha256": "2ac47e084534711feca29560fa3981a3b25079a8665dede253cdd6858dd88c78",
+    "builtinEntries": 103,
+    "objectMemberEntries": 17,
+    "afterSha256": "ecbec0304df9a39724d11cf1bedd11a9deef6b001b8341a38be4f014f0110f69",
+    "normalizedAfterSha256": "ecbec0304df9a39724d11cf1bedd11a9deef6b001b8341a38be4f014f0110f69"
+  },
+  "focusedFinalPassed": 954,
+  "completeJobs": 58,
+  "groups": {
+    "final-white": {
+      "passed": 108,
+      "process": {
+        "source": "builtin-capacity",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "B3E9900903F0ED0005DFB109D31499F04BA7F07585B4FE5F541CE76107479159",
+        "filter": "Category!=Stress&(FullyQualifiedName~LythonCallableSignatureTests|FullyQualifiedName~ModuleContractParityTests|FullyQualifiedName~LoweringArchitectureSubsystemTests|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission)",
+        "pid": 10584,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1483,
+        "stdoutSha256": "E89DA570F5D94FF0B01D20EB9D537758636CDFFC480629FCBE2C3886916092E4",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "ee722b533560dcc133a5c3788f42760dbc975278e6436b49b4cda724d30b5bf8"
+    },
+    "final-semantics": {
+      "passed": 695,
+      "process": {
+        "source": "builtin-capacity",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "A3E159A7E0E6B7C8DF020E42C8F129F067C48D412452627A19822C73AED9FFDA",
+        "filter": "Category!=Stress&(FullyQualifiedName~BuiltinDefinitionIsolationTests|FullyQualifiedName~BuiltinsModuleTests|FullyQualifiedName~BuiltinModulePolicyTests|FullyQualifiedName~BuiltinObjectExceptionFunctionTests|FullyQualifiedName~BuiltinNumericTextFunctionTests|FullyQualifiedName~BuiltinIteratorSequenceFunctionTests|FullyQualifiedName~BuiltinValidationScenarioTests|FullyQualifiedName~BuiltinIterationCancellationTests|FullyQualifiedName~ExceptionTypeProtocolCompatibilityTests|FullyQualifiedName~PropertyConstructorCompatibilityTests)",
+        "pid": 64036,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 6276,
+        "stdoutSha256": "DAA4EF48C72489F0C3681C6231A66E1F26314F1BA46A71A67EDBA60AE0FD404A",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "8e5bd47779b273b067ed0cd760be861a961af82b05c72b134f231a1d2658378c"
+    },
+    "final-owners": {
+      "passed": 89,
+      "process": {
+        "source": "builtin-capacity",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "A3E159A7E0E6B7C8DF020E42C8F129F067C48D412452627A19822C73AED9FFDA",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 9132,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2650,
+        "stdoutSha256": "225AD27921E8AF188E52CFB1082AA07E4960CCA2E3C17684440D87A87361DCDF",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "a6beb63404606a7e36ddcbbd107330a80b87c30a5ec5f6cdc8ece49ec8baa529"
+    },
+    "final-goldens": {
+      "passed": 62,
+      "process": {
+        "source": "builtin-capacity",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "A3E159A7E0E6B7C8DF020E42C8F129F067C48D412452627A19822C73AED9FFDA",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 61560,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8734,
+        "stdoutSha256": "2012BE53862915FA15D601DE34B27F602A8EE8FD80A8E362D37F063FD98DD7B4",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "3d93cb9cdc8c7771b3c68bb5f9c9cb35800ed4a35e46308a230936d71cbbb2a0"
+    }
+  },
+  "temporaryDiagnosticRemoved": true,
+  "noPermanentTestsAddedOrChanged": true,
+  "coreAndPublicCopyEqualBeforePack": true,
+  "testedCoreSha256": "4b37c14350c42fd90bc18e267cce72380d15d0759ea074f4a3f9765b79af11a3",
+  "sourceProof": "Only two existing Dictionary constructor capacity arguments and an explanatory comment; all other code, entries, comparers, callable/type/module identities and governors unchanged.",
+  "previousCiCachedGreen": 39103811711,
+  "previousOriginalStressCheckpoint": {
+    "head": "015ee44a8713223484196f94b9e65424728ad1dd",
+    "run": 39102861280,
+    "passedPerPlatform": 382,
+    "terminalGreenCached": true,
+    "neverQueryAgain": true
+  },
+  "existingAssertionsTimeoutsStressScalesAndProtectedHashesUnchanged": true,
+  "regexPlanningOnly": true,
+  "publicContractOrAccountingChange": null,
+  "elapsedOrCPythonClaim": null,
+  "qualificationRemaining": "Current exact-head Release package and Windows/Ubuntu build/test/package delivery checks."
+}

@@ -76,3 +76,5 @@ benchmarks/results/2026-10-18-list-handoff/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-list-handoff/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-string-suffix/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-string-suffix/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-builtin-capacity/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-builtin-capacity/candidate.patch -text -whitespace

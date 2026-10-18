@@ -1,0 +1,37 @@
+using System.Text.Json;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary reuse of the existing fixed-builtin context-construction recipe.
+[Collection("AllocationSensitive")]
+public sealed class BuiltinCapacityAllocationDiagnostic(ITestOutputHelper output)
+{
+    [Fact]
+    public void MeasureWarmContextConstruction()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        var host = new MockLythonHost();
+        var allocations = new List<long>();
+        for (var index = 0; index < 34; index++)
+        {
+            using (var owner = budget.CreateScope())
+            {
+                var options = new LythonRunOptions { MemoryBudget = owner };
+                var before = GC.GetAllocatedBytesForCurrentThread();
+                var context = new LythonRuntime.ExecutionContext(host, options);
+                var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+                Assert.Equal(103, context.State.BuiltinVariables.Count);
+                Assert.True(context.Variables.ContainsKey("ord"));
+                Assert.True(context.Variables.ContainsKey("format"));
+                Assert.Same(context.State.BuiltinVariables["object"], context.Variables["object"]);
+                Assert.Same(context.State.BuiltinVariables["OSError"], context.State.BuiltinVariables["IOError"]);
+                if (index >= 2) allocations.Add(allocated);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        output.WriteLine("BUILTIN_CAPACITY_ALLOCATIONS:" + JsonSerializer.Serialize(allocations));
+    }
+}
