@@ -90,21 +90,17 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "list(iterable) expects one argument.", span);
         }
 
-        var operation = NativeListOperation.Create(context, span);
+        var result = new PyList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, context.MemoryGovernor, span);
         try
         {
-            operation.BeginList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, span);
-            operation.Iterator = ToSequence(arguments[0], span, context).GetEnumerator();
-            var result = (PyList)operation.Result;
-            while (operation.Iterator.MoveNext())
+            foreach (var item in ToSequence(arguments[0], span, context))
             {
-                result.Add(operation.Iterator.Current);
+                result.Add(item);
                 context.ObserveCollectionCount(result.Count, span);
             }
-            operation.FinishIteration();
-            return operation;
+            return result;
         }
-        catch { operation.Dispose(); throw; }
+        catch { result.DiscardUnpublishedStorage(); throw; }
     }
 
     private static async ValueTask<object> ListAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -119,22 +115,18 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "list(iterable) expects one argument.", span);
         }
 
-        var operation = NativeListOperation.Create(context, span);
+        var result = new PyList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, context.MemoryGovernor, span);
         try
         {
-            operation.BeginList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, span);
-            operation.AsyncIterator = ToSequenceAsync(arguments[0], span, context).GetAsyncEnumerator();
-            var result = (PyList)operation.Result;
-            while (await operation.AsyncIterator.MoveNextAsync().ConfigureAwait(false))
+            await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
             {
-                result.Add(operation.AsyncIterator.Current);
+                result.Add(item);
                 context.ObserveCollectionCount(result.Count, span);
                 if ((result.Count & 63) == 0) context.CheckExecution(span);
             }
-            await operation.FinishIterationAsync().ConfigureAwait(false);
-            return operation;
+            return result;
         }
-        catch { await operation.DisposeAsync().ConfigureAwait(false); throw; }
+        catch { result.DiscardUnpublishedStorage(); throw; }
     }
 
     private static object Tuple(object[] arguments, LythonSourceSpan span, ExecutionContext context)

@@ -1,0 +1,191 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs b/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs
+index 5e83d3f8..4b6d4ef9 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs
+@@ -90,21 +90,17 @@ internal sealed partial class LythonRuntime
+             throw new LythonRuntimeException("TypeError", "list(iterable) expects one argument.", span);
+         }
+ 
+-        var operation = NativeListOperation.Create(context, span);
++        var result = new PyList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, context.MemoryGovernor, span);
+         try
+         {
+-            operation.BeginList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, span);
+-            operation.Iterator = ToSequence(arguments[0], span, context).GetEnumerator();
+-            var result = (PyList)operation.Result;
+-            while (operation.Iterator.MoveNext())
++            foreach (var item in ToSequence(arguments[0], span, context))
+             {
+-                result.Add(operation.Iterator.Current);
++                result.Add(item);
+                 context.ObserveCollectionCount(result.Count, span);
+             }
+-            operation.FinishIteration();
+-            return operation;
++            return result;
+         }
+-        catch { operation.Dispose(); throw; }
++        catch { result.DiscardUnpublishedStorage(); throw; }
+     }
+ 
+     private static async ValueTask<object> ListAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+@@ -119,22 +115,18 @@ internal sealed partial class LythonRuntime
+             throw new LythonRuntimeException("TypeError", "list(iterable) expects one argument.", span);
+         }
+ 
+-        var operation = NativeListOperation.Create(context, span);
++        var result = new PyList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, context.MemoryGovernor, span);
+         try
+         {
+-            operation.BeginList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, span);
+-            operation.AsyncIterator = ToSequenceAsync(arguments[0], span, context).GetAsyncEnumerator();
+-            var result = (PyList)operation.Result;
+-            while (await operation.AsyncIterator.MoveNextAsync().ConfigureAwait(false))
++            await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+             {
+-                result.Add(operation.AsyncIterator.Current);
++                result.Add(item);
+                 context.ObserveCollectionCount(result.Count, span);
+                 if ((result.Count & 63) == 0) context.CheckExecution(span);
+             }
+-            await operation.FinishIterationAsync().ConfigureAwait(false);
+-            return operation;
++            return result;
+         }
+-        catch { await operation.DisposeAsync().ConfigureAwait(false); throw; }
++        catch { result.DiscardUnpublishedStorage(); throw; }
+     }
+ 
+     private static object Tuple(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+index 15e4d7d3..03352e09 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+@@ -520,37 +520,17 @@ internal sealed partial class LythonRuntime
+         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+         {
+             context.CheckExecution(span);
+-            object result = PreservePresence
++            return PreservePresence
+                 ? InvokeBoundWithPresence(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context)
+                 : InvokeBound(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
+-            if (result is NativeListOperation list)
+-            {
+-                try
+-                {
+-                    list.ResultRegistered();
+-                    return list.Result;
+-                }
+-                finally { list.Dispose(); }
+-            }
+-            return result;
+         }
+ 
+         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+         {
+             context.CheckExecution(span);
+-            object result = PreservePresence
++            return PreservePresence
+                 ? await InvokeBoundWithPresenceAsync(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false)
+                 : await InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false);
+-            if (result is NativeListOperation list)
+-            {
+-                try
+-                {
+-                    list.ResultRegistered();
+-                    return list.Result;
+-                }
+-                finally { await list.DisposeAsync().ConfigureAwait(false); }
+-            }
+-            return result;
+         }
+ 
+         /// <summary>Whether calls bind with assignment tracking so omitted arguments stay distinguishable from explicit values.</summary>
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.NativeListOperation.cs b/src/Lokad.Lython/Runtime/LythonRuntime.NativeListOperation.cs
+deleted file mode 100644
+index f1e9c38a..00000000
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.NativeListOperation.cs
++++ /dev/null
+@@ -1,82 +0,0 @@
+-namespace Lokad.Lython.Runtime;
+-
+-internal sealed partial class LythonRuntime
+-{
+-    // Private list storage and rollback stay owned through result registration.
+-    internal sealed class NativeListOperation : IDisposable, IAsyncDisposable
+-    {
+-        private const long ShellBytes = 128;
+-        private readonly MemoryGovernor _governor;
+-        internal object Result = PyNone.Instance;
+-        internal IEnumerator<object>? Iterator;
+-        internal IAsyncEnumerator<object>? AsyncIterator;
+-        private long _funding;
+-        private bool _unpublishedList;
+-
+-        private NativeListOperation(ExecutionContext context)
+-        {
+-            _governor = context.MemoryGovernor;
+-            _funding = ShellBytes;
+-        }
+-
+-        internal static NativeListOperation Create(ExecutionContext context, LythonSourceSpan span)
+-        {
+-            context.MemoryGovernor.Reserve(ShellBytes, span);
+-            try
+-            {
+-                return new NativeListOperation(context);
+-            }
+-            catch { context.MemoryGovernor.ReleaseReserved(ShellBytes); throw; }
+-        }
+-
+-        internal void BeginList(int capacity, LythonSourceSpan span)
+-        {
+-            Result = new PyList(capacity, _governor, span);
+-            _unpublishedList = true;
+-        }
+-
+-        internal void ResultRegistered() => _unpublishedList = false;
+-
+-        internal void FinishIteration()
+-        {
+-            try { Iterator?.Dispose(); }
+-            finally { Iterator = null; }
+-        }
+-
+-        internal async ValueTask FinishIterationAsync()
+-        {
+-            try
+-            {
+-                if (AsyncIterator is not null) await AsyncIterator.DisposeAsync().ConfigureAwait(false);
+-            }
+-            finally { AsyncIterator = null; }
+-        }
+-
+-        public void Dispose()
+-        {
+-            if (_funding == 0) return;
+-            try { FinishIteration(); }
+-            finally { Withdraw(); }
+-        }
+-
+-        public async ValueTask DisposeAsync()
+-        {
+-            if (_funding == 0) return;
+-            try { await FinishIterationAsync().ConfigureAwait(false); }
+-            finally { Withdraw(); }
+-        }
+-
+-        private void Withdraw()
+-        {
+-            var privateList = _unpublishedList ? (PyList)Result : null;
+-            Result = PyNone.Instance;
+-            _unpublishedList = false;
+-            try { privateList?.DiscardUnpublishedStorage(); }
+-            finally
+-            {
+-                _governor.ReleaseReserved(_funding);
+-                _funding = 0;
+-            }
+-        }
+-    }
+-}

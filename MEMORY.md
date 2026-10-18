@@ -65,9 +65,12 @@ owners keep retained input, accumulator aliases and large results charged until
 their users and awaited iterator cleanup finish. Integer result admission remains
 before allocation. Deleting the private shell lowers required control headroom;
 it does not refund guest storage. Minor iterator/state-machine storage continues
-to rely on runtime headroom. `list(iterable)` retains its private construction
-helper for capacity admission, iterator cleanup and unpublished-storage rollback,
-with the same conservative shell estimate and no source/current reference ledger.
+to rely on runtime headroom. `list(iterable)` admits the same private capacity,
+constructs it under lexical iterator ownership, and returns only after awaited
+cleanup finishes. Construction/disposal failure discards only its unpublished
+backing through the existing rollback helper. The private operation shell and
+general binder handoff are removed; successful output and retained input remain
+charged to their owners.
 
 For exact native list/tuple rows, asynchronous `csv.writerow` reuses the existing
 synchronous scalar converter and its scratch reservations. It still awaits the

@@ -1,0 +1,364 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "19cd6654e4f85d4e64dbb12a2be80a44ef7c553e",
+  "candidate": "baseline plus frozen two edits and one class deletion",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs": {
+      "before": "1af7db1dda5a21e90add1f577c74d23c72c2ce5a117e7576486b679360bdf8a1",
+      "after": "c7822fd940d9e4843284f6279ad5cf068b0df3160f8158d0fff392525f40e36f"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": {
+      "before": "865d79732c7346ec4ff6e81a4ddcb21f3e1641155491c4f73cd11858a53668f7",
+      "after": "43d695bae1180fad9046246971c5f1bdb16415589a4ee437596a788cb87c79f7"
+    }
+  },
+  "deletedSource": {
+    "path": "src/Lokad.Lython/Runtime/LythonRuntime.NativeListOperation.cs",
+    "beforeSha256": "56cae2fde64f8f1d66dd1b10da0ebe98eb7ab2656209529dc582010dc4e59fcd",
+    "lines": 82
+  },
+  "groups": {
+    "baseline-behavior": {
+      "passed": 53,
+      "process": {
+        "source": "list-handoff",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "E0EEEB886E09AAD9A039A9BE770433679727152965256B9AE6F46F30ABD2A321",
+        "filter": "Category!=Stress&(FullyQualifiedName~ListConstructionHandoffTests|FullyQualifiedName~PartialNativeListStateTests|FullyQualifiedName~ListConstructionAbortAccountingTests)",
+        "pid": 65136,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1487,
+        "stdoutSha256": "79B652E67958F7C5D3DED14497965E2E062E5378B34D5EE1EAFFE92E2013ECB7",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "9a0341e97635d78772dec2bc56087154bab2f4e9083c7e70b7d6ff9ec35147b1"
+    },
+    "baseline-allocation": {
+      "passed": 1,
+      "process": {
+        "source": "list-handoff",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "E0EEEB886E09AAD9A039A9BE770433679727152965256B9AE6F46F30ABD2A321",
+        "filter": "Category!=Stress&FullyQualifiedName~ListHandoffAllocationDiagnostic",
+        "pid": 21340,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1220,
+        "stdoutSha256": "6B346797916115F7163AF789723C1B7554E2DF64E49C714679F5CA5A38FD8677",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "56df3854f3d095f0c41ca5543e5f0e4870d769152e4e95efcb30aa6f5cb49c8b"
+    },
+    "candidate-behavior": {
+      "passed": 66,
+      "process": {
+        "source": "list-handoff",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "08BDAE11EC3E0415AA01710C566C18C85735F2B1E7466ECAEA9D120E9B2B612B",
+        "filter": "Category!=Stress&(FullyQualifiedName~ListConstructionHandoffTests|FullyQualifiedName~PartialNativeListStateTests|FullyQualifiedName~ListConstructionAbortAccountingTests|FullyQualifiedName~NativeAggregateStateTests)",
+        "pid": 13692,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1317,
+        "stdoutSha256": "67F6339DB58EE629B2AB4407BC0E12501FBA5D772AEB830E043D79903BF96A17",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "082c5fb965f4aa5e1078d234a9bf590d50c0f8b500eb87247b744b199e4a4e25"
+    },
+    "candidate-allocation": {
+      "passed": 1,
+      "process": {
+        "source": "list-handoff",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "08BDAE11EC3E0415AA01710C566C18C85735F2B1E7466ECAEA9D120E9B2B612B",
+        "filter": "Category!=Stress&FullyQualifiedName~ListHandoffAllocationDiagnostic",
+        "pid": 78700,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1124,
+        "stdoutSha256": "4200DB47E0C84B1DAEA05DC8D5B38C348A5923AD42332A1088DFC552EA0F0E70",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "7f35be10ba5c071067d8229e856f570377f79373777675bb322c84874cec0018"
+    },
+    "final-white": {
+      "passed": 197,
+      "process": {
+        "source": "list-handoff",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "0211F60B00E0C38166AFEE8350983FF968DBBD54BE68CCF5EDC58CC217004963",
+        "filter": "Category!=Stress&(FullyQualifiedName~ListConstructionHandoffTests|FullyQualifiedName~NativeAggregateStateTests|FullyQualifiedName~ExactBytesSumTests|FullyQualifiedName~PartialNativeListStateTests|FullyQualifiedName~ListConstructionAbortAccountingTests|FullyQualifiedName~IntegerAdditionAdmissionTests|FullyQualifiedName~ListNumericStoragePolicyTests|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission)",
+        "pid": 44064,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1331,
+        "stdoutSha256": "212720FA50851F7575B6C51FD5394055ECBADF693F4CAFB8373B5187F970AF31",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "07051e20e2070a74b4ab595ee9cef2dd13c9700fe1cbc30996c8d91252c5dc0d"
+    },
+    "final-semantics": {
+      "passed": 636,
+      "process": {
+        "source": "list-handoff",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "8CE35F7D31C9EBFF10DE8B09DEA80CD2E3A6D535C072E51BC0E106D947C89C5E",
+        "filter": "Category!=Stress&(FullyQualifiedName~BytesSumTests|FullyQualifiedName~ExactIntegerAdditionTests|FullyQualifiedName~BuiltinIterationCancellationTests|FullyQualifiedName~BuiltinIteratorSequenceFunctionTests|FullyQualifiedName~BuiltinValidationScenarioTests|FullyQualifiedName~ListCompatibilityTests|FullyQualifiedName~ListScalarAdoptionTests|FullyQualifiedName~ListReplaceDuringIterationTests|FullyQualifiedName~ListMutationScenarioTests|FullyQualifiedName~ListExtendScenarioTests|FullyQualifiedName~ListComprehensionExecutionTests|FullyQualifiedName~AgentCompatibilityBaselineTests)",
+        "pid": 28164,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 6529,
+        "stdoutSha256": "838F9EA7C31842615D7181A9BEDDC28F995CFCF19DFDBB13D6B062900FA9E3EA",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "ffdd968cfd9522bb93092b4ee2f03f2feb9101f7094498239e152a8b4a4c1955"
+    },
+    "final-owners": {
+      "passed": 89,
+      "process": {
+        "source": "list-handoff",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "8CE35F7D31C9EBFF10DE8B09DEA80CD2E3A6D535C072E51BC0E106D947C89C5E",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 63948,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2609,
+        "stdoutSha256": "EE1C09FB76839DC140E29C19E3E5BC9F8CA3A236C20AA961721EFE6C6DF98D69",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "8eda767ae403c9d6dc60e6e721dad0b38fd6fb80c5d424088657ce9b18135f30"
+    },
+    "final-goldens": {
+      "passed": 62,
+      "process": {
+        "source": "list-handoff",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "8CE35F7D31C9EBFF10DE8B09DEA80CD2E3A6D535C072E51BC0E106D947C89C5E",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 63548,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8757,
+        "stdoutSha256": "CDB451CC6C99AA8C1082238D058BF2CF7E661970ACF56BEA95652B67DB212137",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "3bd3d55c80083986b9019826221bde53ed924455c9c1a365e8203ceaff6d6b62"
+    }
+  },
+  "focusedFinalPassed": 984,
+  "completeJobs": 58,
+  "exactGuardMatrices": 18,
+  "distinctCases": "197 whitebox and787 distinct public TRX testIds; public groups disjoint.",
+  "before": [
+    {
+      "kind": "known-list",
+      "asynchronous": false,
+      "samples": [
+        53248,
+        53248,
+        53248,
+        53248,
+        53248,
+        53248,
+        53248,
+        53248
+      ]
+    },
+    {
+      "kind": "known-list",
+      "asynchronous": true,
+      "samples": [
+        62464,
+        62464,
+        62464,
+        62464,
+        62464,
+        62464,
+        62464,
+        62464
+      ]
+    },
+    {
+      "kind": "custom-list",
+      "asynchronous": false,
+      "samples": [
+        55296,
+        55296,
+        55296,
+        55296,
+        55296,
+        55296,
+        55296,
+        55296
+      ]
+    },
+    {
+      "kind": "custom-list",
+      "asynchronous": true,
+      "samples": [
+        79872,
+        79872,
+        79872,
+        79872,
+        79872,
+        79872,
+        79872,
+        79872
+      ]
+    },
+    {
+      "kind": "sum-control",
+      "asynchronous": false,
+      "samples": [
+        12288,
+        12288,
+        12288,
+        12288,
+        12416,
+        12288,
+        12288,
+        12288
+      ]
+    },
+    {
+      "kind": "sum-control",
+      "asynchronous": true,
+      "samples": [
+        12288,
+        12288,
+        12288,
+        12288,
+        12288,
+        12288,
+        12288,
+        12288
+      ]
+    }
+  ],
+  "after": [
+    {
+      "kind": "known-list",
+      "asynchronous": false,
+      "samples": [
+        45056,
+        45056,
+        45056,
+        45056,
+        45056,
+        45056,
+        45056,
+        45056
+      ]
+    },
+    {
+      "kind": "known-list",
+      "asynchronous": true,
+      "samples": [
+        54272,
+        54272,
+        54272,
+        54272,
+        54272,
+        54272,
+        54272,
+        54272
+      ]
+    },
+    {
+      "kind": "custom-list",
+      "asynchronous": false,
+      "samples": [
+        47104,
+        47104,
+        47104,
+        47104,
+        47104,
+        47104,
+        47104,
+        47104
+      ]
+    },
+    {
+      "kind": "custom-list",
+      "asynchronous": true,
+      "samples": [
+        71680,
+        71680,
+        71680,
+        71680,
+        71680,
+        71680,
+        71680,
+        71680
+      ]
+    },
+    {
+      "kind": "sum-control",
+      "asynchronous": false,
+      "samples": [
+        12288,
+        12288,
+        12288,
+        12288,
+        12416,
+        12288,
+        12288,
+        12288
+      ]
+    },
+    {
+      "kind": "sum-control",
+      "asynchronous": true,
+      "samples": [
+        12288,
+        12288,
+        12288,
+        12288,
+        12288,
+        12288,
+        12288,
+        12288
+      ]
+    }
+  ],
+  "environment": {
+    "capturedUtc": "2026-10-18T05:55:39.9605412+00:00",
+    "os": "Microsoft Windows 11 Business",
+    "build": "26200",
+    "architecture": "X64",
+    "cpu": "Intel(R) Core(TM) i7-14700KF",
+    "cores": 20,
+    "logicalProcessors": 28,
+    "powershell": "7.6.6",
+    "head": "19cd6654e4f85d4e64dbb12a2be80a44ef7c553e"
+  },
+  "publicRuntimeCopyMatches": true,
+  "publicRuntimeDllSha256": "500c0a7fd8c69ac40469fad459b0485f75b9bbc642baafd61b5f7d46d5025e3e",
+  "sourceProof": "Only list local allocation/lexical iteration/private rollback, direct general bound returns, and NativeListOperation deletion. PyList capacity/rollback helpers, sum code and all other builtin/call bodies remain unchanged.",
+  "contractTradeoff": "The deleted128-byte control reservation no longer consumes allowance. Major list capacity and retained input/results remain funded by existing owners; only failed unpublished backing is refunded. Exact tiny-budget thresholds are not promised. No new owner/manager, tracing, mode or framework.",
+  "newCoverage": "Eighteen frozen native/custom empty/two/65-item, move/cleanup/both-failure, collection-limit and every fuel/span/effect/disposal prefix records, both APIs. Three actual DisposeAsync TCS success/error/cancel witnesses separate committed backing from temporary funding; output remains private until cleanup completes, aliases persist, failure refunds only private backing and owners return to0.",
+  "diagnosticBoundary": "128 native ICallable invocations through either API, eight warmups/eight samples. Four-item known/custom list construction; existing4096-byte checksum control. Context/input/callable/arguments outside thread counter; binding/construction/iteration/disposal inside. Complete values, exact custom cleanup count, retained list funding and scope return0 checked. Async operations complete; no actual suspension, public scheduling, guest opcode loop, startup/compile, host I/O, elapsed or CPython timing. No requested GC.",
+  "temporaryDiagnosticRemoved": true,
+  "obsoleteOperationAndGeneralHandoffRemoved": true,
+  "fixtureCorrections": [],
+  "externalAssertionsTimeoutsAndStressScalesRelaxed": false,
+  "fullLocalStress": "Not repeated; preserve original scales and batch at the aggregate-ownership checkpoint."
+}
