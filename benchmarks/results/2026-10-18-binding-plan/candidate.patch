@@ -1,0 +1,158 @@
+diff --git a/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs b/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs
+index 8b4190a1..283ce612 100644
+--- a/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs
++++ b/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs
+@@ -14,8 +14,8 @@ internal sealed class FunctionBindingPlan
+     {
+         var governor = context?.MemoryGovernor;
+         // The slot map and positional/keyword/layout arrays are owned by
+-        // this plan. Admit their capacity before allocating, including working
+-        // lists; the estimate remains conservative until layouts are shared.
++        // this plan. Admit conservative capacity and construction overlap before
++        // allocating, even though final arrays no longer need working lists.
+         var layoutBytes = parameters.Count == 0 ? 0 : 128L + 128L * parameters.Count;
+         governor?.Reserve(layoutBytes, null);
+         try
+@@ -23,21 +23,21 @@ internal sealed class FunctionBindingPlan
+             CallableName = callableName;
+             CallableKind = callableKind;
+ 
+-            var positional = new List<LoweredFunctionParameter>(parameters.Count);
+-            var keywordOnly = new List<LoweredFunctionParameter>(parameters.Count);
++            var positionalCount = 0;
++            var keywordOnlyCount = 0;
+             foreach (var parameter in parameters)
+             {
+                 switch (parameter.Kind)
+                 {
+                     case FunctionParameterKind.PositionalOnly:
+-                        positional.Add(parameter);
++                        positionalCount++;
+                         PositionalOnlyCount++;
+                         break;
+                     case FunctionParameterKind.Positional:
+-                        positional.Add(parameter);
++                        positionalCount++;
+                         break;
+                     case FunctionParameterKind.KeywordOnly:
+-                        keywordOnly.Add(parameter);
++                        keywordOnlyCount++;
+                         break;
+                     case FunctionParameterKind.VariadicList:
+                         VariadicList = parameter;
+@@ -48,36 +48,50 @@ internal sealed class FunctionBindingPlan
+                 }
+             }
+ 
+-            PositionalParameters = positional.ToArray();
+-            KeywordOnlyParameters = keywordOnly.ToArray();
+-            var layoutNames = new List<string>(parameters.Count);
++            LoweredFunctionParameter[] positional = positionalCount == 0 ? [] : new LoweredFunctionParameter[positionalCount];
++            LoweredFunctionParameter[] keywordOnly = keywordOnlyCount == 0 ? [] : new LoweredFunctionParameter[keywordOnlyCount];
++            var positionalIndex = 0;
++            var keywordOnlyIndex = 0;
++            foreach (var parameter in parameters)
++            {
++                if (parameter.Kind is FunctionParameterKind.PositionalOnly or FunctionParameterKind.Positional)
++                    positional[positionalIndex++] = parameter;
++                else if (parameter.Kind == FunctionParameterKind.KeywordOnly)
++                    keywordOnly[keywordOnlyIndex++] = parameter;
++            }
++
++            PositionalParameters = positional;
++            KeywordOnlyParameters = keywordOnly;
++            NamedLayoutCount = positionalCount + keywordOnlyCount;
++            var layoutCount = NamedLayoutCount + (VariadicList is null ? 0 : 1) + (VariadicDictionary is null ? 0 : 1);
++            var layoutNames = layoutCount == 0 ? [] : new string[layoutCount];
+             var layoutIndex = new Dictionary<string, int>(parameters.Count, StringComparer.Ordinal);
++            var slot = 0;
+             foreach (var parameter in positional)
+             {
+-                layoutIndex[parameter.Name] = layoutNames.Count;
+-                layoutNames.Add(parameter.Name);
++                layoutIndex[parameter.Name] = slot;
++                layoutNames[slot++] = parameter.Name;
+             }
+ 
+             foreach (var parameter in keywordOnly)
+             {
+-                layoutIndex[parameter.Name] = layoutNames.Count;
+-                layoutNames.Add(parameter.Name);
++                layoutIndex[parameter.Name] = slot;
++                layoutNames[slot++] = parameter.Name;
+             }
+ 
+-            NamedLayoutCount = layoutNames.Count;
+             if (VariadicList is not null)
+             {
+-                layoutIndex[VariadicList.Name] = layoutNames.Count;
+-                layoutNames.Add(VariadicList.Name);
++                layoutIndex[VariadicList.Name] = slot;
++                layoutNames[slot++] = VariadicList.Name;
+             }
+ 
+             if (VariadicDictionary is not null)
+             {
+-                layoutIndex[VariadicDictionary.Name] = layoutNames.Count;
+-                layoutNames.Add(VariadicDictionary.Name);
++                layoutIndex[VariadicDictionary.Name] = slot;
++                layoutNames[slot++] = VariadicDictionary.Name;
+             }
+ 
+-            LayoutParameterNames = layoutNames.ToArray();
++            LayoutParameterNames = layoutNames;
+             LayoutParameterIndex = layoutIndex;
+ 
+             var nameStorageBytes = KeywordOnlyParameters.Count == 0 ? 0 : 32L + 8L * KeywordOnlyParameters.Count;
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/BindingPlanConstructionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/BindingPlanConstructionTests.cs
+new file mode 100644
+index 00000000..77470026
+--- /dev/null
++++ b/tests/Lokad.Lython.PublicApi.Tests/BindingPlanConstructionTests.cs
+@@ -0,0 +1,46 @@
++using Lokad.Lython.Tests.Harness;
++
++namespace Lokad.Lython.PublicApi.Tests;
++
++public sealed class BindingPlanConstructionTests
++{
++    public static IEnumerable<object[]> Cases()
++    {
++        yield return [false,"empty","def f():return []\nprint(f(),f.__defaults__,f.__kwdefaults__)","[] None None\n"];
++        yield return [true,"empty","def f():return []\nprint(f(),f.__defaults__,f.__kwdefaults__)","[] None None\n"];
++        yield return [false,"single","def f(x):return x\nprint(f(3),f(x=4))","3 4\n"];
++        yield return [true,"single","def f(x):return x\nprint(f(3),f(x=4))","3 4\n"];
++        yield return [false,"mixed-default-mutation","def f(a,b=2,/,c=3,*args,d,e=5,**kw):return [a,b,c,args,d,e,kw]\nprint(f(1,d=4))\nprint(f(1,7,8,9,10,d=11,e=12,z=13))\nf.__defaults__=(20,30)\nf.__kwdefaults__['e']=50\nprint(f(1,d=40))\nprint(f(1,d=4,a=9,args=10))","[1, 2, 3, (), 4, 5, {}]\n[1, 7, 8, (9, 10), 11, 12, {'z': 13}]\n[1, 20, 30, (), 40, 50, {}]\n[1, 20, 30, (), 4, 50, {'a': 9, 'args': 10}]\n"];
++        yield return [true,"mixed-default-mutation","def f(a,b=2,/,c=3,*args,d,e=5,**kw):return [a,b,c,args,d,e,kw]\nprint(f(1,d=4))\nprint(f(1,7,8,9,10,d=11,e=12,z=13))\nf.__defaults__=(20,30)\nf.__kwdefaults__['e']=50\nprint(f(1,d=40))\nprint(f(1,d=4,a=9,args=10))","[1, 2, 3, (), 4, 5, {}]\n[1, 7, 8, (9, 10), 11, 12, {'z': 13}]\n[1, 20, 30, (), 40, 50, {}]\n[1, 20, 30, (), 4, 50, {'a': 9, 'args': 10}]\n"];
++        yield return [false,"mixed-errors","def f(a,b=2,/,c=3,*args,d,e=5,**kw):return [a,b,c,args,d,e,kw]\ntry:f()\nexcept TypeError as error:print(type(error).__name__)\ntry:f(1,2,3,**{'c':4,'d':5})\nexcept TypeError as error:print(type(error).__name__)","TypeError\nTypeError\n"];
++        yield return [true,"mixed-errors","def f(a,b=2,/,c=3,*args,d,e=5,**kw):return [a,b,c,args,d,e,kw]\ntry:f()\nexcept TypeError as error:print(type(error).__name__)\ntry:f(1,2,3,**{'c':4,'d':5})\nexcept TypeError as error:print(type(error).__name__)","TypeError\nTypeError\n"];
++        yield return [false,"unicode-keyword","def f(caf\u00e9,*,\u03bb=2):return caf\u00e9+\u03bb\nprint(f(1),f(1,\u03bb=3))","3 4\n"];
++        yield return [true,"unicode-keyword","def f(caf\u00e9,*,\u03bb=2):return caf\u00e9+\u03bb\nprint(f(1),f(1,\u03bb=3))","3 4\n"];
++        yield return [false,"lambda","fn=lambda a=3,*,b=4:a+b\nprint(fn(),fn(5,b=6))","7 11\n"];
++        yield return [true,"lambda","fn=lambda a=3,*,b=4:a+b\nprint(fn(),fn(5,b=6))","7 11\n"];
++        yield return [false,"method","class C:\n def f(self,a=1,*,b=2):return a+b\nprint(C().f(),C().f(3,b=4))","3 7\n"];
++        yield return [true,"method","class C:\n def f(self,a=1,*,b=2):return a+b\nprint(C().f(),C().f(3,b=4))","3 7\n"];
++        yield return [false,"generator","def f(a=1,*,b=2):yield a+b\ng=f()\nf.__kwdefaults__['b']=9\nprint(list(g),list(f(3,b=4)))","[3] [7]\n"];
++        yield return [true,"generator","def f(a=1,*,b=2):yield a+b\ng=f()\nf.__kwdefaults__['b']=9\nprint(list(g),list(f(3,b=4)))","[3] [7]\n"];
++    }
++
++    [Theory]
++    [MemberData(nameof(Cases))]
++    public async Task ParameterShapesAndMutableDefaultsMatchPython(bool asynchronous, string name, string source, string expected)
++        => await Check(asynchronous, name, source, expected);
++
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task ExistingBindingErrorMessagesRemainStable(bool asynchronous)
++        => await Check(asynchronous, "legacy messages", "def f(a,b=2,/,c=3,*args,d,e=5,**kw):return [a,b,c,args,d,e,kw]\ntry:f()\nexcept TypeError as error:print(str(error))\ntry:f(1,2,3,**{'c':4,'d':5})\nexcept TypeError as error:print(str(error))", "Function 'f' is missing argument 'a'.\nFunction 'f' got multiple values for argument 'c'.\n");
++
++    private static async Task Check(bool asynchronous, string name, string source, string expected)
++    {
++        using var script = new LythonEngine().Compile(source);
++        Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
++        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
++        Assert.True(result.Success, result.Failure?.Message);
++        Assert.Equal(expected, result.StandardOutput);
++    }
++}

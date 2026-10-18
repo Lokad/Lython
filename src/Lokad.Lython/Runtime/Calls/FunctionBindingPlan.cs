@@ -14,8 +14,8 @@ internal sealed class FunctionBindingPlan
     {
         var governor = context?.MemoryGovernor;
         // The slot map and positional/keyword/layout arrays are owned by
-        // this plan. Admit their capacity before allocating, including working
-        // lists; the estimate remains conservative until layouts are shared.
+        // this plan. Admit conservative capacity and construction overlap before
+        // allocating, even though final arrays no longer need working lists.
         var layoutBytes = parameters.Count == 0 ? 0 : 128L + 128L * parameters.Count;
         governor?.Reserve(layoutBytes, null);
         try
@@ -23,21 +23,21 @@ internal sealed class FunctionBindingPlan
             CallableName = callableName;
             CallableKind = callableKind;
 
-            var positional = new List<LoweredFunctionParameter>(parameters.Count);
-            var keywordOnly = new List<LoweredFunctionParameter>(parameters.Count);
+            var positionalCount = 0;
+            var keywordOnlyCount = 0;
             foreach (var parameter in parameters)
             {
                 switch (parameter.Kind)
                 {
                     case FunctionParameterKind.PositionalOnly:
-                        positional.Add(parameter);
+                        positionalCount++;
                         PositionalOnlyCount++;
                         break;
                     case FunctionParameterKind.Positional:
-                        positional.Add(parameter);
+                        positionalCount++;
                         break;
                     case FunctionParameterKind.KeywordOnly:
-                        keywordOnly.Add(parameter);
+                        keywordOnlyCount++;
                         break;
                     case FunctionParameterKind.VariadicList:
                         VariadicList = parameter;
@@ -48,36 +48,50 @@ internal sealed class FunctionBindingPlan
                 }
             }
 
-            PositionalParameters = positional.ToArray();
-            KeywordOnlyParameters = keywordOnly.ToArray();
-            var layoutNames = new List<string>(parameters.Count);
+            LoweredFunctionParameter[] positional = positionalCount == 0 ? [] : new LoweredFunctionParameter[positionalCount];
+            LoweredFunctionParameter[] keywordOnly = keywordOnlyCount == 0 ? [] : new LoweredFunctionParameter[keywordOnlyCount];
+            var positionalIndex = 0;
+            var keywordOnlyIndex = 0;
+            foreach (var parameter in parameters)
+            {
+                if (parameter.Kind is FunctionParameterKind.PositionalOnly or FunctionParameterKind.Positional)
+                    positional[positionalIndex++] = parameter;
+                else if (parameter.Kind == FunctionParameterKind.KeywordOnly)
+                    keywordOnly[keywordOnlyIndex++] = parameter;
+            }
+
+            PositionalParameters = positional;
+            KeywordOnlyParameters = keywordOnly;
+            NamedLayoutCount = positionalCount + keywordOnlyCount;
+            var layoutCount = NamedLayoutCount + (VariadicList is null ? 0 : 1) + (VariadicDictionary is null ? 0 : 1);
+            var layoutNames = layoutCount == 0 ? [] : new string[layoutCount];
             var layoutIndex = new Dictionary<string, int>(parameters.Count, StringComparer.Ordinal);
+            var slot = 0;
             foreach (var parameter in positional)
             {
-                layoutIndex[parameter.Name] = layoutNames.Count;
-                layoutNames.Add(parameter.Name);
+                layoutIndex[parameter.Name] = slot;
+                layoutNames[slot++] = parameter.Name;
             }
 
             foreach (var parameter in keywordOnly)
             {
-                layoutIndex[parameter.Name] = layoutNames.Count;
-                layoutNames.Add(parameter.Name);
+                layoutIndex[parameter.Name] = slot;
+                layoutNames[slot++] = parameter.Name;
             }
 
-            NamedLayoutCount = layoutNames.Count;
             if (VariadicList is not null)
             {
-                layoutIndex[VariadicList.Name] = layoutNames.Count;
-                layoutNames.Add(VariadicList.Name);
+                layoutIndex[VariadicList.Name] = slot;
+                layoutNames[slot++] = VariadicList.Name;
             }
 
             if (VariadicDictionary is not null)
             {
-                layoutIndex[VariadicDictionary.Name] = layoutNames.Count;
-                layoutNames.Add(VariadicDictionary.Name);
+                layoutIndex[VariadicDictionary.Name] = slot;
+                layoutNames[slot++] = VariadicDictionary.Name;
             }
 
-            LayoutParameterNames = layoutNames.ToArray();
+            LayoutParameterNames = layoutNames;
             LayoutParameterIndex = layoutIndex;
 
             var nameStorageBytes = KeywordOnlyParameters.Count == 0 ? 0 : 32L + 8L * KeywordOnlyParameters.Count;

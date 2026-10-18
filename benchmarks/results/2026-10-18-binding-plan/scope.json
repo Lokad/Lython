@@ -1,0 +1,13 @@
+{
+  "baseline": "de6efc09ebd6ad0404939ab12bb3ece7d011359a",
+  "sourceFile": "src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs",
+  "sourceSha256": "ac84a33a1e07f60e32ed36a6b1ae5761fe7b25975e13db95ea77b7f3e1cd42f6",
+  "diagnosticSha256": "679612866ec4b76292e4e8db8026762e4279969ef1bff2031632de892dbd1526",
+  "replacement": "Remove3 temporary lists/backing arrays/copies by counting parameter kinds and filling exact existing final arrays plus ordinal slot map. No new layout/cache/owner/default sharing.",
+  "contract": "Preserve final order/map insertion, positional-only/keyword/variadic metadata and per-function defaults. Keep conservative layout/name/default estimates, admission/rollback and retained aliases unchanged.",
+  "gate": "One native before/after,2warmups/8samples/64constructors for empty/single/mixed shapes, unchanged context control. Every plan route allocates less; context arrays identical; exact layout metadata and27 admission/rollback records identical. Reject without retiming otherwise.",
+  "acceptance": "18 public shape/default/lambda/method/generator/error rows including8 CPython semantic cases and exact baseline Lython error wording; focused binding/default/frame/callback/owner/refusal/stack tests and58 complete jobs. Original Stress/assertions/timeouts unchanged.",
+  "compatibility": "Existing function-binding TypeError spelling differs from CPython; compare exception classes for that case and separately freeze exact Lython messages. This change does not claim to fix that difference.",
+  "performance": "Allocation-only constructor comparison; no startup/compile-run/whole-job/CPython timing or retiming.",
+  "regex": "Planning only, no runtime/dependency changes."
+}

@@ -1,0 +1,14 @@
+{
+  "source": "binding-plan",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "0C787D1A1C19CD5FD8833B9C3F286FE931DACD5CBE343A2D0C2E3FD0C9AF51B0",
+  "filter": "Category!=Stress&FullyQualifiedName~BindingPlanAllocationDiagnostic",
+  "pid": 77064,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1123,
+  "stdoutSha256": "AC5C68AC933015749861C151E7A5DE7332367A19A14389D4F01895F5A656342F",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

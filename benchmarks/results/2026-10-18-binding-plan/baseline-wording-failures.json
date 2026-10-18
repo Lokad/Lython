@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Lokad.Lython.PublicApi.Tests.BindingPlanConstructionTests.ParameterShapesAndMutableDefaultsMatchPython(asynchronous: False, name: \"mixed-errors\", source: \"def f(a,b=2,/,c=3,*args,d,e=5,**kw):return [a,b,c,\"\u00b7\u00b7\u00b7, expected: \"f() missing 1 required positional argument: 'a'\\nf\"\u00b7\u00b7\u00b7)",
+    "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"f() missing 1 required positional argumen\"\u00b7\u00b7\u00b7\r\nActual:   \"Function 'f' is missing argument 'a'.\\nFun\"\u00b7\u00b7\u00b7\r\n           \u2191 (pos 0)"
+  },
+  {
+    "name": "Lokad.Lython.PublicApi.Tests.BindingPlanConstructionTests.ParameterShapesAndMutableDefaultsMatchPython(asynchronous: True, name: \"mixed-errors\", source: \"def f(a,b=2,/,c=3,*args,d,e=5,**kw):return [a,b,c,\"\u00b7\u00b7\u00b7, expected: \"f() missing 1 required positional argument: 'a'\\nf\"\u00b7\u00b7\u00b7)",
+    "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"f() missing 1 required positional argumen\"\u00b7\u00b7\u00b7\r\nActual:   \"Function 'f' is missing argument 'a'.\\nFun\"\u00b7\u00b7\u00b7\r\n           \u2191 (pos 0)"
+  }
+]

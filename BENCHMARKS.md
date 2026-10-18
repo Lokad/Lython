@@ -286,6 +286,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [binding-plan constructor](benchmarks/results/2026-10-18-binding-plan/README.md)
+at `de6efc09` plus its frozen one-file runtime patch fills final parameter arrays
+directly. One native comparison saves 96, 160 and 304 bytes per empty, single and
+mixed plan; context controls and 27 admission/rollback records are unchanged.
+This is an allocation saving, with no elapsed or CPython speedup claim.
+
 The [immutable sorted definition](benchmarks/results/2026-10-18-sorted-definition/README.md)
 at `75ad9b2e` plus its frozen one-file runtime patch removes per-run callable/
 signature construction. One fixed warm-context comparison reduces fresh-root

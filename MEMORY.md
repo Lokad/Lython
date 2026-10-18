@@ -457,8 +457,9 @@ construction, returning it once the Python containers own their storage; failed
 construction refunds only new, unpublished metadata. Clearing/replacing published
 defaults does not refund storage that can still have aliases or an active lookup.
 Parameter-heavy definition batches can therefore refuse earlier than older
-revisions that omitted layout capacity. Use bounded execution batches; immutable
-layout sharing remains a performance opportunity, not an accounting exemption.
+revisions that omitted layout capacity. Use bounded execution batches. Final
+parameter arrays are filled directly; conservative capacity estimates and
+per-function default ownership remain unchanged.
 The fixed `len`, `repr`, `ascii`, `format`, `abs`, `pow`, `round`, `divmod`, `bin`,
 `oct`, `hex`, `chr`, `ord` and `sorted` builtin definitions are shared trusted runtime
 metadata covered by host/control headroom. They retain no execution context,

@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="bab4679e-974d-4bb5-a9b3-b42e98c2798e" name="JoannesVermorel@LOKAD-0399 2026-10-18 16:13:45" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T16:13:45.7502017+02:00" queuing="2026-10-18T16:13:45.7502018+02:00" start="2026-10-18T16:13:44.8839439+02:00" finish="2026-10-18T16:13:45.7548379+02:00" />
+  <TestSettings name="default" id="ab6cd756-1ccc-4e9b-a183-1c9f6c795ca4">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_16_13_45" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="946cf96e-3d94-444b-a424-bf6274563b0f" testId="d782e495-7bfa-2413-2cb6-1c038c302505" testName="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic.AdmissionAndRollback" computerName="LOKAD-0399" duration="00:00:00.0059489" startTime="2026-10-18T16:13:45.6774088+02:00" endTime="2026-10-18T16:13:45.6829008+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="946cf96e-3d94-444b-a424-bf6274563b0f">
+      <Output>
+        <StdOut>BINDING_PLAN_WORK:[{"shape":"empty","available":0,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":0,"names":[]},{"shape":"empty","available":127,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":0,"names":[]},{"shape":"empty","available":128,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":0,"names":[]},{"shape":"empty","available":255,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":0,"names":[]},{"shape":"empty","available":256,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":0,"names":[]},{"shape":"empty","available":384,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":0,"names":[]},{"shape":"empty","available":512,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":0,"names":[]},{"shape":"empty","available":768,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":0,"names":[]},{"shape":"empty","available":4096,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":0,"names":[]},{"shape":"single","available":0,"error":"MemoryError","message":"execution memory budget exceeded (65536)","reason":"ExecutionMemoryLimit","denied":256,"committedDelta":0,"names":null},{"shape":"single","available":127,"error":"MemoryError","message":"execution memory budget exceeded (65536)","reason":"ExecutionMemoryLimit","denied":256,"committedDelta":0,"names":null},{"shape":"single","available":128,"error":"MemoryError","message":"execution memory budget exceeded (65536)","reason":"ExecutionMemoryLimit","denied":256,"committedDelta":0,"names":null},{"shape":"single","available":255,"error":"MemoryError","message":"execution memory budget exceeded (65536)","reason":"ExecutionMemoryLimit","denied":256,"committedDelta":0,"names":null},{"shape":"single","available":256,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":256,"names":["x"]},{"shape":"single","available":384,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":256,"names":["x"]},{"shape":"single","available":512,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":256,"names":["x"]},{"shape":"single","available":768,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":256,"names":["x"]},{"shape":"single","available":4096,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":256,"names":["x"]},{"shape":"mixed","available":0,"error":"MemoryError","message":"execution memory budget exceeded (65536)","reason":"ExecutionMemoryLimit","denied":1024,"committedDelta":0,"names":null},{"shape":"mixed","available":127,"error":"MemoryError","message":"execution memory budget exceeded (65536)","reason":"ExecutionMemoryLimit","denied":1024,"committedDelta":0,"names":null},{"shape":"mixed","available":128,"error":"MemoryError","message":"execution memory budget exceeded (65536)","reason":"ExecutionMemoryLimit","denied":1024,"committedDelta":0,"names":null},{"shape":"mixed","available":255,"error":"MemoryError","message":"execution memory budget exceeded (65536)","reason":"ExecutionMemoryLimit","denied":1024,"committedDelta":0,"names":null},{"shape":"mixed","available":256,"error":"MemoryError","message":"execution memory budget exceeded (65536)","reason":"ExecutionMemoryLimit","denied":1024,"committedDelta":0,"names":null},{"shape":"mixed","available":384,"error":"MemoryError","message":"execution memory budget exceeded (65536)","reason":"ExecutionMemoryLimit","denied":1024,"committedDelta":0,"names":null},{"shape":"mixed","available":512,"error":"MemoryError","message":"execution memory budget exceeded (65536)","reason":"ExecutionMemoryLimit","denied":1024,"committedDelta":0,"names":null},{"shape":"mixed","available":768,"error":"MemoryError","message":"execution memory budget exceeded (65536)","reason":"ExecutionMemoryLimit","denied":1024,"committedDelta":0,"names":null},{"shape":"mixed","available":4096,"error":null,"message":null,"reason":null,"denied":0,"committedDelta":1714,"names":["a","b","c","d","e","args","kw"]}]</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b6e99592-25e8-4300-9e2f-b7779f2bf558" testId="91904f7e-88db-ed61-ddbe-829afa08d2c2" testName="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic.Allocation(shape: &quot;single&quot;)" computerName="LOKAD-0399" duration="00:00:00.0373640" startTime="2026-10-18T16:13:45.6170584+02:00" endTime="2026-10-18T16:13:45.6584843+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b6e99592-25e8-4300-9e2f-b7779f2bf558">
+      <Output>
+        <StdOut>BINDING_PLAN_ALLOCATION:{"shape":"single","callsPerSample":64,"samples":[41472,41472,41472,41472,41472,41472,41472,41472],"metadata":{"positional":["x"],"keyword":[],"names":["x"],"map":[{"Key":"x","Value":0}],"PositionalOnlyCount":0,"NamedLayoutCount":1,"variadic":null,"keywords":null,"keywordNames":[]}}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="68668c83-e9dc-4beb-a7d1-970768eb5a58" testId="f30a9473-17f4-d9f8-c254-2112418d317b" testName="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic.Allocation(shape: &quot;context&quot;)" computerName="LOKAD-0399" duration="00:00:00.0147895" startTime="2026-10-18T16:13:45.6757185+02:00" endTime="2026-10-18T16:13:45.6757792+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="68668c83-e9dc-4beb-a7d1-970768eb5a58">
+      <Output>
+        <StdOut>BINDING_PLAN_ALLOCATION:{"shape":"context","callsPerSample":64,"samples":[1029120,1029120,1029120,1029120,1029120,1029120,1029120,1029120],"metadata":null}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2b37aad1-0ce3-4215-bd6b-ed677c0f6c7d" testId="3dc43cd7-3589-ff84-49f0-0bee550c9ca2" testName="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic.Allocation(shape: &quot;empty&quot;)" computerName="LOKAD-0399" duration="00:00:00.0003489" startTime="2026-10-18T16:13:45.6764294+02:00" endTime="2026-10-18T16:13:45.6768965+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2b37aad1-0ce3-4215-bd6b-ed677c0f6c7d">
+      <Output>
+        <StdOut>BINDING_PLAN_ALLOCATION:{"shape":"empty","callsPerSample":64,"samples":[20480,20480,20480,20480,20480,20480,20480,20480],"metadata":{"positional":[],"keyword":[],"names":[],"map":[],"PositionalOnlyCount":0,"NamedLayoutCount":0,"variadic":null,"keywords":null,"keywordNames":[]}}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8aa274aa-7317-4b76-aec5-bde1951add66" testId="de66c68c-3896-9c06-57ec-25d0df8942ee" testName="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic.Allocation(shape: &quot;mixed&quot;)" computerName="LOKAD-0399" duration="00:00:00.0031195" startTime="2026-10-18T16:13:45.6761116+02:00" endTime="2026-10-18T16:13:45.6763807+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8aa274aa-7317-4b76-aec5-bde1951add66">
+      <Output>
+        <StdOut>BINDING_PLAN_ALLOCATION:{"shape":"mixed","callsPerSample":64,"samples":[121856,121856,121856,121856,121856,121856,121856,121856],"metadata":{"positional":["a","b","c"],"keyword":["d","e"],"names":["a","b","c","d","e","args","kw"],"map":[{"Key":"a","Value":0},{"Key":"b","Value":1},{"Key":"c","Value":2},{"Key":"d","Value":3},{"Key":"e","Value":4},{"Key":"args","Value":5},{"Key":"kw","Value":6}],"PositionalOnlyCount":2,"NamedLayoutCount":5,"variadic":"args","keywords":"kw","keywordNames":["d","e"]}}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic.Allocation(shape: &quot;single&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="91904f7e-88db-ed61-ddbe-829afa08d2c2">
+      <Execution id="b6e99592-25e8-4300-9e2f-b7779f2bf558" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic.Allocation(shape: &quot;empty&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="3dc43cd7-3589-ff84-49f0-0bee550c9ca2">
+      <Execution id="2b37aad1-0ce3-4215-bd6b-ed677c0f6c7d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic.Allocation(shape: &quot;mixed&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="de66c68c-3896-9c06-57ec-25d0df8942ee">
+      <Execution id="8aa274aa-7317-4b76-aec5-bde1951add66" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic.AdmissionAndRollback" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="d782e495-7bfa-2413-2cb6-1c038c302505">
+      <Execution id="946cf96e-3d94-444b-a424-bf6274563b0f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic" name="AdmissionAndRollback" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic.Allocation(shape: &quot;context&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="f30a9473-17f4-d9f8-c254-2112418d317b">
+      <Execution id="68668c83-e9dc-4beb-a7d1-970768eb5a58" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BindingPlanAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="d782e495-7bfa-2413-2cb6-1c038c302505" executionId="946cf96e-3d94-444b-a424-bf6274563b0f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="91904f7e-88db-ed61-ddbe-829afa08d2c2" executionId="b6e99592-25e8-4300-9e2f-b7779f2bf558" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f30a9473-17f4-d9f8-c254-2112418d317b" executionId="68668c83-e9dc-4beb-a7d1-970768eb5a58" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3dc43cd7-3589-ff84-49f0-0bee550c9ca2" executionId="2b37aad1-0ce3-4215-bd6b-ed677c0f6c7d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="de66c68c-3896-9c06-57ec-25d0df8942ee" executionId="8aa274aa-7317-4b76-aec5-bde1951add66" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="5" executed="5" passed="5" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.16]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.44]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.46]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.54]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

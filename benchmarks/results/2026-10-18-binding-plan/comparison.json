@@ -1,0 +1,42 @@
+{
+  "accepted": true,
+  "comparison": [
+    {
+      "shape": "context",
+      "control": true,
+      "beforePerCall": 16080.0,
+      "afterPerCall": 16080.0,
+      "savedPerCall": 0.0,
+      "passed": true
+    },
+    {
+      "shape": "empty",
+      "control": false,
+      "beforePerCall": 320.0,
+      "afterPerCall": 224.0,
+      "savedPerCall": 96.0,
+      "passed": true
+    },
+    {
+      "shape": "mixed",
+      "control": false,
+      "beforePerCall": 1904.0,
+      "afterPerCall": 1600.0,
+      "savedPerCall": 304.0,
+      "passed": true
+    },
+    {
+      "shape": "single",
+      "control": false,
+      "beforePerCall": 648.0,
+      "afterPerCall": 488.0,
+      "savedPerCall": 160.0,
+      "passed": true
+    }
+  ],
+  "layoutMetadataIdentical": true,
+  "admissionAndRollbackRecordsIdentical": true,
+  "recordCount": 27,
+  "qualifiedCaptureRepeated": false,
+  "elapsedClaim": false
+}

@@ -7,10 +7,17 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 binding-plan constructor](results/2026-10-18-binding-plan/README.md)
+removes three working lists/backings/copies, retaining per-function defaults and
+conservative admission. One native pair saves 96–304 bytes per plan; context
+controls, metadata and 27 admission/rollback records are identical. All 306 focused
+checks and 58 complete jobs pass. Existing CPython binding-error wording differences
+remain explicit. No layout cache, new owner, elapsed or CPython speedup claim.
+
 The [2026-10-18 immutable sorted definition](results/2026-10-18-sorted-definition/README.md)
 reuses the existing fixed-metadata mechanism for one consumer. One allocation pair
 saves160 bytes per warm fresh context; child samples are identical. 1014 focused
-checks and58 complete jobs pass, including readonly metadata and an overlapping
+checks and 58 complete jobs pass, including readonly metadata and an overlapping
 sort callback/cancellation/retained-result owner witness. Initial host-array fixture
 and diagnostic-hash metadata mistakes were corrected before runtime edits with
 receipts retained. No new owner/cache, timing capture or CPython speedup claim.
@@ -287,7 +294,7 @@ Source and raw samples are preserved; temporary test source is removed, with no
 retuning or recapture after the later correctness change.
 
 The [2026-10-17 complete CSV helper snapshot](results/2026-10-17-csv-helper-fresh/README.md)
-adds the fresh compile/run boundary at efccd974:17.358ms, CPython3.13.2 14.348ms,
+adds the fresh compile/run boundary at efccd974:17.358ms, CPython 3.13.2 14.348ms,
 spreads45.85%/29.76%. Earlier Lython a5a2fc0f measures14.818ms with48.73% spread;
 no direction or ratio is qualified. One10.119s capture,275correctness responses,
 100frozen files and seven removed workers/fixtures are recorded. BS is separate
@@ -297,7 +304,7 @@ original scripts and their larger/stress fixtures remain unchanged.
 
 The [2026-10-17 complete text fresh snapshot](results/2026-10-17-text-fresh/README.md)
 fills compile-to-result at 877f20e2 with identical Lython controls: 16.539/14.994ms,
-CPython3.13.2 11.188ms; spreads48.87%/106.79%/39.21%. The9.34% control difference
+CPython 3.13.2 11.188ms; spreads48.87%/106.79%/39.21%. The9.34% control difference
 and very large spread leave this local Windows result inconclusive. One8.788s
 capture; independent three-size stdout/report goldens,35micro responses and
 both50-file manifests pass; seven workers/fixtures gone. No optimization/VM-warm
@@ -1376,7 +1383,7 @@ CPython 3.13.2 checks on Windows. Its fixture repeats expand into different reco
 each script; they are not a shared row count. Correctness tests are not timing
 measurements. The [original scripts](scripts) remain ordinary Python.
 
-G uses the same shared Windows workstation/toolchain as A and CPython3.13.2.
+G uses the same shared Windows workstation/toolchain as A and CPython 3.13.2.
 Its warm CSV comparison excludes compilation/startup and is a single7.320-second
 diagnostic; later local-import changes are unmeasured.
 

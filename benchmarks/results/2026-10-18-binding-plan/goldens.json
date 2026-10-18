@@ -1,0 +1,63 @@
+{
+  "revision": "de6efc09ebd6ad0404939ab12bb3ece7d011359a",
+  "python": "C:\\Python313\\python.exe",
+  "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "name": "empty",
+      "source": "def f():return []\nprint(f(),f.__defaults__,f.__kwdefaults__)",
+      "sourceSha256": "b92d216ff5afcd8e088d76e1aae06d70b0280adc8c151a774a3e4d2f222c540e",
+      "expected": "[] None None\n"
+    },
+    {
+      "name": "single",
+      "source": "def f(x):return x\nprint(f(3),f(x=4))",
+      "sourceSha256": "ebecb5ad473d87c278c260751638119c2e35ddad8d993beacfd23b983f248170",
+      "expected": "3 4\n"
+    },
+    {
+      "name": "mixed-default-mutation",
+      "source": "def f(a,b=2,/,c=3,*args,d,e=5,**kw):return [a,b,c,args,d,e,kw]\nprint(f(1,d=4))\nprint(f(1,7,8,9,10,d=11,e=12,z=13))\nf.__defaults__=(20,30)\nf.__kwdefaults__['e']=50\nprint(f(1,d=40))\nprint(f(1,d=4,a=9,args=10))",
+      "sourceSha256": "5aa264bee54b966f9b139c8dcec46ed0063063eee13efb4a16c1eee8bac4a0de",
+      "expected": "[1, 2, 3, (), 4, 5, {}]\n[1, 7, 8, (9, 10), 11, 12, {'z': 13}]\n[1, 20, 30, (), 40, 50, {}]\n[1, 20, 30, (), 4, 50, {'a': 9, 'args': 10}]\n"
+    },
+    {
+      "name": "mixed-errors",
+      "source": "def f(a,b=2,/,c=3,*args,d,e=5,**kw):return [a,b,c,args,d,e,kw]\ntry:f()\nexcept TypeError as error:print(type(error).__name__)\ntry:f(1,2,3,**{'c':4,'d':5})\nexcept TypeError as error:print(type(error).__name__)",
+      "sourceSha256": "bacf0cbb1aea8d19371b96b0180a48544e68836cb150794249918e8ce5472888",
+      "expected": "TypeError\nTypeError\n"
+    },
+    {
+      "name": "unicode-keyword",
+      "source": "def f(caf\u00e9,*,\u03bb=2):return caf\u00e9+\u03bb\nprint(f(1),f(1,\u03bb=3))",
+      "sourceSha256": "0e962eb2d330e379e607d9367e9e68c53d64542e6835be19c8875899d0afc003",
+      "expected": "3 4\n"
+    },
+    {
+      "name": "lambda",
+      "source": "fn=lambda a=3,*,b=4:a+b\nprint(fn(),fn(5,b=6))",
+      "sourceSha256": "4d406810f213571e4012f5ca8b4f9969208a58227619177455b09fb6cebf0745",
+      "expected": "7 11\n"
+    },
+    {
+      "name": "method",
+      "source": "class C:\n def f(self,a=1,*,b=2):return a+b\nprint(C().f(),C().f(3,b=4))",
+      "sourceSha256": "d57f4914b3e04dd58486db72dd8c4a306fcf5c321daca3b2c08ee1f9cf035905",
+      "expected": "3 7\n"
+    },
+    {
+      "name": "generator",
+      "source": "def f(a=1,*,b=2):yield a+b\ng=f()\nf.__kwdefaults__['b']=9\nprint(list(g),list(f(3,b=4)))",
+      "sourceSha256": "6f9aa0112912957dbf668b57fc323449316a0fcaad17ece02b60487325ce5202",
+      "expected": "[3] [7]\n"
+    }
+  ],
+  "qualification": "Seven original exact-output CPython goldens reused; binding errors compare correct exception classes because existing Lython message spelling differs. Exact legacy Lython spelling is independently pinned before the optimization.",
+  "measurement": false,
+  "legacyBindingMessages": {
+    "source": "def f(a,b=2,/,c=3,*args,d,e=5,**kw):return [a,b,c,args,d,e,kw]\ntry:f()\nexcept TypeError as error:print(str(error))\ntry:f(1,2,3,**{'c':4,'d':5})\nexcept TypeError as error:print(str(error))",
+    "expectedLython": "Function 'f' is missing argument 'a'.\nFunction 'f' got multiple values for argument 'c'.\n",
+    "expectedCPython": "f() missing 1 required positional argument: 'a'\nf() got multiple values for argument 'c'\n"
+  },
+  "freshCPythonClassGolden": true
+}
