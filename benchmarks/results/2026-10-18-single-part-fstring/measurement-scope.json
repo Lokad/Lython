@@ -1,0 +1,27 @@
+{
+  "base": "c891dc8c3e07da5d241fc999ce5027295685c3cd",
+  "diagnosticSha256": "8d284a9d37210ffc84c4843d65567218a514ec91b5db9567baf1bd4e93d9565b",
+  "tests": 20,
+  "allocationCases": 18,
+  "fuelRecords": 352,
+  "captureCountPerRevision": 1,
+  "warmups": 2,
+  "samples": 8,
+  "invocationsPerSample": 8,
+  "boundary": "Native warm execution;prepared code/context/input;no compilation,startup scheduling,projection or host IO. Pure async values complete on measured thread. Lowered single-part control remains separate. Allocation only;no elapsed timing.",
+  "affected": [
+    "text",
+    "number",
+    "conversion",
+    "custom",
+    "dynamic",
+    "nested"
+  ],
+  "controls": [
+    "multi-control",
+    "empty-control",
+    "lowered-control"
+  ],
+  "acceptance": "Affected allocation and committed-result charges decrease;control arrays unchanged;work/output/join counts and352 fuel/error/span records identical. Single string result may alias its existing funded value. Qualify retained owners,callbacks/cancellation and existing multi-part refusal controls.",
+  "stop": "Runtime count-one join only. Preserve compiler instruction/fuel and no new ownership/lazy-buffer mechanism. Lowered,empty and multi-part joins stay unchanged."
+}

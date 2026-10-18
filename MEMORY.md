@@ -336,6 +336,12 @@ admitting output capacity while those parts still exist. Intermediate estimates
 can remain with the finite execution/result owner after a caught formatting or
 join failure. Earlier denial than the incremental lowered builder is possible;
 pending protocol callbacks and escaping text retain the same ownership protection.
+With exactly one formatted part, the executable join reuses that already
+observed and funded string instead of allocating another buffer and copy. Its
+instruction/fuel checkpoint remains. The original string and its owner survive
+when returned or retained; the incremental lowered builder keeps its existing
+copying policy. This can permit a single-part expression under an allowance
+that previously rejected the redundant join.
 Root `format` and default `object.__format__` keep the receiver, specification and
 callback result funded through suspension. A guest formatter's existing string
 can be returned directly with its owner; conversion does not require decoding

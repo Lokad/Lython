@@ -150,6 +150,8 @@ internal sealed partial class LythonRuntime
                     PushObserved(await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous).ConfigureAwait(false), span);
                     break;
                 case ExecutableJoinFormattedParts join:
+                    // A single formatted part is already observed and funded.
+                    if (join.Count == 1) break;
                     var builder = new GovernedByteBuilder(_context.MemoryGovernor, span);
                     try
                     {

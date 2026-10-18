@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 single-part f-string change](results/2026-10-18-single-part-fstring/README.md)
+removes a redundant executable join builder and copy. One frozen pair saves
+248-528 B/call; six control arrays and 352 boundary records match. All 318 focused
+checks and 58 complete jobs pass. Seven CPython programs match both APIs; owners,
+actual formatter I/O/cancellation and multi-part refusal remain covered. No timing.
+
 The [2026-10-18 str keyword/default correction](results/2026-10-18-str-keywords/README.md)
 reuses argument presence and builtin metadata,removing suffix inference and an
 input copy.24/41 baseline regressions become successes;all440 focused checks and

@@ -1,0 +1,123 @@
+{
+  "base": "c891dc8c3e07da5d241fc999ce5027295685c3cd",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "b1c9fc2b7a5bcaea3613f4506ffea51d58f5983728e734ab0962d0c405c581c4"
+  },
+  "newTests": {
+    "tests/Lokad.Lython.PublicApi.Tests/SinglePartFormattedStringTests.cs": "d836d1d14c9e039cfdbfcdf5090a31e9eeabf5678c727908096c92d81183abc3"
+  },
+  "supportingSourcesUnchanged": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingExpressions.cs": "80711effcadaff4e12f805b5dbb6e1fc1e1d8c2d9bc807309d4402742a123ee4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "21011c9013ff0d36913f170a0561cf7a2e141d39fa93f362afc5a6cbc670f8bb",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "cf5259320ad576d7752d72dc6de9e0bab8a1926cdb3e5f4ac6194a88c63fbc29"
+  },
+  "focusedDistinctPassed": 318,
+  "groups": {
+    "final-white": {
+      "count": 43,
+      "process": {
+        "source": "count-one-join-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "951F18924A421D12C421FBE33B72B36FAA194BEE8C62694981FCAA373593D388",
+        "filter": "Category!=Stress&(FullyQualifiedName~FormattedStringExecutableTests|FullyQualifiedName~StringFormatPrimitiveTests|FullyQualifiedName~IntegerRenderingAdmissionTests|FullyQualifiedName~StringProtocolBoundaryTests|FullyQualifiedName~RenderingSubsystemTests|FullyQualifiedName~ExecutableStackAdmissionTests)",
+        "pid": 60168,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1442,
+        "stdoutSha256": "8306F625E6AC02DC040AA15546A871DCDD833833183E15B69F43D2C91E0A5C33",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "7b0dcdad29a67bc25d38405771b45227cd20aef3a4ef75162876c861f9bfc3b8"
+    },
+    "candidate-new-regressions": {
+      "count": 6,
+      "process": {
+        "source": "count-one-join-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "629BC4C28C6710AA554A5F29D59ABACE48B2E3F6601D7CF4841F8ED72701DCAC",
+        "filter": "Category!=Stress&FullyQualifiedName~SinglePartFormattedStringTests",
+        "pid": 41116,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2368,
+        "stdoutSha256": "8D21CDFF66E21F3526B504B252E736B56D73BED0BF68698F0A82E7E68A2E3169",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "35182480468eba8225b135995576c98e65d7eac2c9c021b036e44bd7a1f84ae4"
+    },
+    "candidate-public": {
+      "count": 117,
+      "process": {
+        "source": "count-one-join-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "629BC4C28C6710AA554A5F29D59ABACE48B2E3F6601D7CF4841F8ED72701DCAC",
+        "filter": "Category!=Stress&(FullyQualifiedName~StringProtocolTests|FullyQualifiedName~IntegerRenderingTests|FullyQualifiedName~ComprehensionLambdaLifetimeTests|FullyQualifiedName~StringConstructorKeywordTests)",
+        "pid": 26480,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3774,
+        "stdoutSha256": "AE6A514D1B345818EE77B76AA517515F10127ED06FFC279E3B6207FD267F9FEE",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "8a777240dcf2a90f22158527220396b09507036bcadeb357817f6212afd82e7e"
+    },
+    "candidate-owners": {
+      "count": 90,
+      "process": {
+        "source": "count-one-join-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "629BC4C28C6710AA554A5F29D59ABACE48B2E3F6601D7CF4841F8ED72701DCAC",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 26476,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2810,
+        "stdoutSha256": "4C80E712BDA60B0C0C4C04D9B3B6158D3FC57DAAAF2F1D286F0ABB0A4F85C4D3",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "0a06443a62c5f51dcc804d65904b1e89d75df09f1a98942b2111c93dd72b9f0a"
+    },
+    "candidate-goldens": {
+      "count": 62,
+      "process": {
+        "source": "count-one-join-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "629BC4C28C6710AA554A5F29D59ABACE48B2E3F6601D7CF4841F8ED72701DCAC",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 63432,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8006,
+        "stdoutSha256": "86CA3E46E4FCB0667FC5EFE031D77951C0B39B0EBD6923960173BCE6B50BE6AB",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "7d0d0d7436fe03bc061697344e7d1a92d62ee653f35da5efdc2166c26c55f04d"
+    }
+  },
+  "completeJobs": 58,
+  "newPermanentCases": 6,
+  "baselineRegressions": {
+    "passed": 2,
+    "failed": 4,
+    "total": 6
+  },
+  "independentCPythonProgramsMatched": 7,
+  "matchedPublicProbeRuns": 14,
+  "exactFuelRecords": 352,
+  "all6ControlArraysIdentical": true,
+  "elapsedMeasured": false,
+  "temporaryDiagnosticRemoved": true,
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "regexPlanningOnly": true,
+  "contracts": "Executable count-one joins keep the already observed/funded string on the stack. No compiler/fuel change or new memory mechanism. Retained aliases keep their existing owners. Lowered/empty/multi-part joins retain their current behavior. Less overlap may admit work previously denied; existing major allocation preflights remain."
+}

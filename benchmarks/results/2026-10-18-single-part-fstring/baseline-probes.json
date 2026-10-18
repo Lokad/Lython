@@ -1,0 +1,218 @@
+[
+  {
+    "source": "value='caf\u00e9 '+str(123456789)\nprint(f'{value}' is value,f'{value!s}' is value,f'{value:}' is value)",
+    "asynchronous": false,
+    "report": {
+      "Index": 0,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "False False False\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 917,
+        "PeakProjectionMemoryBytes": 68,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "True True True\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    }
+  },
+  {
+    "source": "result='caf\u00e9 '+str(123456789)\nclass Value:\n def __format__(self,spec):return result\nprint(f'{Value()}' is result)",
+    "asynchronous": false,
+    "report": {
+      "Index": 1,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "False\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2421,
+        "PeakProjectionMemoryBytes": 44,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "True\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    }
+  },
+  {
+    "source": "value='caf\u00e9'\nprint(f'{value}',f'{value!s}',f'{value:}',f'{value:>{8}}',f'prefix:{value}')",
+    "asynchronous": false,
+    "report": {
+      "Index": 2,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "caf\u00e9 caf\u00e9 caf\u00e9     caf\u00e9 prefix:caf\u00e9\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 1328,
+        "PeakProjectionMemoryBytes": 114,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "caf\u00e9 caf\u00e9 caf\u00e9     caf\u00e9 prefix:caf\u00e9\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    }
+  },
+  {
+    "source": "value='caf\u00e9 '+str(123456789)\nprint(f'{value}' is value,f'{value!s}' is value,f'{value:}' is value)",
+    "asynchronous": true,
+    "report": {
+      "Index": 0,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "False False False\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 917,
+        "PeakProjectionMemoryBytes": 68,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "True True True\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": true
+      }
+    }
+  },
+  {
+    "source": "result='caf\u00e9 '+str(123456789)\nclass Value:\n def __format__(self,spec):return result\nprint(f'{Value()}' is result)",
+    "asynchronous": true,
+    "report": {
+      "Index": 1,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "False\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2421,
+        "PeakProjectionMemoryBytes": 44,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "True\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": true
+      }
+    }
+  },
+  {
+    "source": "value='caf\u00e9'\nprint(f'{value}',f'{value!s}',f'{value:}',f'{value:>{8}}',f'prefix:{value}')",
+    "asynchronous": true,
+    "report": {
+      "Index": 2,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "caf\u00e9 caf\u00e9 caf\u00e9     caf\u00e9 prefix:caf\u00e9\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 1328,
+        "PeakProjectionMemoryBytes": 114,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "caf\u00e9 caf\u00e9 caf\u00e9     caf\u00e9 prefix:caf\u00e9\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": true
+      }
+    }
+  }
+]

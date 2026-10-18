@@ -1,0 +1,12 @@
+{
+  "base": "c891dc8c3e07da5d241fc999ce5027295685c3cd",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "d4bc7ed65973e1b3d61be63c607317cc27a4e0a3c86512af7f1745e84f4a63c4",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingExpressions.cs": "80711effcadaff4e12f805b5dbb6e1fc1e1d8c2d9bc807309d4402742a123ee4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "21011c9013ff0d36913f170a0561cf7a2e141d39fa93f362afc5a6cbc670f8bb",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "cf5259320ad576d7752d72dc6de9e0bab8a1926cdb3e5f4ac6194a88c63fbc29"
+  },
+  "proposal": "## Next bounded AP05 change: executable single-part f-string reuse\n\nCompileFormattedParts always emits final join,including one already-formatted\nPyString. The runtime builder then allocates/copies it again. Three short public\nprobes show matching text but different CPython identity for ordinary/native and\ncustom formatter strings through both APIs. Treat identity reuse as an observed\nCPython optimization,not a universal immutable-string identity guarantee.\n\nFor join.Count==1,leave the existing observed/funded text on the operand stack.\nRemove that execution's builder/copy/preflight overlap;keep the join instruction,\nfuel/span checkpoint and all field/conversion/specifier/protocol operations.\nNo compiler change,new opcode,owner,cache or lazy-buffer tracking. Empty/multi-\npart joins and the incremental lowered route keep their current behavior.\nDocument lower allocation/earlier success and retained input/result aliases;\nno general formatting rewrite. Existing field observation must prove funding.\n\nBefore editing freeze one short native allocation/work pair:single native/text,\ncustom formatter,conversion/dynamic-specifier forms;empty/multi-part and lowered\ncontrols. Require exact work/error/fuel/spans and unchanged control allocations;\nqualify alias/result retention,real formatter/descriptor I/O,cancellation,refusal\nand multi-part join rejection. Reuse existing formatting/owner tests and58 jobs.\nStop at this single executable join;if owner transfer/new policy is needed,reject.\nNo timing campaign. Evidence/pins:\n`.git/agent-notes/single-part-fstring-c891dc8c/source-screen.json`.\n\n",
+  "runtimeEdits": false,
+  "measurements": false
+}

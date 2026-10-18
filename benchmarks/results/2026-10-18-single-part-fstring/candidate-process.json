@@ -1,0 +1,14 @@
+{
+  "source": "count-one-join-patch",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "04ACBB37BB987C269BD994F74D9909E7054D35FF698E375AD41FF0496F59773E",
+  "filter": "Category!=Stress&FullyQualifiedName~SingleFstringDiagnostic",
+  "pid": 69724,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1367,
+  "stdoutSha256": "8355D62326D53E7BD76DB911BB286196318060AFCCB7F331BC5886CBE35467D0",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

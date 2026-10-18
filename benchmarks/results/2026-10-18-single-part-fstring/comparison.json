@@ -1,0 +1,551 @@
+{
+  "accepted": true,
+  "comparisons": [
+    {
+      "shape": "conversion",
+      "asynchronous": false,
+      "beforeBytes": 576.0,
+      "afterBytes": 312.0,
+      "savedBytes": 264.0,
+      "beforeFundingPerCall": 138.0,
+      "afterFundingPerCall": 0.0,
+      "stepsPerCall": 8.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "shape": "conversion",
+      "asynchronous": true,
+      "beforeBytes": 576.0,
+      "afterBytes": 312.0,
+      "savedBytes": 264.0,
+      "beforeFundingPerCall": 138.0,
+      "afterFundingPerCall": 0.0,
+      "stepsPerCall": 8.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "shape": "custom",
+      "asynchronous": false,
+      "beforeBytes": 1296.0,
+      "afterBytes": 1032.0,
+      "savedBytes": 264.0,
+      "beforeFundingPerCall": 138.0,
+      "afterFundingPerCall": 0.0,
+      "stepsPerCall": 10.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "shape": "custom",
+      "asynchronous": true,
+      "beforeBytes": 1296.0,
+      "afterBytes": 1032.0,
+      "savedBytes": 264.0,
+      "beforeFundingPerCall": 138.0,
+      "afterFundingPerCall": 0.0,
+      "stepsPerCall": 10.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "shape": "dynamic",
+      "asynchronous": false,
+      "beforeBytes": 1248.0,
+      "afterBytes": 752.0,
+      "savedBytes": 496.0,
+      "beforeFundingPerCall": 526.0,
+      "afterFundingPerCall": 263.0,
+      "stepsPerCall": 9.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "shape": "dynamic",
+      "asynchronous": true,
+      "beforeBytes": 1248.0,
+      "afterBytes": 752.0,
+      "savedBytes": 496.0,
+      "beforeFundingPerCall": 526.0,
+      "afterFundingPerCall": 263.0,
+      "stepsPerCall": 9.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "shape": "empty-control",
+      "asynchronous": false,
+      "beforeBytes": 384.0,
+      "afterBytes": 384.0,
+      "savedBytes": 0.0,
+      "beforeFundingPerCall": 0.0,
+      "afterFundingPerCall": 0.0,
+      "stepsPerCall": 3.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "shape": "empty-control",
+      "asynchronous": true,
+      "beforeBytes": 384.0,
+      "afterBytes": 384.0,
+      "savedBytes": 0.0,
+      "beforeFundingPerCall": 0.0,
+      "afterFundingPerCall": 0.0,
+      "stepsPerCall": 3.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "shape": "lowered-control",
+      "asynchronous": false,
+      "beforeBytes": 424.0,
+      "afterBytes": 424.0,
+      "savedBytes": 0.0,
+      "beforeFundingPerCall": 138.0,
+      "afterFundingPerCall": 138.0,
+      "stepsPerCall": 4.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "shape": "lowered-control",
+      "asynchronous": true,
+      "beforeBytes": 424.0,
+      "afterBytes": 424.0,
+      "savedBytes": 0.0,
+      "beforeFundingPerCall": 138.0,
+      "afterFundingPerCall": 138.0,
+      "stepsPerCall": 4.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "shape": "multi-control",
+      "asynchronous": false,
+      "beforeBytes": 608.0,
+      "afterBytes": 608.0,
+      "savedBytes": 0.0,
+      "beforeFundingPerCall": 140.0,
+      "afterFundingPerCall": 140.0,
+      "stepsPerCall": 8.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "shape": "multi-control",
+      "asynchronous": true,
+      "beforeBytes": 608.0,
+      "afterBytes": 608.0,
+      "savedBytes": 0.0,
+      "beforeFundingPerCall": 140.0,
+      "afterFundingPerCall": 140.0,
+      "stepsPerCall": 8.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "shape": "nested",
+      "asynchronous": false,
+      "beforeBytes": 840.0,
+      "afterBytes": 312.0,
+      "savedBytes": 528.0,
+      "beforeFundingPerCall": 276.0,
+      "afterFundingPerCall": 0.0,
+      "stepsPerCall": 9.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "shape": "nested",
+      "asynchronous": true,
+      "beforeBytes": 840.0,
+      "afterBytes": 312.0,
+      "savedBytes": 528.0,
+      "beforeFundingPerCall": 276.0,
+      "afterFundingPerCall": 0.0,
+      "stepsPerCall": 9.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "shape": "number",
+      "asynchronous": false,
+      "beforeBytes": 704.0,
+      "afterBytes": 456.0,
+      "savedBytes": 248.0,
+      "beforeFundingPerCall": 268.0,
+      "afterFundingPerCall": 134.0,
+      "stepsPerCall": 6.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "shape": "number",
+      "asynchronous": true,
+      "beforeBytes": 704.0,
+      "afterBytes": 456.0,
+      "savedBytes": 248.0,
+      "beforeFundingPerCall": 268.0,
+      "afterFundingPerCall": 134.0,
+      "stepsPerCall": 6.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "shape": "text",
+      "asynchronous": false,
+      "beforeBytes": 576.0,
+      "afterBytes": 312.0,
+      "savedBytes": 264.0,
+      "beforeFundingPerCall": 138.0,
+      "afterFundingPerCall": 0.0,
+      "stepsPerCall": 6.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "shape": "text",
+      "asynchronous": true,
+      "beforeBytes": 576.0,
+      "afterBytes": 312.0,
+      "savedBytes": 264.0,
+      "beforeFundingPerCall": 138.0,
+      "afterFundingPerCall": 0.0,
+      "stepsPerCall": 6.0,
+      "beforeAliases": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "afterAliases": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "exactFuelRecords": 352,
+  "allWorkOutputJoinCountsIdentical": true,
+  "all6ControlArraysIdentical": true,
+  "elapsedMeasured": false,
+  "retention": "Single formatted result remains on already observed/funded operand slot;no new final string storage. Existing aliases can survive with their original owner. No memory refund mechanism added.",
+  "rawCaptures": "Full samples/funding/alias/work and352 error/span/fuel records in baseline.trx/candidate.trx;one frozen pair."
+}

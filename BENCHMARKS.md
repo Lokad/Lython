@@ -292,6 +292,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [single-part f-string change](benchmarks/results/2026-10-18-single-part-fstring/README.md)
+at `c891dc8c` plus its frozen two-line runtime patch removes a redundant builder
+and copy, saving 248-528 B per affected call through either API. Six control
+arrays and 352 fuel/error/span records match. Retained aliases keep their owners;
+lowered joins keep their existing policy. No elapsed or CPython gain claim.
+
 The [str keyword/default correction](benchmarks/results/2026-10-18-str-keywords/README.md)
 at `b7d67a60` plus its frozen three-file patch fixes 24 baseline regression cases.
 Native direct-call allocations remain unchanged. General presence-aware calls

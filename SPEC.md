@@ -249,7 +249,10 @@ operations with yielding generators. Formatting protocols can suspend under
 `RunAsync` without replaying completed fields. Intermediate text and final output
 coexist during joining and remain conservatively funded. Allocation admission
 and explicit fuel can occur at different checkpoints than the lowered route;
-exact historical thresholds are not part of the contract.
+exact historical thresholds are not part of the contract. A single executable
+formatted part can reuse its already funded string without a final buffer copy;
+retained aliases keep that string's owner. String identity reuse is an
+implementation detail and can differ from incremental lowered formatting.
 Expanded calls share executable target/argument evaluation and the existing
 temporary accumulator with yielding generators. Arguments and expansion errors
 precede rejection of a non-callable target. A sole starred positional argument
