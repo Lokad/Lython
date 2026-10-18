@@ -1,0 +1,68 @@
+{
+  "revision": "3ea431fdc0cb45fc3d3dcb1678a6d0f605d782c8",
+  "sourceSha256": {
+    "benchmarks/scripts/file-manifest-helpers.py": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "9f756ed5cabd3b6d0e2a7d2954163b14d55881ae8ab9b558560215594b68cd1a",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonMicroCommand.cs": "c94517c052799b925bb203a2bf398f8c55ac80e01a7bd2b6652dffa196f4f497",
+    "benchmarks/COMPARISON.md": "5f1891bb1dbe910895a14cb471a8f179963a55ed2324b0426a7bea4168501df9"
+  },
+  "case": "scripts.file-manifest-helpers.large",
+  "lane": "compile-run",
+  "files": 2,
+  "inputBytes": 4107,
+  "sourceUtf8Bytes": 574,
+  "independentGoldenPassed": true,
+  "goldenReference": "CPython3.13.2,output byte maps checked against independent catalog constants",
+  "inputSha256": {
+    "inbox/a.bin": "8d606401e851bf5de5589a9f4bb5e8e331e29d0986ca05b34bddb1a7cf8b4848",
+    "inbox/\u00e9.txt": "b2c137d874d77bc5faffc017c29a89cb8d15b027d5afe794c513b0c0b51a72fb"
+  },
+  "outputSha256": {
+    "outbox/a.bin": "8d606401e851bf5de5589a9f4bb5e8e331e29d0986ca05b34bddb1a7cf8b4848",
+    "outbox/\u00e9.txt": "b2c137d874d77bc5faffc017c29a89cb8d15b027d5afe794c513b0c0b51a72fb",
+    "manifest.json": "52c5ea5e452e8e27ba8fbf4e758149f6a588852b1b7f8de565f4980ac1daca93"
+  },
+  "materialGap": "Leading manifest row AD has only an old warm snapshot. Missing fresh compile-to-result representative file/helper boundary;avoid repeating already-covered config snapshot.",
+  "boundary": "Compile afresh and run one complete file-copy/checksum/manifest job inside an existing host;existing full staging/reset/output checks and cleanup included. Startup/transport excluded. Two identical immutable Lython controls plus CPython primary. Warm/compile-only remain separate,no subtraction or individual-fix trend claim.",
+  "stopping": "One existing micro capture,not a10-minute lane. Existing quiet VM lease and pinned workers;revalidate readiness,independent goldens,source/binary/toolchain identities and command ownership before capture. Stop on unavailable lease,failed correctness/identity/cleanup or noisy result;preserve first capture,no retries/profiles/framework.",
+  "captureStarted": false,
+  "vmInspected": true,
+  "runtimeEdits": false,
+  "readiness": {
+    "observedUtc": "2026-10-18T17:08:36.054728+00:00",
+    "host": "lython-bench",
+    "kernel": "6.17.0-1022-azure",
+    "loadavg": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "memory": {
+      "MemTotal": "16373452 kB",
+      "MemAvailable": "15414064 kB",
+      "SwapTotal": "0 kB"
+    },
+    "leaseAvailable": true,
+    "readinessIsNotLeaseOwnership": true,
+    "priorInspection": "/home/lokad/lython-bench-checks/json-checkpoint-6584ddd7/inspection.json",
+    "toolchains": {
+      "dotnet": {
+        "executable": "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+        "sha256": "01d89e0a0191052bfea616cd4ce624c8faf13b05bbddf7f64499c23e2a9d9269",
+        "output": [
+          "10.0.401 [/home/lokad/lython-bench-toolchains/dotnet/10.0.401/sdk]"
+        ]
+      },
+      "python": {
+        "executable": "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+        "sha256": "673525f3e1ac992831891979187e259c06bbd5e331ab50c0bb697f274ecb0f2a",
+        "output": [
+          "3.13.16 (main, Oct  8 2026, 14:31:33) [GCC 13.3.0]",
+          "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13"
+        ]
+      }
+    },
+    "captureStarted": false,
+    "buildStarted": false
+  }
+}

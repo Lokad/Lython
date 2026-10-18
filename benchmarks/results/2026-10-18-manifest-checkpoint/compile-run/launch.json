@@ -1,0 +1,22 @@
+{
+  "unit": "lython-manifest-checkpoint-compile-run-3ea431fd-20261018",
+  "arguments": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-manifest-checkpoint-compile-run-3ea431fd-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=28",
+    "--property=TimeoutStopSec=1",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/manifest-checkpoint-3ea431fd/compile-run/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/manifest-checkpoint-3ea431fd/compile-run/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/manifest-checkpoint-3ea431fd/run-capture.py",
+    "compile-run"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Running as unit: lython-manifest-checkpoint-compile-run-3ea431fd-20261018.service; invocation ID: 7553103644504f0994b4d0bcd3a4238a\n",
+  "launchedUtc": "2026-10-18T17:18:09.327587+00:00"
+}

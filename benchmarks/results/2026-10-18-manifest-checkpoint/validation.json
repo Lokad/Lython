@@ -1,0 +1,184 @@
+{
+  "dateUtc": "2026-10-18",
+  "candidate": "3ea431fdc0cb45fc3d3dcb1678a6d0f605d782c8",
+  "baseline": "3ea431fdc0cb45fc3d3dcb1678a6d0f605d782c8",
+  "performanceQualified": false,
+  "case": "scripts.file-manifest-helpers.large",
+  "inputFiles": 2,
+  "inputBytes": 4107,
+  "sourceUtf8Bytes": 574,
+  "outputFiles": 3,
+  "manifestBytes": 97,
+  "independentCompleteGoldenMatches": true,
+  "twoIdenticalLythonControls": true,
+  "lanes": {
+    "compile-run": {
+      "summaries": {
+        "baseline": {
+          "engine": "baseline",
+          "medianMicroseconds": 2027.2293846153848,
+          "iqrFraction": 0.30372193849111656
+        },
+        "candidate": {
+          "engine": "candidate",
+          "medianMicroseconds": 2250.704076923077,
+          "iqrFraction": 0.31635669699666275
+        },
+        "CPython": {
+          "engine": "CPython",
+          "medianMicroseconds": 597.0168571428571,
+          "iqrFraction": 0.008292163219949286
+        }
+      },
+      "sortedSampleMicroseconds": {
+        "baseline": [
+          1772.7615384615385,
+          1912.0192307692307,
+          1986.5435384615387,
+          2027.2293846153848,
+          2436.865538461538,
+          2693.1253076923076,
+          3239.821923076923
+        ],
+        "candidate": [
+          1876.4130000000002,
+          1896.8123846153846,
+          1955.3224615384618,
+          2250.704076923077,
+          2556.449153846154,
+          2719.736307692308,
+          3499.4248461538464
+        ],
+        "CPython": [
+          591.0251224489796,
+          592.662306122449,
+          596.3883469387756,
+          597.0168571428571,
+          597.8853265306122,
+          601.0664489795918,
+          601.7981632653061
+        ]
+      },
+      "candidateVsCPython": 3.769917130471439,
+      "identicalLythonControlDifferencePercent": 11.023650998926836,
+      "responseCount": 39,
+      "completedInvocations": 3670,
+      "ownedElapsedSeconds": 7.649099,
+      "allResponsesAndInputDigestsMatch": true,
+      "mediansAndIqrRecomputed": true,
+      "allWorkersAndFixturesGone": true
+    }
+  },
+  "diagnosticLythonToCPythonRatioRange": [
+    3.3955982320450615,
+    3.769917130471439
+  ],
+  "rangeIsTwoControlMediansNotConfidenceInterval": true,
+  "runtimeChangedForThisMeasurement": false,
+  "singleCapturePerBoundary": true,
+  "archiveSha256": "b114531966c5cecdb0f52dfd5f88ec776feb9137b8b7d3d15f0576066c5d72dd",
+  "artifacts": {
+    "build-candidate.log": {
+      "bytes": 761,
+      "sha256": "1750413d6d042d49e105f6d23e746ad18099d799a1c6f281fe8902de0d3976ab"
+    },
+    "capture-scope.json": {
+      "bytes": 3462,
+      "sha256": "6743d832a43800322d4ff57c28eebc1cdbd46800b5298323e36695730b01e928"
+    },
+    "execution-scope.json": {
+      "bytes": 964,
+      "sha256": "313a48606a2605ed535aba3dbcad0c501ff76cca0ccc32ffea6130e7dd596008"
+    },
+    "expected-manifest.json": {
+      "bytes": 97,
+      "sha256": "52c5ea5e452e8e27ba8fbf4e758149f6a588852b1b7f8de565f4980ac1daca93"
+    },
+    "expected-stdout.txt": {
+      "bytes": 2,
+      "sha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3"
+    },
+    "final-cleanup.json": {
+      "bytes": 2433,
+      "sha256": "550d97ba91a800b3e634536a8f1729410215569ab80d389dba5bd9fdbc5566ef"
+    },
+    "input-a.bin": {
+      "bytes": 4096,
+      "sha256": "8d606401e851bf5de5589a9f4bb5e8e331e29d0986ca05b34bddb1a7cf8b4848"
+    },
+    "input-unicode.txt": {
+      "bytes": 11,
+      "sha256": "b2c137d874d77bc5faffc017c29a89cb8d15b027d5afe794c513b0c0b51a72fb"
+    },
+    "inspection.json": {
+      "bytes": 38817,
+      "sha256": "437bd10f438895d0f2f35b6668b7c9422c193b8028cca5ea81234ca6089ca04e"
+    },
+    "preflight.json": {
+      "bytes": 33381,
+      "sha256": "b2c560566732d7e0d4b2bbcfe4593283419634739f22f9fa8a661f66e1023e94"
+    },
+    "preparation.json": {
+      "bytes": 1617,
+      "sha256": "01b752def51a2f7de22bd1374843614d8a60bf7d08e2e5b2947dff99cc5d2373"
+    },
+    "prepare-launch.json": {
+      "bytes": 902,
+      "sha256": "995ca0fb3608bfd4ffc2ab570b9fff581270c32a823757c96b001d3dd825be8e"
+    },
+    "prepare.py": {
+      "bytes": 4117,
+      "sha256": "52cb2272ffaf97a20abe8f25db1005b0029f56eb30b40652c6560e42ef89156e"
+    },
+    "previous-comparison-table.md": {
+      "bytes": 4185,
+      "sha256": "7129f7ddfe72673952fd9ed9321ddb769bcfc43d329670a1a4f93d75caf7290c"
+    },
+    "raw-evidence.tar.gz": {
+      "bytes": 55785,
+      "sha256": "b114531966c5cecdb0f52dfd5f88ec776feb9137b8b7d3d15f0576066c5d72dd"
+    },
+    "README.md": {
+      "bytes": 5077,
+      "sha256": "6c63be0327075000004730be8c43471c90d263f62eaaeaec18e56346b5fd41ae"
+    },
+    "run-capture.py": {
+      "bytes": 2312,
+      "sha256": "ab57c1a949cc0859a11c66ecad60859a835d8e734c05f95aa156a2fe56dcd6d3"
+    },
+    "scope.json": {
+      "bytes": 3640,
+      "sha256": "29e00ced68d086b4df064473e5b53b480eb6ba9da5e417c38246586068b14575"
+    },
+    "source.py": {
+      "bytes": 574,
+      "sha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65"
+    },
+    "compile-run/launch.json": {
+      "bytes": 945,
+      "sha256": "184aabf631a8b61e2d167bb60a6c4e991aee3501e3b572f1e5ff12289cc79324"
+    },
+    "compile-run/micro.json": {
+      "bytes": 62854,
+      "sha256": "76018fadcbe713bda02a0f6fbce884ffeee7a2279fc969ebe105059f085a7aa9"
+    },
+    "compile-run/micro.log": {
+      "bytes": 311,
+      "sha256": "83832aee3b3d20a8841cb9ba794ebd88a4f3415605abf609de5809abbcb78686"
+    },
+    "compile-run/ownership.json": {
+      "bytes": 1462,
+      "sha256": "b8e1ae2092c9b9dd8227ebe1d0dbfea162033dfe9362287f7ec37bccd360f38b"
+    },
+    "compile-run/service.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "compile-run/terminal.json": {
+      "bytes": 1432,
+      "sha256": "1d04a2c22c2586344befd1c24a3f7323cb05ec01bc4509a0af0a29460f51c3ca"
+    }
+  },
+  "previousLeadingTableSha256": "97b0fb4f4c645efa6357d85b2e4b388ade7efb9f5b3ed0d9d79d698d170cbd6b",
+  "previousTablePreservedByteExactly": true
+}

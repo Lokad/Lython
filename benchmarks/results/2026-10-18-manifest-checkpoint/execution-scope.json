@@ -1,0 +1,19 @@
+{
+  "remoteStage": "/home/lokad/lython-bench-checks/manifest-checkpoint-3ea431fd",
+  "revision": "3ea431fdc0cb45fc3d3dcb1678a6d0f605d782c8",
+  "case": "scripts.file-manifest-helpers.large",
+  "lane": "compile-run",
+  "timingCaptureCount": 1,
+  "workLimitSeconds": 28,
+  "cleanupLimitSeconds": 1,
+  "priorRecipeDirectory": "config-checkpoint-348998dc",
+  "recipes": {
+    "inspect.py": "40a66aa3d499af3d75fef6a854424cd11cc865cb0228b351b555e71033427c4e",
+    "prepare.py": "52cb2272ffaf97a20abe8f25db1005b0029f56eb30b40652c6560e42ef89156e",
+    "preflight.py": "d7375fa824a453e06fd600d7c5a15884af24f51b643ff297cd9e71d836a89e2a",
+    "run-capture.py": "ab57c1a949cc0859a11c66ecad60859a835d8e734c05f95aa156a2fe56dcd6d3",
+    "observe.py": "41fb74b42cc2814ee02172a812de899c9edb09d91fa569b2c7da6004d0abb457",
+    "finish.py": "9b0dba536a5ea52af05dd3f344a0eb7a775be2a7f3825e5862a1b5cbd8ebc923"
+  },
+  "sourceAndBenchmarkImplementationChanges": false
+}

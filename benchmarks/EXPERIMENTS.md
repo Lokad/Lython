@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 complete manifest helper checkpoint](results/2026-10-18-manifest-checkpoint/README.md)
+compares immutable `3ea431fd` with CPython 3.13.16 using two identical Lython
+controls. Fresh complete jobs measure 2.027–2.251 ms versus 0.597 ms, nominal
+3.40–3.77×; 30.37%/31.64% Lython spreads and 11.02% control difference leave
+the result inconclusive. All 39 responses/3,670 invocations and complete file
+goldens match; cleanup/lease release pass. One 7.649-second capture, no retry.
+The previous leading comparison table is preserved behind its evidence link.
+No runtime or benchmark implementation change, historical trend or fix attribution.
+
 The [2026-10-18 sum cursor/acquisition change](results/2026-10-18-sum-cursor/README.md)
 fixes a demonstrated Python ordering bug and removes general async sum's two
 forwarding objects. One frozen allocation pair saves 96 B per affected call;

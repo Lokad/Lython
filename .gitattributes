@@ -135,3 +135,4 @@ benchmarks/results/2026-10-18-json-dictionary-capture/** -text whitespace=cr-at-
 benchmarks/results/2026-10-18-json-dictionary-capture/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-sum-cursor/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-sum-cursor/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-manifest-checkpoint/** -text whitespace=cr-at-eol
