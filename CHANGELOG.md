@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Admit large JSON string decoding before creating UTF-16 text for values and keys across dumps, explicit encoding and iterencode. Consolidate three decode call sites, use bounded managed storage for short strings, and release private decoding storage after escaping or failure. Preserve Python text/escaping, callbacks, checkpoints, chunks and retained ownership; conservative live-overlap estimates can reject earlier.
+
 - Admit large JSON integer conversion before allocating decimal text in dumps, explicit encoding and iterencode, including numeric keys. Consolidate integer emission and key appending, remove the unused key-converter control route, and write signed-64 values directly into the existing builder. Preserve validation/sorting, callbacks, checkpoints, chunks, retained output and terminal refusal; numeric working/key-growth estimates can reject earlier.
 
 - Admit large ordinary integer-rendering working storage before CLR decimal conversion, keeping scratch funded through the final UTF-8 copy and returning it on failure. Consolidate three rendering paths and format signed-64 values directly into bounded UTF-8 storage. Preserve Python results, frame/fuel behavior, retained output and terminal refusal; conservative working estimates can reject earlier.

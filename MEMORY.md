@@ -102,6 +102,17 @@ do not create cumulatively retained intermediate Python strings. Append failure
 releases the admitted conversion; yielded chunks remain funded after iterator
 working storage ends. No admission retry or optional-storage bypass is used.
 
+JSON string values and keys share a funded decode/escape path. Inputs of at most
+128 UTF-8 bytes decode through the same strict decoder into a fixed 128-character
+managed span, using bounded control headroom and avoiding a temporary CLR string.
+Larger inputs admit 64 bytes plus twice their UTF-8 byte capacity before decoding;
+that conservative UTF-16 working estimate stays charged through escaping and
+returns on completion or failure. It overlaps existing output-growth and final
+copy funding; source values, yielded chunks and results keep their own owners.
+Non-ASCII inputs can reserve more than their exact decoded width, and commands
+can refuse earlier. No persistent decode cache, intermediate guest string or
+new ownership mechanism is introduced. Refusal remains terminal.
+
 This is cooperative active-storage accounting, not an exact CLR resident-memory
 bound. Framework pools can retain their internal buffers after formatting;
 the host still needs runtime headroom for that storage. Lython-owned pools and

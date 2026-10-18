@@ -58,3 +58,5 @@ benchmarks/results/2026-10-18-integer-rendering/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-integer-rendering/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-json-integers/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-json-integers/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-json-strings/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-json-strings/candidate.patch -text -whitespace

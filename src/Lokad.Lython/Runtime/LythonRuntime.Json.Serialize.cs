@@ -228,7 +228,7 @@ internal sealed partial class LythonRuntime
                     builder.Append("null");
                     return;
                 case PyString text:
-                    AppendJsonString(builder, text.AsString(), options.EnsureAscii, charge, context, span);
+                    AppendJsonString(builder, text, options.EnsureAscii, charge, context, span);
                     return;
                 case bool boolean:
                     builder.Append(boolean ? "true" : "false");
@@ -349,7 +349,7 @@ internal sealed partial class LythonRuntime
             switch (keyValue)
             {
                 case PyString text:
-                    AppendJsonString(builder, text.AsString(), ensureAscii, charge, context, span);
+                    AppendJsonString(builder, text, ensureAscii, charge, context, span);
                     return;
                 case bool boolean:
                     AppendJsonString(builder, boolean ? "true" : "false", ensureAscii, charge, context, span);
@@ -411,6 +411,25 @@ internal sealed partial class LythonRuntime
         {
             charge.Grow(separator.Length);
             builder.Append(separator);
+        }
+
+        internal static void AppendJsonString(StringBuilder builder, PyString text, bool ensureAscii,
+            JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+        {
+            // UTF-8 byte capacity bounds decoded UTF-16 units, including astral
+            // pairs. Small inputs use bounded control storage, with no CLR copy.
+            if (text.Utf8Bytes.Length <= 128)
+            {
+                Span<char> characters = stackalloc char[128];
+                var written = text.CopyUtf16To(characters);
+                AppendJsonString(builder, characters[..written], ensureAscii, charge, context, span);
+                return;
+            }
+
+            // The private decode lives through escaping, alongside builder
+            // growth. It never escapes or becomes a retained guest string.
+            using var decode = context.MemoryGovernor.ReserveTemporary(64 + 2L * text.Utf8Bytes.Length, span);
+            AppendJsonString(builder, text.AsString(), ensureAscii, charge, context, span);
         }
 
         internal static void AppendJsonString(StringBuilder builder, ReadOnlySpan<char> text, bool ensureAscii, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)

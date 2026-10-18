@@ -591,7 +591,7 @@ internal sealed partial class LythonRuntime
                     chunkReady = true;
                     return (true, chunkReady);
                 case PyString text:
-                    JsonModule.AppendJsonString(builder, text.AsString(), _options.EnsureAscii, charge, _context, _span);
+                    JsonModule.AppendJsonString(builder, text, _options.EnsureAscii, charge, _context, _span);
                     chunkReady = true;
                     return (true, chunkReady);
                 case bool boolean:

@@ -354,6 +354,9 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return Utf8.GetString(_utf8);
     }
 
+    // Borrowed bounded working storage uses the same strict decoder as AsString.
+    internal int CopyUtf16To(Span<char> destination) => Utf8.GetChars(_utf8, destination);
+
     internal long CommittedOwnedBytes => EstimateApproximateBytes(_utf8.Length) + _committedCacheBytes;
 
     private void CommitCacheCharge(long bytes)

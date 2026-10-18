@@ -185,10 +185,11 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     [Fact]
     public void FinalConversionDenialNamesCopyCoexistence()
     {
-        // 10,004 output chars: transient scratch fits 45,000 B, but the funded
-        // UTF-16 copy (2x output) does not, so denial lands exactly there.
+        // 10,004 output chars: each leaf decode and transient scratch fit
+        // 45,000 B, but the final UTF-16 copy (2x output) does not. Two leaves
+        // isolate final-copy overlap from one large active input decode.
         var result = new LythonEngine().Run(
-            "import json\nreturn len(json.dumps([\"x\" * 10000]))\n",
+            "import json\nreturn len(json.dumps([\"x\" * 4998, \"x\" * 4998]))\n",
             new MockLythonHost(),
             new LythonRunOptions { MaxExecutionMemoryBytes = 45000 });
         AssertError(result, "MemoryError", "execution memory budget exceeded (45000)");

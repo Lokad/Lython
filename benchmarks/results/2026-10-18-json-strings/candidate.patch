@@ -1,0 +1,75 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs
+index e2258c0a..cce85ee6 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs
+@@ -591,7 +591,7 @@ internal sealed partial class LythonRuntime
+                     chunkReady = true;
+                     return (true, chunkReady);
+                 case PyString text:
+-                    JsonModule.AppendJsonString(builder, text.AsString(), _options.EnsureAscii, charge, _context, _span);
++                    JsonModule.AppendJsonString(builder, text, _options.EnsureAscii, charge, _context, _span);
+                     chunkReady = true;
+                     return (true, chunkReady);
+                 case bool boolean:
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
+index 649d3947..aae29168 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
+@@ -228,7 +228,7 @@ internal sealed partial class LythonRuntime
+                     builder.Append("null");
+                     return;
+                 case PyString text:
+-                    AppendJsonString(builder, text.AsString(), options.EnsureAscii, charge, context, span);
++                    AppendJsonString(builder, text, options.EnsureAscii, charge, context, span);
+                     return;
+                 case bool boolean:
+                     builder.Append(boolean ? "true" : "false");
+@@ -349,7 +349,7 @@ internal sealed partial class LythonRuntime
+             switch (keyValue)
+             {
+                 case PyString text:
+-                    AppendJsonString(builder, text.AsString(), ensureAscii, charge, context, span);
++                    AppendJsonString(builder, text, ensureAscii, charge, context, span);
+                     return;
+                 case bool boolean:
+                     AppendJsonString(builder, boolean ? "true" : "false", ensureAscii, charge, context, span);
+@@ -413,6 +413,25 @@ internal sealed partial class LythonRuntime
+             builder.Append(separator);
+         }
+ 
++        internal static void AppendJsonString(StringBuilder builder, PyString text, bool ensureAscii,
++            JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
++        {
++            // UTF-8 byte capacity bounds decoded UTF-16 units, including astral
++            // pairs. Small inputs use bounded control storage, with no CLR copy.
++            if (text.Utf8Bytes.Length <= 128)
++            {
++                Span<char> characters = stackalloc char[128];
++                var written = text.CopyUtf16To(characters);
++                AppendJsonString(builder, characters[..written], ensureAscii, charge, context, span);
++                return;
++            }
++
++            // The private decode lives through escaping, alongside builder
++            // growth. It never escapes or becomes a retained guest string.
++            using var decode = context.MemoryGovernor.ReserveTemporary(64 + 2L * text.Utf8Bytes.Length, span);
++            AppendJsonString(builder, text.AsString(), ensureAscii, charge, context, span);
++        }
++
+         internal static void AppendJsonString(StringBuilder builder, ReadOnlySpan<char> text, bool ensureAscii, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+         {
+             Span<char> escapedCodeUnit = stackalloc char[4];
+diff --git a/src/Lokad.Lython/Runtime/Text/PyString.cs b/src/Lokad.Lython/Runtime/Text/PyString.cs
+index afbc97e8..2d97e7e9 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyString.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyString.cs
+@@ -354,6 +354,9 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+         return Utf8.GetString(_utf8);
+     }
+ 
++    // Borrowed bounded working storage uses the same strict decoder as AsString.
++    internal int CopyUtf16To(Span<char> destination) => Utf8.GetChars(_utf8, destination);
++
+     internal long CommittedOwnedBytes => EstimateApproximateBytes(_utf8.Length) + _committedCacheBytes;
+ 
+     private void CommitCacheCharge(long bytes)
