@@ -286,6 +286,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [general default-map builders](benchmarks/results/2026-10-18-default-map/README.md)
+at `10d108eb` plus a four-line runtime patch pre-size existing dictionaries.
+One native comparison saves 552 bytes with eight defaults and 912 bytes with 32,
+for both helpers; empty/single and executable controls are unchanged. This is
+allocation evidence only; the added counting pass has not been timed.
+
 The [binding-plan constructor](benchmarks/results/2026-10-18-binding-plan/README.md)
 at `de6efc09` plus its frozen one-file runtime patch fills final parameter arrays
 directly. One native comparison saves 96, 160 and 304 bytes per empty, single and

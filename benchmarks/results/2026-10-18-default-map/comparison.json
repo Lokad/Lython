@@ -1,0 +1,67 @@
+{
+  "accepted": true,
+  "comparison": [
+    {
+      "route": "sync",
+      "count": 8,
+      "before": 1024.0,
+      "after": 472.0
+    },
+    {
+      "route": "async",
+      "count": 1,
+      "before": 248.0,
+      "after": 248.0
+    },
+    {
+      "route": "async",
+      "count": 32,
+      "before": 2112.0,
+      "after": 1200.0
+    },
+    {
+      "route": "executable",
+      "count": 0,
+      "before": 80.0,
+      "after": 80.0
+    },
+    {
+      "route": "executable",
+      "count": 8,
+      "before": 496.0,
+      "after": 496.0
+    },
+    {
+      "route": "async",
+      "count": 8,
+      "before": 1024.0,
+      "after": 472.0
+    },
+    {
+      "route": "async",
+      "count": 0,
+      "before": 112.0,
+      "after": 112.0
+    },
+    {
+      "route": "sync",
+      "count": 0,
+      "before": 112.0,
+      "after": 112.0
+    },
+    {
+      "route": "sync",
+      "count": 32,
+      "before": 2112.0,
+      "after": 1200.0
+    },
+    {
+      "route": "sync",
+      "count": 1,
+      "before": 248.0,
+      "after": 248.0
+    }
+  ],
+  "metadataAndEvaluationAndAliasesIdentical": true,
+  "elapsedClaim": false
+}

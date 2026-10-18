@@ -476,7 +476,8 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<LoweredFunctionParameter> parameters,
         Func<LoweredExpression, object> evaluate)
     {
-        var defaults = new Dictionary<string, object>(StringComparer.Ordinal);
+        var defaultCount = parameters.Count(static parameter => parameter.DefaultValue is not null);
+        var defaults = new Dictionary<string, object>(defaultCount, StringComparer.Ordinal);
         foreach (var parameter in parameters)
         {
             if (parameter.DefaultValue is not null)
@@ -492,7 +493,8 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<LoweredFunctionParameter> parameters,
         Func<LoweredExpression, ValueTask<object>> evaluate)
     {
-        var defaults = new Dictionary<string, object>(StringComparer.Ordinal);
+        var defaultCount = parameters.Count(static parameter => parameter.DefaultValue is not null);
+        var defaults = new Dictionary<string, object>(defaultCount, StringComparer.Ordinal);
         foreach (var parameter in parameters)
         {
             if (parameter.DefaultValue is not null)

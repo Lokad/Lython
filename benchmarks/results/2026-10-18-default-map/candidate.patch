@@ -1,0 +1,24 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+index efbc9585..f721bd73 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+@@ -476,7 +476,8 @@ internal sealed partial class LythonRuntime
+         IReadOnlyList<LoweredFunctionParameter> parameters,
+         Func<LoweredExpression, object> evaluate)
+     {
+-        var defaults = new Dictionary<string, object>(StringComparer.Ordinal);
++        var defaultCount = parameters.Count(static parameter => parameter.DefaultValue is not null);
++        var defaults = new Dictionary<string, object>(defaultCount, StringComparer.Ordinal);
+         foreach (var parameter in parameters)
+         {
+             if (parameter.DefaultValue is not null)
+@@ -492,7 +493,8 @@ internal sealed partial class LythonRuntime
+         IReadOnlyList<LoweredFunctionParameter> parameters,
+         Func<LoweredExpression, ValueTask<object>> evaluate)
+     {
+-        var defaults = new Dictionary<string, object>(StringComparer.Ordinal);
++        var defaultCount = parameters.Count(static parameter => parameter.DefaultValue is not null);
++        var defaults = new Dictionary<string, object>(defaultCount, StringComparer.Ordinal);
+         foreach (var parameter in parameters)
+         {
+             if (parameter.DefaultValue is not null)

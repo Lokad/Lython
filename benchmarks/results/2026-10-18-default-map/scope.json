@@ -1,0 +1,12 @@
+{
+  "baseline": "10d108eb5d04b10d2944ff838cc203f7ee2ae179",
+  "sourceFile": "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs",
+  "sourceSha256": "2a4c875adb199e02cbff70df53242b8c52250ff40f7f819dea68a1f54f6535a4",
+  "change": "Count non-null defaults before sizing the2 existing general sync/async maps; no shared map, callback change, ownership or capacity-estimate change.",
+  "gate": "One pair,2warmups/8samples/64maps per route:0,1,8,32 defaults with required/non-default parameters interspersed. Both async/sync8/32 routes must improve; empty and real executable controls have identical allocation samples; map order/aliases/evaluation count unchanged. Reject without retiming on regression.",
+  "acceptance": "Existing binding/default metadata/aliases, actual suspension/cancellation/owners, admission and58 complete jobs; unchanged original Stress/assertions/timeouts.",
+  "boundary": "Native default-map helper allocation only; no elapsed/compilation/startup/whole-job/CPython claim.",
+  "runtimeEdits": false,
+  "diagnosticSha256": "946727a3afd8c6047e1d698a5404c6ef8811b251909915a2837f2dc2ec405927",
+  "preCaptureFixtureCorrection": "Initial diagnostic did not compile: nonnullable syntax span and xUnit blocking-call rule. Supply real span and await the always-completed native ValueTask. No runtime edit/allocation capture yet; original failed build receipt retained. The next build flagged ConfigureAwait(false) in a test; retain xUnit context. Both failed compile receipts precede allocation capture and runtime edits. Initial baseline-native had6 failures: fixture expression occupied Annotation instead of DefaultValue. Named arguments correct it, assertions unchanged; retain receipt. Those failed routes emitted no allocation records and runtime is unchanged."
+}

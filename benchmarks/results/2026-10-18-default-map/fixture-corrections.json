@@ -1,0 +1,129 @@
+{
+  "beforeRuntimeEdits": true,
+  "description": "Initial diagnostic did not compile: nonnullable syntax span and xUnit blocking-call rule. Supply real span and await the always-completed native ValueTask. No runtime edit/allocation capture yet; original failed build receipt retained. The next build flagged ConfigureAwait(false) in a test; retain xUnit context. Both failed compile receipts precede allocation capture and runtime edits. Initial baseline-native had6 failures: fixture expression occupied Annotation instead of DefaultValue. Named arguments correct it, assertions unchanged; retain receipt. Those failed routes emitted no allocation records and runtime is unchanged.",
+  "trials": {
+    "baseline-white-build": {
+      "process": {
+        "pid": 77692,
+        "exitCode": 1,
+        "hasExited": true,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 9016,
+        "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+        "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+        "arguments": [
+          "build",
+          "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+          "-c",
+          "Release",
+          "--no-restore",
+          "--nologo",
+          "-v",
+          "q"
+        ]
+      },
+      "stdoutSha256": "84966600ca180c27944515cc9cfe92784f58640945a24698ed6701b9e5346341",
+      "compileErrors": [
+        "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\DefaultMapAllocationDiagnostic.cs(21,91): error CS8625: Cannot convert null literal to non-nullable reference type. [D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\Lokad.Lython.Tests.csproj]",
+        "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\DefaultMapAllocationDiagnostic.cs(55,89): error CS8625: Cannot convert null literal to non-nullable reference type. [D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\Lokad.Lython.Tests.csproj]",
+        "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\DefaultMapAllocationDiagnostic.cs(36,110): error xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\Lokad.Lython.Tests.csproj]"
+      ]
+    },
+    "baseline-white-build-fixed": {
+      "process": {
+        "pid": 18884,
+        "exitCode": 1,
+        "hasExited": true,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 9122,
+        "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+        "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+        "arguments": [
+          "build",
+          "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+          "-c",
+          "Release",
+          "--no-restore",
+          "--nologo",
+          "-v",
+          "q"
+        ]
+      },
+      "stdoutSha256": "b90355e675813f7a2e3902cff2d26abc3eb6e23286a10c51aea7794187a7376c",
+      "compileErrors": [
+        "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\DefaultMapAllocationDiagnostic.cs(36,103): error xUnit1030: Test methods should not call ConfigureAwait(false), as it may bypass parallelization limits. Omit ConfigureAwait, or use ConfigureAwait(true) to avoid CA2007. (https://xunit.net/xunit.analyzers/rules/xUnit1030) [D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\Lokad.Lython.Tests.csproj]",
+        "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\DefaultMapAllocationDiagnostic.cs(36,103): error xUnit1030: Test methods should not call ConfigureAwait(false), as it may bypass parallelization limits. Omit ConfigureAwait, or use ConfigureAwait(true) to avoid CA2007. (https://xunit.net/xunit.analyzers/rules/xUnit1030) [D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\Lokad.Lython.Tests.csproj]"
+      ]
+    },
+    "baseline-white-build-final": {
+      "process": {
+        "pid": 76640,
+        "exitCode": 0,
+        "hasExited": true,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 15197,
+        "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+        "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+        "arguments": [
+          "build",
+          "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+          "-c",
+          "Release",
+          "--no-restore",
+          "--nologo",
+          "-v",
+          "q"
+        ]
+      },
+      "stdoutSha256": "ab38765c295e7355d93a4c83df62c8ec14bd4a558330eb0ae48c0716dd326c21",
+      "compileErrors": []
+    },
+    "baseline-native": {
+      "process": {
+        "source": "10d108eb",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "270E8D59E1559BBEBB643CDAEB768E6F4119CD0DBCA9B654F64D0F02D3E8916F",
+        "filter": "Category!=Stress&FullyQualifiedName~DefaultMapAllocationDiagnostic",
+        "pid": 21304,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1176,
+        "stdoutSha256": "D2A88BB105998492084D3650EBE4180D26B09190495826F1805805C43662D4B0",
+        "stderrSha256": "68BD5321A2CA2E3AD0503AE194DD0C35FA4A4CF783F7B94389739504282A5F69"
+      },
+      "stdoutSha256": "d2a88bb105998492084d3650ebe4180d26b09190495826f1805805c43662d4b0",
+      "passed": 4,
+      "failures": [
+        {
+          "name": "Lokad.Lython.Tests.DefaultMapAllocationDiagnostic.General(asynchronous: True, count: 8)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: 8\r\nActual:   0"
+        },
+        {
+          "name": "Lokad.Lython.Tests.DefaultMapAllocationDiagnostic.General(asynchronous: False, count: 32)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: 32\r\nActual:   0"
+        },
+        {
+          "name": "Lokad.Lython.Tests.DefaultMapAllocationDiagnostic.General(asynchronous: True, count: 1)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: 1\r\nActual:   0"
+        },
+        {
+          "name": "Lokad.Lython.Tests.DefaultMapAllocationDiagnostic.General(asynchronous: True, count: 32)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: 32\r\nActual:   0"
+        },
+        {
+          "name": "Lokad.Lython.Tests.DefaultMapAllocationDiagnostic.General(asynchronous: False, count: 1)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: 1\r\nActual:   0"
+        },
+        {
+          "name": "Lokad.Lython.Tests.DefaultMapAllocationDiagnostic.General(asynchronous: False, count: 8)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: 8\r\nActual:   0"
+        }
+      ],
+      "rejectedIncompleteCapture": true
+    }
+  },
+  "assertionsAndGateUnchanged": true,
+  "initialIncompleteCaptureNotUsed": true
+}

@@ -121,3 +121,5 @@ benchmarks/results/2026-10-18-sorted-definition/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-sorted-definition/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-binding-plan/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-binding-plan/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-default-map/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-default-map/candidate.patch -text -whitespace

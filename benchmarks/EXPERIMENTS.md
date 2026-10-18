@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 general default-map capacity change](results/2026-10-18-default-map/README.md)
+removes intermediate dictionary growth in the two general builders. One native
+pair saves 552/912 bytes for 8/32 defaults; empty/single/executable controls and
+evaluation/order/alias records match. All 306 focused checks and 58 complete jobs
+pass with existing preflights/owners unchanged. Initial diagnostic fixture mistakes
+precede runtime edits and remain visible. No shared defaults or elapsed claim.
+
 The [2026-10-18 binding-plan constructor](results/2026-10-18-binding-plan/README.md)
 removes three working lists/backings/copies, retaining per-function defaults and
 conservative admission. One native pair saves 96–304 bytes per plan; context
