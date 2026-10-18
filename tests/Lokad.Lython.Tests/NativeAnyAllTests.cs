@@ -112,7 +112,7 @@ public sealed class NativeAnyAllTests(ITestOutputHelper output)
         else
         {
             var start = input == "range-big" ? BigInteger.Pow(10, 30) : input == "range-zero" ? BigInteger.Zero : BigInteger.One;
-            var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["range"]);
+            var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["range"]);
             values = callable.Invoke([CallArgumentValue.Positional(start), CallArgumentValue.Positional(start + count)], new(0, 1, 1, 1), context);
         }
         context.Variables["values"] = values;

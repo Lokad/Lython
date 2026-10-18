@@ -6,8 +6,7 @@ namespace Lokad.Lython.Tests;
 // MG11: the closure-retention helper owns every retained context along the
 // defining chain (base plus per-variable slots), first-wins so shared frames
 // pay once, with later definitions paying only for regrowth. Module frames
-// count only genuinely module-owned entries: the inherited builtin aliases
-// stay owned by the run, while shadowing assignments count normally.
+// contain only explicit module bindings, including aliases to builtin values.
 public sealed class ClosureRetentionAccountingTests
 {
     private static LythonRuntime.ExecutionContext NewRoot()

@@ -23,9 +23,11 @@ internal sealed partial class LythonRuntime
         var value = locals[slot];
         if (ReferenceEquals(value, UninitializedLocal))
         {
-            if (!codeObject.IsFunctionScope && !codeObject.LocalNames[slot].StartsWith('<') &&
-                context.Variables.TryGetValue(codeObject.LocalNames[slot], out var globalValue))
-                return globalValue;
+            if (!codeObject.IsFunctionScope && !codeObject.LocalNames[slot].StartsWith('<'))
+            {
+                if (context.Variables.TryGetValue(codeObject.LocalNames[slot], out var globalValue)) return globalValue;
+                if (context.TryGetBuiltin(codeObject.LocalNames[slot], out var builtin)) return builtin;
+            }
             throw codeObject.IsFunctionScope
                 ? RuntimeErrors.UnboundLocalVariable(codeObject.LocalNames[slot], span)
                 : RuntimeErrors.NameNotDefined(codeObject.LocalNames[slot], span);
@@ -65,6 +67,8 @@ internal sealed partial class LythonRuntime
         {
             return value;
         }
+
+        if (context.TryGetBuiltin(name, out var builtin)) return builtin;
 
         throw RuntimeErrors.NameNotDefined(name, span);
     }
@@ -844,7 +848,6 @@ internal sealed partial class LythonRuntime
             StoreGlobalNamespaceName(context, name, value);
             return;
         }
-        NoteModuleBuiltinAlias(context, name, value, span);
         SyncExecutableLocalFromValue(codeObject, locals, localCells, name, value);
         if (codeObject.RequiresLocalVariableMirroring || context.MirrorLocalStores || !codeObject.LocalNameToSlot.ContainsKey(name))
         {

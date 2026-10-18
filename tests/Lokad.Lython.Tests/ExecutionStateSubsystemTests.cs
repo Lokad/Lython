@@ -64,13 +64,16 @@ public sealed class ExecutionStateSubsystemTests
     }
 
     [Fact]
-    public void ExecutionState_BuiltinInventoryMatchesRuntimeInitialVariables()
+    public void ExecutionState_BuiltinInventoryResolvesWithoutModuleBindings()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
 
         Assert.Equal(
             ExecutionState.BuiltinNames.Order(StringComparer.Ordinal),
-            context.Frame.Variables.Keys.Where(static name => name != "__name__").Order(StringComparer.Ordinal));
+            context.State.BuiltinVariables.Keys.Order(StringComparer.Ordinal));
+        Assert.Equal("__name__", Assert.Single(context.Frame.Variables.Keys));
+        foreach (var name in ExecutionState.BuiltinNames)
+            Assert.Same(context.State.BuiltinVariables[name], LythonRuntime.ResolveName(name, null!, context));
     }
 
     [Fact]
@@ -83,8 +86,8 @@ public sealed class ExecutionStateSubsystemTests
         Assert.DoesNotContain("__file__", ExecutionState.BuiltinNames);
         Assert.DoesNotContain("__name__", ExecutionState.BuiltinNames);
         Assert.Equal(
-            ExecutionState.BuiltinNames.Order(StringComparer.Ordinal),
-            context.Frame.Variables.Keys.Where(static name => name is not "__file__" and not "__name__").Order(StringComparer.Ordinal));
+            new[] { "__file__", "__name__" },
+            context.Frame.Variables.Keys.Order(StringComparer.Ordinal));
 
         var file = Assert.IsType<PyString>(context.Frame.Variables["__file__"]);
         Assert.Equal("/repo/scripts/tool.py", file.AsString());

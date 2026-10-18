@@ -215,7 +215,6 @@ internal sealed partial class LythonRuntime
                 StoreGlobalNamespaceName(context, name, value);
                 return;
             }
-            if (guestName) NoteModuleBuiltinAlias(context, name, value, span);
             locals[slot] = value;
             if (localCells?[slot] is ExecutableCell localCell)
             {

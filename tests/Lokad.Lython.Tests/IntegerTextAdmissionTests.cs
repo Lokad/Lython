@@ -34,7 +34,7 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
             var governor = context.MemoryGovernor;
             var input = Input(new string('9', 32768), bytes, governor);
             context.Variables["source"] = input;
-            var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["int"]);
+            var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["int"]);
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
             var padding = limit - budget.ReservedBytes - 1024;
             ILythonMemoryReservation? blocker = null;
@@ -82,7 +82,7 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         var governor = context.MemoryGovernor;
         var input = Input(" \t-0x_" + new string('f', 512) + "\r\n", bytes, governor);
-        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["int"]);
+        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["int"]);
         var before = budget.ReservedBytes;
         var result = await Invoke(callable, [CallArgumentValue.Positional(input), CallArgumentValue.Positional(new BigInteger(16))],
             context, asynchronous);

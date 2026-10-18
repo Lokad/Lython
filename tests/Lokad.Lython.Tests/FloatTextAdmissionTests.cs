@@ -34,7 +34,7 @@ public sealed class FloatTextAdmissionTests(ITestOutputHelper output)
             var governor = context.MemoryGovernor;
             var input = Input(new string('9', 32768), bytes, governor);
             context.Variables["source"] = input;
-            var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["float"]);
+            var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
             var padding = limit - budget.ReservedBytes - 1024;
             ILythonMemoryReservation? blocker = null;
@@ -82,7 +82,7 @@ public sealed class FloatTextAdmissionTests(ITestOutputHelper output)
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         var input = Input(" \t" + string.Concat(Enumerable.Repeat("0_", 1024)) + "1.5\r\n", bytes, context.MemoryGovernor);
-        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["float"]);
+        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
         var before = budget.ReservedBytes;
         Assert.Equal(1.5, Assert.IsType<double>(await Invoke(callable, [CallArgumentValue.Positional(input)], context, asynchronous)));
         Assert.Equal(before, budget.ReservedBytes);
@@ -109,7 +109,7 @@ public sealed class FloatTextAdmissionTests(ITestOutputHelper output)
             { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
         var governor = context.MemoryGovernor;
         var input = Input(new string('\0', 2048) + "x", bytes, governor);
-        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["float"]);
+        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
         var padding = limit - budget.ReservedBytes - 16384;
         ILythonMemoryReservation? blocker = null;
         if (shared) Assert.True(budget.TryReserve(padding, out blocker));
@@ -180,7 +180,7 @@ public sealed class FloatTextAdmissionTests(ITestOutputHelper output)
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         var input = Input(new string('\0', 2048) + "x", bytes, context.MemoryGovernor);
-        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["float"]);
+        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
         var before = budget.ReservedBytes;
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             await Invoke(callable, [CallArgumentValue.Positional(input)], context, asynchronous));

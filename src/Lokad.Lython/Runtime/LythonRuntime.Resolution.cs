@@ -40,6 +40,8 @@ internal sealed partial class LythonRuntime
                 return globalValue;
             }
 
+            if (context.TryGetBuiltin(name, out var builtin)) return builtin;
+
             throw RuntimeErrors.NameNotDefined(name, span);
         }
 
@@ -85,6 +87,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        if (context.TryGetBuiltin(name, out var builtinValue)) return builtinValue;
         throw RuntimeErrors.NameNotDefined(name, span);
     }
 
@@ -96,7 +99,6 @@ internal sealed partial class LythonRuntime
             StoreGlobalNamespaceName(storageContext, name, value);
             return;
         }
-        NoteModuleBuiltinAlias(storageContext, name, value, span);
         storageContext.Variables[name] = value;
         storageContext.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
     }
@@ -107,7 +109,6 @@ internal sealed partial class LythonRuntime
         if (storageContext.GlobalNamespace is not null)
             return storageContext.GlobalNamespaceBacking!.TryGetNameKey(name, out var key) &&
                 storageContext.GlobalNamespace.Remove(key);
-        storageContext.ModuleBuiltinAliases?.Remove(name);
         var removed = storageContext.Variables.Remove(name);
         removed |= storageContext.CurrentExecutableFrame?.TryDeleteLocalOrClosure(name) == true;
 

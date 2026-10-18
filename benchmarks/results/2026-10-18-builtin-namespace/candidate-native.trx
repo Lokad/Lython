@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="a2c52fc6-f015-4f6a-9a21-3b92a7afc34a" name="JoannesVermorel@LOKAD-0399 2026-10-18 13:33:12" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T13:33:12.9807828+02:00" queuing="2026-10-18T13:33:12.9807829+02:00" start="2026-10-18T13:33:12.1242706+02:00" finish="2026-10-18T13:33:12.9836312+02:00" />
+  <TestSettings name="default" id="ea4d463f-ebfd-4dc0-8d7c-8d2b12f94beb">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_13_33_12" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="875134bf-b9dd-49a0-95b1-fa94bb8b6cc2" testId="b8ae7bcd-3e71-6793-c85c-69f99403745f" testName="Lokad.Lython.Tests.ModuleNamespaceAllocationDiagnostic.MeasureWarmContextConstruction(child: False)" computerName="LOKAD-0399" duration="00:00:00.0323656" startTime="2026-10-18T13:33:12.8728739+02:00" endTime="2026-10-18T13:33:12.9090784+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="875134bf-b9dd-49a0-95b1-fa94bb8b6cc2">
+      <Output>
+        <StdOut>MODULE_NAMESPACE_ALLOCATIONS:{"child":false,"allocations":[16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240,16240]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="404492fd-f464-4eae-9881-b40302913894" testId="3adfaf1d-56c9-b06c-93f7-4ce41a5e7c55" testName="Lokad.Lython.Tests.ModuleNamespaceAllocationDiagnostic.MeasureWarmContextConstruction(child: True)" computerName="LOKAD-0399" duration="00:00:00.0004556" startTime="2026-10-18T13:33:12.9142127+02:00" endTime="2026-10-18T13:33:12.9142657+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="404492fd-f464-4eae-9881-b40302913894">
+      <Output>
+        <StdOut>MODULE_NAMESPACE_ALLOCATIONS:{"child":true,"allocations":[240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240]}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.ModuleNamespaceAllocationDiagnostic.MeasureWarmContextConstruction(child: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="b8ae7bcd-3e71-6793-c85c-69f99403745f">
+      <Execution id="875134bf-b9dd-49a0-95b1-fa94bb8b6cc2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ModuleNamespaceAllocationDiagnostic" name="MeasureWarmContextConstruction" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ModuleNamespaceAllocationDiagnostic.MeasureWarmContextConstruction(child: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="3adfaf1d-56c9-b06c-93f7-4ce41a5e7c55">
+      <Execution id="404492fd-f464-4eae-9881-b40302913894" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ModuleNamespaceAllocationDiagnostic" name="MeasureWarmContextConstruction" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="b8ae7bcd-3e71-6793-c85c-69f99403745f" executionId="875134bf-b9dd-49a0-95b1-fa94bb8b6cc2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3adfaf1d-56c9-b06c-93f7-4ce41a5e7c55" executionId="404492fd-f464-4eae-9881-b40302913894" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.45]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.46]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.53]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

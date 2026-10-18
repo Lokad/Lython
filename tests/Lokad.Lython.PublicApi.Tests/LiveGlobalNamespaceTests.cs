@@ -6,6 +6,24 @@ public sealed class LiveGlobalNamespaceTests
 {
     public static IEnumerable<object[]> Cases()
     {
+        yield return ["builtin_shadow_delete_before_globals", """
+            len=lambda value:99
+            del len
+            print(len([1,2]))
+            """, "2\n"];
+        yield return ["delete_builtin_without_module_binding", """
+            try:del len
+            except NameError:print('missing')
+            print(len([1]))
+            """, "missing\n1\n"];
+        yield return ["function_builtin_fallback_after_module_delete", """
+            def read():
+                global len
+                return len([1,2])
+            len=lambda value:99
+            del len
+            print(read())
+            """, "2\n"];
         yield return ["identity", """
             print(globals() is globals())
             """, "True\n"];

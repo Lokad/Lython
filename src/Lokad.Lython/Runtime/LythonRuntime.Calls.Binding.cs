@@ -457,20 +457,11 @@ internal sealed partial class LythonRuntime
 
     }
 
-    // Module frames start as copies of the run builtins table; those aliases
-    // stay owned by the run, so only genuinely module-owned entries count here.
-    // Shadowing assignments replace the shared reference and count normally.
+    // Module frames contain only explicit bindings. An explicit alias to a
+    // builtin still occupies a retained module slot, like any other binding.
     private static int CountOwnedModuleVariables(ExecutionContext context)
     {
-        var builtins = context.Services.State.BuiltinVariables;
-        var owned = 0;
-        foreach (var pair in context.Frame.Variables)
-        {
-            if (!builtins.TryGetValue(pair.Key, out var shared) || !ReferenceEquals(shared, pair.Value))
-            {
-                owned++;
-            }
-        }
+        var owned = context.Frame.Variables.Count;
 
         // An unmirrored frame's namespace may be retained by a closure. Admit
         // its whole slot capacity before copying those bindings into Variables;

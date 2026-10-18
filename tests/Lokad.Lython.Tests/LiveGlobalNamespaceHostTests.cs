@@ -33,11 +33,11 @@ public sealed class LiveGlobalNamespaceHostTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeniedBuiltinShadowKeepsActualNamespaceAndReleasesReservation(bool sourceStore)
+    public async Task DeniedNewBuiltinShadowKeepsActualNamespaceAndReleasesReservation(bool sourceStore)
     {
-        var root = await Setup("scope=globals()\nscope['len']=len\n");
+        var root = await Setup("scope=globals()\n");
         var scope = Assert.IsType<PyDict>(root.Variables["scope"]);
-        var prior = root.Variables["len"];
+        var prior = LythonRuntime.ResolveName("len", Span, root);
         var replacement = new PyList([], root.MemoryGovernor, Span);
         using (PinRemaining(root))
         {
@@ -47,8 +47,29 @@ public sealed class LiveGlobalNamespaceHostTests
                 else scope.SetItem(PyString.FromString("len"), replacement);
             });
             Assert.Equal("MemoryError", error.ExceptionType);
-            Assert.Same(prior, root.Variables["len"]);
-            Assert.Same(prior, scope.GetItem(PyString.FromString("len")));
+            Assert.False(root.Variables.ContainsKey("len"));
+            Assert.Same(prior, LythonRuntime.ResolveName("len", Span, root));
+            Assert.False(scope.ContainsKey(PyString.FromString("len")));
+        }
+        Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
+        GC.KeepAlive(replacement);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReplacingExistingBuiltinAliasReusesItsFundedBinding(bool sourceStore)
+    {
+        var root = await Setup("scope=globals()\nscope['len']=len\n");
+        var scope = Assert.IsType<PyDict>(root.Variables["scope"]);
+        var replacement = new PyList([], root.MemoryGovernor, Span);
+        using (PinRemaining(root))
+        {
+            if (sourceStore) LythonRuntime.StoreName("len", replacement, root, Span);
+            else scope.SetItem(PyString.FromString("len"), replacement);
+            Assert.Same(replacement, root.Variables["len"]);
+            Assert.Same(replacement, scope.GetItem(PyString.FromString("len")));
+            Assert.Null(root.MemoryGovernor.AdmissionFailure);
         }
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
         GC.KeepAlive(replacement);

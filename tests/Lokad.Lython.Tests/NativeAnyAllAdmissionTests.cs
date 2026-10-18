@@ -26,7 +26,7 @@ public sealed class NativeAnyAllAdmissionTests(ITestOutputHelper output)
             using var owner = budget.CreateScope();
             var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
             var start = BigInteger.Pow(10, 40);
-            var range = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["range"]);
+            var range = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["range"]);
             var values = range.Invoke([CallArgumentValue.Positional(start), CallArgumentValue.Positional(start + 3)], new(0, 1, 1, 1), context);
             var target = new PyList([values], context.MemoryGovernor);
             context.Variables["values"] = values;

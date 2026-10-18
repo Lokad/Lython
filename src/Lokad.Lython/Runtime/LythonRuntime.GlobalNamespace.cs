@@ -99,13 +99,13 @@ internal sealed partial class LythonRuntime
             if (name is not null)
             {
                 // All funding checks precede changing the visible module binding.
-                var growth = ModuleGrowth(name, value);
+                var growth = ModuleGrowth(name);
                 using var namespaceFunding = _root.MemoryGovernor.ReserveTemporary(growth, _span);
                 EnsureNameCapacity(_names.Count + 1);
                 var named = new NameEntry(key, name, entryBytes);
                 _entries.AddNew(key, named);
                 _names.Add(name, named);
-                _ownedVariables += OwnedChange(name, value);
+                _ownedVariables += OwnedChange(name);
                 _root.Variables[name] = value;
                 if (!name.StartsWith('<')) _root.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
                 namespaceFunding.Dispose();
@@ -133,17 +133,10 @@ internal sealed partial class LythonRuntime
             _nameCapacity = capacity;
         }
 
-        private long ModuleGrowth(string name, object value)
-            => ClosureCellSlotBytes * (long)Math.Max(0, _ownedVariables + OwnedChange(name, value) - _root.ClosureChargedVariableCount);
+        private long ModuleGrowth(string name)
+            => ClosureCellSlotBytes * (long)Math.Max(0, _ownedVariables + OwnedChange(name) - _root.ClosureChargedVariableCount);
 
-        private int OwnedChange(string name, object value)
-        {
-            var change = 0;
-            var shared = _root.Services.State.BuiltinVariables.TryGetValue(name, out var builtin);
-            if (_root.Variables.TryGetValue(name, out var previous) && (!shared || !ReferenceEquals(previous, builtin))) change--;
-            if (!shared || !ReferenceEquals(value, builtin)) change++;
-            return change;
-        }
+        private int OwnedChange(string name) => _root.Variables.ContainsKey(name) ? 0 : 1;
 
         private void CommitModuleGrowth(long growth)
         {
@@ -155,9 +148,9 @@ internal sealed partial class LythonRuntime
 
         private void StoreModuleValue(string name, object value)
         {
-            var growth = ModuleGrowth(name, value);
+            var growth = ModuleGrowth(name);
             using var funding = _root.MemoryGovernor.ReserveTemporary(growth, _span);
-            _ownedVariables += OwnedChange(name, value);
+            _ownedVariables += OwnedChange(name);
             _root.Variables[name] = value;
             if (!name.StartsWith('<')) _root.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
             funding.Dispose();
@@ -169,13 +162,8 @@ internal sealed partial class LythonRuntime
             if (!_entries.TryGetValue(key, out var entry)) return false;
             if (entry is NameEntry named)
             {
-                if (_root.Variables.TryGetValue(named.Name, out var previous) &&
-                    (!_root.Services.State.BuiltinVariables.TryGetValue(named.Name, out var shared) || !ReferenceEquals(previous, shared)))
-                    _ownedVariables--;
-                _root.Variables.Remove(named.Name);
+                if (_root.Variables.Remove(named.Name)) _ownedVariables--;
                 if (!named.Name.StartsWith('<')) _root.CurrentExecutableFrame?.TryDeleteLocalOrClosure(named.Name);
-                if (_root.Services.State.BuiltinVariables.TryGetValue(named.Name, out var builtin))
-                    _root.Variables[named.Name] = builtin;
                 _names.Remove(named.Name);
                 _root.MemoryGovernor.Release(named.Bytes);
                 _nameBytes -= named.Bytes;
@@ -214,60 +202,16 @@ internal sealed partial class LythonRuntime
         var scope = new PyDict(storage, root.MemoryGovernor, span);
         foreach (var pair in root.Variables)
         {
-            if (!root.Services.State.BuiltinVariables.TryGetValue(pair.Key, out var builtin) || !ReferenceEquals(pair.Value, builtin) ||
-                root.ModuleBuiltinAliases?.Contains(pair.Key) == true)
-                scope.SetItem(storage.NameKey(pair.Key), pair.Value);
+            scope.SetItem(storage.NameKey(pair.Key), pair.Value);
         }
         if (root.CurrentExecutableFrame is { } frame)
             foreach (var pair in frame.EnumerateLocals()) scope.SetItem(storage.NameKey(pair.Key), pair.Value);
         root.GlobalNamespace = scope;
         root.GlobalNamespaceBacking = storage;
-        root.ModuleBuiltinAliases = null;
-        root.ModuleBuiltinAliasCapacity = 0;
-        root.MemoryGovernor.Release(root.ModuleBuiltinAliasBytes);
-        root.ModuleBuiltinAliasBytes = 0;
         return scope;
     }
 
     private static void StoreGlobalNamespaceName(ExecutionContext root, string name, object value)
         => root.GlobalNamespace!.SetItem(root.GlobalNamespaceBacking!.NameKey(name), value);
 
-    // Before globals() exists, the module's variables also contain inherited
-    // builtins. Record explicit stores of the identical builtin so the live
-    // dictionary can distinguish an actual module binding from that fallback.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    private static void NoteModuleBuiltinAlias(ExecutionContext context, string name, object value, LythonSourceSpan span)
-    {
-        if (context.ParentContext is not null || context.IsClassBody || context.GlobalNamespace is not null) return;
-        if (value is not (ICallable or PyType or PyEllipsis or PyNotImplemented))
-        {
-            context.ModuleBuiltinAliases?.Remove(name);
-            return;
-        }
-        NoteCallableModuleBuiltinAlias(context, name, value, span);
-    }
-
-    private static void NoteCallableModuleBuiltinAlias(ExecutionContext context, string name, object value, LythonSourceSpan span)
-    {
-        if (!context.Services.State.BuiltinVariables.TryGetValue(name, out var builtin) || !ReferenceEquals(value, builtin))
-        {
-            context.ModuleBuiltinAliases?.Remove(name);
-            return;
-        }
-        if (context.ModuleBuiltinAliases?.Contains(name) == true) return;
-        var count = (context.ModuleBuiltinAliases?.Count ?? 0) + 1;
-        var shell = context.ModuleBuiltinAliases is null ? 128L : 0;
-        using var funding = context.MemoryGovernor.ReserveTemporary(shell +
-            32L * Math.Max(0L, Math.Max(3L, 2L * count) - context.ModuleBuiltinAliasCapacity), span);
-        var aliases = context.ModuleBuiltinAliases ?? new HashSet<string>(StringComparer.Ordinal);
-        var capacity = aliases.EnsureCapacity(count);
-        var charge = shell + 32L * (capacity - context.ModuleBuiltinAliasCapacity);
-        funding.Dispose();
-        context.MemoryGovernor.Reserve(charge, span);
-        context.MemoryGovernor.Commit(charge);
-        context.ModuleBuiltinAliasBytes += charge;
-        context.ModuleBuiltinAliasCapacity = capacity;
-        context.ModuleBuiltinAliases = aliases;
-        aliases.Add(name);
-    }
 }

@@ -1,0 +1,27 @@
+{
+  "baseline": "0db9eed7908cad3b7a747f120d5b0b40c60d1f8d",
+  "sourceSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs": "74b19082707ea29de3fd0380f5b2a65688c9f8029e74764dd5de8d0d815a8c56",
+    "src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs": "fc4bc0202f1f14dbd245754ac37b74fe333c3fec9a22cc95f0ce2d3f8376b885",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs": "06941adbf02d241faa93783807966c39a76b1fa73bd1cfbb5364acfc07865bf0",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "7afb225b028a75d7242d1b93b7322cb362170a811ef63a3472897d947d0aa57d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "b6e09eec5d9103f1694e5348b9fb57fc576cbea76fe6f3f7bd3a73717124c3d3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "01a645e04d99418be07a98af5c475595a85713140f532346c57340de1941760c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "6c6e0311934477379eaaf597c466da057948a30310f90f00c158d4acada698ff",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "edf6131d795a5ace23158f6b8d03ccac4bb4fbf8be22a0b73d7d637c7a228aa4"
+  },
+  "diagnosticSha256": "958759daeafc2a09d9886e5767d0832b75ec745188a82235702e86dd5ad67555",
+  "runtimeProbeDiscrepancies": 6,
+  "explicitSubsetRejectionsOutOfScope": 2,
+  "scope": "Separate actual module bindings from existing run builtin table; preserve lookup ordering by explicit final fallback, including executable module slots. Remove builtin dictionary copy and alias-identity compensation. No namespace overlay, new cache, dispatcher, ownership layer or frontend analysis change.",
+  "deletions": [
+    "CreateModuleVariables builtin dictionary copy",
+    "ModuleBuiltinAliases/Capacity/Bytes fields",
+    "NoteModuleBuiltinAlias and NoteCallableModuleBuiltinAlias plus call sites",
+    "Live-globals builtin identity filtering and builtin reinsertion",
+    "CountOwnedModuleVariables builtin identity scan"
+  ],
+  "contract": "Python module binding deletion reveals builtin fallback consistently before/after globals(); deleting a builtin-only name raises NameError. Mutable builtin/type graph stays per execution; explicit aliases count as retained bindings. Conservative earlier denial may change small thresholds; retained ownership and terminal refusal remain.",
+  "gate": "One existing-context construction allocation capture per source,2warmups/32samples. Require all fresh-root allocation samples below baseline and child allocations no greater; type wrapper isolation, shared-child identity, exception aliases and cleanup-to-zero unchanged. No elapsed/CPython speed claim.",
+  "acceptance": "Focused public/white namespace/local/global/closure/annotation/import/cache/owner/stack/preflight checks and58 representative jobs; independent CPython for pure cases; actual delayed callbacks/cancellation. Package/platform at coherent boundary; no further indexing experiment or general ownership audit."
+}

@@ -1,0 +1,934 @@
+{
+  "cases": [
+    {
+      "name": "shadow-delete",
+      "source": "len=lambda value:99\ndel len\nprint(len([1,2]))"
+    },
+    {
+      "name": "shadow-delete-live-globals-control",
+      "source": "scope=globals()\nlen=lambda value:99\ndel len\nprint(len([1,2]),'len' in scope)"
+    },
+    {
+      "name": "delete-builtin-only",
+      "source": "try:del len\nexcept NameError:print('missing')\nprint(len([1]))"
+    },
+    {
+      "name": "global-read-after-shadow-delete",
+      "source": "def read():\n global len\n return len([1,2])\nlen=lambda value:99\ndel len\nprint(read())"
+    },
+    {
+      "name": "function-local-control",
+      "source": "def run():\n try:print(len([1]))\n except UnboundLocalError:print('local')\n len=lambda value:99\nrun()\nprint(len([1,2]))"
+    },
+    {
+      "name": "explicit-builtin-alias-control",
+      "source": "len=len\nprint('len' in globals())"
+    }
+  ],
+  "stages": {
+    "sync-probes": {
+      "process": {
+        "pid": 28388,
+        "exitCode": 1,
+        "hasExited": true,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1128,
+        "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+        "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
+        "arguments": [
+          "-NoProfile",
+          "-File",
+          ".git/agent-notes/builtin-namespace-0db9eed7/run-probes.ps1"
+        ]
+      },
+      "records": [
+        {
+          "Index": 0,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1120,
+            "PeakProjectionMemoryBytes": 130,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "NameError",
+              "Message": "name 'len' is not defined",
+              "Span": "line 3, column 7",
+              "Frames": [
+                "<module> (line 3)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        {
+          "Index": 1,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "2 False\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2995,
+            "PeakProjectionMemoryBytes": 48,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "2 False\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        {
+          "Index": 2,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 160,
+            "PeakProjectionMemoryBytes": 130,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "NameError",
+              "Message": "name 'len' is not defined",
+              "Span": "line 3, column 7",
+              "Frames": [
+                "<module> (line 3)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "missing\n1\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        {
+          "Index": 3,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1572,
+            "PeakProjectionMemoryBytes": 130,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "NameError",
+              "Message": "name 'len' is not defined",
+              "Span": "line 3, column 9",
+              "Frames": [
+                "read (line 6)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        {
+          "Index": 4,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [
+              {
+                "Code": "LA3146",
+                "Message": "Local variable 'len' is read before it is assigned."
+              }
+            ],
+            "PeakExecutionMemoryBytes": 0,
+            "PeakProjectionMemoryBytes": 0,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "local\n2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": "subset-rejection: Lython statically rejected this snippet; CPython ran it.",
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        {
+          "Index": 5,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "True\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2177,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "True\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        }
+      ]
+    },
+    "async-probes": {
+      "process": {
+        "pid": 41632,
+        "exitCode": 1,
+        "hasExited": true,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 821,
+        "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+        "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
+        "arguments": [
+          "-NoProfile",
+          "-File",
+          ".git/agent-notes/builtin-namespace-0db9eed7/run-probes.ps1",
+          "-Async"
+        ]
+      },
+      "records": [
+        {
+          "Index": 0,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1120,
+            "PeakProjectionMemoryBytes": 130,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "NameError",
+              "Message": "name 'len' is not defined",
+              "Span": "line 3, column 7",
+              "Frames": [
+                "<module> (line 3)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        {
+          "Index": 1,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "2 False\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2995,
+            "PeakProjectionMemoryBytes": 48,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "2 False\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        {
+          "Index": 2,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 160,
+            "PeakProjectionMemoryBytes": 130,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "NameError",
+              "Message": "name 'len' is not defined",
+              "Span": "line 3, column 7",
+              "Frames": [
+                "<module> (line 3)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "missing\n1\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        {
+          "Index": 3,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1572,
+            "PeakProjectionMemoryBytes": 130,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "NameError",
+              "Message": "name 'len' is not defined",
+              "Span": "line 3, column 9",
+              "Frames": [
+                "read (line 6)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        {
+          "Index": 4,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [
+              {
+                "Code": "LA3146",
+                "Message": "Local variable 'len' is read before it is assigned."
+              }
+            ],
+            "PeakExecutionMemoryBytes": 0,
+            "PeakProjectionMemoryBytes": 0,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "local\n2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": "subset-rejection: Lython statically rejected this snippet; CPython ran it.",
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        {
+          "Index": 5,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "True\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2177,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "True\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        }
+      ]
+    },
+    "candidate-sync-probes": {
+      "process": {
+        "pid": 44092,
+        "exitCode": 1,
+        "hasExited": true,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 976,
+        "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+        "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
+        "arguments": [
+          "-NoProfile",
+          "-File",
+          ".git/agent-notes/builtin-namespace-0db9eed7/run-probes.ps1"
+        ]
+      },
+      "records": [
+        {
+          "Index": 0,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1577,
+            "PeakProjectionMemoryBytes": 36,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        {
+          "Index": 1,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "2 False\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2995,
+            "PeakProjectionMemoryBytes": 48,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "2 False\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        {
+          "Index": 2,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "missing\n1\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 569,
+            "PeakProjectionMemoryBytes": 52,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "missing\n1\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        {
+          "Index": 3,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1892,
+            "PeakProjectionMemoryBytes": 36,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        {
+          "Index": 4,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [
+              {
+                "Code": "LA3146",
+                "Message": "Local variable 'len' is read before it is assigned."
+              }
+            ],
+            "PeakExecutionMemoryBytes": 0,
+            "PeakProjectionMemoryBytes": 0,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "local\n2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": "subset-rejection: Lython statically rejected this snippet; CPython ran it.",
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        {
+          "Index": 5,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "True\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1993,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "True\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        }
+      ]
+    },
+    "candidate-async-probes": {
+      "process": {
+        "pid": 6456,
+        "exitCode": 1,
+        "hasExited": true,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 827,
+        "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+        "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
+        "arguments": [
+          "-NoProfile",
+          "-File",
+          ".git/agent-notes/builtin-namespace-0db9eed7/run-probes.ps1",
+          "-Async"
+        ]
+      },
+      "records": [
+        {
+          "Index": 0,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1577,
+            "PeakProjectionMemoryBytes": 36,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        {
+          "Index": 1,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "2 False\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2995,
+            "PeakProjectionMemoryBytes": 48,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "2 False\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        {
+          "Index": 2,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "missing\n1\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 569,
+            "PeakProjectionMemoryBytes": 52,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "missing\n1\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        {
+          "Index": 3,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1892,
+            "PeakProjectionMemoryBytes": 36,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        {
+          "Index": 4,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [
+              {
+                "Code": "LA3146",
+                "Message": "Local variable 'len' is read before it is assigned."
+              }
+            ],
+            "PeakExecutionMemoryBytes": 0,
+            "PeakProjectionMemoryBytes": 0,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "local\n2\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": "subset-rejection: Lython statically rejected this snippet; CPython ran it.",
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        {
+          "Index": 5,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "True\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1993,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "True\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        }
+      ]
+    }
+  }
+}

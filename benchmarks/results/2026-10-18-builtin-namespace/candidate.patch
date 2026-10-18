@@ -1,0 +1,517 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+index 9478a7a5..efbc9585 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+@@ -457,20 +457,11 @@ internal sealed partial class LythonRuntime
+ 
+     }
+ 
+-    // Module frames start as copies of the run builtins table; those aliases
+-    // stay owned by the run, so only genuinely module-owned entries count here.
+-    // Shadowing assignments replace the shared reference and count normally.
++    // Module frames contain only explicit bindings. An explicit alias to a
++    // builtin still occupies a retained module slot, like any other binding.
+     private static int CountOwnedModuleVariables(ExecutionContext context)
+     {
+-        var builtins = context.Services.State.BuiltinVariables;
+-        var owned = 0;
+-        foreach (var pair in context.Frame.Variables)
+-        {
+-            if (!builtins.TryGetValue(pair.Key, out var shared) || !ReferenceEquals(shared, pair.Value))
+-            {
+-                owned++;
+-            }
+-        }
++        var owned = context.Frame.Variables.Count;
+ 
+         // An unmirrored frame's namespace may be retained by a closure. Admit
+         // its whole slot capacity before copying those bindings into Variables;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 6d3a770f..1bbd8bc9 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -23,9 +23,11 @@ internal sealed partial class LythonRuntime
+         var value = locals[slot];
+         if (ReferenceEquals(value, UninitializedLocal))
+         {
+-            if (!codeObject.IsFunctionScope && !codeObject.LocalNames[slot].StartsWith('<') &&
+-                context.Variables.TryGetValue(codeObject.LocalNames[slot], out var globalValue))
+-                return globalValue;
++            if (!codeObject.IsFunctionScope && !codeObject.LocalNames[slot].StartsWith('<'))
++            {
++                if (context.Variables.TryGetValue(codeObject.LocalNames[slot], out var globalValue)) return globalValue;
++                if (context.TryGetBuiltin(codeObject.LocalNames[slot], out var builtin)) return builtin;
++            }
+             throw codeObject.IsFunctionScope
+                 ? RuntimeErrors.UnboundLocalVariable(codeObject.LocalNames[slot], span)
+                 : RuntimeErrors.NameNotDefined(codeObject.LocalNames[slot], span);
+@@ -66,6 +68,8 @@ internal sealed partial class LythonRuntime
+             return value;
+         }
+ 
++        if (context.TryGetBuiltin(name, out var builtin)) return builtin;
++
+         throw RuntimeErrors.NameNotDefined(name, span);
+     }
+ 
+@@ -844,7 +848,6 @@ internal sealed partial class LythonRuntime
+             StoreGlobalNamespaceName(context, name, value);
+             return;
+         }
+-        NoteModuleBuiltinAlias(context, name, value, span);
+         SyncExecutableLocalFromValue(codeObject, locals, localCells, name, value);
+         if (codeObject.RequiresLocalVariableMirroring || context.MirrorLocalStores || !codeObject.LocalNameToSlot.ContainsKey(name))
+         {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index df36219a..61beae68 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -215,7 +215,6 @@ internal sealed partial class LythonRuntime
+                 StoreGlobalNamespaceName(context, name, value);
+                 return;
+             }
+-            if (guestName) NoteModuleBuiltinAlias(context, name, value, span);
+             locals[slot] = value;
+             if (localCells?[slot] is ExecutableCell localCell)
+             {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs b/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs
+index 5885180b..0ccef950 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs
+@@ -19,9 +19,6 @@ internal sealed partial class LythonRuntime
+ 
+         internal PyDict? GlobalNamespace;
+         internal GlobalNamespaceStorage? GlobalNamespaceBacking;
+-        internal HashSet<string>? ModuleBuiltinAliases;
+-        internal int ModuleBuiltinAliasCapacity;
+-        internal long ModuleBuiltinAliasBytes;
+         // Only an active synchronous PyFunction body enables the direct lowered
+         // routes. Child frames and asynchronous calls retain their own strategy.
+         internal bool UseSynchronousLoweredFunctionDispatch { get; set; }
+@@ -44,7 +41,7 @@ internal sealed partial class LythonRuntime
+             Services = new ExecutionServices(new ExecutionState(host, options, builtinVariables));
+             var sourcePath = options?.SourcePath is null ? null : PathOps.Normalize(options.SourcePath, host.Cwd);
+             SourcePath = sourcePath;
+-            InitializeFrameVariables(CreateModuleVariables(builtinVariables, sourcePath, "__main__"));
++            InitializeFrameVariables(CreateModuleVariables(sourcePath, "__main__"));
+             FunctionClosureContext = this;
+             ScopeFacts = ScopeDirectiveFacts.Empty;
+             NonlocalTargets = EmptyNonlocalTargets;
+@@ -175,7 +172,7 @@ internal sealed partial class LythonRuntime
+         {
+             Services = template.Services;
+             SourcePath = scope.SourcePath;
+-            InitializeFrameVariables(CreateModuleVariables(State.BuiltinVariables, scope.SourcePath, scope.Name));
++            InitializeFrameVariables(CreateModuleVariables(scope.SourcePath, scope.Name));
+             FunctionClosureContext = this;
+             ScopeFacts = ScopeDirectiveFacts.Empty;
+             NonlocalTargets = EmptyNonlocalTargets;
+@@ -550,11 +547,10 @@ internal sealed partial class LythonRuntime
+             => State.BuiltinVariables.TryGetValue(name, out value);
+ 
+         private static Dictionary<string, object> CreateModuleVariables(
+-            Dictionary<string, object> builtinVariables,
+             string? sourcePath,
+             string moduleName)
+         {
+-            var variables = new Dictionary<string, object>(builtinVariables, StringComparer.Ordinal)
++            var variables = new Dictionary<string, object>(2, StringComparer.Ordinal)
+             {
+                 ["__name__"] = PyString.FromString(moduleName)
+             };
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs b/src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs
+index 6dc1bba5..07a0ea2c 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs
+@@ -99,13 +99,13 @@ internal sealed partial class LythonRuntime
+             if (name is not null)
+             {
+                 // All funding checks precede changing the visible module binding.
+-                var growth = ModuleGrowth(name, value);
++                var growth = ModuleGrowth(name);
+                 using var namespaceFunding = _root.MemoryGovernor.ReserveTemporary(growth, _span);
+                 EnsureNameCapacity(_names.Count + 1);
+                 var named = new NameEntry(key, name, entryBytes);
+                 _entries.AddNew(key, named);
+                 _names.Add(name, named);
+-                _ownedVariables += OwnedChange(name, value);
++                _ownedVariables += OwnedChange(name);
+                 _root.Variables[name] = value;
+                 if (!name.StartsWith('<')) _root.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
+                 namespaceFunding.Dispose();
+@@ -133,17 +133,10 @@ internal sealed partial class LythonRuntime
+             _nameCapacity = capacity;
+         }
+ 
+-        private long ModuleGrowth(string name, object value)
+-            => ClosureCellSlotBytes * (long)Math.Max(0, _ownedVariables + OwnedChange(name, value) - _root.ClosureChargedVariableCount);
++        private long ModuleGrowth(string name)
++            => ClosureCellSlotBytes * (long)Math.Max(0, _ownedVariables + OwnedChange(name) - _root.ClosureChargedVariableCount);
+ 
+-        private int OwnedChange(string name, object value)
+-        {
+-            var change = 0;
+-            var shared = _root.Services.State.BuiltinVariables.TryGetValue(name, out var builtin);
+-            if (_root.Variables.TryGetValue(name, out var previous) && (!shared || !ReferenceEquals(previous, builtin))) change--;
+-            if (!shared || !ReferenceEquals(value, builtin)) change++;
+-            return change;
+-        }
++        private int OwnedChange(string name) => _root.Variables.ContainsKey(name) ? 0 : 1;
+ 
+         private void CommitModuleGrowth(long growth)
+         {
+@@ -155,9 +148,9 @@ internal sealed partial class LythonRuntime
+ 
+         private void StoreModuleValue(string name, object value)
+         {
+-            var growth = ModuleGrowth(name, value);
++            var growth = ModuleGrowth(name);
+             using var funding = _root.MemoryGovernor.ReserveTemporary(growth, _span);
+-            _ownedVariables += OwnedChange(name, value);
++            _ownedVariables += OwnedChange(name);
+             _root.Variables[name] = value;
+             if (!name.StartsWith('<')) _root.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
+             funding.Dispose();
+@@ -169,13 +162,8 @@ internal sealed partial class LythonRuntime
+             if (!_entries.TryGetValue(key, out var entry)) return false;
+             if (entry is NameEntry named)
+             {
+-                if (_root.Variables.TryGetValue(named.Name, out var previous) &&
+-                    (!_root.Services.State.BuiltinVariables.TryGetValue(named.Name, out var shared) || !ReferenceEquals(previous, shared)))
+-                    _ownedVariables--;
+-                _root.Variables.Remove(named.Name);
++                if (_root.Variables.Remove(named.Name)) _ownedVariables--;
+                 if (!named.Name.StartsWith('<')) _root.CurrentExecutableFrame?.TryDeleteLocalOrClosure(named.Name);
+-                if (_root.Services.State.BuiltinVariables.TryGetValue(named.Name, out var builtin))
+-                    _root.Variables[named.Name] = builtin;
+                 _names.Remove(named.Name);
+                 _root.MemoryGovernor.Release(named.Bytes);
+                 _nameBytes -= named.Bytes;
+@@ -214,60 +202,16 @@ internal sealed partial class LythonRuntime
+         var scope = new PyDict(storage, root.MemoryGovernor, span);
+         foreach (var pair in root.Variables)
+         {
+-            if (!root.Services.State.BuiltinVariables.TryGetValue(pair.Key, out var builtin) || !ReferenceEquals(pair.Value, builtin) ||
+-                root.ModuleBuiltinAliases?.Contains(pair.Key) == true)
+-                scope.SetItem(storage.NameKey(pair.Key), pair.Value);
++            scope.SetItem(storage.NameKey(pair.Key), pair.Value);
+         }
+         if (root.CurrentExecutableFrame is { } frame)
+             foreach (var pair in frame.EnumerateLocals()) scope.SetItem(storage.NameKey(pair.Key), pair.Value);
+         root.GlobalNamespace = scope;
+         root.GlobalNamespaceBacking = storage;
+-        root.ModuleBuiltinAliases = null;
+-        root.ModuleBuiltinAliasCapacity = 0;
+-        root.MemoryGovernor.Release(root.ModuleBuiltinAliasBytes);
+-        root.ModuleBuiltinAliasBytes = 0;
+         return scope;
+     }
+ 
+     private static void StoreGlobalNamespaceName(ExecutionContext root, string name, object value)
+         => root.GlobalNamespace!.SetItem(root.GlobalNamespaceBacking!.NameKey(name), value);
+ 
+-    // Before globals() exists, the module's variables also contain inherited
+-    // builtins. Record explicit stores of the identical builtin so the live
+-    // dictionary can distinguish an actual module binding from that fallback.
+-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+-    private static void NoteModuleBuiltinAlias(ExecutionContext context, string name, object value, LythonSourceSpan span)
+-    {
+-        if (context.ParentContext is not null || context.IsClassBody || context.GlobalNamespace is not null) return;
+-        if (value is not (ICallable or PyType or PyEllipsis or PyNotImplemented))
+-        {
+-            context.ModuleBuiltinAliases?.Remove(name);
+-            return;
+-        }
+-        NoteCallableModuleBuiltinAlias(context, name, value, span);
+-    }
+-
+-    private static void NoteCallableModuleBuiltinAlias(ExecutionContext context, string name, object value, LythonSourceSpan span)
+-    {
+-        if (!context.Services.State.BuiltinVariables.TryGetValue(name, out var builtin) || !ReferenceEquals(value, builtin))
+-        {
+-            context.ModuleBuiltinAliases?.Remove(name);
+-            return;
+-        }
+-        if (context.ModuleBuiltinAliases?.Contains(name) == true) return;
+-        var count = (context.ModuleBuiltinAliases?.Count ?? 0) + 1;
+-        var shell = context.ModuleBuiltinAliases is null ? 128L : 0;
+-        using var funding = context.MemoryGovernor.ReserveTemporary(shell +
+-            32L * Math.Max(0L, Math.Max(3L, 2L * count) - context.ModuleBuiltinAliasCapacity), span);
+-        var aliases = context.ModuleBuiltinAliases ?? new HashSet<string>(StringComparer.Ordinal);
+-        var capacity = aliases.EnsureCapacity(count);
+-        var charge = shell + 32L * (capacity - context.ModuleBuiltinAliasCapacity);
+-        funding.Dispose();
+-        context.MemoryGovernor.Reserve(charge, span);
+-        context.MemoryGovernor.Commit(charge);
+-        context.ModuleBuiltinAliasBytes += charge;
+-        context.ModuleBuiltinAliasCapacity = capacity;
+-        context.ModuleBuiltinAliases = aliases;
+-        aliases.Add(name);
+-    }
+ }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs
+index 6eef5ecc..75021b4d 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs
+@@ -40,6 +40,8 @@ internal sealed partial class LythonRuntime
+                 return globalValue;
+             }
+ 
++            if (context.TryGetBuiltin(name, out var builtin)) return builtin;
++
+             throw RuntimeErrors.NameNotDefined(name, span);
+         }
+ 
+@@ -85,6 +87,7 @@ internal sealed partial class LythonRuntime
+             }
+         }
+ 
++        if (context.TryGetBuiltin(name, out var builtinValue)) return builtinValue;
+         throw RuntimeErrors.NameNotDefined(name, span);
+     }
+ 
+@@ -96,7 +99,6 @@ internal sealed partial class LythonRuntime
+             StoreGlobalNamespaceName(storageContext, name, value);
+             return;
+         }
+-        NoteModuleBuiltinAlias(storageContext, name, value, span);
+         storageContext.Variables[name] = value;
+         storageContext.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
+     }
+@@ -107,7 +109,6 @@ internal sealed partial class LythonRuntime
+         if (storageContext.GlobalNamespace is not null)
+             return storageContext.GlobalNamespaceBacking!.TryGetNameKey(name, out var key) &&
+                 storageContext.GlobalNamespace.Remove(key);
+-        storageContext.ModuleBuiltinAliases?.Remove(name);
+         var removed = storageContext.Variables.Remove(name);
+         removed |= storageContext.CurrentExecutableFrame?.TryDeleteLocalOrClosure(name) == true;
+ 
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/LiveGlobalNamespaceTests.cs b/tests/Lokad.Lython.PublicApi.Tests/LiveGlobalNamespaceTests.cs
+index 6e7a69de..2c34fe84 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/LiveGlobalNamespaceTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/LiveGlobalNamespaceTests.cs
+@@ -6,6 +6,24 @@ public sealed class LiveGlobalNamespaceTests
+ {
+     public static IEnumerable<object[]> Cases()
+     {
++        yield return ["builtin_shadow_delete_before_globals", """
++            len=lambda value:99
++            del len
++            print(len([1,2]))
++            """, "2\n"];
++        yield return ["delete_builtin_without_module_binding", """
++            try:del len
++            except NameError:print('missing')
++            print(len([1]))
++            """, "missing\n1\n"];
++        yield return ["function_builtin_fallback_after_module_delete", """
++            def read():
++                global len
++                return len([1,2])
++            len=lambda value:99
++            del len
++            print(read())
++            """, "2\n"];
+         yield return ["identity", """
+             print(globals() is globals())
+             """, "True\n"];
+diff --git a/tests/Lokad.Lython.Tests/ClosureRetentionAccountingTests.cs b/tests/Lokad.Lython.Tests/ClosureRetentionAccountingTests.cs
+index 2b131d7c..453f7c0d 100644
+--- a/tests/Lokad.Lython.Tests/ClosureRetentionAccountingTests.cs
++++ b/tests/Lokad.Lython.Tests/ClosureRetentionAccountingTests.cs
+@@ -6,8 +6,7 @@ namespace Lokad.Lython.Tests;
+ // MG11: the closure-retention helper owns every retained context along the
+ // defining chain (base plus per-variable slots), first-wins so shared frames
+ // pay once, with later definitions paying only for regrowth. Module frames
+-// count only genuinely module-owned entries: the inherited builtin aliases
+-// stay owned by the run, while shadowing assignments count normally.
++// contain only explicit module bindings, including aliases to builtin values.
+ public sealed class ClosureRetentionAccountingTests
+ {
+     private static LythonRuntime.ExecutionContext NewRoot()
+diff --git a/tests/Lokad.Lython.Tests/DirectFloatTextCallTests.cs b/tests/Lokad.Lython.Tests/DirectFloatTextCallTests.cs
+index f32a4e9a..7046ab2e 100644
+--- a/tests/Lokad.Lython.Tests/DirectFloatTextCallTests.cs
++++ b/tests/Lokad.Lython.Tests/DirectFloatTextCallTests.cs
+@@ -98,7 +98,7 @@ public sealed class DirectFloatTextCallTests(ITestOutputHelper output)
+         context.Variables["text"] = text;
+         context.Variables["raw"] = new PyBytes(System.Text.Encoding.ASCII.GetBytes("17.5"), context.MemoryGovernor, null);
+         context.Variables["number"] = 17.5;
+-        context.Variables["parse"] = context.Variables["float"];
++        context.Variables["parse"] = context.State.BuiltinVariables["float"];
+         context.Variables["value"] = new Argument(effects, "value", text);
+         context.Variables["bad"] = new Argument(effects, "bad", PyString.FromString("bad", context.MemoryGovernor, null));
+         context.Variables["bad_raw"] = new Argument(effects, "bad_raw", new PyBytes(System.Text.Encoding.ASCII.GetBytes("bad"), context.MemoryGovernor, null));
+diff --git a/tests/Lokad.Lython.Tests/ExecutionStateSubsystemTests.cs b/tests/Lokad.Lython.Tests/ExecutionStateSubsystemTests.cs
+index 5c0fc335..a7843c91 100644
+--- a/tests/Lokad.Lython.Tests/ExecutionStateSubsystemTests.cs
++++ b/tests/Lokad.Lython.Tests/ExecutionStateSubsystemTests.cs
+@@ -64,13 +64,16 @@ public sealed class ExecutionStateSubsystemTests
+     }
+ 
+     [Fact]
+-    public void ExecutionState_BuiltinInventoryMatchesRuntimeInitialVariables()
++    public void ExecutionState_BuiltinInventoryResolvesWithoutModuleBindings()
+     {
+         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+ 
+         Assert.Equal(
+             ExecutionState.BuiltinNames.Order(StringComparer.Ordinal),
+-            context.Frame.Variables.Keys.Where(static name => name != "__name__").Order(StringComparer.Ordinal));
++            context.State.BuiltinVariables.Keys.Order(StringComparer.Ordinal));
++        Assert.Equal("__name__", Assert.Single(context.Frame.Variables.Keys));
++        foreach (var name in ExecutionState.BuiltinNames)
++            Assert.Same(context.State.BuiltinVariables[name], LythonRuntime.ResolveName(name, null!, context));
+     }
+ 
+     [Fact]
+@@ -83,8 +86,8 @@ public sealed class ExecutionStateSubsystemTests
+         Assert.DoesNotContain("__file__", ExecutionState.BuiltinNames);
+         Assert.DoesNotContain("__name__", ExecutionState.BuiltinNames);
+         Assert.Equal(
+-            ExecutionState.BuiltinNames.Order(StringComparer.Ordinal),
+-            context.Frame.Variables.Keys.Where(static name => name is not "__file__" and not "__name__").Order(StringComparer.Ordinal));
++            new[] { "__file__", "__name__" },
++            context.Frame.Variables.Keys.Order(StringComparer.Ordinal));
+ 
+         var file = Assert.IsType<PyString>(context.Frame.Variables["__file__"]);
+         Assert.Equal("/repo/scripts/tool.py", file.AsString());
+diff --git a/tests/Lokad.Lython.Tests/FloatTextAdmissionTests.cs b/tests/Lokad.Lython.Tests/FloatTextAdmissionTests.cs
+index 0665cf76..8885d751 100644
+--- a/tests/Lokad.Lython.Tests/FloatTextAdmissionTests.cs
++++ b/tests/Lokad.Lython.Tests/FloatTextAdmissionTests.cs
+@@ -34,7 +34,7 @@ public sealed class FloatTextAdmissionTests(ITestOutputHelper output)
+             var governor = context.MemoryGovernor;
+             var input = Input(new string('9', 32768), bytes, governor);
+             context.Variables["source"] = input;
+-            var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["float"]);
++            var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
+             CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
+             var padding = limit - budget.ReservedBytes - 1024;
+             ILythonMemoryReservation? blocker = null;
+@@ -82,7 +82,7 @@ public sealed class FloatTextAdmissionTests(ITestOutputHelper output)
+         using var owner = budget.CreateScope();
+         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+         var input = Input(" \t" + string.Concat(Enumerable.Repeat("0_", 1024)) + "1.5\r\n", bytes, context.MemoryGovernor);
+-        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["float"]);
++        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
+         var before = budget.ReservedBytes;
+         Assert.Equal(1.5, Assert.IsType<double>(await Invoke(callable, [CallArgumentValue.Positional(input)], context, asynchronous)));
+         Assert.Equal(before, budget.ReservedBytes);
+@@ -109,7 +109,7 @@ public sealed class FloatTextAdmissionTests(ITestOutputHelper output)
+             { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+         var governor = context.MemoryGovernor;
+         var input = Input(new string('\0', 2048) + "x", bytes, governor);
+-        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["float"]);
++        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
+         var padding = limit - budget.ReservedBytes - 16384;
+         ILythonMemoryReservation? blocker = null;
+         if (shared) Assert.True(budget.TryReserve(padding, out blocker));
+@@ -180,7 +180,7 @@ public sealed class FloatTextAdmissionTests(ITestOutputHelper output)
+         using var owner = budget.CreateScope();
+         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+         var input = Input(new string('\0', 2048) + "x", bytes, context.MemoryGovernor);
+-        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["float"]);
++        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
+         var before = budget.ReservedBytes;
+         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+             await Invoke(callable, [CallArgumentValue.Positional(input)], context, asynchronous));
+diff --git a/tests/Lokad.Lython.Tests/IntegerTextAdmissionTests.cs b/tests/Lokad.Lython.Tests/IntegerTextAdmissionTests.cs
+index 8a5765e5..045cee3d 100644
+--- a/tests/Lokad.Lython.Tests/IntegerTextAdmissionTests.cs
++++ b/tests/Lokad.Lython.Tests/IntegerTextAdmissionTests.cs
+@@ -34,7 +34,7 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
+             var governor = context.MemoryGovernor;
+             var input = Input(new string('9', 32768), bytes, governor);
+             context.Variables["source"] = input;
+-            var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["int"]);
++            var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["int"]);
+             CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
+             var padding = limit - budget.ReservedBytes - 1024;
+             ILythonMemoryReservation? blocker = null;
+@@ -82,7 +82,7 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
+         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+         var governor = context.MemoryGovernor;
+         var input = Input(" \t-0x_" + new string('f', 512) + "\r\n", bytes, governor);
+-        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["int"]);
++        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["int"]);
+         var before = budget.ReservedBytes;
+         var result = await Invoke(callable, [CallArgumentValue.Positional(input), CallArgumentValue.Positional(new BigInteger(16))],
+             context, asynchronous);
+diff --git a/tests/Lokad.Lython.Tests/LiveGlobalNamespaceHostTests.cs b/tests/Lokad.Lython.Tests/LiveGlobalNamespaceHostTests.cs
+index 80ec01f2..2bf0adc7 100644
+--- a/tests/Lokad.Lython.Tests/LiveGlobalNamespaceHostTests.cs
++++ b/tests/Lokad.Lython.Tests/LiveGlobalNamespaceHostTests.cs
+@@ -33,11 +33,11 @@ public sealed class LiveGlobalNamespaceHostTests
+     [Theory]
+     [InlineData(false)]
+     [InlineData(true)]
+-    public async Task DeniedBuiltinShadowKeepsActualNamespaceAndReleasesReservation(bool sourceStore)
++    public async Task DeniedNewBuiltinShadowKeepsActualNamespaceAndReleasesReservation(bool sourceStore)
+     {
+-        var root = await Setup("scope=globals()\nscope['len']=len\n");
++        var root = await Setup("scope=globals()\n");
+         var scope = Assert.IsType<PyDict>(root.Variables["scope"]);
+-        var prior = root.Variables["len"];
++        var prior = LythonRuntime.ResolveName("len", Span, root);
+         var replacement = new PyList([], root.MemoryGovernor, Span);
+         using (PinRemaining(root))
+         {
+@@ -47,8 +47,29 @@ public sealed class LiveGlobalNamespaceHostTests
+                 else scope.SetItem(PyString.FromString("len"), replacement);
+             });
+             Assert.Equal("MemoryError", error.ExceptionType);
+-            Assert.Same(prior, root.Variables["len"]);
+-            Assert.Same(prior, scope.GetItem(PyString.FromString("len")));
++            Assert.False(root.Variables.ContainsKey("len"));
++            Assert.Same(prior, LythonRuntime.ResolveName("len", Span, root));
++            Assert.False(scope.ContainsKey(PyString.FromString("len")));
++        }
++        Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
++        GC.KeepAlive(replacement);
++    }
++
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task ReplacingExistingBuiltinAliasReusesItsFundedBinding(bool sourceStore)
++    {
++        var root = await Setup("scope=globals()\nscope['len']=len\n");
++        var scope = Assert.IsType<PyDict>(root.Variables["scope"]);
++        var replacement = new PyList([], root.MemoryGovernor, Span);
++        using (PinRemaining(root))
++        {
++            if (sourceStore) LythonRuntime.StoreName("len", replacement, root, Span);
++            else scope.SetItem(PyString.FromString("len"), replacement);
++            Assert.Same(replacement, root.Variables["len"]);
++            Assert.Same(replacement, scope.GetItem(PyString.FromString("len")));
++            Assert.Null(root.MemoryGovernor.AdmissionFailure);
+         }
+         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
+         GC.KeepAlive(replacement);
+diff --git a/tests/Lokad.Lython.Tests/NativeAnyAllAdmissionTests.cs b/tests/Lokad.Lython.Tests/NativeAnyAllAdmissionTests.cs
+index 160b7db1..da8d88dc 100644
+--- a/tests/Lokad.Lython.Tests/NativeAnyAllAdmissionTests.cs
++++ b/tests/Lokad.Lython.Tests/NativeAnyAllAdmissionTests.cs
+@@ -26,7 +26,7 @@ public sealed class NativeAnyAllAdmissionTests(ITestOutputHelper output)
+             using var owner = budget.CreateScope();
+             var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+             var start = BigInteger.Pow(10, 40);
+-            var range = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["range"]);
++            var range = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["range"]);
+             var values = range.Invoke([CallArgumentValue.Positional(start), CallArgumentValue.Positional(start + 3)], new(0, 1, 1, 1), context);
+             var target = new PyList([values], context.MemoryGovernor);
+             context.Variables["values"] = values;
+diff --git a/tests/Lokad.Lython.Tests/NativeAnyAllTests.cs b/tests/Lokad.Lython.Tests/NativeAnyAllTests.cs
+index 7ccbda1e..61f6e0ba 100644
+--- a/tests/Lokad.Lython.Tests/NativeAnyAllTests.cs
++++ b/tests/Lokad.Lython.Tests/NativeAnyAllTests.cs
+@@ -112,7 +112,7 @@ public sealed class NativeAnyAllTests(ITestOutputHelper output)
+         else
+         {
+             var start = input == "range-big" ? BigInteger.Pow(10, 30) : input == "range-zero" ? BigInteger.Zero : BigInteger.One;
+-            var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.Variables["range"]);
++            var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["range"]);
+             values = callable.Invoke([CallArgumentValue.Positional(start), CallArgumentValue.Positional(start + count)], new(0, 1, 1, 1), context);
+         }
+         context.Variables["values"] = values;

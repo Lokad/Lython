@@ -263,6 +263,13 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [module namespace simplification](benchmarks/results/2026-10-18-builtin-namespace/README.md)
+corrects builtin fallback after deletion and removes the copied builtin dictionary
+and alias bookkeeping. One fixed warm context diagnostic reduces fresh allocation
+from 19,176 to 16,240 bytes and child allocation from 264 to 240 bytes. All 1,491
+focused cases pass. This is allocation against earlier Lython, not an elapsed,
+compile-to-result, whole-job or CPython speedup measurement.
+
 The [two-positional split diagnostic](benchmarks/results/2026-10-18-split-call-count/README.md)
 at `7bf17b16` plus its frozen four-file runtime patch saves 336 bytes/sync call
 and 304 bytes/async call. All 240 work/error records match; zero/one-argument and

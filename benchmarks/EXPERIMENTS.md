@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 module/builtin separation](results/2026-10-18-builtin-namespace/README.md)
+corrects six public runtime probe failures across both APIs and removes duplicate
+builtin storage and identity-based alias compensation. Fresh/child context allocation
+falls by 2,936/24 bytes in one fixed capture pair; 1,491 distinct focused cases pass.
+Explicit aliases fund retained binding slots; no new owner or namespace framework.
+No elapsed, complete-job or CPython speedup claim.
+
 The [2026-10-18 subscript forwarding experiment](results/2026-10-18-subscript-forward-rejected/README.md)
 is rejected and restored. Its normalized async/control ratio improved by 3.7%,
 below the fixed 5% gate; allocations and all 320 behavior/fuel records are unchanged.

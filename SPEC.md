@@ -485,6 +485,13 @@ absent rather than present as misleading placeholders. Exception compatibility
 aliases such as `IOError` and `EnvironmentError` refer to the same supported
 `OSError` type object.
 
+Module namespaces contain explicit module bindings, with builtin lookup as a
+separate fallback. Deleting a module binding that shadows a builtin exposes that
+builtin again, whether or not `globals()` has been called. Deleting a builtin-only
+name raises `NameError`; resolving it does not add it to `globals()`. Explicit
+aliases to the same builtin object remain ordinary visible module bindings.
+Function-local and nonlocal binding rules retain their existing behavior.
+
 The `datetime` subset is fixed-offset and host-mediated. `date`, `time`,
 `datetime`, `timedelta`, `timezone`, `tzinfo`, ISO parsing, formatting, and
 ordinary arithmetic/comparison behavior follow CPython shapes where practical.

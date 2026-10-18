@@ -567,3 +567,13 @@ and host-selected streaming before any refusal remain supported.
 Cleanup returns relinquished allowance independently of CLR collection. Retained
 results and caches remain charged. The borrowed host root is still usable by later,
 separate commands; a refused command cannot resume merely because pressure ends.
+
+Module namespaces store explicit bindings rather than copies of the builtin
+table. Retained module-binding estimates count explicit aliases even when they
+refer to the canonical builtin object. Builtin identity no longer determines
+whether a binding needs storage; its existing ownership and per-run isolation
+are unchanged. Replacing an existing binding reuses its admitted namespace
+capacity. New name metadata and capacity growth still require admission before
+visible mutation. Removing a binding does not refund values retained elsewhere.
+Conservative retained-capacity charges may change small admission thresholds;
+identical tiny-budget thresholds are not part of the ownership contract.

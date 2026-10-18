@@ -98,7 +98,7 @@ public sealed class DirectFloatTextCallTests(ITestOutputHelper output)
         context.Variables["text"] = text;
         context.Variables["raw"] = new PyBytes(System.Text.Encoding.ASCII.GetBytes("17.5"), context.MemoryGovernor, null);
         context.Variables["number"] = 17.5;
-        context.Variables["parse"] = context.Variables["float"];
+        context.Variables["parse"] = context.State.BuiltinVariables["float"];
         context.Variables["value"] = new Argument(effects, "value", text);
         context.Variables["bad"] = new Argument(effects, "bad", PyString.FromString("bad", context.MemoryGovernor, null));
         context.Variables["bad_raw"] = new Argument(effects, "bad_raw", new PyBytes(System.Text.Encoding.ASCII.GetBytes("bad"), context.MemoryGovernor, null));

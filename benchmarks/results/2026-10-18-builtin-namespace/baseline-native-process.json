@@ -1,0 +1,14 @@
+{
+  "source": "builtin-namespace",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "D416BDEC1A7C5013F002F2CD1A026C03897AAEE561BB79A27B6BA691AB4E00D6",
+  "filter": "Category!=Stress&FullyQualifiedName~ModuleNamespaceAllocationDiagnostic",
+  "pid": 62680,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 2365,
+  "stdoutSha256": "576635C3D3D03800798C093425F2561E896057311BFEB7A5D8F51E8444BDE358",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

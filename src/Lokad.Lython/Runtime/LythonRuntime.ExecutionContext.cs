@@ -19,9 +19,6 @@ internal sealed partial class LythonRuntime
 
         internal PyDict? GlobalNamespace;
         internal GlobalNamespaceStorage? GlobalNamespaceBacking;
-        internal HashSet<string>? ModuleBuiltinAliases;
-        internal int ModuleBuiltinAliasCapacity;
-        internal long ModuleBuiltinAliasBytes;
         // Only an active synchronous PyFunction body enables the direct lowered
         // routes. Child frames and asynchronous calls retain their own strategy.
         internal bool UseSynchronousLoweredFunctionDispatch { get; set; }
@@ -44,7 +41,7 @@ internal sealed partial class LythonRuntime
             Services = new ExecutionServices(new ExecutionState(host, options, builtinVariables));
             var sourcePath = options?.SourcePath is null ? null : PathOps.Normalize(options.SourcePath, host.Cwd);
             SourcePath = sourcePath;
-            InitializeFrameVariables(CreateModuleVariables(builtinVariables, sourcePath, "__main__"));
+            InitializeFrameVariables(CreateModuleVariables(sourcePath, "__main__"));
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
             NonlocalTargets = EmptyNonlocalTargets;
@@ -175,7 +172,7 @@ internal sealed partial class LythonRuntime
         {
             Services = template.Services;
             SourcePath = scope.SourcePath;
-            InitializeFrameVariables(CreateModuleVariables(State.BuiltinVariables, scope.SourcePath, scope.Name));
+            InitializeFrameVariables(CreateModuleVariables(scope.SourcePath, scope.Name));
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
             NonlocalTargets = EmptyNonlocalTargets;
@@ -550,11 +547,10 @@ internal sealed partial class LythonRuntime
             => State.BuiltinVariables.TryGetValue(name, out value);
 
         private static Dictionary<string, object> CreateModuleVariables(
-            Dictionary<string, object> builtinVariables,
             string? sourcePath,
             string moduleName)
         {
-            var variables = new Dictionary<string, object>(builtinVariables, StringComparer.Ordinal)
+            var variables = new Dictionary<string, object>(2, StringComparer.Ordinal)
             {
                 ["__name__"] = PyString.FromString(moduleName)
             };
