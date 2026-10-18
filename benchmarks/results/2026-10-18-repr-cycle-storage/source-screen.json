@@ -1,0 +1,15 @@
+{
+  "base": "b0ac7c603e4a235d9aab0bab5b37cb46fa5aa436",
+  "sourceOnly": true,
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/PyRendering.cs": "1da886225f3938db8f3f958990c4d976fec85104e34ca9912e55961220b67cc8",
+    "tests/Lokad.Lython.Tests/RenderingSubsystemTests.cs": "16cf22c01e725f282cfc0573acf3d6c8452781555391beeaac486808412a94b0",
+    "tests/Lokad.Lython.PublicApi.Tests/UnicodeReprCompatibilityTests.cs": "ae8b961954e0ed1c8ba8f1c6669eca95b4305baaa999324bb1e3c992e7756ae0",
+    "tests/Lokad.Lython.PublicApi.Tests/StringProtocolTests.cs": "87d0e6c786b0ea3dfdf6ebeb38f4cc069c9276b4263c6dcb92601db0187a9c89"
+  },
+  "demonstrated": "ToReprPyString unconditionally constructs HashSet before core dispatch. Four container helpers are the Add/Remove consumers;scalar paths do not use it.",
+  "hypothesis": "Deferring unused set storage may reduce scalar repr allocations. Magnitude and elapsed impact are unmeasured.",
+  "proposal": "## Next bounded AP05 candidate: defer unused repr cycle storage\n\nRead-only source screen:ToReprPyString allocates HashSet<object> before dispatch,\nincluding scalar/text values that never call Add/Remove. This source fact does\nnot establish its magnitude or an elapsed gain. Container detection/recursion\nalready lives in four RenderReprTuple/Sequence/Dictionary/Set consumers.\n\nAfter current qualification,measure one short frozen native pair for direct\nscalar/text repr and public repr/ascii/conversion consumers. Proposed removal:\nmake the existing per-call active-container set absent until a real container\nentry needs it,then propagate that same set through the existing recursion.\nPreserve the sole dispatcher,frame/stack checks,Unicode rendering,protocol calls,\npreflights and output ownership. No second type classifier,global/thread cache,\nnew tracker or binder fast path. Keep empty-set behavior and regex rendering\nsemantics unchanged without touching the backend boundary.\n\nAcceptance:scalar allocations decrease,nonempty container/control arrays and\nwork/fuel/error spans match. Reuse nested/cyclic list/dict/tuple/view and Unicode\nregressions,real protocol I/O/cancellation,refusal/cleanup and58 complete jobs.\nNo heap tracing or new memory policy. Stop after these existing rendering\nconsumers;if nullable propagation changes traversal/protocol behavior or needs\nnew storage machinery,reject. Do not retime a failed prototype. Source-only\npins:.git/agent-notes/single-part-fstring-c891dc8c/repr-cycle-source-screen.json.\nNo prototype or measurement has begun.\n\n",
+  "prototype": false,
+  "measurement": false
+}

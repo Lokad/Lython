@@ -1,0 +1,455 @@
+{
+  "base": "b0ac7c603e4a235d9aab0bab5b37cb46fa5aa436",
+  "candidate": "Frozen one-file lazy repr-cycle patch",
+  "semanticOnly": true,
+  "programs": 6,
+  "publicRuns": 12,
+  "matchedRuns": 12,
+  "reference": "Python 3.13.2",
+  "captures": [
+    {
+      "label": "scalars",
+      "source": "for value in [None,True,False,0,-123456789,3.25,'caf\u00e9 \ud83d\ude00',\"a'\\n\"]:print(repr(value),ascii(value))",
+      "asynchronous": false,
+      "report": {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "None None\nTrue True\nFalse False\n0 0\n-123456789 -123456789\n3.25 3.25\n'caf\u00e9 \ud83d\ude00' 'caf\\xe9 \\U0001f600'\n\"a'\\n\" \"a'\\n\"\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 3232,
+          "PeakProjectionMemoryBytes": 264,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "None None\nTrue True\nFalse False\n0 0\n-123456789 -123456789\n3.25 3.25\n'caf\u00e9 \ud83d\ude00' 'caf\\xe9 \\U0001f600'\n\"a'\\n\" \"a'\\n\"\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "list-cycle",
+      "source": "items=[]\nitems.append(items)\nprint(repr(items),ascii(items))",
+      "asynchronous": false,
+      "report": {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "[[...]] [[...]]\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 781,
+          "PeakProjectionMemoryBytes": 64,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "[[...]] [[...]]\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "dict-cycle",
+      "source": "items={}\nitems['self']=items\nprint(repr(items),ascii(items))",
+      "asynchronous": false,
+      "report": {
+        "Index": 2,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "{'self': {...}} {'self': {...}}\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1267,
+          "PeakProjectionMemoryBytes": 96,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "{'self': {...}} {'self': {...}}\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "tuple-cycle",
+      "source": "items=[]\nwrapped=(items,)\nitems.append(wrapped)\nprint(repr(wrapped))",
+      "asynchronous": false,
+      "report": {
+        "Index": 3,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "([(...)],)\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 703,
+          "PeakProjectionMemoryBytes": 54,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "([(...)],)\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "view-cycle",
+      "source": "items={}\nitems['self']=items\nprint(repr(items.keys()),repr(items.values()),repr(items.items()))",
+      "asynchronous": false,
+      "report": {
+        "Index": 4,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "dict_keys(['self']) dict_values([{'self': {...}}]) dict_items([('self', {'self': {...}})])\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2411,
+          "PeakProjectionMemoryBytes": 214,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "dict_keys(['self']) dict_values([{'self': {...}}]) dict_items([('self', {'self': {...}})])\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "alias-and-empty",
+      "source": "leaf=[1]\nprint(repr([leaf,leaf]),repr(set()),repr(()),repr({}),repr([]))",
+      "asynchronous": false,
+      "report": {
+        "Index": 5,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "[[1], [1]] set() () {} []\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2228,
+          "PeakProjectionMemoryBytes": 84,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "[[1], [1]] set() () {} []\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "scalars",
+      "source": "for value in [None,True,False,0,-123456789,3.25,'caf\u00e9 \ud83d\ude00',\"a'\\n\"]:print(repr(value),ascii(value))",
+      "asynchronous": true,
+      "report": {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "None None\nTrue True\nFalse False\n0 0\n-123456789 -123456789\n3.25 3.25\n'caf\u00e9 \ud83d\ude00' 'caf\\xe9 \\U0001f600'\n\"a'\\n\" \"a'\\n\"\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 3232,
+          "PeakProjectionMemoryBytes": 264,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "None None\nTrue True\nFalse False\n0 0\n-123456789 -123456789\n3.25 3.25\n'caf\u00e9 \ud83d\ude00' 'caf\\xe9 \\U0001f600'\n\"a'\\n\" \"a'\\n\"\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "list-cycle",
+      "source": "items=[]\nitems.append(items)\nprint(repr(items),ascii(items))",
+      "asynchronous": true,
+      "report": {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "[[...]] [[...]]\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 781,
+          "PeakProjectionMemoryBytes": 64,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "[[...]] [[...]]\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "dict-cycle",
+      "source": "items={}\nitems['self']=items\nprint(repr(items),ascii(items))",
+      "asynchronous": true,
+      "report": {
+        "Index": 2,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "{'self': {...}} {'self': {...}}\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1267,
+          "PeakProjectionMemoryBytes": 96,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "{'self': {...}} {'self': {...}}\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "tuple-cycle",
+      "source": "items=[]\nwrapped=(items,)\nitems.append(wrapped)\nprint(repr(wrapped))",
+      "asynchronous": true,
+      "report": {
+        "Index": 3,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "([(...)],)\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 703,
+          "PeakProjectionMemoryBytes": 54,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "([(...)],)\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "view-cycle",
+      "source": "items={}\nitems['self']=items\nprint(repr(items.keys()),repr(items.values()),repr(items.items()))",
+      "asynchronous": true,
+      "report": {
+        "Index": 4,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "dict_keys(['self']) dict_values([{'self': {...}}]) dict_items([('self', {'self': {...}})])\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2411,
+          "PeakProjectionMemoryBytes": 214,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "dict_keys(['self']) dict_values([{'self': {...}}]) dict_items([('self', {'self': {...}})])\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "alias-and-empty",
+      "source": "leaf=[1]\nprint(repr([leaf,leaf]),repr(set()),repr(()),repr({}),repr([]))",
+      "asynchronous": true,
+      "report": {
+        "Index": 5,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "[[1], [1]] set() () {} []\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2228,
+          "PeakProjectionMemoryBytes": 84,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "[[1], [1]] set() () {} []\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    }
+  ]
+}

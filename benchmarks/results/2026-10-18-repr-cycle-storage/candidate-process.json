@@ -1,0 +1,14 @@
+{
+  "source": "lazy-repr-cycle-set",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "F0BF6E615BF7B6601396D1706A5EBC256220F5B22B2B439D056F5CF63FD7DE48",
+  "filter": "Category!=Stress&FullyQualifiedName~ReprCycleDiagnostic",
+  "pid": 37136,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1453,
+  "stdoutSha256": "0589EB2083920CC6B3FE353A00813997148498DA69C4463B908C24DEC5C1F4F0",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

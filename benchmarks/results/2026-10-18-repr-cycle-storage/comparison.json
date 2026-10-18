@@ -1,0 +1,318 @@
+{
+  "accepted": true,
+  "comparisons": [
+    {
+      "shape": "ascii",
+      "asynchronous": false,
+      "beforeBytes": 1064.0,
+      "afterBytes": 1000.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 292.0,
+      "stepsPerCall": 10.0
+    },
+    {
+      "shape": "ascii",
+      "asynchronous": true,
+      "beforeBytes": 1064.0,
+      "afterBytes": 1000.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 292.0,
+      "stepsPerCall": 10.0
+    },
+    {
+      "shape": "boolean",
+      "asynchronous": false,
+      "beforeBytes": 408.0,
+      "afterBytes": 344.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 0.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "boolean",
+      "asynchronous": true,
+      "beforeBytes": 408.0,
+      "afterBytes": 344.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 0.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "conversion",
+      "asynchronous": false,
+      "beforeBytes": 672.0,
+      "afterBytes": 608.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 142.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "conversion",
+      "asynchronous": true,
+      "beforeBytes": 672.0,
+      "afterBytes": 608.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 142.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "dict-control",
+      "asynchronous": false,
+      "beforeBytes": 1272.0,
+      "afterBytes": 1272.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 396.0,
+      "stepsPerCall": 10.0
+    },
+    {
+      "shape": "dict-control",
+      "asynchronous": true,
+      "beforeBytes": 1272.0,
+      "afterBytes": 1272.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 396.0,
+      "stepsPerCall": 10.0
+    },
+    {
+      "shape": "direct-integer",
+      "asynchronous": false,
+      "beforeBytes": 208.0,
+      "afterBytes": 144.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 134.0,
+      "stepsPerCall": 1.0
+    },
+    {
+      "shape": "direct-integer",
+      "asynchronous": true,
+      "beforeBytes": 208.0,
+      "afterBytes": 144.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 134.0,
+      "stepsPerCall": 1.0
+    },
+    {
+      "shape": "direct-text",
+      "asynchronous": false,
+      "beforeBytes": 360.0,
+      "afterBytes": 296.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 142.0,
+      "stepsPerCall": 2.0
+    },
+    {
+      "shape": "direct-text",
+      "asynchronous": true,
+      "beforeBytes": 360.0,
+      "afterBytes": 296.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 142.0,
+      "stepsPerCall": 2.0
+    },
+    {
+      "shape": "empty-set",
+      "asynchronous": false,
+      "beforeBytes": 408.0,
+      "afterBytes": 344.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 0.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "empty-set",
+      "asynchronous": true,
+      "beforeBytes": 408.0,
+      "afterBytes": 344.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 0.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "float",
+      "asynchronous": false,
+      "beforeBytes": 584.0,
+      "afterBytes": 520.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 132.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "float",
+      "asynchronous": true,
+      "beforeBytes": 584.0,
+      "afterBytes": 520.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 132.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "integer",
+      "asynchronous": false,
+      "beforeBytes": 552.0,
+      "afterBytes": 488.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 134.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "integer",
+      "asynchronous": true,
+      "beforeBytes": 552.0,
+      "afterBytes": 488.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 134.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "list-control",
+      "asynchronous": false,
+      "beforeBytes": 1096.0,
+      "afterBytes": 1096.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 392.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "list-control",
+      "asynchronous": true,
+      "beforeBytes": 1096.0,
+      "afterBytes": 1096.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 392.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "list-cycle-control",
+      "asynchronous": false,
+      "beforeBytes": 920.0,
+      "afterBytes": 920.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 135.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "list-cycle-control",
+      "asynchronous": true,
+      "beforeBytes": 920.0,
+      "afterBytes": 920.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 135.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "none",
+      "asynchronous": false,
+      "beforeBytes": 408.0,
+      "afterBytes": 344.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 0.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "none",
+      "asynchronous": true,
+      "beforeBytes": 408.0,
+      "afterBytes": 344.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 0.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "set-control",
+      "asynchronous": false,
+      "beforeBytes": 1440.0,
+      "afterBytes": 1440.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 392.0,
+      "stepsPerCall": 11.0
+    },
+    {
+      "shape": "set-control",
+      "asynchronous": true,
+      "beforeBytes": 1440.0,
+      "afterBytes": 1440.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 392.0,
+      "stepsPerCall": 11.0
+    },
+    {
+      "shape": "text",
+      "asynchronous": false,
+      "beforeBytes": 704.0,
+      "afterBytes": 640.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 142.0,
+      "stepsPerCall": 10.0
+    },
+    {
+      "shape": "text",
+      "asynchronous": true,
+      "beforeBytes": 704.0,
+      "afterBytes": 640.0,
+      "savedBytes": 64.0,
+      "fundingPerCall": 142.0,
+      "stepsPerCall": 10.0
+    },
+    {
+      "shape": "tuple-control",
+      "asynchronous": false,
+      "beforeBytes": 1088.0,
+      "afterBytes": 1088.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 392.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "tuple-control",
+      "asynchronous": true,
+      "beforeBytes": 1088.0,
+      "afterBytes": 1088.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 392.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "tuple-cycle-control",
+      "asynchronous": false,
+      "beforeBytes": 1216.0,
+      "afterBytes": 1216.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 273.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "tuple-cycle-control",
+      "asynchronous": true,
+      "beforeBytes": 1216.0,
+      "afterBytes": 1216.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 273.0,
+      "stepsPerCall": 9.0
+    },
+    {
+      "shape": "view-cycle-control",
+      "asynchronous": false,
+      "beforeBytes": 1808.0,
+      "afterBytes": 1808.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 435.0,
+      "stepsPerCall": 10.0
+    },
+    {
+      "shape": "view-cycle-control",
+      "asynchronous": true,
+      "beforeBytes": 1808.0,
+      "afterBytes": 1808.0,
+      "savedBytes": 0.0,
+      "fundingPerCall": 435.0,
+      "stepsPerCall": 10.0
+    }
+  ],
+  "exactFuelRecords": 304,
+  "exactAdmissionRecords": 64,
+  "all14ContainerControlArraysIdentical": true,
+  "allWorkFundingOutputIdentical": true,
+  "elapsedMeasured": false,
+  "captureCountPerRevision": 1,
+  "noProductionTuning": true
+}

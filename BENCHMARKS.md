@@ -292,6 +292,11 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [repr cycle-storage change](benchmarks/results/2026-10-18-repr-cycle-storage/README.md)
+at `b0ac7c60` plus its frozen one-file patch avoids an unused container-cycle set
+for scalar rendering, saving 64 B/call. Fourteen container sample arrays, funding
+and 368 fuel/admission records match. No elapsed or CPython speedup is established.
+
 The [single-part f-string change](benchmarks/results/2026-10-18-single-part-fstring/README.md)
 at `c891dc8c` plus its frozen two-line runtime patch removes a redundant builder
 and copy, saving 248-528 B per affected call through either API. Six control

@@ -149,7 +149,8 @@ internal static class PyRendering
         context.Context.EnterInterpreterFrame(null);
         try
         {
-            return ToReprPyStringCore(value, context, new HashSet<object>(ReferenceEqualityComparer.Instance));
+            // Only container entries need cycle-tracking storage.
+            return ToReprPyStringCore(value, context, null);
         }
         finally
         {
@@ -289,7 +290,7 @@ internal static class PyRendering
         return interpolated ? ToInterpolatedPyString(key, context) : ToPythonPyString(key, context);
     }
 
-    private static PyString ToReprPyStringCore(object value, PyRenderingContext context, HashSet<object> activeContainers)
+    private static PyString ToReprPyStringCore(object value, PyRenderingContext context, HashSet<object>? activeContainers)
     {
         if (PyStringOps.TryAsString(value, out var text))
         {
@@ -321,7 +322,7 @@ internal static class PyRendering
     private static PyString RenderMatchRepr(
         LythonRuntime.ReMatchObject match,
         PyRenderingContext context,
-        HashSet<object> activeContainers)
+        HashSet<object>? activeContainers)
     {
         var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
         builder.AppendAscii("<re.Match object; span=(");
@@ -388,8 +389,9 @@ internal static class PyRendering
         finally { builder.Release(); }
     }
 
-    private static PyString RenderReprTuple(PyTuple tuple, PyRenderingContext context, HashSet<object> activeContainers)
+    private static PyString RenderReprTuple(PyTuple tuple, PyRenderingContext context, HashSet<object>? activeContainers)
     {
+        activeContainers ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
         if (!activeContainers.Add(tuple))
         {
             return PyString.FromString("(...)");
@@ -413,8 +415,9 @@ internal static class PyRendering
         string suffix,
         string recursiveLiteral,
         PyRenderingContext context,
-        HashSet<object> activeContainers)
+        HashSet<object>? activeContainers)
     {
+        activeContainers ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
         if (!activeContainers.Add(items))
         {
             return PyString.FromString(recursiveLiteral);
@@ -455,8 +458,9 @@ internal static class PyRendering
         return builder.ToPyStringAndRelease();
     }
 
-    private static PyString RenderReprDictionary(PyDict dict, PyRenderingContext context, HashSet<object> activeContainers)
+    private static PyString RenderReprDictionary(PyDict dict, PyRenderingContext context, HashSet<object>? activeContainers)
     {
+        activeContainers ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
         if (!activeContainers.Add(dict))
         {
             return PyString.FromString("{...}");
@@ -489,13 +493,14 @@ internal static class PyRendering
         }
     }
 
-    private static PyString RenderReprSet(PySet set, PyRenderingContext context, HashSet<object> activeContainers)
+    private static PyString RenderReprSet(PySet set, PyRenderingContext context, HashSet<object>? activeContainers)
     {
         if (set.Count == 0)
         {
             return EmptySetLiteral;
         }
 
+        activeContainers ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
         if (!activeContainers.Add(set))
         {
             return PyString.FromString("{...}");

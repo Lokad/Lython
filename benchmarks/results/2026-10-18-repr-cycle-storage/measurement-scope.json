@@ -1,0 +1,36 @@
+{
+  "base": "b0ac7c603e4a235d9aab0bab5b37cb46fa5aa436",
+  "diagnosticSha256": "8e9d21b869f359165d3c27143838d22f0a2dde271eb875adc0f30f1c2f8b982c",
+  "tests": 36,
+  "allocationCases": 34,
+  "captureCountPerRevision": 1,
+  "warmups": 2,
+  "samples": 8,
+  "invocationsPerSample": 8,
+  "exactFuelRecords": 304,
+  "exactAdmissionRecords": 64,
+  "boundary": "Warm native rendering/executable execution with prepared code/context/input. Excludes compilation,startup scheduling,projection and host IO. Pure async completes on the measured thread;direct-native rows are synchronous controls under either harness mode. Allocation only,no elapsed timing.",
+  "affected": [
+    "direct-text",
+    "direct-integer",
+    "text",
+    "integer",
+    "boolean",
+    "none",
+    "float",
+    "ascii",
+    "conversion",
+    "empty-set"
+  ],
+  "controls": [
+    "list-control",
+    "tuple-control",
+    "dict-control",
+    "set-control",
+    "list-cycle-control",
+    "tuple-cycle-control",
+    "view-cycle-control"
+  ],
+  "acceptance": "Affected allocations decrease. All non-allocation fields,funding,work/output,304 fuel/error/span and64 refusal records identical;all14 container control arrays identical. Cleanup returns ownership baseline. No new rendering dispatcher/tracker/cache.",
+  "stop": "One-file lazy creation at existing container entries. Reject changed traversal/protocol/fuel/funding or any need for new storage policy. No production tuning after capture."
+}

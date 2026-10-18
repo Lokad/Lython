@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 repr cycle-storage change](results/2026-10-18-repr-cycle-storage/README.md)
+defers the existing per-call set until a container needs it. One frozen pair
+saves64B per affected rendering call;14 container arrays,funding and368 boundary
+records match.327 focused checks and58 complete jobs pass;six CPython programs
+match both APIs. No new cache/dispatcher/owner mechanism or elapsed claim.
+
 The [2026-10-18 single-part f-string change](results/2026-10-18-single-part-fstring/README.md)
 removes a redundant executable join builder and copy. One frozen pair saves
 248-528 B/call; six control arrays and 352 boundary records match. All 318 focused

@@ -1,0 +1,14 @@
+{
+  "source": "b0ac7c603e4a235d9aab0bab5b37cb46fa5aa436",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "1CDFE799CDB6C0936135114CD31C1EA7EBDDFC7BB1FB8C029FF77FF0929AF09D",
+  "filter": "Category!=Stress&FullyQualifiedName~ReprCycleDiagnostic",
+  "pid": 64448,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1359,
+  "stdoutSha256": "6CC3907B663A4CD7547A66E7852F07AD98875C8EAA6AC040DD2AAD49C03D5137",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}
