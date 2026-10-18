@@ -111,50 +111,33 @@ internal sealed partial class LythonRuntime
     private static object Sum(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var total = ValidateSumStart(arguments, span);
-        var operation = NativeIterableOperation.Create(arguments[0], total, context, span);
-        try
+        if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
+        foreach (var item in ToSequence(arguments[0], span, context))
         {
-            if (TrySumExactBytes(operation, total, span, context)) return operation;
-            operation.Iterator = ToSequence(operation.Source, span, context).GetEnumerator();
-            while (operation.Iterator.MoveNext())
-            {
-                operation.Current = operation.Iterator.Current;
-                operation.Result = operation.Result is PyInstance || operation.Current is PyInstance
-                    ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, operation.Result, operation.Current, context, span)
-                    : EvaluateAdd(operation.Result, operation.Current, context, span);
-                operation.Current = PyNone.Instance;
-            }
-            operation.FinishIteration();
-            return operation; // Bound-call registration still needs this root.
+            total = total is PyInstance || item is PyInstance
+                ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, total, item, context, span)
+                : EvaluateAdd(total, item, context, span);
         }
-        catch { operation.Dispose(); throw; }
+        return total;
     }
 
     private static async ValueTask<object> SumAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var total = ValidateSumStart(arguments, span);
-        var operation = NativeIterableOperation.Create(arguments[0], total, context, span);
-        try
+        if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
+        await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
         {
-            if (TrySumExactBytes(operation, total, span, context)) return operation;
-            operation.AsyncIterator = ToSequenceAsync(operation.Source, span, context).GetAsyncEnumerator();
-            while (await operation.AsyncIterator.MoveNextAsync().ConfigureAwait(false))
-            {
-                operation.Current = operation.AsyncIterator.Current;
-                operation.Result = operation.Result is PyInstance || operation.Current is PyInstance
-                    ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, operation.Result, operation.Current, context, span).ConfigureAwait(false)
-                    : EvaluateAdd(operation.Result, operation.Current, context, span);
-                operation.Current = PyNone.Instance;
-            }
-            await operation.FinishIterationAsync().ConfigureAwait(false);
-            return operation;
+            total = total is PyInstance || item is PyInstance
+                ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, total, item, context, span).ConfigureAwait(false)
+                : EvaluateAdd(total, item, context, span);
         }
-        catch { await operation.DisposeAsync().ConfigureAwait(false); throw; }
+        return total;
     }
 
-    private static bool TrySumExactBytes(NativeIterableOperation operation, object start, LythonSourceSpan span, ExecutionContext context)
+    private static bool TrySumExactBytes(object value, object start, LythonSourceSpan span, ExecutionContext context, out object result)
     {
-        if (operation.Source is not PyBytes bytes || !PyNumberOps.IsInteger(start)) return false;
+        result = start;
+        if (value is not PyBytes bytes || !PyNumberOps.IsInteger(start)) return false;
         var source = bytes.Bytes;
         long subtotal = 0;
         for (var i = 0; ; i++)
@@ -168,9 +151,8 @@ internal sealed partial class LythonRuntime
         if (source.Length != 0)
         {
             _ = PyNumberOps.TryAsInteger(start, out var initial);
-            operation.Result = AddExactIntegers(initial, new BigInteger(subtotal), context.MemoryGovernor, span);
+            result = AddExactIntegers(initial, new BigInteger(subtotal), context.MemoryGovernor, span);
         }
-        operation.FinishIteration();
         return true;
     }
 

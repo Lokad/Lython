@@ -66,11 +66,6 @@ public sealed class IntegerAdditionAdmissionTests(ITestOutputHelper output)
                 var pending = Invoke(route, asynchronous, arguments, context);
                 Assert.True(pending.IsCompleted, "Controlled native addition must not suspend during allocation measurement.");
                 result = await pending;
-                if (result is LythonRuntime.NativeIterableOperation operation)
-                {
-                    result = operation.Result;
-                    operation.Dispose();
-                }
             }
             catch (LythonRuntimeException error) { failure = error; }
             var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
@@ -125,11 +120,6 @@ public sealed class IntegerAdditionAdmissionTests(ITestOutputHelper output)
         object[] arguments = [route == 3 ? new PyBytes([1]) : new PyBytes([1]).Iterate(), start];
         var baseline = budget.ReservedBytes;
         var result = await Invoke(route, asynchronous, arguments, context);
-        if (result is LythonRuntime.NativeIterableOperation operation)
-        {
-            result = operation.Result;
-            operation.Dispose();
-        }
         Assert.Equal((BigInteger)start + 1, Assert.IsType<BigInteger>(result));
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.True(budget.ReservedBytes > baseline);

@@ -70,3 +70,5 @@ benchmarks/results/2026-10-18-csv-writerows/rejected-pipeline.patch -text -white
 benchmarks/results/2026-10-18-csv-milestone/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-binary-write/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-binary-write/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-sum-state/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-sum-state/candidate.patch -text -whitespace

@@ -90,17 +90,15 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "list(iterable) expects one argument.", span);
         }
 
-        var operation = NativeIterableOperation.Create(arguments[0], PyNone.Instance, context, span);
+        var operation = NativeListOperation.Create(context, span);
         try
         {
             operation.BeginList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, span);
-            operation.Iterator = ToSequence(operation.Source, span, context).GetEnumerator();
+            operation.Iterator = ToSequence(arguments[0], span, context).GetEnumerator();
             var result = (PyList)operation.Result;
             while (operation.Iterator.MoveNext())
             {
-                operation.Current = operation.Iterator.Current;
-                result.Add(operation.Current);
-                operation.Current = PyNone.Instance;
+                result.Add(operation.Iterator.Current);
                 context.ObserveCollectionCount(result.Count, span);
             }
             operation.FinishIteration();
@@ -121,17 +119,15 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "list(iterable) expects one argument.", span);
         }
 
-        var operation = NativeIterableOperation.Create(arguments[0], PyNone.Instance, context, span);
+        var operation = NativeListOperation.Create(context, span);
         try
         {
             operation.BeginList(arguments[0] is IReadOnlyCollection<object> known ? known.Count : 0, span);
-            operation.AsyncIterator = ToSequenceAsync(operation.Source, span, context).GetAsyncEnumerator();
+            operation.AsyncIterator = ToSequenceAsync(arguments[0], span, context).GetAsyncEnumerator();
             var result = (PyList)operation.Result;
             while (await operation.AsyncIterator.MoveNextAsync().ConfigureAwait(false))
             {
-                operation.Current = operation.AsyncIterator.Current;
-                result.Add(operation.Current);
-                operation.Current = PyNone.Instance;
+                result.Add(operation.AsyncIterator.Current);
                 context.ObserveCollectionCount(result.Count, span);
                 if ((result.Count & 63) == 0) context.CheckExecution(span);
             }

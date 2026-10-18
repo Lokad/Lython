@@ -40,13 +40,12 @@ public sealed class ExactBytesSumTests
     {
         var context = Context();
         object[] arguments = [new PyBytes(Enumerable.Repeat((byte)255, 8192).ToArray()), BigInteger.Zero];
-        using ((IDisposable)Invoke(arguments, context, asynchronous)) { }
+        _ = Invoke(arguments, context, asynchronous);
         var before = GC.GetAllocatedBytesForCurrentThread();
-        using var operation = Assert.IsType<LythonRuntime.NativeIterableOperation>(Invoke(arguments, context, asynchronous));
+        var result = Invoke(arguments, context, asynchronous);
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-        Assert.Equal(new BigInteger(255 * 8192), operation.Result);
+        Assert.Equal(new BigInteger(255 * 8192), result);
         Assert.True(allocated < 4096, $"Byte sum allocated {allocated} bytes.");
-        operation.Dispose();
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -79,7 +78,7 @@ public sealed class ExactBytesSumTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void CancelledByteSumRefundsItsNativeOwner(bool asynchronous)
+    public void CancelledByteSumLeavesNoWorkingReservation(bool asynchronous)
     {
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
@@ -101,8 +100,8 @@ public sealed class ExactBytesSumTests
     {
         try
         {
-            using var operation = Assert.IsType<LythonRuntime.NativeIterableOperation>(Invoke([source, BigInteger.Zero], context, asynchronous));
-            return (operation.Result, null, null, context.State.Limits.ExecutionStepCount);
+            var result = Invoke([source, BigInteger.Zero], context, asynchronous);
+            return (result, null, null, context.State.Limits.ExecutionStepCount);
         }
         catch (LythonRuntimeException error)
         {

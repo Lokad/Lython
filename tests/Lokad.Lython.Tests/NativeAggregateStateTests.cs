@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Reflection;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -12,51 +11,29 @@ public sealed class NativeAggregateStateTests
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
     [Fact]
-    public void AggregateShellFundingCoversItsMeasuredStorageAndRetiresItsReferences()
+    public void DeniedListAdmissionPreservesTheExecutableFrame()
     {
         var context = Context();
-        var create = CreateAggregate();
-        var source = new PyList();
-        var total = PyString.FromString("retained");
-        using ((IDisposable)create(source, total, context, Span)) { }
-        var initial = context.MemoryGovernor.CurrentReservedBytes;
-        var before = GC.GetAllocatedBytesForCurrentThread();
-        var operation = create(source, total, context, Span);
-        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-        var admitted = context.MemoryGovernor.CurrentReservedBytes - initial;
-        Assert.True(admitted >= allocated, $"admitted {admitted}, allocated {allocated}");
-        before = GC.GetAllocatedBytesForCurrentThread();
-        ((IDisposable)operation).Dispose();
-        Assert.Equal(0, GC.GetAllocatedBytesForCurrentThread() - before);
-
-        Assert.Equal(initial, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Same(PyNone.Instance, ((LythonRuntime.NativeIterableOperation)operation).Source);
-        Assert.Same(PyNone.Instance, ((LythonRuntime.NativeIterableOperation)operation).Result);
-        Assert.Same(PyNone.Instance, ((LythonRuntime.NativeIterableOperation)operation).Current);
-    }
-
-    [Fact]
-    public void DeniedAggregateAdmissionPreservesTheExecutableFrame()
-    {
-        var context = Context();
-        var create = CreateAggregate();
+        var list = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["list"]);
+        CallArgumentValue[] arguments = [CallArgumentValue.Positional(PyTuple.Empty)];
         var previous = new LythonRuntime.ExecutableFrameState(Compile("pass\n").EntryPoint, [], null, null);
         context.EnterExecutableSlots(previous);
         var funding = context.MemoryGovernor.MaxAccountedBytes!.Value - context.MemoryGovernor.CurrentCommittedBytes;
         context.MemoryGovernor.Reserve(funding, Span);
         var initial = context.MemoryGovernor.CurrentReservedBytes;
-        var failure = Assert.Throws<LythonRuntimeException>(() => create(PyNone.Instance, BigInteger.Zero, context, Span));
-        Assert.Equal("MemoryError", failure.ExceptionType);
-        Assert.Same(previous, context.CurrentExecutableFrame);
-        Assert.Equal(initial, context.MemoryGovernor.CurrentReservedBytes);
-        context.MemoryGovernor.ReleaseReserved(funding);
-        context.LeaveExecutableSlots(null);
+        try
+        {
+            var failure = Assert.Throws<LythonRuntimeException>(() => list.Invoke(arguments, Span, context));
+            Assert.Equal("MemoryError", failure.ExceptionType);
+            Assert.Same(previous, context.CurrentExecutableFrame);
+            Assert.Equal(initial, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        finally
+        {
+            context.MemoryGovernor.ReleaseReserved(funding);
+            context.LeaveExecutableSlots(null);
+        }
     }
-
-    private static Func<object, object, LythonRuntime.ExecutionContext, LythonSourceSpan, LythonRuntime.NativeIterableOperation> CreateAggregate()
-        => typeof(LythonRuntime).GetNestedType("NativeIterableOperation", BindingFlags.NonPublic)!
-            .GetMethod("Create", BindingFlags.Static | BindingFlags.NonPublic)!
-            .CreateDelegate<Func<object, object, LythonRuntime.ExecutionContext, LythonSourceSpan, LythonRuntime.NativeIterableOperation>>();
 
     [Theory]
     [InlineData(false)]
@@ -117,40 +94,71 @@ public sealed class NativeAggregateStateTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task IteratorCleanupKeepsOperationFundingUntilCompletion(bool asynchronous, bool fail)
+    public async Task IteratorCleanupKeepsRetainedStorageFundedUntilCompletion(bool asynchronous, bool fail)
     {
-        var context = Context();
-        var source = new CleanupSource(context, fail);
-        var sum = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["sum"]);
-        CallArgumentValue[] arguments = [CallArgumentValue.Positional(source)];
-        if (fail)
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using (var owner = budget.CreateScope())
         {
-            if (asynchronous) await Assert.ThrowsAsync<InvalidOperationException>(async () => await sum.InvokeAsync(arguments, Span, context));
-            else Assert.Throws<InvalidOperationException>(() => sum.Invoke(arguments, Span, context));
+            var context = Context(owner);
+            var source = new CleanupSource(context, budget, fail);
+            var sum = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["sum"]);
+            CallArgumentValue[] arguments = [CallArgumentValue.Positional(source)];
+            if (asynchronous)
+            {
+                var pending = sum.InvokeAsync(arguments, Span, context).AsTask();
+                try
+                {
+                    await source.CleanupStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                    Assert.False(pending.IsCompleted);
+                    Assert.True(budget.ReservedBytes >= source.MinimumFunding);
+                    source.ReleaseCleanup.SetResult();
+                    if (fail) await Assert.ThrowsAsync<InvalidOperationException>(() => pending);
+                    else Assert.Equal(BigInteger.One, await pending);
+                }
+                finally
+                {
+                    source.ReleaseCleanup.TrySetResult();
+                    try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
+                    catch (InvalidOperationException) when (fail) { }
+                }
+            }
+            else if (fail) Assert.Throws<InvalidOperationException>(() => sum.Invoke(arguments, Span, context));
+            else Assert.Equal(BigInteger.One, sum.Invoke(arguments, Span, context));
+            Assert.True(source.Checked);
+            Assert.Equal(1, source.CleanupCalls);
+            Assert.Equal(4096, source.Retained.Utf8Bytes.Length);
+            Assert.True(budget.ReservedBytes >= source.MinimumFunding);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
-        else Assert.Equal(BigInteger.One, asynchronous ? await sum.InvokeAsync(arguments, Span, context) : sum.Invoke(arguments, Span, context));
-        Assert.True(source.Checked);
-
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task IteratorFailureRefundsOperationWithoutReplacingTheExecutableFrame(bool asynchronous)
+    public async Task IteratorFailurePreservesFundingAndTheExecutableFrame(bool asynchronous)
     {
-        var context = Context();
-        var previous = new LythonRuntime.ExecutableFrameState(Compile("pass\n").EntryPoint, [], null, null);
-        context.EnterExecutableSlots(previous);
-        var sum = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["sum"]);
-        var source = new FailingSource(context);
-        CallArgumentValue[] arguments = [CallArgumentValue.Positional(source)];
-        if (asynchronous) await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await sum.InvokeAsync(arguments, Span, context));
-        else Assert.ThrowsAny<OperationCanceledException>(() => sum.Invoke(arguments, Span, context));
-        Assert.Same(previous, context.CurrentExecutableFrame);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.True(source.Checked);
-        context.LeaveExecutableSlots(null);
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = Context(owner);
+            var previous = new LythonRuntime.ExecutableFrameState(Compile("pass\n").EntryPoint, [], null, null);
+            context.EnterExecutableSlots(previous);
+            var sum = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["sum"]);
+            var source = new FailingSource(context, budget);
+            CallArgumentValue[] arguments = [CallArgumentValue.Positional(source)];
+            try
+            {
+                if (asynchronous) await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await sum.InvokeAsync(arguments, Span, context));
+                else Assert.ThrowsAny<OperationCanceledException>(() => sum.Invoke(arguments, Span, context));
+                Assert.Same(previous, context.CurrentExecutableFrame);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.True(source.Checked);
+                Assert.True(budget.ReservedBytes >= source.MinimumFunding);
+            }
+            finally { context.LeaveExecutableSlots(null); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     private static object? Run(ExecutableScript code, LythonRuntime.ExecutionContext context)
@@ -163,9 +171,9 @@ public sealed class NativeAggregateStateTests
         return ExecutableScript.Compile(LoweredScript.Lower(parsed.Script!));
     }
 
-    private static LythonRuntime.ExecutionContext Context()
+    private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? owner = null)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         context.Variables.Clear();
         return context;
     }
@@ -204,19 +212,25 @@ public sealed class NativeAggregateStateTests
         }
     }
 
-    private sealed class CleanupSource(LythonRuntime.ExecutionContext context, bool fail) : IPyAsyncIterableValue
+    private sealed class CleanupSource(LythonRuntime.ExecutionContext context, LythonMemoryBudget budget, bool fail) : IPyAsyncIterableValue
     {
         internal bool Checked;
+        internal int CleanupCalls;
+        internal readonly PyString Retained = PyString.FromString(new string('x', 4096), context.MemoryGovernor, Span);
+        internal readonly long MinimumFunding = budget.ReservedBytes;
+        internal readonly TaskCompletionSource CleanupStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal readonly TaskCompletionSource ReleaseCleanup = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private void Check()
         {
-            Assert.True(context.MemoryGovernor.CurrentReservedBytes >= 128);
+            Assert.True(budget.ReservedBytes >= MinimumFunding);
+            Assert.Equal(new string('x', 4096), Retained.AsString());
             Checked = true;
             if (fail) throw new InvalidOperationException("controlled iterator cleanup failure");
         }
         public IEnumerable<object> Iterate()
         {
             try { yield return BigInteger.One; }
-            finally { Check(); }
+            finally { CleanupCalls++; Check(); }
         }
         public async IAsyncEnumerable<object> IterateAsync()
         {
@@ -225,16 +239,25 @@ public sealed class NativeAggregateStateTests
                 await Task.Yield();
                 yield return BigInteger.One;
             }
-            finally { Check(); }
+            finally
+            {
+                CleanupCalls++;
+                CleanupStarted.SetResult();
+                await ReleaseCleanup.Task.ConfigureAwait(false);
+                Check();
+            }
         }
     }
 
-    private sealed class FailingSource(LythonRuntime.ExecutionContext context) : IPyAsyncIterableValue
+    private sealed class FailingSource(LythonRuntime.ExecutionContext context, LythonMemoryBudget budget) : IPyAsyncIterableValue
     {
         internal bool Checked;
+        internal readonly PyString Retained = PyString.FromString(new string('x', 4096), context.MemoryGovernor, Span);
+        internal readonly long MinimumFunding = budget.ReservedBytes;
         private void Check()
         {
-            Assert.True(context.MemoryGovernor.CurrentReservedBytes >= 128);
+            Assert.True(budget.ReservedBytes >= MinimumFunding);
+            Assert.Equal(new string('x', 4096), Retained.AsString());
             Checked = true;
             throw new OperationCanceledException();
         }

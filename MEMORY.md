@@ -59,6 +59,16 @@ awaited publication. The binary dispatch checkpoint, chunk preflights, position
 updates, retained input/handle funding and error order are preserved. This removes
 temporary call packaging without adding an ownership mechanism.
 
+`sum` keeps its source/item/accumulator in ordinary managed call and iterator
+state, without a separately reserved aggregate shell. Existing caller/execution
+owners keep retained input, accumulator aliases and large results charged until
+their users and awaited iterator cleanup finish. Integer result admission remains
+before allocation. Deleting the private shell lowers required control headroom;
+it does not refund guest storage. Minor iterator/state-machine storage continues
+to rely on runtime headroom. `list(iterable)` retains its private construction
+helper for capacity admission, iterator cleanup and unpublished-storage rollback,
+with the same conservative shell estimate and no source/current reference ledger.
+
 For exact native list/tuple rows, asynchronous `csv.writerow` reuses the existing
 synchronous scalar converter and its scratch reservations. It still awaits the
 captured output callback before releasing its call frame or inputs. Custom and

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Remove `sum`'s private operation object and temporary shell reservation; return results from managed locals with deterministic awaited iterator cleanup. Narrow the remaining helper to list construction and delete source/current reference bookkeeping while retaining capacity preflights, unpublished rollback, integer admission and funding for retained aliases/results. Control headroom can decrease.
+
 - Share the native file-write operand path with ordinary binary writes, removing eligible bound-method construction, argument packaging and async forwarding. Preserve checkpoints, closed/read-only/type error order, storage preflights, buffered positions, retained funding and awaited host publication.
 
 - Centralize native CSV row selection in the existing converter for single and bulk writers, removing duplicated selection/plumbing and reusing the synchronous bulk helper. Preserve inline awaited bulk publication, outer checkpoints, ignored callback returns, failure prefixes, retained funding and custom row/output suspension.

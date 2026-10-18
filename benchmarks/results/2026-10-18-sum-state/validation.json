@@ -1,0 +1,429 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "92c5b9e6e5eddd86456b002a3549e5029bc7f31b",
+  "candidate": "baseline plus frozen three edits and one helper narrowing/rename",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs": {
+      "beforePath": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs",
+      "before": "fa8dc9651c8c853a9341dc40d0c5eb8feeb85b732898bb43acea44dd5235f301",
+      "after": "475bb8ac80af303b8815aec4d3ee974b3b5a90f0882104dcecdd15ef4417a590"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs": {
+      "beforePath": "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs",
+      "before": "5688ead3b704ade20287fee50fd1c0a6b31be6dab3217e13a8fb2c16fae7d4c3",
+      "after": "1af7db1dda5a21e90add1f577c74d23c72c2ce5a117e7576486b679360bdf8a1"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": {
+      "beforePath": "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs",
+      "before": "93482a86dbaf1d9a31249276ebbb2426d45ed4dadd8d773150a0b195973fabf2",
+      "after": "865d79732c7346ec4ff6e81a4ddcb21f3e1641155491c4f73cd11858a53668f7"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.NativeListOperation.cs": {
+      "beforePath": "src/Lokad.Lython/Runtime/LythonRuntime.NativeIterableOperation.cs",
+      "before": "af3a74be0c4ac74b8c2cb9a2861426e87cb627d0eb3c479193dcd8393a4b1dc7",
+      "after": "56cae2fde64f8f1d66dd1b10da0ebe98eb7ab2656209529dc582010dc4e59fcd"
+    }
+  },
+  "groups": {
+    "baseline-behavior": {
+      "passed": 150,
+      "process": {
+        "source": "sum-state",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "5A09C91019B4FC095FE7EA2615B10425894D9A1CEDC8716BC48DC5B0A7F12CAD",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeAggregateStateTests|FullyQualifiedName~ExactBytesSumTests|FullyQualifiedName~PartialNativeListStateTests|FullyQualifiedName~ListConstructionAbortAccountingTests|FullyQualifiedName~IntegerAdditionAdmissionTests)",
+        "pid": 52032,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1357,
+        "stdoutSha256": "051C6BF4B3A84B2742A631EEEA4FEE1F14967D204F7C06BA512E9F9F7ACF1BB9",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "7f2764cd493135a7b9e7f944779385b9c5a95af55f6fdc746c962472c6ae6460"
+    },
+    "baseline-allocation": {
+      "passed": 1,
+      "process": {
+        "source": "sum-state",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "5A09C91019B4FC095FE7EA2615B10425894D9A1CEDC8716BC48DC5B0A7F12CAD",
+        "filter": "Category!=Stress&FullyQualifiedName~SumStateAllocationDiagnostic",
+        "pid": 47596,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1193,
+        "stdoutSha256": "4E69E9D8FC5EA11EE19B00CF13DF7CF2FB33A57530DEECE5AFA400D8BA948757",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "6526f6e0da5b534468311d5b6b208774cfa6883251825659b7513434f6068dce"
+    },
+    "candidate-behavior": {
+      "passed": 149,
+      "process": {
+        "source": "sum-state",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "73082F9D477DB38C4AC929D96B7EF531EB0F2EBE1179DAB392106A2706496881",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeAggregateStateTests|FullyQualifiedName~ExactBytesSumTests|FullyQualifiedName~PartialNativeListStateTests|FullyQualifiedName~ListConstructionAbortAccountingTests|FullyQualifiedName~IntegerAdditionAdmissionTests)",
+        "pid": 66748,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1304,
+        "stdoutSha256": "A50797DDA1A3FA1975FBD29A2135DDC0D451E113127661FA4F63D0B77C94C6DC",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "2f6e75909834e46ece72584ade188266d219d728af2ea6581ac9e79ec2bff135"
+    },
+    "candidate-allocation": {
+      "passed": 1,
+      "process": {
+        "source": "sum-state",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "73082F9D477DB38C4AC929D96B7EF531EB0F2EBE1179DAB392106A2706496881",
+        "filter": "Category!=Stress&FullyQualifiedName~SumStateAllocationDiagnostic",
+        "pid": 44552,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1147,
+        "stdoutSha256": "57C2A91F5B666ED4F14C5A1394D1BB281EB429D1E64100A18BA4796CD69A4682",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "5e8534478a80fd7152705b197b7f607990096d7e0124960b7e2defecb3186e63"
+    },
+    "final-white": {
+      "passed": 176,
+      "process": {
+        "source": "sum-state",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "03308DACB29A650AD28C024348715EF947813AE0DC5D966A2D45F4AF09107B47",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeAggregateStateTests|FullyQualifiedName~ExactBytesSumTests|FullyQualifiedName~PartialNativeListStateTests|FullyQualifiedName~ListConstructionAbortAccountingTests|FullyQualifiedName~IntegerAdditionAdmissionTests|FullyQualifiedName~ListNumericStoragePolicyTests|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission)",
+        "pid": 48460,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1340,
+        "stdoutSha256": "BEF2236EF3DD2576C49A5479351E1EAA7A577C92B32A3717DCCA7FFA00B68776",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "b770c2f6fe12b88ab11f5594d1b466925ff80d55022a55fb854ac01dbb5d1286"
+    },
+    "final-semantics": {
+      "passed": 636,
+      "process": {
+        "source": "sum-state",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "59025E3B37946D81B7416022D28F3D0B0AB42B3ECAF60D1E750A28F4D9549C3A",
+        "filter": "Category!=Stress&(FullyQualifiedName~BytesSumTests|FullyQualifiedName~ExactIntegerAdditionTests|FullyQualifiedName~BuiltinIterationCancellationTests|FullyQualifiedName~BuiltinIteratorSequenceFunctionTests|FullyQualifiedName~BuiltinValidationScenarioTests|FullyQualifiedName~ListCompatibilityTests|FullyQualifiedName~ListScalarAdoptionTests|FullyQualifiedName~ListReplaceDuringIterationTests|FullyQualifiedName~ListMutationScenarioTests|FullyQualifiedName~ListExtendScenarioTests|FullyQualifiedName~ListComprehensionExecutionTests|FullyQualifiedName~AgentCompatibilityBaselineTests)",
+        "pid": 51556,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 6658,
+        "stdoutSha256": "851E86FE4132D6AFE92CD537D905A1940E797AFA752EF7A3A2497C8CF208277D",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "ece80938585d2c9b86b4cf6d323e19b273c682102e4509ee074b54b061b2e4fb"
+    },
+    "final-owners": {
+      "passed": 89,
+      "process": {
+        "source": "sum-state",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "59025E3B37946D81B7416022D28F3D0B0AB42B3ECAF60D1E750A28F4D9549C3A",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 38872,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2696,
+        "stdoutSha256": "508532E506B3EEB59BD75E4D1B439042AA1FFF9BFB6035887E408DF0444C7C68",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "a438b8ab41e22b447eaca4a0a06fe1561001d3c26b7b7ced8899f9771aad1605"
+    },
+    "final-goldens": {
+      "passed": 62,
+      "process": {
+        "source": "sum-state",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "59025E3B37946D81B7416022D28F3D0B0AB42B3ECAF60D1E750A28F4D9549C3A",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 59340,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8641,
+        "stdoutSha256": "C4C5F3FE50682A6119398610D8F41D47C50C2D36B6F5024EB87D85E6227F85F3",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "13a77532b06aab004c78a998441483f02906ef17258642f5a2bcb2b3d838320b"
+    }
+  },
+  "focusedFinalPassed": 963,
+  "completeJobs": 58,
+  "distinctCases": "176 whitebox and787 public TRX testIds; public groups are disjoint.",
+  "baselineCases": 150,
+  "candidateCoreCases": 149,
+  "removedTest": "AggregateShellFundingCoversItsMeasuredStorageAndRetiresItsReferences; private field/return-wrapper architecture only. Denied admission/frame preservation is retained through the list callable; other useful regressions stay.",
+  "updatedLifetimeCoverage": "Six existing cleanup/failure cases use an explicit borrowed budget and retained4096-byte value. Actual async cleanup blocks on a released/awaited TCS, runs once, preserves funding and returns allowance to0 after owner cleanup. Existing nested/reentrant/operator witnesses remain.",
+  "before": [
+    {
+      "kind": "bytes",
+      "asynchronous": false,
+      "samples": [
+        22528,
+        22528,
+        22528,
+        22528,
+        22528,
+        22528,
+        22528,
+        22528
+      ]
+    },
+    {
+      "kind": "bytes",
+      "asynchronous": true,
+      "samples": [
+        22528,
+        22528,
+        22528,
+        22528,
+        22528,
+        22528,
+        22528,
+        22528
+      ]
+    },
+    {
+      "kind": "tuple",
+      "asynchronous": false,
+      "samples": [
+        53248,
+        53248,
+        53248,
+        53248,
+        53248,
+        53248,
+        53248,
+        53248
+      ]
+    },
+    {
+      "kind": "tuple",
+      "asynchronous": true,
+      "samples": [
+        62464,
+        62464,
+        62464,
+        62464,
+        62464,
+        62464,
+        62464,
+        62464
+      ]
+    },
+    {
+      "kind": "custom",
+      "asynchronous": false,
+      "samples": [
+        55296,
+        55296,
+        55296,
+        55296,
+        55424,
+        55296,
+        55296,
+        55296
+      ]
+    },
+    {
+      "kind": "custom",
+      "asynchronous": true,
+      "samples": [
+        79872,
+        79872,
+        79872,
+        79872,
+        79872,
+        79872,
+        79872,
+        79872
+      ]
+    },
+    {
+      "kind": "list",
+      "asynchronous": false,
+      "samples": [
+        57344,
+        57344,
+        57344,
+        57344,
+        57344,
+        57344,
+        57344,
+        57344
+      ]
+    },
+    {
+      "kind": "list",
+      "asynchronous": true,
+      "samples": [
+        81920,
+        81920,
+        81920,
+        81920,
+        81920,
+        81920,
+        81920,
+        81920
+      ]
+    }
+  ],
+  "after": [
+    {
+      "kind": "bytes",
+      "asynchronous": false,
+      "samples": [
+        12288,
+        12288,
+        12288,
+        12288,
+        12288,
+        12288,
+        12288,
+        12288
+      ]
+    },
+    {
+      "kind": "bytes",
+      "asynchronous": true,
+      "samples": [
+        12288,
+        12288,
+        12288,
+        12288,
+        12288,
+        12288,
+        12288,
+        12288
+      ]
+    },
+    {
+      "kind": "tuple",
+      "asynchronous": false,
+      "samples": [
+        43008,
+        43008,
+        43008,
+        43008,
+        43008,
+        43008,
+        43008,
+        43008
+      ]
+    },
+    {
+      "kind": "tuple",
+      "asynchronous": true,
+      "samples": [
+        52224,
+        52224,
+        52224,
+        52224,
+        52224,
+        52224,
+        52224,
+        52224
+      ]
+    },
+    {
+      "kind": "custom",
+      "asynchronous": false,
+      "samples": [
+        45056,
+        45056,
+        45056,
+        45056,
+        45184,
+        45056,
+        45056,
+        45056
+      ]
+    },
+    {
+      "kind": "custom",
+      "asynchronous": true,
+      "samples": [
+        69632,
+        69632,
+        69632,
+        69632,
+        69632,
+        69632,
+        69632,
+        69632
+      ]
+    },
+    {
+      "kind": "list",
+      "asynchronous": false,
+      "samples": [
+        55296,
+        55296,
+        55296,
+        55296,
+        55296,
+        55296,
+        55296,
+        55296
+      ]
+    },
+    {
+      "kind": "list",
+      "asynchronous": true,
+      "samples": [
+        79872,
+        79872,
+        79872,
+        79872,
+        79872,
+        79872,
+        79872,
+        79872
+      ]
+    }
+  ],
+  "environment": {
+    "capturedUtc": "2026-10-18T05:28:32.9239340+00:00",
+    "os": "Microsoft Windows 11 Business",
+    "build": "26200",
+    "architecture": "X64",
+    "cpu": "Intel(R) Core(TM) i7-14700KF",
+    "cores": 20,
+    "logicalProcessors": 28,
+    "powershell": "7.6.6",
+    "head": "92c5b9e6e5eddd86456b002a3549e5029bc7f31b"
+  },
+  "publicRuntimeCopyMatches": true,
+  "publicRuntimeDllSha256": "5bb4d5b57f67c73c44ee4564da2d7afe521cc50dbd219c9bb7778a4e2d456d4c",
+  "sourceProof": "Sum has no operation object/reservation/return wrapper. NativeListOperation is list-only and has no Source/Current storage/reset. Other builtin/call code, sum validation and exact-byte checking/reduction loop are unchanged apart from result destination; list preflight/rollback/disposal stays.",
+  "contractTradeoff": "Removed128-byte private sum shell no longer reserves allowance. Control headroom can decrease; exact tiny thresholds are not promised. Retained guest storage remains funded by existing owners independently of CLR liveness. Minor iterator/state-machine storage uses existing headroom. List retains its unchanged128-byte conservative shell estimate.",
+  "diagnosticBoundary": "128 public-shaped native builtin calls through ICallable, both APIs, eight warmups/eight samples. Exact4096-byte checksum, four-item tuple/custom iterator and list construction counterpart. Context/input/callable/arguments outside; binding/call/reduction/iteration/disposal inside. Custom cleanup exactly128, complete values/list result checked; all native async operations complete, no public scheduler/guest opcode loop/startup/compile/actual suspended-I/O/elapsed/CPython measure. Results stay funded until owner disposal, then allowance0. No requested GC.",
+  "temporaryDiagnosticRemoved": true,
+  "obsoleteProductionAndTestReferencesRemoved": true,
+  "fixtureCorrections": [],
+  "existingExternalAssertionsTimeoutsAndStressScalesRelaxed": false,
+  "fullLocalStress": "Not repeated; platform/package qualification at delivery."
+}

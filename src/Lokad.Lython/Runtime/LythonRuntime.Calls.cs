@@ -523,14 +523,14 @@ internal sealed partial class LythonRuntime
             object result = PreservePresence
                 ? InvokeBoundWithPresence(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context)
                 : InvokeBound(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
-            if (result is NativeIterableOperation aggregate)
+            if (result is NativeListOperation list)
             {
                 try
                 {
-                    aggregate.ResultRegistered();
-                    return aggregate.Result;
+                    list.ResultRegistered();
+                    return list.Result;
                 }
-                finally { aggregate.Dispose(); }
+                finally { list.Dispose(); }
             }
             return result;
         }
@@ -541,14 +541,14 @@ internal sealed partial class LythonRuntime
             object result = PreservePresence
                 ? await InvokeBoundWithPresenceAsync(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false)
                 : await InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false);
-            if (result is NativeIterableOperation aggregate)
+            if (result is NativeListOperation list)
             {
                 try
                 {
-                    aggregate.ResultRegistered();
-                    return aggregate.Result;
+                    list.ResultRegistered();
+                    return list.Result;
                 }
-                finally { await aggregate.DisposeAsync().ConfigureAwait(false); }
+                finally { await list.DisposeAsync().ConfigureAwait(false); }
             }
             return result;
         }
