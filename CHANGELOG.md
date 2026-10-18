@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Forward bound async calls directly to their existing implementation ValueTasks, removing a redundant state machine. Preserve execution checks, named/presence binding, Python failure translation, awaited cleanup, cancellation and retained ownership.
+
 - Decode JSON object keys synchronously through the existing typed string decoder, removing generic key awaits and impossible result-type failures. Preserve checkpoints, error coordinates, string admission and ownership through suspended values/hooks.
 
 - Pre-size the two fixed per-execution builtin dictionaries to avoid repeated backing-array growth during setup. Keep builtin entries, private callable/type/module state and conservative memory accounting unchanged.

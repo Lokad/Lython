@@ -80,3 +80,5 @@ benchmarks/results/2026-10-18-builtin-capacity/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-builtin-capacity/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-json-keys/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-json-keys/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-bound-async/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-bound-async/candidate.patch -text -whitespace

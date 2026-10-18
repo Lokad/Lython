@@ -525,12 +525,12 @@ internal sealed partial class LythonRuntime
                 : InvokeBound(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
         }
 
-        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
             return PreservePresence
-                ? await InvokeBoundWithPresenceAsync(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false)
-                : await InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false);
+                ? InvokeBoundWithPresenceAsync(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context)
+                : InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
         }
 
         /// <summary>Whether calls bind with assignment tracking so omitted arguments stay distinguishable from explicit values.</summary>

@@ -1,0 +1,62 @@
+{
+  "exactBoundaryRecords": 34,
+  "allRecordsIdentical": true,
+  "completedControlAllocationUnchanged": true,
+  "rows": [
+    {
+      "kind": "sum",
+      "asynchronous": true,
+      "prefixOnly": false,
+      "callsPerSample": 128,
+      "before": 12288.0,
+      "after": 12288.0,
+      "saved": 0.0
+    },
+    {
+      "kind": "list",
+      "asynchronous": false,
+      "prefixOnly": false,
+      "callsPerSample": 128,
+      "before": 45056.0,
+      "after": 45056.0,
+      "saved": 0.0
+    },
+    {
+      "kind": "list",
+      "asynchronous": true,
+      "prefixOnly": true,
+      "callsPerSample": 1,
+      "before": 1280.0,
+      "after": 1128.0,
+      "saved": 152.0
+    },
+    {
+      "kind": "sum",
+      "asynchronous": true,
+      "prefixOnly": true,
+      "callsPerSample": 1,
+      "before": 1160.0,
+      "after": 1008.0,
+      "saved": 152.0
+    },
+    {
+      "kind": "sum",
+      "asynchronous": false,
+      "prefixOnly": false,
+      "callsPerSample": 128,
+      "before": 12288.0,
+      "after": 12288.0,
+      "saved": 0.0
+    },
+    {
+      "kind": "list",
+      "asynchronous": true,
+      "prefixOnly": false,
+      "callsPerSample": 128,
+      "before": 54272.0,
+      "after": 54272.0,
+      "saved": 0.0
+    }
+  ],
+  "boundary": "128 completed native calls or one genuinely pending first-pull prefix, native binding included; setup/compile/startup/public scheduling excluded. Pending calls are released, awaited and cleaned before owner disposal. No elapsed/total suspended-allocation/CPython/latency claim."
+}

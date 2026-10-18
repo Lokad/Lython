@@ -1,0 +1,104 @@
+using System.Numerics;
+using System.Text.Json;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary native entry diagnostic; the pending rows measure only the prefix.
+[Collection("AllocationSensitive")]
+public sealed class BoundCallAllocationDiagnostic(ITestOutputHelper output)
+{
+    private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
+    [Theory]
+    [InlineData("list", false, false)]
+    [InlineData("list", true, false)]
+    [InlineData("sum", false, false)]
+    [InlineData("sum", true, false)]
+    [InlineData("list", true, true)]
+    [InlineData("sum", true, true)]
+    public async Task Capture(string kind, bool asynchronous, bool suspended)
+    {
+        var samples = new List<long>();
+        for (var sample = -4; sample < 8; sample++)
+        {
+            var budget = new LythonMemoryBudget(8 * 1024 * 1024);
+            using (var owner = budget.CreateScope())
+            {
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+                var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables[kind]);
+                var source = new Source();
+                object input = suspended ? source : kind == "list"
+                    ? new PyTuple([BigInteger.One, new BigInteger(2)], context.MemoryGovernor, Span)
+                    : new PyBytes([1, 2, 3], context.MemoryGovernor, Span);
+                CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
+                long allocated;
+                object? result = null;
+                if (suspended)
+                {
+                    var thread = Environment.CurrentManagedThreadId;
+                    var before = GC.GetAllocatedBytesForCurrentThread();
+                    var pending = callable.InvokeAsync(arguments, Span, context);
+                    allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+                    Assert.Equal(thread, Environment.CurrentManagedThreadId);
+                    var task = pending.AsTask();
+                    try
+                    {
+                        Assert.True(source.Started);
+                        Assert.False(task.IsCompleted);
+                        source.Release.TrySetResult();
+                        result = await task;
+                    }
+                    finally
+                    {
+                        source.Release.TrySetResult();
+                        await task;
+                    }
+                    Assert.Equal(1, source.CleanupCalls);
+                    if (kind == "list") Assert.Same(source.Item, Assert.Single(Assert.IsType<PyList>(result)));
+                    else Assert.Equal(BigInteger.One, Assert.IsType<BigInteger>(result));
+                }
+                else
+                {
+                    var thread = Environment.CurrentManagedThreadId;
+                    var before = GC.GetAllocatedBytesForCurrentThread();
+                    for (var i = 0; i < 128; i++)
+                    {
+                        if (asynchronous)
+                        {
+                            var pending = callable.InvokeAsync(arguments, Span, context);
+                            Assert.True(pending.IsCompletedSuccessfully);
+                            result = await pending;
+                        }
+                        else result = callable.Invoke(arguments, Span, context);
+                    }
+                    allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+                    Assert.Equal(thread, Environment.CurrentManagedThreadId);
+                    if (kind == "list") Assert.Equal(2, Assert.IsType<PyList>(result).Count);
+                    else Assert.Equal(new BigInteger(6), Assert.IsType<BigInteger>(result));
+                }
+                Assert.Null(context.CurrentExecutableFrame);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                if (sample >= 0) samples.Add(allocated);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        output.WriteLine("BOUND_CALL_ALLOCATION:" + JsonSerializer.Serialize(new { kind, asynchronous, prefixOnly = suspended, callsPerSample = suspended ? 1 : 128, samples }));
+    }
+    private sealed class Source : IPyAsyncIterableValue
+    {
+        internal object Item { get; } = BigInteger.One;
+        internal bool Started;
+        internal int CleanupCalls;
+        internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        // Cursor creation validates the ordinary iteration surface before
+        // selecting the asynchronous fallback for its actual pulls.
+        public IEnumerable<object> Iterate() { yield return Item; }
+        public async IAsyncEnumerable<object> IterateAsync()
+        {
+            try { Started = true; await Release.Task.ConfigureAwait(false); yield return Item; }
+            finally { CleanupCalls++; }
+        }
+    }
+}

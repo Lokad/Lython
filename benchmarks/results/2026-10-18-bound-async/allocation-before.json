@@ -1,0 +1,98 @@
+[
+  {
+    "kind": "sum",
+    "asynchronous": true,
+    "prefixOnly": false,
+    "callsPerSample": 128,
+    "samples": [
+      12288,
+      12288,
+      12288,
+      12288,
+      12288,
+      12288,
+      12288,
+      12288
+    ]
+  },
+  {
+    "kind": "list",
+    "asynchronous": false,
+    "prefixOnly": false,
+    "callsPerSample": 128,
+    "samples": [
+      45056,
+      45056,
+      45056,
+      45056,
+      45056,
+      45056,
+      45056,
+      45056
+    ]
+  },
+  {
+    "kind": "list",
+    "asynchronous": true,
+    "prefixOnly": true,
+    "callsPerSample": 1,
+    "samples": [
+      1280,
+      1280,
+      1280,
+      1280,
+      1280,
+      1280,
+      1280,
+      1280
+    ]
+  },
+  {
+    "kind": "sum",
+    "asynchronous": true,
+    "prefixOnly": true,
+    "callsPerSample": 1,
+    "samples": [
+      1160,
+      1160,
+      1160,
+      1160,
+      1160,
+      1160,
+      1160,
+      1160
+    ]
+  },
+  {
+    "kind": "sum",
+    "asynchronous": false,
+    "prefixOnly": false,
+    "callsPerSample": 128,
+    "samples": [
+      12288,
+      12288,
+      12288,
+      12288,
+      12288,
+      12288,
+      12288,
+      12288
+    ]
+  },
+  {
+    "kind": "list",
+    "asynchronous": true,
+    "prefixOnly": false,
+    "callsPerSample": 128,
+    "samples": [
+      54272,
+      54272,
+      54272,
+      54272,
+      54272,
+      54272,
+      54272,
+      54272
+    ]
+  }
+]
