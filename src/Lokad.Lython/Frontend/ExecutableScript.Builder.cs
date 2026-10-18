@@ -5,20 +5,20 @@ namespace Lokad.Lython.Frontend;
 internal sealed partial class ExecutableScript
 {
     private ExecutableScript(
-        LoweredScript lowered,
+        ScriptSyntax syntax,
         ExecutableCodeObject entryPoint)
     {
-        Lowered = lowered;
+        Syntax = syntax;
         EntryPoint = entryPoint;
     }
 
-    public LoweredScript Lowered { get; }
+    public ScriptSyntax Syntax { get; }
 
     public ExecutableCodeObject EntryPoint { get; }
 
     public static ExecutableScript Compile(LoweredScript lowered)
     {
-        return new ExecutableScript(lowered, new Builder().CompileCodeObject("<module>", lowered.Statements));
+        return new ExecutableScript(lowered.Syntax, new Builder().CompileCodeObject("<module>", lowered.Statements));
     }
 
     internal static ExecutableCodeObject CompileGenerator(IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body,

@@ -7,6 +7,16 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 lowered-module lifetime change](results/2026-10-18-lowered-root/README.md)
+removes unconditional whole-module lowering retention from executable programs
+and runners. Three native lifetime failures on4d3c90f9 become passing cases;
+ten final sync/async/annotation/lowered controls and543focused checks pass.
+A temporary diagnostic confirms lowered runner fields1→0 and executable root
+retentionYes→No while original syntax remains. Needed lowered subtrees and
+conservative compilation charges remain. The shared async body is equivalent
+apart from syntax/statement input substitution. Diagnostic removed;no time/byte/
+RSS claim,profile,comparison lane or runtime reclamation mechanism is added.
+
 The [2026-10-18 bridge CPU attribution](results/2026-10-18-bridge-profile/README.md)
 is closed without a performance change:3,296samples,zero lost/missing stacks,
 81unresolved leaves.546canonical source files align to432b11c0 while the reused

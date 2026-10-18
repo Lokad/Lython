@@ -1,0 +1,14 @@
+{
+  "source": "lowered-root",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "304BB1B48F0005096C6CFA3CC9BB5F8E4B99335123DBF914036398B8755619F3",
+  "filter": "Category!=Stress&(FullyQualifiedName~ExecutableCompilationLifetimeTests|FullyQualifiedName~ModuleAnnotationExecutionTests|FullyQualifiedName~ModuleAnnotationBoundaryTests|FullyQualifiedName~PostponedAnnotationSubsystemTests|FullyQualifiedName~AnnotationOnlyLocalBoundaryTests|FullyQualifiedName~AsyncExecutionThreadTests|FullyQualifiedName~ManagedStackGuardTests|FullyQualifiedName~ExecutableStackAdmissionTests|FullyQualifiedName~AsyncExecutableFunctionTests|FullyQualifiedName~ExecutableAsyncIteratorCleanupTests)",
+  "pid": 79868,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1413,
+  "stdoutSha256": "227AA4B759C01906B3F50C1E642B2945CBA919D17547136C954917B775E57E00",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

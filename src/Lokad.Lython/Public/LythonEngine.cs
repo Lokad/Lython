@@ -82,6 +82,10 @@ public sealed class LythonEngine
             }
         }
 
+        // Executable code retains the function/fallback data it needs. Keep the
+        // original syntax for diagnostics, but release the whole lowered module.
+        if (executableScript is not null) loweredScript = null;
+
         // Host-requirement diagnostics depend on the script plus exactly two
         // host capability flags (standard input and subprocess support), so
         // they are computed once per capability state and shared across
@@ -153,7 +157,9 @@ public sealed class LythonEngine
                 }
 
                 var runtime = new LythonRuntime();
-                return await runtime.RunAsync(loweredScript.RequireNotNull(), host, options, executableScript?.EntryPoint).ConfigureAwait(false);
+                return await (executableScript is not null
+                    ? runtime.RunAsync(executableScript, host, options)
+                    : runtime.RunAsync(loweredScript.RequireNotNull(), host, options)).ConfigureAwait(false);
             });
     }
 

@@ -2,8 +2,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// Investigation #2: Compile retains every representation and reuses them
-// across invocations; per-invocation host analysis is shared per capability
+// Compilation retains execution/diagnostic data across invocations;
+// per-invocation host analysis is shared per capability
 // fingerprint instead of re-walking the tree. Hosts that gain capabilities
 // between runs re-evaluate instead of serving stale denials.
 [Collection("RuntimeStress")]

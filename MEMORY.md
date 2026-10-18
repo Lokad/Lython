@@ -23,6 +23,14 @@ Local-module compilation also admits a coarse estimate before parsing/lowering.
 Once prepared code can be exposed to guest callbacks, its estimate stays charged
 for the batch even if import execution fails; parsing/lowering failures return
 their unused admission. This preserves escaping code aliases without tracing them.
+Executable compilation releases its unused whole-module lowered representation
+after building executable code. Original syntax stays for annotations and host
+diagnostics, and function/fallback data stays where needed. Both execution APIs
+use the executable representation directly when available. This changes ordinary
+CLR reference lifetimes, not allowance reclamation: the same conservative
+compilation estimate remains charged until the compiled script is disposed.
+No runtime forced GC, weak tracking or per-object refund is involved.
+
 Runs use that borrowed budget unless `LythonRunOptions.MemoryBudget` supplies
 another. One-shot `LythonEngine.Run`/`RunAsync` disposes its temporary compilation
 after the invocation and its cleanup finish.

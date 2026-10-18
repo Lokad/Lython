@@ -1,0 +1,81 @@
+{
+  "baseRevision": "4d3c90f9734c53a51b64da7f928ef8a851c6dc9c",
+  "kind": "Compiler representation lifetime and known capture diagnostic;not a timing benchmark",
+  "focusedTestsPassed": 543,
+  "canonicalSourceHashes": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs": "6fa4558894dff7c0d567ec2c20bf76de350977beb75119ba51a71bd1014ee489",
+    "src/Lokad.Lython/Public/LythonEngine.cs": "a71d65ad40f97d2b4369aa194c932d40157d6e0a0127fac11e80676e031a393e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.cs": "a171ff1b48db0ecb63cca75f2d334ab88dbb866c135d5de2abcab6aaab00bffc",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "edf6131d795a5ace23158f6b8d03ccac4bb4fbf8be22a0b73d7d637c7a228aa4"
+  },
+  "baselineLifetimeFailures": 3,
+  "newLifetimeAndLoweredControlCases": 10,
+  "temporaryDiagnosticRemoved": true,
+  "asyncBodyEquivalentAfterSyntaxStatementSubstitution": true,
+  "artifacts": {
+    "baseline-captures-process.json": {
+      "bytes": 632,
+      "sha256": "70787612cb042ebf74e418cf2ee066bf101e0b59664aa30f3db076eda462558b"
+    },
+    "baseline-captures.json": {
+      "bytes": 112,
+      "sha256": "cd96235196470a1b9d99d290abfbdac6c76a13b0862c73898d03822163997a63"
+    },
+    "baseline-captures.trx": {
+      "bytes": 2919,
+      "sha256": "202be12b7959eb7937d73d7099c9f324858be1a9b8392bd15d17ed76a67ef4f4"
+    },
+    "baseline-lifetime-process.json": {
+      "bytes": 635,
+      "sha256": "789cf08630790d0016f540eadd85da596109370242a17442f150123cbcc13cd5"
+    },
+    "baseline-lifetime.trx": {
+      "bytes": 12026,
+      "sha256": "4e391455561d81496b4fc8c237372a77186ed818f0e4b12f26dc5f8bee74f78e"
+    },
+    "candidate-captures-process.json": {
+      "bytes": 637,
+      "sha256": "7ee67424b23f1c505bedb62c5dbf6409d5fc8b65e45cf9f18b4429ed409cc6b2"
+    },
+    "candidate-captures.json": {
+      "bytes": 113,
+      "sha256": "b2c5bb5103585948a33f1fb2554f441a69190209f879ba924c1ede87f169c21b"
+    },
+    "candidate-captures.trx": {
+      "bytes": 2919,
+      "sha256": "4d55c028cfca11fd6960915eb2934c1f64fd5b487b57732c4dcf13f6c229cd1f"
+    },
+    "candidate-lifetime-process.json": {
+      "bytes": 640,
+      "sha256": "1bbbac9afde719f1f640ff1a4451ced7460924185f6dabcdfe5392d13f92f2cf"
+    },
+    "candidate-lifetime.trx": {
+      "bytes": 6353,
+      "sha256": "20fb105424a1d2f7559438b0947bd6e5ed4a545726bef36b238b28948e326a3f"
+    },
+    "candidate-white-contract-process.json": {
+      "bytes": 1102,
+      "sha256": "5fbaf8aee30923072dbc9388e0118b78a6d8a253f54443ff8e9101ed26c85736"
+    },
+    "candidate-white-contract.trx": {
+      "bytes": 137009,
+      "sha256": "ce3b49a4e1cdf38b44fc7d80052193c0013c1eba21b852ecc14357d79843fa13"
+    },
+    "capture-diagnostic.cs": {
+      "bytes": 1593,
+      "sha256": "3ba03acca018aac58dd1f469c4f57c1aa5f8322731e23444ef77986e1eaba73c"
+    },
+    "local-validation.json": {
+      "bytes": 9296,
+      "sha256": "f497cf5b7b4e4cf0ccc571015a8189d580903f376756e58be60ac3c3bad19f53"
+    },
+    "proposal.json": {
+      "bytes": 847,
+      "sha256": "ef73686411bab6e94c23918db1981e1846a8608137f632080fc48aad4e596e16"
+    },
+    "README.md": {
+      "bytes": 3549,
+      "sha256": "afe601875452b9ae3f9ae2d70b72b008c844c98eb1ba9c99b1d7576a3060bdfa"
+    }
+  }
+}

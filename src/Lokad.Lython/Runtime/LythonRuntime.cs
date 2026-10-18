@@ -593,11 +593,24 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    public async Task<LythonExecutionResult> RunAsync(
+    public Task<LythonExecutionResult> RunAsync(
         LoweredScript script,
         ILythonHost host,
-        LythonRunOptions? options,
-        ExecutableCodeObject? executableEntry = null)
+        LythonRunOptions? options)
+        => RunAsyncCore(script.Syntax, script.Statements, null, host, options);
+
+    public Task<LythonExecutionResult> RunAsync(
+        ExecutableScript script,
+        ILythonHost host,
+        LythonRunOptions? options)
+        => RunAsyncCore(script.Syntax, null, script.EntryPoint, host, options);
+
+    private async Task<LythonExecutionResult> RunAsyncCore(
+        ScriptSyntax syntax,
+        IReadOnlyList<LoweredStatement>? loweredStatements,
+        ExecutableCodeObject? executableEntry,
+        ILythonHost host,
+        LythonRunOptions? options)
     {
 
         ExecutionContext? context = null;
@@ -606,7 +619,7 @@ internal sealed partial class LythonRuntime
             // Compiled definitions share the synchronous slot/cell contract.
             // Code-object fallback facts still request mirroring when needed.
             context = new ExecutionContext(host, options);
-            InitializeModuleAnnotations(script.Syntax.Statements, context);
+            InitializeModuleAnnotations(syntax.Statements, context);
             // MG25: no initial yield here. Yielding first would abandon the
             // calling thread (in particular the dedicated large stack the
             // public async entry runs on) to the pool before doing any work,
@@ -614,7 +627,7 @@ internal sealed partial class LythonRuntime
             // small pool thread instead. Genuine host delays still yield.
             LoweredBlockFlow flow;
             if (executableEntry is null)
-                flow = await ExecuteStatementsAsync(script.Statements, context).ConfigureAwait(false);
+                flow = await ExecuteStatementsAsync(loweredStatements.RequireNotNull(), context).ConfigureAwait(false);
             else
             {
                 var returned = await ExecuteExecutableCodeObjectAsync(executableEntry, context).ConfigureAwait(false);

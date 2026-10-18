@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Release the unused whole-module lowered representation after executable compilation. Use existing syntax/entry-point metadata for both execution APIs, keeping required function/fallback data, annotations, host-capability diagnostics, managed stack admission, cancellation and cleanup. Conservative compilation ownership remains unchanged.
+
 - Encode ordinary single-positional `json.dumps` calls through existing serialization with immutable builtin defaults, omitting temporary binding/constructor/member packaging. Make the base encoder default stateless while preserving keyword/class/subclass and mutable-encoder behavior, errors, checkpoints, ownership and cancellation.
 
 - Honor text `readline(size)` character limits across ranged-read windows, including non-BMP text and exact window boundaries. Admit accumulated UTF-8 working capacity and replacement/result overlap before allocation and cursor advance; release working storage after completion or awaited cancellation. Remove empty ownership hooks, duplicate UTF-16 windows/cursor traversal and CLR accumulation/re-encoding while preserving codecs, newlines, retained aliases and terminal refusal.

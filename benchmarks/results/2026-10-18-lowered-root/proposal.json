@@ -1,0 +1,12 @@
+{
+  "baseRevision": "4d3c90f9734c53a51b64da7f928ef8a851c6dc9c",
+  "files": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs": "6f3c907f91543065dc4149bd62c0ec8e3d176dec0ee7c2882152d500578238d3",
+    "src/Lokad.Lython/Public/LythonEngine.cs": "2afca4da0eaf3258bf377b293383c50106482a5357b3fefae1231fe25b93070c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.cs": "05c8132957859a7e6d7c7ba7c2438881b8fc5ed40c4f97427ce9a860e05a07c3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "35aa2b51ead241cbf0a6d491b8e1d9779ba222f608100ca5816e67d185824aed"
+  },
+  "scope": "Drop unconditional whole-module lowered root;keep syntax and needed fallback/function subtrees.",
+  "contract": "No CLR-triggered accounting refund or lower compilation estimate;no new representation/strategy/owner.",
+  "previousGoalTurn": "progress"
+}

@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="fdf5682e-fd45-4e10-aebd-0d1194873c71" name="JoannesVermorel@LOKAD-0399 2026-10-18 03:24:14" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T03:24:14.2412398+02:00" queuing="2026-10-18T03:24:14.2412399+02:00" start="2026-10-18T03:24:13.2638577+02:00" finish="2026-10-18T03:24:14.2442397+02:00" />
+  <TestSettings name="default" id="d1bc2db1-ca7e-4b26-92e9-c962761c075e">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_03_24_14" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="264bbfac-e8c3-4a0d-ba46-8372180ff530" testId="47d900c4-1210-df33-7daf-6ac474d3d7b8" testName="Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(source: &quot;class Box:\n value=7\nprint(Box.value)&quot;, expected: &quot;7\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.1039738" startTime="2026-10-18T03:24:14.0053484+02:00" endTime="2026-10-18T03:24:14.1170761+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="264bbfac-e8c3-4a0d-ba46-8372180ff530">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.False() Failure&#xD;
+Expected: False&#xD;
+Actual:   True</Message>
+          <StackTrace>   at Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(String source, String expected) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableCompilationLifetimeTests.cs:line 21&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="170d2d64-6939-4f8c-b92a-89bccbc0ed63" testId="25021ba9-363c-0fbf-cc8d-59da3ef7ca00" testName="Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(source: &quot;def helper(values):return [value+1 for value in va&quot;···, expected: &quot;[2, 3]\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0467051" startTime="2026-10-18T03:24:14.1352583+02:00" endTime="2026-10-18T03:24:14.1752170+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="170d2d64-6939-4f8c-b92a-89bccbc0ed63">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.False() Failure&#xD;
+Expected: False&#xD;
+Actual:   True</Message>
+          <StackTrace>   at Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(String source, String expected) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableCompilationLifetimeTests.cs:line 21&#xD;
+   at InvokeStub_ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="88f02870-2ca1-43a0-b385-47bf46c8b768" testId="78531991-18cf-1e4e-d17f-603d37e948fc" testName="Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(source: &quot;print(7)&quot;, expected: &quot;7\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0111269" startTime="2026-10-18T03:24:14.1346470+02:00" endTime="2026-10-18T03:24:14.1346943+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="88f02870-2ca1-43a0-b385-47bf46c8b768">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.False() Failure&#xD;
+Expected: False&#xD;
+Actual:   True</Message>
+          <StackTrace>   at Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(String source, String expected) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableCompilationLifetimeTests.cs:line 21&#xD;
+   at InvokeStub_ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(source: &quot;print(7)&quot;, expected: &quot;7\n&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="78531991-18cf-1e4e-d17f-603d37e948fc">
+      <Execution id="88f02870-2ca1-43a0-b385-47bf46c8b768" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ExecutableCompilationLifetimeTests" name="ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(source: &quot;def helper(values):return [value+1 for value in va&quot;···, expected: &quot;[2, 3]\n&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="25021ba9-363c-0fbf-cc8d-59da3ef7ca00">
+      <Execution id="170d2d64-6939-4f8c-b92a-89bccbc0ed63" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ExecutableCompilationLifetimeTests" name="ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(source: &quot;class Box:\n value=7\nprint(Box.value)&quot;, expected: &quot;7\n&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="47d900c4-1210-df33-7daf-6ac474d3d7b8">
+      <Execution id="264bbfac-e8c3-4a0d-ba46-8372180ff530" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.ExecutableCompilationLifetimeTests" name="ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="47d900c4-1210-df33-7daf-6ac474d3d7b8" executionId="264bbfac-e8c3-4a0d-ba46-8372180ff530" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="25021ba9-363c-0fbf-cc8d-59da3ef7ca00" executionId="170d2d64-6939-4f8c-b92a-89bccbc0ed63" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="78531991-18cf-1e4e-d17f-603d37e948fc" executionId="88f02870-2ca1-43a0-b385-47bf46c8b768" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="3" executed="3" passed="0" failed="3" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.16]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.43]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.45]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.59]       Assert.False() Failure&#xD;
+[xUnit.net 00:00:00.59]       Expected: False&#xD;
+[xUnit.net 00:00:00.59]       Actual:   True&#xD;
+[xUnit.net 00:00:00.59]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.59]         D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableCompilationLifetimeTests.cs(21,0): at Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(String source, String expected)&#xD;
+[xUnit.net 00:00:00.59]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+[xUnit.net 00:00:00.59]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)&#xD;
+[xUnit.net 00:00:00.59]       Assert.False() Failure&#xD;
+[xUnit.net 00:00:00.59]       Expected: False&#xD;
+[xUnit.net 00:00:00.59]       Actual:   True&#xD;
+[xUnit.net 00:00:00.59]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.59]         D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableCompilationLifetimeTests.cs(21,0): at Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(String source, String expected)&#xD;
+[xUnit.net 00:00:00.59]            at InvokeStub_ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.60]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.64]       Assert.False() Failure&#xD;
+[xUnit.net 00:00:00.64]       Expected: False&#xD;
+[xUnit.net 00:00:00.64]       Actual:   True&#xD;
+[xUnit.net 00:00:00.64]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.64]         D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableCompilationLifetimeTests.cs(21,0): at Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(String source, String expected)&#xD;
+[xUnit.net 00:00:00.64]            at InvokeStub_ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.64]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.64]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T03:24:14.1284955+02:00">
+        <Text>[xUnit.net 00:00:00.59]     Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(source: "class Box:\n value=7\nprint(Box.value)", expected: "7\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T03:24:14.1349382+02:00">
+        <Text>[xUnit.net 00:00:00.59]     Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(source: "print(7)", expected: "7\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T03:24:14.1755518+02:00">
+        <Text>[xUnit.net 00:00:00.64]     Lokad.Lython.Tests.ExecutableCompilationLifetimeTests.ExecutableProgramDoesNotKeepUnusedLoweredModuleAlive(source: "def helper(values):return [value+1 for value in va"···, expected: "[2, 3]\n") [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

@@ -237,6 +237,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+Executable compilation [lifetime evidence](benchmarks/results/2026-10-18-lowered-root/README.md)
+no longer retains the unused whole lowered module through executable programs
+and compiled runners. Source syntax and needed function/fallback data remain.
+Three failed baseline lifetime cases now pass; this establishes reference
+release, not elapsed, byte or RSS savings. No new timing comparison was run.
+
 Default JSON encoding [CD](benchmarks/results/2026-10-18-json-default-dumps/README.md)
 omits unobservable module default-call binding, encoder construction and member
 packaging. Separate native scalar counts save 1,840 bytes per eligible call
