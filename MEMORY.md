@@ -92,6 +92,16 @@ returns after formatting/copying finishes, including failed result admission.
 The final string and its aliases retain their existing owner. This can refuse
 large rendering earlier; denied admission remains terminal and is never retried.
 
+JSON integer values and keys use the same conservative working estimate before
+large decimal conversion. Eager encoding and iterencode hold that temporary
+charge until the value is appended, then release it; builder and retained chunk/
+result ownership remain separate. Signed-64 integers use a fixed 20-character
+managed span directly into the existing builder. Numeric-key growth is admitted
+before appending, so narrow allowances may refuse earlier. Private conversions
+do not create cumulatively retained intermediate Python strings. Append failure
+releases the admitted conversion; yielded chunks remain funded after iterator
+working storage ends. No admission retry or optional-storage bypass is used.
+
 This is cooperative active-storage accounting, not an exact CLR resident-memory
 bound. Framework pools can retain their internal buffers after formatting;
 the host still needs runtime headroom for that storage. Lython-owned pools and

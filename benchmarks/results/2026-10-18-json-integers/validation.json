@@ -1,0 +1,1308 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "9eb065eb1fd72234713c90e6c5879c7b25053484",
+  "candidate": "baseline plus four frozen production files",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs": {
+      "before": "2f647ea8137525b12df13c7f9f719f221a46cf1b263a7922b40eda462c9928f7",
+      "after": "633c4f6211735857c7fc1d9521ec580eecb77e99ca16e6e96b0c64fe761368a9"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs": {
+      "before": "fc8abf0c66fda6e23199469564df30e09bad149593a7632ac245e3e18dbcd80c",
+      "after": "3b461f713ff4a936c2619afd3b364a8a53f736f56278976d1130915f2648b84d"
+    },
+    "src/Lokad.Lython/Runtime/PyRendering.cs": {
+      "before": "883cd87bd04ecc91e4d8ec10b6bffcadd66ccc9729320aa04c3e6ba22f72e7f9",
+      "after": "0505390cfa71d1d9a28727ae9ea236993981798678b6c9bace19d9b1b2c7097c"
+    },
+    "src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs": {
+      "before": "92c9214bf88d8de6509339f6059bf27e17e3f0ee89ba368ab29b192b7256fe21",
+      "after": "43d700a57e8d8cfe305d7350d512f2fcf40e1eb82ffb924f93ef4e573f368013"
+    }
+  },
+  "groups": {
+    "baseline-guards": {
+      "passed": 5,
+      "process": {
+        "source": "9eb065eb",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "5C7FBD3069F1CC44742549055F390B5C4B15714D356E22D9F80E0A6117EF8103",
+        "filter": "Category!=Stress&(FullyQualifiedName~JsonIntegerEmissionAdmissionTests.NumericKeysPreserveEveryCheckpointAndChunk|FullyQualifiedName~JsonIntegerEmissionAllocationDiagnostic)",
+        "pid": 73772,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1370,
+        "stdoutSha256": "6A624150AD1324F824FF14DD625F169D924FEAD25DC08311726AC6173D3C6FEF",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "c1ecb52e0851bc780a9e042a11c73e920806a3e2959f2806120da446adbd7573"
+    },
+    "baseline-frozen": {
+      "passed": 4,
+      "process": {
+        "source": "9eb065eb",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "890A6E0DBCC2D62D04258FA0E11AC5A1D991722B36017040CFBBD786EFF123C8",
+        "filter": "Category!=Stress&FullyQualifiedName~JsonIntegerEmissionAdmissionTests.NumericKeysPreserveEveryCheckpointAndChunk",
+        "pid": 55004,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1313,
+        "stdoutSha256": "E92823A84F513257DA88BF9E8DF81DB0E17B8D01A4AE1C39EFC8EA7E10E539A5",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "53ce2ed3a55923a25fef4ae4da2ee2d66999cc1b2357186ddc78f5b26f9f1e35"
+    },
+    "baseline-public": {
+      "passed": 17,
+      "process": {
+        "source": "9eb065eb",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "C0F3A7930413E25EF3F2D16A6C633E7BA7138CA77150D33D253F69904977C889",
+        "filter": "Category!=Stress&FullyQualifiedName~JsonIntegerEmissionTests",
+        "pid": 42568,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2441,
+        "stdoutSha256": "E16D38750A6269D36D39FEB5DC60D269D607E38C32529A1F97EF1E64D24C0C91",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "3468716328c78656a957db6463a8e9c7ebb3891803121e770e4fec39a61cca48"
+    },
+    "candidate-white": {
+      "passed": 107,
+      "process": {
+        "source": "json-integers",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "99278E24851BEDDC66A7858CE4E87ACC95F15296A46527B646F1C35634A2477D",
+        "filter": "Category!=Stress&(FullyQualifiedName~Json|FullyQualifiedName~JSON)",
+        "pid": 38128,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1308,
+        "stdoutSha256": "3E921C127272E10F2B25845E00B360E50265F154DEA1DEAC73B51F99AC1A7AB9",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "72544f8fb7b8ea7da548e2ed16e6ed4fb46336bb8094ea28fafe8a732cacd1f5"
+    },
+    "final-white": {
+      "passed": 142,
+      "process": {
+        "source": "json-integers",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "D1CD807F5B934E81CC2E77424544A810E1F83F9220D1906F28DC09C66C8BBE77",
+        "filter": "Category!=Stress&(FullyQualifiedName~Json|FullyQualifiedName~JSON|FullyQualifiedName~IntegerRenderingAdmissionTests|FullyQualifiedName~ManagedStackGuardTests|FullyQualifiedName~ExecutableStackAdmissionTests)",
+        "pid": 70504,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1374,
+        "stdoutSha256": "B773D991C92126CA60367439B6DE29D802989A6AEC4486D1D2228CF2B7EE67E2",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "d40a93a9c8149cb2ccefa2ccad799b0d75ffcbc069643f762f3ab34bdaf7b3b2"
+    },
+    "final-json": {
+      "passed": 441,
+      "process": {
+        "source": "json-integers",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "D97E031AAE629D867173CF4A0644DF9BBDFA02AD19740D0FDD5C096E0C794303",
+        "filter": "Category!=Stress&(FullyQualifiedName~Json|FullyQualifiedName~JSON)",
+        "pid": 65024,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 7836,
+        "stdoutSha256": "A9B94FA62675EB3DFBEFB1CD0A25E978C2B9222C8C38AF6A771BBC4F15428A1C",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "33a92658bc8e86689055c30cfcd8b3d81b70b651ddd28ff983951604ddf472f1"
+    },
+    "final-owners": {
+      "passed": 85,
+      "process": {
+        "source": "json-integers",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "D97E031AAE629D867173CF4A0644DF9BBDFA02AD19740D0FDD5C096E0C794303",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests)",
+        "pid": 36348,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2406,
+        "stdoutSha256": "56B4642B853A219961AEF440E22643E8570F2F9BE8AD00A0A6365F12C0D6B663",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "fb46b514b757b5d26d05c10ddc814d2026c398bfcae4728ef7efb32cf59df7a3"
+    },
+    "final-goldens": {
+      "passed": 85,
+      "process": {
+        "source": "json-integers",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "D97E031AAE629D867173CF4A0644DF9BBDFA02AD19740D0FDD5C096E0C794303",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests|FullyQualifiedName~CsvTextStreamTests)",
+        "pid": 73008,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 10659,
+        "stdoutSha256": "37FF4A5DF462242F92D51776D0254244BA1FF02413A079B57894BC17FBB95E7C",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "2149747f79f719074ac155f4604bf1545f9fe6498d75890959c9d5639fa3324e"
+    }
+  },
+  "focusedFinalPassed": 753,
+  "precedingJsonCasesAndRecordsUnchanged": 78,
+  "numericKeyGuardMatricesUnchanged": 4,
+  "failedBaselineCases": [
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"encode\", key: True, asynchronous: True, shared: False)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"encode\", key: True, asynchronous: False, shared: True)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"encode\", key: False, asynchronous: False, shared: True)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"encode\", key: False, asynchronous: True, shared: True)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"iterator\", key: False, asynchronous: True, shared: False)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"iterator\", key: False, asynchronous: False, shared: False)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"dumps\", key: True, asynchronous: False, shared: False)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"iterator\", key: True, asynchronous: False, shared: False)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"encode\", key: True, asynchronous: False, shared: False)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"dumps\", key: True, asynchronous: True, shared: True)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"dumps\", key: False, asynchronous: True, shared: False)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"dumps\", key: True, asynchronous: False, shared: True)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"iterator\", key: False, asynchronous: True, shared: True)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"iterator\", key: False, asynchronous: False, shared: True)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"encode\", key: True, asynchronous: True, shared: True)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"iterator\", key: True, asynchronous: True, shared: True)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"encode\", key: False, asynchronous: False, shared: False)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"dumps\", key: False, asynchronous: False, shared: False)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"iterator\", key: True, asynchronous: False, shared: True)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"dumps\", key: False, asynchronous: True, shared: True)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"dumps\", key: True, asynchronous: True, shared: False)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"encode\", key: False, asynchronous: True, shared: False)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"iterator\", key: True, asynchronous: True, shared: False)",
+    "Lokad.Lython.Tests.JsonIntegerEmissionAdmissionTests.RefusalPrecedesProportionalIntegerText(route: \"dumps\", key: False, asynchronous: False, shared: True)"
+  ],
+  "refusalRecords": {
+    "baseline-white": [
+      {
+        "route": "encode",
+        "key": true,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 81136,
+        "denied": 8192,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": true,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 78256,
+        "denied": 8192,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": false,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 44088,
+        "denied": 39458,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": false,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 46344,
+        "denied": 39458,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": false,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 45208,
+        "denied": 39458,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": false,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 45208,
+        "denied": 39458,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": true,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 79512,
+        "denied": 8192,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": true,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 77592,
+        "denied": 8192,
+        "chunks": 1
+      },
+      {
+        "route": "encode",
+        "key": true,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 78368,
+        "denied": 8192,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": true,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 80784,
+        "denied": 8192,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": false,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 46216,
+        "denied": 39458,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": true,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 79400,
+        "denied": 8192,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": false,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 45096,
+        "denied": 39458,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": false,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 45096,
+        "denied": 39458,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": true,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 81024,
+        "denied": 8192,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": true,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 77480,
+        "denied": 8192,
+        "chunks": 1
+      },
+      {
+        "route": "encode",
+        "key": false,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 44200,
+        "denied": 39458,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": false,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 44832,
+        "denied": 39458,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": true,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 77480,
+        "denied": 8192,
+        "chunks": 1
+      },
+      {
+        "route": "dumps",
+        "key": false,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 46104,
+        "denied": 39458,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": true,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 80896,
+        "denied": 8192,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": false,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 46456,
+        "denied": 39458,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": true,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 77592,
+        "denied": 8192,
+        "chunks": 1
+      },
+      {
+        "route": "dumps",
+        "key": false,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 44720,
+        "denied": 39458,
+        "chunks": 0
+      }
+    ],
+    "candidate-white": [
+      {
+        "route": "dumps",
+        "key": false,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 5384,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": true,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 8616,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": true,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 8264,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": true,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 5072,
+        "denied": 175032,
+        "chunks": 1
+      },
+      {
+        "route": "encode",
+        "key": true,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 5736,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": false,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 6768,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": false,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 5648,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": true,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 8504,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": true,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 6992,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": false,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 4752,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": false,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 5272,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": true,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 6880,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": true,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 4960,
+        "denied": 175032,
+        "chunks": 1
+      },
+      {
+        "route": "encode",
+        "key": false,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 6896,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": true,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 5848,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": true,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 5072,
+        "denied": 175032,
+        "chunks": 1
+      },
+      {
+        "route": "encode",
+        "key": false,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 7008,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": true,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 8376,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": false,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 6656,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": false,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 5760,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": false,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 4640,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": false,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 5760,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": true,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 4960,
+        "denied": 175032,
+        "chunks": 1
+      },
+      {
+        "route": "iterator",
+        "key": false,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 5648,
+        "denied": 175032,
+        "chunks": 0
+      }
+    ],
+    "final-white": [
+      {
+        "route": "dumps",
+        "key": false,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 6656,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": false,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 5760,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": true,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 5736,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": false,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 5648,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": false,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 4640,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": true,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 6992,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": true,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 5072,
+        "denied": 175032,
+        "chunks": 1
+      },
+      {
+        "route": "encode",
+        "key": true,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 5848,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": true,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 6880,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": false,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 5648,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": true,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 8504,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": false,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 6768,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": false,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 6896,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": true,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 4960,
+        "denied": 175032,
+        "chunks": 1
+      },
+      {
+        "route": "dumps",
+        "key": true,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 8376,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": false,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 4752,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": true,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 4960,
+        "denied": 175032,
+        "chunks": 1
+      },
+      {
+        "route": "dumps",
+        "key": true,
+        "asynchronous": true,
+        "shared": true,
+        "allocated": 8264,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": false,
+        "asynchronous": false,
+        "shared": true,
+        "allocated": 5272,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": true,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 8616,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "encode",
+        "key": false,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 7008,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "dumps",
+        "key": false,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 5384,
+        "denied": 175032,
+        "chunks": 0
+      },
+      {
+        "route": "iterator",
+        "key": true,
+        "asynchronous": true,
+        "shared": false,
+        "allocated": 5072,
+        "denied": 175032,
+        "chunks": 1
+      },
+      {
+        "route": "iterator",
+        "key": false,
+        "asynchronous": false,
+        "shared": false,
+        "allocated": 5760,
+        "denied": 175032,
+        "chunks": 0
+      }
+    ]
+  },
+  "allocationBefore": [
+    {
+      "route": "dumps",
+      "key": false,
+      "kind": "42",
+      "samples": [
+        63488,
+        63488,
+        63488,
+        63488,
+        63488,
+        63488,
+        63488,
+        63488
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": false,
+      "kind": "123456",
+      "samples": [
+        69632,
+        69632,
+        69632,
+        69632,
+        69632,
+        69632,
+        69632,
+        69632
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": false,
+      "kind": "long",
+      "samples": [
+        91136,
+        91136,
+        91136,
+        91136,
+        91136,
+        91136,
+        91136,
+        91136
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": false,
+      "kind": "large",
+      "samples": [
+        94208,
+        94208,
+        94208,
+        94208,
+        94208,
+        94208,
+        94208,
+        94208
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": false,
+      "kind": "float",
+      "samples": [
+        67584,
+        67584,
+        67584,
+        67584,
+        67584,
+        67584,
+        67584,
+        67584
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": true,
+      "kind": "42",
+      "samples": [
+        105472,
+        105472,
+        105472,
+        105472,
+        105472,
+        105472,
+        105472,
+        105472
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": true,
+      "kind": "123456",
+      "samples": [
+        111744,
+        111616,
+        111616,
+        111616,
+        111616,
+        111616,
+        111616,
+        111616
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": true,
+      "kind": "long",
+      "samples": [
+        133120,
+        133120,
+        133120,
+        133120,
+        133120,
+        133120,
+        133120,
+        133120
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": true,
+      "kind": "large",
+      "samples": [
+        154624,
+        154624,
+        154624,
+        154624,
+        154624,
+        154624,
+        154624,
+        154624
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": true,
+      "kind": "float",
+      "samples": [
+        109568,
+        109568,
+        109568,
+        109568,
+        109568,
+        109568,
+        109568,
+        109568
+      ]
+    },
+    {
+      "route": "encode",
+      "key": false,
+      "kind": "123456",
+      "samples": [
+        100352,
+        100352,
+        100352,
+        100352,
+        100352,
+        100352,
+        100352,
+        100352
+      ]
+    },
+    {
+      "route": "encode",
+      "key": true,
+      "kind": "123456",
+      "samples": [
+        142336,
+        142336,
+        142336,
+        142336,
+        142336,
+        142336,
+        142336,
+        142336
+      ]
+    },
+    {
+      "route": "iterator",
+      "key": false,
+      "kind": "123456",
+      "samples": [
+        126976,
+        126976,
+        126976,
+        126976,
+        126976,
+        126976,
+        126976,
+        126976
+      ]
+    },
+    {
+      "route": "iterator",
+      "key": true,
+      "kind": "123456",
+      "samples": [
+        263168,
+        263168,
+        263192,
+        263168,
+        263168,
+        263168,
+        263168,
+        263168
+      ]
+    }
+  ],
+  "allocationAfter": [
+    {
+      "route": "dumps",
+      "key": false,
+      "kind": "42",
+      "samples": [
+        63488,
+        63488,
+        63488,
+        63488,
+        63488,
+        63488,
+        63488,
+        63488
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": false,
+      "kind": "123456",
+      "samples": [
+        64512,
+        64512,
+        64512,
+        64512,
+        64512,
+        64512,
+        64512,
+        64512
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": false,
+      "kind": "long",
+      "samples": [
+        82944,
+        82944,
+        82944,
+        82944,
+        82944,
+        82944,
+        82944,
+        82944
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": false,
+      "kind": "large",
+      "samples": [
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": false,
+      "kind": "float",
+      "samples": [
+        67584,
+        67584,
+        67584,
+        67584,
+        67584,
+        67584,
+        67584,
+        67584
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": true,
+      "kind": "42",
+      "samples": [
+        105472,
+        105472,
+        105472,
+        105472,
+        105472,
+        105472,
+        105472,
+        105472
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": true,
+      "kind": "123456",
+      "samples": [
+        106496,
+        106496,
+        106496,
+        106496,
+        106496,
+        106496,
+        106496,
+        106496
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": true,
+      "kind": "long",
+      "samples": [
+        124928,
+        124928,
+        124928,
+        124928,
+        124928,
+        124928,
+        124928,
+        124928
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": true,
+      "kind": "large",
+      "samples": [
+        158720,
+        158720,
+        158720,
+        158720,
+        158720,
+        158720,
+        158720,
+        158720
+      ]
+    },
+    {
+      "route": "dumps",
+      "key": true,
+      "kind": "float",
+      "samples": [
+        109568,
+        109568,
+        109568,
+        109568,
+        109568,
+        109568,
+        109568,
+        109568
+      ]
+    },
+    {
+      "route": "encode",
+      "key": false,
+      "kind": "123456",
+      "samples": [
+        95232,
+        95232,
+        95232,
+        95232,
+        95232,
+        95232,
+        95232,
+        95232
+      ]
+    },
+    {
+      "route": "encode",
+      "key": true,
+      "kind": "123456",
+      "samples": [
+        137216,
+        137216,
+        137216,
+        137216,
+        137216,
+        137216,
+        137216,
+        137216
+      ]
+    },
+    {
+      "route": "iterator",
+      "key": false,
+      "kind": "123456",
+      "samples": [
+        121856,
+        121856,
+        121856,
+        121856,
+        121856,
+        121856,
+        121856,
+        121856
+      ]
+    },
+    {
+      "route": "iterator",
+      "key": true,
+      "kind": "123456",
+      "samples": [
+        258048,
+        258048,
+        258048,
+        258048,
+        258048,
+        258048,
+        258048,
+        258048
+      ]
+    }
+  ],
+  "environment": {
+    "machine": "LOKAD-0399",
+    "os": "Microsoft Windows 10.0.26200",
+    "architecture": "X64",
+    "cpu": {
+      "Name": "Intel(R) Core(TM) i7-14700KF",
+      "NumberOfCores": 20,
+      "NumberOfLogicalProcessors": 28
+    },
+    "recordedUtc": "2026-10-18T03:03:41.9228994+00:00"
+  },
+  "publicRuntimeDllSha256": "8524c48889757454427fc7251948b6d6101536e2f7ad3bceb3866aff0e14be0f",
+  "publicRuntimeCopyMatches": true,
+  "nativeBoundary": "128 synchronous native callable operations with four warmups/eight samples; setup/input/arguments/loading outside, operations and iterator creation/draining/results inside, cleanup outside. No public scheduling, executable dispatch, startup/compile, host I/O, elapsed or CPython timing.",
+  "cpython": {
+    "version": "3.13.2",
+    "flags": "-I -S -X utf8",
+    "semanticCases": 17,
+    "timing": null
+  },
+  "contractChange": "Earlier conservative admission for major integer conversion and numeric-key growth; same terminal refusal and retained owners.",
+  "frameworkPoolRetention": "Active working estimate; physical framework-pool retention still needs host runtime headroom.",
+  "deleted": [
+    "TryConvertJsonObjectKey bool/unused skip argument and duplicate iterator guard",
+    "integer ToString-at-call-site emission",
+    "signed-64 intermediate numeric CLR strings"
+  ],
+  "temporaryDiagnosticRemoved": true,
+  "fixtureCorrection": "Temporary diagnostic used an absent LythonSourceSpan.Empty; corrected to a fixed span before its first capture and before production changes.",
+  "fullLocalStress": "Not repeated; platform/package qualification batched at delivery."
+}

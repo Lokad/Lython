@@ -48,6 +48,11 @@ internal static class RuntimeMemoryEstimates
         // of two without allocating in proportion to the operand.
         => BigInteger.Abs(value).GetBitLength();
 
+    // Decimal digits are below bit/3; fund sign/metadata, CLR text, active
+    // conversion workspace/pool rounding and deliberate working headroom.
+    internal static long EstimateIntegerRenderingWorkingBytes(BigInteger value)
+        => SaturatingAdd(256, SaturatingMultiply(8, GetMagnitudeBitLength(value) / 3 + 2));
+
     public static long SaturatingAdd(long left, long right)
     {
         if (left > long.MaxValue - right)

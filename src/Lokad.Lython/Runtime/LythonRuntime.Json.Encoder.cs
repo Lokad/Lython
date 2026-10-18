@@ -562,12 +562,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 AppendPrettyPrefix(builder, frame.Depth + 1, charge);
-                if (!JsonModule.TryConvertJsonObjectKey(key, skipKeys: false, out var keyText))
-                {
-                    throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
-                }
-
-                JsonModule.AppendJsonString(builder, keyText, _options.EnsureAscii, charge, _context, _span);
+                JsonModule.AppendJsonObjectKey(builder, key, _options.EnsureAscii, charge, _context, _span);
                 JsonModule.AppendSeparator(builder, _options.KeySeparator, charge);
                 frame.Index++;
                 return await AdvanceValueAsync(pairValue, frame.Depth + 1, builder, charge, asynchronous).ConfigureAwait(false);
@@ -605,11 +600,11 @@ internal sealed partial class LythonRuntime
                     return (true, chunkReady);
                 case BigInteger integer:
                     _context.CheckExecution(_span);
-                    JsonModule.AppendJsonNumber(builder, integer.ToString(CultureInfo.InvariantCulture), charge, _context, _span);
+                    JsonModule.AppendJsonInteger(builder, integer, charge, _context, _span);
                     chunkReady = true;
                     return (true, chunkReady);
                 case int integer:
-                    JsonModule.AppendJsonNumber(builder, integer.ToString(CultureInfo.InvariantCulture), charge, _context, _span);
+                    JsonModule.AppendJsonInteger(builder, integer, charge, _context, _span);
                     chunkReady = true;
                     return (true, chunkReady);
                 case double floating:

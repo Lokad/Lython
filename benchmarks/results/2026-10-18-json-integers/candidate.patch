@@ -1,0 +1,197 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs
+index 25a52b38..e2258c0a 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs
+@@ -562,12 +562,7 @@ internal sealed partial class LythonRuntime
+                 }
+ 
+                 AppendPrettyPrefix(builder, frame.Depth + 1, charge);
+-                if (!JsonModule.TryConvertJsonObjectKey(key, skipKeys: false, out var keyText))
+-                {
+-                    throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
+-                }
+-
+-                JsonModule.AppendJsonString(builder, keyText, _options.EnsureAscii, charge, _context, _span);
++                JsonModule.AppendJsonObjectKey(builder, key, _options.EnsureAscii, charge, _context, _span);
+                 JsonModule.AppendSeparator(builder, _options.KeySeparator, charge);
+                 frame.Index++;
+                 return await AdvanceValueAsync(pairValue, frame.Depth + 1, builder, charge, asynchronous).ConfigureAwait(false);
+@@ -605,11 +600,11 @@ internal sealed partial class LythonRuntime
+                     return (true, chunkReady);
+                 case BigInteger integer:
+                     _context.CheckExecution(_span);
+-                    JsonModule.AppendJsonNumber(builder, integer.ToString(CultureInfo.InvariantCulture), charge, _context, _span);
++                    JsonModule.AppendJsonInteger(builder, integer, charge, _context, _span);
+                     chunkReady = true;
+                     return (true, chunkReady);
+                 case int integer:
+-                    JsonModule.AppendJsonNumber(builder, integer.ToString(CultureInfo.InvariantCulture), charge, _context, _span);
++                    JsonModule.AppendJsonInteger(builder, integer, charge, _context, _span);
+                     chunkReady = true;
+                     return (true, chunkReady);
+                 case double floating:
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
+index f9614f27..649d3947 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
+@@ -157,8 +157,7 @@ internal sealed partial class LythonRuntime
+                             }
+ 
+                             AppendJsonValuePrefix(builder, options, depth + 1, index, charge, context, span);
+-                            _ = TryConvertJsonObjectKey(pair.Key, skipKeys: false, out var key);
+-                            AppendJsonString(builder, key, options.EnsureAscii, charge, context, span);
++                            AppendJsonObjectKey(builder, pair.Key, options.EnsureAscii, charge, context, span);
+                             AppendSeparator(builder, options.KeySeparator, charge);
+                             await AppendJsonValueAsync(builder, pair.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
+                             index++;
+@@ -193,8 +192,7 @@ internal sealed partial class LythonRuntime
+                         }
+ 
+                         AppendJsonValuePrefix(builder, options, depth + 1, emitted, charge, context, span);
+-                        _ = TryConvertJsonObjectKey(entry.OriginalKey, skipKeys: false, out var key);
+-                        AppendJsonString(builder, key, options.EnsureAscii, charge, context, span);
++                        AppendJsonObjectKey(builder, entry.OriginalKey, options.EnsureAscii, charge, context, span);
+                         AppendSeparator(builder, options.KeySeparator, charge);
+                         await AppendJsonValueAsync(builder, entry.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
+                         emitted++;
+@@ -238,7 +236,7 @@ internal sealed partial class LythonRuntime
+                 case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
+                     // Giant magnitudes render slowly: bracket the conversion itself.
+                     context.CheckExecution(span);
+-                    AppendJsonNumber(builder, integer.ToString(CultureInfo.InvariantCulture), charge, context, span);
++                    AppendJsonInteger(builder, integer, charge, context, span);
+                     return;
+                 case double floating:
+                     AppendJsonDouble(builder, floating, options, charge, context, span);
+@@ -345,32 +343,27 @@ internal sealed partial class LythonRuntime
+             }
+         }
+ 
+-        internal static bool TryConvertJsonObjectKey(object keyValue, bool skipKeys, out string key)
++        internal static void AppendJsonObjectKey(StringBuilder builder, object keyValue, bool ensureAscii,
++            JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+         {
+             switch (keyValue)
+             {
+                 case PyString text:
+-                    key = text.AsString();
+-                    return true;
++                    AppendJsonString(builder, text.AsString(), ensureAscii, charge, context, span);
++                    return;
+                 case bool boolean:
+-                    key = boolean ? "true" : "false";
+-                    return true;
++                    AppendJsonString(builder, boolean ? "true" : "false", ensureAscii, charge, context, span);
++                    return;
+                 case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
+-                    key = integer.ToString(CultureInfo.InvariantCulture);
+-                    return true;
++                    AppendJsonInteger(builder, integer, charge, context, span, quoted: true);
++                    return;
+                 case double floating when double.IsFinite(floating):
+-                    key = Numbers.PyNumberOps.RenderFloat(floating);
+-                    return true;
++                    AppendJsonString(builder, Numbers.PyNumberOps.RenderFloat(floating), ensureAscii, charge, context, span);
++                    return;
+                 case PyNone:
+-                    key = "null";
+-                    return true;
++                    AppendJsonString(builder, "null", ensureAscii, charge, context, span);
++                    return;
+                 default:
+-                    if (skipKeys)
+-                    {
+-                        key = string.Empty;
+-                        return false;
+-                    }
+-
+                     throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
+             }
+         }
+@@ -420,7 +413,7 @@ internal sealed partial class LythonRuntime
+             builder.Append(separator);
+         }
+ 
+-        internal static void AppendJsonString(StringBuilder builder, string text, bool ensureAscii, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
++        internal static void AppendJsonString(StringBuilder builder, ReadOnlySpan<char> text, bool ensureAscii, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+         {
+             Span<char> escapedCodeUnit = stackalloc char[4];
+             builder.Append('"');
+@@ -473,10 +466,41 @@ internal sealed partial class LythonRuntime
+             builder.Append('"');
+         }
+ 
+-        // Large-number writes bypass the scalar loop below, so fund the
+-        // rendered text before it lands and stay interruptible across the
+-        // (potentially slow) conversion itself.
+-        internal static void AppendJsonNumber(StringBuilder builder, string rendered, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
++        internal static void AppendJsonInteger(StringBuilder builder, BigInteger value, JsonGrowthCharge charge,
++            ExecutionContext context, LythonSourceSpan span, bool quoted = false)
++        {
++            if (value >= long.MinValue && value <= long.MaxValue)
++            {
++                Span<char> characters = stackalloc char[20];
++                if (!((long)value).TryFormat(characters, out var written, provider: CultureInfo.InvariantCulture))
++                    throw new InvalidOperationException("Integer formatting exceeded its fixed buffer.");
++                AppendJsonIntegerText(builder, characters[..written], quoted, charge, context, span);
++                return;
++            }
++
++            using var scratch = context.MemoryGovernor.ReserveTemporary(
++                RuntimeMemoryEstimates.EstimateIntegerRenderingWorkingBytes(value), span);
++            AppendJsonIntegerText(builder, value.ToString(CultureInfo.InvariantCulture), quoted, charge, context, span);
++        }
++
++        private static void AppendJsonIntegerText(StringBuilder builder, ReadOnlySpan<char> text, bool quoted,
++            JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
++        {
++            if (!quoted)
++            {
++                AppendJsonNumber(builder, text, charge, context, span);
++                return;
++            }
++
++            // Numeric keys contain only invariant ASCII digits/sign. Fund the
++            // builder before appending; retain the existing escaper checkpoints.
++            charge.Grow(text.Length + 2L);
++            AppendJsonString(builder, text, ensureAscii: false, charge, context, span);
++        }
++
++        // Integer conversion work is funded separately before formatting;
++        // this shared append retains the number checkpoint and output charge.
++        internal static void AppendJsonNumber(StringBuilder builder, ReadOnlySpan<char> rendered, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+         {
+             context.CheckExecution(span);
+             charge.Grow(rendered.Length);
+diff --git a/src/Lokad.Lython/Runtime/PyRendering.cs b/src/Lokad.Lython/Runtime/PyRendering.cs
+index a4258535..fba26353 100644
+--- a/src/Lokad.Lython/Runtime/PyRendering.cs
++++ b/src/Lokad.Lython/Runtime/PyRendering.cs
+@@ -136,10 +136,7 @@ internal static class PyRendering
+         // bit/3 overestimates decimal digits; include sign, metadata, UTF-16
+         // text, active BCL conversion workspace/pool rounding and headroom.
+         // Final UTF-8 admission overlaps this scratch until copying completes.
+-        var characters = RuntimeMemoryEstimates.GetMagnitudeBitLength(value) / 3 + 2;
+-        var workingBytes = RuntimeMemoryEstimates.SaturatingAdd(256,
+-            RuntimeMemoryEstimates.SaturatingMultiply(8, characters));
+-        using var scratch = governor.ReserveTemporary(workingBytes, null);
++        using var scratch = governor.ReserveTemporary(RuntimeMemoryEstimates.EstimateIntegerRenderingWorkingBytes(value), null);
+         return PyString.FromString(value.ToString(System.Globalization.CultureInfo.InvariantCulture), governor);
+     }
+ 
+diff --git a/src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs b/src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs
+index c549a8ab..f5048a9d 100644
+--- a/src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs
++++ b/src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs
+@@ -48,6 +48,11 @@ internal static class RuntimeMemoryEstimates
+         // of two without allocating in proportion to the operand.
+         => BigInteger.Abs(value).GetBitLength();
+ 
++    // Decimal digits are below bit/3; fund sign/metadata, CLR text, active
++    // conversion workspace/pool rounding and deliberate working headroom.
++    internal static long EstimateIntegerRenderingWorkingBytes(BigInteger value)
++        => SaturatingAdd(256, SaturatingMultiply(8, GetMagnitudeBitLength(value) / 3 + 2));
++
+     public static long SaturatingAdd(long left, long right)
+     {
+         if (left > long.MaxValue - right)

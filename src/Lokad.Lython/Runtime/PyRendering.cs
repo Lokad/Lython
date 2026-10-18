@@ -136,10 +136,7 @@ internal static class PyRendering
         // bit/3 overestimates decimal digits; include sign, metadata, UTF-16
         // text, active BCL conversion workspace/pool rounding and headroom.
         // Final UTF-8 admission overlaps this scratch until copying completes.
-        var characters = RuntimeMemoryEstimates.GetMagnitudeBitLength(value) / 3 + 2;
-        var workingBytes = RuntimeMemoryEstimates.SaturatingAdd(256,
-            RuntimeMemoryEstimates.SaturatingMultiply(8, characters));
-        using var scratch = governor.ReserveTemporary(workingBytes, null);
+        using var scratch = governor.ReserveTemporary(RuntimeMemoryEstimates.EstimateIntegerRenderingWorkingBytes(value), null);
         return PyString.FromString(value.ToString(System.Globalization.CultureInfo.InvariantCulture), governor);
     }
 

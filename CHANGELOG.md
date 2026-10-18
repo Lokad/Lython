@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Admit large JSON integer conversion before allocating decimal text in dumps, explicit encoding and iterencode, including numeric keys. Consolidate integer emission and key appending, remove the unused key-converter control route, and write signed-64 values directly into the existing builder. Preserve validation/sorting, callbacks, checkpoints, chunks, retained output and terminal refusal; numeric working/key-growth estimates can reject earlier.
+
 - Admit large ordinary integer-rendering working storage before CLR decimal conversion, keeping scratch funded through the final UTF-8 copy and returning it on failure. Consolidate three rendering paths and format signed-64 values directly into bounded UTF-8 storage. Preserve Python results, frame/fuel behavior, retained output and terminal refusal; conservative working estimates can reject earlier.
 
 - Execute ordinary single-positional text-file `write` calls from existing operand storage, reusing the same governed writer body. Remove bound-method and argument packaging on that path while preserving exposed/general calls, Unicode counts, encoding/newlines, fuel, error order, retained input, admission, cancellation and host publication/cleanup.
