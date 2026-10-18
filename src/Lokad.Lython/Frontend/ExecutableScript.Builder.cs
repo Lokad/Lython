@@ -144,15 +144,16 @@ internal sealed partial class ExecutableScript
                 _constants.OfType<ExecutableCreateGeneratorExpression>().Any(generator => generator.CodeObject.RequiresLocalVariableMirroring);
             var capturedLocalSlots = CollectCapturedLocalSlots();
 
+            // This builder is single-use; its completed slot maps become code metadata.
             return new ExecutableCodeObject(
                 name,
                 _constants.ToArray(),
                 _names.ToArray(),
                 _locals.ToArray(),
-                new Dictionary<string, int>(_localIndexes, StringComparer.Ordinal),
+                _localIndexes,
                 capturedLocalSlots,
                 _closures.ToArray(),
-                new Dictionary<string, int>(_closureIndexes, StringComparer.Ordinal),
+                _closureIndexes,
                 _scopeFacts,
                 normalizedBlocks,
                 0,

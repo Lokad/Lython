@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 finalized slot-map handoff](results/2026-10-18-slot-map-handoff/README.md)
+removes two compiler dictionary copies. One native/public compilation pair saves
+816-984 B per representative source, retaining roughly 168 B more cell payload
+for text/file under the existing owner. All ten warm controls match; 418 focused
+checks and 58 complete jobs pass. No elapsed measurement or new memory mechanism.
+
 The [2026-10-18 binary operator consolidation](results/2026-10-18-binary-operator-kind/README.md)
 removes a duplicate enum, two maps and a forwarder. One allocation-only pair has
 18 identical sample arrays and 96 matching boundary records; 572 focused cases

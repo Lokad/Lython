@@ -1,0 +1,28 @@
+{
+  "head": "b683730fcbecfbe95213fa978842d8e7f388be72",
+  "screenedUtc": "2026-10-18T17:55:09.940995+00:00",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs": "e433db70bf4911ee0955e937c89f7da78b1bdc62ee95dedea3ce734dd93e3d3f",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "8801a312366eaef58001071fd0cacb213ced385e28cc80df8ec88c7ea271dc1f",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Comprehensions.cs": "9b522ddc3a10dca1c3582b56c7bdd0971470ebaa0eee10b0cd6eeeabacb1237e",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "52a9909e7a2b6fc70247c00eac146eb56d4fe44c3d17a0cf32390cb5c0ffb514",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "edf6131d795a5ace23158f6b8d03ccac4bb4fbf8be22a0b73d7d637c7a228aa4",
+    "src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs": "20ddc9ed5984008304e3e19bbd2f8fe84794a6091eb985c727a9f1c1c48cd0f7",
+    "src/Lokad.Lython/Public/LythonEngine.cs": "6b05f54af4e4e48d9c4bcef3aa7d4eae1c3261462ad12b6a52b19f82239e245d"
+  },
+  "finding": "CompileCodeObject copies finalized local and closure slot maps into code objects. All four entry routes create a fresh private Builder and invoke it once;generator-expression caller never touches child builder after compile. Runtime consumers only read the IReadOnlyDictionary maps. Captured-local collection finishes before map/array publication.",
+  "proposedRemoval": "Two dictionary copy constructors and their temporary object/backing storage;reuse finalized builder maps. No owner/cache/scope,analysis pass or global registry.",
+  "compatibility": "Internal only. Builder spare capacity can remain retained rather than compacted by cloning; quantify before accepting. Keep conservative source-level compilation owner estimate (32768+96*sourceLength),document retention tradeoff;no exact tiny-budget guarantee.",
+  "acceptance": "Before editing freeze one native/public compile allocation pair for complete CSV/text/JSON/file scripts and small helper/closure/lambda/generator forms. Preserve identical code,slot/closure maps,source spans,results,errors and warm allocation/work controls;measure retained capacity difference rather than claim heap reduction. Reuse closure/transitive/comprehension/generator/repeated-run/admission/retained-result tests and58 full jobs.",
+  "stop": "Two map handoffs only. Reject if Builder is reused/mutated after publication,capacity exceeds justified existing compile headroom,or new freeze/copy-on-write/lifetime infrastructure is needed. No timing campaign,other builder collections,frontend cache or representation redesign.",
+  "runtimeEdits": false,
+  "measurements": false,
+  "existingValidation": {
+    "sharedCompiledData": "FunctionDefinitionIsolationTests.ConcurrentExecutionsShareCompiledStorageAndRetainOnlyTheirOwnDefaults holds two actual async users on one compiled script/root.",
+    "compilePreflight": "FunctionDefinitionIsolationTests.RefusedCompilationAvoidsLargeFrontendAllocation witnesses refusal before large frontend work.",
+    "closures": "TransitiveClosureCompatibilityTests,ComprehensionLambdaLifetimeTests,LambdaLifetimeScenarioTests and CompiledGeneratorExpressionTests preserve nearest/transitive cells after defining frames leave.",
+    "suspension": "GeneratorExpressionBoundaryLifetimeTests verifies genuine suspended truth/callback paths,cancellation,retained values and cleanup.",
+    "gcIsolation": "CompileOnceRunManyTests allocation case explicitly collects and belongs to RuntimeStress;select only with existing nonparallel isolation,never overlap builds/tests."
+  },
+  "runtimeMapMutationScreen": "All LocalNameToSlot/ClosureNameToSlot production usages are lookup/enumeration;only constructor assigns properties. No downcast mutation found. Parent and genexpr child builders are distinct;only parent continues after child publication."
+}

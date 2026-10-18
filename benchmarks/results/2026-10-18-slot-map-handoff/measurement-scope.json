@@ -1,0 +1,29 @@
+{
+  "base": "b683730fcbecfbe95213fa978842d8e7f388be72",
+  "diagnosticSha256": "ba770a57425f9cb92bf8b89c7a2d35bab382900a62193db8a864b4ad748ed8aa",
+  "captureCountPerRevision": 1,
+  "tests": 30,
+  "warmups": 2,
+  "samples": 8,
+  "invocationsPerSample": 8,
+  "boundaries": {
+    "nativeCompile": "frontend+lowering+executable code;public budget/owner wrapper excluded",
+    "publicCompile": "LythonEngine.Compile with shared root and script disposal;engine/root/source setup excluded;no execution",
+    "warm": "prepared native executable code/context,pure sync/async;compilation/startup/IO/public projection excluded"
+  },
+  "forms": [
+    "csv",
+    "text",
+    "json",
+    "file",
+    "helper",
+    "closure",
+    "lambda",
+    "generator",
+    "genexpr",
+    "empty-control"
+  ],
+  "metrics": "Allocated bytes,current-thread completion;native code/slot/closure/capture/span fingerprints;dictionary count and actual EnsureCapacity(0) capacity. No elapsed timing.",
+  "acceptance": "Lower compilation allocation per source;identical warm arrays/work/code/maps;quantify retained spare capacity,not a heap reduction claim. Public budgets return zero,frames/temp/depth clear. No recapture/tuning.",
+  "stopping": "Only two finalized map handoffs;no new publication/lifetime mechanism or other collections."
+}

@@ -1,0 +1,99 @@
+{
+  "base": "b683730fcbecfbe95213fa978842d8e7f388be72",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs": "760f6889f8bb848087de9db6a712e623d4098dd1583896d3d02a77c52f0fa670"
+  },
+  "focusedDistinctPassed": 418,
+  "groups": {
+    "final-white": {
+      "count": 117,
+      "process": {
+        "source": "frozen-one-file-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "B3900CA6A525E98118196B24C56B3BE8233DF50406DCEE53438E26B156FC259F",
+        "filter": "Category!=Stress&(FullyQualifiedName~LoweringArchitectureSubsystemTests|FullyQualifiedName~LambdaExecutableTests|FullyQualifiedName~CompiledGeneratorExpressionTests|FullyQualifiedName~ComprehensionLambdaExecutableTests|FullyQualifiedName~EagerComprehensionExecutableTests|FullyQualifiedName~OwnedFunctionLocalsTests|FullyQualifiedName~FunctionClassCellBoundaryTests|FullyQualifiedName~ExecutableGenericFunctionTests|FullyQualifiedName~FunctionBodyTemporaryLifetimeTests)",
+        "pid": 29644,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1503,
+        "stdoutSha256": "109AFA06CF3ABA440A7BEC2813E3539CDB83190E8C597A228F25D77328E858DD",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "1a9007289d580af74ebdee4ad6cb30cd516eb58f406ff5aa7468d06c705d14ee"
+    },
+    "candidate-public": {
+      "count": 149,
+      "process": {
+        "source": "frozen-one-file-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "C447E1F768B2C5B1F1174CE6205D4CD13F2F6700183CD62BEC26B252F14DC5BB",
+        "filter": "Category!=Stress&(FullyQualifiedName~FunctionDefinitionIsolationTests|FullyQualifiedName~TransitiveClosureCompatibilityTests|FullyQualifiedName~FunctionNamespaceLifetimeTests|FullyQualifiedName~ComprehensionLambdaExecutionTests|FullyQualifiedName~ComprehensionLambdaLifetimeTests|FullyQualifiedName~LambdaLifetimeScenarioTests|FullyQualifiedName~LambdaExecutionTests|FullyQualifiedName~GeneratorExpressionBoundaryLifetimeTests|FullyQualifiedName~GeneratorExpressionCompositionTests|FullyQualifiedName~EagerComprehensionExecutionTests|FullyQualifiedName~ExecutableGenericFunctionCompatibilityTests|FullyQualifiedName~CompileOnceRunManyTests|FullyQualifiedName~CompiledModuleAnnotationTests)",
+        "pid": 62812,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4302,
+        "stdoutSha256": "7E27A1FA30C1CA2F86309CFF68B065FE615069BE2FF4DB898D5B2DF0A049D0F1",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "0a99240b97483844591be8a924b397c2211b2c125e02a75ed942c659a9a6aac3"
+    },
+    "candidate-owners": {
+      "count": 90,
+      "process": {
+        "source": "frozen-one-file-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "C447E1F768B2C5B1F1174CE6205D4CD13F2F6700183CD62BEC26B252F14DC5BB",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 70232,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2816,
+        "stdoutSha256": "7DA2DFDF4974097F62D9ECB0D41D3751B6EB7E29C9247F084C7A46F340913E8E",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "f7cef0ba7c64a9cd00419f8fa9954ff5d66104fe090f172e472b6776bee78fa5"
+    },
+    "candidate-goldens": {
+      "count": 62,
+      "process": {
+        "source": "frozen-one-file-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "C447E1F768B2C5B1F1174CE6205D4CD13F2F6700183CD62BEC26B252F14DC5BB",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 53684,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 7861,
+        "stdoutSha256": "13F07F0F86BA5DF317FB63CED425968608685A09982D39E05E85D94800232BF3",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "fb70d7c21cf4de4e314fa5af6f19e991729d90793570abeabf32cb8da80f3775"
+    }
+  },
+  "completeJobs": 58,
+  "independentCPythonPrograms": 5,
+  "nativeDiagnosticCasesPerRevision": 30,
+  "compileComparisonRows": 20,
+  "warmControlArraysIdentical": 10,
+  "newPermanentTests": 0,
+  "temporaryDiagnosticRemoved": true,
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "regexPlanningOnly": true,
+  "supportingSourcesUnchanged": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "8801a312366eaef58001071fd0cacb213ced385e28cc80df8ec88c7ea271dc1f",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Comprehensions.cs": "9b522ddc3a10dca1c3582b56c7bdd0971470ebaa0eee10b0cd6eeeabacb1237e",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "52a9909e7a2b6fc70247c00eac146eb56d4fe44c3d17a0cf32390cb5c0ffb514",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "edf6131d795a5ace23158f6b8d03ccac4bb4fbf8be22a0b73d7d637c7a228aa4",
+    "src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs": "20ddc9ed5984008304e3e19bbd2f8fe84794a6091eb985c727a9f1c1c48cd0f7",
+    "src/Lokad.Lython/Public/LythonEngine.cs": "6b05f54af4e4e48d9c4bcef3aa7d4eae1c3261462ad12b6a52b19f82239e245d"
+  },
+  "contracts": "Internal handoff of two finalized readonly slot maps;no public API,execution,arithmetic,owner or budget changes. Builder capacity can outlive compilation under the existing compiled owner;MEMORY documents it. No new publication/freeze/lifetime machinery."
+}

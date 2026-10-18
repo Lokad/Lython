@@ -1,0 +1,230 @@
+{
+  "accepted": true,
+  "elapsedMeasured": false,
+  "all10WarmArraysAndWorkIdentical": true,
+  "allFingerprintsSourceHashesAndMapEntriesIdentical": true,
+  "compilationComparisons": [
+    {
+      "shape": "closure",
+      "publicBoundary": false,
+      "beforeBytes": 130400.0,
+      "afterBytes": 129376.0,
+      "savedBytes": 1024.0,
+      "maps": 6,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 41312
+    },
+    {
+      "shape": "closure",
+      "publicBoundary": true,
+      "beforeBytes": 132240.0,
+      "afterBytes": 131216.0,
+      "savedBytes": 1024.0,
+      "maps": 6,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 41312
+    },
+    {
+      "shape": "csv",
+      "publicBoundary": false,
+      "beforeBytes": 464232.0,
+      "afterBytes": 463248.0,
+      "savedBytes": 984.0,
+      "maps": 4,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 90272
+    },
+    {
+      "shape": "csv",
+      "publicBoundary": true,
+      "beforeBytes": 466072.0,
+      "afterBytes": 465088.0,
+      "savedBytes": 984.0,
+      "maps": 4,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 90272
+    },
+    {
+      "shape": "empty-control",
+      "publicBoundary": false,
+      "beforeBytes": 27040.0,
+      "afterBytes": 26880.0,
+      "savedBytes": 160.0,
+      "maps": 2,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 33152
+    },
+    {
+      "shape": "empty-control",
+      "publicBoundary": true,
+      "beforeBytes": 28880.0,
+      "afterBytes": 28720.0,
+      "savedBytes": 160.0,
+      "maps": 2,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 33152
+    },
+    {
+      "shape": "file",
+      "publicBoundary": false,
+      "beforeBytes": 521432.0,
+      "afterBytes": 520616.0,
+      "savedBytes": 816.0,
+      "maps": 4,
+      "extraRetainedCapacityCells": 6,
+      "extraRetainedCellPayloadBytes": 168,
+      "compileAllowance": 87872
+    },
+    {
+      "shape": "file",
+      "publicBoundary": true,
+      "beforeBytes": 523272.0,
+      "afterBytes": 522456.0,
+      "savedBytes": 816.0,
+      "maps": 4,
+      "extraRetainedCapacityCells": 6,
+      "extraRetainedCellPayloadBytes": 168,
+      "compileAllowance": 87872
+    },
+    {
+      "shape": "generator",
+      "publicBoundary": false,
+      "beforeBytes": 104872.0,
+      "afterBytes": 104416.0,
+      "savedBytes": 456.0,
+      "maps": 4,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 39584
+    },
+    {
+      "shape": "generator",
+      "publicBoundary": true,
+      "beforeBytes": 106712.0,
+      "afterBytes": 106256.0,
+      "savedBytes": 456.0,
+      "maps": 4,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 39584
+    },
+    {
+      "shape": "genexpr",
+      "publicBoundary": false,
+      "beforeBytes": 122480.0,
+      "afterBytes": 121592.0,
+      "savedBytes": 888.0,
+      "maps": 6,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 39680
+    },
+    {
+      "shape": "genexpr",
+      "publicBoundary": true,
+      "beforeBytes": 124320.0,
+      "afterBytes": 123432.0,
+      "savedBytes": 888.0,
+      "maps": 6,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 39680
+    },
+    {
+      "shape": "helper",
+      "publicBoundary": false,
+      "beforeBytes": 82152.0,
+      "afterBytes": 81696.0,
+      "savedBytes": 456.0,
+      "maps": 4,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 36512
+    },
+    {
+      "shape": "helper",
+      "publicBoundary": true,
+      "beforeBytes": 83992.0,
+      "afterBytes": 83536.0,
+      "savedBytes": 456.0,
+      "maps": 4,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 36512
+    },
+    {
+      "shape": "json",
+      "publicBoundary": false,
+      "beforeBytes": 433984.0,
+      "afterBytes": 433000.0,
+      "savedBytes": 984.0,
+      "maps": 4,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 91040
+    },
+    {
+      "shape": "json",
+      "publicBoundary": true,
+      "beforeBytes": 435824.0,
+      "afterBytes": 434840.0,
+      "savedBytes": 984.0,
+      "maps": 4,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 91040
+    },
+    {
+      "shape": "lambda",
+      "publicBoundary": false,
+      "beforeBytes": 108056.0,
+      "afterBytes": 107032.0,
+      "savedBytes": 1024.0,
+      "maps": 6,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 39584
+    },
+    {
+      "shape": "lambda",
+      "publicBoundary": true,
+      "beforeBytes": 109896.0,
+      "afterBytes": 108872.0,
+      "savedBytes": 1024.0,
+      "maps": 6,
+      "extraRetainedCapacityCells": 0,
+      "extraRetainedCellPayloadBytes": 0,
+      "compileAllowance": 39584
+    },
+    {
+      "shape": "text",
+      "publicBoundary": false,
+      "beforeBytes": 374928.0,
+      "afterBytes": 374112.0,
+      "savedBytes": 816.0,
+      "maps": 4,
+      "extraRetainedCapacityCells": 6,
+      "extraRetainedCellPayloadBytes": 168,
+      "compileAllowance": 73472
+    },
+    {
+      "shape": "text",
+      "publicBoundary": true,
+      "beforeBytes": 376768.0,
+      "afterBytes": 375952.0,
+      "savedBytes": 816.0,
+      "maps": 4,
+      "extraRetainedCapacityCells": 6,
+      "extraRetainedCellPayloadBytes": 168,
+      "compileAllowance": 73472
+    }
+  ],
+  "rawCaptures": "Full arrays/capacities/fingerprints in baseline.trx and candidate.trx;one frozen pair.",
+  "retentionTradeoff": "Handoff retains builder capacity;cloning used count-sized maps. Extra cell payload uses X64 24-byte Entry<string,int> plus4-byte bucket;arrays may round alignment. No exact CLR heap/RSS claim."
+}

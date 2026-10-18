@@ -292,6 +292,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [finalized slot-map handoff](benchmarks/results/2026-10-18-slot-map-handoff/README.md)
+at `b683730f` plus its frozen one-file patch removes two compiler dictionary
+copies. The four representative sources allocate 816-984 B less per compilation;
+text/file retain roughly 168 B more map-cell payload under the compiled owner.
+Warm controls match. No elapsed, compile-to-result or CPython gain is established.
+
 The [sum cursor/acquisition change](benchmarks/results/2026-10-18-sum-cursor/README.md)
 at `74804edc` plus its frozen one-file patch fixes iterator acquisition before
 invalid-start rejection. General async sum also removes two forwarding objects,

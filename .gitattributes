@@ -138,3 +138,5 @@ benchmarks/results/2026-10-18-sum-cursor/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-manifest-checkpoint/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-binary-operator-kind/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-binary-operator-kind/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-slot-map-handoff/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-slot-map-handoff/candidate.patch -text -whitespace

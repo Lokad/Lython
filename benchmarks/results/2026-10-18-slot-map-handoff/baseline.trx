@@ -1,0 +1,328 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="3fc63e9a-6993-4b74-9bea-c3e3c721d838" name="JoannesVermorel@LOKAD-0399 2026-10-18 20:01:41" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T20:01:41.2027242+02:00" queuing="2026-10-18T20:01:41.2027243+02:00" start="2026-10-18T20:01:40.1438420+02:00" finish="2026-10-18T20:01:42.0122081+02:00" />
+  <TestSettings name="default" id="27beb7c2-d151-4997-a948-22de07c49aa4">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_20_01_41" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="57fc000c-b996-453e-a382-4dfcaa8da837" testId="058296f4-f071-d987-a50c-4bf4943934f0" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;closure&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0010273" startTime="2026-10-18T20:01:41.1369908+02:00" endTime="2026-10-18T20:01:41.1379560+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="57fc000c-b996-453e-a382-4dfcaa8da837">
+      <Output>
+        <StdOut>SLOT_MAP_WARM:{"shape":"closure","asynchronous":true,"callsPerSample":8,"samples":[29248,29248,29248,29248,29248,29248,29248,29248],"steps":[232,232,232,232,232,232,232,232],"fingerprint":"F8340D695F4F9F8AAC12D26A9599AB5BAE43243734C6B0F967C6C053150AAA73"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3b474186-0afd-4f1a-a890-58838fa1f0ad" testId="254312c4-614b-097b-4650-65dace53396a" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;text&quot;, publicBoundary: True)" computerName="LOKAD-0399" duration="00:00:00.0502333" startTime="2026-10-18T20:01:41.7033234+02:00" endTime="2026-10-18T20:01:41.7536643+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3b474186-0afd-4f1a-a890-58838fa1f0ad">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"text","publicBoundary":true,"callsPerSample":8,"sourceLength":424,"sourceSha256":"18A323A60C3FE7A91DA1B8DF69E09B968D4AFFA5B7E7E515A4EA3BB765AAF0C3","fingerprint":"6AEA244CC37D0D37057E6992A5BA6EBFD62379D1328024A3A154546AE200C53B","maps":[{"path":"module","kind":"local","count":10,"capacity":11},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:words_from_line","kind":"local","count":1,"capacity":3},{"path":"module/0:words_from_line","kind":"closure","count":0,"capacity":0}],"samples":[3014144,3014144,3014144,3014144,3014144,3014144,3014144,3014144],"compileAllowance":73472}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8e800d2f-396c-48fd-8036-e51806a414ca" testId="258cb5ed-f4fd-595c-cdf4-6c9810b65b07" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;json&quot;, publicBoundary: True)" computerName="LOKAD-0399" duration="00:00:00.0618489" startTime="2026-10-18T20:01:41.7543402+02:00" endTime="2026-10-18T20:01:41.8155664+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8e800d2f-396c-48fd-8036-e51806a414ca">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"json","publicBoundary":true,"callsPerSample":8,"sourceLength":607,"sourceSha256":"BEEA66DFA7AB6333419678181EA8A6D5A5B030EB01AC35B993BB6D801E0C29A7","fingerprint":"FC96CE4AEC3C88A3FB72865DCBAD79470FDBE32CA5B972BC92AA96276F3E6C64","maps":[{"path":"module","kind":"local","count":12,"capacity":17},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:record_amount","kind":"local","count":1,"capacity":3},{"path":"module/0:record_amount","kind":"closure","count":0,"capacity":0}],"samples":[3486592,3486592,3486592,3486592,3486592,3486592,3486592,3486592],"compileAllowance":91040}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1ea97dd4-0e65-4790-a1ae-3d63cef90fe8" testId="c58be6e0-daf0-6864-f450-aa5df0817e9e" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;helper&quot;, publicBoundary: False)" computerName="LOKAD-0399" duration="00:00:00.0100027" startTime="2026-10-18T20:01:41.6933515+02:00" endTime="2026-10-18T20:01:41.7032822+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1ea97dd4-0e65-4790-a1ae-3d63cef90fe8">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"helper","publicBoundary":false,"callsPerSample":8,"sourceLength":39,"sourceSha256":"698516AD46F6A103DE984D58D29288DDC4CEF2A90CE7478222053BFB1DBC5569","fingerprint":"B795CB768B0068993460AD55E8AA2EBF725998781ED1F890A3618A25302EA0D4","maps":[{"path":"module","kind":"local","count":0,"capacity":0},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:add","kind":"local","count":2,"capacity":3},{"path":"module/0:add","kind":"closure","count":0,"capacity":0}],"samples":[657216,657216,657216,657216,657216,657216,657216,657216],"compileAllowance":36512}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4fd9f034-166b-4302-8d1a-3e16eeec8e72" testId="78420f38-f018-2f71-8c0b-0a6fa72d3d7a" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;helper&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0005331" startTime="2026-10-18T20:01:41.1541547+02:00" endTime="2026-10-18T20:01:41.1545982+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4fd9f034-166b-4302-8d1a-3e16eeec8e72">
+      <Output>
+        <StdOut>SLOT_MAP_WARM:{"shape":"helper","asynchronous":false,"callsPerSample":8,"samples":[12096,12096,12096,12096,12096,12096,12096,12096],"steps":[136,136,136,136,136,136,136,136],"fingerprint":"B795CB768B0068993460AD55E8AA2EBF725998781ED1F890A3618A25302EA0D4"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="da8a9005-ae16-4812-a059-411b766ce804" testId="2298ccc5-64e0-afd3-db2b-d2eb8bbb3cb6" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;file&quot;, publicBoundary: True)" computerName="LOKAD-0399" duration="00:00:00.0718953" startTime="2026-10-18T20:01:41.8156342+02:00" endTime="2026-10-18T20:01:41.8874822+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="da8a9005-ae16-4812-a059-411b766ce804">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"file","publicBoundary":true,"callsPerSample":8,"sourceLength":574,"sourceSha256":"E999CDE8423BB0ADBE2D27FF306348223F157975C30478E919DA4A03F20A6A65","fingerprint":"8D07523AF9721C32DC1FE9230EF2BB773DED1CE1A9C489F8973DE43F5DF3B91D","maps":[{"path":"module","kind":"local","count":11,"capacity":11},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:checksum","kind":"local","count":1,"capacity":3},{"path":"module/0:checksum","kind":"closure","count":0,"capacity":0}],"samples":[4186176,4186176,4186176,4186176,4186176,4186176,4186176,4186176],"compileAllowance":87872}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="585e5de0-2097-41d9-9bf0-4f5c09ac2cd2" testId="6bb31379-3271-d616-3006-e42a27e321f7" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;generator&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0085665" startTime="2026-10-18T20:01:41.1147135+02:00" endTime="2026-10-18T20:01:41.1178855+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="585e5de0-2097-41d9-9bf0-4f5c09ac2cd2">
+      <Output>
+        <StdOut>SLOT_MAP_WARM:{"shape":"generator","asynchronous":false,"callsPerSample":8,"samples":[19136,19136,19136,19136,19136,19136,19136,19136],"steps":[256,256,256,256,256,256,256,256],"fingerprint":"F79558419EF60C52770894848802D895256AA10B80CC1051BEED9096461E9FF3"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="231d19e4-58ac-4e6f-b569-5f919d67d014" testId="c542dac0-7f22-ad68-2237-f123140b2a5a" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;csv&quot;, publicBoundary: True)" computerName="LOKAD-0399" duration="00:00:00.0825008" startTime="2026-10-18T20:01:41.8875510+02:00" endTime="2026-10-18T20:01:41.9700589+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="231d19e4-58ac-4e6f-b569-5f919d67d014">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"csv","publicBoundary":true,"callsPerSample":8,"sourceLength":599,"sourceSha256":"7D421BD3C67892EA046F7E6BE8DCBDE2E47B5AC85E0F88911ED7F3B27FDDC893","fingerprint":"63E32299AE9F61540BEA99073091A049A346CF47FA675381873D191F76FAA692","maps":[{"path":"module","kind":"local","count":12,"capacity":17},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:parse_amount","kind":"local","count":1,"capacity":3},{"path":"module/0:parse_amount","kind":"closure","count":0,"capacity":0}],"samples":[3728576,3728576,3728576,3728576,3728576,3728576,3728576,3728576],"compileAllowance":90272}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7e0dd721-c1e7-466b-90e7-651ca08ab624" testId="93776f96-d12d-1700-b0ab-9dda26315c4d" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;closure&quot;, publicBoundary: False)" computerName="LOKAD-0399" duration="00:00:00.0147190" startTime="2026-10-18T20:01:41.5738161+02:00" endTime="2026-10-18T20:01:41.5885796+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7e0dd721-c1e7-466b-90e7-651ca08ab624">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"closure","publicBoundary":false,"callsPerSample":8,"sourceLength":89,"sourceSha256":"1A4A35FC730D90C7D243AFA70C8335FDA7F5BB377AC1080B1B6D52795DDD9B4F","fingerprint":"F8340D695F4F9F8AAC12D26A9599AB5BAE43243734C6B0F967C6C053150AAA73","maps":[{"path":"module","kind":"local","count":1,"capacity":3},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:make","kind":"local","count":2,"capacity":3},{"path":"module/0:make","kind":"closure","count":0,"capacity":0},{"path":"module/0:make/0:read","kind":"local","count":1,"capacity":3},{"path":"module/0:make/0:read","kind":"closure","count":1,"capacity":3}],"samples":[1043200,1043200,1043200,1043200,1043200,1043200,1043200,1043200],"compileAllowance":41312}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1c0c18af-87e1-48b1-9406-075b5651b65b" testId="f3d72f81-34d4-dc8e-09d2-d6abb05202a8" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;text&quot;, publicBoundary: False)" computerName="LOKAD-0399" duration="00:00:00.1321433" startTime="2026-10-18T20:01:41.2072078+02:00" endTime="2026-10-18T20:01:41.3393559+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1c0c18af-87e1-48b1-9406-075b5651b65b">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"text","publicBoundary":false,"callsPerSample":8,"sourceLength":424,"sourceSha256":"18A323A60C3FE7A91DA1B8DF69E09B968D4AFFA5B7E7E515A4EA3BB765AAF0C3","fingerprint":"6AEA244CC37D0D37057E6992A5BA6EBFD62379D1328024A3A154546AE200C53B","maps":[{"path":"module","kind":"local","count":10,"capacity":11},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:words_from_line","kind":"local","count":1,"capacity":3},{"path":"module/0:words_from_line","kind":"closure","count":0,"capacity":0}],"samples":[2999424,2999424,2999424,2999424,2999424,2999424,2999424,2999424],"compileAllowance":73472}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f6cffeee-7fa9-4340-a83c-02092507bd36" testId="65db1d6f-40e5-d201-95be-93b76b836634" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;lambda&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0051805" startTime="2026-10-18T20:01:41.1850700+02:00" endTime="2026-10-18T20:01:41.1851788+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f6cffeee-7fa9-4340-a83c-02092507bd36">
+      <Output>
+        <StdOut>SLOT_MAP_WARM:{"shape":"lambda","asynchronous":true,"callsPerSample":8,"samples":[26880,26880,26880,26880,26880,26880,26880,26880],"steps":[216,216,216,216,216,216,216,216],"fingerprint":"255AA93942637C303399924FC9DC86EDBBE3E4029BEB72D3D1477471ED19BEA2"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b81f9202-28b2-4fc5-af47-745f6c9ff64e" testId="24820e5a-7807-438b-a0fd-025ebf03b100" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;genexpr&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0033732" startTime="2026-10-18T20:01:41.1507235+02:00" endTime="2026-10-18T20:01:41.1541040+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b81f9202-28b2-4fc5-af47-745f6c9ff64e">
+      <Output>
+        <StdOut>SLOT_MAP_WARM:{"shape":"genexpr","asynchronous":true,"callsPerSample":8,"samples":[31680,31680,31680,31680,31680,31680,31680,31680],"steps":[528,528,528,528,528,528,528,528],"fingerprint":"22E09C772BB6922A0BE02067DF5CCF8E89DD2A16B12597ED54053EDA8B203B6D"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="401f837d-1972-4259-ab21-4e6e1dc328a7" testId="5c4c325f-25a7-ffb2-c03b-11ca552acbff" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;lambda&quot;, publicBoundary: True)" computerName="LOKAD-0399" duration="00:00:00.0149193" startTime="2026-10-18T20:01:41.3543361+02:00" endTime="2026-10-18T20:01:41.3692177+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="401f837d-1972-4259-ab21-4e6e1dc328a7">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"lambda","publicBoundary":true,"callsPerSample":8,"sourceLength":71,"sourceSha256":"BE4D8A185B96FF62CFC2016D382C3565FBA8A40AFB79901B654D9758FD234975","fingerprint":"255AA93942637C303399924FC9DC86EDBBE3E4029BEB72D3D1477471ED19BEA2","maps":[{"path":"module","kind":"local","count":1,"capacity":3},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:make","kind":"local","count":1,"capacity":3},{"path":"module/0:make","kind":"closure","count":0,"capacity":0},{"path":"module/0:make/0:\u003Clambda\u003E","kind":"local","count":1,"capacity":3},{"path":"module/0:make/0:\u003Clambda\u003E","kind":"closure","count":1,"capacity":3}],"samples":[879168,879168,879168,879168,879168,879168,879168,879168],"compileAllowance":39584}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="856b7c9e-e112-434d-bb0e-0a4eeb799f2c" testId="5289b62b-a9c3-8309-bd69-f3dce93cf954" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;csv&quot;, publicBoundary: False)" computerName="LOKAD-0399" duration="00:00:00.0695166" startTime="2026-10-18T20:01:41.4549045+02:00" endTime="2026-10-18T20:01:41.5244542+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="856b7c9e-e112-434d-bb0e-0a4eeb799f2c">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"csv","publicBoundary":false,"callsPerSample":8,"sourceLength":599,"sourceSha256":"7D421BD3C67892EA046F7E6BE8DCBDE2E47B5AC85E0F88911ED7F3B27FDDC893","fingerprint":"63E32299AE9F61540BEA99073091A049A346CF47FA675381873D191F76FAA692","maps":[{"path":"module","kind":"local","count":12,"capacity":17},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:parse_amount","kind":"local","count":1,"capacity":3},{"path":"module/0:parse_amount","kind":"closure","count":0,"capacity":0}],"samples":[3713856,3713856,3713856,3713856,3713856,3713856,3713856,3713856],"compileAllowance":90272}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="164eda04-ef4c-4006-a147-6ba48ddecbac" testId="293f20e3-fc08-53e2-34d7-d11fed10fdd0" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;closure&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.1561087" startTime="2026-10-18T20:01:40.9489648+02:00" endTime="2026-10-18T20:01:41.1092322+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="164eda04-ef4c-4006-a147-6ba48ddecbac">
+      <Output>
+        <StdOut>SLOT_MAP_WARM:{"shape":"closure","asynchronous":false,"callsPerSample":8,"samples":[27712,27712,27712,27712,27712,27712,27712,27712],"steps":[232,232,232,232,232,232,232,232],"fingerprint":"F8340D695F4F9F8AAC12D26A9599AB5BAE43243734C6B0F967C6C053150AAA73"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="fc4eba99-1ecb-4747-adfb-063f6a215922" testId="3d27764a-86dc-099e-3364-18ccaa8348c2" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;genexpr&quot;, publicBoundary: False)" computerName="LOKAD-0399" duration="00:00:00.0148696" startTime="2026-10-18T20:01:41.3394210+02:00" endTime="2026-10-18T20:01:41.3542650+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fc4eba99-1ecb-4747-adfb-063f6a215922">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"genexpr","publicBoundary":false,"callsPerSample":8,"sourceLength":72,"sourceSha256":"3EADABD3158783F492AAC10C1A2F03322E62A1343483FC5D816FC9760AF709C2","fingerprint":"22E09C772BB6922A0BE02067DF5CCF8E89DD2A16B12597ED54053EDA8B203B6D","maps":[{"path":"module","kind":"local","count":0,"capacity":0},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:total","kind":"local","count":1,"capacity":3},{"path":"module/0:total","kind":"closure","count":0,"capacity":0},{"path":"module/0:total/0:\u003Cgenexpr\u003E","kind":"local","count":2,"capacity":3},{"path":"module/0:total/0:\u003Cgenexpr\u003E","kind":"closure","count":1,"capacity":3}],"samples":[979840,979840,979840,979840,979840,979840,979840,979840],"compileAllowance":39680}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="eaf78b3f-a40a-4e18-8278-6de047bdffec" testId="7dba66ac-1429-3ecc-ef90-43cdbc5bfdde" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;empty-control&quot;, publicBoundary: True)" computerName="LOKAD-0399" duration="00:00:00.0018397" startTime="2026-10-18T20:01:41.4530601+02:00" endTime="2026-10-18T20:01:41.4548595+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eaf78b3f-a40a-4e18-8278-6de047bdffec">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"empty-control","publicBoundary":true,"callsPerSample":8,"sourceLength":4,"sourceSha256":"D74FF0EE8DA3B9806B18C877DBF29BBDE50B5BD8E4DAD7A3A725000FEB82E8F1","fingerprint":"3C03240234D9784AB889A735488B317B5019228D244395650BBDF84AD1AB087F","maps":[{"path":"module","kind":"local","count":0,"capacity":0},{"path":"module","kind":"closure","count":0,"capacity":0}],"samples":[231040,231040,231040,231040,231040,231040,231040,231040],"compileAllowance":33152}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="bd4cc3ce-00ba-4d27-a71c-a3b4af0827b5" testId="f7539b78-ac22-bf2e-050d-50dafa1493ec" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;lambda&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0043610" startTime="2026-10-18T20:01:41.1546347+02:00" endTime="2026-10-18T20:01:41.1590361+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bd4cc3ce-00ba-4d27-a71c-a3b4af0827b5">
+      <Output>
+        <StdOut>SLOT_MAP_WARM:{"shape":"lambda","asynchronous":false,"callsPerSample":8,"samples":[26112,26112,26112,26112,26112,26112,26112,26112],"steps":[216,216,216,216,216,216,216,216],"fingerprint":"255AA93942637C303399924FC9DC86EDBBE3E4029BEB72D3D1477471ED19BEA2"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f98c7b19-5260-4c15-9562-b6751c1cd2da" testId="6f5abf41-306d-3c90-ab28-75310e8ce8a2" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;lambda&quot;, publicBoundary: False)" computerName="LOKAD-0399" duration="00:00:00.0138493" startTime="2026-10-18T20:01:41.5354912+02:00" endTime="2026-10-18T20:01:41.5492298+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f98c7b19-5260-4c15-9562-b6751c1cd2da">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"lambda","publicBoundary":false,"callsPerSample":8,"sourceLength":71,"sourceSha256":"BE4D8A185B96FF62CFC2016D382C3565FBA8A40AFB79901B654D9758FD234975","fingerprint":"255AA93942637C303399924FC9DC86EDBBE3E4029BEB72D3D1477471ED19BEA2","maps":[{"path":"module","kind":"local","count":1,"capacity":3},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:make","kind":"local","count":1,"capacity":3},{"path":"module/0:make","kind":"closure","count":0,"capacity":0},{"path":"module/0:make/0:\u003Clambda\u003E","kind":"local","count":1,"capacity":3},{"path":"module/0:make/0:\u003Clambda\u003E","kind":"closure","count":1,"capacity":3}],"samples":[864448,864448,864448,864448,864448,864448,864448,864448],"compileAllowance":39584}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0a9d3b00-436e-4b3a-81a4-c0683181e5b2" testId="544b537d-9c7c-7511-5e46-281f4effe739" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;helper&quot;, publicBoundary: True)" computerName="LOKAD-0399" duration="00:00:00.0108573" startTime="2026-10-18T20:01:41.5257001+02:00" endTime="2026-10-18T20:01:41.5354356+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0a9d3b00-436e-4b3a-81a4-c0683181e5b2">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"helper","publicBoundary":true,"callsPerSample":8,"sourceLength":39,"sourceSha256":"698516AD46F6A103DE984D58D29288DDC4CEF2A90CE7478222053BFB1DBC5569","fingerprint":"B795CB768B0068993460AD55E8AA2EBF725998781ED1F890A3618A25302EA0D4","maps":[{"path":"module","kind":"local","count":0,"capacity":0},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:add","kind":"local","count":2,"capacity":3},{"path":"module/0:add","kind":"closure","count":0,"capacity":0}],"samples":[671936,671936,671936,671936,671936,671936,671936,671936],"compileAllowance":36512}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="aa398ded-801b-45d5-865a-1e1d3cec0f3c" testId="a8aeefbe-16b8-db14-627c-c5b9f70e9c5a" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;generator&quot;, publicBoundary: False)" computerName="LOKAD-0399" duration="00:00:00.0123124" startTime="2026-10-18T20:01:41.5614768+02:00" endTime="2026-10-18T20:01:41.5737608+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="aa398ded-801b-45d5-865a-1e1d3cec0f3c">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"generator","publicBoundary":false,"callsPerSample":8,"sourceLength":71,"sourceSha256":"815A3440619525958C137C2051D8554427D318224F91EDC9802CC83BB821BE47","fingerprint":"F79558419EF60C52770894848802D895256AA10B80CC1051BEED9096461E9FF3","maps":[{"path":"module","kind":"local","count":0,"capacity":0},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:\u003Cgenerator\u003E","kind":"local","count":1,"capacity":3},{"path":"module/0:\u003Cgenerator\u003E","kind":"closure","count":0,"capacity":0}],"samples":[838976,838976,838976,838976,838976,838976,838976,838976],"compileAllowance":39584}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="6f0c3dab-c8be-4ee4-b42b-9e3dca7013e2" testId="2f8e4a84-8931-17cd-d67d-2d9c8a566f03" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;closure&quot;, publicBoundary: True)" computerName="LOKAD-0399" duration="00:00:00.0152500" startTime="2026-10-18T20:01:41.6780488+02:00" endTime="2026-10-18T20:01:41.6932856+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6f0c3dab-c8be-4ee4-b42b-9e3dca7013e2">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"closure","publicBoundary":true,"callsPerSample":8,"sourceLength":89,"sourceSha256":"1A4A35FC730D90C7D243AFA70C8335FDA7F5BB377AC1080B1B6D52795DDD9B4F","fingerprint":"F8340D695F4F9F8AAC12D26A9599AB5BAE43243734C6B0F967C6C053150AAA73","maps":[{"path":"module","kind":"local","count":1,"capacity":3},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:make","kind":"local","count":2,"capacity":3},{"path":"module/0:make","kind":"closure","count":0,"capacity":0},{"path":"module/0:make/0:read","kind":"local","count":1,"capacity":3},{"path":"module/0:make/0:read","kind":"closure","count":1,"capacity":3}],"samples":[1057920,1057920,1057920,1057920,1057920,1057920,1057920,1057920],"compileAllowance":41312}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="133a657d-d676-4fae-877e-1f2f4521d199" testId="c7978d89-f227-6689-d91c-861bbd0c7207" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;generator&quot;, publicBoundary: True)" computerName="LOKAD-0399" duration="00:00:00.0121390" startTime="2026-10-18T20:01:41.5492842+02:00" endTime="2026-10-18T20:01:41.5614220+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="133a657d-d676-4fae-877e-1f2f4521d199">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"generator","publicBoundary":true,"callsPerSample":8,"sourceLength":71,"sourceSha256":"815A3440619525958C137C2051D8554427D318224F91EDC9802CC83BB821BE47","fingerprint":"F79558419EF60C52770894848802D895256AA10B80CC1051BEED9096461E9FF3","maps":[{"path":"module","kind":"local","count":0,"capacity":0},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:\u003Cgenerator\u003E","kind":"local","count":1,"capacity":3},{"path":"module/0:\u003Cgenerator\u003E","kind":"closure","count":0,"capacity":0}],"samples":[853696,853696,853696,853696,853696,853696,853696,853696],"compileAllowance":39584}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b823e8f0-40d4-49ef-9520-40940d04ea64" testId="67692557-0801-4f2f-6325-9250d7881cfd" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;genexpr&quot;, publicBoundary: True)" computerName="LOKAD-0399" duration="00:00:00.0426916" startTime="2026-10-18T20:01:41.1862768+02:00" endTime="2026-10-18T20:01:41.2071372+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b823e8f0-40d4-49ef-9520-40940d04ea64">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"genexpr","publicBoundary":true,"callsPerSample":8,"sourceLength":72,"sourceSha256":"3EADABD3158783F492AAC10C1A2F03322E62A1343483FC5D816FC9760AF709C2","fingerprint":"22E09C772BB6922A0BE02067DF5CCF8E89DD2A16B12597ED54053EDA8B203B6D","maps":[{"path":"module","kind":"local","count":0,"capacity":0},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:total","kind":"local","count":1,"capacity":3},{"path":"module/0:total","kind":"closure","count":0,"capacity":0},{"path":"module/0:total/0:\u003Cgenexpr\u003E","kind":"local","count":2,"capacity":3},{"path":"module/0:total/0:\u003Cgenexpr\u003E","kind":"closure","count":1,"capacity":3}],"samples":[994560,994560,994688,994560,994560,994560,994560,994560],"compileAllowance":39680}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4ab916bc-8e6e-4a25-8989-94f46bd94dde" testId="c1172ced-1032-2530-b435-d5de6ea7c949" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;generator&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0041800" startTime="2026-10-18T20:01:41.1327744+02:00" endTime="2026-10-18T20:01:41.1369313+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4ab916bc-8e6e-4a25-8989-94f46bd94dde">
+      <Output>
+        <StdOut>SLOT_MAP_WARM:{"shape":"generator","asynchronous":true,"callsPerSample":8,"samples":[19776,19776,19776,19776,19776,19776,19776,19776],"steps":[256,256,256,256,256,256,256,256],"fingerprint":"F79558419EF60C52770894848802D895256AA10B80CC1051BEED9096461E9FF3"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="6c718659-c724-41d4-9eb0-be1be31e55e4" testId="8766fee3-4c9f-7640-2f1d-746c0af02db7" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;empty-control&quot;, publicBoundary: False)" computerName="LOKAD-0399" duration="00:00:00.0030466" startTime="2026-10-18T20:01:41.4499995+02:00" endTime="2026-10-18T20:01:41.4529987+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6c718659-c724-41d4-9eb0-be1be31e55e4">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"empty-control","publicBoundary":false,"callsPerSample":8,"sourceLength":4,"sourceSha256":"D74FF0EE8DA3B9806B18C877DBF29BBDE50B5BD8E4DAD7A3A725000FEB82E8F1","fingerprint":"3C03240234D9784AB889A735488B317B5019228D244395650BBDF84AD1AB087F","maps":[{"path":"module","kind":"local","count":0,"capacity":0},{"path":"module","kind":"closure","count":0,"capacity":0}],"samples":[216320,216320,216320,216320,216320,216320,216320,216320],"compileAllowance":33152}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a56b235d-b109-4767-8191-a1cd34215b52" testId="d6fc9b17-9566-9723-ec0b-18366ca2e982" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;helper&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0147841" startTime="2026-10-18T20:01:41.1182340+02:00" endTime="2026-10-18T20:01:41.1327265+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a56b235d-b109-4767-8191-a1cd34215b52">
+      <Output>
+        <StdOut>SLOT_MAP_WARM:{"shape":"helper","asynchronous":true,"callsPerSample":8,"samples":[12864,12864,12864,12864,12864,12864,12864,12864],"steps":[136,136,136,136,136,136,136,136],"fingerprint":"B795CB768B0068993460AD55E8AA2EBF725998781ED1F890A3618A25302EA0D4"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="dff84280-6285-4b3d-8e90-64de01e57347" testId="5ec8582c-c8af-7490-6f88-181fe68d27bc" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;genexpr&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0126611" startTime="2026-10-18T20:01:41.1380050+02:00" endTime="2026-10-18T20:01:41.1506607+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dff84280-6285-4b3d-8e90-64de01e57347">
+      <Output>
+        <StdOut>SLOT_MAP_WARM:{"shape":"genexpr","asynchronous":false,"callsPerSample":8,"samples":[31040,31040,31040,31040,31040,31040,31040,31040],"steps":[528,528,528,528,528,528,528,528],"fingerprint":"22E09C772BB6922A0BE02067DF5CCF8E89DD2A16B12597ED54053EDA8B203B6D"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="96bc6172-50ec-4deb-aa5d-22727d8dfcbe" testId="beb6da60-1358-16a7-3c4b-83bb379ecfb5" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;file&quot;, publicBoundary: False)" computerName="LOKAD-0399" duration="00:00:00.0893878" startTime="2026-10-18T20:01:41.5886348+02:00" endTime="2026-10-18T20:01:41.6779814+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="96bc6172-50ec-4deb-aa5d-22727d8dfcbe">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"file","publicBoundary":false,"callsPerSample":8,"sourceLength":574,"sourceSha256":"E999CDE8423BB0ADBE2D27FF306348223F157975C30478E919DA4A03F20A6A65","fingerprint":"8D07523AF9721C32DC1FE9230EF2BB773DED1CE1A9C489F8973DE43F5DF3B91D","maps":[{"path":"module","kind":"local","count":11,"capacity":11},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:checksum","kind":"local","count":1,"capacity":3},{"path":"module/0:checksum","kind":"closure","count":0,"capacity":0}],"samples":[4171456,4171456,4171456,4171456,4171456,4171456,4171456,4171456],"compileAllowance":87872}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a700e980-9f1d-42e0-8393-3c55389db7db" testId="eaebbb47-b124-667a-e3c5-d5573263cf18" testName="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;json&quot;, publicBoundary: False)" computerName="LOKAD-0399" duration="00:00:00.0806717" startTime="2026-10-18T20:01:41.3692842+02:00" endTime="2026-10-18T20:01:41.4499306+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a700e980-9f1d-42e0-8393-3c55389db7db">
+      <Output>
+        <StdOut>SLOT_MAP_COMPILE:{"shape":"json","publicBoundary":false,"callsPerSample":8,"sourceLength":607,"sourceSha256":"BEEA66DFA7AB6333419678181EA8A6D5A5B030EB01AC35B993BB6D801E0C29A7","fingerprint":"FC96CE4AEC3C88A3FB72865DCBAD79470FDBE32CA5B972BC92AA96276F3E6C64","maps":[{"path":"module","kind":"local","count":12,"capacity":17},{"path":"module","kind":"closure","count":0,"capacity":0},{"path":"module/0:record_amount","kind":"local","count":1,"capacity":3},{"path":"module/0:record_amount","kind":"closure","count":0,"capacity":0}],"samples":[3471872,3471872,3471872,3471872,3471872,3471872,3471872,3471872],"compileAllowance":91040}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;genexpr&quot;, publicBoundary: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="3d27764a-86dc-099e-3364-18ccaa8348c2">
+      <Execution id="fc4eba99-1ecb-4747-adfb-063f6a215922" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;csv&quot;, publicBoundary: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="5289b62b-a9c3-8309-bd69-f3dce93cf954">
+      <Execution id="856b7c9e-e112-434d-bb0e-0a4eeb799f2c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;genexpr&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="24820e5a-7807-438b-a0fd-025ebf03b100">
+      <Execution id="b81f9202-28b2-4fc5-af47-745f6c9ff64e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Warm" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;lambda&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="f7539b78-ac22-bf2e-050d-50dafa1493ec">
+      <Execution id="bd4cc3ce-00ba-4d27-a71c-a3b4af0827b5" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Warm" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;closure&quot;, publicBoundary: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="93776f96-d12d-1700-b0ab-9dda26315c4d">
+      <Execution id="7e0dd721-c1e7-466b-90e7-651ca08ab624" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;empty-control&quot;, publicBoundary: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="7dba66ac-1429-3ecc-ef90-43cdbc5bfdde">
+      <Execution id="eaf78b3f-a40a-4e18-8278-6de047bdffec" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;lambda&quot;, publicBoundary: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="6f5abf41-306d-3c90-ab28-75310e8ce8a2">
+      <Execution id="f98c7b19-5260-4c15-9562-b6751c1cd2da" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;generator&quot;, publicBoundary: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="a8aeefbe-16b8-db14-627c-c5b9f70e9c5a">
+      <Execution id="aa398ded-801b-45d5-865a-1e1d3cec0f3c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;helper&quot;, publicBoundary: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c58be6e0-daf0-6864-f450-aa5df0817e9e">
+      <Execution id="1ea97dd4-0e65-4790-a1ae-3d63cef90fe8" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;closure&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="293f20e3-fc08-53e2-34d7-d11fed10fdd0">
+      <Execution id="164eda04-ef4c-4006-a147-6ba48ddecbac" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Warm" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;closure&quot;, publicBoundary: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="2f8e4a84-8931-17cd-d67d-2d9c8a566f03">
+      <Execution id="6f0c3dab-c8be-4ee4-b42b-9e3dca7013e2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;generator&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="6bb31379-3271-d616-3006-e42a27e321f7">
+      <Execution id="585e5de0-2097-41d9-9bf0-4f5c09ac2cd2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Warm" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;genexpr&quot;, publicBoundary: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="67692557-0801-4f2f-6325-9250d7881cfd">
+      <Execution id="b823e8f0-40d4-49ef-9520-40940d04ea64" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;empty-control&quot;, publicBoundary: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="8766fee3-4c9f-7640-2f1d-746c0af02db7">
+      <Execution id="6c718659-c724-41d4-9eb0-be1be31e55e4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;lambda&quot;, publicBoundary: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="5c4c325f-25a7-ffb2-c03b-11ca552acbff">
+      <Execution id="401f837d-1972-4259-ab21-4e6e1dc328a7" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;file&quot;, publicBoundary: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="beb6da60-1358-16a7-3c4b-83bb379ecfb5">
+      <Execution id="96bc6172-50ec-4deb-aa5d-22727d8dfcbe" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;csv&quot;, publicBoundary: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c542dac0-7f22-ad68-2237-f123140b2a5a">
+      <Execution id="231d19e4-58ac-4e6f-b569-5f919d67d014" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;json&quot;, publicBoundary: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="eaebbb47-b124-667a-e3c5-d5573263cf18">
+      <Execution id="a700e980-9f1d-42e0-8393-3c55389db7db" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;lambda&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="65db1d6f-40e5-d201-95be-93b76b836634">
+      <Execution id="f6cffeee-7fa9-4340-a83c-02092507bd36" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Warm" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;text&quot;, publicBoundary: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="f3d72f81-34d4-dc8e-09d2-d6abb05202a8">
+      <Execution id="1c0c18af-87e1-48b1-9406-075b5651b65b" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;helper&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="d6fc9b17-9566-9723-ec0b-18366ca2e982">
+      <Execution id="a56b235d-b109-4767-8191-a1cd34215b52" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Warm" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;closure&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="058296f4-f071-d987-a50c-4bf4943934f0">
+      <Execution id="57fc000c-b996-453e-a382-4dfcaa8da837" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Warm" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;json&quot;, publicBoundary: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="258cb5ed-f4fd-595c-cdf4-6c9810b65b07">
+      <Execution id="8e800d2f-396c-48fd-8036-e51806a414ca" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;genexpr&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="5ec8582c-c8af-7490-6f88-181fe68d27bc">
+      <Execution id="dff84280-6285-4b3d-8e90-64de01e57347" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Warm" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;text&quot;, publicBoundary: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="254312c4-614b-097b-4650-65dace53396a">
+      <Execution id="3b474186-0afd-4f1a-a890-58838fa1f0ad" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;file&quot;, publicBoundary: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="2298ccc5-64e0-afd3-db2b-d2eb8bbb3cb6">
+      <Execution id="da8a9005-ae16-4812-a059-411b766ce804" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;generator&quot;, publicBoundary: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c7978d89-f227-6689-d91c-861bbd0c7207">
+      <Execution id="133a657d-d676-4fae-877e-1f2f4521d199" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;helper&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="78420f38-f018-2f71-8c0b-0a6fa72d3d7a">
+      <Execution id="4fd9f034-166b-4302-8d1a-3e16eeec8e72" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Warm" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Warm(shape: &quot;generator&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c1172ced-1032-2530-b435-d5de6ea7c949">
+      <Execution id="4ab916bc-8e6e-4a25-8989-94f46bd94dde" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Warm" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.SlotMapDiagnostic.Compilation(shape: &quot;helper&quot;, publicBoundary: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="544b537d-9c7c-7511-5e46-281f4effe739">
+      <Execution id="0a9d3b00-436e-4b3a-81a4-c0683181e5b2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.SlotMapDiagnostic" name="Compilation" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="058296f4-f071-d987-a50c-4bf4943934f0" executionId="57fc000c-b996-453e-a382-4dfcaa8da837" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="254312c4-614b-097b-4650-65dace53396a" executionId="3b474186-0afd-4f1a-a890-58838fa1f0ad" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="258cb5ed-f4fd-595c-cdf4-6c9810b65b07" executionId="8e800d2f-396c-48fd-8036-e51806a414ca" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c58be6e0-daf0-6864-f450-aa5df0817e9e" executionId="1ea97dd4-0e65-4790-a1ae-3d63cef90fe8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="78420f38-f018-2f71-8c0b-0a6fa72d3d7a" executionId="4fd9f034-166b-4302-8d1a-3e16eeec8e72" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2298ccc5-64e0-afd3-db2b-d2eb8bbb3cb6" executionId="da8a9005-ae16-4812-a059-411b766ce804" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6bb31379-3271-d616-3006-e42a27e321f7" executionId="585e5de0-2097-41d9-9bf0-4f5c09ac2cd2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c542dac0-7f22-ad68-2237-f123140b2a5a" executionId="231d19e4-58ac-4e6f-b569-5f919d67d014" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="93776f96-d12d-1700-b0ab-9dda26315c4d" executionId="7e0dd721-c1e7-466b-90e7-651ca08ab624" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f3d72f81-34d4-dc8e-09d2-d6abb05202a8" executionId="1c0c18af-87e1-48b1-9406-075b5651b65b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="65db1d6f-40e5-d201-95be-93b76b836634" executionId="f6cffeee-7fa9-4340-a83c-02092507bd36" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="24820e5a-7807-438b-a0fd-025ebf03b100" executionId="b81f9202-28b2-4fc5-af47-745f6c9ff64e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5c4c325f-25a7-ffb2-c03b-11ca552acbff" executionId="401f837d-1972-4259-ab21-4e6e1dc328a7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5289b62b-a9c3-8309-bd69-f3dce93cf954" executionId="856b7c9e-e112-434d-bb0e-0a4eeb799f2c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="293f20e3-fc08-53e2-34d7-d11fed10fdd0" executionId="164eda04-ef4c-4006-a147-6ba48ddecbac" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3d27764a-86dc-099e-3364-18ccaa8348c2" executionId="fc4eba99-1ecb-4747-adfb-063f6a215922" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7dba66ac-1429-3ecc-ef90-43cdbc5bfdde" executionId="eaf78b3f-a40a-4e18-8278-6de047bdffec" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f7539b78-ac22-bf2e-050d-50dafa1493ec" executionId="bd4cc3ce-00ba-4d27-a71c-a3b4af0827b5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6f5abf41-306d-3c90-ab28-75310e8ce8a2" executionId="f98c7b19-5260-4c15-9562-b6751c1cd2da" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="544b537d-9c7c-7511-5e46-281f4effe739" executionId="0a9d3b00-436e-4b3a-81a4-c0683181e5b2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a8aeefbe-16b8-db14-627c-c5b9f70e9c5a" executionId="aa398ded-801b-45d5-865a-1e1d3cec0f3c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2f8e4a84-8931-17cd-d67d-2d9c8a566f03" executionId="6f0c3dab-c8be-4ee4-b42b-9e3dca7013e2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c7978d89-f227-6689-d91c-861bbd0c7207" executionId="133a657d-d676-4fae-877e-1f2f4521d199" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="67692557-0801-4f2f-6325-9250d7881cfd" executionId="b823e8f0-40d4-49ef-9520-40940d04ea64" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c1172ced-1032-2530-b435-d5de6ea7c949" executionId="4ab916bc-8e6e-4a25-8989-94f46bd94dde" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8766fee3-4c9f-7640-2f1d-746c0af02db7" executionId="6c718659-c724-41d4-9eb0-be1be31e55e4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d6fc9b17-9566-9723-ec0b-18366ca2e982" executionId="a56b235d-b109-4767-8191-a1cd34215b52" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5ec8582c-c8af-7490-6f88-181fe68d27bc" executionId="dff84280-6285-4b3d-8e90-64de01e57347" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="beb6da60-1358-16a7-3c4b-83bb379ecfb5" executionId="96bc6172-50ec-4deb-aa5d-22727d8dfcbe" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="eaebbb47-b124-667a-e3c5-d5573263cf18" executionId="a700e980-9f1d-42e0-8393-3c55389db7db" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="30" executed="30" passed="30" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.46]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.48]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:01.51]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

@@ -31,6 +31,11 @@ CLR reference lifetimes, not allowance reclamation: the same conservative
 compilation estimate remains charged until the compiled script is disposed.
 No runtime forced GC, weak tracking or per-object refund is involved.
 
+Code objects take the completed local/closure slot maps from single-use compiler
+builders. These maps are read-only after publication. They can retain spare
+builder capacity instead of compact copies; the existing coarse compilation
+estimate and compiled owner cover that storage until the script is disposed.
+
 Function definitions share their read-only local/global/nonlocal-name facts and
 prepared class-cell requirement with their code and runtime functions. These are
 compiled metadata, containing no cells, defaults, hosts or execution contexts.

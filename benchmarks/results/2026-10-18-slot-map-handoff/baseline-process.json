@@ -1,0 +1,14 @@
+{
+  "source": "b683730fcbecfbe95213fa978842d8e7f388be72",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "AABC13897621EFE1722344FC816BC16979B6453FC6EB46C38793B73A9C498929",
+  "filter": "Category!=Stress&FullyQualifiedName~SlotMapDiagnostic",
+  "pid": 19544,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 2133,
+  "stdoutSha256": "BFB66A5507CC1E1CF89D83F3C65D253C02952F3B517A56CF011A6B1DFA570B32",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

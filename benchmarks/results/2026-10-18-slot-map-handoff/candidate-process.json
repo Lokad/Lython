@@ -1,0 +1,14 @@
+{
+  "source": "frozen-one-file-patch",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "58E2910BF589FED4576B8AB2995B263CA50D0509B621E928358203F908F4B9DA",
+  "filter": "Category!=Stress&FullyQualifiedName~SlotMapDiagnostic",
+  "pid": 47496,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 2091,
+  "stdoutSha256": "0681FD25336EF1A5F0E14DE5280C975CAE2E14078966C2A98BE71AC544FAFD62",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

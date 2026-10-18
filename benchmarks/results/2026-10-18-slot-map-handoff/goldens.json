@@ -1,0 +1,36 @@
+{
+  "reference": "CPython3.13.2",
+  "purpose": "Semantic outputs only;top-level-return snippets wrapped in one function",
+  "programs": [
+    {
+      "shape": "helper",
+      "source": "def add(a,b):return a+b\nreturn add(5,7)",
+      "cpythonSource": "def run():\n def add(a,b):return a+b\n return add(5,7)\nprint(run())\n",
+      "stdout": "12\n"
+    },
+    {
+      "shape": "closure",
+      "source": "def make(offset):\n def read(value):return value+offset\n return read\nf=make(7)\nreturn f(5)",
+      "cpythonSource": "def run():\n def make(offset):\n  def read(value):return value+offset\n  return read\n f=make(7)\n return f(5)\nprint(run())\n",
+      "stdout": "12\n"
+    },
+    {
+      "shape": "lambda",
+      "source": "def make(offset):return lambda value:value+offset\nf=make(7)\nreturn f(5)",
+      "cpythonSource": "def run():\n def make(offset):return lambda value:value+offset\n f=make(7)\n return f(5)\nprint(run())\n",
+      "stdout": "12\n"
+    },
+    {
+      "shape": "generator",
+      "source": "def values(offset):\n yield offset\n yield offset+1\nreturn sum(values(7))",
+      "cpythonSource": "def run():\n def values(offset):\n  yield offset\n  yield offset+1\n return sum(values(7))\nprint(run())\n",
+      "stdout": "15\n"
+    },
+    {
+      "shape": "genexpr",
+      "source": "def total(offset):return sum(i+offset for i in range(3))\nreturn total(3)",
+      "cpythonSource": "def run():\n def total(offset):return sum(i+offset for i in range(3))\n return total(3)\nprint(run())\n",
+      "stdout": "12\n"
+    }
+  ]
+}
