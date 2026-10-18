@@ -66,3 +66,16 @@ complete CSV/text/JSON/file goldens. All 70 white-box JSON names/frozen records
 match the preceding delivery. See [baseline proof](baseline-proof.json) and
 [local validation](local-validation.json). No timeout, containment assertion or
 Stress scale was relaxed; this evidence does not claim a new full Stress run.
+
+The first platform qualification, [CI39082775997](https://github.com/Lokad/Lython/actions/runs/39082775997),
+exposed five omitted white-box fixtures: three required the deleted UTF-16 cache,
+and two used the old accumulator estimate. Those three architecture-only tests
+are removed; native decoding denial/close cleanup remain. The two emission cases
+now reserve the existing builder's eight-byte capacity, preserving payload denial,
+refunds and the same terminal failure, with an added exact denied-demand assertion.
+All 22 cases in the four affected classes pass after that test-only cleanup
+(450 focused passes across the delivery). Production source and the measured
+comparison are unchanged. The initial CI's 11,515 public cases pass on each
+platform. See [fixture qualification](fixture-qualification.json) and
+[preserved initial failures](initial-ci-failure.log); no timeout or containment
+assertion was relaxed. Subsequent platform status belongs to its exact revision.

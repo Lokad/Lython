@@ -37,7 +37,8 @@ public sealed class TextReadEmissionOwnershipTests
         // also holds builder scratch. Leave the payload admission one byte short.
         // Keep the reader and current window strongly owned.
         var payloadLength = readSize < 0 ? 4 : readSize;
-        var builderScratch = readSize == 4 ? 32 + 4 * payloadLength : 0;
+        // GovernedByteBuilder starts with eight bytes of working capacity.
+        var builderScratch = readSize == 4 ? 8 : 0;
         var pressure = cap - governor.CurrentAccountedBytes
             - (128 + payloadLength + builderScratch - 1);
         Assert.True(pressure > 0);
@@ -58,6 +59,7 @@ public sealed class TextReadEmissionOwnershipTests
             });
 
         Assert.Equal("MemoryError", error.ExceptionType);
+        Assert.Equal(128 + payloadLength, governor.LastDeniedReservationBytes);
         Assert.Equal(reserved + pressure, governor.CurrentReservedBytes);
         Assert.Equal(committed, governor.CurrentCommittedBytes);
         governor.ReleaseReserved(pressure);

@@ -1,0 +1,145 @@
+tests (ubuntu-latest)	Test Release	﻿2026-10-18T00:28:05.9473557Z ##[group]Run try { dotnet test Lokad.Lython.slnx -c Release --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9474879Z ^[[36;1mtry { dotnet test Lokad.Lython.slnx -c Release --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }^[[0m
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9475579Z ^[[36;1mif ($LASTEXITCODE -ne 0) { exit 1 }^[[0m
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9496913Z shell: /usr/bin/pwsh -command ". '{0}'"
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9497142Z env:
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9497310Z   DOTNET_ROOT: /usr/share/dotnet
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9497571Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9497915Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9498245Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9498547Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9498877Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9499168Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9499439Z   DOTNET_DbgEnableMiniDump: 1
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9499642Z   DOTNET_DbgMiniDumpType: Mini
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9499909Z   DOTNET_DbgMiniDumpName: /home/runner/work/Lython/Lython/crash-%p.dmp
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:05.9500203Z ##[endgroup]
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:06.7439790Z 
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:07.5232313Z Test run for /home/runner/work/Lython/Lython/tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v10.0)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:07.5993287Z Test run for /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/bin/Release/net10.0/Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v10.0)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:07.6902748Z A total of 1 test files matched the specified pattern.
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:07.7722794Z A total of 1 test files matched the specified pattern.
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:08.0069587Z Blame: Attaching crash dump utility to process dotnet (3145).
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:08.0193779Z Blame: Attaching crash dump utility to process dotnet (3152).
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:14.4273703Z ^[[31;1m[xUnit.net 00:00:05.90]     Lokad.Lython.Tests.Utf16CodecAccountingTests.AstralWindowDecodedCacheDenialRefundsTheNativeString [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:14.4324438Z   Failed Lokad.Lython.Tests.Utf16CodecAccountingTests.AstralWindowDecodedCacheDenialRefundsTheNativeString [1 ms]
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:14.4341464Z   Error Message:
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:14.4366786Z    Assert.Throws() Failure: No exception was thrown
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:14.4406890Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:14.4413438Z   Stack Trace:
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:14.4414472Z      at Lokad.Lython.Tests.Utf16CodecAccountingTests.AstralWindowDecodedCacheDenialRefundsTheNativeString() in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/Utf16CodecAccountingTests.cs:line 114
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:14.4415535Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:14.4416555Z    at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:16.6533858Z ^[[31;1m[xUnit.net 00:00:08.30]     Lokad.Lython.Tests.Windows1252CodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:16.6592117Z   Failed Lokad.Lython.Tests.Windows1252CodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString [< 1 ms]
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:16.6616953Z   Error Message:
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:16.6647055Z    Assert.Throws() Failure: No exception was thrown
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:16.6677566Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:16.6695736Z   Stack Trace:
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:16.6697205Z      at Lokad.Lython.Tests.Windows1252CodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString() in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/Windows1252CodecAccountingTests.cs:line 65
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:16.6699170Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:16.6700491Z    at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:25.8898283Z ^[[31;1m[xUnit.net 00:00:17.53]     Lokad.Lython.Tests.AsciiCodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:25.8936557Z   Failed Lokad.Lython.Tests.AsciiCodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString [< 1 ms]
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:25.8941822Z   Error Message:
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:25.8957468Z    Assert.Throws() Failure: No exception was thrown
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:25.8958104Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:25.8958592Z   Stack Trace:
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:25.8959756Z      at Lokad.Lython.Tests.AsciiCodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString() in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/AsciiCodecAccountingTests.cs:line 65
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:25.8961301Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:25.8962435Z    at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3066411Z ^[[31;1m[xUnit.net 00:00:17.96]     Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: True, readSize: 4) [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3097662Z ^[[31;1m[xUnit.net 00:00:17.96]     Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: False, readSize: 4) [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3149898Z   Failed Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: True, readSize: 4) [< 1 ms]
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3151092Z   Error Message:
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3151604Z    Assert.Throws() Failure: No exception was thrown
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3152355Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3155167Z   Stack Trace:
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3157212Z      at Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(Boolean asynchronous, Int32 readSize) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/TextReadEmissionOwnershipTests.cs:line 48
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3159031Z --- End of stack trace from previous location ---
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3160349Z   Failed Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: False, readSize: 4) [< 1 ms]
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3161640Z   Error Message:
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3162194Z    Assert.Throws() Failure: No exception was thrown
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3163028Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3163717Z   Stack Trace:
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3165294Z      at Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(Boolean asynchronous, Int32 readSize) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/TextReadEmissionOwnershipTests.cs:line 54
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:26.3167310Z --- End of stack trace from previous location ---
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:33.7717757Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:33.8210732Z 
+tests (ubuntu-latest)	Test Release	2026-10-18T00:28:33.8267088Z Failed!  - Failed:     5, Passed:  3407, Skipped:     0, Total:  3412, Duration: 23 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:30:20.7906162Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (ubuntu-latest)	Test Release	2026-10-18T00:30:20.8236033Z 
+tests (ubuntu-latest)	Test Release	2026-10-18T00:30:20.8385381Z Passed!  - Failed:     0, Passed: 11515, Skipped:     0, Total: 11515, Duration: 2 m 5 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)
+tests (ubuntu-latest)	Test Release	2026-10-18T00:30:20.9500024Z ##[error]Process completed with exit code 1.
+tests (windows-latest)	Test Release	﻿2026-10-18T00:29:14.7331812Z ##[group]Run try { dotnet test Lokad.Lython.slnx -c Release --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7333427Z ^[[36;1mtry { dotnet test Lokad.Lython.slnx -c Release --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }^[[0m
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7334314Z ^[[36;1mif ($LASTEXITCODE -ne 0) { exit 1 }^[[0m
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7406427Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7406779Z env:
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7406970Z   DOTNET_ROOT: C:\Program Files\dotnet
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7407496Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.16\x64
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7407952Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.16\x64/lib/pkgconfig
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7408397Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.16\x64
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7408835Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.16\x64
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7409226Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.16\x64
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7409552Z   DOTNET_DbgEnableMiniDump: 1
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7409786Z   DOTNET_DbgMiniDumpType: Mini
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7410070Z   DOTNET_DbgMiniDumpName: D:\a\Lython\Lython/crash-%p.dmp
+tests (windows-latest)	Test Release	2026-10-18T00:29:14.7410365Z ##[endgroup]
+tests (windows-latest)	Test Release	2026-10-18T00:29:15.4820777Z 
+tests (windows-latest)	Test Release	2026-10-18T00:29:16.5153670Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v10.0)
+tests (windows-latest)	Test Release	2026-10-18T00:29:16.5453740Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v10.0)
+tests (windows-latest)	Test Release	2026-10-18T00:29:17.5031005Z A total of 1 test files matched the specified pattern.
+tests (windows-latest)	Test Release	2026-10-18T00:29:17.5033346Z A total of 1 test files matched the specified pattern.
+tests (windows-latest)	Test Release	2026-10-18T00:29:17.9208001Z Blame: Attaching crash dump utility to process testhost (6356).
+tests (windows-latest)	Test Release	2026-10-18T00:29:17.9215929Z Blame: Attaching crash dump utility to process testhost (8004).
+tests (windows-latest)	Test Release	2026-10-18T00:29:25.1141226Z ^[[31;1m[xUnit.net 00:00:02.73]     Lokad.Lython.Tests.Windows1252CodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString [FAIL]^[[0m
+tests (windows-latest)	Test Release	2026-10-18T00:29:25.1182161Z   Failed Lokad.Lython.Tests.Windows1252CodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString [2 ms]
+tests (windows-latest)	Test Release	2026-10-18T00:29:25.1254656Z   Error Message:
+tests (windows-latest)	Test Release	2026-10-18T00:29:25.1320886Z    Assert.Throws() Failure: No exception was thrown
+tests (windows-latest)	Test Release	2026-10-18T00:29:25.1399589Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+tests (windows-latest)	Test Release	2026-10-18T00:29:25.1429889Z   Stack Trace:
+tests (windows-latest)	Test Release	2026-10-18T00:29:25.1457865Z      at Lokad.Lython.Tests.Windows1252CodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString() in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\Windows1252CodecAccountingTests.cs:line 65
+tests (windows-latest)	Test Release	2026-10-18T00:29:25.1567379Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+tests (windows-latest)	Test Release	2026-10-18T00:29:25.1569347Z    at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (windows-latest)	Test Release	2026-10-18T00:29:29.7369827Z ^[[31;1m[xUnit.net 00:00:10.14]     Lokad.Lython.Tests.AsciiCodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString [FAIL]^[[0m
+tests (windows-latest)	Test Release	2026-10-18T00:29:29.7372410Z   Failed Lokad.Lython.Tests.AsciiCodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString [< 1 ms]
+tests (windows-latest)	Test Release	2026-10-18T00:29:29.7646750Z   Error Message:
+tests (windows-latest)	Test Release	2026-10-18T00:29:29.7650092Z    Assert.Throws() Failure: No exception was thrown
+tests (windows-latest)	Test Release	2026-10-18T00:29:29.7652040Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+tests (windows-latest)	Test Release	2026-10-18T00:29:29.7654008Z   Stack Trace:
+tests (windows-latest)	Test Release	2026-10-18T00:29:29.7658162Z      at Lokad.Lython.Tests.AsciiCodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString() in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\AsciiCodecAccountingTests.cs:line 65
+tests (windows-latest)	Test Release	2026-10-18T00:29:29.7665762Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+tests (windows-latest)	Test Release	2026-10-18T00:29:29.7668354Z    at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (windows-latest)	Test Release	2026-10-18T00:29:30.1457684Z ^[[31;1m[xUnit.net 00:00:11.71]     Lokad.Lython.Tests.Utf16CodecAccountingTests.AstralWindowDecodedCacheDenialRefundsTheNativeString [FAIL]^[[0m
+tests (windows-latest)	Test Release	2026-10-18T00:29:30.1460697Z   Failed Lokad.Lython.Tests.Utf16CodecAccountingTests.AstralWindowDecodedCacheDenialRefundsTheNativeString [< 1 ms]
+tests (windows-latest)	Test Release	2026-10-18T00:29:30.1461894Z   Error Message:
+tests (windows-latest)	Test Release	2026-10-18T00:29:30.1462395Z    Assert.Throws() Failure: No exception was thrown
+tests (windows-latest)	Test Release	2026-10-18T00:29:30.1465609Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+tests (windows-latest)	Test Release	2026-10-18T00:29:30.1466255Z   Stack Trace:
+tests (windows-latest)	Test Release	2026-10-18T00:29:30.1467845Z      at Lokad.Lython.Tests.Utf16CodecAccountingTests.AstralWindowDecodedCacheDenialRefundsTheNativeString() in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\Utf16CodecAccountingTests.cs:line 114
+tests (windows-latest)	Test Release	2026-10-18T00:29:30.1469918Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+tests (windows-latest)	Test Release	2026-10-18T00:29:30.1868560Z    at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.6380445Z ^[[31;1m[xUnit.net 00:00:18.21]     Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: True, readSize: 4) [FAIL]^[[0m
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.6618528Z   Failed Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: True, readSize: 4) [1 ms]
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.6620400Z   Error Message:
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.6621042Z    Assert.Throws() Failure: No exception was thrown
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.6621971Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.6623001Z   Stack Trace:
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.6624990Z      at Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(Boolean asynchronous, Int32 readSize) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\TextReadEmissionOwnershipTests.cs:line 48
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.6627469Z --- End of stack trace from previous location ---
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.6983239Z ^[[31;1m[xUnit.net 00:00:18.27]     Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: False, readSize: 4) [FAIL]^[[0m
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.8415297Z   Failed Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: False, readSize: 4) [< 1 ms]
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.8416856Z   Error Message:
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.8419070Z    Assert.Throws() Failure: No exception was thrown
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.8422184Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.8430394Z   Stack Trace:
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.8444341Z      at Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(Boolean asynchronous, Int32 readSize) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\TextReadEmissionOwnershipTests.cs:line 54
+tests (windows-latest)	Test Release	2026-10-18T00:29:36.8447553Z --- End of stack trace from previous location ---
+tests (windows-latest)	Test Release	2026-10-18T00:29:48.1864591Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (windows-latest)	Test Release	2026-10-18T00:29:48.2629689Z 
+tests (windows-latest)	Test Release	2026-10-18T00:29:48.2656399Z Failed!  - Failed:     5, Passed:  3407, Skipped:     0, Total:  3412, Duration: 27 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)
+tests (windows-latest)	Test Release	2026-10-18T00:32:02.2625343Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (windows-latest)	Test Release	2026-10-18T00:32:02.3066968Z 
+tests (windows-latest)	Test Release	2026-10-18T00:32:02.3234662Z Passed!  - Failed:     0, Passed: 11515, Skipped:     0, Total: 11515, Duration: 2 m 34 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)
+tests (windows-latest)	Test Release	2026-10-18T00:32:02.7114237Z ##[error]Process completed with exit code 1.

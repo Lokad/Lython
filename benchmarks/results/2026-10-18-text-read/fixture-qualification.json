@@ -1,0 +1,320 @@
+{
+  "runtimeSourceRevision": "12863ed72b07d4a12fe8666e6cc9b652d569e67b",
+  "runtimeChanged": false,
+  "initialCiRun": 39082775997,
+  "initialCiResult": "Both platforms fail the same five white-box fixtures; all 11515 public cases pass on each.",
+  "removedObsoleteTests": {
+    "AsciiCodecAccountingTests.cs": [
+      "WindowDecodedCacheDenialRefundsTheNativeString"
+    ],
+    "Windows1252CodecAccountingTests.cs": [
+      "WindowDecodedCacheDenialRefundsTheNativeString"
+    ],
+    "Utf16CodecAccountingTests.cs": [
+      "AstralWindowDecodedCacheDenialRefundsTheNativeString"
+    ]
+  },
+  "reason": "Only these three cases require the removed duplicate UTF-16 cache. Native decoding denial and close cleanup remain covered.",
+  "emissionFixtureChange": "Replace obsolete48-byte accumulator scratch with8-byte initial capacity. Retain payload refusal, exact reservation/committed cleanup and same-terminal-error assertions; add exact denied payload demand.",
+  "focusedTotalPassed": 450,
+  "noTimeoutOrContainmentRelaxation": true,
+  "newVmCapture": false,
+  "records": {
+    "ci-omitted-baseline": {
+      "process": {
+        "source": "12863ed7",
+        "production": "pre-fixture-cleanup",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "F714A65668459BFE81FD69D1BB0BD1AB3F109D476FD762EA6B57E888A2F561EC",
+        "filter": "Category!=Stress&(FullyQualifiedName~AsciiCodecAccountingTests|FullyQualifiedName~Windows1252CodecAccountingTests|FullyQualifiedName~Utf16CodecAccountingTests|FullyQualifiedName~TextReadEmissionOwnershipTests)",
+        "pid": 55456,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1151,
+        "stdoutSha256": "50EC04F1B60D542659E0B013B2B16D9B5CDEB86623AC794F65DF5C9C98A1F329",
+        "stderrSha256": "7EEB3B57F36961C599A65B15742D0B97845EC52F5B31C3F23D5C922814C9C051"
+      },
+      "passed": 20,
+      "failed": 5,
+      "trxSha256": "9de140968ba2c138ab7c117060553aa1e065777bdcce25f34a3bae8aa30c0c59",
+      "cases": [
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: True, readSize: 2)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.ClosingWindowsRefundsBothTextRepresentations(errorMode: 1)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: False, readSize: -1)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.AsciiCodecAccountingTests.ClosingWindowsRefundsBothTextRepresentations(errorMode: 2)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Windows1252CodecAccountingTests.DeniedNativeDecodingRefundsUnusedAdmission(cap: 130)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.ClosingWindowsRefundsBothTextRepresentations(errorMode: 3)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.RetainedLineStaysChargedAfterReaderCloses(asynchronous: False)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodingDenialKeepsStagedTextAndRefundsTemporaryFunding",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: True, readSize: 4)",
+          "outcome": "Failed",
+          "message": "Assert.Throws() Failure: No exception was thrown\r\nExpected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)"
+        },
+        {
+          "name": "Lokad.Lython.Tests.Windows1252CodecAccountingTests.ClosingWindowsRefundsBothTextRepresentations(errorMode: 2)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.AstralWindowDecodedCacheDenialRefundsTheNativeString",
+          "outcome": "Failed",
+          "message": "Assert.Throws() Failure: No exception was thrown\r\nExpected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)"
+        },
+        {
+          "name": "Lokad.Lython.Tests.AsciiCodecAccountingTests.DeniedNativeDecodingRefundsUnusedAdmission(cap: 130)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodedOutputStaysFundedAcrossASuspendedWriteAndRefundsOnCancellation",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.AsciiCodecAccountingTests.ClosingWindowsRefundsBothTextRepresentations(errorMode: 1)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.ClosingWindowsRefundsBothTextRepresentations(errorMode: 2)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: False, readSize: 4)",
+          "outcome": "Failed",
+          "message": "Assert.Throws() Failure: No exception was thrown\r\nExpected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)"
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: False, readSize: 2)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.AsciiCodecAccountingTests.ClosingWindowsRefundsBothTextRepresentations(errorMode: 3)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Windows1252CodecAccountingTests.ClosingWindowsRefundsBothTextRepresentations(errorMode: 1)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.AsciiCodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString",
+          "outcome": "Failed",
+          "message": "Assert.Throws() Failure: No exception was thrown\r\nExpected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)"
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.DeniedNativeDecodingRefundsUnusedAdmission(cap: 130)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.RetainedLineStaysChargedAfterReaderCloses(asynchronous: True)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: True, readSize: -1)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Windows1252CodecAccountingTests.WindowDecodedCacheDenialRefundsTheNativeString",
+          "outcome": "Failed",
+          "message": "Assert.Throws() Failure: No exception was thrown\r\nExpected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)"
+        },
+        {
+          "name": "Lokad.Lython.Tests.Windows1252CodecAccountingTests.ClosingWindowsRefundsBothTextRepresentations(errorMode: 3)",
+          "outcome": "Passed",
+          "message": ""
+        }
+      ]
+    },
+    "candidate-fixture-cleanup": {
+      "process": {
+        "source": "12863ed7",
+        "production": "fixture-cleanup",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "6C59920559DEE155DFC043303B6310CEF37A9F6204350741239B47454AA2B2E8",
+        "filter": "Category!=Stress&(FullyQualifiedName~AsciiCodecAccountingTests|FullyQualifiedName~Windows1252CodecAccountingTests|FullyQualifiedName~Utf16CodecAccountingTests|FullyQualifiedName~TextReadEmissionOwnershipTests)",
+        "pid": 49604,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1135,
+        "stdoutSha256": "BAC07446178D3B7F195270818641506C64A803AC396E75E5049AB23AB6D3421F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "passed": 22,
+      "failed": 0,
+      "trxSha256": "bb68bae2ef519b911d66dfbfb3bf31f4cac0fdd4d0cad35c9f6b271b7dfb5229",
+      "cases": [
+        {
+          "name": "Lokad.Lython.Tests.Windows1252CodecAccountingTests.ClosingWindowsRefundsOwnedStorage(errorMode: 1)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: False, readSize: 4)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.AsciiCodecAccountingTests.ClosingWindowsRefundsOwnedStorage(errorMode: 3)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: True, readSize: 2)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.ClosingWindowsRefundsOwnedStorage(errorMode: 3)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodingDenialKeepsStagedTextAndRefundsTemporaryFunding",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Windows1252CodecAccountingTests.DeniedNativeDecodingRefundsUnusedAdmission(cap: 130)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodedOutputStaysFundedAcrossASuspendedWriteAndRefundsOnCancellation",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.RetainedLineStaysChargedAfterReaderCloses(asynchronous: False)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.AsciiCodecAccountingTests.ClosingWindowsRefundsOwnedStorage(errorMode: 1)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: False, readSize: -1)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.AsciiCodecAccountingTests.DeniedNativeDecodingRefundsUnusedAdmission(cap: 130)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Windows1252CodecAccountingTests.ClosingWindowsRefundsOwnedStorage(errorMode: 3)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.AsciiCodecAccountingTests.ClosingWindowsRefundsOwnedStorage(errorMode: 2)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.ClosingWindowsRefundsOwnedStorage(errorMode: 2)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: False, readSize: 2)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.RetainedLineStaysChargedAfterReaderCloses(asynchronous: True)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: True, readSize: -1)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionPayloadReturnsUnpublishedStorage(asynchronous: True, readSize: 4)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.DeniedNativeDecodingRefundsUnusedAdmission(cap: 130)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Utf16CodecAccountingTests.ClosingWindowsRefundsOwnedStorage(errorMode: 1)",
+          "outcome": "Passed",
+          "message": ""
+        },
+        {
+          "name": "Lokad.Lython.Tests.Windows1252CodecAccountingTests.ClosingWindowsRefundsOwnedStorage(errorMode: 2)",
+          "outcome": "Passed",
+          "message": ""
+        }
+      ]
+    }
+  },
+  "buildReceipt": {
+    "pid": 28472,
+    "exitCode": 0,
+    "hasExited": true,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 15647,
+    "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+    "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+    "arguments": [
+      "build",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "--no-restore",
+      "-p:UseSharedCompilation=false",
+      "-nodeReuse:false"
+    ]
+  },
+  "failedCiLogSha256": "04ee37b281888e081c2dcd883f00d15871877f023434bce997d4c0c9f65a0579"
+}

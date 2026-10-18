@@ -79,7 +79,7 @@ public sealed class Utf16CodecAccountingTests
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
-    public void ClosingWindowsRefundsBothTextRepresentations(int errorMode)
+    public void ClosingWindowsRefundsOwnedStorage(int errorMode)
     {
         foreach (var window in new[] { 1, 2, 3, 5 })
         {
@@ -96,25 +96,5 @@ public sealed class Utf16CodecAccountingTests
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
-    }
-
-    [Fact]
-    public void AstralWindowDecodedCacheDenialRefundsTheNativeString()
-    {
-        var host = new MockLythonHost();
-        host.SeedBytes("/input", [0x3d, 0xd8, 0x00, 0xde]);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState("/input", context,
-            LythonRuntime.TextEncodingMode.Utf16LittleEndian, LythonRuntime.TextErrorMode.Strict,
-            LythonRuntime.TextNewlineMode.PreserveUniversal, 1);
-        var before = context.MemoryGovernor.CurrentCommittedBytes;
-        // Admit raw/UTF-8 storage but leave the UTF-16 cache one byte short.
-        using var pressure = context.MemoryGovernor.ReserveTemporary(65536 - context.MemoryGovernor.CurrentAccountedBytes
-            - 176, null);
-        try { Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(state.Prime).ExceptionType); }
-        finally { state.Release(); }
-        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
-        pressure.Dispose();
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }
