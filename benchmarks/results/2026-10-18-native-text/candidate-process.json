@@ -1,0 +1,14 @@
+{
+  "source": "native-text",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "318947BC704A76C7DFDC438DA9E31A79BD611AD38A1FC30F4AFD3B61E48CBB33",
+  "filter": "Category!=Stress&(FullyQualifiedName~NativeTextDiagnostic|FullyQualifiedName~NativeScalarDispatchBoundaryTests)",
+  "pid": 46892,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1379,
+  "stdoutSha256": "2D0098200DE89CAF662F2DE97DB85B62CE87F67F2ABACDE4292957C81ED8E94D",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

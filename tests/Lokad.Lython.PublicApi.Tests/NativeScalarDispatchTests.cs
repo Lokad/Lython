@@ -4,22 +4,28 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class NativeScalarDispatchTests
 {
-    [Fact]
-    public async Task RetainedMixedIntegerResultKeepsItsOwner()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RetainedScalarResultKeepsItsOwner(bool text)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("value=(1<<4096)+True\nalias=value\nvalue=None\nreturn alias", budget);
+        var expression = text ? "left+right" : "(1<<4096)+True";
+        using var script = new LythonEngine().Compile($"value={expression}\nalias=value\nvalue=None\nreturn alias", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions
+        { Globals = text ? new Dictionary<string, object?> { ["left"] = "café", ["right"] = "😀" } : null };
+        object expected = text ? "café😀" : (System.Numerics.BigInteger.One << 4096) + 1;
         foreach (var asynchronous in new[] { false, true })
         {
-            using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+            using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
             {
                 Assert.True(retained.Success, retained.Failure?.Message);
-                Assert.Equal((System.Numerics.BigInteger.One << 4096) + 1, retained.ReturnValue);
+                Assert.Equal(expected, retained.ReturnValue);
                 var held = budget.ReservedBytes;
                 Assert.True(held > baseline);
-                using (var next = script.Run(new MockLythonHost())) Assert.True(next.Success, next.Failure?.Message);
+                using (var next = script.Run(new MockLythonHost(), options)) Assert.True(next.Success, next.Failure?.Message);
                 Assert.Equal(held, budget.ReservedBytes);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
@@ -35,6 +41,12 @@ public sealed class NativeScalarDispatchTests
     [InlineData("unary", true)]
     [InlineData("truth", false)]
     [InlineData("truth", true)]
+    [InlineData("text_binary", false)]
+    [InlineData("text_binary", true)]
+    [InlineData("text_augmented", false)]
+    [InlineData("text_augmented", true)]
+    [InlineData("text_left", false)]
+    [InlineData("text_left", true)]
     public async Task AProtocolOperandStillSuspendsWithoutReplay(string operation, bool cancel)
     {
         var (method, expression, expected) = operation switch
@@ -42,9 +54,12 @@ public sealed class NativeScalarDispatchTests
             "binary" => ("__radd__", "print(1.5+Operand())", "3.5\n"),
             "augmented" => ("__radd__", "value=1.5\nvalue+=Operand()\nprint(value)", "3.5\n"),
             "unary" => ("__pos__", "print(+Operand())", "3.5\n"),
+            "text_binary" => ("__radd__", "print('left'+Operand())", "3.5\n"),
+            "text_augmented" => ("__radd__", "value='left'\nvalue+=Operand()\nprint(value)", "3.5\n"),
+            "text_left" => ("__add__", "print(Operand()+'right')", "3.5\n"),
             _ => ("__bool__", "print(not Operand())", "False\n")
         };
-        var source = $"class Operand:\n def {method}(self" + (method == "__radd__" ? ",other" : "") +
+        var source = $"class Operand:\n def {method}(self" + (method is "__radd__" or "__add__" ? ",other" : "") +
             $"):\n  with open('events.txt','a') as output:output.write('{operation}')\n  return " +
             (operation == "truth" ? "True" : "3.5") + "\nvalue=1.5\nvalue+=True\n" + expression;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);

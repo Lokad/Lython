@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 native text dispatch change](results/2026-10-18-native-text/README.md)
+extends the existing synchronous native operand gate to exact builtin strings
+under async hosting. One predicate changes; no operator/storage/protocol body or
+execution framework is added. The fixed native gate passes: async-string median
+2.7052 to 2.0524 ms, allocations unchanged, controls within their limits. All 44
+frozen work matrices and 694 final focused cases pass. This is an unqualified
+native observation; no whole-job or CPython timing claim or repeated capture.
+
 The [2026-10-18 native separator split change](results/2026-10-18-string-split/README.md)
 removes ordinary split(sep) method/argument packaging and the split-only
 zero-argument delegate, sharing existing validation and UTF-8 storage code.

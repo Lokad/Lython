@@ -1,0 +1,138 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index 276e866c..df36219a 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -788,11 +788,12 @@ internal sealed partial class LythonRuntime
+ 
+                                 case ExecutableOpCode.Binary:
+                                 case ExecutableOpCode.Augmented:
+-                                    // Exact native scalars cannot invoke guest protocols. Share the
++                                    // Exact builtin operands cannot invoke guest protocols. Share the
+                                     // synchronous transfer/admission path before creating any
+                                     // operation-helper state machine; never retry a guest call.
+-                                    if (_stack[_stack.Count - 2] is BigInteger or double or bool &&
+-                                        _stack[_stack.Count - 1] is BigInteger or double or bool)
++                                    if ((_stack[_stack.Count - 2] is BigInteger or double or bool &&
++                                         _stack[_stack.Count - 1] is BigInteger or double or bool) ||
++                                        (_stack[_stack.Count - 2] is PyString && _stack[_stack.Count - 1] is PyString))
+                                         ExecuteObservedValueOperation(instruction);
+                                     else
+                                         jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs b/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
+index f6ccd5ee..51a70741 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
+@@ -4,22 +4,28 @@ namespace Lokad.Lython.PublicApi.Tests;
+ 
+ public sealed class NativeScalarDispatchTests
+ {
+-    [Fact]
+-    public async Task RetainedMixedIntegerResultKeepsItsOwner()
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task RetainedScalarResultKeepsItsOwner(bool text)
+     {
+         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+-        using var script = new LythonEngine().Compile("value=(1<<4096)+True\nalias=value\nvalue=None\nreturn alias", budget);
++        var expression = text ? "left+right" : "(1<<4096)+True";
++        using var script = new LythonEngine().Compile($"value={expression}\nalias=value\nvalue=None\nreturn alias", budget);
+         Assert.True(script.IsValid);
+         var baseline = budget.ReservedBytes;
++        var options = new LythonRunOptions
++        { Globals = text ? new Dictionary<string, object?> { ["left"] = "café", ["right"] = "😀" } : null };
++        object expected = text ? "café😀" : (System.Numerics.BigInteger.One << 4096) + 1;
+         foreach (var asynchronous in new[] { false, true })
+         {
+-            using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
++            using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+             {
+                 Assert.True(retained.Success, retained.Failure?.Message);
+-                Assert.Equal((System.Numerics.BigInteger.One << 4096) + 1, retained.ReturnValue);
++                Assert.Equal(expected, retained.ReturnValue);
+                 var held = budget.ReservedBytes;
+                 Assert.True(held > baseline);
+-                using (var next = script.Run(new MockLythonHost())) Assert.True(next.Success, next.Failure?.Message);
++                using (var next = script.Run(new MockLythonHost(), options)) Assert.True(next.Success, next.Failure?.Message);
+                 Assert.Equal(held, budget.ReservedBytes);
+             }
+             Assert.Equal(baseline, budget.ReservedBytes);
+@@ -35,6 +41,12 @@ public sealed class NativeScalarDispatchTests
+     [InlineData("unary", true)]
+     [InlineData("truth", false)]
+     [InlineData("truth", true)]
++    [InlineData("text_binary", false)]
++    [InlineData("text_binary", true)]
++    [InlineData("text_augmented", false)]
++    [InlineData("text_augmented", true)]
++    [InlineData("text_left", false)]
++    [InlineData("text_left", true)]
+     public async Task AProtocolOperandStillSuspendsWithoutReplay(string operation, bool cancel)
+     {
+         var (method, expression, expected) = operation switch
+@@ -42,9 +54,12 @@ public sealed class NativeScalarDispatchTests
+             "binary" => ("__radd__", "print(1.5+Operand())", "3.5\n"),
+             "augmented" => ("__radd__", "value=1.5\nvalue+=Operand()\nprint(value)", "3.5\n"),
+             "unary" => ("__pos__", "print(+Operand())", "3.5\n"),
++            "text_binary" => ("__radd__", "print('left'+Operand())", "3.5\n"),
++            "text_augmented" => ("__radd__", "value='left'\nvalue+=Operand()\nprint(value)", "3.5\n"),
++            "text_left" => ("__add__", "print(Operand()+'right')", "3.5\n"),
+             _ => ("__bool__", "print(not Operand())", "False\n")
+         };
+-        var source = $"class Operand:\n def {method}(self" + (method == "__radd__" ? ",other" : "") +
++        var source = $"class Operand:\n def {method}(self" + (method is "__radd__" or "__add__" ? ",other" : "") +
+             $"):\n  with open('events.txt','a') as output:output.write('{operation}')\n  return " +
+             (operation == "truth" ? "True" : "3.5") + "\nvalue=1.5\nvalue+=True\n" + expression;
+         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+diff --git a/tests/Lokad.Lython.Tests/NativeScalarDispatchBoundaryTests.cs b/tests/Lokad.Lython.Tests/NativeScalarDispatchBoundaryTests.cs
+index 4035d8bd..4ae4da8a 100644
+--- a/tests/Lokad.Lython.Tests/NativeScalarDispatchBoundaryTests.cs
++++ b/tests/Lokad.Lython.Tests/NativeScalarDispatchBoundaryTests.cs
+@@ -71,8 +71,47 @@ public sealed class NativeScalarDispatchBoundaryTests(ITestOutputHelper output)
+         { "shift_float", "return left<<right", 1.5, BigInteger.One, null, "TypeError" },
+         { "invert_float", "return ~left", 1.5, false, null, "TypeError" },
+         { "wide_bool", "return left+right", true, BigInteger.One << 80, (BigInteger.One << 80) + 1, null },
++        { "text_add", "return left+right", PyString.FromString("café"), PyString.FromString("😀"), PyString.FromString("café😀"), null },
++        { "text_aug", "global left\nleft+=right\nreturn left", PyString.FromString("café"), PyString.FromString("😀"), PyString.FromString("café😀"), null },
++        { "text_less", "return left<right", PyString.FromString("café"), PyString.FromString("😀"), true, null },
++        { "text_in", "return left in right", PyString.FromString("😀"), PyString.FromString("café😀tail"), true, null },
++        { "text_format", "return left%right", PyString.FromString("café:%s"), PyString.FromString("😀"), PyString.FromString("café:😀"), null },
++        { "text_power", "return left**right", PyString.FromString("café"), PyString.FromString("😀"), null, "TypeError" },
++        { "text_matrix", "return left@right", PyString.FromString("café"), PyString.FromString("😀"), null, "TypeError" },
+     };
+ 
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task StringConcatenationAdmissionRefusesBeforePublication(bool augmented)
++    {
++        var source = "pad()\nglobal left\n" + (augmented ? "left+=right\nreturn left" : "return left+right");
++        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
++        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
++        foreach (var asynchronous in new[] { false, true })
++        {
++            using (var owner = budget.CreateScope())
++            {
++                var context = new Context(new MockLythonHost(), new LythonRunOptions
++                { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024 });
++                var left = PyString.FromString("café" + new string('x', 1024), context.MemoryGovernor, null);
++                var right = PyString.FromString("😀" + new string('y', 1024), context.MemoryGovernor, null);
++                context.Variables["left"] = left;
++                context.Variables["right"] = right;
++                context.Variables["pad"] = new FillAllowance(256, PyString.FromString("funded", context.MemoryGovernor, null));
++                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
++                Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
++                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
++                Assert.True(failure.Attribution?.Requested >= left.Utf8Bytes.Length + right.Utf8Bytes.Length);
++                Assert.Contains('+', source.Substring(failure.Span!.Start, failure.Span.Length));
++                Assert.Same(left, context.Variables["left"]);
++                Assert.Same(right, context.Variables["right"]);
++                CheckCleanup(context);
++            }
++            Assert.Equal(0, budget.ReservedBytes);
++        }
++    }
++
+     [Theory]
+     [MemberData(nameof(Cases))]
+     public async Task EveryFuelBoundaryKeepsValuesErrorsPublicationAndCleanup(

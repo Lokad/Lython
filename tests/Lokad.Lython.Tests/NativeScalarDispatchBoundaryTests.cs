@@ -71,7 +71,46 @@ public sealed class NativeScalarDispatchBoundaryTests(ITestOutputHelper output)
         { "shift_float", "return left<<right", 1.5, BigInteger.One, null, "TypeError" },
         { "invert_float", "return ~left", 1.5, false, null, "TypeError" },
         { "wide_bool", "return left+right", true, BigInteger.One << 80, (BigInteger.One << 80) + 1, null },
+        { "text_add", "return left+right", PyString.FromString("café"), PyString.FromString("😀"), PyString.FromString("café😀"), null },
+        { "text_aug", "global left\nleft+=right\nreturn left", PyString.FromString("café"), PyString.FromString("😀"), PyString.FromString("café😀"), null },
+        { "text_less", "return left<right", PyString.FromString("café"), PyString.FromString("😀"), true, null },
+        { "text_in", "return left in right", PyString.FromString("😀"), PyString.FromString("café😀tail"), true, null },
+        { "text_format", "return left%right", PyString.FromString("café:%s"), PyString.FromString("😀"), PyString.FromString("café:😀"), null },
+        { "text_power", "return left**right", PyString.FromString("café"), PyString.FromString("😀"), null, "TypeError" },
+        { "text_matrix", "return left@right", PyString.FromString("café"), PyString.FromString("😀"), null, "TypeError" },
     };
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StringConcatenationAdmissionRefusesBeforePublication(bool augmented)
+    {
+        var source = "pad()\nglobal left\n" + (augmented ? "left+=right\nreturn left" : "return left+right");
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var owner = budget.CreateScope())
+            {
+                var context = new Context(new MockLythonHost(), new LythonRunOptions
+                { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024 });
+                var left = PyString.FromString("café" + new string('x', 1024), context.MemoryGovernor, null);
+                var right = PyString.FromString("😀" + new string('y', 1024), context.MemoryGovernor, null);
+                context.Variables["left"] = left;
+                context.Variables["right"] = right;
+                context.Variables["pad"] = new FillAllowance(256, PyString.FromString("funded", context.MemoryGovernor, null));
+                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
+                Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
+                Assert.True(failure.Attribution?.Requested >= left.Utf8Bytes.Length + right.Utf8Bytes.Length);
+                Assert.Contains('+', source.Substring(failure.Span!.Start, failure.Span.Length));
+                Assert.Same(left, context.Variables["left"]);
+                Assert.Same(right, context.Variables["right"]);
+                CheckCleanup(context);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
 
     [Theory]
     [MemberData(nameof(Cases))]

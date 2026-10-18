@@ -1,0 +1,285 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "7149dac72894055245cf4fb76e2a08aad3ac40ce",
+  "candidate": "Frozen one-file exact-PyString operand gate on baseline",
+  "source": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs",
+  "beforeSha256": "e74c0c843834e990ea028b88d1f44faae567e6d31e9ac1d7d733420a3d0cb0b8",
+  "afterSha256": "b6e09eec5d9103f1694e5348b9fb57fc576cbea76fe6f3f7bd3a73717124c3d3",
+  "exactSubstitutionProof": true,
+  "sourceProof": "One existing predicate plus its comment only. No operator, parser, callback, storage, call/transfer, ownership, cache, mode or dispatch framework changed.",
+  "comparison": {
+    "accepted": true,
+    "exactWorkRecords": 44,
+    "exactWorkMatched": true,
+    "native": [
+      {
+        "asynchronous": false,
+        "numeric": false,
+        "beforeMilliseconds": [
+          1.9637,
+          1.9816999999999998,
+          1.9991,
+          1.9951999999999999,
+          1.9810999999999999,
+          2.426,
+          1.9488999999999999,
+          1.9562
+        ],
+        "afterMilliseconds": [
+          1.9012,
+          1.8982,
+          1.9748999999999999,
+          1.9202,
+          1.8327,
+          1.8336,
+          1.8426,
+          1.8338
+        ],
+        "beforeMedianMs": 1.9813999999999998,
+        "afterMedianMs": 1.8704,
+        "afterOverBefore": 0.9439790047441204,
+        "allocationUnchanged": true,
+        "beforeAllocated": [
+          115168,
+          115168,
+          115168,
+          115168,
+          115168,
+          115168,
+          115168,
+          115168
+        ],
+        "afterAllocated": [
+          115168,
+          115168,
+          115168,
+          115168,
+          115168,
+          115168,
+          115168,
+          115168
+        ],
+        "gatePassed": true
+      },
+      {
+        "asynchronous": true,
+        "numeric": false,
+        "beforeMilliseconds": [
+          2.6908000000000003,
+          2.7051000000000003,
+          2.7017,
+          2.7399,
+          2.7017,
+          3.0484,
+          2.7053,
+          2.7229
+        ],
+        "afterMilliseconds": [
+          2.0827,
+          2.0458,
+          2.0471,
+          2.049,
+          2.3272000000000004,
+          2.0833000000000004,
+          2.0558,
+          2.0427
+        ],
+        "beforeMedianMs": 2.7052,
+        "afterMedianMs": 2.0524,
+        "afterOverBefore": 0.7586869732367293,
+        "allocationUnchanged": true,
+        "beforeAllocated": [
+          115144,
+          115144,
+          115144,
+          115144,
+          115144,
+          115144,
+          115144,
+          115144
+        ],
+        "afterAllocated": [
+          115144,
+          115144,
+          115144,
+          115144,
+          115144,
+          115144,
+          115144,
+          115144
+        ],
+        "gatePassed": true
+      },
+      {
+        "asynchronous": true,
+        "numeric": true,
+        "beforeMilliseconds": [
+          2.2232,
+          2.1967000000000003,
+          2.1898,
+          2.2072,
+          2.2792,
+          2.1748000000000003,
+          2.1553,
+          2.2103
+        ],
+        "afterMilliseconds": [
+          2.1789,
+          2.1748000000000003,
+          2.1807,
+          2.185,
+          2.1659,
+          2.1516,
+          2.2112,
+          2.1895000000000002
+        ],
+        "beforeMedianMs": 2.20195,
+        "afterMedianMs": 2.1798,
+        "afterOverBefore": 0.9899407343490997,
+        "allocationUnchanged": true,
+        "beforeAllocated": [
+          115144,
+          115144,
+          115144,
+          115144,
+          115144,
+          115144,
+          115144,
+          115144
+        ],
+        "afterAllocated": [
+          115144,
+          115144,
+          115144,
+          115144,
+          115144,
+          115144,
+          115144,
+          115144
+        ],
+        "gatePassed": true
+      }
+    ],
+    "performanceQualified": false,
+    "repeatedTiming": false,
+    "scope": "One existing native operand gate only; local short native loop comparison, no complete-job or CPython timing claim."
+  },
+  "finalFocusedPassed": 694,
+  "groups": {
+    "final-white": {
+      "passed": 133,
+      "process": {
+        "source": "native-text",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "EF9940333AEB20143BF0990CBB1432EF28BB7BC4E1E27403BF0CB1E0D5CCE1A4",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeScalarDispatchBoundaryTests|FullyQualifiedName~StringProtocolBoundaryTests|FullyQualifiedName~RuntimeProtocolSubsystemTests|FullyQualifiedName~NumericArchitectureSubsystemTests|FullyQualifiedName~ExecutableAugmentedIntegerBoundaryTests|FullyQualifiedName~ExecutableOperandStackBoundaryTests|FullyQualifiedName~LoweringArchitectureSubsystemTests|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission)",
+        "pid": 58780,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1531,
+        "stdoutSha256": "B6AD5219911C1AD8B8370AC7726E0F86A30C14AA7D7D06998EE3436FDF0668E2",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "e4c7f3dbc4adda0858ae7b71fb9d78593aa6df27a21f083795eafe6f5b5e6bbe"
+    },
+    "final-semantics": {
+      "passed": 410,
+      "process": {
+        "source": "native-text",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "8417F97133C8690ABCDE77A71681F6A95CA1210076488DCECCCCEB4AF3A5B041",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeScalarDispatchTests|FullyQualifiedName~NumericAugmentedAsyncTests|FullyQualifiedName~AugmentedProtocolFallbackTests|FullyQualifiedName~StringProtocolTests|FullyQualifiedName~FormatProtocolTests|FullyQualifiedName~StringMethodCompatibilityTests|FullyQualifiedName~ExactIntegerOperatorTests)",
+        "pid": 72388,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 7104,
+        "stdoutSha256": "53DFD566D05850364B28AAA25E9ECB7B91F7A3DF46EDB2B2B876443B16488264",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "02697615e3820016dc1250a8116d503eb4467f49794306702b34663ba9e15755"
+    },
+    "final-owners": {
+      "passed": 89,
+      "process": {
+        "source": "native-text",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "8417F97133C8690ABCDE77A71681F6A95CA1210076488DCECCCCEB4AF3A5B041",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 79144,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2563,
+        "stdoutSha256": "255223F287FDE78F314B61E4C19C4C05256997DCBFF8435262A931CB4621C6BE",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "05a0b5e5e2710df1eacf379be36ac4be19ce085e4f2e2831a1d7adee99f0d5a4"
+    },
+    "final-goldens": {
+      "passed": 62,
+      "process": {
+        "source": "native-text",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "8417F97133C8690ABCDE77A71681F6A95CA1210076488DCECCCCEB4AF3A5B041",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 53984,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8688,
+        "stdoutSha256": "40CF2A1A8B462C279C9DDA74966AB5609C74594D26DE1CEB553A3DB872D9CDF1",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "b582706cc1edd2637ee502ca02ea02b1231e769372aebdd65734edd5bb27e188"
+    }
+  },
+  "completeJobs": 58,
+  "exactBeforeAfterMatrices": 44,
+  "finalMatrices": 46,
+  "allOriginal44MatricesStillMatch": true,
+  "runtimeCoreAndTestCopySha256": "5b8c05de3112b693a77923411e6def22945238403657c9066e3daa94652444eb",
+  "temporaryDiagnosticRemoved": true,
+  "regexPlanningOnly": true,
+  "noWholeJobOrCPythonTimingClaim": true,
+  "originalStress": "Separate cached015ee44a checkpoint, not repeated per edit.",
+  "artifacts": {
+    "baseline-diagnostic.trx": {
+      "bytes": 56403,
+      "sha256": "e6e1f8368733c09f09e77066afa4bb2a216f25e853150b97c575682efacf8382"
+    },
+    "baseline-process.json": {
+      "bytes": 696,
+      "sha256": "a9319d7d58cd5c54d108e188f33a915e04db6d41939f4ba7ec82bf620879f787"
+    },
+    "candidate-diagnostic.trx": {
+      "bytes": 56403,
+      "sha256": "01a78c5bb3641fa32828fbcd7498eef5c96993e0b3787aa2bb35539f2c27f304"
+    },
+    "candidate-process.json": {
+      "bytes": 697,
+      "sha256": "3126fcca57ea3e85ff9d0c3158436e131a3304bcfa7d310f584611097cd0f8aa"
+    },
+    "candidate.patch": {
+      "bytes": 9597,
+      "sha256": "29dc2fdc93e92f1803f9a3c08fa61050e8d19f97591a4a920c37f862b4c4ef56"
+    },
+    "comparison.json": {
+      "bytes": 3275,
+      "sha256": "45cb43e4692dbcf916c6a32398256ac90d63d462d5df90ac6876fb353ea87bbf"
+    },
+    "diagnostic.cs": {
+      "bytes": 2776,
+      "sha256": "08a128118b5e98652783d188ab4d79f6ec32748f4a34b15904636d590960847f"
+    },
+    "dotnet-info.txt": {
+      "bytes": 3078,
+      "sha256": "b9e3002fe0c5408d48cf2d381bc67d754eb860bef8ce7b94140a9a645eb69d48"
+    }
+  }
+}

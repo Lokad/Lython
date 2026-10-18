@@ -1,0 +1,157 @@
+{
+  "accepted": true,
+  "exactWorkRecords": 44,
+  "exactWorkMatched": true,
+  "native": [
+    {
+      "asynchronous": false,
+      "numeric": false,
+      "beforeMilliseconds": [
+        1.9637,
+        1.9816999999999998,
+        1.9991,
+        1.9951999999999999,
+        1.9810999999999999,
+        2.426,
+        1.9488999999999999,
+        1.9562
+      ],
+      "afterMilliseconds": [
+        1.9012,
+        1.8982,
+        1.9748999999999999,
+        1.9202,
+        1.8327,
+        1.8336,
+        1.8426,
+        1.8338
+      ],
+      "beforeMedianMs": 1.9813999999999998,
+      "afterMedianMs": 1.8704,
+      "afterOverBefore": 0.9439790047441204,
+      "allocationUnchanged": true,
+      "beforeAllocated": [
+        115168,
+        115168,
+        115168,
+        115168,
+        115168,
+        115168,
+        115168,
+        115168
+      ],
+      "afterAllocated": [
+        115168,
+        115168,
+        115168,
+        115168,
+        115168,
+        115168,
+        115168,
+        115168
+      ],
+      "gatePassed": true
+    },
+    {
+      "asynchronous": true,
+      "numeric": false,
+      "beforeMilliseconds": [
+        2.6908000000000003,
+        2.7051000000000003,
+        2.7017,
+        2.7399,
+        2.7017,
+        3.0484,
+        2.7053,
+        2.7229
+      ],
+      "afterMilliseconds": [
+        2.0827,
+        2.0458,
+        2.0471,
+        2.049,
+        2.3272000000000004,
+        2.0833000000000004,
+        2.0558,
+        2.0427
+      ],
+      "beforeMedianMs": 2.7052,
+      "afterMedianMs": 2.0524,
+      "afterOverBefore": 0.7586869732367293,
+      "allocationUnchanged": true,
+      "beforeAllocated": [
+        115144,
+        115144,
+        115144,
+        115144,
+        115144,
+        115144,
+        115144,
+        115144
+      ],
+      "afterAllocated": [
+        115144,
+        115144,
+        115144,
+        115144,
+        115144,
+        115144,
+        115144,
+        115144
+      ],
+      "gatePassed": true
+    },
+    {
+      "asynchronous": true,
+      "numeric": true,
+      "beforeMilliseconds": [
+        2.2232,
+        2.1967000000000003,
+        2.1898,
+        2.2072,
+        2.2792,
+        2.1748000000000003,
+        2.1553,
+        2.2103
+      ],
+      "afterMilliseconds": [
+        2.1789,
+        2.1748000000000003,
+        2.1807,
+        2.185,
+        2.1659,
+        2.1516,
+        2.2112,
+        2.1895000000000002
+      ],
+      "beforeMedianMs": 2.20195,
+      "afterMedianMs": 2.1798,
+      "afterOverBefore": 0.9899407343490997,
+      "allocationUnchanged": true,
+      "beforeAllocated": [
+        115144,
+        115144,
+        115144,
+        115144,
+        115144,
+        115144,
+        115144,
+        115144
+      ],
+      "afterAllocated": [
+        115144,
+        115144,
+        115144,
+        115144,
+        115144,
+        115144,
+        115144,
+        115144
+      ],
+      "gatePassed": true
+    }
+  ],
+  "performanceQualified": false,
+  "repeatedTiming": false,
+  "scope": "One existing native operand gate only; local short native loop comparison, no complete-job or CPython timing claim."
+}
