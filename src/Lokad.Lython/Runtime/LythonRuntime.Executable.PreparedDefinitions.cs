@@ -36,8 +36,8 @@ internal sealed partial class LythonRuntime
                             }).ToArray(),
                             ReturnAnnotation = function.Definition.ReturnAnnotation is null ? null : Capture(function.Definition.ReturnAnnotation),
                         };
-                        RetainPreparedDefinitionStorage(definition.Parameters, 64L + 160L * definition.Parameters.Count, span);
-                        RetainPreparedDefinitionStorage(definition, 128L + 64L * definition.Decorators.Count, span);
+                        AdmitPreparedDefinitionStorage(64L + 160L * definition.Parameters.Count, span);
+                        AdmitPreparedDefinitionStorage(128L + 64L * definition.Decorators.Count, span);
                         if (asynchronous) await ExecuteLoweredFunctionDefinitionAsync(definition, _context).ConfigureAwait(false);
                         else ExecuteLoweredFunctionDefinition(definition, _context);
                         SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, _context);
@@ -101,7 +101,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private void RetainPreparedDefinitionStorage(object owner, long bytes, LythonSourceSpan span)
+        private void AdmitPreparedDefinitionStorage(long bytes, LythonSourceSpan span)
         {
             _context.MemoryGovernor.Reserve(bytes, span);
             _context.MemoryGovernor.Commit(bytes);

@@ -1,0 +1,8 @@
+{
+  "sourceFiles": 546,
+  "archiveFilesWithWindowsNewlineConversion": 546,
+  "initialUnit": "lython-bridge-profile-432b11c0-20261018",
+  "initialTerminal": "failed at source preflight before worker/tracer launch;no trace",
+  "correction": "Compare canonical LF source to canonical Git content,without changing runtime or workload. Preserve initial failed unit/archive.",
+  "captureCountBeforeCorrection": 0
+}

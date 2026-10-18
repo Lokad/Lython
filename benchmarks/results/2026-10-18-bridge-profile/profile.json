@@ -1,0 +1,80 @@
+{
+  "diagnosticOnly": true,
+  "performanceQualified": false,
+  "closed": true,
+  "traceSeconds": 10,
+  "ownedSeconds": 13.716118,
+  "samples": 3296,
+  "lostEvents": 0,
+  "missingStacks": 0,
+  "unresolvedLeaves": 81,
+  "sourceAlignedRevision": "432b11c0dcbe1315c0603c2b6facfa2ae0f3fbc3",
+  "assemblyMetadataRevision": "22648c5a364877801ff9c11ba6bdc6fb75d631c7",
+  "sourceFilesMatchCurrentGit": 546,
+  "responses": 3559,
+  "invocations": 7116,
+  "allOutputAndFileGoldensMatch": true,
+  "sourceAndBinaryHashesUnchanged": true,
+  "ordinaryRuntimeOverrides": true,
+  "traceSha256": "e2c9b26e2b90e7112eccfe27d9bc88960215135f9c56d006b216a02de2069b5a",
+  "selectedInclusiveAndLeaf": {
+    "tieredJit": {
+      "name": "TieredCompilationManager::DoBackgroundWork(long*, long, long)",
+      "samples": 1025,
+      "percent": 31.098300970873787
+    },
+    "fixtureReset": {
+      "name": "Lokad.Lython.Benchmarks.Comparison.ComparisonFileHost::Reset()",
+      "samples": 649,
+      "percent": 19.690533980582526
+    },
+    "protocolRead": {
+      "name": "Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol+<ReadAsync>d__7::MoveNext()",
+      "samples": 899,
+      "percent": 27.275485436893202
+    },
+    "runtimeRunAsync": {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+<RunAsync>d__516::MoveNext()",
+      "samples": 528,
+      "percent": 16.019417475728154
+    },
+    "spinLeaf": {
+      "name": "ThreadNative_SpinWait",
+      "samples": 273,
+      "percent": 8.282766990291263
+    }
+  },
+  "terminal": {
+    "observedUtc": "2026-10-18T01:04:34.001567+00:00",
+    "unit": "lython-bridge-profile-432b11c0-lf-20261018",
+    "properties": "MainPID=0\nResult=success\nExecMainStatus=0\nControlGroup=\nActiveState=inactive\nSubState=dead\n",
+    "workerGone": true,
+    "tracerGone": true,
+    "fixtureGone": true,
+    "leaseReleased": true
+  },
+  "conclusion": "Close fixed-invocation attribution without a runtime performance change. Tiered JIT,fixture reset and protocol/scheduling are material;whole-process CPU does not isolate the timed embedding operation. No specific builtin/setup mechanism is established as the cause.",
+  "limitations": [
+    "Inclusive frames overlap and are not additive.",
+    "Protocol work outside timed batches is included;two-invocation diagnostic batches differ from calibrated comparison batches.",
+    "Ordinary tiered JIT remains active after warmup.",
+    "One trace does not establish steady-state fractions,wall-clock savings or attribution of the CPython gap.",
+    "81 unresolved leaves are reported,not silently assigned to runtime code."
+  ],
+  "repeatTrace": false,
+  "preflightCorrection": {
+    "sourceFiles": 546,
+    "archiveFilesWithWindowsNewlineConversion": 546,
+    "initialUnit": "lython-bridge-profile-432b11c0-20261018",
+    "initialTerminal": "failed at source preflight before worker/tracer launch;no trace",
+    "correction": "Compare canonical LF source to canonical Git content,without changing runtime or workload. Preserve initial failed unit/archive.",
+    "captureCountBeforeCorrection": 0
+  },
+  "nextCodeChange": {
+    "file": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs",
+    "proposedRemoval": "Unused owner parameter and two existing-value arguments from prepared-definition admission helper. Name it AdmitPreparedDefinitionStorage;keep all size/Reserve/Commit operations.",
+    "reason": "Misleading ownership parameter has no consumer under cooperative execution ownership. This is cleanup,not a measured performance improvement.",
+    "compatibility": "No Python/public/memory/stack/cancellation contract change;both removed expressions are existing record properties/local references.",
+    "validation": "Use existing prepared/suspending definition,frame,fuel,admission,lifetime and async cleanup regressions. No new test or benchmark for this reversible internal signature cleanup."
+  }
+}

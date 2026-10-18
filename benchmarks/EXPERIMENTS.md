@@ -7,6 +7,19 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 bridge CPU attribution](results/2026-10-18-bridge-profile/README.md)
+is closed without a performance change:3,296samples,zero lost/missing stacks,
+81unresolved leaves.546canonical source files align to432b11c0 while the reused
+worker retains22648c5a build metadata. JIT31.10%,fixtureReset19.69%,protocolRead
+27.28% and RunAsync16.02% are overlapping inclusive CPU figures,not savings or
+wall-clock fractions. Whole-process sampling includes protocol outside timed
+batches and ordinary JIT;no fixed builtin/setup mechanism was established.
+3,559responses/7,116invocations match goldens,inputs/source stay unchanged and
+worker/tracer/fixtures are gone. One actual trace only;preflight transport and
+Windows git-archive newline corrections are preserved separately. A small
+unused prepared-definition owner parameter was removed with admission unchanged;
+133existing focused checks pass. No new test/benchmark or runtime speedup claim.
+
 The [2026-10-18 default JSON encoding](results/2026-10-18-json-default-dumps/README.md)
 omits ordinary default-call binding/constructor/member packaging and reuses the
 existing serializer with stateless builtin metadata. Native scalar counts save

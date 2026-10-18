@@ -1,0 +1,60 @@
+{
+  "diagnosticOnly": true,
+  "performanceQualified": false,
+  "profileSourceRevision": "432b11c0dcbe1315c0603c2b6facfa2ae0f3fbc3",
+  "profileAssemblyMetadataRevision": "22648c5a364877801ff9c11ba6bdc6fb75d631c7",
+  "runtimeCleanupSource": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs",
+  "runtimeCleanupCanonicalSha256": "c2f8fd783b6bf37a4caa217f75d2d1612270452e878b143f6780023951359653",
+  "focusedTestsPassed": 133,
+  "profileClosureVerified": true,
+  "artifacts": {
+    "cpu.json": {
+      "bytes": 23642,
+      "sha256": "9f676ce9e0f1f7560f6e48de94fb1a1a2824052f2e5f3874c115d3def957f79d"
+    },
+    "diagnostic.json": {
+      "bytes": 152972,
+      "sha256": "15711f7003c2a8ae6500c4458b03f40b3d983e23131f961c85e016c4d06eb4ad"
+    },
+    "expected-source.json": {
+      "bytes": 71681,
+      "sha256": "bcd2457153652d05dd594523d83d4771c249d381404cc9b709f92c83b5424be7"
+    },
+    "local-validation.json": {
+      "bytes": 3053,
+      "sha256": "5e0a20c1e5768cd3f5a4cf7349196b1ebc2ffc7fe67eff8f102712229df34f64"
+    },
+    "preflight-correction.json": {
+      "bytes": 417,
+      "sha256": "bbf3d7c3befa82a51bd81dfe5d2425ff99e8ad56cfee1a57c2ce44f851ba648b"
+    },
+    "preflight-evidence.tar.gz": {
+      "bytes": 30980,
+      "sha256": "5b6ff7bbbd92691cf19f8a2602c4779796db30e645f615d70f2221ca2d6bea58"
+    },
+    "profile.json": {
+      "bytes": 3973,
+      "sha256": "f534cf83000b50badf4e10c2acbb904adbb22c218f5f4bca2009701613880e1d"
+    },
+    "raw-evidence.tar.gz": {
+      "bytes": 817525,
+      "sha256": "aac49fe5ceca703e1520e6633df5b96e997b44e71197abc66f5e81d43e64f1f9"
+    },
+    "responses.jsonl.gz": {
+      "bytes": 57134,
+      "sha256": "c21fc115e5844fa608de61e2262b9abd97f91f8c2a2a10911a4422763b1ff431"
+    },
+    "runner.py": {
+      "bytes": 8171,
+      "sha256": "d8edd7975bc86e290350fbc4f4604332578979e7057abee9376b40a9533686bc"
+    },
+    "terminal.json": {
+      "bytes": 321,
+      "sha256": "0e3ed5ce3ff0c5011889ea63ce03bbc6303d4c0bd7f83cea47bdcad3039e3b85"
+    },
+    "tracer.log": {
+      "bytes": 630,
+      "sha256": "6155e3caf109e802499ea3f610ab378e2435ed18cb87e7b3c7400dde5fc8b3d1"
+    }
+  }
+}

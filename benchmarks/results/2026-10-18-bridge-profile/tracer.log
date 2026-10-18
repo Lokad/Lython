@@ -1,0 +1,13 @@
+
+Provider Name                           Keywords            Level               Enabled By
+Microsoft-Windows-DotNETRuntime         0x000000100003801D  Informational(4)    --profile
+
+Linux Perf Events                                                               Enabled By
+cpu-sampling                                                                    --profile
+
+Output File    : /home/lokad/lython-bench-checks/bridge-profile-432b11c0-lf/profile/bridge.nettrace
+
+Recording stopped.
+Resolving symbols.
+Finished recording trace.
+Trace written to /home/lokad/lython-bench-checks/bridge-profile-432b11c0-lf/profile/bridge.nettrace

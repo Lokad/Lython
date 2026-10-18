@@ -91,6 +91,12 @@ shape; other JSON rows often explicitly supply options. The separate scalar-call
 allocation diagnostic saves 1,840 bytes per eligible call. Whole-job time is
 3.80% higher, within 7–9% Lython spread; no gain or regression is established.
 
+A [follow-up CPU profile](benchmarks/results/2026-10-18-bridge-profile/README.md)
+of the same bridge job/source is closed without a performance change. JIT,
+fixture reset and protocol/scheduling are material, with protocol outside timed
+batches included. Its overlapping CPU fractions cannot explain CD's elapsed
+ratio or establish fixed builtin/setup costs. No repeat trace was run.
+
 BU executes frozen Release package binaries built with SDK
 10.0.300-preview.0.26177.108 on the VM's .NET 10.0.12 runtime. Its identical
 adapter was built at a35ee62c; only the packaged Lython DLL differs between

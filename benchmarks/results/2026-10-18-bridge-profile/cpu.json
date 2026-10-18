@@ -1,0 +1,768 @@
+{
+  "traceEventVersion": "3.2.8.0",
+  "expectedPid": 2446021,
+  "samples": 3296,
+  "noStacks": 0,
+  "unknownLeaves": 81,
+  "lythonStacks": 1490,
+  "first": 1.078378,
+  "last": 9988.477037,
+  "eventsLost": 0,
+  "counts": {
+    "Universal.System/ProcessMapping": 902,
+    "Universal.System/ProcessMappingMetadata": 52,
+    "Universal.System/ProcessSymbol": 34037,
+    "Universal.System/ExistingProcess": 1,
+    "Universal.Events/cpu": 3296,
+    "Microsoft-Windows-DotNETRuntime/YieldProcessorMeasurement": 11,
+    "Microsoft-Windows-DotNETRuntime/AppDomainResourceManagement/ThreadCreated": 3,
+    "Microsoft-Windows-DotNETRuntime/TieredCompilation/Pause": 7,
+    "Microsoft-Windows-DotNETRuntime/TieredCompilation/BackgroundJitStop": 226,
+    "Microsoft-Windows-DotNETRuntime/TieredCompilation/Resume": 7,
+    "Microsoft-Windows-DotNETRuntime/TieredCompilation/BackgroundJitStart": 225,
+    "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThreadAdjustment/Sample": 66,
+    "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThread/Wait": 7455,
+    "Microsoft-Windows-DotNETRuntime/GC/FinalizersStart": 41,
+    "Microsoft-Windows-DotNETRuntime/GC/FinalizersStop": 41,
+    "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThreadAdjustment/Adjustment": 33,
+    "Microsoft-Windows-DotNETRuntime/GC/SuspendEEStart": 19,
+    "Microsoft-Windows-DotNETRuntime/GC/SuspendEEStop": 19,
+    "Microsoft-Windows-DotNETRuntime/GC/Triggered": 19,
+    "Microsoft-Windows-DotNETRuntime/GC/Start": 19,
+    "Microsoft-Windows-DotNETRuntime/GC/CommittedUsage": 38,
+    "Microsoft-Windows-DotNETRuntime/GC/MarkWithType": 132,
+    "Microsoft-Windows-DotNETRuntime/GC/GlobalHeapHistory": 19,
+    "Microsoft-Windows-DotNETRuntime/GC/PerHeapHistory": 19,
+    "Microsoft-Windows-DotNETRuntime/GC/Stop": 19,
+    "Microsoft-Windows-DotNETRuntime/GC/HeapStats": 19,
+    "Microsoft-Windows-DotNETRuntime/GC/RestartEEStart": 19,
+    "Microsoft-Windows-DotNETRuntime/GC/RestartEEStop": 19,
+    "Microsoft-Windows-DotNETRuntime/Thread/Creating": 1,
+    "Microsoft-Windows-DotNETRuntime/Thread/Running": 1,
+    "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThread/Start": 1,
+    "Microsoft-Windows-DotNETRuntime/Method/UnloadVerbose": 12,
+    "Microsoft-Windows-DotNETRuntime/GC/FreeSegment": 1
+  },
+  "exceptions": {},
+  "leaf": [
+    {
+      "name": "ThreadNative_SpinWait",
+      "samples": 273,
+      "percent": 8.282766990291263
+    },
+    {
+      "name": "__schedule",
+      "samples": 170,
+      "percent": 5.157766990291262
+    },
+    {
+      "name": "schedule",
+      "samples": 66,
+      "percent": 2.0024271844660193
+    },
+    {
+      "name": "_raw_spin_unlock_irqrestore",
+      "samples": 59,
+      "percent": 1.7900485436893203
+    },
+    {
+      "name": "do_syscall_64",
+      "samples": 58,
+      "percent": 1.7597087378640777
+    },
+    {
+      "name": "finish_task_switch.isra.0",
+      "samples": 52,
+      "percent": 1.5776699029126213
+    },
+    {
+      "name": "srso_safe_ret",
+      "samples": 43,
+      "percent": 1.3046116504854368
+    },
+    {
+      "name": "LinearScan::allocateRegisters()",
+      "samples": 41,
+      "percent": 1.2439320388349515
+    },
+    {
+      "name": "[unresolved] libc.so.6",
+      "samples": 35,
+      "percent": 1.0618932038834952
+    },
+    {
+      "name": "[unresolved] ",
+      "samples": 32,
+      "percent": 0.970873786407767
+    },
+    {
+      "name": "ext4_inode_csum",
+      "samples": 31,
+      "percent": 0.9405339805825242
+    },
+    {
+      "name": "__sched_yield",
+      "samples": 27,
+      "percent": 0.8191747572815534
+    },
+    {
+      "name": "Compiler::fgInterBlockLocalVarLiveness()",
+      "samples": 26,
+      "percent": 0.7888349514563107
+    },
+    {
+      "name": "find_get_block_common",
+      "samples": 22,
+      "percent": 0.6674757281553398
+    },
+    {
+      "name": "Compiler::optVnCopyProp()",
+      "samples": 21,
+      "percent": 0.6371359223300971
+    },
+    {
+      "name": "__tls_get_addr",
+      "samples": 21,
+      "percent": 0.6371359223300971
+    },
+    {
+      "name": "crc32c",
+      "samples": 20,
+      "percent": 0.6067961165048543
+    },
+    {
+      "name": "Compiler::fgValueNumberTree(GenTree*)",
+      "samples": 17,
+      "percent": 0.5157766990291263
+    },
+    {
+      "name": "kmem_cache_alloc_noprof",
+      "samples": 17,
+      "percent": 0.5157766990291263
+    },
+    {
+      "name": "ext4_fill_raw_inode",
+      "samples": 17,
+      "percent": 0.5157766990291263
+    },
+    {
+      "name": "LinearScan::doLinearScan()",
+      "samples": 15,
+      "percent": 0.4550970873786408
+    },
+    {
+      "name": "Compiler::optAssertionProp(unsigned long* const\u0026, GenTree*, Statement*, BasicBlock*)",
+      "samples": 15,
+      "percent": 0.4550970873786408
+    },
+    {
+      "name": "ValueNumStore::VNForFunc(var_types, VNFunc, unsigned int, unsigned int)",
+      "samples": 15,
+      "percent": 0.4550970873786408
+    },
+    {
+      "name": "crc32c_arch",
+      "samples": 15,
+      "percent": 0.4550970873786408
+    },
+    {
+      "name": "GenTreeVisitor\u003CLocalAddressVisitor\u003E::WalkTree(GenTree**, GenTree*)",
+      "samples": 14,
+      "percent": 0.42475728155339804
+    },
+    {
+      "name": "void Compiler::fgFindJumpTargets\u003Ctrue\u003E(unsigned char const*, unsigned int, FixedBitVect*)",
+      "samples": 14,
+      "percent": 0.42475728155339804
+    },
+    {
+      "name": "Compiler::optAssertionPropMain()",
+      "samples": 14,
+      "percent": 0.42475728155339804
+    },
+    {
+      "name": "CodeGen::genCodeForBBlist()",
+      "samples": 14,
+      "percent": 0.42475728155339804
+    },
+    {
+      "name": "Compiler::lvaSortByRefCount()",
+      "samples": 14,
+      "percent": 0.42475728155339804
+    },
+    {
+      "name": "__cond_resched",
+      "samples": 14,
+      "percent": 0.42475728155339804
+    },
+    {
+      "name": "Compiler::fgPerBlockLocalVarLiveness()",
+      "samples": 13,
+      "percent": 0.39441747572815533
+    },
+    {
+      "name": "LinearScan::BuildNode(GenTree*)",
+      "samples": 13,
+      "percent": 0.39441747572815533
+    },
+    {
+      "name": "SsaBuilder::Build()",
+      "samples": 13,
+      "percent": 0.39441747572815533
+    },
+    {
+      "name": "rcu_all_qs",
+      "samples": 12,
+      "percent": 0.3640776699029126
+    },
+    {
+      "name": "__ext4_handle_dirty_metadata",
+      "samples": 12,
+      "percent": 0.3640776699029126
+    },
+    {
+      "name": "__raw_callee_save___pv_queued_spin_unlock",
+      "samples": 12,
+      "percent": 0.3640776699029126
+    },
+    {
+      "name": "jbd2_journal_get_write_access",
+      "samples": 12,
+      "percent": 0.3640776699029126
+    },
+    {
+      "name": "Compiler::impImportBlockCode(BasicBlock*)",
+      "samples": 11,
+      "percent": 0.3337378640776699
+    },
+    {
+      "name": "System.Threading.LowLevelLifoSemaphore::Wait(int32,bool)",
+      "samples": 11,
+      "percent": 0.3337378640776699
+    },
+    {
+      "name": "ext4_mark_iloc_dirty",
+      "samples": 11,
+      "percent": 0.3337378640776699
+    },
+    {
+      "name": "__ext4_new_inode",
+      "samples": 11,
+      "percent": 0.3337378640776699
+    },
+    {
+      "name": "_raw_spin_lock",
+      "samples": 11,
+      "percent": 0.3337378640776699
+    },
+    {
+      "name": "Compiler::lvaComputeRefCounts(bool, bool)",
+      "samples": 10,
+      "percent": 0.30339805825242716
+    },
+    {
+      "name": "Compiler::fgMorphSmpOp(GenTree*, Compiler::MorphAddrContext*, bool*)",
+      "samples": 10,
+      "percent": 0.30339805825242716
+    },
+    {
+      "name": "Compiler::fgFindBasicBlocks()",
+      "samples": 10,
+      "percent": 0.30339805825242716
+    },
+    {
+      "name": "GenTreeVisitor\u003CCompiler::lvaMarkLocalVars(BasicBlock*, bool)::MarkLocalVarsVisitor\u003E::WalkTree(GenTree**, GenTree*)",
+      "samples": 10,
+      "percent": 0.30339805825242716
+    },
+    {
+      "name": "SwitchToThread",
+      "samples": 10,
+      "percent": 0.30339805825242716
+    },
+    {
+      "name": "link_path_walk",
+      "samples": 10,
+      "percent": 0.30339805825242716
+    },
+    {
+      "name": "copy_from_user_nmi",
+      "samples": 10,
+      "percent": 0.30339805825242716
+    },
+    {
+      "name": "GenTreeVisitor\u003CCompiler::gtUpdateStmtSideEffects(Statement*)::UpdateSideEffectsWalker\u003E::WalkTree(GenTree**, GenTree*)",
+      "samples": 9,
+      "percent": 0.27305825242718446
+    }
+  ],
+  "inclusive": [
+    {
+      "name": "CorUnix::CPalThread::ThreadEntry(void*)",
+      "samples": 2997,
+      "percent": 90.92839805825243
+    },
+    {
+      "name": "ManagedThreadBase::KickOff(void (*)(void*), void*)",
+      "samples": 2978,
+      "percent": 90.35194174757281
+    },
+    {
+      "name": "CallDescrWorkerInternal",
+      "samples": 1953,
+      "percent": 59.25364077669903
+    },
+    {
+      "name": "DispatchCallSimple(unsigned long*, unsigned int, unsigned long, unsigned int)",
+      "samples": 1953,
+      "percent": 59.25364077669903
+    },
+    {
+      "name": "KickOffThread_Worker(void*)",
+      "samples": 1953,
+      "percent": 59.25364077669903
+    },
+    {
+      "name": "KickOffThread(void*)",
+      "samples": 1953,
+      "percent": 59.25364077669903
+    },
+    {
+      "name": "entry_SYSCALL_64_after_hwframe",
+      "samples": 1498,
+      "percent": 45.449029126213595
+    },
+    {
+      "name": "do_syscall_64",
+      "samples": 1492,
+      "percent": 45.26699029126213
+    },
+    {
+      "name": "System.Threading.ExecutionContext::RunInternal(class System.Threading.ExecutionContext,class System.Threading.ContextCallback,object)",
+      "samples": 1432,
+      "percent": 43.44660194174757
+    },
+    {
+      "name": "x64_sys_call",
+      "samples": 1428,
+      "percent": 43.3252427184466
+    },
+    {
+      "name": "TieredCompilationManager::DoBackgroundWork(long*, long, long)",
+      "samples": 1025,
+      "percent": 31.098300970873787
+    },
+    {
+      "name": "TieredCompilationManager::BackgroundWorkerStart()",
+      "samples": 1025,
+      "percent": 31.098300970873787
+    },
+    {
+      "name": "TieredCompilationManager::BackgroundWorkerBootstrapper1(void*)",
+      "samples": 1025,
+      "percent": 31.098300970873787
+    },
+    {
+      "name": "TieredCompilationManager::BackgroundWorkerBootstrapper0(void*)",
+      "samples": 1025,
+      "percent": 31.098300970873787
+    },
+    {
+      "name": "MethodDesc::PrepareILBasedCode(PrepareCodeConfig*)",
+      "samples": 1015,
+      "percent": 30.79490291262136
+    },
+    {
+      "name": "MethodDesc::JitCompileCode(PrepareCodeConfig*)",
+      "samples": 1013,
+      "percent": 30.734223300970875
+    },
+    {
+      "name": "TieredCompilationManager::CompileCodeVersion(NativeCodeVersion)",
+      "samples": 1013,
+      "percent": 30.734223300970875
+    },
+    {
+      "name": "MethodDesc::JitCompileCodeLockedEventWrapper(PrepareCodeConfig*, ListLockEntryBase\u003CNativeCodeVersion\u003E*)",
+      "samples": 1011,
+      "percent": 30.67354368932039
+    },
+    {
+      "name": "MethodDesc::JitCompileCodeLocked(PrepareCodeConfig*, COR_ILMETHOD_DECODER*, ListLockEntryBase\u003CNativeCodeVersion\u003E*, unsigned int*, bool*)",
+      "samples": 987,
+      "percent": 29.945388349514563
+    },
+    {
+      "name": "UnsafeJitFunction(PrepareCodeConfig*, COR_ILMETHOD_DECODER*, bool*, bool*, unsigned int*)",
+      "samples": 986,
+      "percent": 29.91504854368932
+    },
+    {
+      "name": "jitNativeCode(CORINFO_METHOD_STRUCT_*, CORINFO_MODULE_STRUCT_*, ICorJitInfo*, CORINFO_METHOD_INFO*, void**, unsigned int*, JitFlags*, void*)",
+      "samples": 970,
+      "percent": 29.429611650485437
+    },
+    {
+      "name": "CILJit::compileMethod(ICorJitInfo*, CORINFO_METHOD_INFO*, unsigned int, unsigned char**, unsigned int*)",
+      "samples": 968,
+      "percent": 29.368932038834952
+    },
+    {
+      "name": "System.Threading.ThreadPoolWorkQueue::Dispatch()",
+      "samples": 965,
+      "percent": 29.277912621359224
+    },
+    {
+      "name": "System.Threading.Tasks.Task::RunContinuations(object)",
+      "samples": 939,
+      "percent": 28.489077669902912
+    },
+    {
+      "name": "System.Threading.Tasks.Task::ExecuteWithThreadLocal(class System.Threading.Tasks.Task\u0026,class System.Threading.Thread)",
+      "samples": 920,
+      "percent": 27.9126213592233
+    },
+    {
+      "name": "System.Threading.Tasks.AwaitTaskContinuation::RunOrScheduleAction(class System.Runtime.CompilerServices.IAsyncStateMachineBox,bool)",
+      "samples": 904,
+      "percent": 27.42718446601942
+    },
+    {
+      "name": "Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7::MoveNext()",
+      "samples": 899,
+      "percent": 27.275485436893202
+    },
+    {
+      "name": "System.IO.Stream\u002B\u003CReadAtLeastAsyncCore\u003Ed__49::MoveNext()",
+      "samples": 893,
+      "percent": 27.093446601941746
+    },
+    {
+      "name": "Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CProcessRequestsAsync\u003Ed__15::MoveNext()",
+      "samples": 882,
+      "percent": 26.759708737864077
+    },
+    {
+      "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CProcessRequestsAsync\u003Ed__15]::MoveNext()",
+      "samples": 882,
+      "percent": 26.759708737864077
+    },
+    {
+      "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601[System.__Canon]::SetExistingTaskResult(class System.Threading.Tasks.Task\u00601\u003C!0\u003E,!0)",
+      "samples": 880,
+      "percent": 26.699029126213592
+    },
+    {
+      "name": "Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker::Batch(class Lokad.Lython.Benchmarks.Comparison.ComparisonWorkload,int32,string,int32,valuetype [System.Runtime]System.Threading.CancellationToken)",
+      "samples": 857,
+      "percent": 26.00121359223301
+    },
+    {
+      "name": "Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker::Invoke(class [Lokad.Lython]Lokad.Lython.LythonCompiledScript,class Lokad.Lython.Benchmarks.Comparison.ComparisonWorkload,class Lokad.Lython.Benchmarks.Comparison.ComparisonFileHost,bool)",
+      "samples": 837,
+      "percent": 25.394417475728154
+    },
+    {
+      "name": "System.Threading.Tasks.Sources.ManualResetValueTaskSourceCore\u00601[System.Int32]::SignalCompletion()",
+      "samples": 823,
+      "percent": 24.969660194174757
+    },
+    {
+      "name": "Lokad.Lython.Benchmarks.Comparison.ComparisonFileHost::Reset()",
+      "samples": 649,
+      "percent": 19.690533980582526
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionThreads\u002BWorker::Run()",
+      "samples": 573,
+      "percent": 17.384708737864077
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem\u002B\u003C\u003Ec::\u003CExecute\u003Eb__6_0(object)",
+      "samples": 529,
+      "percent": 16.049757281553397
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem::Execute(class [System.Threading]System.Threading.ExecutionContext)",
+      "samples": 529,
+      "percent": 16.049757281553397
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CRunAsync\u003Ed__516::MoveNext()",
+      "samples": 528,
+      "percent": 16.019417475728154
+    },
+    {
+      "name": "Lokad.Lython.LythonEngine\u002B\u003C\u003Ec__DisplayClass6_0\u002B\u003C\u003CCompileCore\u003Eb__4\u003Ed::MoveNext()",
+      "samples": 528,
+      "percent": 16.019417475728154
+    },
+    {
+      "name": "Lokad.Lython.LythonEngine\u002B\u003C\u003Ec__DisplayClass6_0::\u003CCompileCore\u003Eb__4(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions)",
+      "samples": 528,
+      "percent": 16.019417475728154
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CExecuteExecutableCodeObjectAsync\u003Ed__719::MoveNext()",
+      "samples": 446,
+      "percent": 13.531553398058252
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter\u002B\u003CExecuteAsync\u003Ed__63::MoveNext()",
+      "samples": 440,
+      "percent": 13.349514563106796
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter\u002B\u003CExecuteValueOperationAsync\u003Ed__2::MoveNext()",
+      "samples": 416,
+      "percent": 12.62135922330097
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CInvokeCallableTargetAsync\u003Ed__330\u00601[Lokad.Lython.Runtime.LythonRuntime\u002BPreparedCallArguments]::MoveNext()",
+      "samples": 412,
+      "percent": 12.5
+    },
+    {
+      "name": "System.Threading.LowLevelLifoSemaphore::Wait(int32,bool)",
+      "samples": 397,
+      "percent": 12.044902912621358
+    },
+    {
+      "name": "ThreadNative_YieldThread",
+      "samples": 332,
+      "percent": 10.072815533980583
+    },
+    {
+      "name": "SwitchToThread",
+      "samples": 329,
+      "percent": 9.981796116504855
+    },
+    {
+      "name": "__sched_yield",
+      "samples": 320,
+      "percent": 9.70873786407767
+    },
+    {
+      "name": "System.IO.FileSystem::RemoveDirectoryRecursive(string)",
+      "samples": 314,
+      "percent": 9.526699029126213
+    }
+  ],
+  "threads": {
+    "2446027": 1044,
+    "2446023": 19,
+    "2446033": 367,
+    "2446035": 574,
+    "2446029": 344,
+    "2446031": 277,
+    "2446034": 305,
+    "2446052": 366
+  },
+  "sampledAllocations": [],
+  "gcStarts": {
+    "generation=0 reason=AllocSmall type=NonConcurrentGC": 18,
+    "generation=2 reason=AllocSmall type=NonConcurrentGC": 1
+  },
+  "gcDurations": {
+    "matched": 19,
+    "sumMilliseconds": 13.061972999998488,
+    "maxMilliseconds": 3.441154000000097,
+    "medianMilliseconds": 0.5082529999999679
+  },
+  "unmatchedGcStops": 0,
+  "unmatchedGcStarts": 0,
+  "overwrittenGcStarts": 0,
+  "suspensionDurations": {
+    "matched": 19,
+    "sumMilliseconds": 14.474593999999342,
+    "maxMilliseconds": 3.5456409999987955,
+    "medianMilliseconds": 0.579649999999674
+  },
+  "unmatchedPauseStops": 0,
+  "unmatchedPauseStarts": 0,
+  "overwrittenPauseStarts": 0,
+  "methodLoadEvents": [],
+  "examplePayloads": {
+    "YieldProcessorMeasurement": {
+      "ClrInstanceID": 0,
+      "NsPerYield": 23.65909090909091,
+      "EstablishedNsPerYield": 22.244444444444444
+    },
+    "AppDomainResourceManagement/ThreadCreated": {
+      "ManagedThreadID": 140348592497872,
+      "AppDomainID": 104025952616432,
+      "Flags": 0,
+      "ManagedThreadIndex": 11,
+      "OSThreadID": 2446023,
+      "ClrInstanceID": 0
+    },
+    "TieredCompilation/Pause": {
+      "ClrInstanceID": 0
+    },
+    "TieredCompilation/BackgroundJitStop": {
+      "ClrInstanceID": 0,
+      "PendingMethodCount": 1571,
+      "JittedMethodCount": 19
+    },
+    "TieredCompilation/Resume": {
+      "ClrInstanceID": 0,
+      "NewMethodCount": 179
+    },
+    "TieredCompilation/BackgroundJitStart": {
+      "ClrInstanceID": 0,
+      "PendingMethodCount": 1687
+    },
+    "ThreadPoolWorkerThreadAdjustment/Sample": {
+      "Throughput": 427.1912542596604,
+      "ClrInstanceID": 0
+    },
+    "ThreadPoolWorkerThread/Wait": {
+      "ActiveWorkerThreadCount": 4,
+      "RetiredWorkerThreadCount": 0,
+      "ClrInstanceID": 0
+    },
+    "GC/FinalizersStart": {
+      "ClrInstanceID": 0
+    },
+    "GC/FinalizersStop": {
+      "Count": 0,
+      "ClrInstanceID": 0
+    },
+    "ThreadPoolWorkerThreadAdjustment/Adjustment": {
+      "AverageThroughput": 567.9030939246977,
+      "NewWorkerThreadCount": 9,
+      "Reason": 3,
+      "ClrInstanceID": 0
+    },
+    "GC/SuspendEEStart": {
+      "Reason": 1,
+      "Count": 6,
+      "ClrInstanceID": 0
+    },
+    "GC/SuspendEEStop": {
+      "ClrInstanceID": 0
+    },
+    "GC/Triggered": {
+      "Reason": 0,
+      "ClrInstanceID": 0
+    },
+    "GC/Start": {
+      "Count": 7,
+      "Reason": 0,
+      "Depth": 0,
+      "Type": 0,
+      "ClrInstanceID": 0,
+      "ClientSequenceNumber": 0
+    },
+    "GC/CommittedUsage": {
+      "Version": 1,
+      "TotalCommittedInUse": 25591808,
+      "TotalCommittedInGlobalDecommit": 0,
+      "TotalCommittedInFree": 4096,
+      "TotalCommittedInGlobalFree": 0,
+      "TotalBookkeepingCommitted": 1011712
+    },
+    "GC/MarkWithType": {
+      "HeapNum": 0,
+      "ClrInstanceID": 0,
+      "Type": 0,
+      "Promoted": 23388
+    },
+    "GC/GlobalHeapHistory": {
+      "FinalYoungestDesired": 16777216,
+      "NumHeaps": 1,
+      "CondemnedGeneration": 0,
+      "Gen0ReductionCount": 0,
+      "Reason": 0,
+      "GlobalMechanisms": 30,
+      "ClrInstanceID": 0,
+      "PauseMode": 1,
+      "MemoryPressure": 6,
+      "CondemnReasons0": 0,
+      "CondemnReasons1": 0,
+      "Count": 8
+    },
+    "GC/PerHeapHistory": {
+      "ClrInstanceID": 0,
+      "FreeListAllocated": 0,
+      "FreeListRejected": 0,
+      "EndOfSegAllocated": 0,
+      "CondemnedAllocated": 0,
+      "PinnedAllocated": 0,
+      "PinnedAllocatedAdvance": 0,
+      "RunningFreeListEfficiency": 0,
+      "CondemnReasons0": 0,
+      "CondemnReasons1": 0,
+      "CompactMechanisms": 1,
+      "ExpandMechanisms": 1024,
+      "ConcurrentCompactMechanisms": null,
+      "HeapIndex": 0,
+      "ExtraGen0Commit": 0,
+      "Count": 5,
+      "MemoryPressure": null
+    },
+    "GC/Stop": {
+      "Count": 7,
+      "Depth": 0,
+      "ClrInstanceID": 0
+    },
+    "GC/HeapStats": {
+      "TotalHeapSize": 2853792,
+      "TotalPromoted": 353712,
+      "Depth": 0,
+      "GenerationSize0": 560,
+      "TotalPromotedSize0": 353712,
+      "GenerationSize1": 696104,
+      "TotalPromotedSize1": 0,
+      "GenerationSize2": 2131552,
+      "TotalPromotedSize2": 0,
+      "GenerationSize3": 0,
+      "TotalPromotedSize3": 0,
+      "FinalizationPromotedSize": 108192,
+      "FinalizationPromotedCount": 275,
+      "PinnedObjectCount": 1,
+      "SinkBlockCount": 267,
+      "GCHandleCount": 358,
+      "ClrInstanceID": 0,
+      "GenerationSize4": 25576,
+      "TotalPromotedSize4": 0
+    },
+    "GC/RestartEEStart": {
+      "ClrInstanceID": 0
+    },
+    "GC/RestartEEStop": {
+      "ClrInstanceID": 0
+    },
+    "Thread/Creating": {
+      "ID": 140313964334352,
+      "ClrInstanceID": 0
+    },
+    "Thread/Running": {
+      "ID": 140313964334352,
+      "ClrInstanceID": 0
+    },
+    "ThreadPoolWorkerThread/Start": {
+      "ActiveWorkerThreadCount": 5,
+      "RetiredWorkerThreadCount": 0,
+      "ClrInstanceID": 0
+    },
+    "Method/UnloadVerbose": {
+      "MethodID": 140348899919712,
+      "ModuleID": 140348867493888,
+      "MethodStartAddress": 140348899988512,
+      "MethodSize": 24,
+      "MethodToken": 0,
+      "MethodFlags": 9,
+      "MethodNamespace": "dynamicClass",
+      "MethodName": "InvokeStub_EventAttribute.set_Task",
+      "MethodSignature": "class System.Object  (class System.Object,class System.Object,int*)",
+      "ClrInstanceID": 0,
+      "ReJITID": 0,
+      "OptimizationTier": 2
+    },
+    "GC/FreeSegment": {
+      "Address": 140315025473576,
+      "ClrInstanceID": 0
+    }
+  }
+}
