@@ -52,6 +52,13 @@ publication are awaited before the call frame or its inputs are released, includ
 failure and cancellation. This removes control allocation without changing the
 ownership contract or promising identical tiny-budget thresholds.
 
+Ordinary single-positional writes on native text and binary files share the
+existing operand call boundary. Binary writes stage data synchronously through
+the same governed buffer; flush, close and execution cleanup retain mediated,
+awaited publication. The binary dispatch checkpoint, chunk preflights, position
+updates, retained input/handle funding and error order are preserved. This removes
+temporary call packaging without adding an ownership mechanism.
+
 For exact native list/tuple rows, asynchronous `csv.writerow` reuses the existing
 synchronous scalar converter and its scratch reservations. It still awaits the
 captured output callback before releasing its call frame or inputs. Custom and

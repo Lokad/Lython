@@ -23,7 +23,7 @@ internal sealed partial class LythonRuntime
             var operation = _stack[_stack.Count - 1] switch
             {
                 PyList when name == "append" => DirectListAppend,
-                ExecutionContext.TextFileHandle when name == "write" => DirectTextFileWrite,
+                ExecutionContext.TextFileHandle or ExecutionContext.BinaryFileHandle when name == "write" => DirectFileWrite,
                 CsvWriterObject when name == "writerow" => DirectCsvWriterow,
                 PyDict when name == "get" => DirectDictionaryGet,
                 Text.PyString when name == "startswith" => DirectStringStartsWith,

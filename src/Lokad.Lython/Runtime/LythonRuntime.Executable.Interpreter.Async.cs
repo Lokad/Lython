@@ -74,9 +74,9 @@ internal sealed partial class LythonRuntime
                         {
                             result = InvokeListAppend((PyList)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context);
                         }
-                        else if (call.HasReceiver && ReferenceEquals(callable, DirectTextFileWrite))
+                        else if (call.HasReceiver && ReferenceEquals(callable, DirectFileWrite))
                         {
-                            result = InvokeTextFileWrite((ExecutionContext.TextFileHandle)_stack[start],
+                            result = InvokeFileWrite(_stack[start],
                                 _stack[start + call.ArgumentOffset], call.CallSpan, _context);
                         }
                         else if (call.HasReceiver && ReferenceEquals(callable, DirectCsvWriterow))

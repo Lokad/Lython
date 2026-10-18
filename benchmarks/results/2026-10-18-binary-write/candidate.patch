@@ -1,0 +1,96 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.BinaryFileHandle.cs b/src/Lokad.Lython/Runtime/LythonRuntime.BinaryFileHandle.cs
+index ae13587e..1c2ca21c 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.BinaryFileHandle.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.BinaryFileHandle.cs
+@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
+                     throw new LythonRuntimeException(ModuleException("io", "UnsupportedOperation"), "File not open for writing", span);
+             }
+ 
+-            private BigInteger Write(object value, LythonSourceSpan span)
++            internal BigInteger Write(object value, LythonSourceSpan span)
+             {
+                 EnsureWritable(span);
+                 if (value is not PyBytes bytes)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+index 75bcd973..076a1fa0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+@@ -175,16 +175,21 @@ internal sealed partial class LythonRuntime
+         finally { context.LeaveInterpreterFrame(); }
+     }
+ 
+-    // Exact text-file writes stage governed output synchronously. Publication
++    // Exact native file writes stage governed output synchronously. Publication
+     // remains on the existing flush/close and execution cleanup paths.
+-    private static object InvokeTextFileWrite(ExecutionContext.TextFileHandle receiver, object value, LythonSourceSpan span, ExecutionContext context)
++    private static object InvokeFileWrite(object receiver, object value, LythonSourceSpan span, ExecutionContext context)
+     {
+         context.EnterInterpreterFrame(span);
+         try
+         {
+             context.CheckExecution(span);
+             context.CheckExecution(span);
+-            return TextFileHandleMembers.Write(receiver, value, span);
++            if (receiver is ExecutionContext.TextFileHandle text)
++                return TextFileHandleMembers.Write(text, value, span);
++            // Preserve the binary member dispatcher's check before its write
++            // body, in addition to the common callable/binder checks above.
++            context.CheckExecution(span);
++            return ((ExecutionContext.BinaryFileHandle)receiver).Write(value, span);
+         }
+         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+         finally { context.LeaveInterpreterFrame(); }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 5580be1d..7334a9a4 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -10,7 +10,7 @@ internal sealed partial class LythonRuntime
+     // Internal operand only: its receiver occupies a separate slot. A guest
+     // list-valued attribute can never be confused with this resolved method.
+     private static readonly object DirectListAppend = new();
+-    private static readonly object DirectTextFileWrite = new();
++    private static readonly object DirectFileWrite = new();
+     private static readonly object DirectCsvWriterow = new();
+     private static readonly object DirectDictionaryGet = new();
+     private static readonly object DirectStringStartsWith = new();
+@@ -560,9 +560,9 @@ internal sealed partial class LythonRuntime
+             {
+                 result = InvokeListAppend((PyList)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+             }
+-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectTextFileWrite))
++            else if (callSite.HasReceiver && ReferenceEquals(target, DirectFileWrite))
+             {
+-                result = InvokeTextFileWrite((ExecutionContext.TextFileHandle)stack[start],
++                result = InvokeFileWrite(stack[start],
+                     stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+             }
+             else if (callSite.HasReceiver && ReferenceEquals(target, DirectCsvWriterow))
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index b04780f1..351b2e3e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -74,9 +74,9 @@ internal sealed partial class LythonRuntime
+                         {
+                             result = InvokeListAppend((PyList)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context);
+                         }
+-                        else if (call.HasReceiver && ReferenceEquals(callable, DirectTextFileWrite))
++                        else if (call.HasReceiver && ReferenceEquals(callable, DirectFileWrite))
+                         {
+-                            result = InvokeTextFileWrite((ExecutionContext.TextFileHandle)_stack[start],
++                            result = InvokeFileWrite(_stack[start],
+                                 _stack[start + call.ArgumentOffset], call.CallSpan, _context);
+                         }
+                         else if (call.HasReceiver && ReferenceEquals(callable, DirectCsvWriterow))
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index f70e7424..7c232f8c 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -23,7 +23,7 @@ internal sealed partial class LythonRuntime
+             var operation = _stack[_stack.Count - 1] switch
+             {
+                 PyList when name == "append" => DirectListAppend,
+-                ExecutionContext.TextFileHandle when name == "write" => DirectTextFileWrite,
++                ExecutionContext.TextFileHandle or ExecutionContext.BinaryFileHandle when name == "write" => DirectFileWrite,
+                 CsvWriterObject when name == "writerow" => DirectCsvWriterow,
+                 PyDict when name == "get" => DirectDictionaryGet,
+                 Text.PyString when name == "startswith" => DirectStringStartsWith,

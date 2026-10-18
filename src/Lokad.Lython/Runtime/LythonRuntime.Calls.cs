@@ -175,16 +175,21 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    // Exact text-file writes stage governed output synchronously. Publication
+    // Exact native file writes stage governed output synchronously. Publication
     // remains on the existing flush/close and execution cleanup paths.
-    private static object InvokeTextFileWrite(ExecutionContext.TextFileHandle receiver, object value, LythonSourceSpan span, ExecutionContext context)
+    private static object InvokeFileWrite(object receiver, object value, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);
         try
         {
             context.CheckExecution(span);
             context.CheckExecution(span);
-            return TextFileHandleMembers.Write(receiver, value, span);
+            if (receiver is ExecutionContext.TextFileHandle text)
+                return TextFileHandleMembers.Write(text, value, span);
+            // Preserve the binary member dispatcher's check before its write
+            // body, in addition to the common callable/binder checks above.
+            context.CheckExecution(span);
+            return ((ExecutionContext.BinaryFileHandle)receiver).Write(value, span);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }

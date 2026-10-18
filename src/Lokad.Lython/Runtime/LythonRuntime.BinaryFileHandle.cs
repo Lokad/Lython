@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException(ModuleException("io", "UnsupportedOperation"), "File not open for writing", span);
             }
 
-            private BigInteger Write(object value, LythonSourceSpan span)
+            internal BigInteger Write(object value, LythonSourceSpan span)
             {
                 EnsureWritable(span);
                 if (value is not PyBytes bytes)

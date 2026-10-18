@@ -10,7 +10,7 @@ internal sealed partial class LythonRuntime
     // Internal operand only: its receiver occupies a separate slot. A guest
     // list-valued attribute can never be confused with this resolved method.
     private static readonly object DirectListAppend = new();
-    private static readonly object DirectTextFileWrite = new();
+    private static readonly object DirectFileWrite = new();
     private static readonly object DirectCsvWriterow = new();
     private static readonly object DirectDictionaryGet = new();
     private static readonly object DirectStringStartsWith = new();
@@ -560,9 +560,9 @@ internal sealed partial class LythonRuntime
             {
                 result = InvokeListAppend((PyList)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
             }
-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectTextFileWrite))
+            else if (callSite.HasReceiver && ReferenceEquals(target, DirectFileWrite))
             {
-                result = InvokeTextFileWrite((ExecutionContext.TextFileHandle)stack[start],
+                result = InvokeFileWrite(stack[start],
                     stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
             }
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectCsvWriterow))

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Share the native file-write operand path with ordinary binary writes, removing eligible bound-method construction, argument packaging and async forwarding. Preserve checkpoints, closed/read-only/type error order, storage preflights, buffered positions, retained funding and awaited host publication.
+
 - Centralize native CSV row selection in the existing converter for single and bulk writers, removing duplicated selection/plumbing and reusing the synchronous bulk helper. Preserve inline awaited bulk publication, outer checkpoints, ignored callback returns, failure prefixes, retained funding and custom row/output suspension.
 
 - Reuse synchronous scalar conversion for native list/tuple rows in asynchronous `csv.writerow`, removing unnecessary async iteration wrappers. Keep output callbacks awaited and retain the generic async route for custom/generator rows, preserving checkpoints, supported cell types, storage preflights, ownership and cancellation.
