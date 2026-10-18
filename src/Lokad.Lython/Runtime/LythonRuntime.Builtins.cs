@@ -418,13 +418,18 @@ internal sealed partial class LythonRuntime
 
     private static object AbsValue(object value, ExecutionContext context, LythonSourceSpan span)
     {
-        if (value is PyComplex complex) return complex.Magnitude(span);
         if (value is PyInstance absInstance &&
             TryInvokeUnarySpecialMethod(absInstance, "__abs__", context, span, out var absolute))
         {
             return absolute;
         }
 
+        return AbsValueWithoutProtocols(value, context, span);
+    }
+
+    private static object AbsValueWithoutProtocols(object value, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (value is PyComplex complex) return complex.Magnitude(span);
         if (value is PyDecimal decimalValue)
         {
             return OwnDecimalValue(new PyDecimal(decimal.Abs(decimalValue.Value), decimalValue.Exponent), context, span);

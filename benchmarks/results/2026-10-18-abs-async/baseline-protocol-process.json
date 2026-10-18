@@ -1,0 +1,14 @@
+{
+  "source": "abs",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+  "assemblySha256": "26D3E4AFA314F26668E6B981FA556495015CD452A34ABB7F9AD9AD8C39026EF5",
+  "filter": "Category!=Stress&FullyQualifiedName~NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay",
+  "pid": 79304,
+  "hasExited": true,
+  "exitCode": 1,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 3032,
+  "stdoutSha256": "1637FEFE6C825E1272BDA21FF9EBC6B6C7CAF2C5F1CCE5A22FB0DEFCE45A766D",
+  "stderrSha256": "1A39CE86CEBC5D716BFFF68A2E5510B1556C752E6D8C86C34046424FE23E64B8"
+}

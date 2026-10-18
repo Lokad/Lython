@@ -1,0 +1,163 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.Numeric.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.Numeric.Async.cs
+index 833a6589..f6dfdefb 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.Numeric.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.Numeric.Async.cs
+@@ -4,6 +4,23 @@ namespace Lokad.Lython.Runtime;
+ 
+ internal sealed partial class LythonRuntime
+ {
++    private static ValueTask<object> AbsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
++        => arguments.Length == 1
++            ? AbsValueAsync(arguments[0], context, span)
++            : ValueTask.FromResult(Abs(arguments, span, context));
++
++    private static ValueTask<object> AbsValueAsync(object value, ExecutionContext context, LythonSourceSpan span)
++        => value is PyInstance instance ? AbsInstanceAsync(instance, context, span)
++            : ValueTask.FromResult(AbsValueWithoutProtocols(value, context, span));
++
++    private static async ValueTask<object> AbsInstanceAsync(PyInstance instance, ExecutionContext context, LythonSourceSpan span)
++    {
++        var protocol = await InvokeUnarySpecialMethodAsync(instance, "__abs__", context, span).ConfigureAwait(false);
++        return protocol.Kind == SpecialMethodInvocationKind.Invoked
++            ? protocol.Value
++            : AbsValueWithoutProtocols(instance, context, span);
++    }
++
+     private static ValueTask<object> FloatAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+         => arguments.Length == 1 && arguments[0] is PyInstance instance
+             ? ConvertInstanceToFloatAsync(instance, context, span)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs
+index ed9ff3e9..d84128cc 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs
+@@ -418,13 +418,18 @@ internal sealed partial class LythonRuntime
+ 
+     private static object AbsValue(object value, ExecutionContext context, LythonSourceSpan span)
+     {
+-        if (value is PyComplex complex) return complex.Magnitude(span);
+         if (value is PyInstance absInstance &&
+             TryInvokeUnarySpecialMethod(absInstance, "__abs__", context, span, out var absolute))
+         {
+             return absolute;
+         }
+ 
++        return AbsValueWithoutProtocols(value, context, span);
++    }
++
++    private static object AbsValueWithoutProtocols(object value, ExecutionContext context, LythonSourceSpan span)
++    {
++        if (value is PyComplex complex) return complex.Magnitude(span);
+         if (value is PyDecimal decimalValue)
+         {
+             return OwnDecimalValue(new PyDecimal(decimal.Abs(decimalValue.Value), decimalValue.Exponent), context, span);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs b/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs
+index cf511fb1..fde618b0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs
+@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
+         private static readonly BuiltinCallable SharedRepr = BuiltinCallable.Create("repr", Repr, ReprAsync, ["value"]);
+         private static readonly BuiltinCallable SharedAscii = BuiltinCallable.Create("ascii", Ascii, AsciiAsync, ["value"]);
+         private static readonly BuiltinCallable SharedFormat = BuiltinCallable.Create("format", Format, FormatAsync, ["value", "format_spec"], requiredCount: 1);
+-        private static readonly BuiltinCallable SharedAbs = BuiltinCallable.Create("abs", Abs, ["x"]);
++        private static readonly BuiltinCallable SharedAbs = BuiltinCallable.Create("abs", Abs, AbsAsync, ["x"]);
+         private static readonly BuiltinCallable SharedPow = BuiltinCallable.Create("pow", Pow, ["base", "exp", "mod"], requiredCount: 2);
+         private static readonly BuiltinCallable SharedRound = BuiltinCallable.Create("round", Round, ["number", "ndigits"], requiredCount: 1);
+         private static readonly BuiltinCallable SharedDivMod = BuiltinCallable.Create("divmod", DivMod, ["a", "b"]);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.OperatorModule.cs b/src/Lokad.Lython/Runtime/LythonRuntime.OperatorModule.cs
+index 4a01b8a8..db97eee9 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.OperatorModule.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.OperatorModule.cs
+@@ -23,7 +23,9 @@ internal sealed partial class LythonRuntime
+                 "not_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNot, (arguments, span, _) => Unary(arguments, span, static (value, _) => !IsTruthy(value))),
+                 "is_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIs, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => AreIdentical(left, right))),
+                 "is_not" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIsNot, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => !AreIdentical(left, right))),
+-                "abs" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAbs, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateAbsolute(value, context, innerSpan))),
++                "abs" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAbs,
++                    (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => AbsValue(value, context, innerSpan)),
++                    EvaluateAbsoluteAsync),
+                 "neg" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNeg, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateUnaryMinus(value, context, innerSpan))),
+                 "pos" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorPos, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateUnaryPlus(value, context, innerSpan))),
+                 "invert" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorInvert, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateBitwiseNot(value, context, innerSpan))),
+@@ -298,8 +300,9 @@ internal sealed partial class LythonRuntime
+         return operation(arguments[0], arguments[1], span);
+     }
+ 
+-    private static object EvaluateAbsolute(object value, ExecutionContext context, LythonSourceSpan span)
+-        => AbsValue(value, context, span);
++    private static ValueTask<object> EvaluateAbsoluteAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
++        => arguments.Length == 1 ? AbsValueAsync(arguments[0], context, span)
++            : ValueTask.FromResult(Unary(arguments, span, (value, innerSpan) => AbsValue(value, context, innerSpan)));
+ 
+     private static object EvaluateIndex(object value, ExecutionContext context, LythonSourceSpan span)
+     {
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs b/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
+index 51a70741..5637567c 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
+@@ -47,6 +47,10 @@ public sealed class NativeScalarDispatchTests
+     [InlineData("text_augmented", true)]
+     [InlineData("text_left", false)]
+     [InlineData("text_left", true)]
++    [InlineData("absolute", false)]
++    [InlineData("absolute", true)]
++    [InlineData("operator_absolute", false)]
++    [InlineData("operator_absolute", true)]
+     public async Task AProtocolOperandStillSuspendsWithoutReplay(string operation, bool cancel)
+     {
+         var (method, expression, expected) = operation switch
+@@ -57,6 +61,8 @@ public sealed class NativeScalarDispatchTests
+             "text_binary" => ("__radd__", "print('left'+Operand())", "3.5\n"),
+             "text_augmented" => ("__radd__", "value='left'\nvalue+=Operand()\nprint(value)", "3.5\n"),
+             "text_left" => ("__add__", "print(Operand()+'right')", "3.5\n"),
++            "absolute" => ("__abs__", "print(abs(Operand()))", "3.5\n"),
++            "operator_absolute" => ("__abs__", "import operator\nprint(operator.abs(Operand()))", "3.5\n"),
+             _ => ("__bool__", "print(not Operand())", "False\n")
+         };
+         var source = $"class Operand:\n def {method}(self" + (method is "__radd__" or "__add__" ? ",other" : "") +
+@@ -122,8 +128,46 @@ public sealed class NativeScalarDispatchTests
+         { "bad_bitwise", "def op(value):return ~value\ntry:print(op(1.5))\nexcept Exception as error:print(type(error).__name__)", "TypeError\n" },
+         { "bad_shift", "def op(value):return value<<1\ntry:print(op(1.5))\nexcept Exception as error:print(type(error).__name__)", "TypeError\n" },
+         { "bad_matrix", "def op(value):return value@value\ntry:print(op(1.5))\nexcept Exception as error:print(type(error).__name__)", "TypeError\n" },
++        { "abs_primitives", "import math\nprint(abs(-7),abs(7),abs(True),abs(False),abs(-1.25),abs(-0.0))\nprint(math.copysign(1.0,abs(-0.0)),abs(float('-inf')))", "7 7 1 0 1.25 0.0\n1.0 inf\n" },
++        { "abs_numeric_types", "import operator,decimal,datetime\nfor call in (abs,operator.abs):print(call(3+4j),call(decimal.Decimal('-1.25')),call(datetime.timedelta(seconds=-2)))", "5.0 1.25 0:00:02\n5.0 1.25 0:00:02\n" },
++        { "abs_protocol_values", "import operator\nclass Number:\n def __abs__(self):return 'custom'\nprint(abs(Number()),operator.abs(Number()))", "custom custom\n" },
++        { "abs_missing_and_noncallable", "import operator\nclass Missing:pass\nclass Nil:__abs__=None\nfor call in (abs,operator.abs):\n for value in ('text',None,Missing(),Nil()):\n  try:call(value)\n  except Exception as error:print(type(error).__name__)", "TypeError\nTypeError\nTypeError\nTypeError\nTypeError\nTypeError\nTypeError\nTypeError\n" },
++        { "abs_arity", "import operator\nfor call in (abs,operator.abs):\n for args in ((),(1,2)):\n  try:call(*args)\n  except Exception as error:print(type(error).__name__)", "TypeError\nTypeError\nTypeError\nTypeError\n" },
++        { "abs_alias_and_expansion", "import operator\nsaved=abs\nprint(saved(-7),abs(*[-7]),operator.abs(-7))\nabs=lambda value:'custom'\nprint(abs(-7),saved(-7))", "7 7 7\ncustom 7\n" },
+     };
+ 
++    [Theory]
++    [InlineData(false, false)]
++    [InlineData(true, false)]
++    [InlineData(false, true)]
++    [InlineData(true, true)]
++    public async Task AbsoluteProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(bool asynchronous, bool module)
++    {
++        var source = "import operator\nclass Number:\n def __abs__(self):\n  with open('/events.txt','a') as output:output.write('entered')\n  try:\n   payload='x'*750000\n  finally:\n   return 7\ntry:\n print(" + (module ? "operator.abs" : "abs") + "(Number()))\nexcept MemoryError:\n print('swallowed')";
++        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
++        using (var script = new LythonEngine().Compile(source, budget))
++        {
++            Assert.True(script.IsValid);
++            var baseline = budget.ReservedBytes;
++            var delayed = asynchronous ? new DelayedLythonHost() : null;
++            var mock = asynchronous ? null : new MockLythonHost();
++            delayed?.SeedFile("/events.txt", "");
++            mock?.SeedFile("/events.txt", "");
++            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
++            using (var result = asynchronous ? await script.RunAsync(delayed!, options) : script.Run(mock!, options))
++            {
++                Assert.False(result.Success);
++                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
++                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
++                Assert.Equal("", result.StandardOutput);
++                Assert.Equal("entered", delayed is null ? mock!.ReadText("/events.txt") : delayed.ReadText("/events.txt"));
++                if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
++            }
++            Assert.Equal(baseline, budget.ReservedBytes);
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     [Theory]
+     [MemberData(nameof(Programs))]
+     public async Task ScalarOperationsKeepPythonResultsAndErrors(string label, string source, string expected)

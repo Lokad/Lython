@@ -1,0 +1,16 @@
+{
+  "baseline": "ff4b52f0a326346a8ad0d5eea0813f5265b02110",
+  "sourceSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "91e5b1a297df090e5bb0840d81d00d59a19406a0fe536ec69a99ce6f2918c914",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.Numeric.Async.cs": "1abe405fed69be31da50db75c2968586c2f11312fdeb83d31d27d6dc74445b66",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "ecbec0304df9a39724d11cf1bedd11a9deef6b001b8341a38be4f014f0110f69",
+    "src/Lokad.Lython/Runtime/LythonRuntime.OperatorModule.cs": "70c3a8968735c44f0ad02a9f349e42f1dd95711c92a4ff9c61ad06ab1b3ff8c9"
+  },
+  "scope": "First demonstrate and fix abs guest-protocol suspension using existing async unary lookup and unchanged numeric kernel/preflights. Then assess direct shared-builtin primitive operands with the existing single-input wrapper; no binder, cache or ownership redesign.",
+  "gate": "Correct async host I/O/cancellation/admission/cleanup and existing numeric results/errors. Before any primitive dispatch change freeze exact work records and one native allocation/control capture. Ordinary primitives must allocate less, expanded/protocol controls remain unchanged. No timing or full-job campaign.",
+  "closedSourceFindings": [
+    "PyModule.TryGetCachedMember already caches stable JSON callables, so no four-field wrapper hoist is justified.",
+    "ArgumentPresence already uses an inline ulong and overflow bool array. No replacement is needed."
+  ],
+  "additionalConsumer": "operator.abs is the only other AbsValue caller and also registers only a synchronous implementation. Include it through the same async value helper, preserving unary arity validation."
+}

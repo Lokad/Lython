@@ -842,6 +842,12 @@ current language subset. These forms must
 be rejected explicitly. `LythonEngine.RunAsync` is an embedding API that awaits
 host effects; it does not make Python asynchronous syntax available to scripts.
 
+`abs` and `operator.abs` use the guest `__abs__` protocol. Under `RunAsync`,
+callbacks that perform host I/O are awaited through the shared unary-protocol
+dispatcher. Native numeric operands retain the same numeric operations. A missing
+hook reaches the ordinary numeric/type-error path without a second lookup.
+Cancellation, refused admission and native cleanup retain their usual contracts.
+
 Loop and comprehension targets follow ordinary assignment rules, including
 nested list/tuple unpacking, starred targets, attribute/subscript/slice stores
 and trailing commas. Receivers and indices evaluate once at each ordered store.

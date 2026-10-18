@@ -92,3 +92,5 @@ benchmarks/results/2026-10-18-native-text/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-native-text/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-alias-capture-rejected/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-alias-capture-rejected/rejected-candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-abs-async/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-abs-async/candidate.patch -text -whitespace

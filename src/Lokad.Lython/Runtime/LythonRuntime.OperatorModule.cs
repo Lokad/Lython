@@ -23,7 +23,9 @@ internal sealed partial class LythonRuntime
                 "not_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNot, (arguments, span, _) => Unary(arguments, span, static (value, _) => !IsTruthy(value))),
                 "is_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIs, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => AreIdentical(left, right))),
                 "is_not" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIsNot, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => !AreIdentical(left, right))),
-                "abs" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAbs, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateAbsolute(value, context, innerSpan))),
+                "abs" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAbs,
+                    (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => AbsValue(value, context, innerSpan)),
+                    EvaluateAbsoluteAsync),
                 "neg" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNeg, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateUnaryMinus(value, context, innerSpan))),
                 "pos" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorPos, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateUnaryPlus(value, context, innerSpan))),
                 "invert" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorInvert, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateBitwiseNot(value, context, innerSpan))),
@@ -298,8 +300,9 @@ internal sealed partial class LythonRuntime
         return operation(arguments[0], arguments[1], span);
     }
 
-    private static object EvaluateAbsolute(object value, ExecutionContext context, LythonSourceSpan span)
-        => AbsValue(value, context, span);
+    private static ValueTask<object> EvaluateAbsoluteAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => arguments.Length == 1 ? AbsValueAsync(arguments[0], context, span)
+            : ValueTask.FromResult(Unary(arguments, span, (value, innerSpan) => AbsValue(value, context, innerSpan)));
 
     private static object EvaluateIndex(object value, ExecutionContext context, LythonSourceSpan span)
     {

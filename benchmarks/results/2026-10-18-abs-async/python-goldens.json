@@ -1,0 +1,168 @@
+{
+  "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "executable": "C:\\Python313\\python.exe",
+  "isolatedFlags": [
+    "-I",
+    "-S",
+    "-X",
+    "utf8"
+  ],
+  "cases": [
+    {
+      "name": "float_arithmetic",
+      "sourceSha256": "f25ae1f93920d0d111fa4b26901e345d498ad1731442a8e14a0e73abc0ac6b7c",
+      "expectedSha256": "785d6a909faa4b0927b2de5ba1ea49e544e2e451bbf0082dd88c2f519f734d16",
+      "passed": true
+    },
+    {
+      "name": "float_augmented",
+      "sourceSha256": "633b1bcfd11c0d39bcdd059ea52886ceca5572636b55631d568f4e3f173c3fdb",
+      "expectedSha256": "a5c0dfc64d745c1bff4a4f6397214178e1597fc224cdb21bb7783e556ed8493f",
+      "passed": true
+    },
+    {
+      "name": "bool_bitwise",
+      "sourceSha256": "2470448331e69f1efb439a300d561db14dac363fc662a7a8deeaec2ea76e51ba",
+      "expectedSha256": "d100643b402084b9049c24edbb2e324c4eae1b29bf3f23a4e208db0812539b1f",
+      "passed": true
+    },
+    {
+      "name": "mixed",
+      "sourceSha256": "48641c6f87339985ec57c46a1c87ecbc4e908e0e319fb82e98a46839e3633b1d",
+      "expectedSha256": "a2bc18134e37a7ef36f1250bc14ec7915b8789c163d703ab2bb33379159e7e2b",
+      "passed": true
+    },
+    {
+      "name": "bool_augmented",
+      "sourceSha256": "01a780758a4859103b690cedc0dff0cac062310731b1bd3530e8d0f59126c29e",
+      "expectedSha256": "428d4a6c858964d0b808f59a16b3aebd41e7f12ebfa23a1ea86d194e8333de8a",
+      "passed": true
+    },
+    {
+      "name": "unary",
+      "sourceSha256": "291a251c262f748b038250d5d52a7c30397fae698fd365a98f48439a58fa6a26",
+      "expectedSha256": "1927c2f434ddacb0f24ced998db60219044e836c077b9b1ef1525f2960bbe41e",
+      "passed": true
+    },
+    {
+      "name": "negative_zero",
+      "sourceSha256": "24eb5c0962d5397e3e49d09c6ff524b52e3bf3dc4da7d575df2f91a03b61004f",
+      "expectedSha256": "72cbefc7565302de884d447dbaeb446d9ba88247bd13a7190f0e0086a9955a4e",
+      "passed": true
+    },
+    {
+      "name": "nonfinite",
+      "sourceSha256": "dd04f3aa84fd80ce39aac20f9fdd6a2de920b03790930ec62ca90ec2fba9e903",
+      "expectedSha256": "a94b94be1f48ef281e178d86ab3c43e025f5a71cfc7e2db5df7682326cff8e62",
+      "passed": true
+    },
+    {
+      "name": "chain_true",
+      "sourceSha256": "893b97a65b1fa8c217858dfa5b2aac5d52b4c6566affa5f2c25490034ccf06d9",
+      "expectedSha256": "1de60df3eaa1cc846c7055b67e21b2b96422ba94144cbbdfa80baec3ed5a70f8",
+      "passed": true
+    },
+    {
+      "name": "chain_false",
+      "sourceSha256": "ef1f86298804a744a8870ceadae38c9e69be67644a24941007c964aec2acdba1",
+      "expectedSha256": "7aebc64e780611aa9b1fb170007dc34e45993e69e412198771ed7ab12c77c87d",
+      "passed": true
+    },
+    {
+      "name": "chain_once",
+      "sourceSha256": "eeb1ccb8eefbfdc04edfe8f1e9e703abb1c9579f20d2511b8fc00a933f7b6d77",
+      "expectedSha256": "e399e1d95955bbc8f4341734454c33d8519ef8aba11159733c51935bddabe564",
+      "passed": true
+    },
+    {
+      "name": "chain_nonbool",
+      "sourceSha256": "d90a6369fbbaaa271fd8dc5682edd72cb78fbc8f37fb94febb793504da397893",
+      "expectedSha256": "acc07b62f23f458923737c4cd4a66bd05d1e71eb4f384003baaf2dcc760d6349",
+      "passed": true
+    },
+    {
+      "name": "reflected",
+      "sourceSha256": "37720cdf5183d01be5426b423cab962b4b0e13a500bf240810e62d06c1bb83ac",
+      "expectedSha256": "5ca797740e932dd836206d2b4bea825c83bc47e25e45006d0a2b62fe71be40b6",
+      "passed": true
+    },
+    {
+      "name": "truth_protocol",
+      "sourceSha256": "486f6107492d899cf5e00daa82c32ccc3c06a2e5fdf8cf310f7fac478277d928",
+      "expectedSha256": "f98228ace1ac33641a329eaaea8bb5abca849113729d53234530c9fda0c09d64",
+      "passed": true
+    },
+    {
+      "name": "divide_zero",
+      "sourceSha256": "21aad71ae0ffe8f38a5b354f53e6f5b1e1070602f6968f52172c295215a673b8",
+      "expectedSha256": "356ecfe2cab0868ff7fddfb433a68bcb7a83f06f9d929ab78e1e043a6752d6ec",
+      "passed": true
+    },
+    {
+      "name": "floor_zero",
+      "sourceSha256": "c3e76633b632f91820424120ba6bb9ac2bd4ada62bd4e17e618fbc84ba8f2e13",
+      "expectedSha256": "356ecfe2cab0868ff7fddfb433a68bcb7a83f06f9d929ab78e1e043a6752d6ec",
+      "passed": true
+    },
+    {
+      "name": "modulo_zero",
+      "sourceSha256": "3f8c2d4ffd5aae817803a8dbff5e3cd41665d5d7abefe6e99d8110429abf89e6",
+      "expectedSha256": "356ecfe2cab0868ff7fddfb433a68bcb7a83f06f9d929ab78e1e043a6752d6ec",
+      "passed": true
+    },
+    {
+      "name": "bad_bitwise",
+      "sourceSha256": "64ae12df68456b79f8bd8a15dc59ca8d4f0def027413937e4173c038fd56642c",
+      "expectedSha256": "89e4cb3c54f325613accec01e6a1d2860b3778f65c1c76982d7d455b40316a95",
+      "passed": true
+    },
+    {
+      "name": "bad_shift",
+      "sourceSha256": "191106e23a7221a26bd116396587670a60966030575c5afa542f04757415418e",
+      "expectedSha256": "89e4cb3c54f325613accec01e6a1d2860b3778f65c1c76982d7d455b40316a95",
+      "passed": true
+    },
+    {
+      "name": "bad_matrix",
+      "sourceSha256": "44d0c05868b0ef194ea1e9500fa53f0604a83c7e743a9c7c4e91b549e5a09977",
+      "expectedSha256": "89e4cb3c54f325613accec01e6a1d2860b3778f65c1c76982d7d455b40316a95",
+      "passed": true
+    },
+    {
+      "name": "abs_primitives",
+      "sourceSha256": "99fe749a21af2c56def846899cfc9ad96315a3a2fe8319b778ac49a966e34ff3",
+      "expectedSha256": "9003e34786c75e33103c78233e3f52e88e9787d8e0f657a70f298d324758bd13",
+      "passed": true
+    },
+    {
+      "name": "abs_numeric_types",
+      "sourceSha256": "a97196567f2f7d177008d393622330151e6be2fd4fed15540e0a2fe23183f30e",
+      "expectedSha256": "1616d17c794d3e99781d529c13caf0cdd69af8dc3acbcedd53f36b5291fd8353",
+      "passed": true
+    },
+    {
+      "name": "abs_protocol_values",
+      "sourceSha256": "466bf319562893e2e612f48e0e40244b673448cd7fb79d969d905562ab9c3150",
+      "expectedSha256": "b3c13991343c9277dec61289f13ae3c520036dc9323f5b761c850c7491caf451",
+      "passed": true
+    },
+    {
+      "name": "abs_missing_and_noncallable",
+      "sourceSha256": "3f3eca7e6fe0ddb63ddbaf737d34fcfb1ce764e6f0d8e2d02a702769bd135b21",
+      "expectedSha256": "913d8a4e2233f96732462a3e47f736c9b0403da99ca776ee334ebff803127815",
+      "passed": true
+    },
+    {
+      "name": "abs_arity",
+      "sourceSha256": "f32b37ef43bd8cb5429bf37a2875efb69dca268827820d5fe8cd877ce3862b05",
+      "expectedSha256": "91ce3b1e608ce82e59b4386162cbf0e804280d596587a1b5b7b194f4c77c102b",
+      "passed": true
+    },
+    {
+      "name": "abs_alias_and_expansion",
+      "sourceSha256": "d456c4605f88db176fb164462f8611f9f97ab908f0be4267cfa93a5d1cf075e5",
+      "expectedSha256": "0a78452526d261f0ba8d3004d9514ef9a1247c44f9c00b6b473caee1e4f4bd24",
+      "passed": true
+    }
+  ]
+}

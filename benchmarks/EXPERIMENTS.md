@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 absolute-value correction](results/2026-10-18-abs-async/README.md)
+makes abs and operator.abs await guest __abs__ hooks through the existing unary
+dispatcher. Two global-abs async-host regressions fail before the correction;
+all 18 protocol controls and 965 final focused cases pass afterward. The numeric
+kernel/preflights are unchanged, and 26 programs match isolated CPython.
+No performance measurement or primitive dispatch change is included.
+
 The [2026-10-18 type-alias shortcut](results/2026-10-18-alias-capture-rejected/README.md)
 was rejected: removing fallback-driven mirroring before replacing lazy captures
 loses outer names in three escaped factory cases. Baseline and restored source

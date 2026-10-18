@@ -35,6 +35,13 @@ Runs use that borrowed budget unless `LythonRunOptions.MemoryBudget` supplies
 another. One-shot `LythonEngine.Run`/`RunAsync` disposes its temporary compilation
 after the invocation and its cleanup finish.
 
+`abs` and `operator.abs` await guest `__abs__` callbacks during asynchronous
+execution. Their existing binding storage, operands and callback owners remain
+funded until the awaited call and cleanup finish. Cancellation or refused
+admission does not release a pending user's storage early. Native numeric
+operations and their allocation preflights are shared with synchronous execution;
+this adds no reservation, cache or reclamation mechanism.
+
 Ordinary single-positional `json.dumps` uses immutable builtin-default metadata
 instead of per-call binding arrays, forwarded options and a temporary encoder.
 The shared default callback holds no guest value, receiver or execution owner.

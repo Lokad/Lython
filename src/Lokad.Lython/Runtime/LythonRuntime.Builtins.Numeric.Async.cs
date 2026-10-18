@@ -4,6 +4,23 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static ValueTask<object> AbsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => arguments.Length == 1
+            ? AbsValueAsync(arguments[0], context, span)
+            : ValueTask.FromResult(Abs(arguments, span, context));
+
+    private static ValueTask<object> AbsValueAsync(object value, ExecutionContext context, LythonSourceSpan span)
+        => value is PyInstance instance ? AbsInstanceAsync(instance, context, span)
+            : ValueTask.FromResult(AbsValueWithoutProtocols(value, context, span));
+
+    private static async ValueTask<object> AbsInstanceAsync(PyInstance instance, ExecutionContext context, LythonSourceSpan span)
+    {
+        var protocol = await InvokeUnarySpecialMethodAsync(instance, "__abs__", context, span).ConfigureAwait(false);
+        return protocol.Kind == SpecialMethodInvocationKind.Invoked
+            ? protocol.Value
+            : AbsValueWithoutProtocols(instance, context, span);
+    }
+
     private static ValueTask<object> FloatAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         => arguments.Length == 1 && arguments[0] is PyInstance instance
             ? ConvertInstanceToFloatAsync(instance, context, span)
