@@ -263,6 +263,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [two-positional split diagnostic](benchmarks/results/2026-10-18-split-call-count/README.md)
+at `7bf17b16` plus its frozen four-file runtime patch saves 336 bytes/sync call
+and 304 bytes/async call. All 240 work/error records match; zero/one-argument and
+exposed controls are unchanged. This native-loop allocation result makes no
+elapsed-time, complete-job or CPython speedup claim.
+
 The [int/float setup diagnostic](benchmarks/results/2026-10-18-builtin-signatures/README.md)
 at `4e55ff0d` plus its frozen one-file patch reduces native warm context allocation
 from 19,312 to 19,176 bytes; the child-context control stays at 264 bytes. This

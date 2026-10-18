@@ -36,6 +36,7 @@ public sealed class DirectStringSplitExecutionTests
         { "count-count_evaluation_order", "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\ndef text():\n events.append('receiver')\n return 'a,b,c'\ndef sep():\n events.append('separator')\n return ','\ndef count():\n events.append('count-object')\n return Count()\nprint(text().split(sep(),count()),events)", "['a', 'b,c'] ['receiver', 'separator', 'count-object', 'index']\n" },
         { "count-count_method_forms", "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\nmethod='a,b,c'.split\nprint(method(',',Count()),'a,b,c'.split(sep=',',maxsplit=Count()),'a,b,c'.split(*[',',Count()]))\nprint(events)", "['a', 'b,c'] ['a', 'b,c'] ['a', 'b,c']\n['index', 'index', 'index']\n" },
         { "count-index-rebinds-receiver", "text='a,b,c'\nclass Count:\n def __index__(self):\n  global text\n  text='changed'\n  return 1\nprint(text.split(',',Count()),text)", "['a', 'b,c'] changed\n" },
+        { "count-dynamic-two-arguments", "class Text:\n def split(self,sep,count):return ['custom',sep,count]\nprint(Text().split(',',1))", "['custom', ',', 1]\n" },
     };
 
     [Theory]

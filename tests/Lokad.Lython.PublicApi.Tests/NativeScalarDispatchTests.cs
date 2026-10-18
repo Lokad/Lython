@@ -71,6 +71,8 @@ public sealed class NativeScalarDispatchTests
     [InlineData("split_count_expanded", true)]
     [InlineData("split_count_descriptor", false)]
     [InlineData("split_count_descriptor", true)]
+    [InlineData("split_argument", false)]
+    [InlineData("split_argument", true)]
     public async Task AProtocolOperandStillSuspendsWithoutReplay(string operation, bool cancel)
     {
         var (method, expression, expected) = operation switch
@@ -93,6 +95,7 @@ public sealed class NativeScalarDispatchTests
             "split_count_keyword" => ("__index__", "print('a,b,c'.split(sep=',',maxsplit=Operand()))", "['a', 'b,c']\n"),
             "split_count_expanded" => ("__index__", "print('a,b,c'.split(*[',',Operand()]))", "['a', 'b,c']\n"),
             "split_count_descriptor" => ("__index__", "print('a,b,c'.split(',',Operand()))", "['a', 'b,c']\n"),
+            "split_argument" => ("__index__", "print('a,b,c'.split(',',int(Operand())))", "['a', 'b,c']\n"),
             _ => ("__bool__", "print(not Operand())", "False\n")
         };
         var source = operation is "operator_negative_descriptor" or "split_count_descriptor"

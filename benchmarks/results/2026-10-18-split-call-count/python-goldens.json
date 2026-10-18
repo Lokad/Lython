@@ -1,0 +1,198 @@
+{
+  "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "executable": "C:\\Python313\\python.exe",
+  "isolatedFlags": [
+    "-I",
+    "-S",
+    "-X",
+    "utf8"
+  ],
+  "cases": [
+    {
+      "name": "unicode-whitespace",
+      "sourceSha256": "5007d3d9ee6333d7a39eec386e29b401a6fbf96f2c03bacd3464dbe48b3f94bd",
+      "expectedSha256": "7c7fe7fb8f03207e94d617de5d1b5cc3c50eb314c3eb2ca2580d0f45b7463624",
+      "passed": true
+    },
+    {
+      "name": "empty-and-boundaries",
+      "sourceSha256": "4a48d5f598c679957282393b555dc38aba578df2d627a65143fd1c1dd142174e",
+      "expectedSha256": "326d3d019038ce05ce1430414090b6ce420e9d71037c248a6c1437664eec6035",
+      "passed": true
+    },
+    {
+      "name": "fresh-results",
+      "sourceSha256": "390136d36db50d5d009f28ab2f812f35a635ab722cad81c79b64ee41139173a4",
+      "expectedSha256": "58cc2d9c6f3de03def70af3e3e7394f6848e5da8d84c7d724758e46f0d2cad74",
+      "passed": true
+    },
+    {
+      "name": "explicit-options",
+      "sourceSha256": "84813f6d6714d2a9aad60219985e73811291332ddc82e6d887048c8d8df80987",
+      "expectedSha256": "b5351455e51a49bdd28e821132b05ddfc019e66e9c45583b5f441f5344e7c9d9",
+      "passed": true
+    },
+    {
+      "name": "exposed",
+      "sourceSha256": "db3f6d0ade41437a400c89a0a7bdd3715672755a5044e61110502330fe8ade13",
+      "expectedSha256": "29d1ebf6e7824856ba10137447d52d6b287ad5b0cd7e852c97f17c6247cff078",
+      "passed": true
+    },
+    {
+      "name": "custom-receiver",
+      "sourceSha256": "06a00061b90f15c03e1008129f02a024aaec8406dea59543f7b5bc25c3a66e38",
+      "expectedSha256": "377970ea8344bdfcec68f4b7b6fb7a0cea1bba42d571db841fdd64f5103b80b2",
+      "passed": true
+    },
+    {
+      "name": "expanded",
+      "sourceSha256": "6b0993def93d2fe5620187ef268a2eac47211fdb695ba6d950dc8cce24713ca4",
+      "expectedSha256": "7d24a12be39cd87887fc10775c38aa53463f394174b528290b1b68ed9161aa63",
+      "passed": true
+    },
+    {
+      "name": "receiver-once",
+      "sourceSha256": "a2db8bc5c0a3ae4d8c20ede04332879ffab856aab70ca53e11c887c000b441f4",
+      "expectedSha256": "6c9cf659629f735d11b316f302eacad7876eb66a353930de1b51ed60cb917b1d",
+      "passed": true
+    },
+    {
+      "name": "unicode-separator",
+      "sourceSha256": "6fa4eca9ef7696be0f270141f73c8fb8e8ccc6124a63fd3b679c03750c38e355",
+      "expectedSha256": "03e92779c5f0ed9bf20a9fe3901930e955d0d547cb16ed2ad3af5718c3c8fcb5",
+      "passed": true
+    },
+    {
+      "name": "explicit-none",
+      "sourceSha256": "f92db539e17b6a7a0a02c92aba40dabe78dae56766d9b065c9d7cf14a0d9acd2",
+      "expectedSha256": "ac3090332baa2c23b647658943fe4f9322e96139efbbbf1233ea495a541c850c",
+      "passed": true
+    },
+    {
+      "name": "separator-alias",
+      "sourceSha256": "0cd8112f14f8baa4b3a38981c419a707a87ddd90cfe55a682a80d3dd168b9cb4",
+      "expectedSha256": "8c2f2acb42f1d609c35d67aa20aff198e90dc1a6dab70ada68c267ccb13a96be",
+      "passed": true
+    },
+    {
+      "name": "separator-effects",
+      "sourceSha256": "457ff8669dea5494e2af0503c816e63e816ec598f5e8f357ee0f1e09bb183c92",
+      "expectedSha256": "342d62a3435d2bb04693f127b981baad5c4c7ec6682f68c62138083aa563271f",
+      "passed": true
+    },
+    {
+      "name": "receiver-rebinding",
+      "sourceSha256": "2f0d2b445e86cadfd8c7f4951dd0d13178fdc807c89865d631b3aa516c89c551",
+      "expectedSha256": "5141a8c9073786581a9a4833e73121073a08e7e2b09bcdb026cf619ca65b69e4",
+      "passed": true
+    },
+    {
+      "name": "dynamic-separator",
+      "sourceSha256": "a94e2497ded7bd8ddb7ed9a6a69d67a5277bbb76c814e238023ce35ed87757fc",
+      "expectedSha256": "f09b7436272fab9c69418c2321fcc7308ca2290ccbf4a3db9cc7a62e5d7444ff",
+      "passed": true
+    },
+    {
+      "name": "exposed-and-expanded-separator",
+      "sourceSha256": "689710db6f644d751802c619bb4690b133f098befbe890f10b3f9986b6ffd642",
+      "expectedSha256": "b54f7db4eec7bdf421fb16ae3f3b0dbed316a058319e1429d455680996c8a25c",
+      "passed": true
+    },
+    {
+      "name": "separator-errors",
+      "sourceSha256": "a384a7dbfbcdadfb12684d7ec51bbb551ca408de9a0eb0352d646721e35a7112",
+      "expectedSha256": "4ecb4fc3514d9639a33fee46cba097c2acc2291353833a657457ec167e1cc604",
+      "passed": true
+    },
+    {
+      "name": "count-bounded_native",
+      "sourceSha256": "e5c49cf53a73ddebd3130c67a511440794bacd17c0f24fe1315c4d39aa8b8255",
+      "expectedSha256": "e714499f81a90b8d2a8a32e50065770537924a7fa26a35911f88a42ef5c39caa",
+      "passed": true
+    },
+    {
+      "name": "count-index_protocol",
+      "sourceSha256": "0b28b6c44f7e7637fcfb632f67d9f261d3da08ffe0c7c36a08568d82f952ba93",
+      "expectedSha256": "4183dadc8beb639a5643276aed9d9828fe0c83f2477978a27ca902cea95716bc",
+      "passed": true
+    },
+    {
+      "name": "count-separator_validation_order",
+      "sourceSha256": "b31a79f6ac6e177bc83d73110eef9551ae9bdcb922cb25bc85e90d3e5cf4ecfe",
+      "expectedSha256": "ad4072e800e68b1e6f25ddab5f24594853f46b4c918561ed3cfc5171e67f8d2d",
+      "passed": true
+    },
+    {
+      "name": "count-index_error_precedence",
+      "sourceSha256": "c940c6bc3dd9ff0dbd74da6bdc5c411e80ecd59f66b2ede94b3ad3cd417a0823",
+      "expectedSha256": "eff1d1ad05ea12d1f2ba4b690da521a8e914120f34e2a9556a7c4f54e4ef00d4",
+      "passed": true
+    },
+    {
+      "name": "count-large_representable_counts",
+      "sourceSha256": "1ead2ab60a34d4f8376be0131791fd4a57c24a7f28d2d6e8349ae3c5ea89685b",
+      "expectedSha256": "000fbdfd538a4ef95ebba075162859034430481972d150604e2b21c9b8da95d2",
+      "passed": true
+    },
+    {
+      "name": "count-count_overflow",
+      "sourceSha256": "1deec548ae0182c15f80f3eb1b03466e7aabf6b60ca731a887e001171df4053e",
+      "expectedSha256": "31df9fa0c264d542e81ff96066c63d91239d84820ef1c22d7f232e73d2416da3",
+      "passed": true
+    },
+    {
+      "name": "count-count_64_boundaries",
+      "sourceSha256": "c53d04d0ae77c618c3704901bf13cfffb663f22d8133e1af287a497e1be62f54",
+      "expectedSha256": "ed05838a6a2aa267f64b47ba60973c9543da67e7a8aa0ad6f808ef63813930a8",
+      "passed": true
+    },
+    {
+      "name": "count-count_whitespace_domain",
+      "sourceSha256": "dd8748e1d5f1123a1ef099744b00273307fde0278d7750e8a0d20a4772a83d38",
+      "expectedSha256": "9568b8ca034c6455c74a2885c33a7c9976939f3052be36bef0ab315b66a8fd2c",
+      "passed": true
+    },
+    {
+      "name": "count-count_type_slot",
+      "sourceSha256": "ce0bfc5249bd94bbe4af48e7d0641c234514c873bbae11a4710515947e855bcd",
+      "expectedSha256": "ca5dfb630f159f32fe75da6101bccc1321588f9709299aae1509b21ea53e61bb",
+      "passed": true
+    },
+    {
+      "name": "count-count_getattribute_bypass",
+      "sourceSha256": "137b4f3ae833e57a4328c4c523adccd8d5a967162b62fa69954b67f984d39006",
+      "expectedSha256": "ca5dfb630f159f32fe75da6101bccc1321588f9709299aae1509b21ea53e61bb",
+      "passed": true
+    },
+    {
+      "name": "count-count_invalid_values",
+      "sourceSha256": "4e2fa76bd94078c9c0a9f0fd6c90afcc210ad9368ffe4d8abd8007023fc34b7c",
+      "expectedSha256": "f3eab766a766e203e22741ca51ce47fdd77831a50a72100e38c0b9818fc15bbb",
+      "passed": true
+    },
+    {
+      "name": "count-count_evaluation_order",
+      "sourceSha256": "04d585d003cb257b017e4a95c3791364113d01155bde8d1a8705b846b890027e",
+      "expectedSha256": "fd9c396a8cc6326d4d4a5f13da651f18626d7dac7c9252f657b22ee47b26acd5",
+      "passed": true
+    },
+    {
+      "name": "count-count_method_forms",
+      "sourceSha256": "8faee978cc8b6eb6e80332eb6607c376e083c5bbae3e0deed0bcf3e4ac836f71",
+      "expectedSha256": "59769d15a2aeccc44f792d01e0cb739f3b353d787cff07695abd93d6d3ad6b3b",
+      "passed": true
+    },
+    {
+      "name": "count-index-rebinds-receiver",
+      "sourceSha256": "da5e7968d4d8aa744af72673bc4ed564b5658836576108e1324425c022a89ecd",
+      "expectedSha256": "75722c37c7543319c545cb455839a83a9ca0756d66901531d202cd9e84369da5",
+      "passed": true
+    },
+    {
+      "name": "count-dynamic-two-arguments",
+      "sourceSha256": "0e9406323356e313ef9a06d0a708fbc4c76ae250714f06b6b1fa4f67e8169be3",
+      "expectedSha256": "5869718ac32a2bddeeb3b327ef72e4d6d0c127fe615ebb4a9def3c3a8967024e",
+      "passed": true
+    }
+  ]
+}

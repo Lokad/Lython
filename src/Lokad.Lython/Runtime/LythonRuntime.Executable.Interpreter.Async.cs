@@ -91,9 +91,11 @@ internal sealed partial class LythonRuntime
                         }
                         else if (call.HasReceiver && ReferenceEquals(callable, DirectStringSplit))
                         {
-                            result = InvokeStringSplit((Text.PyString)_stack[start],
-                                call.ArgumentCount == 1 ? _stack[start + call.ArgumentOffset] : null,
-                                call.CallSpan, _context);
+                            var splitSeparator = call.ArgumentCount >= 1 ? _stack[start + call.ArgumentOffset] : null;
+                            var splitCount = call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : null;
+                            result = splitCount is PyInstance
+                                ? await InvokeStringSplitAsync((Text.PyString)_stack[start], splitSeparator, splitCount, call.CallSpan, _context).ConfigureAwait(false)
+                                : InvokeStringSplit((Text.PyString)_stack[start], splitSeparator, splitCount, call.CallSpan, _context);
                         }
                         else if (call.HasReceiver && (ReferenceEquals(callable, DirectStringStartsWith) || ReferenceEquals(callable, DirectStringEndsWith)))
                         {

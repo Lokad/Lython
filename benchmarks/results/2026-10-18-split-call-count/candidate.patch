@@ -1,0 +1,114 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+index 67b86704..d129b650 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+@@ -322,7 +322,7 @@ internal sealed partial class ExecutableScript
+                     "write" => call.Arguments.Count == 1,
+                     "writerow" => call.Arguments.Count == 1,
+                     "replace" => call.Arguments.Count is 2 or 3,
+-                    "split" => call.Arguments.Count is 0 or 1,
++                    "split" => call.Arguments.Count is >= 0 and <= 2,
+                     "strip" or "lower" or "upper" or
+                     "islower" or "isupper" or "istitle" or "isalpha" or "isdigit" or "isalnum" or
+                     "isascii" or "isdecimal" or "isidentifier" or "isnumeric" or "isprintable" or "isspace"
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+index bb7ba849..bed19eb2 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+@@ -268,14 +268,28 @@ internal sealed partial class LythonRuntime
+         finally { context.LeaveInterpreterFrame(); }
+     }
+ 
+-    private static object InvokeStringSplit(PyString receiver, object? separator, LythonSourceSpan span, ExecutionContext context)
++    private static object InvokeStringSplit(PyString receiver, object? separator, object? count, LythonSourceSpan span, ExecutionContext context)
+     {
+         context.EnterInterpreterFrame(span);
+         try
+         {
+             context.CheckExecution(span);
+             context.CheckExecution(span);
+-            return StringMembers.Split(receiver, separator, null, span, context);
++            return StringMembers.Split(receiver, separator, count, span, context);
++        }
++        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
++        finally { context.LeaveInterpreterFrame(); }
++    }
++
++    private static async ValueTask<object> InvokeStringSplitAsync(PyString receiver, object? separator, object count,
++        LythonSourceSpan span, ExecutionContext context)
++    {
++        context.EnterInterpreterFrame(span);
++        try
++        {
++            context.CheckExecution(span);
++            context.CheckExecution(span);
++            return await StringMembers.SplitAsync(receiver, separator, count, span, context).ConfigureAwait(false);
+         }
+         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+         finally { context.LeaveInterpreterFrame(); }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 7191224b..6d3a770f 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -580,7 +580,8 @@ internal sealed partial class LythonRuntime
+             else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringSplit))
+             {
+                 result = InvokeStringSplit((PyString)stack[start],
+-                    callSite.ArgumentCount == 1 ? stack[start + callSite.ArgumentOffset] : null,
++                    callSite.ArgumentCount >= 1 ? stack[start + callSite.ArgumentOffset] : null,
++                    callSite.ArgumentCount == 2 ? stack[start + callSite.ArgumentOffset + 1] : null,
+                     callSite.CallSpan, context);
+             }
+             else if (callSite.HasReceiver && (ReferenceEquals(target, DirectStringStartsWith) || ReferenceEquals(target, DirectStringEndsWith)))
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 7a983c18..c99513c0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -91,9 +91,11 @@ internal sealed partial class LythonRuntime
+                         }
+                         else if (call.HasReceiver && ReferenceEquals(callable, DirectStringSplit))
+                         {
+-                            result = InvokeStringSplit((Text.PyString)_stack[start],
+-                                call.ArgumentCount == 1 ? _stack[start + call.ArgumentOffset] : null,
+-                                call.CallSpan, _context);
++                            var splitSeparator = call.ArgumentCount >= 1 ? _stack[start + call.ArgumentOffset] : null;
++                            var splitCount = call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : null;
++                            result = splitCount is PyInstance
++                                ? await InvokeStringSplitAsync((Text.PyString)_stack[start], splitSeparator, splitCount, call.CallSpan, _context).ConfigureAwait(false)
++                                : InvokeStringSplit((Text.PyString)_stack[start], splitSeparator, splitCount, call.CallSpan, _context);
+                         }
+                         else if (call.HasReceiver && (ReferenceEquals(callable, DirectStringStartsWith) || ReferenceEquals(callable, DirectStringEndsWith)))
+                         {
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/DirectStringSplitExecutionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/DirectStringSplitExecutionTests.cs
+index 9d4d939c..43235e8a 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/DirectStringSplitExecutionTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/DirectStringSplitExecutionTests.cs
+@@ -36,6 +36,7 @@ public sealed class DirectStringSplitExecutionTests
+         { "count-count_evaluation_order", "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\ndef text():\n events.append('receiver')\n return 'a,b,c'\ndef sep():\n events.append('separator')\n return ','\ndef count():\n events.append('count-object')\n return Count()\nprint(text().split(sep(),count()),events)", "['a', 'b,c'] ['receiver', 'separator', 'count-object', 'index']\n" },
+         { "count-count_method_forms", "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\nmethod='a,b,c'.split\nprint(method(',',Count()),'a,b,c'.split(sep=',',maxsplit=Count()),'a,b,c'.split(*[',',Count()]))\nprint(events)", "['a', 'b,c'] ['a', 'b,c'] ['a', 'b,c']\n['index', 'index', 'index']\n" },
+         { "count-index-rebinds-receiver", "text='a,b,c'\nclass Count:\n def __index__(self):\n  global text\n  text='changed'\n  return 1\nprint(text.split(',',Count()),text)", "['a', 'b,c'] changed\n" },
++        { "count-dynamic-two-arguments", "class Text:\n def split(self,sep,count):return ['custom',sep,count]\nprint(Text().split(',',1))", "['custom', ',', 1]\n" },
+     };
+ 
+     [Theory]
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs b/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
+index 1395d892..ffbccc8e 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
+@@ -71,6 +71,8 @@ public sealed class NativeScalarDispatchTests
+     [InlineData("split_count_expanded", true)]
+     [InlineData("split_count_descriptor", false)]
+     [InlineData("split_count_descriptor", true)]
++    [InlineData("split_argument", false)]
++    [InlineData("split_argument", true)]
+     public async Task AProtocolOperandStillSuspendsWithoutReplay(string operation, bool cancel)
+     {
+         var (method, expression, expected) = operation switch
+@@ -93,6 +95,7 @@ public sealed class NativeScalarDispatchTests
+             "split_count_keyword" => ("__index__", "print('a,b,c'.split(sep=',',maxsplit=Operand()))", "['a', 'b,c']\n"),
+             "split_count_expanded" => ("__index__", "print('a,b,c'.split(*[',',Operand()]))", "['a', 'b,c']\n"),
+             "split_count_descriptor" => ("__index__", "print('a,b,c'.split(',',Operand()))", "['a', 'b,c']\n"),
++            "split_argument" => ("__index__", "print('a,b,c'.split(',',int(Operand())))", "['a', 'b,c']\n"),
+             _ => ("__bool__", "print(not Operand())", "False\n")
+         };
+         var source = operation is "operator_negative_descriptor" or "split_count_descriptor"

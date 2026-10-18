@@ -1,0 +1,14 @@
+{
+  "source": "split-call-count",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "EFAA212514EED4B9FCA51C6777EEBC9680B489DF66C4597BC25C2CCBD5D9AE29",
+  "filter": "Category!=Stress&FullyQualifiedName~StringSplitCountDiagnostic",
+  "pid": 76240,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1432,
+  "stdoutSha256": "CF65FB264DC1AB533A62B3546CB978C58CFFA21998965E2A733A43F0ED41D665",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

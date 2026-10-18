@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 two-positional split call path](results/2026-10-18-split-call-count/README.md)
+removes eligible method/delegate/argument packaging on the corrected count
+semantics. One fixed native capture saves 336 bytes/sync call and 304 bytes/async;
+zero/one-argument and exposed controls are unchanged. All 240 work/error records,
+1,014 final focused cases and 31 CPython split goldens pass. No elapsed or
+complete-job/CPython speedup claim is made.
+
 The [2026-10-18 split count correction](results/2026-10-18-split-count/README.md)
 normalizes counts before separator validation, supports large signed 64-bit counts
 and awaits type-index descriptors/callbacks. Baseline 18 failures include 10 actual

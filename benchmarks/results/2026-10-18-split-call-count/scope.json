@@ -1,0 +1,16 @@
+{
+  "baseline": "7bf17b16cbeec49a81c702c43da705e4b3375847",
+  "sourceSha256": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "8619e42f9741fcdd3c86e24b736e4a41cface0c9a84e1f4112c12b2d2b976186",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "3e4e16df145ac0f8b8dd22e8fc6329c3dba74333694c25ca060c8af9c729e070",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "d747bb0093e43bfa8d06426ebfafcd78fc5b9d0607983b0e92676bb58b3bdc97",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "67788e727ff1910bfe52abd8d9d6f081648a4a449b5779796e3a57216e316589",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs": "c3f30e1a2de373b850cc66ec9a92868296eab6840202ac9546748ef955338fb5",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.cs": "c60df2fb2320dbf1311f28071245cf6638e1c9fa1cc71034e726c2ae43571445"
+  },
+  "diagnosticSha256": "9e9349012d6b045208598ae420b11aa75b9bdf75b19d3eda3198716e0fc2e5ef",
+  "scope": "Two-positional immediate builtin str.split only, on corrected count semantics. Reuse existing receiver marker, kernel and sync/async count helper; keep exposed/keyword/expanded/custom routes general. Candidate waits preceding qualification.",
+  "gate": "One baseline/candidate capture:128calls/sample,4warmups/8samples. Separator/None count forms allocate less; omitted/single/exposed sample arrays identical; all240 work/value/identity/error/span/callback/fuel records identical. Reject otherwise without retiming.",
+  "acceptance": "Existing direct/general semantics, actual suspended index/descriptor calls, suspended native argument evaluation, retained results, terminal refusal and existing stack/preflight/owner controls. No wider binder/owner design, new framework or long lane.",
+  "elapsedClaim": false
+}
