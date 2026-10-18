@@ -12,14 +12,17 @@ public sealed class ExactIntegerUnaryAdmissionTests
     [InlineData("-", true)]
     [InlineData("~", false)]
     [InlineData("~", true)]
+    [InlineData("abs", false)]
+    [InlineData("abs", true)]
     public void DeniedUnaryResultPreservesThePreviousTarget(string token, bool asynchronous)
     {
-        var syntax = LythonFrontend.Compile("global entered,target\nentered=True\ntarget=" + token + "seed").Script!;
+        var expression = token == "abs" ? "abs(seed)" : token + "seed";
+        var syntax = LythonFrontend.Compile("global entered,target\nentered=True\ntarget=" + expression).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MaxExecutionMemoryBytes = limit });
-        var seed = BigInteger.One << 262144;
+        var seed = (token == "abs" ? -BigInteger.One : BigInteger.One) << 262144;
         context.ObserveValue(seed, default);
         var original = new PyList([true], context.MemoryGovernor, null);
         context.Variables["seed"] = seed;
@@ -34,6 +37,8 @@ public sealed class ExactIntegerUnaryAdmissionTests
             else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         });
         Assert.Equal("MemoryError", error.ExceptionType);
+        Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, error.Attribution?.Reason);
         Assert.True(Assert.IsType<bool>(context.Variables["entered"]));
         Assert.Same(original, context.Variables["target"]);
         Assert.Null(context.CurrentExecutableFrame);

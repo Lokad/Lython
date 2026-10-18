@@ -59,6 +59,8 @@ public sealed class NativeScalarDispatchTests
     [InlineData("operator_invert", true)]
     [InlineData("operator_negative_descriptor", false)]
     [InlineData("operator_negative_descriptor", true)]
+    [InlineData("absolute_argument", false)]
+    [InlineData("absolute_argument", true)]
     public async Task AProtocolOperandStillSuspendsWithoutReplay(string operation, bool cancel)
     {
         var (method, expression, expected) = operation switch
@@ -75,6 +77,7 @@ public sealed class NativeScalarDispatchTests
             "operator_positive" => ("__pos__", "import operator\nprint(operator.pos(Operand()))", "3.5\n"),
             "operator_invert" => ("__invert__", "import operator\nprint(operator.invert(Operand()))", "3.5\n"),
             "operator_negative_descriptor" => ("__neg__", "import operator\nprint(operator.neg(Operand()))", "3.5\n"),
+            "absolute_argument" => ("__abs__", "print(abs(abs(Operand())))", "3.5\n"),
             _ => ("__bool__", "print(not Operand())", "False\n")
         };
         var source = operation == "operator_negative_descriptor"
@@ -149,6 +152,7 @@ public sealed class NativeScalarDispatchTests
         { "abs_missing_and_noncallable", "import operator\nclass Missing:pass\nclass Nil:__abs__=None\nfor call in (abs,operator.abs):\n for value in ('text',None,Missing(),Nil()):\n  try:call(value)\n  except Exception as error:print(type(error).__name__)", "TypeError\nTypeError\nTypeError\nTypeError\nTypeError\nTypeError\nTypeError\nTypeError\n" },
         { "abs_arity", "import operator\nfor call in (abs,operator.abs):\n for args in ((),(1,2)):\n  try:call(*args)\n  except Exception as error:print(type(error).__name__)", "TypeError\nTypeError\nTypeError\nTypeError\n" },
         { "abs_alias_and_expansion", "import operator\nsaved=abs\nprint(saved(-7),abs(*[-7]),operator.abs(-7))\nabs=lambda value:'custom'\nprint(abs(-7),saved(-7))", "7 7 7\ncustom 7\n" },
+        { "abs_large_alias", "value=1<<4096\nprint(abs(value) is value,abs(-value)==value)\nsaved=abs\nabs=lambda value:'changed'\nprint(saved(value) is value,abs(value))", "True True\nTrue changed\n" },
         { "operator_neg_protocol", "import operator\nclass Number:\n def __neg__(self):return 'custom-neg'\nprint(operator.neg(Number()))", "custom-neg\n" },
         { "operator_pos_protocol", "import operator\nclass Number:\n def __pos__(self):return ['custom-pos']\nprint(operator.pos(Number()))", "['custom-pos']\n" },
         { "operator_invert_protocol", "import operator\nclass Number:\n def __invert__(self):return None\nprint(operator.invert(Number()))", "None\n" },

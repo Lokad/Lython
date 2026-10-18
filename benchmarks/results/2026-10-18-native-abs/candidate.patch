@@ -1,0 +1,143 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs
+index d84128cc..df61219d 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs
+@@ -406,6 +406,9 @@ internal sealed partial class LythonRuntime
+         }
+     }
+ 
++    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> AbsoluteOperation
++        = static (value, span, context) => AbsValueWithoutProtocols(value, context, span);
++
+     private static object Abs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+     {
+         if (arguments.Length != 1)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 267b12f9..7191224b 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -602,6 +602,11 @@ internal sealed partial class LythonRuntime
+                     callSite.ArgumentCount == 2 ? stack[start + callSite.ArgumentOffset + 1] : PyNone.Instance,
+                     callSite.CallSpan, context);
+             }
++            else if (callSite.IsPositionalOnly && callSite.ArgumentCount == 1 && ExecutionContext.IsAbsoluteBuiltin(target) &&
++                stack[start + callSite.ArgumentOffset] is System.Numerics.BigInteger or double or bool)
++            {
++                result = InvokeSingleInput(stack[start + callSite.ArgumentOffset], AbsoluteOperation, callSite.CallSpan, context);
++            }
+             else if (callSite.IsPositionalOnly && callSite.ArgumentCount == 1 && ExecutionContext.IsLengthBuiltin(target) &&
+                 stack[start + callSite.ArgumentOffset] is not PyInstance)
+             {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index f1d6da4c..7a983c18 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -125,6 +125,11 @@ internal sealed partial class LythonRuntime
+                                 ? await InvokeDictionaryGetAsync(receiver, key, fallback, call.CallSpan, _context).ConfigureAwait(false)
+                                 : InvokeDictionaryGet(receiver, key, fallback, call.CallSpan, _context);
+                         }
++                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 && ExecutionContext.IsAbsoluteBuiltin(callable) &&
++                            _stack[start + call.ArgumentOffset] is System.Numerics.BigInteger or double or bool)
++                        {
++                            result = InvokeSingleInput(_stack[start + call.ArgumentOffset], AbsoluteOperation, call.CallSpan, _context);
++                        }
+                         else if (call.IsPositionalOnly && call.ArgumentCount == 1 && ExecutionContext.IsLengthBuiltin(callable) &&
+                             _stack[start + call.ArgumentOffset] is not PyInstance)
+                         {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs b/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs
+index fde618b0..14865ed7 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs
+@@ -22,6 +22,7 @@ internal sealed partial class LythonRuntime
+         private static readonly BuiltinCallable SharedOrd = BuiltinCallable.Create("ord", Ord, ["c"]);
+ 
+         internal static bool IsLengthBuiltin(object value) => ReferenceEquals(value, SharedLen);
++        internal static bool IsAbsoluteBuiltin(object value) => ReferenceEquals(value, SharedAbs);
+ 
+         // Python types are mutable. Every root execution context therefore needs
+         // its own connected object/type graph instead of sharing a cached table.
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/ExactIntegerUnaryTests.cs b/tests/Lokad.Lython.PublicApi.Tests/ExactIntegerUnaryTests.cs
+index 4f9396b3..09832c0b 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/ExactIntegerUnaryTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/ExactIntegerUnaryTests.cs
+@@ -7,13 +7,16 @@ public sealed class ExactIntegerUnaryTests
+     [Theory]
+     [InlineData("-")]
+     [InlineData("~")]
++    [InlineData("abs")]
++    [InlineData("abs-positive")]
+     public async Task ReturnedHeapIntegersKeepTheirSurvivingOwner(string token)
+     {
+         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+-        using var script = new LythonEngine().Compile("return " + token + "seed", budget);
++        var expression = token switch { "abs" => "abs(-seed)", "abs-positive" => "abs(seed)", _ => token + "seed" };
++        using var script = new LythonEngine().Compile("return " + expression, budget);
+         var baseline = budget.ReservedBytes;
+         var seed = System.Numerics.BigInteger.One << 10000;
+-        var expected = token == "-" ? -seed : ~seed;
++        var expected = token == "-" ? -seed : token == "~" ? ~seed : seed;
+         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["seed"] = seed } };
+         foreach (var asynchronous in new[] { false, true })
+         {
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs b/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
+index e20c9326..49844190 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
+@@ -59,6 +59,8 @@ public sealed class NativeScalarDispatchTests
+     [InlineData("operator_invert", true)]
+     [InlineData("operator_negative_descriptor", false)]
+     [InlineData("operator_negative_descriptor", true)]
++    [InlineData("absolute_argument", false)]
++    [InlineData("absolute_argument", true)]
+     public async Task AProtocolOperandStillSuspendsWithoutReplay(string operation, bool cancel)
+     {
+         var (method, expression, expected) = operation switch
+@@ -75,6 +77,7 @@ public sealed class NativeScalarDispatchTests
+             "operator_positive" => ("__pos__", "import operator\nprint(operator.pos(Operand()))", "3.5\n"),
+             "operator_invert" => ("__invert__", "import operator\nprint(operator.invert(Operand()))", "3.5\n"),
+             "operator_negative_descriptor" => ("__neg__", "import operator\nprint(operator.neg(Operand()))", "3.5\n"),
++            "absolute_argument" => ("__abs__", "print(abs(abs(Operand())))", "3.5\n"),
+             _ => ("__bool__", "print(not Operand())", "False\n")
+         };
+         var source = operation == "operator_negative_descriptor"
+@@ -149,6 +152,7 @@ public sealed class NativeScalarDispatchTests
+         { "abs_missing_and_noncallable", "import operator\nclass Missing:pass\nclass Nil:__abs__=None\nfor call in (abs,operator.abs):\n for value in ('text',None,Missing(),Nil()):\n  try:call(value)\n  except Exception as error:print(type(error).__name__)", "TypeError\nTypeError\nTypeError\nTypeError\nTypeError\nTypeError\nTypeError\nTypeError\n" },
+         { "abs_arity", "import operator\nfor call in (abs,operator.abs):\n for args in ((),(1,2)):\n  try:call(*args)\n  except Exception as error:print(type(error).__name__)", "TypeError\nTypeError\nTypeError\nTypeError\n" },
+         { "abs_alias_and_expansion", "import operator\nsaved=abs\nprint(saved(-7),abs(*[-7]),operator.abs(-7))\nabs=lambda value:'custom'\nprint(abs(-7),saved(-7))", "7 7 7\ncustom 7\n" },
++        { "abs_large_alias", "value=1<<4096\nprint(abs(value) is value,abs(-value)==value)\nsaved=abs\nabs=lambda value:'changed'\nprint(saved(value) is value,abs(value))", "True True\nTrue changed\n" },
+         { "operator_neg_protocol", "import operator\nclass Number:\n def __neg__(self):return 'custom-neg'\nprint(operator.neg(Number()))", "custom-neg\n" },
+         { "operator_pos_protocol", "import operator\nclass Number:\n def __pos__(self):return ['custom-pos']\nprint(operator.pos(Number()))", "['custom-pos']\n" },
+         { "operator_invert_protocol", "import operator\nclass Number:\n def __invert__(self):return None\nprint(operator.invert(Number()))", "None\n" },
+diff --git a/tests/Lokad.Lython.Tests/ExactIntegerUnaryAdmissionTests.cs b/tests/Lokad.Lython.Tests/ExactIntegerUnaryAdmissionTests.cs
+index b5ace181..a2ff4f72 100644
+--- a/tests/Lokad.Lython.Tests/ExactIntegerUnaryAdmissionTests.cs
++++ b/tests/Lokad.Lython.Tests/ExactIntegerUnaryAdmissionTests.cs
+@@ -12,14 +12,17 @@ public sealed class ExactIntegerUnaryAdmissionTests
+     [InlineData("-", true)]
+     [InlineData("~", false)]
+     [InlineData("~", true)]
++    [InlineData("abs", false)]
++    [InlineData("abs", true)]
+     public void DeniedUnaryResultPreservesThePreviousTarget(string token, bool asynchronous)
+     {
+-        var syntax = LythonFrontend.Compile("global entered,target\nentered=True\ntarget=" + token + "seed").Script!;
++        var expression = token == "abs" ? "abs(seed)" : token + "seed";
++        var syntax = LythonFrontend.Compile("global entered,target\nentered=True\ntarget=" + expression).Script!;
+         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+         const long limit = 1024 * 1024;
+         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+             new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+-        var seed = BigInteger.One << 262144;
++        var seed = (token == "abs" ? -BigInteger.One : BigInteger.One) << 262144;
+         context.ObserveValue(seed, default);
+         var original = new PyList([true], context.MemoryGovernor, null);
+         context.Variables["seed"] = seed;
+@@ -34,6 +37,8 @@ public sealed class ExactIntegerUnaryAdmissionTests
+             else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+         });
+         Assert.Equal("MemoryError", error.ExceptionType);
++        Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
++        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, error.Attribution?.Reason);
+         Assert.True(Assert.IsType<bool>(context.Variables["entered"]));
+         Assert.Same(original, context.Variables["target"]);
+         Assert.Null(context.CurrentExecutableFrame);

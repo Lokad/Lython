@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 native absolute-value call path](results/2026-10-18-native-abs/README.md)
+removes bound argument-array creation for ordinary exact-builtin scalar calls.
+One fixed allocation/control comparison saves 32 bytes/call on both APIs; expanded
+and synthetic protocol controls are unchanged. All 132 work/identity/error/span
+records match; 1,078 final focused cases and 37 CPython goldens pass. Numeric kernel,
+call-frame/owner implementations and core dependencies are unchanged. No elapsed
+or complete-job/CPython speedup is claimed.
+
 The [2026-10-18 operator unary correction](results/2026-10-18-operator-unary/README.md)
 routes neg/pos/invert through the existing unary dispatcher and corrects shared
 type-slot lookup, including awaited descriptor binding. Baseline regressions and

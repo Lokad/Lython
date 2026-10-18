@@ -7,13 +7,16 @@ public sealed class ExactIntegerUnaryTests
     [Theory]
     [InlineData("-")]
     [InlineData("~")]
+    [InlineData("abs")]
+    [InlineData("abs-positive")]
     public async Task ReturnedHeapIntegersKeepTheirSurvivingOwner(string token)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("return " + token + "seed", budget);
+        var expression = token switch { "abs" => "abs(-seed)", "abs-positive" => "abs(seed)", _ => token + "seed" };
+        using var script = new LythonEngine().Compile("return " + expression, budget);
         var baseline = budget.ReservedBytes;
         var seed = System.Numerics.BigInteger.One << 10000;
-        var expected = token == "-" ? -seed : ~seed;
+        var expected = token == "-" ? -seed : token == "~" ? ~seed : seed;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["seed"] = seed } };
         foreach (var asynchronous in new[] { false, true })
         {

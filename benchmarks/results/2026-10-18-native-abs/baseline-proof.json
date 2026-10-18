@@ -1,0 +1,2110 @@
+{
+  "scope": {
+    "baseline": "2a268ae82cbbcc2526a0c9eb8f05bc900e598f3c",
+    "sourceSha256": {
+      "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "a5ec80799f8609c702cbdd4c241837c32adcd06860714c59cf88255abc21ead3",
+      "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "45b4524fddc467e539e0e2a29359098486e8fabb27d02afcf1ac4b063af5a7ea",
+      "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "51010373ce54fcaf8fe11a4bdca42b8e31a20a6a51f9e1415133bfe4fc5f0a00",
+      "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "a7c0d55124299ce2a1b4a87538de042984b91d0d740663d963ebc51f97143941",
+      "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "3e4e16df145ac0f8b8dd22e8fc6329c3dba74333694c25ca060c8af9c729e070",
+      "src/Lokad.Lython/Runtime/Calls/CallBinder.cs": "26b06815e595d18cd38c0bd3e71efe7b6ab5914f67049c354b87dbd35a00a8ed"
+    },
+    "diagnosticSha256": "7ce1b1585b7a80b48fe22cf82ce67350542ec3c41870794e9ae67a7bad3ccd3d",
+    "scope": "Native single-positional shared-builtin abs with exact BigInteger/double/bool operands, using existing InvokeSingleInput and unchanged numeric kernel. No native dispatch edits until preceding unary delivery qualifies.",
+    "diagnostic": "One native allocation capture per baseline/candidate: 128 calls/sample,4warmups/8samples, both APIs. Expanded and synthetic guest-protocol controls; genuine host suspension lives in permanent public tests.132 exact fuel/value/identity/error/span records. No elapsed/CPython/whole-job claim.",
+    "gate": "Every ordinary primitive route must allocate less; expanded/protocol control samples unchanged; all132 records identical. Reject otherwise without retiming or a broader binder/ownership design."
+  },
+  "allocation": [
+    {
+      "asynchronous": false,
+      "route": "boolean",
+      "callsPerSample": 128,
+      "samples": [
+        12768,
+        12768,
+        12768,
+        12768,
+        12768,
+        12768,
+        12768,
+        12768
+      ]
+    },
+    {
+      "asynchronous": false,
+      "route": "expanded",
+      "callsPerSample": 128,
+      "samples": [
+        112096,
+        112096,
+        112096,
+        112096,
+        112096,
+        112096,
+        112096,
+        112096
+      ]
+    },
+    {
+      "asynchronous": false,
+      "route": "float",
+      "callsPerSample": 128,
+      "samples": [
+        10720,
+        10720,
+        10720,
+        10720,
+        10720,
+        10720,
+        10720,
+        10720
+      ]
+    },
+    {
+      "asynchronous": false,
+      "route": "integer",
+      "callsPerSample": 128,
+      "samples": [
+        12768,
+        12768,
+        12768,
+        12768,
+        12768,
+        12768,
+        12768,
+        12768
+      ]
+    },
+    {
+      "asynchronous": false,
+      "route": "protocol",
+      "callsPerSample": 128,
+      "samples": [
+        8672,
+        8672,
+        8672,
+        8672,
+        8672,
+        8672,
+        8672,
+        8672
+      ]
+    },
+    {
+      "asynchronous": true,
+      "route": "boolean",
+      "callsPerSample": 128,
+      "samples": [
+        12744,
+        12744,
+        12744,
+        12744,
+        12744,
+        12744,
+        12744,
+        12744
+      ]
+    },
+    {
+      "asynchronous": true,
+      "route": "expanded",
+      "callsPerSample": 128,
+      "samples": [
+        121288,
+        121288,
+        121288,
+        121288,
+        121288,
+        121288,
+        121288,
+        121288
+      ]
+    },
+    {
+      "asynchronous": true,
+      "route": "float",
+      "callsPerSample": 128,
+      "samples": [
+        10696,
+        10696,
+        10696,
+        10696,
+        10696,
+        10696,
+        10696,
+        10696
+      ]
+    },
+    {
+      "asynchronous": true,
+      "route": "integer",
+      "callsPerSample": 128,
+      "samples": [
+        12744,
+        12744,
+        12744,
+        12744,
+        12744,
+        12744,
+        12744,
+        12744
+      ]
+    },
+    {
+      "asynchronous": true,
+      "route": "protocol",
+      "callsPerSample": 128,
+      "samples": [
+        8648,
+        8648,
+        8648,
+        8648,
+        8648,
+        8648,
+        8648,
+        8648
+      ]
+    }
+  ],
+  "work": [
+    {
+      "asynchronous": false,
+      "records": [
+        {
+          "kind": "negative",
+          "fuel": 1,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (1)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 3,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 2
+        },
+        {
+          "kind": "negative",
+          "fuel": 2,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (2)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 11,
+            "Length": 5,
+            "Line": 1,
+            "Column": 12
+          },
+          "steps": 3
+        },
+        {
+          "kind": "negative",
+          "fuel": 3,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (3)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 4
+        },
+        {
+          "kind": "negative",
+          "fuel": 4,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (4)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 5
+        },
+        {
+          "kind": "negative",
+          "fuel": 5,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (5)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 6
+        },
+        {
+          "kind": "negative",
+          "fuel": 6,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (6)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "negative",
+          "fuel": 7,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (7)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 0,
+            "Length": 17,
+            "Line": 1,
+            "Column": 1
+          },
+          "steps": 8
+        },
+        {
+          "kind": "negative",
+          "fuel": 8,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "negative",
+          "fuel": 9,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "negative",
+          "fuel": 10,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "negative",
+          "fuel": 11,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "positive",
+          "fuel": 1,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (1)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 3,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 2
+        },
+        {
+          "kind": "positive",
+          "fuel": 2,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (2)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 11,
+            "Length": 5,
+            "Line": 1,
+            "Column": 12
+          },
+          "steps": 3
+        },
+        {
+          "kind": "positive",
+          "fuel": 3,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (3)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 4
+        },
+        {
+          "kind": "positive",
+          "fuel": 4,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (4)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 5
+        },
+        {
+          "kind": "positive",
+          "fuel": 5,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (5)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 6
+        },
+        {
+          "kind": "positive",
+          "fuel": 6,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (6)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "positive",
+          "fuel": 7,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (7)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 0,
+            "Length": 17,
+            "Line": 1,
+            "Column": 1
+          },
+          "steps": 8
+        },
+        {
+          "kind": "positive",
+          "fuel": 8,
+          "result": "7",
+          "identity": true,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "positive",
+          "fuel": 9,
+          "result": "7",
+          "identity": true,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "positive",
+          "fuel": 10,
+          "result": "7",
+          "identity": true,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "positive",
+          "fuel": 11,
+          "result": "7",
+          "identity": true,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "float",
+          "fuel": 1,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (1)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 3,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 2
+        },
+        {
+          "kind": "float",
+          "fuel": 2,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (2)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 11,
+            "Length": 5,
+            "Line": 1,
+            "Column": 12
+          },
+          "steps": 3
+        },
+        {
+          "kind": "float",
+          "fuel": 3,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (3)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 4
+        },
+        {
+          "kind": "float",
+          "fuel": 4,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (4)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 5
+        },
+        {
+          "kind": "float",
+          "fuel": 5,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (5)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 6
+        },
+        {
+          "kind": "float",
+          "fuel": 6,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (6)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "float",
+          "fuel": 7,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (7)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 0,
+            "Length": 17,
+            "Line": 1,
+            "Column": 1
+          },
+          "steps": 8
+        },
+        {
+          "kind": "float",
+          "fuel": 8,
+          "result": "0:0",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "float",
+          "fuel": 9,
+          "result": "0:0",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "float",
+          "fuel": 10,
+          "result": "0:0",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "float",
+          "fuel": 11,
+          "result": "0:0",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "boolean",
+          "fuel": 1,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (1)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 3,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 2
+        },
+        {
+          "kind": "boolean",
+          "fuel": 2,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (2)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 11,
+            "Length": 5,
+            "Line": 1,
+            "Column": 12
+          },
+          "steps": 3
+        },
+        {
+          "kind": "boolean",
+          "fuel": 3,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (3)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 4
+        },
+        {
+          "kind": "boolean",
+          "fuel": 4,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (4)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 5
+        },
+        {
+          "kind": "boolean",
+          "fuel": 5,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (5)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 6
+        },
+        {
+          "kind": "boolean",
+          "fuel": 6,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (6)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "boolean",
+          "fuel": 7,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (7)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 0,
+            "Length": 17,
+            "Line": 1,
+            "Column": 1
+          },
+          "steps": 8
+        },
+        {
+          "kind": "boolean",
+          "fuel": 8,
+          "result": "1",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "boolean",
+          "fuel": 9,
+          "result": "1",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "boolean",
+          "fuel": 10,
+          "result": "1",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "boolean",
+          "fuel": 11,
+          "result": "1",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "text",
+          "fuel": 1,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (1)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 3,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 2
+        },
+        {
+          "kind": "text",
+          "fuel": 2,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (2)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 11,
+            "Length": 5,
+            "Line": 1,
+            "Column": 12
+          },
+          "steps": 3
+        },
+        {
+          "kind": "text",
+          "fuel": 3,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (3)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 4
+        },
+        {
+          "kind": "text",
+          "fuel": 4,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (4)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 5
+        },
+        {
+          "kind": "text",
+          "fuel": 5,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (5)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 6
+        },
+        {
+          "kind": "text",
+          "fuel": 6,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (6)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "text",
+          "fuel": 7,
+          "result": null,
+          "identity": null,
+          "exception": "TypeError",
+          "message": "bad operand type for abs(): 'str'",
+          "reason": null,
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "text",
+          "fuel": 8,
+          "result": null,
+          "identity": null,
+          "exception": "TypeError",
+          "message": "bad operand type for abs(): 'str'",
+          "reason": null,
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "text",
+          "fuel": 9,
+          "result": null,
+          "identity": null,
+          "exception": "TypeError",
+          "message": "bad operand type for abs(): 'str'",
+          "reason": null,
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "text",
+          "fuel": 10,
+          "result": null,
+          "identity": null,
+          "exception": "TypeError",
+          "message": "bad operand type for abs(): 'str'",
+          "reason": null,
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "text",
+          "fuel": 11,
+          "result": null,
+          "identity": null,
+          "exception": "TypeError",
+          "message": "bad operand type for abs(): 'str'",
+          "reason": null,
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "protocol",
+          "fuel": 1,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (1)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 3,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 2
+        },
+        {
+          "kind": "protocol",
+          "fuel": 2,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (2)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 11,
+            "Length": 5,
+            "Line": 1,
+            "Column": 12
+          },
+          "steps": 3
+        },
+        {
+          "kind": "protocol",
+          "fuel": 3,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (3)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 4
+        },
+        {
+          "kind": "protocol",
+          "fuel": 4,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (4)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 5
+        },
+        {
+          "kind": "protocol",
+          "fuel": 5,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (5)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 6
+        },
+        {
+          "kind": "protocol",
+          "fuel": 6,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (6)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "protocol",
+          "fuel": 7,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (7)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 0,
+            "Length": 17,
+            "Line": 1,
+            "Column": 1
+          },
+          "steps": 8
+        },
+        {
+          "kind": "protocol",
+          "fuel": 8,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "protocol",
+          "fuel": 9,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "protocol",
+          "fuel": 10,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "protocol",
+          "fuel": 11,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        }
+      ]
+    },
+    {
+      "asynchronous": true,
+      "records": [
+        {
+          "kind": "negative",
+          "fuel": 1,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (1)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 3,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 2
+        },
+        {
+          "kind": "negative",
+          "fuel": 2,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (2)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 11,
+            "Length": 5,
+            "Line": 1,
+            "Column": 12
+          },
+          "steps": 3
+        },
+        {
+          "kind": "negative",
+          "fuel": 3,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (3)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 4
+        },
+        {
+          "kind": "negative",
+          "fuel": 4,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (4)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 5
+        },
+        {
+          "kind": "negative",
+          "fuel": 5,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (5)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 6
+        },
+        {
+          "kind": "negative",
+          "fuel": 6,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (6)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "negative",
+          "fuel": 7,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (7)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 0,
+            "Length": 17,
+            "Line": 1,
+            "Column": 1
+          },
+          "steps": 8
+        },
+        {
+          "kind": "negative",
+          "fuel": 8,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "negative",
+          "fuel": 9,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "negative",
+          "fuel": 10,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "negative",
+          "fuel": 11,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "positive",
+          "fuel": 1,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (1)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 3,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 2
+        },
+        {
+          "kind": "positive",
+          "fuel": 2,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (2)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 11,
+            "Length": 5,
+            "Line": 1,
+            "Column": 12
+          },
+          "steps": 3
+        },
+        {
+          "kind": "positive",
+          "fuel": 3,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (3)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 4
+        },
+        {
+          "kind": "positive",
+          "fuel": 4,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (4)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 5
+        },
+        {
+          "kind": "positive",
+          "fuel": 5,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (5)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 6
+        },
+        {
+          "kind": "positive",
+          "fuel": 6,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (6)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "positive",
+          "fuel": 7,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (7)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 0,
+            "Length": 17,
+            "Line": 1,
+            "Column": 1
+          },
+          "steps": 8
+        },
+        {
+          "kind": "positive",
+          "fuel": 8,
+          "result": "7",
+          "identity": true,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "positive",
+          "fuel": 9,
+          "result": "7",
+          "identity": true,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "positive",
+          "fuel": 10,
+          "result": "7",
+          "identity": true,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "positive",
+          "fuel": 11,
+          "result": "7",
+          "identity": true,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "float",
+          "fuel": 1,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (1)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 3,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 2
+        },
+        {
+          "kind": "float",
+          "fuel": 2,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (2)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 11,
+            "Length": 5,
+            "Line": 1,
+            "Column": 12
+          },
+          "steps": 3
+        },
+        {
+          "kind": "float",
+          "fuel": 3,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (3)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 4
+        },
+        {
+          "kind": "float",
+          "fuel": 4,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (4)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 5
+        },
+        {
+          "kind": "float",
+          "fuel": 5,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (5)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 6
+        },
+        {
+          "kind": "float",
+          "fuel": 6,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (6)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "float",
+          "fuel": 7,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (7)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 0,
+            "Length": 17,
+            "Line": 1,
+            "Column": 1
+          },
+          "steps": 8
+        },
+        {
+          "kind": "float",
+          "fuel": 8,
+          "result": "0:0",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "float",
+          "fuel": 9,
+          "result": "0:0",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "float",
+          "fuel": 10,
+          "result": "0:0",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "float",
+          "fuel": 11,
+          "result": "0:0",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "boolean",
+          "fuel": 1,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (1)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 3,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 2
+        },
+        {
+          "kind": "boolean",
+          "fuel": 2,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (2)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 11,
+            "Length": 5,
+            "Line": 1,
+            "Column": 12
+          },
+          "steps": 3
+        },
+        {
+          "kind": "boolean",
+          "fuel": 3,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (3)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 4
+        },
+        {
+          "kind": "boolean",
+          "fuel": 4,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (4)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 5
+        },
+        {
+          "kind": "boolean",
+          "fuel": 5,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (5)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 6
+        },
+        {
+          "kind": "boolean",
+          "fuel": 6,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (6)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "boolean",
+          "fuel": 7,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (7)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 0,
+            "Length": 17,
+            "Line": 1,
+            "Column": 1
+          },
+          "steps": 8
+        },
+        {
+          "kind": "boolean",
+          "fuel": 8,
+          "result": "1",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "boolean",
+          "fuel": 9,
+          "result": "1",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "boolean",
+          "fuel": 10,
+          "result": "1",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "boolean",
+          "fuel": 11,
+          "result": "1",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "text",
+          "fuel": 1,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (1)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 3,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 2
+        },
+        {
+          "kind": "text",
+          "fuel": 2,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (2)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 11,
+            "Length": 5,
+            "Line": 1,
+            "Column": 12
+          },
+          "steps": 3
+        },
+        {
+          "kind": "text",
+          "fuel": 3,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (3)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 4
+        },
+        {
+          "kind": "text",
+          "fuel": 4,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (4)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 5
+        },
+        {
+          "kind": "text",
+          "fuel": 5,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (5)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 6
+        },
+        {
+          "kind": "text",
+          "fuel": 6,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (6)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "text",
+          "fuel": 7,
+          "result": null,
+          "identity": null,
+          "exception": "TypeError",
+          "message": "bad operand type for abs(): 'str'",
+          "reason": null,
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "text",
+          "fuel": 8,
+          "result": null,
+          "identity": null,
+          "exception": "TypeError",
+          "message": "bad operand type for abs(): 'str'",
+          "reason": null,
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "text",
+          "fuel": 9,
+          "result": null,
+          "identity": null,
+          "exception": "TypeError",
+          "message": "bad operand type for abs(): 'str'",
+          "reason": null,
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "text",
+          "fuel": 10,
+          "result": null,
+          "identity": null,
+          "exception": "TypeError",
+          "message": "bad operand type for abs(): 'str'",
+          "reason": null,
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "text",
+          "fuel": 11,
+          "result": null,
+          "identity": null,
+          "exception": "TypeError",
+          "message": "bad operand type for abs(): 'str'",
+          "reason": null,
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "protocol",
+          "fuel": 1,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (1)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 3,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 2
+        },
+        {
+          "kind": "protocol",
+          "fuel": 2,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (2)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 11,
+            "Length": 5,
+            "Line": 1,
+            "Column": 12
+          },
+          "steps": 3
+        },
+        {
+          "kind": "protocol",
+          "fuel": 3,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (3)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 4
+        },
+        {
+          "kind": "protocol",
+          "fuel": 4,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (4)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 5
+        },
+        {
+          "kind": "protocol",
+          "fuel": 5,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (5)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 6
+        },
+        {
+          "kind": "protocol",
+          "fuel": 6,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (6)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 7,
+            "Length": 10,
+            "Line": 1,
+            "Column": 8
+          },
+          "steps": 7
+        },
+        {
+          "kind": "protocol",
+          "fuel": 7,
+          "result": null,
+          "identity": null,
+          "exception": "RuntimeError",
+          "message": "maximum execution step count exceeded (7)",
+          "reason": "ExecutionStepLimit",
+          "span": {
+            "Start": 0,
+            "Length": 17,
+            "Line": 1,
+            "Column": 1
+          },
+          "steps": 8
+        },
+        {
+          "kind": "protocol",
+          "fuel": 8,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "protocol",
+          "fuel": 9,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "protocol",
+          "fuel": 10,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        },
+        {
+          "kind": "protocol",
+          "fuel": 11,
+          "result": "7",
+          "identity": false,
+          "exception": null,
+          "message": null,
+          "reason": null,
+          "span": null,
+          "steps": 8
+        }
+      ]
+    }
+  ],
+  "exactWorkRecords": 132,
+  "measurement": "Native allocation only, one baseline capture; no elapsed, CPython or complete-job claim.",
+  "process": {
+    "source": "abs-native",
+    "production": "baseline",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+    "assemblySha256": "C45EE0FCB7A5D277710D2F8DBABF070A52D6B0CF2C2BC49C206CA68B1F395AA5",
+    "filter": "Category!=Stress&FullyQualifiedName~AbsoluteCallDiagnostic",
+    "pid": 77488,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 1343,
+    "stdoutSha256": "D8A3D76F40A4D782BE82BE9B5F8B5EA9BC7B71960420908340C941F8D0E43F33",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "trxSha256": "8d6f622995e6b4ffa481b72334aae9038d0ef1c7828d6f7e2d3acd53ca86c51b"
+}

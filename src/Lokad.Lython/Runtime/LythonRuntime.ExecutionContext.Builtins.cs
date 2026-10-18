@@ -22,6 +22,7 @@ internal sealed partial class LythonRuntime
         private static readonly BuiltinCallable SharedOrd = BuiltinCallable.Create("ord", Ord, ["c"]);
 
         internal static bool IsLengthBuiltin(object value) => ReferenceEquals(value, SharedLen);
+        internal static bool IsAbsoluteBuiltin(object value) => ReferenceEquals(value, SharedAbs);
 
         // Python types are mutable. Every root execution context therefore needs
         // its own connected object/type graph instead of sharing a cached table.

@@ -1,0 +1,104 @@
+{
+  "accepted": true,
+  "allocation": [
+    {
+      "asynchronous": false,
+      "route": "boolean",
+      "before": 12768.0,
+      "after": 8672.0,
+      "savedPerCall": 32.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "expanded",
+      "before": 112096.0,
+      "after": 112096.0,
+      "savedPerCall": 0.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "float",
+      "before": 10720.0,
+      "after": 6624.0,
+      "savedPerCall": 32.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "integer",
+      "before": 12768.0,
+      "after": 8672.0,
+      "savedPerCall": 32.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "protocol",
+      "before": 8672.0,
+      "after": 8672.0,
+      "savedPerCall": 0.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "boolean",
+      "before": 12744.0,
+      "after": 8648.0,
+      "savedPerCall": 32.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "expanded",
+      "before": 121288.0,
+      "after": 121288.0,
+      "savedPerCall": 0.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "float",
+      "before": 10696.0,
+      "after": 6600.0,
+      "savedPerCall": 32.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "integer",
+      "before": 12744.0,
+      "after": 8648.0,
+      "savedPerCall": 32.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "protocol",
+      "before": 8648.0,
+      "after": 8648.0,
+      "savedPerCall": 0.0,
+      "gatePassed": true
+    }
+  ],
+  "workAndSpansIdentical": true,
+  "exactWorkRecords": 132,
+  "repeatedCapture": false,
+  "elapsedClaim": false,
+  "candidateProcess": {
+    "source": "abs-native",
+    "production": "candidate",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+    "assemblySha256": "6F829E2CB1EE9909D0FD21D4D6DEF98632ED1F8A5813A35C527E7A56A8F3CC71",
+    "filter": "Category!=Stress&FullyQualifiedName~AbsoluteCallDiagnostic",
+    "pid": 38812,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 1313,
+    "stdoutSha256": "F0DA94555B76DC9AD19EE7377B6D2B9399860883BEFE5301CF44D5927491B90A",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "candidateTrxSha256": "eb857f80e689d5f840dd1d61cfdf29a1a7022e7cd2ccb53542ae1d9962a8d5ab"
+}

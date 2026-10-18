@@ -406,6 +406,9 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> AbsoluteOperation
+        = static (value, span, context) => AbsValueWithoutProtocols(value, context, span);
+
     private static object Abs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length != 1)

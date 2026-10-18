@@ -96,3 +96,5 @@ benchmarks/results/2026-10-18-abs-async/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-abs-async/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-operator-unary/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-operator-unary/*.patch -text -whitespace
+benchmarks/results/2026-10-18-native-abs/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-native-abs/candidate.patch -text -whitespace

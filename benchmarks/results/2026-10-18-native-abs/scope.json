@@ -1,0 +1,15 @@
+{
+  "baseline": "2a268ae82cbbcc2526a0c9eb8f05bc900e598f3c",
+  "sourceSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "a5ec80799f8609c702cbdd4c241837c32adcd06860714c59cf88255abc21ead3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "45b4524fddc467e539e0e2a29359098486e8fabb27d02afcf1ac4b063af5a7ea",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "51010373ce54fcaf8fe11a4bdca42b8e31a20a6a51f9e1415133bfe4fc5f0a00",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "a7c0d55124299ce2a1b4a87538de042984b91d0d740663d963ebc51f97143941",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "3e4e16df145ac0f8b8dd22e8fc6329c3dba74333694c25ca060c8af9c729e070",
+    "src/Lokad.Lython/Runtime/Calls/CallBinder.cs": "26b06815e595d18cd38c0bd3e71efe7b6ab5914f67049c354b87dbd35a00a8ed"
+  },
+  "diagnosticSha256": "7ce1b1585b7a80b48fe22cf82ce67350542ec3c41870794e9ae67a7bad3ccd3d",
+  "scope": "Native single-positional shared-builtin abs with exact BigInteger/double/bool operands, using existing InvokeSingleInput and unchanged numeric kernel. No native dispatch edits until preceding unary delivery qualifies.",
+  "diagnostic": "One native allocation capture per baseline/candidate: 128 calls/sample,4warmups/8samples, both APIs. Expanded and synthetic guest-protocol controls; genuine host suspension lives in permanent public tests.132 exact fuel/value/identity/error/span records. No elapsed/CPython/whole-job claim.",
+  "gate": "Every ordinary primitive route must allocate less; expanded/protocol control samples unchanged; all132 records identical. Reject otherwise without retiming or a broader binder/ownership design."
+}

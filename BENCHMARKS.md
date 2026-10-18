@@ -263,6 +263,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [native abs call diagnostic](benchmarks/results/2026-10-18-native-abs/README.md)
+at `2a268ae8` plus its frozen four-file runtime patch saves 32 bytes per ordinary
+integer/float/bool call on both APIs. Expanded/protocol controls and 132 exact
+work/identity/error records are unchanged. This is a local Windows x64 native-loop
+allocation result, not elapsed-time, complete-job or CPython performance evidence.
+
 Executable compilation [lifetime evidence](benchmarks/results/2026-10-18-lowered-root/README.md)
 no longer retains the unused whole lowered module through executable programs
 and compiled runners. Source syntax and needed function/fallback data remain.
