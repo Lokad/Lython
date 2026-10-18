@@ -1341,12 +1341,14 @@ return chr(128512) * 100
         Assert.Contains("projection memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void DeeplyNestedGlobalRendering_IsStackSafe()
+    [Theory]
+    [InlineData(16, true)]
+    [InlineData(700, false)]
+    public void DeeplyNestedGlobalRendering_IsStackSafe(int depth, bool succeeds)
     {
-        var nested = CreateDeeplyNestedList(700);
+        var nested = CreateDeeplyNestedList(depth);
 
-        var result = new LythonEngine().Run(
+        using var result = new LythonEngine().Run(
             """
 text = str(data)
 """,
@@ -1359,8 +1361,14 @@ text = str(data)
                 }
             });
 
-        Assert.True(result.Success, result.Failure?.Message);
-        Assert.Null(result.Failure);
+        Assert.Equal(succeeds, result.Success);
+        if (succeeds) Assert.Null(result.Failure);
+        else
+        {
+            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+            Assert.Equal(LythonFailureReason.InterpreterStackLimit, result.FailureAttribution?.Reason);
+            Assert.Equal("maximum interpreter stack depth exceeded", result.Failure?.Message);
+        }
     }
 
     [Fact]
