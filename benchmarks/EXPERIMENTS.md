@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 type-alias shortcut](results/2026-10-18-alias-capture-rejected/README.md)
+was rejected: removing fallback-driven mirroring before replacing lazy captures
+loses outer names in three escaped factory cases. Baseline and restored source
+pass six CPython-matched programs through both APIs; 129 restored focused checks
+pass. All production bytes and the qualified6912bd8f library are restored.
+Useful public regressions remain. No timing, retry, relaxed gate or broader
+capture redesign; future lowering must migrate lazy evaluation/captures together.
+
 The [2026-10-18 native text dispatch change](results/2026-10-18-native-text/README.md)
 extends the existing synchronous native operand gate to exact builtin strings
 under async hosting. One predicate changes; no operator/storage/protocol body or

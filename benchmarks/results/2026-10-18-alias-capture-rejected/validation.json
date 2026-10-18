@@ -1,0 +1,154 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "6912bd8f40016f01453a568dcdffd329c8f5c6e6",
+  "prototypeRejected": true,
+  "productionRestoredByteForByte": true,
+  "coreLibraryEqualsQualifiedReleasePackage": true,
+  "coreSha256": "aee30a96ef73cc3a5b61b464bd71d2727ea4634431ba3d269cc13875ba1279c9",
+  "runtimeCiCachedGreen": 39110567807,
+  "baselineAndRestoredPublicTestAssembliesIdentical": true,
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "c573a0a4aed9397a207d517d0abe821ee5f125c714b1442446af796ae392832e",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs": "99fd847f7ad9dd7c7ad3ad9f5b0c663b895fc42ca65c4fc9278cd4e4b6a3aae7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs": "a17d1ec3cbac31a80835849a0745cb2dd059eb02718053fa79c6abc19d592dc9"
+  },
+  "newTestFile": "tests/Lokad.Lython.PublicApi.Tests/LazyTypeAliasCaptureTests.cs",
+  "newTestSha256": "413324c9842a45c0ce389152ccb19fa1f7dd1e17e9075eacbf8447600785132b",
+  "prototype": {
+    "rejected": true,
+    "gateFailed": "Three escaped nested alias captures fail with missing outer value; baseline examples all pass.",
+    "passed": 3,
+    "failed": 3,
+    "productionRestored": true,
+    "restoredFiles": {
+      "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "c573a0a4aed9397a207d517d0abe821ee5f125c714b1442446af796ae392832e",
+      "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs": "99fd847f7ad9dd7c7ad3ad9f5b0c663b895fc42ca65c4fc9278cd4e4b6a3aae7",
+      "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs": "a17d1ec3cbac31a80835849a0745cb2dd059eb02718053fa79c6abc19d592dc9"
+    },
+    "timingRun": false,
+    "retentionRedesign": false,
+    "failedCases": [
+      {
+        "name": "Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: \"generic-bound\", source: \"def outer():\\n value=int\\n def make():\\n  type A[T\"\u00b7\u00b7\u00b7, expected: \"True True\\n\")",
+        "message": "generic-bound: cannot access free variable 'value' where it is not associated with a value in enclosing scope"
+      },
+      {
+        "name": "Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: \"transitive-factory\", source: \"def outer():\\n value=int\\n def middle():\\n  def ma\"\u00b7\u00b7\u00b7, expected: \"True\\n\")",
+        "message": "transitive-factory: cannot access free variable 'value' where it is not associated with a value in enclosing scope"
+      },
+      {
+        "name": "Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: \"escaped-factory\", source: \"def outer():\\n value=int\\n def make():\\n  type A=v\"\u00b7\u00b7\u00b7, expected: \"True True\\n\")",
+        "message": "escaped-factory: cannot access free variable 'value' where it is not associated with a value in enclosing scope"
+      }
+    ],
+    "prototypeApiCoverage": "Each fixture runs synchronous first, then async. Failed fixtures reject on the synchronous route; passing controls execute both. No async result is inferred for failed fixtures."
+  },
+  "groups": {
+    "baseline-captures": {
+      "passed": 6,
+      "failed": 0,
+      "process": {
+        "source": "type-alias",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "265E87538ABE420B64BE4E33BBC799E3F3C49594F233FE2D65857FC1DCDA33BF",
+        "filter": "Category!=Stress&FullyQualifiedName~LazyTypeAliasCaptureTests",
+        "pid": 8416,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2329,
+        "stdoutSha256": "F5B142C138CC851008A250CAAC76EB6B297BA4F824658A3B022F6AA5BDEE9187",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "4188c9bbdf14ccf5cade77869c66fa023fa9c67c16e6b71e9f490eb0c750deac"
+    },
+    "prototype-captures": {
+      "passed": 3,
+      "failed": 3,
+      "process": {
+        "source": "type-alias",
+        "production": "prototype",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "691C43DAEE63F486D05921602E4E6FADD40DED175C69DC386ECCE4722DEB1A21",
+        "filter": "Category!=Stress&FullyQualifiedName~LazyTypeAliasCaptureTests",
+        "pid": 62488,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2299,
+        "stdoutSha256": "E2DD391F0398026248B4C6B0D34462B30A4D28CC2FCAD3BAF10C4A6C9AEB93EF",
+        "stderrSha256": "4A43E9A030EABDFE6B8FB248B1EE5A84493F503ADE8B9D602CC17115F84DB502"
+      },
+      "trxSha256": "9796778e7a32dcca77e2b65237e54c883b76b96408637be4f14dd6c5623ec671"
+    },
+    "restored-captures": {
+      "passed": 129,
+      "failed": 0,
+      "process": {
+        "source": "type-alias",
+        "production": "restored-baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "265E87538ABE420B64BE4E33BBC799E3F3C49594F233FE2D65857FC1DCDA33BF",
+        "filter": "Category!=Stress&(FullyQualifiedName~LazyTypeAliasCaptureTests|FullyQualifiedName~ModernTypingScenarioTests|FullyQualifiedName~ClassScopeDirectiveTests|FullyQualifiedName~PostponedAnnotationTests|FullyQualifiedName~AnnotationCompatibilityTests)",
+        "pid": 78560,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3740,
+        "stdoutSha256": "03A5AAF7A0E274476E23E1F1627D9EA374F4B23CD7884E2B47C1FCCD2AD114A2",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "42cf382e4a3db14b6e7e0d51a85e57c86bba269ce390faf9a12fe7977dce2838"
+    }
+  },
+  "finalFocusedPassed": 129,
+  "newPurePrograms": 6,
+  "bothApisPassOnBaselineAndRestored": true,
+  "pythonGoldens": 6,
+  "timingRun": false,
+  "largerCaptureRedesignStarted": false,
+  "regexPlanningOnly": true,
+  "artifacts": {
+    "baseline-captures-process.json": {
+      "bytes": 655,
+      "sha256": "b75db04ec83cc6d078d3a91b04ee3bd61b202dfb986a11ceaa158051b33351fb"
+    },
+    "baseline-captures.trx": {
+      "bytes": 11896,
+      "sha256": "4188c9bbdf14ccf5cade77869c66fa023fa9c67c16e6b71e9f490eb0c750deac"
+    },
+    "prototype-captures-process.json": {
+      "bytes": 657,
+      "sha256": "5591a519decf0e7a61b73bd0a3f61264a0b79e6be47213fcd91a1019262e49f4"
+    },
+    "prototype-captures.trx": {
+      "bytes": 16544,
+      "sha256": "9796778e7a32dcca77e2b65237e54c883b76b96408637be4f14dd6c5623ec671"
+    },
+    "python-goldens.json": {
+      "bytes": 1783,
+      "sha256": "abe02ee8b427a19dfc53f74796a4d3fc99ff1249199bb096d6497f41747ce48f"
+    },
+    "rejected-candidate.patch": {
+      "bytes": 2676,
+      "sha256": "e7bef418bf942e484019b551afb646b1f865e8c0e5131ad55a184f44e5d7d93c"
+    },
+    "rejection.json": {
+      "bytes": 2174,
+      "sha256": "28b7859bf2d60c127cb635e088e74efea78d293edbd8929652ffc92f958e0ba4"
+    },
+    "restored-captures-process.json": {
+      "bytes": 848,
+      "sha256": "9273b809d37be8a83e5dfb4888b89f83dbca09ca42d927eb38c3404d63d182cf"
+    },
+    "restored-captures.trx": {
+      "bytes": 203975,
+      "sha256": "42cf382e4a3db14b6e7e0d51a85e57c86bba269ce390faf9a12fe7977dce2838"
+    },
+    "scope.json": {
+      "bytes": 1171,
+      "sha256": "e7143dafa1b5e8403ab3e43e8b32bc1574252119978bfac1840a502401d67c5d"
+    }
+  }
+}

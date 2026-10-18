@@ -1,0 +1,12 @@
+{
+  "baseline": "6912bd8f40016f01453a568dcdffd329c8f5c6e6",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "c573a0a4aed9397a207d517d0abe821ee5f125c714b1442446af796ae392832e",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs": "99fd847f7ad9dd7c7ad3ad9f5b0c663b895fc42ca65c4fc9278cd4e4b6a3aae7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs": "a17d1ec3cbac31a80835849a0745cb2dd059eb02718053fa79c6abc19d592dc9"
+  },
+  "scope": "One diagnostic prototype: route type aliases through existing prepared-definition operation, using unchanged ExecuteTypeAlias and local synchronization. Remove fallback registration, leaving no forced mirroring flag. No new capture/VM design.",
+  "gate": "All escaped-nested alias values and control examples must preserve Python semantics. On any failure reject/restore immediately, retain useful semantic coverage; no timing or broader redesign.",
+  "hypothesis": "Removing fallback-driven mirroring before lowering lazy values/captures may lose enclosing locals when a factory outlives its parent function.",
+  "runtimeModified": false
+}

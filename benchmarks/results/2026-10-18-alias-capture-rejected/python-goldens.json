@@ -1,0 +1,48 @@
+{
+  "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "executable": "C:\\Python313\\python.exe",
+  "isolatedFlags": [
+    "-I",
+    "-S",
+    "-X",
+    "utf8"
+  ],
+  "cases": [
+    {
+      "name": "escaped-factory",
+      "sourceSha256": "4ba046471f07848ca2a7cba26bee28f5ba027416832971cdae06fab78d601170",
+      "expectedSha256": "2f2b190ca0cd88a775b9bab75d94ba6ff03509bb6eb19d7000c453c3d46813e1",
+      "passed": true
+    },
+    {
+      "name": "transitive-factory",
+      "sourceSha256": "3790b03bf62da00b5cbcdd9f285b532dd0c321ef5eb56c685b6def68f646fd0d",
+      "expectedSha256": "a9ac0c3ac83c40e1b4c3416066d63d324ee9f8c144641dfeed72d140b6557245",
+      "passed": true
+    },
+    {
+      "name": "generic-bound",
+      "sourceSha256": "813415559863d40d8d29f98cd4745cce0f64f3c26974bb192009ceb13a6eb6c5",
+      "expectedSha256": "2f2b190ca0cd88a775b9bab75d94ba6ff03509bb6eb19d7000c453c3d46813e1",
+      "passed": true
+    },
+    {
+      "name": "alias-before-rebinding",
+      "sourceSha256": "4dfe83bdc7e626a745cd87ddc3649c6f26f875bb47ca8e1165fd7cedd525802e",
+      "expectedSha256": "a9ac0c3ac83c40e1b4c3416066d63d324ee9f8c144641dfeed72d140b6557245",
+      "passed": true
+    },
+    {
+      "name": "module-late-binding",
+      "sourceSha256": "421b10137f924a9a57d32a734e8f43ea0a336cd39f2d7b44453688fe7df14f48",
+      "expectedSha256": "a9ac0c3ac83c40e1b4c3416066d63d324ee9f8c144641dfeed72d140b6557245",
+      "passed": true
+    },
+    {
+      "name": "nonlocal-editor",
+      "sourceSha256": "d3003818344abe33d15b37e14fe4850176c88627cc1b3e2168935bc5d49ee98e",
+      "expectedSha256": "a9ac0c3ac83c40e1b4c3416066d63d324ee9f8c144641dfeed72d140b6557245",
+      "passed": true
+    }
+  ]
+}

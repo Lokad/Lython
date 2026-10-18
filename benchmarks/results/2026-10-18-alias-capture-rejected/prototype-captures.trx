@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="492ac19d-d60f-47c0-8fa7-0aca434f2861" name="JoannesVermorel@LOKAD-0399 2026-10-18 10:30:37" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T10:30:37.1443018+02:00" queuing="2026-10-18T10:30:37.1443020+02:00" start="2026-10-18T10:30:35.1017527+02:00" finish="2026-10-18T10:30:37.1478565+02:00" />
+  <TestSettings name="default" id="2ea7fa29-d7eb-41c3-8e6c-c5a2c9b81208">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_10_30_37" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="eb857082-fc97-41dc-9061-75e7031481de" testId="bd21c302-6c68-0871-be81-ea535ea8136a" testName="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;nonlocal-editor&quot;, source: &quot;def outer():\n value=int\n def make():\n  type A=v&quot;···, expected: &quot;True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0406575" startTime="2026-10-18T10:30:37.0369984+02:00" endTime="2026-10-18T10:30:37.0769676+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eb857082-fc97-41dc-9061-75e7031481de" />
+    <UnitTestResult executionId="15523aee-dae8-4743-93b5-608fa300c3df" testId="04973dd4-30f6-3778-81e2-7a59f12c32ea" testName="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;generic-bound&quot;, source: &quot;def outer():\n value=int\n def make():\n  type A[T&quot;···, expected: &quot;True True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.2302758" startTime="2026-10-18T10:30:36.7710118+02:00" endTime="2026-10-18T10:30:37.0096158+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="15523aee-dae8-4743-93b5-608fa300c3df">
+      <Output>
+        <ErrorInfo>
+          <Message>generic-bound: cannot access free variable 'value' where it is not associated with a value in enclosing scope</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LazyTypeAliasCaptureTests.cs:line 30&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7373aed7-5647-4694-85e6-2cc965fee6d3" testId="90ea4670-5108-58cb-fe86-9f6c0f70d8a1" testName="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;transitive-factory&quot;, source: &quot;def outer():\n value=int\n def middle():\n  def ma&quot;···, expected: &quot;True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0005998" startTime="2026-10-18T10:30:37.0786897+02:00" endTime="2026-10-18T10:30:37.0794194+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7373aed7-5647-4694-85e6-2cc965fee6d3">
+      <Output>
+        <ErrorInfo>
+          <Message>transitive-factory: cannot access free variable 'value' where it is not associated with a value in enclosing scope</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LazyTypeAliasCaptureTests.cs:line 30&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="cb3d405e-0308-4687-9fcd-9f15414d0167" testId="4a83b211-d993-b5f0-8925-4e9570a2b06b" testName="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;module-late-binding&quot;, source: &quot;value=int\ndef make():\n type A=value\n return A\n&quot;···, expected: &quot;True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0238445" startTime="2026-10-18T10:30:37.0172337+02:00" endTime="2026-10-18T10:30:37.0359211+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cb3d405e-0308-4687-9fcd-9f15414d0167" />
+    <UnitTestResult executionId="03984574-3d02-4e81-b38b-6bb5de24e364" testId="a53880a9-865c-e5ca-cb9c-dc451798e541" testName="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;alias-before-rebinding&quot;, source: &quot;def make(value):\n type A=value\n value=str\n retu&quot;···, expected: &quot;True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0015243" startTime="2026-10-18T10:30:37.0771519+02:00" endTime="2026-10-18T10:30:37.0786320+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="03984574-3d02-4e81-b38b-6bb5de24e364" />
+    <UnitTestResult executionId="c589ddbe-599a-4126-980c-fbbe2820c2ae" testId="7366d55d-8010-ca3c-e895-b4123578d0c1" testName="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;escaped-factory&quot;, source: &quot;def outer():\n value=int\n def make():\n  type A=v&quot;···, expected: &quot;True True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0045259" startTime="2026-10-18T10:30:37.0797691+02:00" endTime="2026-10-18T10:30:37.0840282+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c589ddbe-599a-4126-980c-fbbe2820c2ae">
+      <Output>
+        <ErrorInfo>
+          <Message>escaped-factory: cannot access free variable 'value' where it is not associated with a value in enclosing scope</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LazyTypeAliasCaptureTests.cs:line 30&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;transitive-factory&quot;, source: &quot;def outer():\n value=int\n def middle():\n  def ma&quot;···, expected: &quot;True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="90ea4670-5108-58cb-fe86-9f6c0f70d8a1">
+      <Execution id="7373aed7-5647-4694-85e6-2cc965fee6d3" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests" name="LazyCapturesSurviveDefiningFramesAndKeepTheirOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;generic-bound&quot;, source: &quot;def outer():\n value=int\n def make():\n  type A[T&quot;···, expected: &quot;True True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="04973dd4-30f6-3778-81e2-7a59f12c32ea">
+      <Execution id="15523aee-dae8-4743-93b5-608fa300c3df" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests" name="LazyCapturesSurviveDefiningFramesAndKeepTheirOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;escaped-factory&quot;, source: &quot;def outer():\n value=int\n def make():\n  type A=v&quot;···, expected: &quot;True True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="7366d55d-8010-ca3c-e895-b4123578d0c1">
+      <Execution id="c589ddbe-599a-4126-980c-fbbe2820c2ae" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests" name="LazyCapturesSurviveDefiningFramesAndKeepTheirOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;alias-before-rebinding&quot;, source: &quot;def make(value):\n type A=value\n value=str\n retu&quot;···, expected: &quot;True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="a53880a9-865c-e5ca-cb9c-dc451798e541">
+      <Execution id="03984574-3d02-4e81-b38b-6bb5de24e364" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests" name="LazyCapturesSurviveDefiningFramesAndKeepTheirOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;module-late-binding&quot;, source: &quot;value=int\ndef make():\n type A=value\n return A\n&quot;···, expected: &quot;True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="4a83b211-d993-b5f0-8925-4e9570a2b06b">
+      <Execution id="cb3d405e-0308-4687-9fcd-9f15414d0167" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests" name="LazyCapturesSurviveDefiningFramesAndKeepTheirOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;nonlocal-editor&quot;, source: &quot;def outer():\n value=int\n def make():\n  type A=v&quot;···, expected: &quot;True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="bd21c302-6c68-0871-be81-ea535ea8136a">
+      <Execution id="eb857082-fc97-41dc-9061-75e7031481de" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests" name="LazyCapturesSurviveDefiningFramesAndKeepTheirOwner" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="bd21c302-6c68-0871-be81-ea535ea8136a" executionId="eb857082-fc97-41dc-9061-75e7031481de" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="04973dd4-30f6-3778-81e2-7a59f12c32ea" executionId="15523aee-dae8-4743-93b5-608fa300c3df" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="90ea4670-5108-58cb-fe86-9f6c0f70d8a1" executionId="7373aed7-5647-4694-85e6-2cc965fee6d3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4a83b211-d993-b5f0-8925-4e9570a2b06b" executionId="cb3d405e-0308-4687-9fcd-9f15414d0167" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a53880a9-865c-e5ca-cb9c-dc451798e541" executionId="03984574-3d02-4e81-b38b-6bb5de24e364" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7366d55d-8010-ca3c-e895-b4123578d0c1" executionId="c589ddbe-599a-4126-980c-fbbe2820c2ae" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="6" executed="6" passed="3" failed="3" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.24]   Discovering: Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.37]   Discovered:  Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.39]   Starting:    Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.65]       generic-bound: cannot access free variable 'value' where it is not associated with a value in enclosing scope&#xD;
+[xUnit.net 00:00:01.65]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.65]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LazyTypeAliasCaptureTests.cs(30,0): at Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(String name, String source, String expected)&#xD;
+[xUnit.net 00:00:01.65]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.71]       transitive-factory: cannot access free variable 'value' where it is not associated with a value in enclosing scope&#xD;
+[xUnit.net 00:00:01.71]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.71]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LazyTypeAliasCaptureTests.cs(30,0): at Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(String name, String source, String expected)&#xD;
+[xUnit.net 00:00:01.71]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.72]       escaped-factory: cannot access free variable 'value' where it is not associated with a value in enclosing scope&#xD;
+[xUnit.net 00:00:01.72]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.72]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LazyTypeAliasCaptureTests.cs(30,0): at Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(String name, String source, String expected)&#xD;
+[xUnit.net 00:00:01.72]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.72]   Finished:    Lokad.Lython.PublicApi.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T10:30:37.0113429+02:00">
+        <Text>[xUnit.net 00:00:01.65]     Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: "generic-bound", source: "def outer():\n value=int\n def make():\n  type A[T"···, expected: "True True\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T10:30:37.0798109+02:00">
+        <Text>[xUnit.net 00:00:01.71]     Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: "transitive-factory", source: "def outer():\n value=int\n def middle():\n  def ma"···, expected: "True\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T10:30:37.0842421+02:00">
+        <Text>[xUnit.net 00:00:01.72]     Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: "escaped-factory", source: "def outer():\n value=int\n def make():\n  type A=v"···, expected: "True True\n") [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

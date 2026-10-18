@@ -1,0 +1,42 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
+index b4ffc4e4..19539733 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
+@@ -52,6 +52,10 @@ internal sealed partial class ExecutableScript
+                     AddInstruction(currentBlock, ExecutableInstruction.DefineFunction(InternFunction(functionDefinition), functionDefinition.Span));
+                     return currentBlock;
+ 
++                case LoweredTypeAliasStatement alias:
++                    EmitOperation(new ExecutableCreateTypeAlias(alias), alias.Span, currentBlock);
++                    return currentBlock;
++
+                 case LoweredAssertStatement assertion:
+                     return CompileAssert(assertion, currentBlock);
+                 case LoweredRaiseStatement raised:
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs b/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs
+index a46df0a7..a09ea46a 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs
+@@ -6,6 +6,7 @@ internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression
+ internal sealed record ExecutableAnnotationsEnabled : ExecutableOperation;
+ internal sealed record ExecutableStartClassHeader(int Count) : ExecutableOperation;
+ internal sealed record ExecutableCreateClass(LoweredClassDefinitionStatement Definition, bool ExpandedHeader) : ExecutableOperation;
++internal sealed record ExecutableCreateTypeAlias(LoweredTypeAliasStatement Definition) : ExecutableOperation;
+ 
+ internal sealed partial class ExecutableScript
+ {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
+index baa6dfd0..5c7fb389 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
+@@ -11,6 +11,10 @@ internal sealed partial class LythonRuntime
+         {
+             switch (operation)
+             {
++                case ExecutableCreateTypeAlias alias:
++                    ExecuteTypeAlias(alias.Definition, _context);
++                    SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, _context);
++                    break;
+                 case ExecutableAnnotationsEnabled:
+                     _stack.Push(!_context.PostponedAnnotations);
+                     break;

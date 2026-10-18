@@ -1,0 +1,29 @@
+{
+  "rejected": true,
+  "gateFailed": "Three escaped nested alias captures fail with missing outer value; baseline examples all pass.",
+  "passed": 3,
+  "failed": 3,
+  "productionRestored": true,
+  "restoredFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "c573a0a4aed9397a207d517d0abe821ee5f125c714b1442446af796ae392832e",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs": "99fd847f7ad9dd7c7ad3ad9f5b0c663b895fc42ca65c4fc9278cd4e4b6a3aae7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs": "a17d1ec3cbac31a80835849a0745cb2dd059eb02718053fa79c6abc19d592dc9"
+  },
+  "timingRun": false,
+  "retentionRedesign": false,
+  "failedCases": [
+    {
+      "name": "Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: \"generic-bound\", source: \"def outer():\\n value=int\\n def make():\\n  type A[T\"\u00b7\u00b7\u00b7, expected: \"True True\\n\")",
+      "message": "generic-bound: cannot access free variable 'value' where it is not associated with a value in enclosing scope"
+    },
+    {
+      "name": "Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: \"transitive-factory\", source: \"def outer():\\n value=int\\n def middle():\\n  def ma\"\u00b7\u00b7\u00b7, expected: \"True\\n\")",
+      "message": "transitive-factory: cannot access free variable 'value' where it is not associated with a value in enclosing scope"
+    },
+    {
+      "name": "Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: \"escaped-factory\", source: \"def outer():\\n value=int\\n def make():\\n  type A=v\"\u00b7\u00b7\u00b7, expected: \"True True\\n\")",
+      "message": "escaped-factory: cannot access free variable 'value' where it is not associated with a value in enclosing scope"
+    }
+  ],
+  "prototypeApiCoverage": "Each fixture runs synchronous first, then async. Failed fixtures reject on the synchronous route; passing controls execute both. No async result is inferred for failed fixtures."
+}

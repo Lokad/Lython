@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="15077e39-9258-4ab8-ae76-80e724723786" name="JoannesVermorel@LOKAD-0399 2026-10-18 10:28:54" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T10:28:54.9202073+02:00" queuing="2026-10-18T10:28:54.9202074+02:00" start="2026-10-18T10:28:52.8601729+02:00" finish="2026-10-18T10:28:54.9236215+02:00" />
+  <TestSettings name="default" id="7081a9d4-2287-45fe-8dbf-dcbdbde1be4a">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_10_28_54" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="76ae17ea-0950-4941-a1a3-0ad22af70033" testId="7366d55d-8010-ca3c-e895-b4123578d0c1" testName="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;escaped-factory&quot;, source: &quot;def outer():\n value=int\n def make():\n  type A=v&quot;···, expected: &quot;True True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0050247" startTime="2026-10-18T10:28:54.8583950+02:00" endTime="2026-10-18T10:28:54.8635371+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="76ae17ea-0950-4941-a1a3-0ad22af70033" />
+    <UnitTestResult executionId="ca390805-4e3b-4912-ae02-2e0790c531e3" testId="90ea4670-5108-58cb-fe86-9f6c0f70d8a1" testName="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;transitive-factory&quot;, source: &quot;def outer():\n value=int\n def middle():\n  def ma&quot;···, expected: &quot;True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0010577" startTime="2026-10-18T10:28:54.8572253+02:00" endTime="2026-10-18T10:28:54.8583280+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ca390805-4e3b-4912-ae02-2e0790c531e3" />
+    <UnitTestResult executionId="bb4a2096-b984-49c4-a5c6-a6983e375d16" testId="bd21c302-6c68-0871-be81-ea535ea8136a" testName="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;nonlocal-editor&quot;, source: &quot;def outer():\n value=int\n def make():\n  type A=v&quot;···, expected: &quot;True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0199166" startTime="2026-10-18T10:28:54.8195335+02:00" endTime="2026-10-18T10:28:54.8357767+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bb4a2096-b984-49c4-a5c6-a6983e375d16" />
+    <UnitTestResult executionId="ea9458d3-4286-4ee9-9f03-07cf1ac4929a" testId="04973dd4-30f6-3778-81e2-7a59f12c32ea" testName="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;generic-bound&quot;, source: &quot;def outer():\n value=int\n def make():\n  type A[T&quot;···, expected: &quot;True True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.2296636" startTime="2026-10-18T10:28:54.5788231+02:00" endTime="2026-10-18T10:28:54.8134888+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ea9458d3-4286-4ee9-9f03-07cf1ac4929a" />
+    <UnitTestResult executionId="92b6392d-2926-463e-8d8a-b2ac0943b156" testId="4a83b211-d993-b5f0-8925-4e9570a2b06b" testName="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;module-late-binding&quot;, source: &quot;value=int\ndef make():\n type A=value\n return A\n&quot;···, expected: &quot;True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0015751" startTime="2026-10-18T10:28:54.8190209+02:00" endTime="2026-10-18T10:28:54.8190895+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="92b6392d-2926-463e-8d8a-b2ac0943b156" />
+    <UnitTestResult executionId="39a97b48-3a8b-4895-90cd-a5cf190e5c2f" testId="a53880a9-865c-e5ca-cb9c-dc451798e541" testName="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;alias-before-rebinding&quot;, source: &quot;def make(value):\n type A=value\n value=str\n retu&quot;···, expected: &quot;True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0211474" startTime="2026-10-18T10:28:54.8358982+02:00" endTime="2026-10-18T10:28:54.8571330+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="39a97b48-3a8b-4895-90cd-a5cf190e5c2f" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;transitive-factory&quot;, source: &quot;def outer():\n value=int\n def middle():\n  def ma&quot;···, expected: &quot;True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="90ea4670-5108-58cb-fe86-9f6c0f70d8a1">
+      <Execution id="ca390805-4e3b-4912-ae02-2e0790c531e3" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests" name="LazyCapturesSurviveDefiningFramesAndKeepTheirOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;generic-bound&quot;, source: &quot;def outer():\n value=int\n def make():\n  type A[T&quot;···, expected: &quot;True True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="04973dd4-30f6-3778-81e2-7a59f12c32ea">
+      <Execution id="ea9458d3-4286-4ee9-9f03-07cf1ac4929a" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests" name="LazyCapturesSurviveDefiningFramesAndKeepTheirOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;escaped-factory&quot;, source: &quot;def outer():\n value=int\n def make():\n  type A=v&quot;···, expected: &quot;True True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="7366d55d-8010-ca3c-e895-b4123578d0c1">
+      <Execution id="76ae17ea-0950-4941-a1a3-0ad22af70033" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests" name="LazyCapturesSurviveDefiningFramesAndKeepTheirOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;alias-before-rebinding&quot;, source: &quot;def make(value):\n type A=value\n value=str\n retu&quot;···, expected: &quot;True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="a53880a9-865c-e5ca-cb9c-dc451798e541">
+      <Execution id="39a97b48-3a8b-4895-90cd-a5cf190e5c2f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests" name="LazyCapturesSurviveDefiningFramesAndKeepTheirOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;module-late-binding&quot;, source: &quot;value=int\ndef make():\n type A=value\n return A\n&quot;···, expected: &quot;True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="4a83b211-d993-b5f0-8925-4e9570a2b06b">
+      <Execution id="92b6392d-2926-463e-8d8a-b2ac0943b156" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests" name="LazyCapturesSurviveDefiningFramesAndKeepTheirOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests.LazyCapturesSurviveDefiningFramesAndKeepTheirOwner(name: &quot;nonlocal-editor&quot;, source: &quot;def outer():\n value=int\n def make():\n  type A=v&quot;···, expected: &quot;True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="bd21c302-6c68-0871-be81-ea535ea8136a">
+      <Execution id="bb4a2096-b984-49c4-a5c6-a6983e375d16" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.LazyTypeAliasCaptureTests" name="LazyCapturesSurviveDefiningFramesAndKeepTheirOwner" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="7366d55d-8010-ca3c-e895-b4123578d0c1" executionId="76ae17ea-0950-4941-a1a3-0ad22af70033" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="90ea4670-5108-58cb-fe86-9f6c0f70d8a1" executionId="ca390805-4e3b-4912-ae02-2e0790c531e3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bd21c302-6c68-0871-be81-ea535ea8136a" executionId="bb4a2096-b984-49c4-a5c6-a6983e375d16" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="04973dd4-30f6-3778-81e2-7a59f12c32ea" executionId="ea9458d3-4286-4ee9-9f03-07cf1ac4929a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4a83b211-d993-b5f0-8925-4e9570a2b06b" executionId="92b6392d-2926-463e-8d8a-b2ac0943b156" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a53880a9-865c-e5ca-cb9c-dc451798e541" executionId="39a97b48-3a8b-4895-90cd-a5cf190e5c2f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="6" executed="6" passed="6" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.25]   Discovering: Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.41]   Discovered:  Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.43]   Starting:    Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.74]   Finished:    Lokad.Lython.PublicApi.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
