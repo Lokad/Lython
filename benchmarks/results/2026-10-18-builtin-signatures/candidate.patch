@@ -1,0 +1,28 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs b/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs
+index 14865ed7..37b18eee 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs
+@@ -4,6 +4,11 @@ internal sealed partial class LythonRuntime
+ {
+     internal sealed partial class ExecutionContext
+     {
++        private static readonly LythonCallableSignature IntSignature
++            = LythonCallableSignature.Create("int", ["x", "base"], requiredCount: 0, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
++        private static readonly LythonCallableSignature FloatSignature
++            = LythonCallableSignature.Create("float", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
++
+         // These fixed plain functions have no receiver, run state or type caches:
+         // BuiltinCallable's mutable slots are gated on builtin type names. Their
+         // __self__ is resolved from the caller context, not stored on the callable.
+@@ -139,9 +144,9 @@ internal sealed partial class LythonRuntime
+                 ["GeneratorExit"] = new ExceptionTypeValue("GeneratorExit"),
+                 ["KeyboardInterrupt"] = new ExceptionTypeValue("KeyboardInterrupt"),
+                 ["bool"] = BuiltinCallable.Create(LythonCallableSignature.Create("bool", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bool, BoolAsync),
+-                ["int"] = BuiltinCallable.Create(LythonCallableSignature.Create("int", ["x", "base"], requiredCount: 0, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Int, IntAsync),
++                ["int"] = BuiltinCallable.Create(IntSignature, Int, IntAsync),
+                 ["complex"] = new PyBuiltinRuntimeType("complex", ConstructComplex, null, ConstructComplexAsync),
+-                ["float"] = BuiltinCallable.Create(LythonCallableSignature.Create("float", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Float, FloatAsync),
++                ["float"] = BuiltinCallable.Create(FloatSignature, Float, FloatAsync),
+                 ["bytes"] = BuiltinCallable.Create(LythonCallableSignature.Create("bytes", ["source", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bytes, BytesAsync),
+                 ["staticmethod"] = BuiltinCallable.Create("staticmethod", StaticMethod, ["func"], requiredCount: 1),
+                 ["classmethod"] = BuiltinCallable.Create("classmethod", ClassMethod, ["func"], requiredCount: 1),

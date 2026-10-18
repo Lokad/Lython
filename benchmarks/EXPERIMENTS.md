@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 int/float signature input reuse](results/2026-10-18-builtin-signatures/README.md)
+removes two fixed name arrays and repeated interning lookups during invocation
+setup. Native warm fresh-context allocation falls from 19,312 to 19,176 bytes;
+child control stays at 264 bytes. Mutable type wrappers remain per execution,
+and all 846 focused cases pass. Existing layouts were already cached; no new
+registry/cache or elapsed/complete-job/CPython performance claim is introduced.
+
 The [2026-10-18 native absolute-value call path](results/2026-10-18-native-abs/README.md)
 removes bound argument-array creation for ordinary exact-builtin scalar calls.
 One fixed allocation/control comparison saves 32 bytes/call on both APIs; expanded

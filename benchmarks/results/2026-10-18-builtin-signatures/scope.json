@@ -1,0 +1,14 @@
+{
+  "baseline": "4e55ff0df2d3044da115f9bc7075cf1fc5a33876",
+  "sourceSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "cfcb75f3f47496f43a4d27e6e7602b711b90b10003b30c543ea38a273a47166b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs": "74b19082707ea29de3fd0380f5b2a65688c9f8029e74764dd5de8d0d815a8c56",
+    "src/Lokad.Lython/Runtime/Calls/LythonCallableSignature.cs": "ff386018d336181ae700e8eaf3a382fc8df8005160d60d64db53d64f3ad8b08b"
+  },
+  "diagnosticSha256": "803c7ef7d2f85336d6228710bf4fe5de4959cb61c047e2e1916935aaa84dccc7",
+  "scope": "Two immutable int/float signature inputs only. Existing layouts/maps already interned; keep mutable builtin wrappers/type graphs per execution. No registry, cache, binder or ownership redesign.",
+  "gate": "One baseline and candidate context allocation capture,2warmups/32samples; fresh context allocations decrease, child-context control samples identical; type wrapper isolation/alias/budget assertions unchanged. Reject otherwise without retiming.",
+  "nativeDispatchChanged": false,
+  "elapsedClaim": false,
+  "candidateRequiresPriorDeliveryQualification": true
+}

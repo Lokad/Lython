@@ -1,0 +1,14 @@
+{
+  "source": "signatures",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "F4D32792CC5F093436878A5E6118CC11BD5991266F2493F751E18D9696CD025D",
+  "filter": "Category!=Stress&FullyQualifiedName~BuiltinSignatureAllocationDiagnostic",
+  "pid": 75104,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1091,
+  "stdoutSha256": "2CBD1774CABA804C352101AB7612DF8BCA873221A0156DD52FB3B191CA8CC5D9",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

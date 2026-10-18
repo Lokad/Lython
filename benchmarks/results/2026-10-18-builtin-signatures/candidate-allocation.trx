@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="015353f0-c5d0-471e-9194-09ab3fd2f39f" name="JoannesVermorel@LOKAD-0399 2026-10-18 12:07:57" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T12:07:57.4866350+02:00" queuing="2026-10-18T12:07:57.4866351+02:00" start="2026-10-18T12:07:56.6566048+02:00" finish="2026-10-18T12:07:57.4893347+02:00" />
+  <TestSettings name="default" id="2acc0142-d896-4646-bb24-ea1852b82875">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_12_07_57" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="b4f19703-4584-431e-9970-02e606076ca4" testId="bee78d89-df13-a8ae-cace-6bff2e7c4b7a" testName="Lokad.Lython.Tests.BuiltinSignatureAllocationDiagnostic.MeasureWarmContextConstruction(child: False)" computerName="LOKAD-0399" duration="00:00:00.0010780" startTime="2026-10-18T12:07:57.4211351+02:00" endTime="2026-10-18T12:07:57.4211929+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b4f19703-4584-431e-9970-02e606076ca4">
+      <Output>
+        <StdOut>BUILTIN_SIGNATURE_ALLOCATIONS:{"child":false,"allocations":[19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176,19176]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5bf84830-ccad-4e59-84e8-155beeab6098" testId="4e9b8f7d-8d83-479e-e136-0e9d1c263aa3" testName="Lokad.Lython.Tests.BuiltinSignatureAllocationDiagnostic.MeasureWarmContextConstruction(child: True)" computerName="LOKAD-0399" duration="00:00:00.0318410" startTime="2026-10-18T12:07:57.3798218+02:00" endTime="2026-10-18T12:07:57.4159201+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5bf84830-ccad-4e59-84e8-155beeab6098">
+      <Output>
+        <StdOut>BUILTIN_SIGNATURE_ALLOCATIONS:{"child":true,"allocations":[264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264]}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.BuiltinSignatureAllocationDiagnostic.MeasureWarmContextConstruction(child: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="4e9b8f7d-8d83-479e-e136-0e9d1c263aa3">
+      <Execution id="5bf84830-ccad-4e59-84e8-155beeab6098" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BuiltinSignatureAllocationDiagnostic" name="MeasureWarmContextConstruction" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.BuiltinSignatureAllocationDiagnostic.MeasureWarmContextConstruction(child: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="bee78d89-df13-a8ae-cace-6bff2e7c4b7a">
+      <Execution id="b4f19703-4584-431e-9970-02e606076ca4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.BuiltinSignatureAllocationDiagnostic" name="MeasureWarmContextConstruction" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="bee78d89-df13-a8ae-cace-6bff2e7c4b7a" executionId="b4f19703-4584-431e-9970-02e606076ca4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4e9b8f7d-8d83-479e-e136-0e9d1c263aa3" executionId="5bf84830-ccad-4e59-84e8-155beeab6098" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.43]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.45]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.51]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

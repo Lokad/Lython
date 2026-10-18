@@ -263,6 +263,11 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [int/float setup diagnostic](benchmarks/results/2026-10-18-builtin-signatures/README.md)
+at `4e55ff0d` plus its frozen one-file patch reduces native warm context allocation
+from 19,312 to 19,176 bytes; the child-context control stays at 264 bytes. This
+is an allocation result, with no elapsed-time or CPython speedup claim.
+
 The [native abs call diagnostic](benchmarks/results/2026-10-18-native-abs/README.md)
 at `2a268ae8` plus its frozen four-file runtime patch saves 32 bytes per ordinary
 integer/float/bool call on both APIs. Expanded/protocol controls and 132 exact
