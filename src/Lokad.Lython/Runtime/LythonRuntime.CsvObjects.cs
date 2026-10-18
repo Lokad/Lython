@@ -380,20 +380,10 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "writerow" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "csv.writerow(row) expects one argument.", span);
-                    }
-
-                    var cells = ToCsvRow(arguments[0], span, context, out var convertedBytes);
-                    return WriteRow(writer, cells, span, context, convertedBytes);
-                }, CsvWriterowSignature, async (arguments, span, context) =>
-                {
-                    var (cells, convertedBytes) = await ToCsvRowAsync(arguments[0], span, context).ConfigureAwait(false);
-                    return await WriteRowAsync(writer, cells, span, context, convertedBytes).ConfigureAwait(false);
-                }),
+                "writerow" => BoundCallable.Create(
+                    (arguments, span, context) => WriteRowFromValue(writer, arguments[0], span, context),
+                    CsvWriterowSignature,
+                    (arguments, span, context) => WriteRowFromValueAsync(writer, arguments[0], span, context)),
                 "writerows" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -446,6 +436,17 @@ internal sealed partial class LythonRuntime
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+
+        // Shared by ordinary operand calls and the general binder. The fixed
+        // signature validates arity before the bound route reaches this body.
+        public static object WriteRowFromValue(CsvWriterObject writer, object row, LythonSourceSpan span, ExecutionContext context)
+            => WriteRow(writer, ToCsvRow(row, span, context, out var convertedBytes), span, context, convertedBytes);
+
+        public static async ValueTask<object> WriteRowFromValueAsync(CsvWriterObject writer, object row, LythonSourceSpan span, ExecutionContext context)
+        {
+            var (cells, convertedBytes) = await ToCsvRowAsync(row, span, context).ConfigureAwait(false);
+            return await WriteRowAsync(writer, cells, span, context, convertedBytes).ConfigureAwait(false);
         }
 
         public static object WriteRow(CsvWriterObject writer, CsvCell[] row, LythonSourceSpan span, ExecutionContext context, long convertedBytes)

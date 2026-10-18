@@ -43,6 +43,15 @@ result ownership, admission and terminal refusal keep their existing contracts.
 Removing temporary control allocations may reduce required headroom; identical
 tiny-budget thresholds are not promised. No reclamation or new cache is involved.
 
+Ordinary single-positional `csv.writerow` calls on native CSV writers borrow the
+existing receiver and argument operands, avoiding temporary member wrappers and
+general binding storage. Exposed and dynamic calls use the same row-conversion
+and publication bodies. Row cells, retained history, rendered output and callback
+results keep their existing owners and preflights. Asynchronous row iteration and
+publication are awaited before the call frame or its inputs are released, including
+failure and cancellation. This removes control allocation without changing the
+ownership contract or promising identical tiny-budget thresholds.
+
 Each invocation owns its working storage. Projection allocates under a result
 owner established before execution; this owner is a sibling of the invocation
 owner and survives execution cleanup. Disposing `LythonExecutionResult` clears

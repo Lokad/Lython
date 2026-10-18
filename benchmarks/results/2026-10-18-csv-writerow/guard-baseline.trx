@@ -1,0 +1,196 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="f3962b10-a56b-49de-b60c-30de9d80a281" name="JoannesVermorel@LOKAD-0399 2026-10-18 05:42:49" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T05:42:49.2752319+02:00" queuing="2026-10-18T05:42:49.2752321+02:00" start="2026-10-18T05:42:48.2975206+02:00" finish="2026-10-18T05:42:49.3020977+02:00" />
+  <TestSettings name="default" id="2800c85e-a354-48d5-bf66-889f8de8327d">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_05_42_49" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="26eb059a-5c68-4613-bd1c-7b5ebe3a2600" testId="f57f569c-fc21-2265-7e32-7a2f987d359d" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: True, asynchronous: True, shape: &quot;scalar&quot;)" computerName="LOKAD-0399" duration="00:00:00.0007718" startTime="2026-10-18T05:42:49.2366054+02:00" endTime="2026-10-18T05:42:49.2373126+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="26eb059a-5c68-4613-bd1c-7b5ebe3a2600">
+      <Output>
+        <StdOut>CSV_WRITEROW_GUARDS:{"exposed":true,"asynchronous":true,"shape":"scalar","steps":13,"outcome":"TypeError:\u0027NoneType\u0027 object is not iterable","writes":[],"checkpoints":["-:0:","7,6,1,8:0:","7,15,1,8:0:","0,22,1,1:0:","30,6,2,8:0:","37,8,2,15:0:","37,10,2,15:0:","37,10,2,15:0:","37,10,2,15:0:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="56a12939-95fa-4185-84a0-936286c1b401" testId="a2219dcb-32ee-d35e-4cc2-9d01292881ce" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.SuspendedPublicationKeepsRenderedRowFundedUntilCompletion(cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0005557" startTime="2026-10-18T05:42:49.2567170+02:00" endTime="2026-10-18T05:42:49.2567359+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="56a12939-95fa-4185-84a0-936286c1b401" />
+    <UnitTestResult executionId="a74c6862-e5c4-4e8a-94c0-b618ea123d01" testId="631a5688-37fd-11a1-06a8-576f7b15a594" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.RefusedConversionRetainsNeitherHistoryNorPublishedOutput(asynchronous: True, history: False)" computerName="LOKAD-0399" duration="00:00:00.0020820" startTime="2026-10-18T05:42:49.2563700+02:00" endTime="2026-10-18T05:42:49.2563944+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a74c6862-e5c4-4e8a-94c0-b618ea123d01" />
+    <UnitTestResult executionId="04484f77-45b3-46d0-aeb3-edbb6c7d0aab" testId="f55d5b6d-8510-4282-5ec4-35605a11b5d2" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.RefusedConversionRetainsNeitherHistoryNorPublishedOutput(asynchronous: False, history: False)" computerName="LOKAD-0399" duration="00:00:00.0001989" startTime="2026-10-18T05:42:49.2565126+02:00" endTime="2026-10-18T05:42:49.2565329+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="04484f77-45b3-46d0-aeb3-edbb6c7d0aab" />
+    <UnitTestResult executionId="45f3e65c-7f09-4dae-bca2-d02a08c18964" testId="87504e90-ee54-3986-0804-0d73c6bb1a1a" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.SuspendedArgumentKeepsTheEvaluatedWriter(cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0031222" startTime="2026-10-18T05:42:49.2578645+02:00" endTime="2026-10-18T05:42:49.2594324+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="45f3e65c-7f09-4dae-bca2-d02a08c18964" />
+    <UnitTestResult executionId="7f326e24-091f-4a1f-a704-70f2d37a09f5" testId="035a9804-e412-b29c-5e60-a72b28d39a6c" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: False, asynchronous: True, shape: &quot;scalar&quot;)" computerName="LOKAD-0399" duration="00:00:00.0008157" startTime="2026-10-18T05:42:49.2556510+02:00" endTime="2026-10-18T05:42:49.2556920+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7f326e24-091f-4a1f-a704-70f2d37a09f5">
+      <Output>
+        <StdOut>CSV_WRITEROW_GUARDS:{"exposed":false,"asynchronous":true,"shape":"scalar","steps":11,"outcome":"TypeError:\u0027NoneType\u0027 object is not iterable","writes":[],"checkpoints":["-:0:","7,6,1,8:0:","7,15,1,8:0:","23,8,1,24:0:","23,10,1,24:0:","23,10,1,24:0:","23,10,1,24:0:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c8197665-fe72-42b9-af73-11db9c4acc79" testId="27b98106-e72d-9041-115c-05075e361aae" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: True, asynchronous: False, shape: &quot;unsupported-cell&quot;)" computerName="LOKAD-0399" duration="00:00:00.0006341" startTime="2026-10-18T05:42:49.2335925+02:00" endTime="2026-10-18T05:42:49.2341465+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c8197665-fe72-42b9-af73-11db9c4acc79">
+      <Output>
+        <StdOut>CSV_WRITEROW_GUARDS:{"exposed":true,"asynchronous":false,"shape":"unsupported-cell","steps":14,"outcome":"TypeError:CSV rows must contain scalar values.","writes":[],"checkpoints":["-:0:","7,6,1,8:0:","7,15,1,8:0:","0,22,1,1:0:","30,6,2,8:0:","37,8,2,15:0:","37,10,2,15:0:","37,10,2,15:0:","37,10,2,15:0:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c1a3ea40-8d86-4d3c-b89e-e30fd276659b" testId="fdd2b9dc-5245-fca4-866c-901a4cb61700" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.SuspendedArgumentKeepsTheEvaluatedWriter(cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0008833" startTime="2026-10-18T05:42:49.2595049+02:00" endTime="2026-10-18T05:42:49.2604711+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c1a3ea40-8d86-4d3c-b89e-e30fd276659b" />
+    <UnitTestResult executionId="d8e75beb-c8da-42a1-b840-14788c66da63" testId="807af66a-72dd-437c-40f3-cd4719e9a640" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: False, asynchronous: False, shape: &quot;scalar&quot;)" computerName="LOKAD-0399" duration="00:00:00.0008954" startTime="2026-10-18T05:42:49.2341817+02:00" endTime="2026-10-18T05:42:49.2351042+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d8e75beb-c8da-42a1-b840-14788c66da63">
+      <Output>
+        <StdOut>CSV_WRITEROW_GUARDS:{"exposed":false,"asynchronous":false,"shape":"scalar","steps":11,"outcome":"TypeError:\u0027NoneType\u0027 object is not iterable","writes":[],"checkpoints":["-:0:","7,6,1,8:0:","7,15,1,8:0:","23,8,1,24:0:","23,10,1,24:0:","23,10,1,24:0:","23,10,1,24:0:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="ddb0ac6e-3a3b-4c92-9c58-259dacda7da3" testId="3fd03fdd-5067-5997-f83c-bfcb992ffbd7" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.SuspendedPublicationKeepsRenderedRowFundedUntilCompletion(cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0087417" startTime="2026-10-18T05:42:49.2566656+02:00" endTime="2026-10-18T05:42:49.2566857+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ddb0ac6e-3a3b-4c92-9c58-259dacda7da3" />
+    <UnitTestResult executionId="8c35bd92-526b-4367-93fa-7c2e0b9190ab" testId="4697806b-b727-2210-eba5-14f3f58140f3" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: False, asynchronous: False, shape: &quot;row&quot;)" computerName="LOKAD-0399" duration="00:00:00.0010527" startTime="2026-10-18T05:42:49.2557516+02:00" endTime="2026-10-18T05:42:49.2557915+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8c35bd92-526b-4367-93fa-7c2e0b9190ab">
+      <Output>
+        <StdOut>CSV_WRITEROW_GUARDS:{"exposed":false,"asynchronous":false,"shape":"row","steps":17,"outcome":"saved","writes":["a,\u0022\u00E9,\uD83D\uDE00\u0022\n"],"checkpoints":["-:0:","7,6,1,8:0:","7,15,1,8:0:","23,8,1,24:0:","23,10,1,24:0:","23,10,1,24:0:","23,10,1,24:0:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","0,34,1,1:1:a,\u0022\u00E9,\uD83D\uDE00\u0022\n"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0c01bd54-45df-4352-8c0f-a464dbd94dab" testId="7ed4068f-f887-5a00-9fc7-dadfa1dc7010" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: True, asynchronous: True, shape: &quot;unsupported-cell&quot;)" computerName="LOKAD-0399" duration="00:00:00.0007937" startTime="2026-10-18T05:42:49.2351382+02:00" endTime="2026-10-18T05:42:49.2358779+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0c01bd54-45df-4352-8c0f-a464dbd94dab">
+      <Output>
+        <StdOut>CSV_WRITEROW_GUARDS:{"exposed":true,"asynchronous":true,"shape":"unsupported-cell","steps":14,"outcome":"TypeError:CSV rows must contain scalar values.","writes":[],"checkpoints":["-:0:","7,6,1,8:0:","7,15,1,8:0:","0,22,1,1:0:","30,6,2,8:0:","37,8,2,15:0:","37,10,2,15:0:","37,10,2,15:0:","37,10,2,15:0:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f73db429-731b-40d1-910f-7846d5117a86" testId="9c610c84-4b4f-3bb2-c2ec-f1038d50bd6f" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.RefusedConversionRetainsNeitherHistoryNorPublishedOutput(asynchronous: True, history: True)" computerName="LOKAD-0399" duration="00:00:00.0002228" startTime="2026-10-18T05:42:49.2565658+02:00" endTime="2026-10-18T05:42:49.2565898+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f73db429-731b-40d1-910f-7846d5117a86" />
+    <UnitTestResult executionId="09d0a265-f6f0-4055-b41b-ca255db2898d" testId="7ff766cf-3c61-a45c-0ea2-78f788a2e4d8" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.RefusedConversionRetainsNeitherHistoryNorPublishedOutput(asynchronous: False, history: True)" computerName="LOKAD-0399" duration="00:00:00.0003675" startTime="2026-10-18T05:42:49.2564535+02:00" endTime="2026-10-18T05:42:49.2564758+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="09d0a265-f6f0-4055-b41b-ca255db2898d" />
+    <UnitTestResult executionId="b238298e-c37f-4cf9-9cb6-c2069e7eff98" testId="ccb43be2-7575-4d93-63c1-d30c148cb8ea" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: False, asynchronous: True, shape: &quot;row&quot;)" computerName="LOKAD-0399" duration="00:00:00.0112158" startTime="2026-10-18T05:42:49.2265264+02:00" endTime="2026-10-18T05:42:49.2323685+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b238298e-c37f-4cf9-9cb6-c2069e7eff98">
+      <Output>
+        <StdOut>CSV_WRITEROW_GUARDS:{"exposed":false,"asynchronous":true,"shape":"row","steps":17,"outcome":"saved","writes":["a,\u0022\u00E9,\uD83D\uDE00\u0022\n"],"checkpoints":["-:0:","7,6,1,8:0:","7,15,1,8:0:","23,8,1,24:0:","23,10,1,24:0:","23,10,1,24:0:","23,10,1,24:0:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","0,34,1,1:1:a,\u0022\u00E9,\uD83D\uDE00\u0022\n"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="fa2ac185-1f41-4da4-9abc-ef84f0fa3bb6" testId="86b60ee8-aac4-5826-f178-5d23be473504" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: True, asynchronous: True, shape: &quot;row&quot;)" computerName="LOKAD-0399" duration="00:00:00.0009713" startTime="2026-10-18T05:42:49.2373653+02:00" endTime="2026-10-18T05:42:49.2382958+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fa2ac185-1f41-4da4-9abc-ef84f0fa3bb6">
+      <Output>
+        <StdOut>CSV_WRITEROW_GUARDS:{"exposed":true,"asynchronous":true,"shape":"row","steps":19,"outcome":"saved","writes":["a,\u0022\u00E9,\uD83D\uDE00\u0022\n"],"checkpoints":["-:0:","7,6,1,8:0:","7,15,1,8:0:","0,22,1,1:0:","30,6,2,8:0:","37,8,2,15:0:","37,10,2,15:0:","37,10,2,15:0:","37,10,2,15:0:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","23,25,2,1:1:a,\u0022\u00E9,\uD83D\uDE00\u0022\n"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d8389309-021e-41e6-a97e-44efdae5bf12" testId="691087aa-1ebd-829c-0771-e1c81b9fd08d" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: True, asynchronous: False, shape: &quot;row&quot;)" computerName="LOKAD-0399" duration="00:00:00.1469474" startTime="2026-10-18T05:42:49.0702708+02:00" endTime="2026-10-18T05:42:49.2211761+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d8389309-021e-41e6-a97e-44efdae5bf12">
+      <Output>
+        <StdOut>CSV_WRITEROW_GUARDS:{"exposed":true,"asynchronous":false,"shape":"row","steps":19,"outcome":"saved","writes":["a,\u0022\u00E9,\uD83D\uDE00\u0022\n"],"checkpoints":["-:0:","7,6,1,8:0:","7,15,1,8:0:","0,22,1,1:0:","30,6,2,8:0:","37,8,2,15:0:","37,10,2,15:0:","37,10,2,15:0:","37,10,2,15:0:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","23,25,2,1:1:a,\u0022\u00E9,\uD83D\uDE00\u0022\n"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="10a1075c-96aa-4b9b-8b75-9f4678f6926c" testId="52582ef6-792d-9827-7b1a-8ca530ce333f" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: True, asynchronous: False, shape: &quot;scalar&quot;)" computerName="LOKAD-0399" duration="00:00:00.0006043" startTime="2026-10-18T05:42:49.2359103+02:00" endTime="2026-10-18T05:42:49.2365590+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="10a1075c-96aa-4b9b-8b75-9f4678f6926c">
+      <Output>
+        <StdOut>CSV_WRITEROW_GUARDS:{"exposed":true,"asynchronous":false,"shape":"scalar","steps":13,"outcome":"TypeError:\u0027NoneType\u0027 object is not iterable","writes":[],"checkpoints":["-:0:","7,6,1,8:0:","7,15,1,8:0:","0,22,1,1:0:","30,6,2,8:0:","37,8,2,15:0:","37,10,2,15:0:","37,10,2,15:0:","37,10,2,15:0:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:","30,18,2,8:1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="afd68f02-2755-4cb1-a743-fb6a5513bc7c" testId="191ba533-4f0b-1d68-fbed-39e7548e406c" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: False, asynchronous: False, shape: &quot;unsupported-cell&quot;)" computerName="LOKAD-0399" duration="00:00:00.0011303" startTime="2026-10-18T05:42:49.2327326+02:00" endTime="2026-10-18T05:42:49.2335460+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="afd68f02-2755-4cb1-a743-fb6a5513bc7c">
+      <Output>
+        <StdOut>CSV_WRITEROW_GUARDS:{"exposed":false,"asynchronous":false,"shape":"unsupported-cell","steps":12,"outcome":"TypeError:CSV rows must contain scalar values.","writes":[],"checkpoints":["-:0:","7,6,1,8:0:","7,15,1,8:0:","23,8,1,24:0:","23,10,1,24:0:","23,10,1,24:0:","23,10,1,24:0:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a1d6bcb0-9ae9-4155-a09d-2532ff9c198a" testId="465ec9af-9054-870d-0e5c-6248d1d3e851" testName="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: False, asynchronous: True, shape: &quot;unsupported-cell&quot;)" computerName="LOKAD-0399" duration="00:00:00.0010202" startTime="2026-10-18T05:42:49.2554180+02:00" endTime="2026-10-18T05:42:49.2554794+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a1d6bcb0-9ae9-4155-a09d-2532ff9c198a">
+      <Output>
+        <StdOut>CSV_WRITEROW_GUARDS:{"exposed":false,"asynchronous":true,"shape":"unsupported-cell","steps":12,"outcome":"TypeError:CSV rows must contain scalar values.","writes":[],"checkpoints":["-:0:","7,6,1,8:0:","7,15,1,8:0:","23,8,1,24:0:","23,10,1,24:0:","23,10,1,24:0:","23,10,1,24:0:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:","7,27,1,8:1:"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: True, asynchronous: False, shape: &quot;unsupported-cell&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="27b98106-e72d-9041-115c-05075e361aae">
+      <Execution id="c8197665-fe72-42b9-af73-11db9c4acc79" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="EveryCheckpointPreservesArgumentAndPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: True, asynchronous: False, shape: &quot;scalar&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="52582ef6-792d-9827-7b1a-8ca530ce333f">
+      <Execution id="10a1075c-96aa-4b9b-8b75-9f4678f6926c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="EveryCheckpointPreservesArgumentAndPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.RefusedConversionRetainsNeitherHistoryNorPublishedOutput(asynchronous: False, history: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="7ff766cf-3c61-a45c-0ea2-78f788a2e4d8">
+      <Execution id="09d0a265-f6f0-4055-b41b-ca255db2898d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="RefusedConversionRetainsNeitherHistoryNorPublishedOutput" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: False, asynchronous: True, shape: &quot;row&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="ccb43be2-7575-4d93-63c1-d30c148cb8ea">
+      <Execution id="b238298e-c37f-4cf9-9cb6-c2069e7eff98" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="EveryCheckpointPreservesArgumentAndPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: False, asynchronous: False, shape: &quot;scalar&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="807af66a-72dd-437c-40f3-cd4719e9a640">
+      <Execution id="d8e75beb-c8da-42a1-b840-14788c66da63" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="EveryCheckpointPreservesArgumentAndPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: True, asynchronous: True, shape: &quot;unsupported-cell&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="7ed4068f-f887-5a00-9fc7-dadfa1dc7010">
+      <Execution id="0c01bd54-45df-4352-8c0f-a464dbd94dab" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="EveryCheckpointPreservesArgumentAndPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: True, asynchronous: False, shape: &quot;row&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="691087aa-1ebd-829c-0771-e1c81b9fd08d">
+      <Execution id="d8389309-021e-41e6-a97e-44efdae5bf12" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="EveryCheckpointPreservesArgumentAndPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.RefusedConversionRetainsNeitherHistoryNorPublishedOutput(asynchronous: True, history: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="631a5688-37fd-11a1-06a8-576f7b15a594">
+      <Execution id="a74c6862-e5c4-4e8a-94c0-b618ea123d01" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="RefusedConversionRetainsNeitherHistoryNorPublishedOutput" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: True, asynchronous: True, shape: &quot;row&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="86b60ee8-aac4-5826-f178-5d23be473504">
+      <Execution id="fa2ac185-1f41-4da4-9abc-ef84f0fa3bb6" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="EveryCheckpointPreservesArgumentAndPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.SuspendedPublicationKeepsRenderedRowFundedUntilCompletion(cancel: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="a2219dcb-32ee-d35e-4cc2-9d01292881ce">
+      <Execution id="56a12939-95fa-4185-84a0-936286c1b401" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="SuspendedPublicationKeepsRenderedRowFundedUntilCompletion" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.SuspendedArgumentKeepsTheEvaluatedWriter(cancel: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="87504e90-ee54-3986-0804-0d73c6bb1a1a">
+      <Execution id="45f3e65c-7f09-4dae-bca2-d02a08c18964" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="SuspendedArgumentKeepsTheEvaluatedWriter" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.RefusedConversionRetainsNeitherHistoryNorPublishedOutput(asynchronous: False, history: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="f55d5b6d-8510-4282-5ec4-35605a11b5d2">
+      <Execution id="04484f77-45b3-46d0-aeb3-edbb6c7d0aab" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="RefusedConversionRetainsNeitherHistoryNorPublishedOutput" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: False, asynchronous: True, shape: &quot;unsupported-cell&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="465ec9af-9054-870d-0e5c-6248d1d3e851">
+      <Execution id="a1d6bcb0-9ae9-4155-a09d-2532ff9c198a" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="EveryCheckpointPreservesArgumentAndPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.SuspendedPublicationKeepsRenderedRowFundedUntilCompletion(cancel: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="3fd03fdd-5067-5997-f83c-bfcb992ffbd7">
+      <Execution id="ddb0ac6e-3a3b-4c92-9c58-259dacda7da3" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="SuspendedPublicationKeepsRenderedRowFundedUntilCompletion" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.SuspendedArgumentKeepsTheEvaluatedWriter(cancel: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="fdd2b9dc-5245-fca4-866c-901a4cb61700">
+      <Execution id="c1a3ea40-8d86-4d3c-b89e-e30fd276659b" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="SuspendedArgumentKeepsTheEvaluatedWriter" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.RefusedConversionRetainsNeitherHistoryNorPublishedOutput(asynchronous: True, history: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="9c610c84-4b4f-3bb2-c2ec-f1038d50bd6f">
+      <Execution id="f73db429-731b-40d1-910f-7846d5117a86" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="RefusedConversionRetainsNeitherHistoryNorPublishedOutput" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: False, asynchronous: False, shape: &quot;unsupported-cell&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="191ba533-4f0b-1d68-fbed-39e7548e406c">
+      <Execution id="afd68f02-2755-4cb1-a743-fb6a5513bc7c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="EveryCheckpointPreservesArgumentAndPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: False, asynchronous: True, shape: &quot;scalar&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="035a9804-e412-b29c-5e60-a72b28d39a6c">
+      <Execution id="7f326e24-091f-4a1f-a704-70f2d37a09f5" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="EveryCheckpointPreservesArgumentAndPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: True, asynchronous: True, shape: &quot;scalar&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="f57f569c-fc21-2265-7e32-7a2f987d359d">
+      <Execution id="26eb059a-5c68-4613-bd1c-7b5ebe3a2600" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="EveryCheckpointPreservesArgumentAndPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests.EveryCheckpointPreservesArgumentAndPublication(exposed: False, asynchronous: False, shape: &quot;row&quot;)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="4697806b-b727-2210-eba5-14f3f58140f3">
+      <Execution id="8c35bd92-526b-4367-93fa-7c2e0b9190ab" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CsvWriterowCallBoundaryTests" name="EveryCheckpointPreservesArgumentAndPublication" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="f57f569c-fc21-2265-7e32-7a2f987d359d" executionId="26eb059a-5c68-4613-bd1c-7b5ebe3a2600" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a2219dcb-32ee-d35e-4cc2-9d01292881ce" executionId="56a12939-95fa-4185-84a0-936286c1b401" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="631a5688-37fd-11a1-06a8-576f7b15a594" executionId="a74c6862-e5c4-4e8a-94c0-b618ea123d01" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f55d5b6d-8510-4282-5ec4-35605a11b5d2" executionId="04484f77-45b3-46d0-aeb3-edbb6c7d0aab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="87504e90-ee54-3986-0804-0d73c6bb1a1a" executionId="45f3e65c-7f09-4dae-bca2-d02a08c18964" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="035a9804-e412-b29c-5e60-a72b28d39a6c" executionId="7f326e24-091f-4a1f-a704-70f2d37a09f5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="27b98106-e72d-9041-115c-05075e361aae" executionId="c8197665-fe72-42b9-af73-11db9c4acc79" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fdd2b9dc-5245-fca4-866c-901a4cb61700" executionId="c1a3ea40-8d86-4d3c-b89e-e30fd276659b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="807af66a-72dd-437c-40f3-cd4719e9a640" executionId="d8e75beb-c8da-42a1-b840-14788c66da63" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3fd03fdd-5067-5997-f83c-bfcb992ffbd7" executionId="ddb0ac6e-3a3b-4c92-9c58-259dacda7da3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4697806b-b727-2210-eba5-14f3f58140f3" executionId="8c35bd92-526b-4367-93fa-7c2e0b9190ab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7ed4068f-f887-5a00-9fc7-dadfa1dc7010" executionId="0c01bd54-45df-4352-8c0f-a464dbd94dab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9c610c84-4b4f-3bb2-c2ec-f1038d50bd6f" executionId="f73db429-731b-40d1-910f-7846d5117a86" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7ff766cf-3c61-a45c-0ea2-78f788a2e4d8" executionId="09d0a265-f6f0-4055-b41b-ca255db2898d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ccb43be2-7575-4d93-63c1-d30c148cb8ea" executionId="b238298e-c37f-4cf9-9cb6-c2069e7eff98" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="86b60ee8-aac4-5826-f178-5d23be473504" executionId="fa2ac185-1f41-4da4-9abc-ef84f0fa3bb6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="691087aa-1ebd-829c-0771-e1c81b9fd08d" executionId="d8389309-021e-41e6-a97e-44efdae5bf12" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="52582ef6-792d-9827-7b1a-8ca530ce333f" executionId="10a1075c-96aa-4b9b-8b75-9f4678f6926c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="191ba533-4f0b-1d68-fbed-39e7548e406c" executionId="afd68f02-2755-4cb1-a743-fb6a5513bc7c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="465ec9af-9054-870d-0e5c-6248d1d3e851" executionId="a1d6bcb0-9ae9-4155-a09d-2532ff9c198a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="20" executed="20" passed="20" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.18]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.47]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.49]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.70]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

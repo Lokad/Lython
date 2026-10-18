@@ -24,6 +24,7 @@ internal sealed partial class LythonRuntime
             {
                 PyList when name == "append" => DirectListAppend,
                 ExecutionContext.TextFileHandle when name == "write" => DirectTextFileWrite,
+                CsvWriterObject when name == "writerow" => DirectCsvWriterow,
                 PyDict when name == "get" => DirectDictionaryGet,
                 Text.PyString when name == "startswith" => DirectStringStartsWith,
                 Text.PyString when name == "replace" => DirectStringReplace,

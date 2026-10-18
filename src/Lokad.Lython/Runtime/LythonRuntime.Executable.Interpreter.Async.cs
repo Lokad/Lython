@@ -79,6 +79,11 @@ internal sealed partial class LythonRuntime
                             result = InvokeTextFileWrite((ExecutionContext.TextFileHandle)_stack[start],
                                 _stack[start + call.ArgumentOffset], call.CallSpan, _context);
                         }
+                        else if (call.HasReceiver && ReferenceEquals(callable, DirectCsvWriterow))
+                        {
+                            result = await InvokeCsvWriterowAsync((CsvWriterObject)_stack[start],
+                                _stack[start + call.ArgumentOffset], call.CallSpan, _context).ConfigureAwait(false);
+                        }
                         else if (call.HasReceiver && _stack[start] is Text.PyString stringReceiver &&
                             callable is Func<Text.PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
                         {

@@ -1,0 +1,150 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+index e6ffa0dd..06a2c924 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+@@ -320,6 +320,7 @@ internal sealed partial class ExecutableScript
+                     "get" => call.Arguments.Count is 1 or 2,
+                     "append" => call.Arguments.Count == 1,
+                     "write" => call.Arguments.Count == 1,
++                    "writerow" => call.Arguments.Count == 1,
+                     "replace" => call.Arguments.Count is 2 or 3,
+                     "strip" or "split" or "lower" or "upper" or
+                     "islower" or "isupper" or "istitle" or "isalpha" or "isdigit" or "isalnum" or
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+index c5951dde..75bcd973 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+@@ -190,6 +190,34 @@ internal sealed partial class LythonRuntime
+         finally { context.LeaveInterpreterFrame(); }
+     }
+ 
++    private static object InvokeCsvWriterow(CsvWriterObject receiver, object row, LythonSourceSpan span, ExecutionContext context)
++    {
++        context.EnterInterpreterFrame(span);
++        try
++        {
++            context.CheckExecution(span);
++            context.CheckExecution(span);
++            return RuntimeValue(CsvWriterMembers.WriteRowFromValue(receiver, row, span, context));
++        }
++        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
++        finally { context.LeaveInterpreterFrame(); }
++    }
++
++    // Row iteration and the captured output callback can both suspend. Retain
++    // this call frame and its inputs until conversion/publication finish.
++    private static async ValueTask<object> InvokeCsvWriterowAsync(CsvWriterObject receiver, object row, LythonSourceSpan span, ExecutionContext context)
++    {
++        context.EnterInterpreterFrame(span);
++        try
++        {
++            context.CheckExecution(span);
++            context.CheckExecution(span);
++            return RuntimeValue(await CsvWriterMembers.WriteRowFromValueAsync(receiver, row, span, context).ConfigureAwait(false));
++        }
++        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
++        finally { context.LeaveInterpreterFrame(); }
++    }
++
+     private static object InvokeSingleInput<T>(T value,
+         Func<T, LythonSourceSpan, ExecutionContext, object> operation, LythonSourceSpan span, ExecutionContext context) where T : class
+     {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs b/src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs
+index 0f167338..e2818733 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs
+@@ -380,20 +380,10 @@ internal sealed partial class LythonRuntime
+         {
+             value = name switch
+             {
+-                "writerow" => BoundCallable.Create((arguments, span, context) =>
+-                {
+-                    if (arguments.Length != 1)
+-                    {
+-                        throw new LythonRuntimeException("TypeError", "csv.writerow(row) expects one argument.", span);
+-                    }
+-
+-                    var cells = ToCsvRow(arguments[0], span, context, out var convertedBytes);
+-                    return WriteRow(writer, cells, span, context, convertedBytes);
+-                }, CsvWriterowSignature, async (arguments, span, context) =>
+-                {
+-                    var (cells, convertedBytes) = await ToCsvRowAsync(arguments[0], span, context).ConfigureAwait(false);
+-                    return await WriteRowAsync(writer, cells, span, context, convertedBytes).ConfigureAwait(false);
+-                }),
++                "writerow" => BoundCallable.Create(
++                    (arguments, span, context) => WriteRowFromValue(writer, arguments[0], span, context),
++                    CsvWriterowSignature,
++                    (arguments, span, context) => WriteRowFromValueAsync(writer, arguments[0], span, context)),
+                 "writerows" => BoundCallable.Create((arguments, span, context) =>
+                 {
+                     if (arguments.Length != 1)
+@@ -448,6 +438,17 @@ internal sealed partial class LythonRuntime
+             return !ReferenceEquals(value, MissingMemberValue.Instance);
+         }
+ 
++        // Shared by ordinary operand calls and the general binder. The fixed
++        // signature validates arity before the bound route reaches this body.
++        public static object WriteRowFromValue(CsvWriterObject writer, object row, LythonSourceSpan span, ExecutionContext context)
++            => WriteRow(writer, ToCsvRow(row, span, context, out var convertedBytes), span, context, convertedBytes);
++
++        public static async ValueTask<object> WriteRowFromValueAsync(CsvWriterObject writer, object row, LythonSourceSpan span, ExecutionContext context)
++        {
++            var (cells, convertedBytes) = await ToCsvRowAsync(row, span, context).ConfigureAwait(false);
++            return await WriteRowAsync(writer, cells, span, context, convertedBytes).ConfigureAwait(false);
++        }
++
+         public static object WriteRow(CsvWriterObject writer, CsvCell[] row, LythonSourceSpan span, ExecutionContext context, long convertedBytes)
+         {
+             var rendered = PrepareRow(writer, row, span, context, convertedBytes);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index cc421de0..5580be1d 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -11,6 +11,7 @@ internal sealed partial class LythonRuntime
+     // list-valued attribute can never be confused with this resolved method.
+     private static readonly object DirectListAppend = new();
+     private static readonly object DirectTextFileWrite = new();
++    private static readonly object DirectCsvWriterow = new();
+     private static readonly object DirectDictionaryGet = new();
+     private static readonly object DirectStringStartsWith = new();
+     private static readonly object DirectStringReplace = new();
+@@ -564,6 +565,11 @@ internal sealed partial class LythonRuntime
+                 result = InvokeTextFileWrite((ExecutionContext.TextFileHandle)stack[start],
+                     stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+             }
++            else if (callSite.HasReceiver && ReferenceEquals(target, DirectCsvWriterow))
++            {
++                result = InvokeCsvWriterow((CsvWriterObject)stack[start],
++                    stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
++            }
+             else if (callSite.HasReceiver && stack[start] is PyString stringReceiver &&
+                 target is Func<PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
+             {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index a8002afb..b04780f1 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -79,6 +79,11 @@ internal sealed partial class LythonRuntime
+                             result = InvokeTextFileWrite((ExecutionContext.TextFileHandle)_stack[start],
+                                 _stack[start + call.ArgumentOffset], call.CallSpan, _context);
+                         }
++                        else if (call.HasReceiver && ReferenceEquals(callable, DirectCsvWriterow))
++                        {
++                            result = await InvokeCsvWriterowAsync((CsvWriterObject)_stack[start],
++                                _stack[start + call.ArgumentOffset], call.CallSpan, _context).ConfigureAwait(false);
++                        }
+                         else if (call.HasReceiver && _stack[start] is Text.PyString stringReceiver &&
+                             callable is Func<Text.PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
+                         {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index 5df84122..f70e7424 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -24,6 +24,7 @@ internal sealed partial class LythonRuntime
+             {
+                 PyList when name == "append" => DirectListAppend,
+                 ExecutionContext.TextFileHandle when name == "write" => DirectTextFileWrite,
++                CsvWriterObject when name == "writerow" => DirectCsvWriterow,
+                 PyDict when name == "get" => DirectDictionaryGet,
+                 Text.PyString when name == "startswith" => DirectStringStartsWith,
+                 Text.PyString when name == "replace" => DirectStringReplace,

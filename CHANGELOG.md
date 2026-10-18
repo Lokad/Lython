@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Execute ordinary single-positional native CSV `writerow` calls from existing receiver/argument operands. Share the row-conversion bodies with general bound calls and remove eligible member wrappers and argument binding. Preserve Python results, error/fuel boundaries, row/history/result funding, asynchronous iteration/publication, cancellation and explicit rejection of unsupported cell types.
+
 - Admit large JSON string decoding before creating UTF-16 text for values and keys across dumps, explicit encoding and iterencode. Consolidate three decode call sites, use bounded managed storage for short strings, and release private decoding storage after escaping or failure. Preserve Python text/escaping, callbacks, checkpoints, chunks and retained ownership; conservative live-overlap estimates can reject earlier.
 
 - Admit large JSON integer conversion before allocating decimal text in dumps, explicit encoding and iterencode, including numeric keys. Consolidate integer emission and key appending, remove the unused key-converter control route, and write signed-64 values directly into the existing builder. Preserve validation/sorting, callbacks, checkpoints, chunks, retained output and terminal refusal; numeric working/key-growth estimates can reject earlier.

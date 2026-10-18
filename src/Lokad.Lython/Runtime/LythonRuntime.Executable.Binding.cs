@@ -11,6 +11,7 @@ internal sealed partial class LythonRuntime
     // list-valued attribute can never be confused with this resolved method.
     private static readonly object DirectListAppend = new();
     private static readonly object DirectTextFileWrite = new();
+    private static readonly object DirectCsvWriterow = new();
     private static readonly object DirectDictionaryGet = new();
     private static readonly object DirectStringStartsWith = new();
     private static readonly object DirectStringReplace = new();
@@ -562,6 +563,11 @@ internal sealed partial class LythonRuntime
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectTextFileWrite))
             {
                 result = InvokeTextFileWrite((ExecutionContext.TextFileHandle)stack[start],
+                    stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+            }
+            else if (callSite.HasReceiver && ReferenceEquals(target, DirectCsvWriterow))
+            {
+                result = InvokeCsvWriterow((CsvWriterObject)stack[start],
                     stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
             }
             else if (callSite.HasReceiver && stack[start] is PyString stringReceiver &&

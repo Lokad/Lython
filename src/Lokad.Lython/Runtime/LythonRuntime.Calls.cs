@@ -190,6 +190,34 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    private static object InvokeCsvWriterow(CsvWriterObject receiver, object row, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            return RuntimeValue(CsvWriterMembers.WriteRowFromValue(receiver, row, span, context));
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
+    // Row iteration and the captured output callback can both suspend. Retain
+    // this call frame and its inputs until conversion/publication finish.
+    private static async ValueTask<object> InvokeCsvWriterowAsync(CsvWriterObject receiver, object row, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            return RuntimeValue(await CsvWriterMembers.WriteRowFromValueAsync(receiver, row, span, context).ConfigureAwait(false));
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private static object InvokeSingleInput<T>(T value,
         Func<T, LythonSourceSpan, ExecutionContext, object> operation, LythonSourceSpan span, ExecutionContext context) where T : class
     {
