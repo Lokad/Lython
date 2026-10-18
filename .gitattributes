@@ -54,3 +54,5 @@ benchmarks/results/2026-10-18-bridge-profile/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-lowered-root/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-text-file-write/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-text-file-write/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-integer-rendering/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-integer-rendering/candidate.patch -text -whitespace

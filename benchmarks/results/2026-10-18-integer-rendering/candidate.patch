@@ -1,0 +1,60 @@
+diff --git a/src/Lokad.Lython/Runtime/PyRendering.cs b/src/Lokad.Lython/Runtime/PyRendering.cs
+index 07a17818..a4258535 100644
+--- a/src/Lokad.Lython/Runtime/PyRendering.cs
++++ b/src/Lokad.Lython/Runtime/PyRendering.cs
+@@ -71,7 +71,7 @@ internal static class PyRendering
+             {
+                 PyNone => PyStringOps.NoneLiteral,
+                 bool boolean => boolean ? TrueLiteral : FalseLiteral,
+-                _ when PyNumberOps.TryAsInteger(value, out var integer) => PyString.FromString(integer.ToString(System.Globalization.CultureInfo.InvariantCulture), context.Context.MemoryGovernor),
++                _ when PyNumberOps.TryAsInteger(value, out var integer) => RenderInteger(integer, context),
+                 double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
+                 LythonRuntime.DictKeysView view => JoinRenderedReprValues("dict_keys([", view, "])", context),
+                 LythonRuntime.DictValuesView view => JoinRenderedReprValues("dict_values([", view, "])", context),
+@@ -103,7 +103,7 @@ internal static class PyRendering
+             {
+                 PyNone => PyStringOps.NoneLiteral,
+                 bool boolean => boolean ? TrueLiteral : FalseLiteral,
+-                _ when PyNumberOps.TryAsInteger(value, out var integer) => PyString.FromString(integer.ToString(System.Globalization.CultureInfo.InvariantCulture), context.Context.MemoryGovernor),
++                _ when PyNumberOps.TryAsInteger(value, out var integer) => RenderInteger(integer, context),
+                 double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
+                 LythonRuntime.DictKeysView view => JoinRenderedReprValues("dict_keys([", view, "])", context),
+                 LythonRuntime.DictValuesView view => JoinRenderedReprValues("dict_values([", view, "])", context),
+@@ -121,6 +121,28 @@ internal static class PyRendering
+         }
+     }
+ 
++    private static PyString RenderInteger(BigInteger value, PyRenderingContext context)
++    {
++        var governor = context.Context.MemoryGovernor;
++        if (value >= long.MinValue && value <= long.MaxValue)
++        {
++            // The sign and all signed-64 decimal digits fit in twenty bytes.
++            Span<byte> buffer = stackalloc byte[20];
++            if (!((long)value).TryFormat(buffer, out var written, provider: System.Globalization.CultureInfo.InvariantCulture))
++                throw new InvalidOperationException("Integer formatting exceeded its fixed buffer.");
++            return PyString.CopyFromUtf8(buffer[..written], governor, null);
++        }
++
++        // bit/3 overestimates decimal digits; include sign, metadata, UTF-16
++        // text, active BCL conversion workspace/pool rounding and headroom.
++        // Final UTF-8 admission overlaps this scratch until copying completes.
++        var characters = RuntimeMemoryEstimates.GetMagnitudeBitLength(value) / 3 + 2;
++        var workingBytes = RuntimeMemoryEstimates.SaturatingAdd(256,
++            RuntimeMemoryEstimates.SaturatingMultiply(8, characters));
++        using var scratch = governor.ReserveTemporary(workingBytes, null);
++        return PyString.FromString(value.ToString(System.Globalization.CultureInfo.InvariantCulture), governor);
++    }
++
+     public static string ToPythonString(object value, PyRenderingContext context) => ToPythonPyString(value, context).AsString();
+ 
+     public static string ToInterpolatedString(object value, PyRenderingContext context) => ToInterpolatedPyString(value, context).AsString();
+@@ -285,7 +307,7 @@ internal static class PyRendering
+             PySet set => RenderReprSet(set, context, activeContainers),
+             PyNone => PyStringOps.NoneLiteral,
+             bool boolean => boolean ? TrueLiteral : FalseLiteral,
+-            _ when PyNumberOps.TryAsInteger(value, out var integer) => PyString.FromString(integer.ToString(System.Globalization.CultureInfo.InvariantCulture), context.Context.MemoryGovernor),
++            _ when PyNumberOps.TryAsInteger(value, out var integer) => RenderInteger(integer, context),
+             double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
+             LythonRuntime.DictKeysView view => RenderReprSequence(view, "dict_keys([", "])", "dict_keys([...])", context, activeContainers),
+             LythonRuntime.DictValuesView view => RenderReprSequence(view, "dict_values([", "])", "dict_values([...])", context, activeContainers),

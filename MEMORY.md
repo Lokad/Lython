@@ -83,6 +83,21 @@ the copy, while the working buffer remains charged. A failed conversion retains
 the builder and its funding. A successful consuming conversion releases only
 working storage; the result and its aliases remain funded under their owner.
 
+Ordinary integer `str`, `repr` and rendering share one conversion path. Values
+in the signed-64 range format into a fixed 20-byte managed span, then admit the
+owned UTF-8 result before copying. Larger values admit a conservative working
+estimate before CLR decimal formatting, including UTF-16 text, active conversion
+workspace and headroom. That temporary charge overlaps final UTF-8 admission and
+returns after formatting/copying finishes, including failed result admission.
+The final string and its aliases retain their existing owner. This can refuse
+large rendering earlier; denied admission remains terminal and is never retried.
+
+This is cooperative active-storage accounting, not an exact CLR resident-memory
+bound. Framework pools can retain their internal buffers after formatting;
+the host still needs runtime headroom for that storage. Lython-owned pools and
+caches keep their longer-lived funding. No new pool, cache or lifetime system
+is introduced for rendering.
+
 Accumulated text-file reads use the same governed UTF-8 working builder. Growth
 admits replacement capacity while the old buffer is still charged; materializing
 the returned string admits its copy before releasing that buffer. Each read

@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="12cee60c-2626-4494-b2c4-e910c69346b5" name="JoannesVermorel@LOKAD-0399 2026-10-18 04:23:08" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T04:23:08.6935067+02:00" queuing="2026-10-18T04:23:08.6935070+02:00" start="2026-10-18T04:23:07.6466155+02:00" finish="2026-10-18T04:23:08.6973997+02:00" />
+  <TestSettings name="default" id="5513e1d6-f54d-4053-8a4e-8aac8b08671c">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_04_23_08" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="4050143c-16b1-4ac4-9a3f-6b790f9101d2" testId="04201748-9053-b507-dd81-e2a8cd50df6c" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds(mode: 2)" computerName="LOKAD-0399" duration="00:00:00.0000494" startTime="2026-10-18T04:23:08.6172378+02:00" endTime="2026-10-18T04:23:08.6172782+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4050143c-16b1-4ac4-9a3f-6b790f9101d2" />
+    <UnitTestResult executionId="a3c7bb30-4feb-4757-8741-fee28b51fef8" testId="bdda4d00-66a0-3bea-c91d-ff7cc5741758" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds(mode: 1)" computerName="LOKAD-0399" duration="00:00:00.0004438" startTime="2026-10-18T04:23:08.6168430+02:00" endTime="2026-10-18T04:23:08.6172014+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a3c7bb30-4feb-4757-8741-fee28b51fef8" />
+    <UnitTestResult executionId="ff5f3ace-4590-4d3d-9135-1f0a1ad56532" testId="c410b8f8-2776-e88b-55e4-3f6e8861e661" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;str&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.1331900" startTime="2026-10-18T04:23:08.4557007+02:00" endTime="2026-10-18T04:23:08.5929670+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ff5f3ace-4590-4d3d-9135-1f0a1ad56532">
+      <Output>
+        <StdOut>INTEGER_RENDER_GUARDS:{"route":"str","asynchronous":false,"steps":12,"checkpoints":["-:0","7,3,1,8:0","11,8,1,12:0","11,10,1,12:0","11,10,1,12:0","11,10,1,12:0","7,15,1,8:1","7,15,1,8:1","7,15,1,8:1","7,15,1,8:1","-:1","0,22,1,1:1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e7413e54-3aba-4f11-9190-59f9cfe602ff" testId="018f3128-bd16-456b-efd8-37ba9ff00711" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;str&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0057320" startTime="2026-10-18T04:23:08.5991111+02:00" endTime="2026-10-18T04:23:08.5991801+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e7413e54-3aba-4f11-9190-59f9cfe602ff">
+      <Output>
+        <StdOut>INTEGER_RENDER_GUARDS:{"route":"str","asynchronous":true,"steps":12,"checkpoints":["-:0","7,3,1,8:0","11,8,1,12:0","11,10,1,12:0","11,10,1,12:0","11,10,1,12:0","7,15,1,8:1","7,15,1,8:1","7,15,1,8:1","7,15,1,8:1","-:1","0,22,1,1:1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="55a6b9ba-bbe0-4719-8d3e-676722fe862e" testId="c37cf216-a80c-f9d2-1c75-c001e91fab53" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;format&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0123493" startTime="2026-10-18T04:23:08.5995722+02:00" endTime="2026-10-18T04:23:08.6111463+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="55a6b9ba-bbe0-4719-8d3e-676722fe862e">
+      <Output>
+        <StdOut>INTEGER_RENDER_GUARDS:{"route":"format","asynchronous":false,"steps":9,"checkpoints":["-:0","10,8,1,11:0","10,10,1,11:0","10,10,1,11:0","10,10,1,11:0","7,15,1,8:1","-:1","7,15,1,8:1","0,22,1,1:1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d6500093-ac6b-4505-8e5d-487d9219286c" testId="afc1bde5-ace7-e809-a445-e6d3682a9aa7" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds(mode: 0)" computerName="LOKAD-0399" duration="00:00:00.0024263" startTime="2026-10-18T04:23:08.6147966+02:00" endTime="2026-10-18T04:23:08.6167800+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d6500093-ac6b-4505-8e5d-487d9219286c" />
+    <UnitTestResult executionId="3f782b4e-8283-48bc-ae6a-a84d6ba9e6af" testId="44375158-589e-9309-55a6-fc1289a3faf7" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;repr&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0016527" startTime="2026-10-18T04:23:08.6117558+02:00" endTime="2026-10-18T04:23:08.6134014+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3f782b4e-8283-48bc-ae6a-a84d6ba9e6af">
+      <Output>
+        <StdOut>INTEGER_RENDER_GUARDS:{"route":"repr","asynchronous":false,"steps":12,"checkpoints":["-:0","7,4,1,8:0","12,8,1,13:0","12,10,1,13:0","12,10,1,13:0","12,10,1,13:0","7,16,1,8:1","7,16,1,8:1","7,16,1,8:1","7,16,1,8:1","-:1","0,23,1,1:1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4158792d-ffc7-4c6a-94ad-8378e03eb644" testId="158be4b9-2fc9-eb41-149d-a5d6cfb5c23e" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;format&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0005796" startTime="2026-10-18T04:23:08.6112186+02:00" endTime="2026-10-18T04:23:08.6117206+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4158792d-ffc7-4c6a-94ad-8378e03eb644">
+      <Output>
+        <StdOut>INTEGER_RENDER_GUARDS:{"route":"format","asynchronous":true,"steps":9,"checkpoints":["-:0","10,8,1,11:0","10,10,1,11:0","10,10,1,11:0","10,10,1,11:0","7,15,1,8:1","-:1","7,15,1,8:1","0,22,1,1:1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3bdcd285-4395-4ed9-81ce-12d493458cc9" testId="cce33caa-2442-d696-f138-92995b2dc16a" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;repr&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0006816" startTime="2026-10-18T04:23:08.6134363+02:00" endTime="2026-10-18T04:23:08.6141128+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3bdcd285-4395-4ed9-81ce-12d493458cc9">
+      <Output>
+        <StdOut>INTEGER_RENDER_GUARDS:{"route":"repr","asynchronous":true,"steps":12,"checkpoints":["-:0","7,4,1,8:0","12,8,1,13:0","12,10,1,13:0","12,10,1,13:0","12,10,1,13:0","7,16,1,8:1","7,16,1,8:1","7,16,1,8:1","7,16,1,8:1","-:1","0,23,1,1:1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;format&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="158be4b9-2fc9-eb41-149d-a5d6cfb5c23e">
+      <Execution id="4158792d-ffc7-4c6a-94ad-8378e03eb644" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RenderingPreservesFuelSpansAndArgumentEffects" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds(mode: 2)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="04201748-9053-b507-dd81-e2a8cd50df6c">
+      <Execution id="4050143c-16b1-4ac4-9a3f-6b790f9101d2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="ResultKeepsFundingAfterWorkingStorageEnds" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;format&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c37cf216-a80c-f9d2-1c75-c001e91fab53">
+      <Execution id="55a6b9ba-bbe0-4719-8d3e-676722fe862e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RenderingPreservesFuelSpansAndArgumentEffects" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds(mode: 1)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="bdda4d00-66a0-3bea-c91d-ff7cc5741758">
+      <Execution id="a3c7bb30-4feb-4757-8741-fee28b51fef8" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="ResultKeepsFundingAfterWorkingStorageEnds" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;str&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c410b8f8-2776-e88b-55e4-3f6e8861e661">
+      <Execution id="ff5f3ace-4590-4d3d-9135-1f0a1ad56532" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RenderingPreservesFuelSpansAndArgumentEffects" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;repr&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="44375158-589e-9309-55a6-fc1289a3faf7">
+      <Execution id="3f782b4e-8283-48bc-ae6a-a84d6ba9e6af" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RenderingPreservesFuelSpansAndArgumentEffects" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds(mode: 0)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="afc1bde5-ace7-e809-a445-e6d3682a9aa7">
+      <Execution id="d6500093-ac6b-4505-8e5d-487d9219286c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="ResultKeepsFundingAfterWorkingStorageEnds" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;repr&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="cce33caa-2442-d696-f138-92995b2dc16a">
+      <Execution id="3bdcd285-4395-4ed9-81ce-12d493458cc9" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RenderingPreservesFuelSpansAndArgumentEffects" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;str&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="018f3128-bd16-456b-efd8-37ba9ff00711">
+      <Execution id="e7413e54-3aba-4f11-9190-59f9cfe602ff" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RenderingPreservesFuelSpansAndArgumentEffects" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="04201748-9053-b507-dd81-e2a8cd50df6c" executionId="4050143c-16b1-4ac4-9a3f-6b790f9101d2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bdda4d00-66a0-3bea-c91d-ff7cc5741758" executionId="a3c7bb30-4feb-4757-8741-fee28b51fef8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c410b8f8-2776-e88b-55e4-3f6e8861e661" executionId="ff5f3ace-4590-4d3d-9135-1f0a1ad56532" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="018f3128-bd16-456b-efd8-37ba9ff00711" executionId="e7413e54-3aba-4f11-9190-59f9cfe602ff" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c37cf216-a80c-f9d2-1c75-c001e91fab53" executionId="55a6b9ba-bbe0-4719-8d3e-676722fe862e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="afc1bde5-ace7-e809-a445-e6d3682a9aa7" executionId="d6500093-ac6b-4505-8e5d-487d9219286c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="44375158-589e-9309-55a6-fc1289a3faf7" executionId="3f782b4e-8283-48bc-ae6a-a84d6ba9e6af" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="158be4b9-2fc9-eb41-149d-a5d6cfb5c23e" executionId="4158792d-ffc7-4c6a-94ad-8378e03eb644" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cce33caa-2442-d696-f138-92995b2dc16a" executionId="3bdcd285-4395-4ed9-81ce-12d493458cc9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="9" executed="9" passed="9" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.17]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.49]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.51]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.69]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

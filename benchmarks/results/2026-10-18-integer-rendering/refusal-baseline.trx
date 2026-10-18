@@ -1,0 +1,270 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="5509c7ca-2ef9-45d0-8be6-190b20ae3b27" name="JoannesVermorel@LOKAD-0399 2026-10-18 04:21:04" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T04:21:04.4909747+02:00" queuing="2026-10-18T04:21:04.4909749+02:00" start="2026-10-18T04:21:03.5254702+02:00" finish="2026-10-18T04:21:04.5878076+02:00" />
+  <TestSettings name="default" id="66bd5c4f-53e2-433c-87fc-7ba37389eff4">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_04_21_04" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="17e39b80-1ce7-4df2-a5ef-c9df26851301" testId="0dcccf35-06f7-7342-96a9-6df512e5e87d" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 1, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0134890" startTime="2026-10-18T04:21:04.5201585+02:00" endTime="2026-10-18T04:21:04.5334027+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="17e39b80-1ce7-4df2-a5ef-c9df26851301">
+      <Output>
+        <StdOut>INTEGER_RENDER_REFUSAL:{"mode":1,"shared":true,"allocated":41008,"denied":19857}</StdOut>
+        <ErrorInfo>
+          <Message>Refused integer rendering allocated 41008 bytes.</Message>
+          <StackTrace>   at Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Int32 mode, Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\IntegerRenderingAdmissionTests.cs:line 60&#xD;
+   at InvokeStub_IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7ffd47e7-0185-406f-a2e0-091ec0294b52" testId="aff0e3d7-6527-08e4-e0f3-13ca63447f35" testName="Lokad.Lython.Tests.IntegerRenderingAllocationDiagnostic.Capture" computerName="LOKAD-0399" duration="00:00:00.0479182" startTime="2026-10-18T04:21:04.2768889+02:00" endTime="2026-10-18T04:21:04.3285549+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7ffd47e7-0185-406f-a2e0-091ec0294b52" />
+    <UnitTestResult executionId="92b5738b-80dd-4d0f-a20a-ccc63adbdc22" testId="58215976-eac3-810f-27a7-ece4f88a413b" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 0, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0133573" startTime="2026-10-18T04:21:04.5336919+02:00" endTime="2026-10-18T04:21:04.5468350+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="92b5738b-80dd-4d0f-a20a-ccc63adbdc22">
+      <Output>
+        <StdOut>INTEGER_RENDER_REFUSAL:{"mode":0,"shared":true,"allocated":41008,"denied":19857}</StdOut>
+        <ErrorInfo>
+          <Message>Refused integer rendering allocated 41008 bytes.</Message>
+          <StackTrace>   at Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Int32 mode, Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\IntegerRenderingAdmissionTests.cs:line 60&#xD;
+   at InvokeStub_IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="025b78ab-d53f-4301-9a17-9513b6a1494b" testId="aa0b76fe-18bc-1d20-d950-074bb530c4c8" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 1, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0135141" startTime="2026-10-18T04:21:04.5065498+02:00" endTime="2026-10-18T04:21:04.5198499+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="025b78ab-d53f-4301-9a17-9513b6a1494b">
+      <Output>
+        <StdOut>INTEGER_RENDER_REFUSAL:{"mode":1,"shared":false,"allocated":41120,"denied":19857}</StdOut>
+        <ErrorInfo>
+          <Message>Refused integer rendering allocated 41120 bytes.</Message>
+          <StackTrace>   at Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Int32 mode, Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\IntegerRenderingAdmissionTests.cs:line 60&#xD;
+   at InvokeStub_IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1e481a97-e54e-49a6-81db-8d1e015d049c" testId="018f3128-bd16-456b-efd8-37ba9ff00711" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;str&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0051288" startTime="2026-10-18T04:21:04.4180654+02:00" endTime="2026-10-18T04:21:04.4223675+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1e481a97-e54e-49a6-81db-8d1e015d049c">
+      <Output>
+        <StdOut>INTEGER_RENDER_GUARDS:{"route":"str","asynchronous":true,"steps":12,"checkpoints":["-:0","7,3,1,8:0","11,8,1,12:0","11,10,1,12:0","11,10,1,12:0","11,10,1,12:0","7,15,1,8:1","7,15,1,8:1","7,15,1,8:1","7,15,1,8:1","-:1","0,22,1,1:1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2d11507e-b6a5-41d9-85e8-c8c1f0fe147d" testId="afc1bde5-ace7-e809-a445-e6d3682a9aa7" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds(mode: 0)" computerName="LOKAD-0399" duration="00:00:00.0021357" startTime="2026-10-18T04:21:04.4557659+02:00" endTime="2026-10-18T04:21:04.4578212+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2d11507e-b6a5-41d9-85e8-c8c1f0fe147d" />
+    <UnitTestResult executionId="0a08c3d6-05a7-4538-8d27-52a07f1774cc" testId="38bd1eeb-093d-a0b9-e9d5-bbeb118b408c" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 2, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0134203" startTime="2026-10-18T04:21:04.4930779+02:00" endTime="2026-10-18T04:21:04.5062334+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0a08c3d6-05a7-4538-8d27-52a07f1774cc">
+      <Output>
+        <StdOut>INTEGER_RENDER_REFUSAL:{"mode":2,"shared":false,"allocated":41184,"denied":19857}</StdOut>
+        <ErrorInfo>
+          <Message>Refused integer rendering allocated 41184 bytes.</Message>
+          <StackTrace>   at Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Int32 mode, Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\IntegerRenderingAdmissionTests.cs:line 60&#xD;
+   at InvokeStub_IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7d514c6b-1a5a-4467-9690-ea5225124839" testId="614d948b-98c7-5359-e17b-691fe4b5ef43" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 2, shared: True)" computerName="LOKAD-0399" duration="00:00:00.0138177" startTime="2026-10-18T04:21:04.4816074+02:00" endTime="2026-10-18T04:21:04.4927503+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7d514c6b-1a5a-4467-9690-ea5225124839">
+      <Output>
+        <StdOut>INTEGER_RENDER_REFUSAL:{"mode":2,"shared":true,"allocated":41072,"denied":19857}</StdOut>
+        <ErrorInfo>
+          <Message>Refused integer rendering allocated 41072 bytes.</Message>
+          <StackTrace>   at Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Int32 mode, Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\IntegerRenderingAdmissionTests.cs:line 60&#xD;
+   at InvokeStub_IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d4191185-ad4d-489e-b445-0a1a840ef978" testId="44375158-589e-9309-55a6-fc1289a3faf7" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;repr&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0014134" startTime="2026-10-18T04:21:04.4433846+02:00" endTime="2026-10-18T04:21:04.4443608+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d4191185-ad4d-489e-b445-0a1a840ef978">
+      <Output>
+        <StdOut>INTEGER_RENDER_GUARDS:{"route":"repr","asynchronous":false,"steps":12,"checkpoints":["-:0","7,4,1,8:0","12,8,1,13:0","12,10,1,13:0","12,10,1,13:0","12,10,1,13:0","7,16,1,8:1","7,16,1,8:1","7,16,1,8:1","7,16,1,8:1","-:1","0,23,1,1:1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a0394729-e600-4330-b5a9-3cb08c2d9d05" testId="c37cf216-a80c-f9d2-1c75-c001e91fab53" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;format&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0116061" startTime="2026-10-18T04:21:04.4224425+02:00" endTime="2026-10-18T04:21:04.4339677+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a0394729-e600-4330-b5a9-3cb08c2d9d05">
+      <Output>
+        <StdOut>INTEGER_RENDER_GUARDS:{"route":"format","asynchronous":false,"steps":9,"checkpoints":["-:0","10,8,1,11:0","10,10,1,11:0","10,10,1,11:0","10,10,1,11:0","7,15,1,8:1","-:1","7,15,1,8:1","0,22,1,1:1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="94a1805c-339a-4b33-b279-4a44b466905c" testId="c410b8f8-2776-e88b-55e4-3f6e8861e661" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;str&quot;, asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0875875" startTime="2026-10-18T04:21:04.3353068+02:00" endTime="2026-10-18T04:21:04.4175563+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="94a1805c-339a-4b33-b279-4a44b466905c">
+      <Output>
+        <StdOut>INTEGER_RENDER_GUARDS:{"route":"str","asynchronous":false,"steps":12,"checkpoints":["-:0","7,3,1,8:0","11,8,1,12:0","11,10,1,12:0","11,10,1,12:0","11,10,1,12:0","7,15,1,8:1","7,15,1,8:1","7,15,1,8:1","7,15,1,8:1","-:1","0,22,1,1:1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e6a70da3-160b-4d7e-b915-39a5036b8f4a" testId="bdda4d00-66a0-3bea-c91d-ff7cc5741758" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds(mode: 1)" computerName="LOKAD-0399" duration="00:00:00.0002168" startTime="2026-10-18T04:21:04.4578742+02:00" endTime="2026-10-18T04:21:04.4580548+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e6a70da3-160b-4d7e-b915-39a5036b8f4a" />
+    <UnitTestResult executionId="4eda379b-e10f-4ff9-88a4-7e005bc891ae" testId="04201748-9053-b507-dd81-e2a8cd50df6c" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds(mode: 2)" computerName="LOKAD-0399" duration="00:00:00.0000360" startTime="2026-10-18T04:21:04.4740358+02:00" endTime="2026-10-18T04:21:04.4740674+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4eda379b-e10f-4ff9-88a4-7e005bc891ae" />
+    <UnitTestResult executionId="535ebab2-a841-4deb-b879-a1af0d894013" testId="158be4b9-2fc9-eb41-149d-a5d6cfb5c23e" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;format&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0089164" startTime="2026-10-18T04:21:04.4340302+02:00" endTime="2026-10-18T04:21:04.4433072+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="535ebab2-a841-4deb-b879-a1af0d894013">
+      <Output>
+        <StdOut>INTEGER_RENDER_GUARDS:{"route":"format","asynchronous":true,"steps":9,"checkpoints":["-:0","10,8,1,11:0","10,10,1,11:0","10,10,1,11:0","10,10,1,11:0","7,15,1,8:1","-:1","7,15,1,8:1","0,22,1,1:1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="95f605ce-648c-4a62-bf0e-6ac065126c82" testId="d346fc87-0449-6469-aab5-c39705379527" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 0, shared: False)" computerName="LOKAD-0399" duration="00:00:00.0166943" startTime="2026-10-18T04:21:04.4742404+02:00" endTime="2026-10-18T04:21:04.4790859+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="95f605ce-648c-4a62-bf0e-6ac065126c82">
+      <Output>
+        <StdOut>INTEGER_RENDER_REFUSAL:{"mode":0,"shared":false,"allocated":41120,"denied":19857}</StdOut>
+        <ErrorInfo>
+          <Message>Refused integer rendering allocated 41120 bytes.</Message>
+          <StackTrace>   at Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Int32 mode, Boolean shared) in D:\code\Lython\tests\Lokad.Lython.Tests\IntegerRenderingAdmissionTests.cs:line 60&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7422f548-ad8d-4bdc-97b9-ef31a993293d" testId="cce33caa-2442-d696-f138-92995b2dc16a" testName="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;repr&quot;, asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0112296" startTime="2026-10-18T04:21:04.4444065+02:00" endTime="2026-10-18T04:21:04.4556508+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7422f548-ad8d-4bdc-97b9-ef31a993293d">
+      <Output>
+        <StdOut>INTEGER_RENDER_GUARDS:{"route":"repr","asynchronous":true,"steps":12,"checkpoints":["-:0","7,4,1,8:0","12,8,1,13:0","12,10,1,13:0","12,10,1,13:0","12,10,1,13:0","7,16,1,8:1","7,16,1,8:1","7,16,1,8:1","7,16,1,8:1","-:1","0,23,1,1:1"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;str&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c410b8f8-2776-e88b-55e4-3f6e8861e661">
+      <Execution id="94a1805c-339a-4b33-b279-4a44b466905c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RenderingPreservesFuelSpansAndArgumentEffects" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 0, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="58215976-eac3-810f-27a7-ece4f88a413b">
+      <Execution id="92b5738b-80dd-4d0f-a20a-ccc63adbdc22" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RefusalPrecedesProportionalFormattingAllocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;format&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="158be4b9-2fc9-eb41-149d-a5d6cfb5c23e">
+      <Execution id="535ebab2-a841-4deb-b879-a1af0d894013" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RenderingPreservesFuelSpansAndArgumentEffects" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds(mode: 2)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="04201748-9053-b507-dd81-e2a8cd50df6c">
+      <Execution id="4eda379b-e10f-4ff9-88a4-7e005bc891ae" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="ResultKeepsFundingAfterWorkingStorageEnds" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;repr&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="44375158-589e-9309-55a6-fc1289a3faf7">
+      <Execution id="d4191185-ad4d-489e-b445-0a1a840ef978" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RenderingPreservesFuelSpansAndArgumentEffects" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;format&quot;, asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c37cf216-a80c-f9d2-1c75-c001e91fab53">
+      <Execution id="a0394729-e600-4330-b5a9-3cb08c2d9d05" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RenderingPreservesFuelSpansAndArgumentEffects" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;repr&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="cce33caa-2442-d696-f138-92995b2dc16a">
+      <Execution id="7422f548-ad8d-4bdc-97b9-ef31a993293d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RenderingPreservesFuelSpansAndArgumentEffects" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 2, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="614d948b-98c7-5359-e17b-691fe4b5ef43">
+      <Execution id="7d514c6b-1a5a-4467-9690-ea5225124839" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RefusalPrecedesProportionalFormattingAllocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAllocationDiagnostic.Capture" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="aff0e3d7-6527-08e4-e0f3-13ca63447f35">
+      <Execution id="7ffd47e7-0185-406f-a2e0-091ec0294b52" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAllocationDiagnostic" name="Capture" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 1, shared: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="0dcccf35-06f7-7342-96a9-6df512e5e87d">
+      <Execution id="17e39b80-1ce7-4df2-a5ef-c9df26851301" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RefusalPrecedesProportionalFormattingAllocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 1, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="aa0b76fe-18bc-1d20-d950-074bb530c4c8">
+      <Execution id="025b78ab-d53f-4301-9a17-9513b6a1494b" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RefusalPrecedesProportionalFormattingAllocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects(route: &quot;str&quot;, asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="018f3128-bd16-456b-efd8-37ba9ff00711">
+      <Execution id="1e481a97-e54e-49a6-81db-8d1e015d049c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RenderingPreservesFuelSpansAndArgumentEffects" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 2, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="38bd1eeb-093d-a0b9-e9d5-bbeb118b408c">
+      <Execution id="0a08c3d6-05a7-4538-8d27-52a07f1774cc" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RefusalPrecedesProportionalFormattingAllocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds(mode: 1)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="bdda4d00-66a0-3bea-c91d-ff7cc5741758">
+      <Execution id="e6a70da3-160b-4d7e-b915-39a5036b8f4a" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="ResultKeepsFundingAfterWorkingStorageEnds" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds(mode: 0)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="afc1bde5-ace7-e809-a445-e6d3682a9aa7">
+      <Execution id="2d11507e-b6a5-41d9-85e8-c8c1f0fe147d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="ResultKeepsFundingAfterWorkingStorageEnds" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 0, shared: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="d346fc87-0449-6469-aab5-c39705379527">
+      <Execution id="95f605ce-648c-4a62-bf0e-6ac065126c82" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.IntegerRenderingAdmissionTests" name="RefusalPrecedesProportionalFormattingAllocation" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="0dcccf35-06f7-7342-96a9-6df512e5e87d" executionId="17e39b80-1ce7-4df2-a5ef-c9df26851301" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="aff0e3d7-6527-08e4-e0f3-13ca63447f35" executionId="7ffd47e7-0185-406f-a2e0-091ec0294b52" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="58215976-eac3-810f-27a7-ece4f88a413b" executionId="92b5738b-80dd-4d0f-a20a-ccc63adbdc22" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="aa0b76fe-18bc-1d20-d950-074bb530c4c8" executionId="025b78ab-d53f-4301-9a17-9513b6a1494b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="018f3128-bd16-456b-efd8-37ba9ff00711" executionId="1e481a97-e54e-49a6-81db-8d1e015d049c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="afc1bde5-ace7-e809-a445-e6d3682a9aa7" executionId="2d11507e-b6a5-41d9-85e8-c8c1f0fe147d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="38bd1eeb-093d-a0b9-e9d5-bbeb118b408c" executionId="0a08c3d6-05a7-4538-8d27-52a07f1774cc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="614d948b-98c7-5359-e17b-691fe4b5ef43" executionId="7d514c6b-1a5a-4467-9690-ea5225124839" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="44375158-589e-9309-55a6-fc1289a3faf7" executionId="d4191185-ad4d-489e-b445-0a1a840ef978" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c37cf216-a80c-f9d2-1c75-c001e91fab53" executionId="a0394729-e600-4330-b5a9-3cb08c2d9d05" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c410b8f8-2776-e88b-55e4-3f6e8861e661" executionId="94a1805c-339a-4b33-b279-4a44b466905c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bdda4d00-66a0-3bea-c91d-ff7cc5741758" executionId="e6a70da3-160b-4d7e-b915-39a5036b8f4a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="04201748-9053-b507-dd81-e2a8cd50df6c" executionId="4eda379b-e10f-4ff9-88a4-7e005bc891ae" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="158be4b9-2fc9-eb41-149d-a5d6cfb5c23e" executionId="535ebab2-a841-4deb-b879-a1af0d894013" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d346fc87-0449-6469-aab5-c39705379527" executionId="95f605ce-648c-4a62-bf0e-6ac065126c82" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cce33caa-2442-d696-f138-92995b2dc16a" executionId="7422f548-ad8d-4bdc-97b9-ef31a993293d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="16" executed="16" passed="10" failed="6" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.44]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.46]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.67]       Refused integer rendering allocated 41120 bytes.&#xD;
+[xUnit.net 00:00:00.68]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.68]         D:\code\Lython\tests\Lokad.Lython.Tests\IntegerRenderingAdmissionTests.cs(60,0): at Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Int32 mode, Boolean shared)&#xD;
+[xUnit.net 00:00:00.68]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+[xUnit.net 00:00:00.68]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)&#xD;
+[xUnit.net 00:00:00.68]       Output:&#xD;
+[xUnit.net 00:00:00.68]         INTEGER_RENDER_REFUSAL:{"mode":0,"shared":false,"allocated":41120,"denied":19857}&#xD;
+[xUnit.net 00:00:00.69]       Refused integer rendering allocated 41072 bytes.&#xD;
+[xUnit.net 00:00:00.69]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.69]         D:\code\Lython\tests\Lokad.Lython.Tests\IntegerRenderingAdmissionTests.cs(60,0): at Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Int32 mode, Boolean shared)&#xD;
+[xUnit.net 00:00:00.69]            at InvokeStub_IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.69]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.69]       Output:&#xD;
+[xUnit.net 00:00:00.69]         INTEGER_RENDER_REFUSAL:{"mode":2,"shared":true,"allocated":41072,"denied":19857}&#xD;
+[xUnit.net 00:00:00.70]       Refused integer rendering allocated 41184 bytes.&#xD;
+[xUnit.net 00:00:00.70]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.70]         D:\code\Lython\tests\Lokad.Lython.Tests\IntegerRenderingAdmissionTests.cs(60,0): at Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Int32 mode, Boolean shared)&#xD;
+[xUnit.net 00:00:00.70]            at InvokeStub_IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.70]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.70]       Output:&#xD;
+[xUnit.net 00:00:00.70]         INTEGER_RENDER_REFUSAL:{"mode":2,"shared":false,"allocated":41184,"denied":19857}&#xD;
+[xUnit.net 00:00:00.71]       Refused integer rendering allocated 41120 bytes.&#xD;
+[xUnit.net 00:00:00.71]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.71]         D:\code\Lython\tests\Lokad.Lython.Tests\IntegerRenderingAdmissionTests.cs(60,0): at Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Int32 mode, Boolean shared)&#xD;
+[xUnit.net 00:00:00.71]            at InvokeStub_IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.71]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.71]       Output:&#xD;
+[xUnit.net 00:00:00.71]         INTEGER_RENDER_REFUSAL:{"mode":1,"shared":false,"allocated":41120,"denied":19857}&#xD;
+[xUnit.net 00:00:00.73]       Refused integer rendering allocated 41008 bytes.&#xD;
+[xUnit.net 00:00:00.73]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.73]         D:\code\Lython\tests\Lokad.Lython.Tests\IntegerRenderingAdmissionTests.cs(60,0): at Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Int32 mode, Boolean shared)&#xD;
+[xUnit.net 00:00:00.73]            at InvokeStub_IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.73]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.73]       Output:&#xD;
+[xUnit.net 00:00:00.73]         INTEGER_RENDER_REFUSAL:{"mode":1,"shared":true,"allocated":41008,"denied":19857}&#xD;
+[xUnit.net 00:00:00.74]       Refused integer rendering allocated 41008 bytes.&#xD;
+[xUnit.net 00:00:00.74]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.74]         D:\code\Lython\tests\Lokad.Lython.Tests\IntegerRenderingAdmissionTests.cs(60,0): at Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Int32 mode, Boolean shared)&#xD;
+[xUnit.net 00:00:00.74]            at InvokeStub_IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.74]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.74]       Output:&#xD;
+[xUnit.net 00:00:00.74]         INTEGER_RENDER_REFUSAL:{"mode":0,"shared":true,"allocated":41008,"denied":19857}&#xD;
+[xUnit.net 00:00:00.74]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T04:21:04.4943206+02:00">
+        <Text>[xUnit.net 00:00:00.67]     Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 0, shared: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T04:21:04.4944430+02:00">
+        <Text>[xUnit.net 00:00:00.69]     Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 2, shared: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T04:21:04.5065356+02:00">
+        <Text>[xUnit.net 00:00:00.70]     Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 2, shared: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T04:21:04.5201187+02:00">
+        <Text>[xUnit.net 00:00:00.71]     Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 1, shared: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T04:21:04.5337013+02:00">
+        <Text>[xUnit.net 00:00:00.73]     Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 1, shared: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T04:21:04.5471138+02:00">
+        <Text>[xUnit.net 00:00:00.74]     Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 0, shared: True) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

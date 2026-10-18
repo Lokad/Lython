@@ -1,0 +1,596 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "2c381510bbddbc6f2677c072d9764fadb46fb34c",
+  "candidate": "baseline plus one frozen rendering file",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/PyRendering.cs": {
+      "before": "555b261122f0b5df8502de67238ed3a85fe606596febdb784cbdc808461bc064",
+      "after": "883cd87bd04ecc91e4d8ec10b6bffcadd66ccc9729320aa04c3e6ba22f72e7f9"
+    }
+  },
+  "groups": {
+    "baseline-frozen": {
+      "passed": 9,
+      "process": {
+        "source": "2c381510",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "E291284685589CC19415C2EC5DE6779DBCEF064C0AB14551CEB57B0860DE54A1",
+        "filter": "Category!=Stress&(FullyQualifiedName~IntegerRenderingAdmissionTests.RenderingPreservesFuelSpansAndArgumentEffects|FullyQualifiedName~IntegerRenderingAdmissionTests.ResultKeepsFundingAfterWorkingStorageEnds)",
+        "pid": 53864,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1349,
+        "stdoutSha256": "AE600F906A11DED08ACF78CAADE56C851A6100371D1DE50D9DC0906AE6C4035F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "2cb2dc6eaa4b0be9695518604d7ea5864dad42a4beac7d9d6101c44560456877"
+    },
+    "baseline-public": {
+      "passed": 16,
+      "process": {
+        "source": "2c381510",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "5AFAF7F1A2CF053A32CDE8B644D420C81838DE2A61C760C5EB45EED7EA620646",
+        "filter": "Category!=Stress&FullyQualifiedName~IntegerRenderingTests",
+        "pid": 42444,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2489,
+        "stdoutSha256": "9711E5C51E0C2F9861EC1612B685C3F5B24595AC74B11879CDFD67D7AB760FD5",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "dc70c9345f6a70bf434f8fcfb742cd2f13d2c24d7106f0f3cf542b889a9dc4de"
+    },
+    "baseline-counters": {
+      "passed": 1,
+      "process": {
+        "source": "2c381510",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "6B673C7C5B6A88C534C0D740979EB2DF9EF9F278FD2567FB278CBC8D05A5B2C8",
+        "filter": "Category!=Stress&FullyQualifiedName~IntegerRenderingAllocationDiagnostic.CaptureCounters",
+        "pid": 60404,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1106,
+        "stdoutSha256": "EAF3403D73423B6142CA5BA7BAC0AC12A0C254DC18096F913374FE8D33CC5D26",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "20821150edf6050639c9a698f6293aa5d93585f97a17f53ed18dc40b3764e06e"
+    },
+    "candidate-white": {
+      "passed": 17,
+      "process": {
+        "source": "integer-rendering",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "1EFAE44420CB36FA68F363C56C43043552D6015A4D49299E1914FF3A4B27F82C",
+        "filter": "Category!=Stress&(FullyQualifiedName~IntegerRenderingAdmissionTests|FullyQualifiedName~IntegerRenderingAllocationDiagnostic)",
+        "pid": 55560,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1268,
+        "stdoutSha256": "15742BDC18680A1AD65FD6F90F9C1DB922D3AE24EAF1B7B3F8018F1C2DC01D38",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "8a49a97f4bae1a93e6732ffc75a1323e8a708eb71cd37ff4f6ddfb8137e4a60e"
+    },
+    "final-white": {
+      "passed": 89,
+      "process": {
+        "source": "integer-rendering",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "09960922E4E5F2D0CFE08CFE0D944384438A055EC87F02C613F8A97B096F4EA9",
+        "filter": "Category!=Stress&(FullyQualifiedName~IntegerRenderingAdmissionTests|FullyQualifiedName~RendererGovernanceTests|FullyQualifiedName~RenderingSubsystemTests|FullyQualifiedName~DecimalRendererAccountingTests|FullyQualifiedName~IntegerTextAdmissionTests|FullyQualifiedName~DirectIntegerTextCallTests|FullyQualifiedName~ManagedStackGuardTests|FullyQualifiedName~ExecutableStackAdmissionTests|FullyQualifiedName~NativeScalarDispatchBoundaryTests|FullyQualifiedName~ComparisonFuelTests)",
+        "pid": 63916,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1365,
+        "stdoutSha256": "53ABAD57822CF820BB196DA4160FCDE2A9317C50BE329D44F42B45C23F86B125",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "441b59d88ec13431af8e73465308e09e42545c9d659638355554e5533c9eab37"
+    },
+    "final-rendering": {
+      "passed": 115,
+      "process": {
+        "source": "integer-rendering",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "5AFAF7F1A2CF053A32CDE8B644D420C81838DE2A61C760C5EB45EED7EA620646",
+        "filter": "Category!=Stress&(FullyQualifiedName~IntegerRenderingTests|FullyQualifiedName~RendererAccountingScenarioTests|FullyQualifiedName~DecimalRendererAccountingScenarioTests|FullyQualifiedName~FunctionStringAdmissionTests|FullyQualifiedName~StringOwnershipAdmissionTests|FullyQualifiedName~ExactIntegerAdditionTests|FullyQualifiedName~ExactIntegerOperatorTests|FullyQualifiedName~DirectIntegerTextCallTests|FullyQualifiedName~HeapIntegerLiteralAccountingScenarioTests)",
+        "pid": 3264,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 5352,
+        "stdoutSha256": "D3903D23147612E967D2A15AF7397FC0C3C457A9A5A6C75211D8E47EAA7C4885",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "5e6da51dd38a5b2ea38aa81762be2e1aafc01e4c0479f4b73bef5d2d7041d415"
+    },
+    "final-owners": {
+      "passed": 85,
+      "process": {
+        "source": "integer-rendering",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "5AFAF7F1A2CF053A32CDE8B644D420C81838DE2A61C760C5EB45EED7EA620646",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~StringBuilderAdmissionTests)",
+        "pid": 69192,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2380,
+        "stdoutSha256": "2E1A61F313D012D5DF1F19AC01CF0C893BB21A6A4843F03D4093976074E803C2",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "7cde6ff2c3e7e77801f3ccda66de2d6480f6b6fa97b6370cb8cfc8d6ca0fce70"
+    },
+    "final-goldens": {
+      "passed": 115,
+      "process": {
+        "source": "integer-rendering",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "5AFAF7F1A2CF053A32CDE8B644D420C81838DE2A61C760C5EB45EED7EA620646",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests|FullyQualifiedName~CsvTextStreamTests|FullyQualifiedName~JsonTextStreamTests)",
+        "pid": 66308,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 11636,
+        "stdoutSha256": "D849DB6B347E337FBA2EB389A2E3AD69290B5D14AE3608358B860493D4A36F45",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "93f24fb95110f7e451c81e1289209423c91485afeefeca6e6887dc159caabf18"
+    }
+  },
+  "focusedFinalPassed": 404,
+  "sixGuardMatricesUnchanged": true,
+  "failedBaselineCases": [
+    "Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 1, shared: True)",
+    "Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 0, shared: True)",
+    "Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 1, shared: False)",
+    "Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 2, shared: False)",
+    "Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 2, shared: True)",
+    "Lokad.Lython.Tests.IntegerRenderingAdmissionTests.RefusalPrecedesProportionalFormattingAllocation(mode: 0, shared: False)"
+  ],
+  "refusalRecords": {
+    "baseline-white": [
+      {
+        "mode": 1,
+        "shared": true,
+        "allocated": 41008,
+        "denied": 19857
+      },
+      {
+        "mode": 0,
+        "shared": true,
+        "allocated": 41008,
+        "denied": 19857
+      },
+      {
+        "mode": 1,
+        "shared": false,
+        "allocated": 41120,
+        "denied": 19857
+      },
+      {
+        "mode": 2,
+        "shared": false,
+        "allocated": 41184,
+        "denied": 19857
+      },
+      {
+        "mode": 2,
+        "shared": true,
+        "allocated": 41072,
+        "denied": 19857
+      },
+      {
+        "mode": 0,
+        "shared": false,
+        "allocated": 41120,
+        "denied": 19857
+      }
+    ],
+    "candidate-white": [
+      {
+        "mode": 2,
+        "shared": true,
+        "allocated": 1592,
+        "denied": 175032
+      },
+      {
+        "mode": 0,
+        "shared": false,
+        "allocated": 1640,
+        "denied": 175032
+      },
+      {
+        "mode": 2,
+        "shared": false,
+        "allocated": 1704,
+        "denied": 175032
+      },
+      {
+        "mode": 1,
+        "shared": true,
+        "allocated": 976,
+        "denied": 175032
+      },
+      {
+        "mode": 0,
+        "shared": true,
+        "allocated": 976,
+        "denied": 175032
+      },
+      {
+        "mode": 1,
+        "shared": false,
+        "allocated": 1640,
+        "denied": 175032
+      }
+    ],
+    "final-white": [
+      {
+        "mode": 2,
+        "shared": true,
+        "allocated": 1592,
+        "denied": 175032
+      },
+      {
+        "mode": 1,
+        "shared": true,
+        "allocated": 976,
+        "denied": 175032
+      },
+      {
+        "mode": 2,
+        "shared": false,
+        "allocated": 1704,
+        "denied": 175032
+      },
+      {
+        "mode": 0,
+        "shared": true,
+        "allocated": 976,
+        "denied": 175032
+      },
+      {
+        "mode": 1,
+        "shared": false,
+        "allocated": 1640,
+        "denied": 175032
+      },
+      {
+        "mode": 0,
+        "shared": false,
+        "allocated": 1640,
+        "denied": 175032
+      }
+    ]
+  },
+  "samples": {
+    "allocation-before.json": [
+      {
+        "mode": 0,
+        "large": false,
+        "samples": [
+          23552,
+          23552,
+          23552,
+          23552,
+          23552,
+          23552,
+          23552,
+          23552
+        ]
+      },
+      {
+        "mode": 0,
+        "large": true,
+        "samples": [
+          30720,
+          30720,
+          30720,
+          30720,
+          30720,
+          30720,
+          30720,
+          30720
+        ]
+      },
+      {
+        "mode": 1,
+        "large": false,
+        "samples": [
+          23552,
+          23552,
+          23552,
+          23552,
+          23552,
+          23552,
+          23552,
+          23552
+        ]
+      },
+      {
+        "mode": 1,
+        "large": true,
+        "samples": [
+          30720,
+          30720,
+          30720,
+          30720,
+          30720,
+          30720,
+          30720,
+          30720
+        ]
+      },
+      {
+        "mode": 2,
+        "large": false,
+        "samples": [
+          31744,
+          31744,
+          31744,
+          31744,
+          31872,
+          31744,
+          31744,
+          31744
+        ]
+      },
+      {
+        "mode": 2,
+        "large": true,
+        "samples": [
+          38912,
+          38912,
+          38912,
+          38912,
+          38912,
+          38912,
+          38912,
+          38912
+        ]
+      },
+      {
+        "mode": 3,
+        "large": false,
+        "samples": [
+          30720,
+          30720,
+          30720,
+          30720,
+          30720,
+          30720,
+          30720,
+          30720
+        ]
+      }
+    ],
+    "allocation-after.json": [
+      {
+        "mode": 0,
+        "large": false,
+        "samples": [
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432
+        ]
+      },
+      {
+        "mode": 0,
+        "large": true,
+        "samples": [
+          34816,
+          34816,
+          34816,
+          34816,
+          34816,
+          34816,
+          34816,
+          34816
+        ]
+      },
+      {
+        "mode": 1,
+        "large": false,
+        "samples": [
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432
+        ]
+      },
+      {
+        "mode": 1,
+        "large": true,
+        "samples": [
+          34816,
+          34816,
+          34816,
+          34816,
+          34816,
+          34816,
+          34816,
+          34816
+        ]
+      },
+      {
+        "mode": 2,
+        "large": false,
+        "samples": [
+          26624,
+          26624,
+          26624,
+          26624,
+          26624,
+          26624,
+          26624,
+          26624
+        ]
+      },
+      {
+        "mode": 2,
+        "large": true,
+        "samples": [
+          43008,
+          43008,
+          43008,
+          43008,
+          43008,
+          43008,
+          43008,
+          43008
+        ]
+      },
+      {
+        "mode": 3,
+        "large": false,
+        "samples": [
+          30720,
+          30720,
+          30720,
+          30720,
+          30720,
+          30720,
+          30720,
+          30720
+        ]
+      }
+    ],
+    "counters-before.json": [
+      {
+        "value": "42",
+        "samples": [
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432
+        ]
+      },
+      {
+        "value": "123456",
+        "samples": [
+          23552,
+          23552,
+          23552,
+          23552,
+          23552,
+          23552,
+          23552,
+          23552
+        ]
+      },
+      {
+        "value": "9223372036854775807",
+        "samples": [
+          28672,
+          28672,
+          28672,
+          28672,
+          28672,
+          28672,
+          28672,
+          28672
+        ]
+      }
+    ],
+    "counters-after.json": [
+      {
+        "value": "42",
+        "samples": [
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432
+        ]
+      },
+      {
+        "value": "123456",
+        "samples": [
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432,
+          18432
+        ]
+      },
+      {
+        "value": "9223372036854775807",
+        "samples": [
+          20480,
+          20480,
+          20480,
+          20480,
+          20480,
+          20480,
+          20480,
+          20480
+        ]
+      }
+    ]
+  },
+  "environment": {
+    "machine": "LOKAD-0399",
+    "os": "Microsoft Windows 10.0.26200",
+    "architecture": "X64",
+    "cpu": {
+      "Name": "Intel(R) Core(TM) i7-14700KF",
+      "NumberOfCores": 20,
+      "NumberOfLogicalProcessors": 28
+    },
+    "recordedUtc": "2026-10-18T02:31:47.7111532+00:00"
+  },
+  "publicRuntimeDllSha256": "f10c35e628c2130feaea445345a9d48d5ca9233ce31bf165e896f73bcc8584f6",
+  "publicRuntimeCopyMatches": true,
+  "frameworkReview": {
+    "url": "https://github.com/dotnet/runtime/blob/v10.0.0/src/libraries/System.Runtime.Numerics/src/System/Number.BigInteger.cs",
+    "sha256": "1db4221aedd26d6ade5990ff1effd9da0c3c19fc4ad67195524fd9c2144f84b8",
+    "scope": "Rough active decimal workspace estimate; framework pool retention needs host runtime headroom. No exact physical-heap bound."
+  },
+  "cpython": {
+    "version": "3.13.2",
+    "flags": "-I -S -X utf8",
+    "semanticCases": 14,
+    "timing": null
+  },
+  "boundary": "128 direct native conversions with fresh funded contexts/input outside thread-allocation counter. Conversion/results/consumption inside; cleanup outside. No public scheduling, interpreter, compilation, startup, host I/O, elapsed capture or CPython timing.",
+  "positiveCounterCapture": "Fills a material gap before production changes; original seven diagnostic rows were not repeated.",
+  "temporaryDiagnosticRemoved": true,
+  "fullLocalStress": "Not repeated; delivery CI batches platform/package checks.",
+  "contractChange": "Earlier conservative working/overlap denial for larger integer rendering; same retained-result ownership and terminal refusal."
+}

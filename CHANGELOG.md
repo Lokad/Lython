@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Admit large ordinary integer-rendering working storage before CLR decimal conversion, keeping scratch funded through the final UTF-8 copy and returning it on failure. Consolidate three rendering paths and format signed-64 values directly into bounded UTF-8 storage. Preserve Python results, frame/fuel behavior, retained output and terminal refusal; conservative working estimates can reject earlier.
+
 - Execute ordinary single-positional text-file `write` calls from existing operand storage, reusing the same governed writer body. Remove bound-method and argument packaging on that path while preserving exposed/general calls, Unicode counts, encoding/newlines, fuel, error order, retained input, admission, cancellation and host publication/cleanup.
 
 - Release the unused whole-module lowered representation after executable compilation. Use existing syntax/entry-point metadata for both execution APIs, keeping required function/fallback data, annotations, host-capability diagnostics, managed stack admission, cancellation and cleanup. Conservative compilation ownership remains unchanged.
