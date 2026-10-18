@@ -1,0 +1,57 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+index 3589dfdc..ecff2357 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+@@ -173,7 +173,7 @@ internal sealed partial class LythonRuntime
+             }
+         }
+ 
+-        private static (object Value, int End) ReadJsonString(JsonParseInput input, bool strict, int position, ExecutionContext context, LythonSourceSpan span)
++        private static (PyString Value, int End) ReadJsonString(JsonParseInput input, bool strict, int position, ExecutionContext context, LythonSourceSpan span)
+         {
+             var original = input.Source.Span;
+             var end = position + 1;
+@@ -288,6 +288,17 @@ internal sealed partial class LythonRuntime
+             }
+         }
+ 
++        // Both object readers validate the quote first. Keys use the same
++        // decoder and frame policy as string values, without generic dispatch
++        // or a suspension point: JSON string keys never invoke a callback.
++        private static (PyString Value, int End) ReadJsonObjectKey(JsonParseInput input, JsonLoadOptions options, int position, ExecutionContext context, LythonSourceSpan span)
++        {
++            context.CheckExecution(span);
++            context.EnterInterpreterFrame(span);
++            try { return ReadJsonString(input, IsTruthy(options.Strict), position, context, span); }
++            finally { context.LeaveInterpreterFrame(); }
++        }
++
+         private async ValueTask<(object Value, int End)> ReadJsonObjectAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int openBrace, bool asynchronous)
+         {
+             var bytes = input.Source;
+@@ -332,11 +343,7 @@ internal sealed partial class LythonRuntime
+                     }
+ 
+                     context.CheckExecution(span);
+-                    var (pairKeyObject, pairKeyEnd) = await ReadJsonValueAsync(input, options, context, span, depth, pairKeyStart, asynchronous).ConfigureAwait(false);
+-                    if (pairKeyObject is not PyString pairKey)
+-                    {
+-                        throw new InvalidOperationException("JSON object key decoded to a non-string.");
+-                    }
++                    var (pairKey, pairKeyEnd) = ReadJsonObjectKey(input, options, pairKeyStart, context, span);
+ 
+                     var pairColon = EnsureJsonColon(bytes.Span, pairKeyEnd, input, span, context);
+                     var (pairValue, pairEnd) = await ReadJsonValueAsync(input, options, context, span, depth, pairColon + 1, asynchronous).ConfigureAwait(false);
+@@ -389,11 +396,7 @@ internal sealed partial class LythonRuntime
+                 }
+ 
+                 context.CheckExecution(span);
+-                var (memberKeyObject, memberKeyEnd) = await ReadJsonValueAsync(input, options, context, span, depth, keyStart, asynchronous).ConfigureAwait(false);
+-                if (memberKeyObject is not PyString memberKey)
+-                {
+-                    throw new InvalidOperationException("JSON object key decoded to a non-string.");
+-                }
++                var (memberKey, memberKeyEnd) = ReadJsonObjectKey(input, options, keyStart, context, span);
+ 
+                 var memberColon = EnsureJsonColon(bytes.Span, memberKeyEnd, input, span, context);
+                 var (memberValue, memberEnd) = await ReadJsonValueAsync(input, options, context, span, depth, memberColon + 1, asynchronous).ConfigureAwait(false);

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Decode JSON object keys synchronously through the existing typed string decoder, removing generic key awaits and impossible result-type failures. Preserve checkpoints, error coordinates, string admission and ownership through suspended values/hooks.
+
 - Pre-size the two fixed per-execution builtin dictionaries to avoid repeated backing-array growth during setup. Keep builtin entries, private callable/type/module state and conservative memory accounting unchanged.
 
 - Share the existing direct string-affix operand path with ordinary positional `str.endswith` calls, removing eligible bound-method and argument packaging. Preserve character bounds, tuple matching, error/fuel order, dynamic/exposed calls, suspended index hooks, cancellation and retained ownership.

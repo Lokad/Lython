@@ -1,0 +1,166 @@
+[
+  {
+    "asynchronous": true,
+    "arrayControl": false,
+    "inputBytes": 365,
+    "callsPerSample": 64,
+    "frequency": 10000000,
+    "samples": [
+      {
+        "ticks": 19390,
+        "allocated": 998912
+      },
+      {
+        "ticks": 22052,
+        "allocated": 998912
+      },
+      {
+        "ticks": 21385,
+        "allocated": 998912
+      },
+      {
+        "ticks": 19643,
+        "allocated": 998912
+      },
+      {
+        "ticks": 19516,
+        "allocated": 998912
+      },
+      {
+        "ticks": 19633,
+        "allocated": 998912
+      },
+      {
+        "ticks": 21812,
+        "allocated": 998912
+      },
+      {
+        "ticks": 21831,
+        "allocated": 998912
+      }
+    ]
+  },
+  {
+    "asynchronous": false,
+    "arrayControl": false,
+    "inputBytes": 365,
+    "callsPerSample": 64,
+    "frequency": 10000000,
+    "samples": [
+      {
+        "ticks": 20983,
+        "allocated": 998912
+      },
+      {
+        "ticks": 20270,
+        "allocated": 998912
+      },
+      {
+        "ticks": 27315,
+        "allocated": 998912
+      },
+      {
+        "ticks": 22650,
+        "allocated": 998912
+      },
+      {
+        "ticks": 22956,
+        "allocated": 998912
+      },
+      {
+        "ticks": 22437,
+        "allocated": 998912
+      },
+      {
+        "ticks": 22299,
+        "allocated": 998912
+      },
+      {
+        "ticks": 22761,
+        "allocated": 998912
+      }
+    ]
+  },
+  {
+    "asynchronous": true,
+    "arrayControl": true,
+    "inputBytes": 183,
+    "callsPerSample": 64,
+    "frequency": 10000000,
+    "samples": [
+      {
+        "ticks": 12802,
+        "allocated": 421376
+      },
+      {
+        "ticks": 14285,
+        "allocated": 421376
+      },
+      {
+        "ticks": 13295,
+        "allocated": 421376
+      },
+      {
+        "ticks": 101109,
+        "allocated": 421376
+      },
+      {
+        "ticks": 13620,
+        "allocated": 421376
+      },
+      {
+        "ticks": 23900,
+        "allocated": 421376
+      },
+      {
+        "ticks": 15790,
+        "allocated": 421376
+      },
+      {
+        "ticks": 17347,
+        "allocated": 421376
+      }
+    ]
+  },
+  {
+    "asynchronous": false,
+    "arrayControl": true,
+    "inputBytes": 183,
+    "callsPerSample": 64,
+    "frequency": 10000000,
+    "samples": [
+      {
+        "ticks": 10887,
+        "allocated": 421376
+      },
+      {
+        "ticks": 16952,
+        "allocated": 421376
+      },
+      {
+        "ticks": 10463,
+        "allocated": 421376
+      },
+      {
+        "ticks": 10807,
+        "allocated": 421376
+      },
+      {
+        "ticks": 10511,
+        "allocated": 421376
+      },
+      {
+        "ticks": 11273,
+        "allocated": 421376
+      },
+      {
+        "ticks": 11536,
+        "allocated": 421376
+      },
+      {
+        "ticks": 11603,
+        "allocated": 421376
+      }
+    ]
+  }
+]

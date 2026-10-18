@@ -1,0 +1,48 @@
+{
+  "exactRecords": 18,
+  "allBoundaryRecordsIdentical": true,
+  "allocationUnchanged": true,
+  "rows": [
+    {
+      "asynchronous": false,
+      "arrayControl": true,
+      "allocatedBefore": 421376.0,
+      "allocatedAfter": 421376.0,
+      "medianMsBefore": 1.3208499999999999,
+      "medianMsAfter": 1.108,
+      "spreadPercentBefore": 4.012567664761328,
+      "spreadPercentAfter": 58.564981949458485
+    },
+    {
+      "asynchronous": true,
+      "arrayControl": true,
+      "allocatedBefore": 421376.0,
+      "allocatedAfter": 421376.0,
+      "medianMsBefore": 1.50415,
+      "medianMsAfter": 1.5037500000000001,
+      "spreadPercentBefore": 295.69524316058903,
+      "spreadPercentAfter": 587.2452202826267
+    },
+    {
+      "asynchronous": false,
+      "arrayControl": false,
+      "allocatedBefore": 998912.0,
+      "allocatedAfter": 998912.0,
+      "medianMsBefore": 2.786,
+      "medianMsAfter": 2.25435,
+      "spreadPercentBefore": 22.142857142857142,
+      "spreadPercentAfter": 31.250693104442522
+    },
+    {
+      "asynchronous": true,
+      "arrayControl": false,
+      "allocatedBefore": 998912.0,
+      "allocatedAfter": 998912.0,
+      "medianMsBefore": 2.47425,
+      "medianMsAfter": 2.0514,
+      "spreadPercentBefore": 3.7991310498130746,
+      "spreadPercentAfter": 12.976503851028564
+    }
+  ],
+  "timingStatus": "One short local native diagnostic per role; unqualified, no whole-job/CPython/latency claim. Samples preserve control variance; no repeat campaign."
+}

@@ -1,0 +1,69 @@
+using System.Diagnostics;
+using System.Text.Json;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+
+namespace Lokad.Lython.Tests;
+
+// Temporary native parser comparison; remove before final qualification.
+[Collection("AllocationSensitive")]
+public sealed class JsonKeyParseDiagnostic(ITestOutputHelper output)
+{
+    private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task Capture(bool asynchronous, bool arrayControl)
+    {
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn json.loads").Script!)).EntryPoint;
+        var document = arrayControl ? "[" + string.Join(',', Enumerable.Range(0, 32).Select(i => $"\"v{i}\"")) + "]"
+            : "{" + string.Join(',', Enumerable.Range(0, 32).Select(i => $"\"k{i}\":\"v{i}\"")) + "}";
+        var samples = new List<object>();
+        for (var sample = -4; sample < 8; sample++)
+        {
+            var budget = new LythonMemoryBudget(32 * 1024 * 1024);
+            using (var owner = budget.CreateScope())
+            {
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+                var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+                var input = PyString.FromString(document, context.MemoryGovernor, Span);
+                CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
+                object? last = null;
+                var count = 0;
+                var thread = Environment.CurrentManagedThreadId;
+                var before = GC.GetAllocatedBytesForCurrentThread();
+                var start = Stopwatch.GetTimestamp();
+                for (var i = 0; i < 64; i++)
+                {
+                    if (asynchronous)
+                    {
+                        var pending = callable.InvokeAsync(arguments, Span, context);
+                        Assert.True(pending.IsCompletedSuccessfully);
+                        last = await pending;
+                    }
+                    else last = callable.Invoke(arguments, Span, context);
+                    count += last is PyDict dictionary ? dictionary.Count : ((PyList)last).Count;
+                }
+                var ticks = Stopwatch.GetTimestamp() - start;
+                var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+                Assert.Equal(thread, Environment.CurrentManagedThreadId);
+                Assert.Equal(64 * 32, count);
+                for (var i = 0; i < 32; i++)
+                {
+                    var value = arrayControl ? ((PyList)last!)[i] : ((PyDict)last!).GetItem(PyString.FromString("k" + i));
+                    Assert.Equal("v" + i, Assert.IsType<PyString>(value).AsString());
+                }
+                Assert.Null(context.CurrentExecutableFrame);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                if (sample >= 0) samples.Add(new { ticks, allocated });
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        output.WriteLine("JSON_KEY_PARSE_DIAGNOSTIC:" + JsonSerializer.Serialize(new { asynchronous, arrayControl, inputBytes = System.Text.Encoding.UTF8.GetByteCount(document), callsPerSample = 64, frequency = Stopwatch.Frequency, samples }));
+    }
+}
