@@ -1,0 +1,20 @@
+{
+  "base": "38f44447e5bc44faeae3cfe5be678f28305be266",
+  "fixtureSha256": "6cfb7ffbb262570620958a6c456248e73cc3da8ff5cb443b797eb7c6cb5660e1",
+  "boundary": "Native frontend/lowering/executable compilation and native warm execution; not public compile-to-result, startup, projection or IO",
+  "shapes": [
+    "binary",
+    "mixed",
+    "comparison",
+    "helper",
+    "augmented-control",
+    "unary-control"
+  ],
+  "samples": 8,
+  "warmups": 2,
+  "callsPerSample": 8,
+  "captureCountPerRevision": 1,
+  "metrics": "Current-thread allocated bytes, work count and operator-name/opcode/span fingerprint. No elapsed timing.",
+  "checks": "20 cases, 96 exact boundary records; same bytes, steps, results, errors and spans required",
+  "fixtureRepair": "Initial compile failed CS8619 nullable ValueTask branches; split existing branches before any successful capture; failed receipt retained."
+}

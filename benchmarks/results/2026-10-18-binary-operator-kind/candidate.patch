@@ -1,0 +1,251 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+index b252e78a..d15bca17 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+@@ -198,7 +198,7 @@ internal sealed partial class ExecutableScript
+ 
+                     currentBlock = CompileExpression(binary.Left, currentBlock);
+                     currentBlock = CompileExpression(binary.Right, currentBlock);
+-                    AddInstruction(currentBlock, ExecutableInstruction.Binary(MapBinaryOperator(binary.Binary.Operator), binary.Span));
++                    AddInstruction(currentBlock, ExecutableInstruction.Binary(binary.Binary.Operator, binary.Span));
+                     return currentBlock;
+ 
+                 case LoweredUnaryExpression unary:
+@@ -276,7 +276,7 @@ internal sealed partial class ExecutableScript
+                     AddInstruction(currentBlock, ExecutableInstruction.Dup(chained.Span));
+                     AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(slot, chained.Span));
+                 }
+-                AddInstruction(currentBlock, ExecutableInstruction.Binary(MapBinaryOperator(chained.ChainedComparison.Operators[i]), chained.Span));
++                AddInstruction(currentBlock, ExecutableInstruction.Binary(chained.ChainedComparison.Operators[i], chained.Span));
+                 if (i < chained.ChainedComparison.Operators.Count - 1)
+                 {
+                     AddInstruction(currentBlock, ExecutableInstruction.Dup(chained.Span));
+@@ -384,37 +384,6 @@ internal sealed partial class ExecutableScript
+             return joinBlock;
+         }
+ 
+-        private static ExecutableBinaryOperator MapBinaryOperator(BinaryOperatorSyntax op)
+-            => op switch
+-            {
+-                BinaryOperatorSyntax.Or => ExecutableBinaryOperator.Or,
+-                BinaryOperatorSyntax.And => ExecutableBinaryOperator.And,
+-                BinaryOperatorSyntax.Add => ExecutableBinaryOperator.Add,
+-                BinaryOperatorSyntax.Subtract => ExecutableBinaryOperator.Subtract,
+-                BinaryOperatorSyntax.Multiply => ExecutableBinaryOperator.Multiply,
+-                BinaryOperatorSyntax.MatrixMultiply => ExecutableBinaryOperator.MatrixMultiply,
+-                BinaryOperatorSyntax.Divide => ExecutableBinaryOperator.Divide,
+-                BinaryOperatorSyntax.FloorDivide => ExecutableBinaryOperator.FloorDivide,
+-                BinaryOperatorSyntax.Modulo => ExecutableBinaryOperator.Modulo,
+-                BinaryOperatorSyntax.Power => ExecutableBinaryOperator.Power,
+-                BinaryOperatorSyntax.BitwiseOr => ExecutableBinaryOperator.BitwiseOr,
+-                BinaryOperatorSyntax.BitwiseXor => ExecutableBinaryOperator.BitwiseXor,
+-                BinaryOperatorSyntax.BitwiseAnd => ExecutableBinaryOperator.BitwiseAnd,
+-                BinaryOperatorSyntax.LeftShift => ExecutableBinaryOperator.LeftShift,
+-                BinaryOperatorSyntax.RightShift => ExecutableBinaryOperator.RightShift,
+-                BinaryOperatorSyntax.Equal => ExecutableBinaryOperator.Equal,
+-                BinaryOperatorSyntax.NotEqual => ExecutableBinaryOperator.NotEqual,
+-                BinaryOperatorSyntax.Less => ExecutableBinaryOperator.Less,
+-                BinaryOperatorSyntax.LessEqual => ExecutableBinaryOperator.LessEqual,
+-                BinaryOperatorSyntax.Greater => ExecutableBinaryOperator.Greater,
+-                BinaryOperatorSyntax.GreaterEqual => ExecutableBinaryOperator.GreaterEqual,
+-                BinaryOperatorSyntax.Is => ExecutableBinaryOperator.Is,
+-                BinaryOperatorSyntax.IsNot => ExecutableBinaryOperator.IsNot,
+-                BinaryOperatorSyntax.In => ExecutableBinaryOperator.In,
+-                BinaryOperatorSyntax.NotIn => ExecutableBinaryOperator.NotIn,
+-                _ => throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support binary operator {op}."),
+-            };
+-
+         private static ExecutableUnaryOperator MapUnaryOperator(UnaryOperatorSyntax op)
+             => op switch
+             {
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index b1e22325..926b9be2 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -62,35 +62,6 @@ internal enum ExecutableOpCode
+     AbruptJump,
+ }
+ 
+-internal enum ExecutableBinaryOperator
+-{
+-    Or,
+-    And,
+-    Add,
+-    Subtract,
+-    Multiply,
+-    MatrixMultiply,
+-    Divide,
+-    FloorDivide,
+-    Modulo,
+-    Power,
+-    BitwiseOr,
+-    BitwiseXor,
+-    BitwiseAnd,
+-    LeftShift,
+-    RightShift,
+-    Equal,
+-    NotEqual,
+-    Less,
+-    LessEqual,
+-    Greater,
+-    GreaterEqual,
+-    Is,
+-    IsNot,
+-    In,
+-    NotIn,
+-}
+-
+ internal enum ExecutableUnaryOperator
+ {
+     Not,
+@@ -155,7 +126,7 @@ internal readonly record struct ExecutableInstruction
+ 
+     private readonly Operand _primaryOperand;
+     private readonly Operand _secondaryOperand;
+-    private readonly ExecutableBinaryOperator _binaryOperator;
++    private readonly BinaryOperatorSyntax _binaryOperator;
+     private readonly ExecutableUnaryOperator _unaryOperator;
+     private readonly ExecutableAugmentedOperator _augmentedOperator;
+     private readonly ExecutableSliceParts _sliceParts;
+@@ -165,7 +136,7 @@ internal readonly record struct ExecutableInstruction
+         LythonSourceSpan span,
+         Operand primaryOperand,
+         Operand secondaryOperand,
+-        ExecutableBinaryOperator binaryOperator,
++        BinaryOperatorSyntax binaryOperator,
+         ExecutableUnaryOperator unaryOperator,
+         ExecutableAugmentedOperator augmentedOperator,
+         ExecutableSliceParts sliceParts)
+@@ -203,7 +174,7 @@ internal readonly record struct ExecutableInstruction
+     public int CleanupId => ReadOperand(OpCode == ExecutableOpCode.EndFinally ? _secondaryOperand : _primaryOperand, OperandKind.CleanupId);
+     public int ExceptionNameIndex => ReadOperand(_primaryOperand, OperandKind.ExceptionNameIndex);
+     public ExecutableSliceParts SliceParts => _sliceParts;
+-    public ExecutableBinaryOperator BinaryOperator => _binaryOperator;
++    public BinaryOperatorSyntax BinaryOperator => _binaryOperator;
+     public ExecutableUnaryOperator UnaryOperator => _unaryOperator;
+     public ExecutableAugmentedOperator AugmentedOperator => _augmentedOperator;
+ 
+@@ -329,7 +300,7 @@ internal readonly record struct ExecutableInstruction
+     public static ExecutableInstruction MakeSlice(ExecutableSliceParts parts, LythonSourceSpan span)
+         => new(ExecutableOpCode.MakeSlice, span, Operand.None, Operand.None, default, default, default, parts);
+ 
+-    public static ExecutableInstruction Binary(ExecutableBinaryOperator op, LythonSourceSpan span)
++    public static ExecutableInstruction Binary(BinaryOperatorSyntax op, LythonSourceSpan span)
+         => new(ExecutableOpCode.Binary, span, Operand.None, Operand.None, op, default, default, default);
+ 
+     public static ExecutableInstruction Augmented(ExecutableAugmentedOperator op, LythonSourceSpan span)
+@@ -579,7 +550,7 @@ internal sealed class ExecutableCodeObject
+         if (instructions.Length == 2 && IsOperand(instructions[0]) && instructions[1].OpCode == ExecutableOpCode.Return)
+             return ExecutableSimpleReturn.ReturnValue;
+         if (instructions.Length == 4 && IsOperand(instructions[0]) && IsOperand(instructions[1])
+-            && instructions[2].OpCode == ExecutableOpCode.Binary && instructions[2].BinaryOperator == ExecutableBinaryOperator.Add
++            && instructions[2].OpCode == ExecutableOpCode.Binary && instructions[2].BinaryOperator == BinaryOperatorSyntax.Add
+             && instructions[3].OpCode == ExecutableOpCode.Return)
+             return ExecutableSimpleReturn.IntegerAdd;
+         return ExecutableSimpleReturn.None;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 107b5297..1f556ed7 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -214,7 +214,7 @@ internal sealed partial class LythonRuntime
+                         result = await ReadSliceValueAsync(_stack[first], start, end, step, instruction.Span, _context).ConfigureAwait(false);
+                         break;
+                     case ExecutableOpCode.Binary:
+-                        result = await EvaluateBinaryOperatorAsync(MapExecutableBinary(instruction.BinaryOperator),
++                        result = await EvaluateBinaryOperatorAsync(instruction.BinaryOperator,
+                             _stack[first], _stack[first + 1], _context, instruction.Span).ConfigureAwait(false);
+                         break;
+                     case ExecutableOpCode.Augmented:
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index a4b2afe6..4cb9d548 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -518,8 +518,8 @@ internal sealed partial class LythonRuntime
+                 {
+                     ExecutableOpCode.Subscript => ReadSubscriptValue(_stack[first], _stack[first + 1], instruction.Span, _context),
+                     ExecutableOpCode.Slice => ExecuteExecutableSlice(ref _stack, instruction.SliceParts, instruction.Span, _context),
+-                    ExecutableOpCode.Binary => EvaluateExecutableBinary(instruction.BinaryOperator,
+-                        _stack[first], _stack[first + 1], instruction.Span, _context),
++                    ExecutableOpCode.Binary => EvaluateBinaryOperator(instruction.BinaryOperator,
++                        _stack[first], _stack[first + 1], _context, instruction.Span),
+                     ExecutableOpCode.Augmented => EvaluateExecutableAugmented(instruction.AugmentedOperator,
+                         _stack[first], _stack[first + 1], _context, instruction.Span),
+                     ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, _stack[first], _context, instruction.Span),
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs
+index 2f5a630b..18330f60 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs
+@@ -204,38 +204,6 @@ internal sealed partial class LythonRuntime
+         return tuple;
+     }
+ 
+-    private static object EvaluateExecutableBinary(ExecutableBinaryOperator op, object left, object right, LythonSourceSpan span, ExecutionContext context)
+-        => EvaluateBinaryOperator(MapExecutableBinary(op), left, right, context, span);
+-
+-    private static BinaryOperatorSyntax MapExecutableBinary(ExecutableBinaryOperator op)
+-        => op switch
+-        {
+-            ExecutableBinaryOperator.Add => BinaryOperatorSyntax.Add,
+-            ExecutableBinaryOperator.Subtract => BinaryOperatorSyntax.Subtract,
+-            ExecutableBinaryOperator.Multiply => BinaryOperatorSyntax.Multiply,
+-            ExecutableBinaryOperator.MatrixMultiply => BinaryOperatorSyntax.MatrixMultiply,
+-            ExecutableBinaryOperator.Divide => BinaryOperatorSyntax.Divide,
+-            ExecutableBinaryOperator.FloorDivide => BinaryOperatorSyntax.FloorDivide,
+-            ExecutableBinaryOperator.Modulo => BinaryOperatorSyntax.Modulo,
+-            ExecutableBinaryOperator.Power => BinaryOperatorSyntax.Power,
+-            ExecutableBinaryOperator.BitwiseOr => BinaryOperatorSyntax.BitwiseOr,
+-            ExecutableBinaryOperator.BitwiseXor => BinaryOperatorSyntax.BitwiseXor,
+-            ExecutableBinaryOperator.BitwiseAnd => BinaryOperatorSyntax.BitwiseAnd,
+-            ExecutableBinaryOperator.LeftShift => BinaryOperatorSyntax.LeftShift,
+-            ExecutableBinaryOperator.RightShift => BinaryOperatorSyntax.RightShift,
+-            ExecutableBinaryOperator.Less => BinaryOperatorSyntax.Less,
+-            ExecutableBinaryOperator.LessEqual => BinaryOperatorSyntax.LessEqual,
+-            ExecutableBinaryOperator.Greater => BinaryOperatorSyntax.Greater,
+-            ExecutableBinaryOperator.GreaterEqual => BinaryOperatorSyntax.GreaterEqual,
+-            ExecutableBinaryOperator.Is => BinaryOperatorSyntax.Is,
+-            ExecutableBinaryOperator.IsNot => BinaryOperatorSyntax.IsNot,
+-            ExecutableBinaryOperator.In => BinaryOperatorSyntax.In,
+-            ExecutableBinaryOperator.NotIn => BinaryOperatorSyntax.NotIn,
+-            ExecutableBinaryOperator.Equal => BinaryOperatorSyntax.Equal,
+-            ExecutableBinaryOperator.NotEqual => BinaryOperatorSyntax.NotEqual,
+-            _ => throw new InvalidOperationException($"Executable IR contains unknown binary operator {op}."),
+-        };
+-
+     private static object EvaluateExecutableUnary(ExecutableUnaryOperator op, object operand, ExecutionContext context, LythonSourceSpan span)
+         => EvaluateUnaryOperator(MapExecutableUnary(op), operand, context, span);
+ 
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.SimpleReturn.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.SimpleReturn.cs
+index e4641427..9323fb45 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.SimpleReturn.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.SimpleReturn.cs
+@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
+                     context.Services.CheckExecution(instructions[2].Span);
+                     try
+                     {
+-                        result = EvaluateExecutableBinary(ExecutableBinaryOperator.Add, result, second, instructions[2].Span, context);
++                        result = EvaluateBinaryOperator(BinaryOperatorSyntax.Add, result, second, context, instructions[2].Span);
+                         context.ObserveValue(result, instructions[2].Span);
+                     }
+                     catch (LythonRuntimeException error)
+diff --git a/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs b/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs
+index fc9dca11..663b6b16 100644
+--- a/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs
++++ b/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs
+@@ -358,7 +358,7 @@ y
+             instruction =>
+             {
+                 Assert.Equal(ExecutableOpCode.Binary, instruction.OpCode);
+-                Assert.Equal(ExecutableBinaryOperator.Add, instruction.BinaryOperator);
++                Assert.Equal(BinaryOperatorSyntax.Add, instruction.BinaryOperator);
+             },
+             instruction => Assert.Equal(ExecutableOpCode.StoreLocal, instruction.OpCode),
+             instruction => Assert.Equal(ExecutableOpCode.LoadLocal, instruction.OpCode),
+@@ -432,7 +432,7 @@ else:
+         Assert.Contains(entry.Blocks, block => block.Instructions.Any(instruction => instruction.OpCode == ExecutableOpCode.JumpIfFalse));
+         Assert.Contains(entry.Blocks, block => block.Instructions.Any(instruction => instruction.OpCode == ExecutableOpCode.Jump));
+         Assert.Contains(entry.Blocks, block => block.Instructions.Any(instruction =>
+-            instruction.OpCode == ExecutableOpCode.Binary && instruction.BinaryOperator == ExecutableBinaryOperator.Subtract));
++            instruction.OpCode == ExecutableOpCode.Binary && instruction.BinaryOperator == BinaryOperatorSyntax.Subtract));
+     }
+ 
+     [Fact]

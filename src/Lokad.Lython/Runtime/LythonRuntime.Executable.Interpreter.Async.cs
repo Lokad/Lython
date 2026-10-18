@@ -214,7 +214,7 @@ internal sealed partial class LythonRuntime
                         result = await ReadSliceValueAsync(_stack[first], start, end, step, instruction.Span, _context).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Binary:
-                        result = await EvaluateBinaryOperatorAsync(MapExecutableBinary(instruction.BinaryOperator),
+                        result = await EvaluateBinaryOperatorAsync(instruction.BinaryOperator,
                             _stack[first], _stack[first + 1], _context, instruction.Span).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Augmented:

@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 binary operator consolidation](results/2026-10-18-binary-operator-kind/README.md)
+removes a duplicate enum, two maps and a forwarder. One allocation-only pair has
+18 identical sample arrays and 96 matching boundary records; 572 focused cases
+and 58 complete jobs pass. No timing or allocation-reduction claim. Compilation
+is native frontend/lowering/executable construction, not public compile-to-result.
+
 The [2026-10-18 complete manifest helper checkpoint](results/2026-10-18-manifest-checkpoint/README.md)
 compares immutable `3ea431fd` with CPython 3.13.16 using two identical Lython
 controls. Fresh complete jobs measure 2.027–2.251 ms versus 0.597 ms, nominal

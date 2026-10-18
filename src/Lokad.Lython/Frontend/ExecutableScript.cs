@@ -62,35 +62,6 @@ internal enum ExecutableOpCode
     AbruptJump,
 }
 
-internal enum ExecutableBinaryOperator
-{
-    Or,
-    And,
-    Add,
-    Subtract,
-    Multiply,
-    MatrixMultiply,
-    Divide,
-    FloorDivide,
-    Modulo,
-    Power,
-    BitwiseOr,
-    BitwiseXor,
-    BitwiseAnd,
-    LeftShift,
-    RightShift,
-    Equal,
-    NotEqual,
-    Less,
-    LessEqual,
-    Greater,
-    GreaterEqual,
-    Is,
-    IsNot,
-    In,
-    NotIn,
-}
-
 internal enum ExecutableUnaryOperator
 {
     Not,
@@ -155,7 +126,7 @@ internal readonly record struct ExecutableInstruction
 
     private readonly Operand _primaryOperand;
     private readonly Operand _secondaryOperand;
-    private readonly ExecutableBinaryOperator _binaryOperator;
+    private readonly BinaryOperatorSyntax _binaryOperator;
     private readonly ExecutableUnaryOperator _unaryOperator;
     private readonly ExecutableAugmentedOperator _augmentedOperator;
     private readonly ExecutableSliceParts _sliceParts;
@@ -165,7 +136,7 @@ internal readonly record struct ExecutableInstruction
         LythonSourceSpan span,
         Operand primaryOperand,
         Operand secondaryOperand,
-        ExecutableBinaryOperator binaryOperator,
+        BinaryOperatorSyntax binaryOperator,
         ExecutableUnaryOperator unaryOperator,
         ExecutableAugmentedOperator augmentedOperator,
         ExecutableSliceParts sliceParts)
@@ -203,7 +174,7 @@ internal readonly record struct ExecutableInstruction
     public int CleanupId => ReadOperand(OpCode == ExecutableOpCode.EndFinally ? _secondaryOperand : _primaryOperand, OperandKind.CleanupId);
     public int ExceptionNameIndex => ReadOperand(_primaryOperand, OperandKind.ExceptionNameIndex);
     public ExecutableSliceParts SliceParts => _sliceParts;
-    public ExecutableBinaryOperator BinaryOperator => _binaryOperator;
+    public BinaryOperatorSyntax BinaryOperator => _binaryOperator;
     public ExecutableUnaryOperator UnaryOperator => _unaryOperator;
     public ExecutableAugmentedOperator AugmentedOperator => _augmentedOperator;
 
@@ -329,7 +300,7 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction MakeSlice(ExecutableSliceParts parts, LythonSourceSpan span)
         => new(ExecutableOpCode.MakeSlice, span, Operand.None, Operand.None, default, default, default, parts);
 
-    public static ExecutableInstruction Binary(ExecutableBinaryOperator op, LythonSourceSpan span)
+    public static ExecutableInstruction Binary(BinaryOperatorSyntax op, LythonSourceSpan span)
         => new(ExecutableOpCode.Binary, span, Operand.None, Operand.None, op, default, default, default);
 
     public static ExecutableInstruction Augmented(ExecutableAugmentedOperator op, LythonSourceSpan span)
@@ -579,7 +550,7 @@ internal sealed class ExecutableCodeObject
         if (instructions.Length == 2 && IsOperand(instructions[0]) && instructions[1].OpCode == ExecutableOpCode.Return)
             return ExecutableSimpleReturn.ReturnValue;
         if (instructions.Length == 4 && IsOperand(instructions[0]) && IsOperand(instructions[1])
-            && instructions[2].OpCode == ExecutableOpCode.Binary && instructions[2].BinaryOperator == ExecutableBinaryOperator.Add
+            && instructions[2].OpCode == ExecutableOpCode.Binary && instructions[2].BinaryOperator == BinaryOperatorSyntax.Add
             && instructions[3].OpCode == ExecutableOpCode.Return)
             return ExecutableSimpleReturn.IntegerAdd;
         return ExecutableSimpleReturn.None;

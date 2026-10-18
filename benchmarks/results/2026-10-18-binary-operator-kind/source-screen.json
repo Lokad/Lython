@@ -1,0 +1,21 @@
+{
+  "head": "38f44447e5bc44faeae3cfe5be678f28305be266",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/Syntax.cs": "194fafdac40d9536bb7141b7b1511f01249cbd2189a543fa3901ae1fe379c7af",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "14004ff18f542d1fa1a771a2e67f9bcb3cfe79a99b130e11476c3773fca17b5f",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "7ccfefe0002b5ffbdae3d37c6ae1b7c34914fd895e9541587384f65cb57f2ce8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs": "509de51d7e73f9abbfc3cd346de1a189a16937a87353512fb53bc6de3200014c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "1b4c864ca14c2a495201628203e64d9f25b9c0828cb740867a92bbc3ef6f9d83",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "befce2503a87e0b7735659bb88c1fd4a94be978434efb71edd01213baadb393a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.SimpleReturn.cs": "9c98e76d60001c75fdeffaa46fa9b1b419f6c8d7add77ad273fd2334a0f79dd2",
+    "tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs": "c0fd9b9cb66a776789a2c3fdd829aa6d9ff826da878f2a68ea36f6e166022986"
+  },
+  "closedHypothesis": "Ordinary executable async Binary/Augmented primitive numbers/string pairs and primitive Unary already use ExecuteObservedValueOperation synchronously at Interpreter.cs790;generic async helper is not their actual consumer. Do not add another dispatcher/guard or retime this hypothesis.",
+  "finding": "BinaryOperatorSyntax and ExecutableBinaryOperator have25 identical members in identical ordinal order. Instruction stores a dedicated int-sized enum field;compiler translates syntax->IR and runtime translates back for each general binary instruction. Small simple-return path also forwards through this mapping. Only5 production files name the duplicate enum/maps plus shared sync interpreter uses the forwarding helper;one test file has2 enum assertions.",
+  "proposal": "Use existing BinaryOperatorSyntax directly in internal executable instructions. Delete only duplicate binary enum,compiler MapBinaryOperator,runtime MapExecutableBinary and trivial EvaluateExecutableBinary forwarder where consumers disappear. Rewire sync/async/shared simple-return consumers directly to existing operator routines. Keep unary/augmented representations and all arithmetic/protocol/stack/ownership kernels unchanged.",
+  "compatibility": "Internal enum type changes,not public API or a persisted bytecode contract. Preserve normal syntax semantics/short-circuiting and explicit unsupported-operator failure;inspect And/Or compile routing before removal because runtime mapper excludes eager bool forms. No new validation table,dispatcher or representation framework.",
+  "acceptance": "One frozen native compile/warm pair before edits for ordinary binary/mixed/comparison/helper calls,with augmented/unary controls;require same allocations,valid opcode counts/spans,fuel/errors and public Python results. Reuse exact integer/wide/admission tests,actual suspending rich/contains/arithmetic callbacks,aliases/cycles and58 full jobs. No architecture-only new tests;update existing enum references without changing useful assertions. No elapsed/CPython gain prediction.",
+  "stopping": "Only binary operator kind;no unary/augmented/instruction-layout/VM/tagged-value/analysis redesign,global enum audit,owner/cache or retiming. Reject if a stable external bytecode boundary or new validation/lifetime machinery is required.",
+  "runtimeEdits": false,
+  "measurements": false
+}

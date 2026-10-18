@@ -518,8 +518,8 @@ internal sealed partial class LythonRuntime
                 {
                     ExecutableOpCode.Subscript => ReadSubscriptValue(_stack[first], _stack[first + 1], instruction.Span, _context),
                     ExecutableOpCode.Slice => ExecuteExecutableSlice(ref _stack, instruction.SliceParts, instruction.Span, _context),
-                    ExecutableOpCode.Binary => EvaluateExecutableBinary(instruction.BinaryOperator,
-                        _stack[first], _stack[first + 1], instruction.Span, _context),
+                    ExecutableOpCode.Binary => EvaluateBinaryOperator(instruction.BinaryOperator,
+                        _stack[first], _stack[first + 1], _context, instruction.Span),
                     ExecutableOpCode.Augmented => EvaluateExecutableAugmented(instruction.AugmentedOperator,
                         _stack[first], _stack[first + 1], _context, instruction.Span),
                     ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, _stack[first], _context, instruction.Span),

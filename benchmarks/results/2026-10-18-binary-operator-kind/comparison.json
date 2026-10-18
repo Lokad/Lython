@@ -1,0 +1,154 @@
+{
+  "accepted": true,
+  "all18AllocationArraysIdentical": true,
+  "exactBoundaryRecords": 96,
+  "allWorkArraysAndFingerprintsIdentical": true,
+  "elapsedMeasured": false,
+  "comparisons": [
+    {
+      "category": "compile",
+      "shape": "augmented-control",
+      "asynchronous": null,
+      "beforeBytesPerInvocation": 74776.0,
+      "afterBytesPerInvocation": 74776.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "compile",
+      "shape": "binary",
+      "asynchronous": null,
+      "beforeBytesPerInvocation": 78456.0,
+      "afterBytesPerInvocation": 78456.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "compile",
+      "shape": "comparison",
+      "asynchronous": null,
+      "beforeBytesPerInvocation": 107496.0,
+      "afterBytesPerInvocation": 107496.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "compile",
+      "shape": "helper",
+      "asynchronous": null,
+      "beforeBytesPerInvocation": 68552.0,
+      "afterBytesPerInvocation": 68552.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "compile",
+      "shape": "mixed",
+      "asynchronous": null,
+      "beforeBytesPerInvocation": 86712.0,
+      "afterBytesPerInvocation": 86712.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "compile",
+      "shape": "unary-control",
+      "asynchronous": null,
+      "beforeBytesPerInvocation": 77064.0,
+      "afterBytesPerInvocation": 77064.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "warm",
+      "shape": "augmented-control",
+      "asynchronous": false,
+      "beforeBytesPerInvocation": 4736.0,
+      "afterBytesPerInvocation": 4736.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "warm",
+      "shape": "augmented-control",
+      "asynchronous": true,
+      "beforeBytesPerInvocation": 4736.0,
+      "afterBytesPerInvocation": 4736.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "warm",
+      "shape": "binary",
+      "asynchronous": false,
+      "beforeBytesPerInvocation": 4736.0,
+      "afterBytesPerInvocation": 4736.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "warm",
+      "shape": "binary",
+      "asynchronous": true,
+      "beforeBytesPerInvocation": 4736.0,
+      "afterBytesPerInvocation": 4736.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "warm",
+      "shape": "comparison",
+      "asynchronous": false,
+      "beforeBytesPerInvocation": 6792.0,
+      "afterBytesPerInvocation": 6792.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "warm",
+      "shape": "comparison",
+      "asynchronous": true,
+      "beforeBytesPerInvocation": 6792.0,
+      "afterBytesPerInvocation": 6792.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "warm",
+      "shape": "helper",
+      "asynchronous": false,
+      "beforeBytesPerInvocation": 224.0,
+      "afterBytesPerInvocation": 224.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "warm",
+      "shape": "helper",
+      "asynchronous": true,
+      "beforeBytesPerInvocation": 224.0,
+      "afterBytesPerInvocation": 224.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "warm",
+      "shape": "mixed",
+      "asynchronous": false,
+      "beforeBytesPerInvocation": 5768.0,
+      "afterBytesPerInvocation": 5768.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "warm",
+      "shape": "mixed",
+      "asynchronous": true,
+      "beforeBytesPerInvocation": 5768.0,
+      "afterBytesPerInvocation": 5768.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "warm",
+      "shape": "unary-control",
+      "asynchronous": false,
+      "beforeBytesPerInvocation": 8832.0,
+      "afterBytesPerInvocation": 8832.0,
+      "allSamplesIdentical": true
+    },
+    {
+      "category": "warm",
+      "shape": "unary-control",
+      "asynchronous": true,
+      "beforeBytesPerInvocation": 8832.0,
+      "afterBytesPerInvocation": 8832.0,
+      "allSamplesIdentical": true
+    }
+  ],
+  "rawCaptureLocation": "All samples/fingerprints/boundary records remain in baseline.trx and candidate.trx; not duplicated here."
+}

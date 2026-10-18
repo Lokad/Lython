@@ -358,7 +358,7 @@ y
             instruction =>
             {
                 Assert.Equal(ExecutableOpCode.Binary, instruction.OpCode);
-                Assert.Equal(ExecutableBinaryOperator.Add, instruction.BinaryOperator);
+                Assert.Equal(BinaryOperatorSyntax.Add, instruction.BinaryOperator);
             },
             instruction => Assert.Equal(ExecutableOpCode.StoreLocal, instruction.OpCode),
             instruction => Assert.Equal(ExecutableOpCode.LoadLocal, instruction.OpCode),
@@ -432,7 +432,7 @@ else:
         Assert.Contains(entry.Blocks, block => block.Instructions.Any(instruction => instruction.OpCode == ExecutableOpCode.JumpIfFalse));
         Assert.Contains(entry.Blocks, block => block.Instructions.Any(instruction => instruction.OpCode == ExecutableOpCode.Jump));
         Assert.Contains(entry.Blocks, block => block.Instructions.Any(instruction =>
-            instruction.OpCode == ExecutableOpCode.Binary && instruction.BinaryOperator == ExecutableBinaryOperator.Subtract));
+            instruction.OpCode == ExecutableOpCode.Binary && instruction.BinaryOperator == BinaryOperatorSyntax.Subtract));
     }
 
     [Fact]

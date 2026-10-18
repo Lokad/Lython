@@ -204,38 +204,6 @@ internal sealed partial class LythonRuntime
         return tuple;
     }
 
-    private static object EvaluateExecutableBinary(ExecutableBinaryOperator op, object left, object right, LythonSourceSpan span, ExecutionContext context)
-        => EvaluateBinaryOperator(MapExecutableBinary(op), left, right, context, span);
-
-    private static BinaryOperatorSyntax MapExecutableBinary(ExecutableBinaryOperator op)
-        => op switch
-        {
-            ExecutableBinaryOperator.Add => BinaryOperatorSyntax.Add,
-            ExecutableBinaryOperator.Subtract => BinaryOperatorSyntax.Subtract,
-            ExecutableBinaryOperator.Multiply => BinaryOperatorSyntax.Multiply,
-            ExecutableBinaryOperator.MatrixMultiply => BinaryOperatorSyntax.MatrixMultiply,
-            ExecutableBinaryOperator.Divide => BinaryOperatorSyntax.Divide,
-            ExecutableBinaryOperator.FloorDivide => BinaryOperatorSyntax.FloorDivide,
-            ExecutableBinaryOperator.Modulo => BinaryOperatorSyntax.Modulo,
-            ExecutableBinaryOperator.Power => BinaryOperatorSyntax.Power,
-            ExecutableBinaryOperator.BitwiseOr => BinaryOperatorSyntax.BitwiseOr,
-            ExecutableBinaryOperator.BitwiseXor => BinaryOperatorSyntax.BitwiseXor,
-            ExecutableBinaryOperator.BitwiseAnd => BinaryOperatorSyntax.BitwiseAnd,
-            ExecutableBinaryOperator.LeftShift => BinaryOperatorSyntax.LeftShift,
-            ExecutableBinaryOperator.RightShift => BinaryOperatorSyntax.RightShift,
-            ExecutableBinaryOperator.Less => BinaryOperatorSyntax.Less,
-            ExecutableBinaryOperator.LessEqual => BinaryOperatorSyntax.LessEqual,
-            ExecutableBinaryOperator.Greater => BinaryOperatorSyntax.Greater,
-            ExecutableBinaryOperator.GreaterEqual => BinaryOperatorSyntax.GreaterEqual,
-            ExecutableBinaryOperator.Is => BinaryOperatorSyntax.Is,
-            ExecutableBinaryOperator.IsNot => BinaryOperatorSyntax.IsNot,
-            ExecutableBinaryOperator.In => BinaryOperatorSyntax.In,
-            ExecutableBinaryOperator.NotIn => BinaryOperatorSyntax.NotIn,
-            ExecutableBinaryOperator.Equal => BinaryOperatorSyntax.Equal,
-            ExecutableBinaryOperator.NotEqual => BinaryOperatorSyntax.NotEqual,
-            _ => throw new InvalidOperationException($"Executable IR contains unknown binary operator {op}."),
-        };
-
     private static object EvaluateExecutableUnary(ExecutableUnaryOperator op, object operand, ExecutionContext context, LythonSourceSpan span)
         => EvaluateUnaryOperator(MapExecutableUnary(op), operand, context, span);
 

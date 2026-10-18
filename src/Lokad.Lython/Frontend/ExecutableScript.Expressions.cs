@@ -198,7 +198,7 @@ internal sealed partial class ExecutableScript
 
                     currentBlock = CompileExpression(binary.Left, currentBlock);
                     currentBlock = CompileExpression(binary.Right, currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.Binary(MapBinaryOperator(binary.Binary.Operator), binary.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.Binary(binary.Binary.Operator, binary.Span));
                     return currentBlock;
 
                 case LoweredUnaryExpression unary:
@@ -276,7 +276,7 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.Dup(chained.Span));
                     AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(slot, chained.Span));
                 }
-                AddInstruction(currentBlock, ExecutableInstruction.Binary(MapBinaryOperator(chained.ChainedComparison.Operators[i]), chained.Span));
+                AddInstruction(currentBlock, ExecutableInstruction.Binary(chained.ChainedComparison.Operators[i], chained.Span));
                 if (i < chained.ChainedComparison.Operators.Count - 1)
                 {
                     AddInstruction(currentBlock, ExecutableInstruction.Dup(chained.Span));
@@ -383,37 +383,6 @@ internal sealed partial class ExecutableScript
 
             return joinBlock;
         }
-
-        private static ExecutableBinaryOperator MapBinaryOperator(BinaryOperatorSyntax op)
-            => op switch
-            {
-                BinaryOperatorSyntax.Or => ExecutableBinaryOperator.Or,
-                BinaryOperatorSyntax.And => ExecutableBinaryOperator.And,
-                BinaryOperatorSyntax.Add => ExecutableBinaryOperator.Add,
-                BinaryOperatorSyntax.Subtract => ExecutableBinaryOperator.Subtract,
-                BinaryOperatorSyntax.Multiply => ExecutableBinaryOperator.Multiply,
-                BinaryOperatorSyntax.MatrixMultiply => ExecutableBinaryOperator.MatrixMultiply,
-                BinaryOperatorSyntax.Divide => ExecutableBinaryOperator.Divide,
-                BinaryOperatorSyntax.FloorDivide => ExecutableBinaryOperator.FloorDivide,
-                BinaryOperatorSyntax.Modulo => ExecutableBinaryOperator.Modulo,
-                BinaryOperatorSyntax.Power => ExecutableBinaryOperator.Power,
-                BinaryOperatorSyntax.BitwiseOr => ExecutableBinaryOperator.BitwiseOr,
-                BinaryOperatorSyntax.BitwiseXor => ExecutableBinaryOperator.BitwiseXor,
-                BinaryOperatorSyntax.BitwiseAnd => ExecutableBinaryOperator.BitwiseAnd,
-                BinaryOperatorSyntax.LeftShift => ExecutableBinaryOperator.LeftShift,
-                BinaryOperatorSyntax.RightShift => ExecutableBinaryOperator.RightShift,
-                BinaryOperatorSyntax.Equal => ExecutableBinaryOperator.Equal,
-                BinaryOperatorSyntax.NotEqual => ExecutableBinaryOperator.NotEqual,
-                BinaryOperatorSyntax.Less => ExecutableBinaryOperator.Less,
-                BinaryOperatorSyntax.LessEqual => ExecutableBinaryOperator.LessEqual,
-                BinaryOperatorSyntax.Greater => ExecutableBinaryOperator.Greater,
-                BinaryOperatorSyntax.GreaterEqual => ExecutableBinaryOperator.GreaterEqual,
-                BinaryOperatorSyntax.Is => ExecutableBinaryOperator.Is,
-                BinaryOperatorSyntax.IsNot => ExecutableBinaryOperator.IsNot,
-                BinaryOperatorSyntax.In => ExecutableBinaryOperator.In,
-                BinaryOperatorSyntax.NotIn => ExecutableBinaryOperator.NotIn,
-                _ => throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support binary operator {op}."),
-            };
 
         private static ExecutableUnaryOperator MapUnaryOperator(UnaryOperatorSyntax op)
             => op switch

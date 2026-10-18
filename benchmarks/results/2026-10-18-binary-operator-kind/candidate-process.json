@@ -1,0 +1,14 @@
+{
+  "source": "frozen-seven-file-patch",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "F0CED669600484B8E78BB6FB0791A3791B64862C993EFFFF639C969B9A416AA6",
+  "filter": "Category!=Stress&FullyQualifiedName~BinaryKindDiagnostic",
+  "pid": 77004,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1448,
+  "stdoutSha256": "61B32CD38A47C9303FE16E8815282484FB80FD7A19DC6ACA8F6F8B54465A2722",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

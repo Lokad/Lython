@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
                     context.Services.CheckExecution(instructions[2].Span);
                     try
                     {
-                        result = EvaluateExecutableBinary(ExecutableBinaryOperator.Add, result, second, instructions[2].Span, context);
+                        result = EvaluateBinaryOperator(BinaryOperatorSyntax.Add, result, second, context, instructions[2].Span);
                         context.ObserveValue(result, instructions[2].Span);
                     }
                     catch (LythonRuntimeException error)

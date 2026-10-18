@@ -1,0 +1,99 @@
+{
+  "base": "38f44447e5bc44faeae3cfe5be678f28305be266",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "52c09bc24ebc77f8a0ce10569c8a8ea8fe7c1b028a86cf64649d7a10a936b7ca",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "52a9909e7a2b6fc70247c00eac146eb56d4fe44c3d17a0cf32390cb5c0ffb514",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "0df6bf79015612b3216d3591af203a196a24579dc3be012b9ae6abcb47debd02",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "21011c9013ff0d36913f170a0561cf7a2e141d39fa93f362afc5a6cbc670f8bb",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs": "4147cfb9ab5029247e8aba2b771fb3e63e331c2cf2ecf45c4b97ed72db66a3f9",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.SimpleReturn.cs": "6b2ed6dbc93613888860b3ef32703fc77734ddf2e6468a8cd2662962792b4234",
+    "tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs": "dfa4ae9b95211c1332e5a0413a870ae99ceafb915384fa5e937f51c021ede0d4"
+  },
+  "focusedDistinctPassed": 572,
+  "groups": {
+    "final-white": {
+      "count": 111,
+      "process": {
+        "source": "frozen-seven-file-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "5A44D7DE30ABFD6E6993DB6BF505322B41E085A2D3EB842E6684DFF0E13DDC8F",
+        "filter": "Category!=Stress&(FullyQualifiedName~LoweringArchitectureSubsystemTests|FullyQualifiedName~ChainedComparisonObservationTests|FullyQualifiedName~ExecutableAugmentedIntegerBoundaryTests|FullyQualifiedName~ExactIntegerUnaryAdmissionTests|FullyQualifiedName~ComparisonResultRouteTests|FullyQualifiedName~ComparisonFuelTests|FullyQualifiedName~IntegerAliasOwnershipTests|FullyQualifiedName~ExecutableStackAdmissionTests)",
+        "pid": 39140,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1486,
+        "stdoutSha256": "2EF91CB6F1445EF37177A14DFE4E33CF92AB43C1AB187FB4F35C69BF42ADFB4D",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "8b8f25389f320df77f62ad0b4a1481e42a69d6dd0a2dc6b5f5505a5c2cdb86b1"
+    },
+    "candidate-public": {
+      "count": 309,
+      "process": {
+        "source": "frozen-seven-file-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "4C50E9AA8C40145F8B4F699744180DC366E509B4E84113B8C64E12994D29E534",
+        "filter": "Category!=Stress&(FullyQualifiedName~ExactIntegerOperatorTests|FullyQualifiedName~ExactIntegerAdditionTests|FullyQualifiedName~ExactIntegerUnaryTests|FullyQualifiedName~RichComparisonSemanticsTests|FullyQualifiedName~ComparisonValueTests|FullyQualifiedName~NumericAugmentedAsyncTests|FullyQualifiedName~ShortCircuitScenarioTests|FullyQualifiedName~ShortCircuitRefinementTests|FullyQualifiedName~ChainedComparisonScenarioTests|FullyQualifiedName~IntegerAliasOwnershipTests|FullyQualifiedName~OperatorValueAccountingScenarioTests|FullyQualifiedName~ContainmentProtocolScenarioTests)",
+        "pid": 50472,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 6820,
+        "stdoutSha256": "919E58312001A77ABC9BF6BB2772BCACF458992692352097ACF07514EE22BEB9",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "8c8a7a47429843778788356f454103f7acb995f27b61e9fcdc596d496b7c6e73"
+    },
+    "candidate-owners": {
+      "count": 90,
+      "process": {
+        "source": "frozen-seven-file-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "4C50E9AA8C40145F8B4F699744180DC366E509B4E84113B8C64E12994D29E534",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 46248,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2758,
+        "stdoutSha256": "59910F39A38340CC12127CAF696446AA3DD7DA69FE9FE773DBBB42A831CBF4CA",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "331869088f481b91c60fa7a6d6f7a84efdd66ee07a1783c600987099ec74f7f0"
+    },
+    "candidate-goldens": {
+      "count": 62,
+      "process": {
+        "source": "frozen-seven-file-patch",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "4C50E9AA8C40145F8B4F699744180DC366E509B4E84113B8C64E12994D29E534",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 53748,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 7950,
+        "stdoutSha256": "45ACBA68A730BDEA484AD533C43EE36F83FFBBA657256A815AC249C0CCB86636",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "d288af652442135ddd2a7c37a7d8a4eaa1b4e1b563badcd6f56b4ead19c612b5"
+    }
+  },
+  "completeJobs": 58,
+  "independentCPythonPrograms": 7,
+  "nativeDiagnosticCasesPerRevision": 20,
+  "exactBoundaryRecords": 96,
+  "allocationArraysIdentical": 18,
+  "elapsedMeasured": false,
+  "temporaryDiagnosticRemoved": true,
+  "newPermanentTests": 0,
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "regexPlanningOnly": true,
+  "contract": "Internal binary kind only; no public API/persisted bytecode contract. Short-circuit lowering, arithmetic/protocol kernels, preflights, fuel, stack, owners and cancellation are unchanged.",
+  "removal": "Duplicate 25-member enum, compiler map, runtime map and forwarding helper removed. Existing tests change only two enum type references."
+}
