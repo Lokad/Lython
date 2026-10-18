@@ -1,0 +1,84 @@
+{
+  "accepted": false,
+  "normalizedAsyncRatio": 0.9630693528681764,
+  "syncControlRatio": 1.0211416118941339,
+  "allocationArraysIdentical": true,
+  "exactWorkRecords": 320,
+  "workRecordsIdentical": true,
+  "baseline": {
+    "False": {
+      "medianTicks": 28451.0,
+      "allocated": [
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432
+      ]
+    },
+    "True": {
+      "medianTicks": 35275.0,
+      "allocated": [
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664
+      ]
+    }
+  },
+  "candidate": {
+    "False": {
+      "medianTicks": 29052.5,
+      "allocated": [
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432,
+        146432
+      ]
+    },
+    "True": {
+      "medianTicks": 34690.5,
+      "allocated": [
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664,
+        145664
+      ]
+    }
+  },
+  "repeatedCapture": false,
+  "wholeJobOrCPythonClaim": false,
+  "baselineTrxSha256": "8dcb42173080ae3fc666bf92b5b262ed2171505e2b61642e9d94b12f708e8648",
+  "candidateTrxSha256": "d8153fffa866bce6c59c318581a9dcfda8158027e35aa3f81c5dcf08e3dc6a7c"
+}

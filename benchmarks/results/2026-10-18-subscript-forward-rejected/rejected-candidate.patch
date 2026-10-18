@@ -1,0 +1,59 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
+index 5b3b3183..6a3e9113 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
+@@ -694,32 +694,43 @@ internal sealed partial class LythonRuntime
+         return collection;
+     }
+ 
+-    private static async ValueTask<object> ReadLoweredSubscriptAsync(object target, object index, LythonSourceSpan span, ExecutionContext context)
++    private static ValueTask<object> ReadLoweredSubscriptAsync(object target, object index, LythonSourceSpan span, ExecutionContext context)
+     {
+         if (target is PyDict { HasProtocolKeys: true } dictionary && index is PyString key)
+-        {
+-            var found = await dictionary.TryGetBuiltinStringAsync(key, context, span).ConfigureAwait(false);
+-            return found.Found ? found.Value : throw RuntimeErrors.MissingKey(key, span);
+-        }
++            return ReadDictionaryStringAsync(dictionary, key, span, context);
+         if (target is ElementTreeModule.Element element)
+-            return await ElementTreeModule.ReadIndexAsync(element, index, context, span, true).ConfigureAwait(false);
++            return ElementTreeModule.ReadIndexAsync(element, index, context, span, true);
+         if (target is ReMatchObject match)
+         {
+-            return await ReMatchMembers.GetSubscriptAsync(match, index, span, context).ConfigureAwait(false);
++            return ReMatchMembers.GetSubscriptAsync(match, index, span, context);
+         }
+         if (target is PyInstance instance)
+         {
+-            return await GetUserItemAsync(instance, index, context, span).ConfigureAwait(false);
++            return GetUserItemAsync(instance, index, context, span);
+         }
+         if (index is PySlice slice && PyIndexing.IsNativeSliceTarget(target))
+-            return await ReadSliceValueAsync(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context).ConfigureAwait(false);
++            return ReadSliceValueAsync(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context);
+         if (target is PyType type && type.TryGetMember("__type_params__", out _))
+         {
+-            return await CreateGenericSubscriptAsync(target, index, context, span, true).ConfigureAwait(false);
++            return CreateGenericSubscriptAsync(target, index, context, span, true);
+         }
+         if ((target is IPyIndexableValue or PyRange) && index is PyInstance)
++            return ReadGuestIndexAsync(target, index, span, context);
++        return ValueTask.FromResult(ReadSubscriptValue(target, index, span, context));
++
++        // These two results require work after a possible suspension. Other
++        // branches forward the existing operation without another state machine.
++        static async ValueTask<object> ReadDictionaryStringAsync(PyDict dictionary, PyString key, LythonSourceSpan span, ExecutionContext context)
++        {
++            var found = await dictionary.TryGetBuiltinStringAsync(key, context, span).ConfigureAwait(false);
++            return found.Found ? found.Value : throw RuntimeErrors.MissingKey(key, span);
++        }
++
++        static async ValueTask<object> ReadGuestIndexAsync(object target, object index, LythonSourceSpan span, ExecutionContext context)
++        {
+             index = await CoerceTypeIndexAsync(index, context, span, true).ConfigureAwait(false) ?? PyNone.Instance;
+-        return ReadSubscriptValue(target, index, span, context);
++            return ReadSubscriptValue(target, index, span, context);
++        }
+     }
+ 
+     private static object ResolveLoweredMemberValue(

@@ -1,0 +1,14 @@
+{
+  "source": "subscript-forward",
+  "production": "restored",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "8B0FA12212D122D03ACC126E72794CD4F04EFDD0C6E52FF4FD2F956F5EE5CFA0",
+  "filter": "Category!=Stress&(FullyQualifiedName~IterationIndexingSubsystemTests|FullyQualifiedName~SubscriptSetterBindingTests|FullyQualifiedName~ExecutableSubscriptStoreTests|FullyQualifiedName~ExecutableAugmentedSubscriptTests|FullyQualifiedName~NativeSliceDispatchTests|FullyQualifiedName~MappingSliceKeyOwnershipTests|FullyQualifiedName~IntegerProtocolAsyncTests|FullyQualifiedName~RuntimeProtocolSubsystemTests|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission)",
+  "pid": 41904,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 2219,
+  "stdoutSha256": "9D6D62C6E8F7516907047DA20A743046B50653783A67EA86CA201817F3E9E157",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

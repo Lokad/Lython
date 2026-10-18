@@ -1,0 +1,40 @@
+{
+  "baseline": "cbe7fd1ca68f913005143ef024c617f77d3a277b",
+  "productionAndTestsRestored": {
+    "originalProductionAndTestsRestored": true,
+    "sourceSha256": {
+      "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "dee4f7291d8dfd964beacfeeaf9c7212319477cf1d1a7860f8a8cc0f36c5aad3",
+      "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Assignments.cs": "31d39c2478c52ddf0857a47b10b96a98778fd6edae3c4c3d1b462bb66aacaf26",
+      "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "94d53b9b10f8d0621d59e32cb3b9a94feb31c11859691041d304c9bd89b15ad8",
+      "src/Lokad.Lython/Runtime/PyIndexing.cs": "1606d2e4a8d196c2f09964638678a85e77fad5317704ee32c7269a182322b4fb"
+    },
+    "temporaryDiagnosticRemoved": true,
+    "candidatePatchSha256": "a3d33dc8634a8cc5041c3776dcebc232b3092bd54683c3fd74d724c80d955c96",
+    "gateRejected": true,
+    "noRetiming": true
+  },
+  "restoredFocusedPassed": 147,
+  "restoredProcess": {
+    "source": "subscript-forward",
+    "production": "restored",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+    "assemblySha256": "8B0FA12212D122D03ACC126E72794CD4F04EFDD0C6E52FF4FD2F956F5EE5CFA0",
+    "filter": "Category!=Stress&(FullyQualifiedName~IterationIndexingSubsystemTests|FullyQualifiedName~SubscriptSetterBindingTests|FullyQualifiedName~ExecutableSubscriptStoreTests|FullyQualifiedName~ExecutableAugmentedSubscriptTests|FullyQualifiedName~NativeSliceDispatchTests|FullyQualifiedName~MappingSliceKeyOwnershipTests|FullyQualifiedName~IntegerProtocolAsyncTests|FullyQualifiedName~RuntimeProtocolSubsystemTests|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission)",
+    "pid": 41904,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 2219,
+    "stdoutSha256": "9D6D62C6E8F7516907047DA20A743046B50653783A67EA86CA201817F3E9E157",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "exactWorkRecords": 320,
+  "callbackWorkRecordsAreSynthetic": true,
+  "actualSuspensionCoverage": "Existing IntegerProtocolAsyncTests with controlled pending callbacks included in147 restored checks; no new callback implementation retained.",
+  "temporaryDiagnosticRemoved": true,
+  "regexPlanningOnly": true,
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "performanceAccepted": false,
+  "retiming": false,
+  "localPackageCheck": "Not repeated: evidence/docs only; exact production/test source restored to already qualified cbe7fd1c. Cross-platform/package checks run at publication boundary."
+}

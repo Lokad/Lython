@@ -104,3 +104,5 @@ benchmarks/results/2026-10-18-split-count/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-split-count/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-split-call-count/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-split-call-count/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-subscript-forward-rejected/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-subscript-forward-rejected/rejected-candidate.patch -text -whitespace

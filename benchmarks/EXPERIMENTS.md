@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 subscript forwarding experiment](results/2026-10-18-subscript-forward-rejected/README.md)
+is rejected and restored. Its normalized async/control ratio improved by 3.7%,
+below the fixed 5% gate; allocations and all 320 behavior/fuel records are unchanged.
+The rebuilt original sources pass 147 focused checks. No retiming, qualified
+elapsed improvement, complete-job or CPython speedup is claimed.
+
 The [2026-10-18 two-positional split call path](results/2026-10-18-split-call-count/README.md)
 removes eligible method/delegate/argument packaging on the corrected count
 semantics. One fixed native capture saves 336 bytes/sync call and 304 bytes/async;

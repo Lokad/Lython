@@ -1,0 +1,14 @@
+{
+  "baseline": "cbe7fd1ca68f913005143ef024c617f77d3a277b",
+  "sourceSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "dee4f7291d8dfd964beacfeeaf9c7212319477cf1d1a7860f8a8cc0f36c5aad3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Assignments.cs": "31d39c2478c52ddf0857a47b10b96a98778fd6edae3c4c3d1b462bb66aacaf26",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "94d53b9b10f8d0621d59e32cb3b9a94feb31c11859691041d304c9bd89b15ad8",
+    "src/Lokad.Lython/Runtime/PyIndexing.cs": "1606d2e4a8d196c2f09964638678a85e77fad5317704ee32c7269a182322b4fb"
+  },
+  "diagnosticSha256": "d2afba284e75215a2ca802b4a99af003a55dae8b4c9d13698ec8f2e4f05a8492",
+  "scope": "Only ReadLoweredSubscriptAsync forwarding; native completed ValueTask and direct existing helper forwarding, leaving continuations only where results require work. No new dispatcher, index kernel, cache, owner or general binder.",
+  "gate": "One capture per source. 8 warmup/12 alternating sync-async samples,4096 list reads/sample. Require >=5% lower median async/sync time ratio, sync median time <=110% baseline and identical allocation arrays. All320 work/value/identity/error/span/callback/fuel records identical. Reject without retiming if any gate fails.",
+  "acceptance": "Existing public and source-linked indexing/slice/protocol/regex-group/XML/generic-alias controls, actual suspended/cancelled guest callbacks, terminal admission, retained aliases and58 complete jobs. No long lane or broader inventory.",
+  "measurement": "Local warm existing-context native diagnostic; not quiet-machine elapsed qualification, whole-job/CPython result, compilation, startup or pending-I/O allocation."
+}

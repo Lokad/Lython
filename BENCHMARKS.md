@@ -506,6 +506,10 @@ Both are inconclusive; neither supplies a qualified speed change or CPython
 multiplier. That checkpoint predates governed ownership and does not qualify
 current accounting or host latency.
 
+The [native subscript forwarding candidate](benchmarks/results/2026-10-18-subscript-forward-rejected/README.md)
+missed its fixed timing gate and was restored. Allocation and 320 work records are
+unchanged; this is a rejected local diagnostic, not an accepted HEAD improvement.
+
 The [zip containment diagnostic](benchmarks/results/2026-10-14-zip-state/README.md)
 retains a higher candidate median with substantial noise. Its status is
 inconclusive; it does not establish today's HEAD performance or async pull cost.
