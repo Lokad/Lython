@@ -1,0 +1,15 @@
+{
+  "base": "b7d67a60d231318ea4799ce8ef7bbf9cfa6f99ea",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "b0bd61b2a9a94e11c1367dd0e2c6143b28bd0c1491c80f476e360410b5dbb73e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "8f6449fcbd1d1a0267c4dbebad159245508ec3a22ce0ecce369912032872b974",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "6f8523e69f62eea8f61cb4176de0080f1fbfc6a5cfbbe67d6329ddf0aafc4a31",
+    "src/Lokad.Lython/Runtime/Calls/CallBinder.cs": "26b06815e595d18cd38c0bd3e71efe7b6ab5914f67049c354b87dbd35a00a8ed",
+    "src/Lokad.Lython/Runtime/PyBytes.cs": "be28ba62a517b95c1f3607f1a46d7c2e0650f70e855ff485c4c7ba0640b8a23f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.TextCodec.cs": "a0adcad8ab1b1f29f5286c734bb742750551ddc447da8f6cbaddd39f3d6bcbd1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "8422fc730472bb4ef7ccc7959aca0c5dc5d65b4464a9a6dfa96b3843877c753c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "4b6f49995a40d90982e450ee681327f72bc1668d519e400fb80659c5010864c6"
+  },
+  "proposal": "Concrete correction:use a private str specialization of existing BuiltinCallable\nand its existing BoundCallArguments/ArgumentPresence hooks. Keep builtin type\nmetadata/hierarchy per execution;unseal only that private base and expose its\nconstructor to the specialization. No new fields,public API,binder option or\nmemory layer. Validate only supplied codec-name types,distinguish omitted object\nfrom None,and keep default None markers internal to existing codec parsers.\nRemove Str/StrAsync array-length inference and the wrong positional-only flag.\nEmpty bytes skip codec lookup after type validation;decode borrows PyBytes.Memory,\nremoving its unadmitted input copy. Keep actual protocol awaits and native guards.\n\nTradeoff:the existing presence binder supplies three slots on general str calls,\nso some zero/one-argument controls may allocate more. Measure one short allocation\ncomparison;do not expand the binder to optimize that tradeoff. Reuse builtin type/\nnew-slot/metadata tests and add alias/expanded keyword witnesses. Require the30\nprepared regressions plus owner/protocol/codec/admission controls. Stop at str;\nno changes to other builtin contracts,codec implementations or caller scopes.\n\n",
+  "runtimeEdits": false
+}

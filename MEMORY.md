@@ -36,6 +36,12 @@ builders. These maps are read-only after publication. They can retain spare
 builder capacity instead of compact copies; the existing coarse compilation
 estimate and compiled owner cover that storage until the script is disposed.
 
+General `str` calls use the existing binder's three-slot argument-presence
+array, distinguishing omitted options from explicit `None`. This can allocate
+more than a compact positional array. Direct native integer/string calls keep
+their operand path. Byte decoding borrows the immutable input through completion;
+the codec preflights and funds its output without a private input copy.
+
 Function definitions share their read-only local/global/nonlocal-name facts and
 prepared class-cell requirement with their code and runtime functions. These are
 compiled metadata, containing no cells, defaults, hosts or execution contexts.

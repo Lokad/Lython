@@ -192,53 +192,51 @@ internal sealed partial class LythonRuntime
     private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> NativeStrOperation
         = static (value, _, context) => PyRendering.ToInterpolatedPyString(value, new PyRenderingContext(context));
 
-    private static object Str(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private sealed class StrCallable() : BuiltinCallable(
+        LythonCallableSignature.Create("str", ["object", "encoding", "errors"], requiredCount: 0,
+            maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None), DecodeStr, null)
     {
-        if (arguments.Length == 0)
+        protected override bool PreservePresence => true;
+
+        protected override object InvokeBoundWithPresence(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
         {
-            return PyString.Empty;
+            // Codec-name types precede object validation, even without an object.
+            // Omitted slots retain the binder's internal None defaults; an explicit
+            // None must fail here before reaching the shared codec parsers.
+            if (bound.Assigned[1]) RequireCodecNameType(bound.Values[1], "str()", "encoding", span);
+            if (bound.Assigned[2]) RequireCodecNameType(bound.Values[2], "str()", "errors", span);
+
+            if (!bound.Assigned[0]) return PyString.Empty;
+            if (!bound.Assigned[1] && !bound.Assigned[2])
+                return NativeStrOperation(bound.Values[0], span, context);
+
+            return base.InvokeBound(bound.Values, span, context);
         }
 
-        if (arguments.Length == 1)
-        {
-            return NativeStrOperation(arguments[0], span, context);
-        }
-
-        if (arguments.Length == 2 || arguments.Length == 3)
-        {
-            // CPython validates the codec names before the object, and refuses
-            // to decode strings outright.
-            RequireCodecNameType(arguments[1], "str()", "encoding", span);
-            if (arguments.Length == 3)
-            {
-                RequireCodecNameType(arguments[2], "str()", "errors", span);
-            }
-
-            if (arguments[0] is PyString || arguments[0] is string)
-            {
-                throw new LythonRuntimeException("TypeError", "decoding str is not supported", span);
-            }
-
-            if (arguments[0] is not PyBytes bytes)
-            {
-                throw new LythonRuntimeException("TypeError", "decoding to str: need a bytes-like object, " + RuntimeErrors.OperandTypeName(arguments[0]) + " found", span);
-            }
-
-            var encoding = ParseTextEncoding(arguments[1], "str()", span);
-            var errors = arguments.Length == 3
-                ? ParseTextErrors(arguments[2], "str()", span)
-                : TextErrorMode.Strict;
-            return DecodeText(bytes.ToArray(), encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
-        }
-
-        // Overlong calls are rejected by the binder first; this guards direct uses.
-        throw new LythonRuntimeException("TypeError", "str(object=', encoding='utf-8', errors='strict') expects bytes when encoding or errors are provided.", span);
+        protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
+            => bound.Assigned[0] && !bound.Assigned[1] && !bound.Assigned[2] && bound.Values[0] is PyInstance instance
+                ? RenderInstanceStringAsync(instance, 's', context, span)
+                : new(InvokeBoundWithPresence(bound, span, context));
     }
 
-    private static ValueTask<object> StrAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => arguments.Length == 1 && arguments[0] is PyInstance instance
-            ? RenderInstanceStringAsync(instance, 's', context, span)
-            : new(Str(arguments, span, context));
+    private static object DecodeStr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments[0] is PyString or string)
+        {
+            throw new LythonRuntimeException("TypeError", "decoding str is not supported", span);
+        }
+
+        if (arguments[0] is not PyBytes bytes)
+        {
+            throw new LythonRuntimeException("TypeError", "decoding to str: need a bytes-like object, " + RuntimeErrors.OperandTypeName(arguments[0]) + " found", span);
+        }
+
+        // Empty input needs neither codec lookup nor a private input copy.
+        if (bytes.Length == 0) return PyString.Empty;
+        var encoding = ParseTextEncoding(arguments[1], "str()", span);
+        var errors = ParseTextErrors(arguments[2], "str()", span);
+        return DecodeText(bytes.Memory, encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
+    }
 
     private static ValueTask<object> ReprAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         => arguments.Length == 1 && arguments[0] is PyInstance instance

@@ -74,7 +74,7 @@ internal sealed partial class LythonRuntime
                 ["open"] = new OpenCallable(),
                 ["print"] = new PrintCallable(),
                 ["input"] = BuiltinCallable.Create("input", Input, InputAsync, ["prompt"], requiredCount: 0),
-                ["str"] = BuiltinCallable.Create(LythonCallableSignature.Create("str", ["object", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Str, StrAsync),
+                ["str"] = new StrCallable(),
                 ["repr"] = SharedRepr,
                 ["ascii"] = SharedAscii,
                 ["format"] = SharedFormat,

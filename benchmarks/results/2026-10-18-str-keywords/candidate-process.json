@@ -1,0 +1,14 @@
+{
+  "source": "str-presence-three-file-patch",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "FFF800158403728738B58662A40909B7B6D6AF6F618628842C267D343A5A23C4",
+  "filter": "Category!=Stress&FullyQualifiedName~NativeStrDiagnostic",
+  "pid": 46276,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1320,
+  "stdoutSha256": "B1903CC5A53C41E3607AADB2829E9264287EE640234DD2D4AB88A5C3F9C99E22",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

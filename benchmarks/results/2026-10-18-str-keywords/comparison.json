@@ -1,0 +1,605 @@
+{
+  "accepted": true,
+  "elapsedMeasured": false,
+  "nativeFastPathsUnchanged": true,
+  "allWorkFundingSourceOutputArraysIdentical": true,
+  "exactFuelRecords": 216,
+  "exactAdmissionRecords": 36,
+  "comparisons": [
+    {
+      "shape": "alias",
+      "asynchronous": false,
+      "beforeBytes": 464.0,
+      "afterBytes": 464.0,
+      "deltaBytes": 0,
+      "beforeSamples": [
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712
+      ],
+      "afterSamples": [
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712
+      ]
+    },
+    {
+      "shape": "alias",
+      "asynchronous": true,
+      "beforeBytes": 464.0,
+      "afterBytes": 464.0,
+      "deltaBytes": 0,
+      "beforeSamples": [
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712
+      ],
+      "afterSamples": [
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712
+      ]
+    },
+    {
+      "shape": "bytes-control",
+      "asynchronous": false,
+      "beforeBytes": 560.0,
+      "afterBytes": 576.0,
+      "deltaBytes": 16,
+      "beforeSamples": [
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480
+      ],
+      "afterSamples": [
+        4608,
+        4608,
+        4608,
+        4608,
+        4608,
+        4608,
+        4608,
+        4608
+      ]
+    },
+    {
+      "shape": "bytes-control",
+      "asynchronous": true,
+      "beforeBytes": 560.0,
+      "afterBytes": 576.0,
+      "deltaBytes": 16,
+      "beforeSamples": [
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480
+      ],
+      "afterSamples": [
+        4608,
+        4608,
+        4608,
+        4608,
+        4608,
+        4608,
+        4608,
+        4608
+      ]
+    },
+    {
+      "shape": "codec-control",
+      "asynchronous": false,
+      "beforeBytes": 496.0,
+      "afterBytes": 472.0,
+      "deltaBytes": -24,
+      "beforeSamples": [
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968
+      ],
+      "afterSamples": [
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776
+      ]
+    },
+    {
+      "shape": "codec-control",
+      "asynchronous": true,
+      "beforeBytes": 496.0,
+      "afterBytes": 472.0,
+      "deltaBytes": -24,
+      "beforeSamples": [
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968
+      ],
+      "afterSamples": [
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776
+      ]
+    },
+    {
+      "shape": "custom-control",
+      "asynchronous": false,
+      "beforeBytes": 960.0,
+      "afterBytes": 976.0,
+      "deltaBytes": 16,
+      "beforeSamples": [
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680
+      ],
+      "afterSamples": [
+        7808,
+        7808,
+        7808,
+        7808,
+        7808,
+        7808,
+        7808,
+        7808
+      ]
+    },
+    {
+      "shape": "custom-control",
+      "asynchronous": true,
+      "beforeBytes": 960.0,
+      "afterBytes": 976.0,
+      "deltaBytes": 16,
+      "beforeSamples": [
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680
+      ],
+      "afterSamples": [
+        7808,
+        7808,
+        7808,
+        7808,
+        7808,
+        7808,
+        7808,
+        7808
+      ]
+    },
+    {
+      "shape": "expanded-control",
+      "asynchronous": false,
+      "beforeBytes": 1088.0,
+      "afterBytes": 1104.0,
+      "deltaBytes": 16,
+      "beforeSamples": [
+        8704,
+        8704,
+        8704,
+        8704,
+        8704,
+        8704,
+        8704,
+        8704
+      ],
+      "afterSamples": [
+        8832,
+        8832,
+        8832,
+        8832,
+        8832,
+        8832,
+        8832,
+        8832
+      ]
+    },
+    {
+      "shape": "expanded-control",
+      "asynchronous": true,
+      "beforeBytes": 1160.0,
+      "afterBytes": 1176.0,
+      "deltaBytes": 16,
+      "beforeSamples": [
+        9280,
+        9280,
+        9280,
+        9280,
+        9280,
+        9280,
+        9280,
+        9280
+      ],
+      "afterSamples": [
+        9408,
+        9408,
+        9408,
+        9408,
+        9408,
+        9408,
+        9408,
+        9408
+      ]
+    },
+    {
+      "shape": "float-control",
+      "asynchronous": false,
+      "beforeBytes": 520.0,
+      "afterBytes": 536.0,
+      "deltaBytes": 16,
+      "beforeSamples": [
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160
+      ],
+      "afterSamples": [
+        4288,
+        4288,
+        4288,
+        4288,
+        4288,
+        4288,
+        4288,
+        4288
+      ]
+    },
+    {
+      "shape": "float-control",
+      "asynchronous": true,
+      "beforeBytes": 520.0,
+      "afterBytes": 536.0,
+      "deltaBytes": 16,
+      "beforeSamples": [
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160
+      ],
+      "afterSamples": [
+        4288,
+        4288,
+        4288,
+        4288,
+        4288,
+        4288,
+        4288,
+        4288
+      ]
+    },
+    {
+      "shape": "int",
+      "asynchronous": false,
+      "beforeBytes": 456.0,
+      "afterBytes": 456.0,
+      "deltaBytes": 0,
+      "beforeSamples": [
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648
+      ],
+      "afterSamples": [
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648
+      ]
+    },
+    {
+      "shape": "int",
+      "asynchronous": true,
+      "beforeBytes": 456.0,
+      "afterBytes": 456.0,
+      "deltaBytes": 0,
+      "beforeSamples": [
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648
+      ],
+      "afterSamples": [
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648
+      ]
+    },
+    {
+      "shape": "shadow-control",
+      "asynchronous": false,
+      "beforeBytes": 472.0,
+      "afterBytes": 472.0,
+      "deltaBytes": 0,
+      "beforeSamples": [
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776
+      ],
+      "afterSamples": [
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776
+      ]
+    },
+    {
+      "shape": "shadow-control",
+      "asynchronous": true,
+      "beforeBytes": 472.0,
+      "afterBytes": 472.0,
+      "deltaBytes": 0,
+      "beforeSamples": [
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776
+      ],
+      "afterSamples": [
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776
+      ]
+    },
+    {
+      "shape": "string",
+      "asynchronous": false,
+      "beforeBytes": 312.0,
+      "afterBytes": 312.0,
+      "deltaBytes": 0,
+      "beforeSamples": [
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496
+      ],
+      "afterSamples": [
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496
+      ]
+    },
+    {
+      "shape": "string",
+      "asynchronous": true,
+      "beforeBytes": 312.0,
+      "afterBytes": 312.0,
+      "deltaBytes": 0,
+      "beforeSamples": [
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496
+      ],
+      "afterSamples": [
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496
+      ]
+    },
+    {
+      "shape": "wide",
+      "asynchronous": false,
+      "beforeBytes": 744.0,
+      "afterBytes": 744.0,
+      "deltaBytes": 0,
+      "beforeSamples": [
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952
+      ],
+      "afterSamples": [
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952
+      ]
+    },
+    {
+      "shape": "wide",
+      "asynchronous": true,
+      "beforeBytes": 744.0,
+      "afterBytes": 744.0,
+      "deltaBytes": 0,
+      "beforeSamples": [
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952
+      ],
+      "afterSamples": [
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952
+      ]
+    },
+    {
+      "shape": "zero-control",
+      "asynchronous": false,
+      "beforeBytes": 312.0,
+      "afterBytes": 360.0,
+      "deltaBytes": 48,
+      "beforeSamples": [
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496
+      ],
+      "afterSamples": [
+        2880,
+        2880,
+        2880,
+        2880,
+        2880,
+        2880,
+        2880,
+        2880
+      ]
+    },
+    {
+      "shape": "zero-control",
+      "asynchronous": true,
+      "beforeBytes": 312.0,
+      "afterBytes": 360.0,
+      "deltaBytes": 48,
+      "beforeSamples": [
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496
+      ],
+      "afterSamples": [
+        2880,
+        2880,
+        2880,
+        2880,
+        2880,
+        2880,
+        2880,
+        2880
+      ]
+    }
+  ],
+  "contract": "Presence-sized general str array increases some calls;codec removes private byte copy. No latency gain claim,no binder widening."
+}

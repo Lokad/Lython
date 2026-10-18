@@ -292,6 +292,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [str keyword/default correction](benchmarks/results/2026-10-18-str-keywords/README.md)
+at `b7d67a60` plus its frozen three-file patch fixes 24 baseline regression cases.
+Native direct-call allocations remain unchanged. General presence-aware calls
+can allocate16B more (zero arguments48B);a two-byte codec control saves24B by
+borrowing input. This is a correctness tradeoff;no elapsed or CPython gain claim.
+
 The [ordinary native str call change](benchmarks/results/2026-10-18-native-str-call/README.md)
 at `7cb7e8ec` plus its frozen three-file patch saves 32 B per integer/string call
 through either API. All 14 allocation controls and 252 fuel/admission records

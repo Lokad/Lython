@@ -1,0 +1,496 @@
+{
+  "base": "b7d67a60d231318ea4799ce8ef7bbf9cfa6f99ea",
+  "librarySha256": "d21c101d8fa7a4c3d3c70eeee9e9ee256850d48708a453735c8af247d2cea88c",
+  "reference": "CPython3.13.2",
+  "semanticOnly": true,
+  "programs": 30,
+  "publicRuns": 60,
+  "captures": [
+    {
+      "label": "empty",
+      "source": "try:\n value=str()\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "ok ''\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "integer-object",
+      "source": "try:\n value=str(object=12)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok '12'\n"
+    },
+    {
+      "label": "string-object",
+      "source": "try:\n value=str(object='text')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok 'text'\n"
+    },
+    {
+      "label": "none-object",
+      "source": "try:\n value=str(object=None)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok 'None'\n"
+    },
+    {
+      "label": "codec-object",
+      "source": "try:\n value=str(object=b'\\xc3\\xa9',encoding='utf-8')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok '\u00e9'\n"
+    },
+    {
+      "label": "encoding-only",
+      "source": "try:\n value=str(encoding='utf-8')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "errors-only",
+      "source": "try:\n value=str(errors='ignore')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "unknown-encoding-no-object",
+      "source": "try:\n value=str(encoding='missing-codec')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "unknown-errors-no-object",
+      "source": "try:\n value=str(errors='missing-handler')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "bad-encoding-no-object",
+      "source": "try:\n value=str(encoding=12)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "none-errors-no-object",
+      "source": "try:\n value=str(errors=None)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "none-object-with-codec",
+      "source": "try:\n value=str(object=None,encoding='utf-8')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "string-object-with-codec",
+      "source": "try:\n value=str(object='text',encoding='utf-8')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "ignore-with-default-encoding",
+      "source": "try:\n value=str(b'\\xff',errors='ignore')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "keyword-ignore-default-encoding",
+      "source": "try:\n value=str(object=b'\\xff',errors='ignore')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "keyword-replace-default-encoding",
+      "source": "try:\n value=str(object=b'\\xff',errors='replace')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok '\ufffd'\n"
+    },
+    {
+      "label": "all-keywords",
+      "source": "try:\n value=str(object=b'plain',encoding='utf-8',errors='strict')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok 'plain'\n"
+    },
+    {
+      "label": "duplicate-object",
+      "source": "try:\n value=str(12,object=23)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "duplicate-encoding",
+      "source": "try:\n value=str(b'plain','utf-8',encoding='ascii')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "bad-codec-first",
+      "source": "try:\n value=str(object=12,encoding=None)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "bad-errors-first",
+      "source": "try:\n value=str(object='text',errors=12)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "bad-both-no-object",
+      "source": "try:\n value=str(encoding=None,errors=12)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "unknown-codec-empty",
+      "source": "try:\n value=str(object=b'',encoding='missing-codec')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "unknown-errors-empty",
+      "source": "try:\n value=str(object=b'',errors='missing-handler')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "unexpected-name",
+      "source": "try:\n value=str(unknown=1)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "too-many",
+      "source": "try:\n value=str(1,2,3,4)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "duplicate-expanded-object",
+      "source": "try:\n value=str(object=12,**{'object':13})\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "positional-none-codec",
+      "source": "try:\n value=str(None,'utf-8')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "positional-bad-encoding",
+      "source": "try:\n value=str(12,encoding=None)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "argument-order",
+      "source": "events=[]\ndef mark(label,value):\n events.append(label)\n return value\ntry:str(object=mark('object',12),encoding=mark('encoding',None),errors=mark('errors',12))\nexcept TypeError:print(events)",
+      "asynchronous": false,
+      "matches": true,
+      "lython": "['object', 'encoding', 'errors']\n",
+      "cpython": "['object', 'encoding', 'errors']\n"
+    },
+    {
+      "label": "empty",
+      "source": "try:\n value=str()\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "ok ''\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "integer-object",
+      "source": "try:\n value=str(object=12)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok '12'\n"
+    },
+    {
+      "label": "string-object",
+      "source": "try:\n value=str(object='text')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok 'text'\n"
+    },
+    {
+      "label": "none-object",
+      "source": "try:\n value=str(object=None)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok 'None'\n"
+    },
+    {
+      "label": "codec-object",
+      "source": "try:\n value=str(object=b'\\xc3\\xa9',encoding='utf-8')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok '\u00e9'\n"
+    },
+    {
+      "label": "encoding-only",
+      "source": "try:\n value=str(encoding='utf-8')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "errors-only",
+      "source": "try:\n value=str(errors='ignore')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "unknown-encoding-no-object",
+      "source": "try:\n value=str(encoding='missing-codec')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "unknown-errors-no-object",
+      "source": "try:\n value=str(errors='missing-handler')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "bad-encoding-no-object",
+      "source": "try:\n value=str(encoding=12)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "none-errors-no-object",
+      "source": "try:\n value=str(errors=None)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "none-object-with-codec",
+      "source": "try:\n value=str(object=None,encoding='utf-8')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "string-object-with-codec",
+      "source": "try:\n value=str(object='text',encoding='utf-8')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "ignore-with-default-encoding",
+      "source": "try:\n value=str(b'\\xff',errors='ignore')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "keyword-ignore-default-encoding",
+      "source": "try:\n value=str(object=b'\\xff',errors='ignore')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "keyword-replace-default-encoding",
+      "source": "try:\n value=str(object=b'\\xff',errors='replace')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok '\ufffd'\n"
+    },
+    {
+      "label": "all-keywords",
+      "source": "try:\n value=str(object=b'plain',encoding='utf-8',errors='strict')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok 'plain'\n"
+    },
+    {
+      "label": "duplicate-object",
+      "source": "try:\n value=str(12,object=23)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "duplicate-encoding",
+      "source": "try:\n value=str(b'plain','utf-8',encoding='ascii')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "bad-codec-first",
+      "source": "try:\n value=str(object=12,encoding=None)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "bad-errors-first",
+      "source": "try:\n value=str(object='text',errors=12)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "bad-both-no-object",
+      "source": "try:\n value=str(encoding=None,errors=12)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "unknown-codec-empty",
+      "source": "try:\n value=str(object=b'',encoding='missing-codec')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "unknown-errors-empty",
+      "source": "try:\n value=str(object=b'',errors='missing-handler')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": false,
+      "lython": "TypeError\n",
+      "cpython": "ok ''\n"
+    },
+    {
+      "label": "unexpected-name",
+      "source": "try:\n value=str(unknown=1)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "too-many",
+      "source": "try:\n value=str(1,2,3,4)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "duplicate-expanded-object",
+      "source": "try:\n value=str(object=12,**{'object':13})\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "positional-none-codec",
+      "source": "try:\n value=str(None,'utf-8')\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "positional-bad-encoding",
+      "source": "try:\n value=str(12,encoding=None)\n print('ok',repr(value))\nexcept Exception as error:\n print(type(error).__name__)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "TypeError\n",
+      "cpython": "TypeError\n"
+    },
+    {
+      "label": "argument-order",
+      "source": "events=[]\ndef mark(label,value):\n events.append(label)\n return value\ntry:str(object=mark('object',12),encoding=mark('encoding',None),errors=mark('errors',12))\nexcept TypeError:print(events)",
+      "asynchronous": true,
+      "matches": true,
+      "lython": "['object', 'encoding', 'errors']\n",
+      "cpython": "['object', 'encoding', 'errors']\n"
+    }
+  ],
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "6f8523e69f62eea8f61cb4176de0080f1fbfc6a5cfbbe67d6329ddf0aafc4a31",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "b0bd61b2a9a94e11c1367dd0e2c6143b28bd0c1491c80f476e360410b5dbb73e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "8f6449fcbd1d1a0267c4dbebad159245508ec3a22ce0ecce369912032872b974",
+    "src/Lokad.Lython/Runtime/Calls/CallBinder.cs": "26b06815e595d18cd38c0bd3e71efe7b6ab5914f67049c354b87dbd35a00a8ed"
+  }
+}

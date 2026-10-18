@@ -2773,9 +2773,9 @@ internal sealed partial class LythonRuntime
     private static readonly TypeNewMethod _notImplementedTypeNewSlot;
     private static readonly FrozenDictionary<PyBuiltinRuntimeType, TypeNewMethod> _datetimeTypeNewSlots;
 
-    private sealed class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
+    private class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
-        private BuiltinCallable(
+        protected BuiltinCallable(
             LythonCallableSignature signature,
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)

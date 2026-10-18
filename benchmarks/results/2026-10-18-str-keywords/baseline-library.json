@@ -1,0 +1,6 @@
+{
+  "commit": "b7d67a60d231318ea4799ce8ef7bbf9cfa6f99ea",
+  "librarySha256": "d21c101d8fa7a4c3d3c70eeee9e9ee256850d48708a453735c8af247d2cea88c",
+  "publicTestsSha256": "18a62b40edd906d1bfe2be10a7c98715766b4d7cf6b8df864c04f133455179f0",
+  "source": "Current public-only tests against immutable baseline package;no new public APIs required."
+}

@@ -2181,6 +2181,15 @@ evaluation precede lookup; the evaluated receiver, key and lookup storage stay
 funded through suspension. A miss, including withdrawal of a matching entry
 during equality, raises `KeyError` with the original key.
 
+`str(object='', encoding='utf-8', errors='strict')` accepts its arguments by
+position or keyword. Supplied codec names must be strings; an explicit `None`
+is distinct from omission. Without an object, validly typed codec options still
+produce an empty string without codec lookup. With an object and no codec
+options, ordinary string conversion applies. Supplying either codec option
+requires bytes, defaulting the other option to UTF-8 or strict handling.
+Empty bytes produce an empty string after name-type validation without resolving
+codec names. Nonempty decoding uses Lython's supported codec/error-handler set.
+
 Implicit `str`, `repr`, `ascii`, `format` and f-string conversions resolve
 `__str__` / `__repr__` / `__format__` on the type's method resolution order and
 bind descriptors.

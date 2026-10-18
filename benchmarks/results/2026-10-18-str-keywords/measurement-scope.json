@@ -1,0 +1,12 @@
+{
+  "base": "b7d67a60d231318ea4799ce8ef7bbf9cfa6f99ea",
+  "diagnosticSha256": "5e0ae0349dadd9115ba0fa0f31db9ffc346145472bbbb3081dae68c71cf7d7dc",
+  "captureCountPerRevision": 1,
+  "warmups": 2,
+  "samples": 8,
+  "invocationsPerSample": 8,
+  "tests": 28,
+  "boundary": "Reused native warm call diagnostic;prepared code/context/input;no startup/compilation/projection/IO or elapsed measurement. Pure async values complete on measured thread.",
+  "expected": "Native integer/wide/alias/string allocations/work/funding unchanged;252 existing fuel/admission records identical. General str uses3-slot presence array:float/bytes/expanded/custom +16B,zero +48B;shadow unchanged. Codec borrows input,expected2-byte codec control saves24B net. Correct keyword results qualified separately by public cases.",
+  "stop": "Str signature/defaults and owned input borrowing only;no generic binder options,other builtin contracts or codec implementation changes."
+}

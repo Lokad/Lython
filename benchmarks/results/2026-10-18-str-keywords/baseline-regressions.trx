@@ -1,0 +1,764 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="c4fe79df-1c10-4e18-b9ed-43c02704852f" name="JoannesVermorel@LOKAD-0399 2026-10-18 20:53:39" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T20:53:39.2620879+02:00" queuing="2026-10-18T20:53:39.2620880+02:00" start="2026-10-18T20:53:36.1483209+02:00" finish="2026-10-18T20:53:39.3970350+02:00" />
+  <TestSettings name="default" id="7b993c8e-d55f-4ce1-a014-1d70e2342325">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_20_53_39" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="cf871429-44a9-4f75-a046-44d97c6cd924" testId="6727f021-7f44-e468-18a8-5d268c5f2525" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;encoding-only&quot;, source: &quot;try:\n value=str(encoding='utf-8')\n print('ok',re&quot;···, expected: &quot;ok ''\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0005330" startTime="2026-10-18T20:53:39.2544534+02:00" endTime="2026-10-18T20:53:39.2544759+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cf871429-44a9-4f75-a046-44d97c6cd924">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok ''\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="07810e13-7bfd-457a-8f8a-32304fa18da4" testId="0bafa6bb-c5d6-8f0f-aaf9-7628ba52210e" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;integer-object&quot;, source: &quot;try:\n value=str(object=12)\n print('ok',repr(valu&quot;···, expected: &quot;ok '12'\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0760218" startTime="2026-10-18T20:53:39.1580415+02:00" endTime="2026-10-18T20:53:39.2341593+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="07810e13-7bfd-457a-8f8a-32304fa18da4">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok '12'\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="baacdb75-a544-4f61-8d91-3194ca58867b" testId="7fee800a-4ba5-9781-3d47-5e4ff30dd55d" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(descriptor: False, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0010289" startTime="2026-10-18T20:53:39.1560074+02:00" endTime="2026-10-18T20:53:39.1570720+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="baacdb75-a544-4f61-8d91-3194ca58867b">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Same() Failure: Values are not the same instance&#xD;
+Expected: Task { Status = WaitingForActivation }&#xD;
+Actual:   Task&lt;LythonExecutionResult,&lt;&lt;RunAsyncCore&gt;g__RunAndDisposeAsync|26_1&gt;d&gt; { Status = RanToCompletion }</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 93&#xD;
+   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 108&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9f0f0ce1-c693-45d0-bf87-18336b1c3268" testId="bcd7b470-866c-c4bf-9478-291b3ef20be4" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;all-keywords&quot;, source: &quot;try:\n value=str(object=b'plain',encoding='utf-8',&quot;···, expected: &quot;ok 'plain'\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0005698" startTime="2026-10-18T20:53:39.2536560+02:00" endTime="2026-10-18T20:53:39.2536922+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9f0f0ce1-c693-45d0-bf87-18336b1c3268">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok 'plain'\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="71d864b7-3657-428b-8a39-80cfa8ef25ae" testId="3633cae6-312c-272e-88d1-ed27cb9373da" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;bad-codec-first&quot;, source: &quot;try:\n value=str(object=12,encoding=None)\n print(&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0008330" startTime="2026-10-18T20:53:39.2677299+02:00" endTime="2026-10-18T20:53:39.2686416+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="71d864b7-3657-428b-8a39-80cfa8ef25ae" />
+    <UnitTestResult executionId="482cdfdc-934a-4fc5-bdbf-a8347fde5c25" testId="aacf7017-895b-c5c4-f558-5a73f7bde74f" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;identity-and-type&quot;, source: &quot;value='café \ud83d\ude00'\nprint(str(object=value) is value,&quot;···, expected: &quot;True str builtins True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0010985" startTime="2026-10-18T20:53:39.3071920+02:00" endTime="2026-10-18T20:53:39.3083700+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="482cdfdc-934a-4fc5-bdbf-a8347fde5c25">
+      <Output>
+        <ErrorInfo>
+          <Message>Builtin 'str' got an unexpected keyword argument 'object'.</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 60&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0cd98cb3-090e-4627-959d-3040e89fbd91" testId="960db7d4-fad0-a87b-a8e4-f7882b261f0f" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;duplicate-object&quot;, source: &quot;try:\n value=str(12,object=23)\n print('ok',repr(v&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0008226" startTime="2026-10-18T20:53:39.3086314+02:00" endTime="2026-10-18T20:53:39.3093481+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0cd98cb3-090e-4627-959d-3040e89fbd91" />
+    <UnitTestResult executionId="a4388dd0-9f97-4822-bd82-70a293a1a760" testId="20272a29-5e7b-1d3e-a6ca-87b1f02f2755" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;string-object-with-codec&quot;, source: &quot;try:\n value=str(object='text',encoding='utf-8')\n&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0086610" startTime="2026-10-18T20:53:39.2345716+02:00" endTime="2026-10-18T20:53:39.2433094+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a4388dd0-9f97-4822-bd82-70a293a1a760" />
+    <UnitTestResult executionId="84692b92-2ff2-4257-bdb5-26a19d816714" testId="bc251a55-170c-e099-10af-db7417c6e4ae" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;positional-bad-encoding&quot;, source: &quot;try:\n value=str(12,encoding=None)\n print('ok',re&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0008964" startTime="2026-10-18T20:53:39.2666769+02:00" endTime="2026-10-18T20:53:39.2676551+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="84692b92-2ff2-4257-bdb5-26a19d816714" />
+    <UnitTestResult executionId="ab86529a-2001-4376-941b-7a29470a2be7" testId="09ef6463-73d5-3726-a0f9-b7da8965d556" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;unknown-encoding-no-object&quot;, source: &quot;try:\n value=str(encoding='missing-codec')\n print&quot;···, expected: &quot;ok ''\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0146651" startTime="2026-10-18T20:53:39.2841833+02:00" endTime="2026-10-18T20:53:39.2842078+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ab86529a-2001-4376-941b-7a29470a2be7">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok ''\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3dda3e3b-0183-443e-99d0-c66daafbcb61" testId="6e25cbea-37a1-7ccb-f74a-b0d80ed9d30a" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;none-object-with-codec&quot;, source: &quot;try:\n value=str(object=None,encoding='utf-8')\n p&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0010651" startTime="2026-10-18T20:53:39.2844300+02:00" endTime="2026-10-18T20:53:39.2853958+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3dda3e3b-0183-443e-99d0-c66daafbcb61" />
+    <UnitTestResult executionId="b2473334-f870-405c-a33c-e6cd87f06bc9" testId="50fff1d0-6dd4-c190-e819-ce4e9d119ce4" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;custom&quot;, source: &quot;events=[]\nclass Value:\n def __str__(self):events&quot;···, expected: &quot;custom ['str']\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0029229" startTime="2026-10-18T20:53:39.3458636+02:00" endTime="2026-10-18T20:53:39.3488305+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b2473334-f870-405c-a33c-e6cd87f06bc9">
+      <Output>
+        <ErrorInfo>
+          <Message>Builtin 'str' got an unexpected keyword argument 'object'.</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 60&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3d48c6d8-6f37-45a2-bedb-bfb37f37d482" testId="3f9b7a90-e875-fe91-f839-62d9b11821b3" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;duplicate-encoding&quot;, source: &quot;try:\n value=str(b'plain','utf-8',encoding='ascii'&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0008990" startTime="2026-10-18T20:53:39.3111653+02:00" endTime="2026-10-18T20:53:39.3121617+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3d48c6d8-6f37-45a2-bedb-bfb37f37d482" />
+    <UnitTestResult executionId="5297f40b-f831-43d9-97a4-36cc4257e38b" testId="8ccdb2d0-c137-1b72-8ce4-b812b1614e65" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;errors-only&quot;, source: &quot;try:\n value=str(errors='ignore')\n print('ok',rep&quot;···, expected: &quot;ok ''\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0004402" startTime="2026-10-18T20:53:39.3129792+02:00" endTime="2026-10-18T20:53:39.3132904+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5297f40b-f831-43d9-97a4-36cc4257e38b">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok ''\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3930d81a-3dad-4a16-9b0d-14dd0c9f1478" testId="d78c6c9e-31ee-a8b5-460d-4453896efb84" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;keyword-replace-default-encoding&quot;, source: &quot;try:\n value=str(object=b'\\xff',errors='replace')&quot;···, expected: &quot;ok '�'\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0005413" startTime="2026-10-18T20:53:39.2541611+02:00" endTime="2026-10-18T20:53:39.2541857+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3930d81a-3dad-4a16-9b0d-14dd0c9f1478">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok '�'\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="222d8fca-36ce-4d13-a1af-4e7afc84ee66" testId="81ef7f3a-46df-ead6-408e-41deac50329a" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;imported-alias&quot;, source: &quot;from builtins import str as constructor\nprint(con&quot;···, expected: &quot;None\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0084114" startTime="2026-10-18T20:53:39.2547527+02:00" endTime="2026-10-18T20:53:39.2630906+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="222d8fca-36ce-4d13-a1af-4e7afc84ee66">
+      <Output>
+        <ErrorInfo>
+          <Message>Builtin 'str' got an unexpected keyword argument 'object'.</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 60&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="32f2a29b-30ea-4957-bb90-4a8a6c1b7530" testId="926c9b8e-594f-f6e5-76fe-0c104195de0d" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;positional-none-codec&quot;, source: &quot;try:\n value=str(None,'utf-8')\n print('ok',repr(v&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0009090" startTime="2026-10-18T20:53:39.3418059+02:00" endTime="2026-10-18T20:53:39.3424122+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="32f2a29b-30ea-4957-bb90-4a8a6c1b7530" />
+    <UnitTestResult executionId="1461e1fd-a615-441e-bcc6-8249cfa65cb0" testId="7f42e607-b519-e7dd-69aa-795de5a2ef96" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;unexpected-name&quot;, source: &quot;try:\n value=str(unknown=1)\n print('ok',repr(valu&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0008529" startTime="2026-10-18T20:53:39.2478440+02:00" endTime="2026-10-18T20:53:39.2487952+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1461e1fd-a615-441e-bcc6-8249cfa65cb0" />
+    <UnitTestResult executionId="7c3fcacc-98e1-493a-bc30-fb773bb7fe21" testId="85ed8ba1-a892-a733-f191-e06a3990ef7f" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(descriptor: False, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0012142" startTime="2026-10-18T20:53:39.1555967+02:00" endTime="2026-10-18T20:53:39.1557412+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7c3fcacc-98e1-493a-bc30-fb773bb7fe21">
+      <Output>
+        <ErrorInfo>
+          <Message>Builtin 'str' got an unexpected keyword argument 'object'.</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 99&#xD;
+   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 108&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e9a249a0-d2be-4a55-a1c2-57765eaa1388" testId="8447d28d-d76c-f0b9-99dd-fe676d44f15b" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;codec-object&quot;, source: &quot;try:\n value=str(object=b'\\xc3\\xa9',encoding='ut&quot;···, expected: &quot;ok 'é'\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0004769" startTime="2026-10-18T20:53:39.3094082+02:00" endTime="2026-10-18T20:53:39.3099225+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e9a249a0-d2be-4a55-a1c2-57765eaa1388">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok 'é'\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7401b774-d6fe-466e-ae51-39ab3723d152" testId="181506a0-ee7c-fa80-8854-3ba1b7a0e89d" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;alias&quot;, source: &quot;constructor=str\nprint(constructor(object=12))&quot;, expected: &quot;12\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0009588" startTime="2026-10-18T20:53:39.2539881+02:00" endTime="2026-10-18T20:53:39.2540134+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7401b774-d6fe-466e-ae51-39ab3723d152">
+      <Output>
+        <ErrorInfo>
+          <Message>Builtin 'str' got an unexpected keyword argument 'object'.</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 60&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="37024ea4-5158-4366-9afe-66981360dd4d" testId="429b9e48-45a4-b984-539a-001f2f594451" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;unknown-errors-no-object&quot;, source: &quot;try:\n value=str(errors='missing-handler')\n print&quot;···, expected: &quot;ok ''\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0004324" startTime="2026-10-18T20:53:39.3135135+02:00" endTime="2026-10-18T20:53:39.3138220+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="37024ea4-5158-4366-9afe-66981360dd4d">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok ''\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4bc6967f-7ac8-4c52-88ae-5fb2fdcab5ac" testId="25b62aab-2962-5843-4986-c0e419999f23" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;duplicate-expanded-object&quot;, source: &quot;try:\n value=str(object=12,**{'object':13})\n prin&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0023582" startTime="2026-10-18T20:53:39.3434945+02:00" endTime="2026-10-18T20:53:39.3458028+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4bc6967f-7ac8-4c52-88ae-5fb2fdcab5ac" />
+    <UnitTestResult executionId="692c15bd-ed25-4ec1-a50e-9a268992ba65" testId="b663be03-e485-a867-8ed1-6501a6e23073" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;bad-both-no-object&quot;, source: &quot;try:\n value=str(encoding=None,errors=12)\n print(&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0009664" startTime="2026-10-18T20:53:39.3103290+02:00" endTime="2026-10-18T20:53:39.3111090+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="692c15bd-ed25-4ec1-a50e-9a268992ba65" />
+    <UnitTestResult executionId="3924adac-157d-4f18-9361-095a41045a54" testId="02297ddc-3464-be92-b15c-f7af7ac507cf" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;string-object&quot;, source: &quot;try:\n value=str(object='text')\n print('ok',repr(&quot;···, expected: &quot;ok 'text'\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0004479" startTime="2026-10-18T20:53:39.3157831+02:00" endTime="2026-10-18T20:53:39.3159872+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3924adac-157d-4f18-9361-095a41045a54">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok 'text'\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5f9ea9a1-e5cf-4709-ab87-6cb9bad9b3a9" testId="4ab1392a-e88e-676b-bd3a-3674de56d884" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;none-object&quot;, source: &quot;try:\n value=str(object=None)\n print('ok',repr(va&quot;···, expected: &quot;ok 'None'\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0005271" startTime="2026-10-18T20:53:39.2695609+02:00" endTime="2026-10-18T20:53:39.2695956+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5f9ea9a1-e5cf-4709-ab87-6cb9bad9b3a9">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok 'None'\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3d821d0c-6636-4ff6-bb36-0c0e02c93bc9" testId="c86f23d6-2ad7-3e3c-4c7c-65cc47a838b6" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;type-metadata&quot;, source: &quot;first=str.__mro__\nprint(first is str.__mro__,[t._&quot;···, expected: &quot;True ['str', 'object'] type\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0215846" startTime="2026-10-18T20:53:39.2854610+02:00" endTime="2026-10-18T20:53:39.3071311+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3d821d0c-6636-4ff6-bb36-0c0e02c93bc9" />
+    <UnitTestResult executionId="5e8da414-5530-4ab2-988d-d11162d1ccc4" testId="58dbb9e5-5108-3b1b-0216-b3c81c238f10" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;none-errors-no-object&quot;, source: &quot;try:\n value=str(errors=None)\n print('ok',repr(va&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0024933" startTime="2026-10-18T20:53:39.2543843+02:00" endTime="2026-10-18T20:53:39.2544101+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5e8da414-5530-4ab2-988d-d11162d1ccc4" />
+    <UnitTestResult executionId="fc9ca544-1ce6-423d-a8b7-691488ce66ed" testId="9fca9f39-4cf6-37e8-a086-dcf328f58806" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(descriptor: True, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0066768" startTime="2026-10-18T20:53:39.1548251+02:00" endTime="2026-10-18T20:53:39.1548821+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fc9ca544-1ce6-423d-a8b7-691488ce66ed">
+      <Output>
+        <ErrorInfo>
+          <Message>Builtin 'str' got an unexpected keyword argument 'object'.</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 99&#xD;
+   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 108&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c176fdb6-6f7b-4cb4-ac31-8f4308c60431" testId="207263cb-5672-65e8-03f1-d8a50c4ef49d" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;expanded&quot;, source: &quot;options={'object':b'\\xff','errors':'replace'}\npr&quot;···, expected: &quot;�\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0095820" startTime="2026-10-18T20:53:39.3303653+02:00" endTime="2026-10-18T20:53:39.3400068+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c176fdb6-6f7b-4cb4-ac31-8f4308c60431">
+      <Output>
+        <ErrorInfo>
+          <Message>Builtin 'str' got an unexpected keyword argument 'object'.</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 60&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="954ee417-edbb-4c64-8df7-84d50cb70480" testId="2acfd4ce-3948-8388-27ba-a5d0cd28dc5a" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;bad-encoding-no-object&quot;, source: &quot;try:\n value=str(encoding=12)\n print('ok',repr(va&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0008716" startTime="2026-10-18T20:53:39.3144168+02:00" endTime="2026-10-18T20:53:39.3148402+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="954ee417-edbb-4c64-8df7-84d50cb70480" />
+    <UnitTestResult executionId="068bd47f-e0bb-4c92-bce3-1a05cd3b7832" testId="e8e65d3c-c533-dea2-40dd-4decd93ccc47" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;keyword-ignore-default-encoding&quot;, source: &quot;try:\n value=str(object=b'\\xff',errors='ignore')\&quot;···, expected: &quot;ok ''\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0004887" startTime="2026-10-18T20:53:39.3148972+02:00" endTime="2026-10-18T20:53:39.3154444+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="068bd47f-e0bb-4c92-bce3-1a05cd3b7832">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok ''\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="faa9a226-3bcc-423b-ad84-f11c92e7f68d" testId="7d591ee1-2894-a9e2-09e0-90222c7e1ed2" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;bad-errors-first&quot;, source: &quot;try:\n value=str(object='text',errors=12)\n print(&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0009036" startTime="2026-10-18T20:53:39.2471111+02:00" endTime="2026-10-18T20:53:39.2477701+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="faa9a226-3bcc-423b-ad84-f11c92e7f68d" />
+    <UnitTestResult executionId="bd3341c4-cc8f-4950-92a6-8fa42b7a4dc3" testId="eee96555-6ca2-d6e0-6c2c-f37ad5ad4fd0" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;argument-order&quot;, source: &quot;events=[]\ndef mark(label,value):\n events.append(&quot;···, expected: &quot;['object', 'encoding', 'errors']\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0141744" startTime="2026-10-18T20:53:39.3162591+02:00" endTime="2026-10-18T20:53:39.3303073+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bd3341c4-cc8f-4950-92a6-8fa42b7a4dc3" />
+    <UnitTestResult executionId="bf13eae3-9c55-4ab3-8f0f-d6e134dd9f38" testId="2a9a1cfe-f56e-d3a4-6817-9f8e1daca137" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;new-slot&quot;, source: &quot;print(str.__new__(str,object=12))&quot;, expected: &quot;12\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0007635" startTime="2026-10-18T20:53:39.3424734+02:00" endTime="2026-10-18T20:53:39.3432866+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bf13eae3-9c55-4ab3-8f0f-d6e134dd9f38">
+      <Output>
+        <ErrorInfo>
+          <Message>Builtin 'str' got an unexpected keyword argument 'object'.</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 60&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d9b028ff-7c2b-4f9a-8456-28e63a1ba4cb" testId="02817d91-3ad0-e3a4-e96a-43cc43c770c2" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(descriptor: True, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.3835382" startTime="2026-10-18T20:53:38.7691690+02:00" endTime="2026-10-18T20:53:39.1468149+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d9b028ff-7c2b-4f9a-8456-28e63a1ba4cb">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Same() Failure: Values are not the same instance&#xD;
+Expected: Task { Status = WaitingForActivation }&#xD;
+Actual:   Task&lt;LythonExecutionResult,&lt;&lt;RunAsyncCore&gt;g__RunAndDisposeAsync|26_1&gt;d&gt; { Status = RanToCompletion }</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 93&#xD;
+   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 108&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d65523da-e2e0-4e24-bd19-6588927dd678" testId="fd13d57c-36e7-1aea-48f4-997935ef58d0" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;unknown-codec-empty&quot;, source: &quot;try:\n value=str(object=b'',encoding='missing-code&quot;···, expected: &quot;ok ''\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0004949" startTime="2026-10-18T20:53:39.3126651+02:00" endTime="2026-10-18T20:53:39.3127596+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d65523da-e2e0-4e24-bd19-6588927dd678">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok ''\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="89738da4-63d5-43f5-b497-fea86b92dcdd" testId="61e29982-8f90-c0f6-b72b-f9db10ece34f" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;unknown-errors-empty&quot;, source: &quot;try:\n value=str(object=b'',errors='missing-handle&quot;···, expected: &quot;ok ''\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0005116" startTime="2026-10-18T20:53:39.3490512+02:00" endTime="2026-10-18T20:53:39.3494393+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="89738da4-63d5-43f5-b497-fea86b92dcdd">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok ''\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="154f92a9-29c9-493d-8481-06e4c21ea770" testId="144fd456-628a-539a-f1d8-8f1078d9f47a" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;too-many&quot;, source: &quot;try:\n value=str(1,2,3,4)\n print('ok',repr(value)&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0011359" startTime="2026-10-18T20:53:39.3402600+02:00" endTime="2026-10-18T20:53:39.3413059+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="154f92a9-29c9-493d-8481-06e4c21ea770" />
+    <UnitTestResult executionId="203a760a-1a97-4b97-af4d-586abf61f82b" testId="b03fe476-2412-cc51-ddbe-03a31f85d230" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;empty&quot;, source: &quot;try:\n value=str()\n print('ok',repr(value))\nexce&quot;···, expected: &quot;ok ''\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0033120" startTime="2026-10-18T20:53:39.2634259+02:00" endTime="2026-10-18T20:53:39.2665913+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="203a760a-1a97-4b97-af4d-586abf61f82b" />
+    <UnitTestResult executionId="585f6ef2-8169-41ac-9b58-10e11154bf57" testId="0c4d82db-2bc9-345c-1df3-fbfa9fc04b94" testName="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;ignore-with-default-encoding&quot;, source: &quot;try:\n value=str(b'\\xff',errors='ignore')\n print&quot;···, expected: &quot;ok ''\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0034745" startTime="2026-10-18T20:53:39.2438499+02:00" endTime="2026-10-18T20:53:39.2467458+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="585f6ef2-8169-41ac-9b58-10e11154bf57">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ok ''\n"&#xD;
+Actual:   "TypeError\n"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs:line 61&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;string-object-with-codec&quot;, source: &quot;try:\n value=str(object='text',encoding='utf-8')\n&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="20272a29-5e7b-1d3e-a6ca-87b1f02f2755">
+      <Execution id="a4388dd0-9f97-4822-bd82-70a293a1a760" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;errors-only&quot;, source: &quot;try:\n value=str(errors='ignore')\n print('ok',rep&quot;···, expected: &quot;ok ''\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="8ccdb2d0-c137-1b72-8ce4-b812b1614e65">
+      <Execution id="5297f40b-f831-43d9-97a4-36cc4257e38b" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;unknown-errors-empty&quot;, source: &quot;try:\n value=str(object=b'',errors='missing-handle&quot;···, expected: &quot;ok ''\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="61e29982-8f90-c0f6-b72b-f9db10ece34f">
+      <Execution id="89738da4-63d5-43f5-b497-fea86b92dcdd" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(descriptor: False, cancel: True)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="7fee800a-4ba5-9781-3d47-5e4ff30dd55d">
+      <Execution id="baacdb75-a544-4f61-8d91-3194ca58867b" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;bad-both-no-object&quot;, source: &quot;try:\n value=str(encoding=None,errors=12)\n print(&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="b663be03-e485-a867-8ed1-6501a6e23073">
+      <Execution id="692c15bd-ed25-4ec1-a50e-9a268992ba65" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;duplicate-expanded-object&quot;, source: &quot;try:\n value=str(object=12,**{'object':13})\n prin&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="25b62aab-2962-5843-4986-c0e419999f23">
+      <Execution id="4bc6967f-7ac8-4c52-88ae-5fb2fdcab5ac" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;custom&quot;, source: &quot;events=[]\nclass Value:\n def __str__(self):events&quot;···, expected: &quot;custom ['str']\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="50fff1d0-6dd4-c190-e819-ce4e9d119ce4">
+      <Execution id="b2473334-f870-405c-a33c-e6cd87f06bc9" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;argument-order&quot;, source: &quot;events=[]\ndef mark(label,value):\n events.append(&quot;···, expected: &quot;['object', 'encoding', 'errors']\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="eee96555-6ca2-d6e0-6c2c-f37ad5ad4fd0">
+      <Execution id="bd3341c4-cc8f-4950-92a6-8fa42b7a4dc3" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;encoding-only&quot;, source: &quot;try:\n value=str(encoding='utf-8')\n print('ok',re&quot;···, expected: &quot;ok ''\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="6727f021-7f44-e468-18a8-5d268c5f2525">
+      <Execution id="cf871429-44a9-4f75-a046-44d97c6cd924" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;type-metadata&quot;, source: &quot;first=str.__mro__\nprint(first is str.__mro__,[t._&quot;···, expected: &quot;True ['str', 'object'] type\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="c86f23d6-2ad7-3e3c-4c7c-65cc47a838b6">
+      <Execution id="3d821d0c-6636-4ff6-bb36-0c0e02c93bc9" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;none-object&quot;, source: &quot;try:\n value=str(object=None)\n print('ok',repr(va&quot;···, expected: &quot;ok 'None'\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="4ab1392a-e88e-676b-bd3a-3674de56d884">
+      <Execution id="5f9ea9a1-e5cf-4709-ab87-6cb9bad9b3a9" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;unexpected-name&quot;, source: &quot;try:\n value=str(unknown=1)\n print('ok',repr(valu&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="7f42e607-b519-e7dd-69aa-795de5a2ef96">
+      <Execution id="1461e1fd-a615-441e-bcc6-8249cfa65cb0" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;positional-none-codec&quot;, source: &quot;try:\n value=str(None,'utf-8')\n print('ok',repr(v&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="926c9b8e-594f-f6e5-76fe-0c104195de0d">
+      <Execution id="32f2a29b-30ea-4957-bb90-4a8a6c1b7530" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;unknown-errors-no-object&quot;, source: &quot;try:\n value=str(errors='missing-handler')\n print&quot;···, expected: &quot;ok ''\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="429b9e48-45a4-b984-539a-001f2f594451">
+      <Execution id="37024ea4-5158-4366-9afe-66981360dd4d" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;integer-object&quot;, source: &quot;try:\n value=str(object=12)\n print('ok',repr(valu&quot;···, expected: &quot;ok '12'\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="0bafa6bb-c5d6-8f0f-aaf9-7628ba52210e">
+      <Execution id="07810e13-7bfd-457a-8f8a-32304fa18da4" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;empty&quot;, source: &quot;try:\n value=str()\n print('ok',repr(value))\nexce&quot;···, expected: &quot;ok ''\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="b03fe476-2412-cc51-ddbe-03a31f85d230">
+      <Execution id="203a760a-1a97-4b97-af4d-586abf61f82b" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;string-object&quot;, source: &quot;try:\n value=str(object='text')\n print('ok',repr(&quot;···, expected: &quot;ok 'text'\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="02297ddc-3464-be92-b15c-f7af7ac507cf">
+      <Execution id="3924adac-157d-4f18-9361-095a41045a54" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(descriptor: True, cancel: True)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="02817d91-3ad0-e3a4-e96a-43cc43c770c2">
+      <Execution id="d9b028ff-7c2b-4f9a-8456-28e63a1ba4cb" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;bad-errors-first&quot;, source: &quot;try:\n value=str(object='text',errors=12)\n print(&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="7d591ee1-2894-a9e2-09e0-90222c7e1ed2">
+      <Execution id="faa9a226-3bcc-423b-ad84-f11c92e7f68d" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;unknown-codec-empty&quot;, source: &quot;try:\n value=str(object=b'',encoding='missing-code&quot;···, expected: &quot;ok ''\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="fd13d57c-36e7-1aea-48f4-997935ef58d0">
+      <Execution id="d65523da-e2e0-4e24-bd19-6588927dd678" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;duplicate-encoding&quot;, source: &quot;try:\n value=str(b'plain','utf-8',encoding='ascii'&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="3f9b7a90-e875-fe91-f839-62d9b11821b3">
+      <Execution id="3d48c6d8-6f37-45a2-bedb-bfb37f37d482" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;all-keywords&quot;, source: &quot;try:\n value=str(object=b'plain',encoding='utf-8',&quot;···, expected: &quot;ok 'plain'\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="bcd7b470-866c-c4bf-9478-291b3ef20be4">
+      <Execution id="9f0f0ce1-c693-45d0-bf87-18336b1c3268" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;ignore-with-default-encoding&quot;, source: &quot;try:\n value=str(b'\\xff',errors='ignore')\n print&quot;···, expected: &quot;ok ''\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="0c4d82db-2bc9-345c-1df3-fbfa9fc04b94">
+      <Execution id="585f6ef2-8169-41ac-9b58-10e11154bf57" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;positional-bad-encoding&quot;, source: &quot;try:\n value=str(12,encoding=None)\n print('ok',re&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="bc251a55-170c-e099-10af-db7417c6e4ae">
+      <Execution id="84692b92-2ff2-4257-bdb5-26a19d816714" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;bad-codec-first&quot;, source: &quot;try:\n value=str(object=12,encoding=None)\n print(&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="3633cae6-312c-272e-88d1-ed27cb9373da">
+      <Execution id="71d864b7-3657-428b-8a39-80cfa8ef25ae" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;keyword-ignore-default-encoding&quot;, source: &quot;try:\n value=str(object=b'\\xff',errors='ignore')\&quot;···, expected: &quot;ok ''\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="e8e65d3c-c533-dea2-40dd-4decd93ccc47">
+      <Execution id="068bd47f-e0bb-4c92-bce3-1a05cd3b7832" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;codec-object&quot;, source: &quot;try:\n value=str(object=b'\\xc3\\xa9',encoding='ut&quot;···, expected: &quot;ok 'é'\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="8447d28d-d76c-f0b9-99dd-fe676d44f15b">
+      <Execution id="e9a249a0-d2be-4a55-a1c2-57765eaa1388" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;alias&quot;, source: &quot;constructor=str\nprint(constructor(object=12))&quot;, expected: &quot;12\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="181506a0-ee7c-fa80-8854-3ba1b7a0e89d">
+      <Execution id="7401b774-d6fe-466e-ae51-39ab3723d152" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;bad-encoding-no-object&quot;, source: &quot;try:\n value=str(encoding=12)\n print('ok',repr(va&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="2acfd4ce-3948-8388-27ba-a5d0cd28dc5a">
+      <Execution id="954ee417-edbb-4c64-8df7-84d50cb70480" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;too-many&quot;, source: &quot;try:\n value=str(1,2,3,4)\n print('ok',repr(value)&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="144fd456-628a-539a-f1d8-8f1078d9f47a">
+      <Execution id="154f92a9-29c9-493d-8481-06e4c21ea770" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(descriptor: False, cancel: False)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="85ed8ba1-a892-a733-f191-e06a3990ef7f">
+      <Execution id="7c3fcacc-98e1-493a-bc30-fb773bb7fe21" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;expanded&quot;, source: &quot;options={'object':b'\\xff','errors':'replace'}\npr&quot;···, expected: &quot;�\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="207263cb-5672-65e8-03f1-d8a50c4ef49d">
+      <Execution id="c176fdb6-6f7b-4cb4-ac31-8f4308c60431" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;new-slot&quot;, source: &quot;print(str.__new__(str,object=12))&quot;, expected: &quot;12\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="2a9a1cfe-f56e-d3a4-6817-9f8e1daca137">
+      <Execution id="bf13eae3-9c55-4ab3-8f0f-d6e134dd9f38" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;imported-alias&quot;, source: &quot;from builtins import str as constructor\nprint(con&quot;···, expected: &quot;None\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="81ef7f3a-46df-ead6-408e-41deac50329a">
+      <Execution id="222d8fca-36ce-4d13-a1af-4e7afc84ee66" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;keyword-replace-default-encoding&quot;, source: &quot;try:\n value=str(object=b'\\xff',errors='replace')&quot;···, expected: &quot;ok '�'\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="d78c6c9e-31ee-a8b5-460d-4453896efb84">
+      <Execution id="3930d81a-3dad-4a16-9b0d-14dd0c9f1478" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;unknown-encoding-no-object&quot;, source: &quot;try:\n value=str(encoding='missing-codec')\n print&quot;···, expected: &quot;ok ''\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="09ef6463-73d5-3726-a0f9-b7da8965d556">
+      <Execution id="ab86529a-2001-4376-941b-7a29470a2be7" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(descriptor: True, cancel: False)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="9fca9f39-4cf6-37e8-a086-dcf328f58806">
+      <Execution id="fc9ca544-1ce6-423d-a8b7-691488ce66ed" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;none-errors-no-object&quot;, source: &quot;try:\n value=str(errors=None)\n print('ok',repr(va&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="58dbb9e5-5108-3b1b-0216-b3c81c238f10">
+      <Execution id="5e8da414-5530-4ab2-988d-d11162d1ccc4" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;none-object-with-codec&quot;, source: &quot;try:\n value=str(object=None,encoding='utf-8')\n p&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="6e25cbea-37a1-7ccb-f74a-b0d80ed9d30a">
+      <Execution id="3dda3e3b-0183-443e-99d0-c66daafbcb61" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;identity-and-type&quot;, source: &quot;value='café \ud83d\ude00'\nprint(str(object=value) is value,&quot;···, expected: &quot;True str builtins True\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="aacf7017-895b-c5c4-f558-5a73f7bde74f">
+      <Execution id="482cdfdc-934a-4fc5-bdbf-a8347fde5c25" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: &quot;duplicate-object&quot;, source: &quot;try:\n value=str(12,object=23)\n print('ok',repr(v&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\lokad.lython.publicapi.tests.dll" id="960db7d4-fad0-a87b-a8e4-f7882b261f0f">
+      <Execution id="0cd98cb3-090e-4627-959d-3040e89fbd91" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\str-keywords-b7d67a60\baseline-public-tests\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests" name="KeywordDefaultsAndErrorsMatchPython" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="6727f021-7f44-e468-18a8-5d268c5f2525" executionId="cf871429-44a9-4f75-a046-44d97c6cd924" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0bafa6bb-c5d6-8f0f-aaf9-7628ba52210e" executionId="07810e13-7bfd-457a-8f8a-32304fa18da4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7fee800a-4ba5-9781-3d47-5e4ff30dd55d" executionId="baacdb75-a544-4f61-8d91-3194ca58867b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bcd7b470-866c-c4bf-9478-291b3ef20be4" executionId="9f0f0ce1-c693-45d0-bf87-18336b1c3268" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3633cae6-312c-272e-88d1-ed27cb9373da" executionId="71d864b7-3657-428b-8a39-80cfa8ef25ae" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="aacf7017-895b-c5c4-f558-5a73f7bde74f" executionId="482cdfdc-934a-4fc5-bdbf-a8347fde5c25" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="960db7d4-fad0-a87b-a8e4-f7882b261f0f" executionId="0cd98cb3-090e-4627-959d-3040e89fbd91" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="20272a29-5e7b-1d3e-a6ca-87b1f02f2755" executionId="a4388dd0-9f97-4822-bd82-70a293a1a760" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bc251a55-170c-e099-10af-db7417c6e4ae" executionId="84692b92-2ff2-4257-bdb5-26a19d816714" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="09ef6463-73d5-3726-a0f9-b7da8965d556" executionId="ab86529a-2001-4376-941b-7a29470a2be7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6e25cbea-37a1-7ccb-f74a-b0d80ed9d30a" executionId="3dda3e3b-0183-443e-99d0-c66daafbcb61" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="50fff1d0-6dd4-c190-e819-ce4e9d119ce4" executionId="b2473334-f870-405c-a33c-e6cd87f06bc9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3f9b7a90-e875-fe91-f839-62d9b11821b3" executionId="3d48c6d8-6f37-45a2-bedb-bfb37f37d482" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8ccdb2d0-c137-1b72-8ce4-b812b1614e65" executionId="5297f40b-f831-43d9-97a4-36cc4257e38b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d78c6c9e-31ee-a8b5-460d-4453896efb84" executionId="3930d81a-3dad-4a16-9b0d-14dd0c9f1478" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="81ef7f3a-46df-ead6-408e-41deac50329a" executionId="222d8fca-36ce-4d13-a1af-4e7afc84ee66" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="926c9b8e-594f-f6e5-76fe-0c104195de0d" executionId="32f2a29b-30ea-4957-bb90-4a8a6c1b7530" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7f42e607-b519-e7dd-69aa-795de5a2ef96" executionId="1461e1fd-a615-441e-bcc6-8249cfa65cb0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="85ed8ba1-a892-a733-f191-e06a3990ef7f" executionId="7c3fcacc-98e1-493a-bc30-fb773bb7fe21" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8447d28d-d76c-f0b9-99dd-fe676d44f15b" executionId="e9a249a0-d2be-4a55-a1c2-57765eaa1388" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="181506a0-ee7c-fa80-8854-3ba1b7a0e89d" executionId="7401b774-d6fe-466e-ae51-39ab3723d152" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="429b9e48-45a4-b984-539a-001f2f594451" executionId="37024ea4-5158-4366-9afe-66981360dd4d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="25b62aab-2962-5843-4986-c0e419999f23" executionId="4bc6967f-7ac8-4c52-88ae-5fb2fdcab5ac" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b663be03-e485-a867-8ed1-6501a6e23073" executionId="692c15bd-ed25-4ec1-a50e-9a268992ba65" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="02297ddc-3464-be92-b15c-f7af7ac507cf" executionId="3924adac-157d-4f18-9361-095a41045a54" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4ab1392a-e88e-676b-bd3a-3674de56d884" executionId="5f9ea9a1-e5cf-4709-ab87-6cb9bad9b3a9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c86f23d6-2ad7-3e3c-4c7c-65cc47a838b6" executionId="3d821d0c-6636-4ff6-bb36-0c0e02c93bc9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="58dbb9e5-5108-3b1b-0216-b3c81c238f10" executionId="5e8da414-5530-4ab2-988d-d11162d1ccc4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9fca9f39-4cf6-37e8-a086-dcf328f58806" executionId="fc9ca544-1ce6-423d-a8b7-691488ce66ed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="207263cb-5672-65e8-03f1-d8a50c4ef49d" executionId="c176fdb6-6f7b-4cb4-ac31-8f4308c60431" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2acfd4ce-3948-8388-27ba-a5d0cd28dc5a" executionId="954ee417-edbb-4c64-8df7-84d50cb70480" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e8e65d3c-c533-dea2-40dd-4decd93ccc47" executionId="068bd47f-e0bb-4c92-bce3-1a05cd3b7832" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7d591ee1-2894-a9e2-09e0-90222c7e1ed2" executionId="faa9a226-3bcc-423b-ad84-f11c92e7f68d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="eee96555-6ca2-d6e0-6c2c-f37ad5ad4fd0" executionId="bd3341c4-cc8f-4950-92a6-8fa42b7a4dc3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2a9a1cfe-f56e-d3a4-6817-9f8e1daca137" executionId="bf13eae3-9c55-4ab3-8f0f-d6e134dd9f38" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="02817d91-3ad0-e3a4-e96a-43cc43c770c2" executionId="d9b028ff-7c2b-4f9a-8456-28e63a1ba4cb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fd13d57c-36e7-1aea-48f4-997935ef58d0" executionId="d65523da-e2e0-4e24-bd19-6588927dd678" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="61e29982-8f90-c0f6-b72b-f9db10ece34f" executionId="89738da4-63d5-43f5-b497-fea86b92dcdd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="144fd456-628a-539a-f1d8-8f1078d9f47a" executionId="154f92a9-29c9-493d-8481-06e4c21ea770" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b03fe476-2412-cc51-ddbe-03a31f85d230" executionId="203a760a-1a97-4b97-af4d-586abf61f82b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0c4d82db-2bc9-345c-1df3-fbfa9fc04b94" executionId="585f6ef2-8169-41ac-9b58-10e11154bf57" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="41" executed="41" passed="17" failed="24" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.41]   Discovering: Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.58]   Discovered:  Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.62]   Starting:    Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:02.03]       Assert.Same() Failure: Values are not the same instance&#xD;
+[xUnit.net 00:00:02.03]       Expected: Task { Status = WaitingForActivation }&#xD;
+[xUnit.net 00:00:02.03]       Actual:   Task&lt;LythonExecutionResult,&lt;&lt;RunAsyncCore&gt;g__RunAndDisposeAsync|26_1&gt;d&gt; { Status = RanToCompletion }&#xD;
+[xUnit.net 00:00:02.03]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.03]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(93,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.03]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(108,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.03]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.03]       Builtin 'str' got an unexpected keyword argument 'object'.&#xD;
+[xUnit.net 00:00:02.03]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.03]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(99,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.03]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(108,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.03]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.04]       Builtin 'str' got an unexpected keyword argument 'object'.&#xD;
+[xUnit.net 00:00:02.04]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.04]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(99,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.04]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(108,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.04]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.04]       Assert.Same() Failure: Values are not the same instance&#xD;
+[xUnit.net 00:00:02.04]       Expected: Task { Status = WaitingForActivation }&#xD;
+[xUnit.net 00:00:02.04]       Actual:   Task&lt;LythonExecutionResult,&lt;&lt;RunAsyncCore&gt;g__RunAndDisposeAsync|26_1&gt;d&gt; { Status = RanToCompletion }&#xD;
+[xUnit.net 00:00:02.04]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.04]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(93,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.04]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(108,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(Boolean descriptor, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.04]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.11]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.11]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.11]       Expected: "ok '12'\n"&#xD;
+[xUnit.net 00:00:02.11]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.11]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.11]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.11]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.11]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.13]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.13]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.13]       Expected: "ok ''\n"&#xD;
+[xUnit.net 00:00:02.13]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.13]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.13]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.13]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.13]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.13]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.13]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.13]       Expected: "ok 'plain'\n"&#xD;
+[xUnit.net 00:00:02.13]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.13]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.13]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.13]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.13]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.13]       Builtin 'str' got an unexpected keyword argument 'object'.&#xD;
+[xUnit.net 00:00:02.13]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.13]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(60,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.13]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.13]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.13]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.13]       Expected: "ok '�'\n"&#xD;
+[xUnit.net 00:00:02.13]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.13]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.13]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.13]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.13]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.13]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.13]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.13]       Expected: "ok ''\n"&#xD;
+[xUnit.net 00:00:02.13]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.13]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.13]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.13]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.13]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.14]       Builtin 'str' got an unexpected keyword argument 'object'.&#xD;
+[xUnit.net 00:00:02.14]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.14]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(60,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.14]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.15]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.16]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.16]       Expected: "ok 'None'\n"&#xD;
+[xUnit.net 00:00:02.16]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.16]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.16]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.16]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.16]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.16]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.16]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.16]       Expected: "ok ''\n"&#xD;
+[xUnit.net 00:00:02.16]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.16]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.16]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.16]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.16]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.19]       Builtin 'str' got an unexpected keyword argument 'object'.&#xD;
+[xUnit.net 00:00:02.19]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.19]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(60,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.19]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.19]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.19]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.19]       Expected: "ok 'é'\n"&#xD;
+[xUnit.net 00:00:02.19]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.19]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.19]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.19]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.19]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.19]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.19]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.19]       Expected: "ok ''\n"&#xD;
+[xUnit.net 00:00:02.19]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.19]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.19]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.19]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.19]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.19]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.19]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.19]       Expected: "ok ''\n"&#xD;
+[xUnit.net 00:00:02.19]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.19]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.19]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.19]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.19]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.19]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.19]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.19]       Expected: "ok ''\n"&#xD;
+[xUnit.net 00:00:02.19]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.19]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.19]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.19]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.19]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.20]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.20]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.20]       Expected: "ok ''\n"&#xD;
+[xUnit.net 00:00:02.20]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.20]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.20]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.20]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.20]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.20]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.20]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.20]       Expected: "ok 'text'\n"&#xD;
+[xUnit.net 00:00:02.20]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.20]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.20]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.20]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.20]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.22]       Builtin 'str' got an unexpected keyword argument 'object'.&#xD;
+[xUnit.net 00:00:02.22]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.22]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(60,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.22]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.22]       Builtin 'str' got an unexpected keyword argument 'object'.&#xD;
+[xUnit.net 00:00:02.22]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.22]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(60,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.22]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.23]       Builtin 'str' got an unexpected keyword argument 'object'.&#xD;
+[xUnit.net 00:00:02.23]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.23]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(60,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.23]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.23]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.23]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.23]       Expected: "ok ''\n"&#xD;
+[xUnit.net 00:00:02.23]       Actual:   "TypeError\n"&#xD;
+[xUnit.net 00:00:02.23]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.23]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.23]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\StringConstructorKeywordTests.cs(61,0): at Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.23]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.23]   Finished:    Lokad.Lython.PublicApi.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.1485615+02:00">
+        <Text>[xUnit.net 00:00:02.03]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(descriptor: True, cancel: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.1551669+02:00">
+        <Text>[xUnit.net 00:00:02.03]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(descriptor: True, cancel: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.1558949+02:00">
+        <Text>[xUnit.net 00:00:02.04]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(descriptor: False, cancel: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.1572724+02:00">
+        <Text>[xUnit.net 00:00:02.04]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordObjectAwaitsDescriptorAndBodyWithoutLosingOwners(descriptor: False, cancel: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.2345845+02:00">
+        <Text>[xUnit.net 00:00:02.11]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "integer-object", source: "try:\n value=str(object=12)\n print('ok',repr(valu"···, expected: "ok '12'\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.2470346+02:00">
+        <Text>[xUnit.net 00:00:02.13]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "ignore-with-default-encoding", source: "try:\n value=str(b'\\xff',errors='ignore')\n print"···, expected: "ok ''\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.2661629+02:00">
+        <Text>[xUnit.net 00:00:02.13]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "all-keywords", source: "try:\n value=str(object=b'plain',encoding='utf-8',"···, expected: "ok 'plain'\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.2662542+02:00">
+        <Text>[xUnit.net 00:00:02.13]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "alias", source: "constructor=str\nprint(constructor(object=12))", expected: "12\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.2662979+02:00">
+        <Text>[xUnit.net 00:00:02.13]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "keyword-replace-default-encoding", source: "try:\n value=str(object=b'\\xff',errors='replace')"···, expected: "ok '�'\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.2663832+02:00">
+        <Text>[xUnit.net 00:00:02.13]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "encoding-only", source: "try:\n value=str(encoding='utf-8')\n print('ok',re"···, expected: "ok ''\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.2664703+02:00">
+        <Text>[xUnit.net 00:00:02.14]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "imported-alias", source: "from builtins import str as constructor\nprint(con"···, expected: "None\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.2708752+02:00">
+        <Text>[xUnit.net 00:00:02.15]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "none-object", source: "try:\n value=str(object=None)\n print('ok',repr(va"···, expected: "ok 'None'\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.2842818+02:00">
+        <Text>[xUnit.net 00:00:02.16]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "unknown-encoding-no-object", source: "try:\n value=str(encoding='missing-codec')\n print"···, expected: "ok ''\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.3086395+02:00">
+        <Text>[xUnit.net 00:00:02.19]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "identity-and-type", source: "value='café \ud83d\ude00'\nprint(str(object=value) is value,"···, expected: "True str builtins True\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.3100489+02:00">
+        <Text>[xUnit.net 00:00:02.19]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "codec-object", source: "try:\n value=str(object=b'\\xc3\\xa9',encoding='ut"···, expected: "ok 'é'\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.3140038+02:00">
+        <Text>[xUnit.net 00:00:02.19]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "unknown-codec-empty", source: "try:\n value=str(object=b'',encoding='missing-code"···, expected: "ok ''\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.3140806+02:00">
+        <Text>[xUnit.net 00:00:02.19]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "errors-only", source: "try:\n value=str(errors='ignore')\n print('ok',rep"···, expected: "ok ''\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.3142339+02:00">
+        <Text>[xUnit.net 00:00:02.19]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "unknown-errors-no-object", source: "try:\n value=str(errors='missing-handler')\n print"···, expected: "ok ''\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.3155692+02:00">
+        <Text>[xUnit.net 00:00:02.20]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "keyword-ignore-default-encoding", source: "try:\n value=str(object=b'\\xff',errors='ignore')\"···, expected: "ok ''\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.3160985+02:00">
+        <Text>[xUnit.net 00:00:02.20]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "string-object", source: "try:\n value=str(object='text')\n print('ok',repr("···, expected: "ok 'text'\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.3402684+02:00">
+        <Text>[xUnit.net 00:00:02.22]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "expanded", source: "options={'object':b'\\xff','errors':'replace'}\npr"···, expected: "�\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.3434075+02:00">
+        <Text>[xUnit.net 00:00:02.22]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "new-slot", source: "print(str.__new__(str,object=12))", expected: "12\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.3489806+02:00">
+        <Text>[xUnit.net 00:00:02.23]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "custom", source: "events=[]\nclass Value:\n def __str__(self):events"···, expected: "custom ['str']\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T20:53:39.3495664+02:00">
+        <Text>[xUnit.net 00:00:02.23]     Lokad.Lython.PublicApi.Tests.StringConstructorKeywordTests.KeywordDefaultsAndErrorsMatchPython(label: "unknown-errors-empty", source: "try:\n value=str(object=b'',errors='missing-handle"···, expected: "ok ''\n") [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

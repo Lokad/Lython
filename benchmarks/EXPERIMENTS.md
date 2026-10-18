@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 str keyword/default correction](results/2026-10-18-str-keywords/README.md)
+reuses argument presence and builtin metadata,removing suffix inference and an
+input copy.24/41 baseline regressions become successes;all440 focused checks and
+58 complete jobs pass.37 CPython programs match through both APIs. One unchanged
+builtin-subclass boundary remains explicit. A short allocation pair preserves
+native calls and252 boundary records;general-call array costs are documented.
+
 The [2026-10-18 ordinary native str calls](results/2026-10-18-native-str-call/README.md)
 reuse existing call frames and rendering,removing a bound array per affected
 call. One frozen allocation pair saves32B;14 controls and252 boundary records

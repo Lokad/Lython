@@ -142,3 +142,5 @@ benchmarks/results/2026-10-18-slot-map-handoff/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-slot-map-handoff/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-native-str-call/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-native-str-call/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-str-keywords/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-str-keywords/candidate.patch -text -whitespace
