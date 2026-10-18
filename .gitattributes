@@ -109,3 +109,5 @@ benchmarks/results/2026-10-18-subscript-forward-rejected/rejected-candidate.patc
 benchmarks/results/2026-10-18-builtin-namespace/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-builtin-namespace/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-config-checkpoint/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-json-result-copy/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-json-result-copy/candidate.patch -text -whitespace

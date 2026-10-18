@@ -577,3 +577,11 @@ capacity. New name metadata and capacity growth still require admission before
 visible mutation. Removing a binding does not refund values retained elsewhere.
 Conservative retained-capacity charges may change small admission thresholds;
 identical tiny-budget thresholds are not part of the ownership contract.
+
+JSON serialization and iterator chunks share final text conversion. Results of
+at most 128 UTF-16 code units use fixed managed char/byte spans instead of a
+temporary CLR string; the existing UTF-8 factory admits the retained result
+before allocating and copying it. The spans do not escape. Larger results retain
+the existing funded UTF-16 copy and UTF-8 conversion. Removing the small heap
+temporary changes admission thresholds without changing retained-result ownership,
+pending-user cleanup or the output builder's existing growth accounting.

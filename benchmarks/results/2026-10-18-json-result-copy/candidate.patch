@@ -1,0 +1,188 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs
+index cce85ee6..212282fb 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs
+@@ -429,10 +429,7 @@ internal sealed partial class LythonRuntime
+                         continue;
+                     }
+ 
+-                    // Fund the UTF-16 copy below like the eager path, then
+-                    // transfer ownership to the retained chunk itself.
+-                    charge.Grow(builder.Length);
+-                    var chunk = LythonRuntime.CreateString(builder.ToString(), _context, _span);
++                    var chunk = JsonModule.FinishJsonText(builder, charge, _context, _span);
+                     return PyIterationResult.Yield(chunk);
+                 }
+             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
+index aae29168..f87694b3 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
+@@ -39,15 +39,12 @@ internal sealed partial class LythonRuntime
+             try
+             {
+                 var builder = new StringBuilder();
+-                // Charge output growth as it happens; CreateString charges the
+-                // final value, at which point this temporary is released.
++                // Charge output growth as it happens; the final string factory
++                // charges the result before this temporary is released.
+                 using var charge = new JsonGrowthCharge(context.MemoryGovernor, span);
+                 var active = options.CheckCircular ? new HashSet<object>(ReferenceEqualityComparer.Instance) : null;
+                 await AppendJsonValueAsync(builder, value, options, context, span, depth: 0, defaultDepth: 0, active, charge, asynchronous).ConfigureAwait(false);
+-                // The UTF-16 copy below coexists briefly with the builder backing
+-                // and the final UTF-8 value: fund it before duplicating.
+-                charge.Grow(builder.Length);
+-                return CreateString(builder.ToString(), context, span);
++                return FinishJsonText(builder, charge, context, span);
+             }
+             catch (InvalidOperationException ex)
+             {
+@@ -55,6 +52,25 @@ internal sealed partial class LythonRuntime
+             }
+         }
+ 
++        internal static PyString FinishJsonText(StringBuilder builder, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
++        {
++            // Small results use bounded managed control storage. The existing
++            // span factory admits retained UTF-8 storage before allocation and
++            // copies the bytes; no view of these stack buffers can escape.
++            if (builder.Length <= 128)
++            {
++                Span<char> characters = stackalloc char[128];
++                builder.CopyTo(0, characters, builder.Length);
++                Span<byte> utf8 = stackalloc byte[384];
++                var written = StrictUtf8.GetBytes(characters[..builder.Length], utf8);
++                return PyString.CopyFromUtf8(utf8[..written], context.MemoryGovernor, span);
++            }
++
++            // The large UTF-16 copy coexists with the builder and final UTF-8.
++            charge.Grow(builder.Length);
++            return CreateString(builder.ToString(), context, span);
++        }
++
+         /// <summary>
+         /// Charges JSON output growth incrementally so a huge document meets
+         /// the memory budget while building instead of only at the final
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/JsonStringEmissionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/JsonStringEmissionTests.cs
+index 76738d60..3a7c0d0f 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/JsonStringEmissionTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/JsonStringEmissionTests.cs
+@@ -4,6 +4,48 @@ namespace Lokad.Lython.PublicApi.Tests;
+ 
+ public sealed class JsonStringEmissionTests
+ {
++    [Theory]
++    [InlineData("dumps", false)]
++    [InlineData("dumps", true)]
++    [InlineData("encode", false)]
++    [InlineData("encode", true)]
++    [InlineData("iterator", false)]
++    [InlineData("iterator", true)]
++    public async Task RetainedEncodedResultsRemainFundedAcrossExecutions(string route, bool asynchronous)
++    {
++        var expression = route switch
++        {
++            "encode" => "json.JSONEncoder(ensure_ascii=False).encode(payload)",
++            "iterator" => "list(json.JSONEncoder(ensure_ascii=False).iterencode(payload))",
++            _ => "json.dumps(payload,ensure_ascii=False)",
++        };
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        using (var script = new LythonEngine().Compile("import json\nreturn " + expression, budget))
++        {
++            Assert.True(script.IsValid);
++            var baseline = budget.ReservedBytes;
++            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["payload"] = "café😀" } };
++            using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
++            {
++                Assert.True(retained.Success, retained.Failure?.Message);
++                var expected = "\"café😀\"";
++                Assert.Equal(expected, route == "iterator"
++                    ? Assert.IsType<string>(Assert.Single(Assert.IsAssignableFrom<System.Collections.IEnumerable>(retained.ReturnValue).Cast<object?>()))
++                    : Assert.IsType<string>(retained.ReturnValue));
++                var held = budget.ReservedBytes;
++                Assert.True(held > baseline);
++                using (var next = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
++                    Assert.True(next.Success, next.Failure?.Message);
++                Assert.Equal(held, budget.ReservedBytes);
++                Assert.Equal(expected, route == "iterator"
++                    ? Assert.IsType<string>(Assert.Single(Assert.IsAssignableFrom<System.Collections.IEnumerable>(retained.ReturnValue).Cast<object?>()))
++                    : Assert.IsType<string>(retained.ReturnValue));
++            }
++            Assert.Equal(baseline, budget.ReservedBytes);
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     public static IEnumerable<object[]> Cases()
+     {
+         foreach (var ensureAscii in new[] { false, true })
+diff --git a/tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs b/tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs
+index 34883c9b..919079d6 100644
+--- a/tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs
++++ b/tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs
+@@ -37,6 +37,65 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
+         Assert.Equal(0, budget.ReservedBytes);
+     }
+ 
++    [Theory]
++    [InlineData("dumps", false, false)]
++    [InlineData("dumps", false, true)]
++    [InlineData("dumps", true, false)]
++    [InlineData("dumps", true, true)]
++    [InlineData("encode", false, false)]
++    [InlineData("encode", false, true)]
++    [InlineData("encode", true, false)]
++    [InlineData("encode", true, true)]
++    [InlineData("iterator", false, false)]
++    [InlineData("iterator", false, true)]
++    [InlineData("iterator", true, false)]
++    [InlineData("iterator", true, true)]
++    public async Task SmallResultStillRequiresAdmissionForRetainedUtf8(string route, bool asynchronous, bool shared)
++    {
++        const long limit = 1024 * 1024;
++        var budget = new LythonMemoryBudget(limit);
++        using (var owner = budget.CreateScope())
++        {
++            var context = new Context(new MockLythonHost(), new LythonRunOptions
++                { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
++            var governor = context.MemoryGovernor;
++            var input = PyString.FromString("a", governor, Span);
++            var callable = Load(context, route);
++            CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
++            var iterator = route == "iterator"
++                ? Assert.IsType<LythonRuntime.JsonEncodeIterator>(callable.Invoke(arguments, Span, context)) : null;
++            var resultBytes = PyString.EstimateApproximateBytes(3); // "a"
++            var padding = limit - budget.ReservedBytes - resultBytes + 1;
++            ILythonMemoryReservation? blocker = null;
++            if (shared) Assert.True(budget.TryReserve(padding, out blocker));
++            else { governor.Reserve(padding, Span); governor.Commit(padding); }
++            using (blocker)
++            {
++                var committed = governor.CurrentCommittedBytes;
++                object? published = null;
++                var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
++                {
++                    if (iterator is null)
++                        published = asynchronous ? await callable.InvokeAsync(arguments, Span, context)
++                            : callable.Invoke(arguments, Span, context);
++                    else if (asynchronous) published = await iterator.TryMoveNextAsync();
++                    else { iterator.TryMoveNext(out var chunk); published = chunk; }
++                });
++                Assert.Null(published);
++                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
++                    error.Attribution?.Reason);
++                Assert.Same(governor.AdmissionFailure, error);
++                Assert.Same(Span, error.Span);
++                Assert.Equal(resultBytes, governor.LastDeniedReservationBytes);
++                Assert.Equal(committed, governor.CurrentCommittedBytes);
++                Assert.Equal("a", input.AsString());
++                Assert.Equal(0, governor.CurrentReservedBytes);
++                Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
++            }
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     public static IEnumerable<object[]> Refusals()
+     {
+         foreach (var route in new[] { "dumps", "encode", "iterator" })

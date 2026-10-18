@@ -39,20 +39,36 @@ internal sealed partial class LythonRuntime
             try
             {
                 var builder = new StringBuilder();
-                // Charge output growth as it happens; CreateString charges the
-                // final value, at which point this temporary is released.
+                // Charge output growth as it happens; the final string factory
+                // charges the result before this temporary is released.
                 using var charge = new JsonGrowthCharge(context.MemoryGovernor, span);
                 var active = options.CheckCircular ? new HashSet<object>(ReferenceEqualityComparer.Instance) : null;
                 await AppendJsonValueAsync(builder, value, options, context, span, depth: 0, defaultDepth: 0, active, charge, asynchronous).ConfigureAwait(false);
-                // The UTF-16 copy below coexists briefly with the builder backing
-                // and the final UTF-8 value: fund it before duplicating.
-                charge.Grow(builder.Length);
-                return CreateString(builder.ToString(), context, span);
+                return FinishJsonText(builder, charge, context, span);
             }
             catch (InvalidOperationException ex)
             {
                 throw new LythonRuntimeException("TypeError", ex.Message, span);
             }
+        }
+
+        internal static PyString FinishJsonText(StringBuilder builder, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+        {
+            // Small results use bounded managed control storage. The existing
+            // span factory admits retained UTF-8 storage before allocation and
+            // copies the bytes; no view of these stack buffers can escape.
+            if (builder.Length <= 128)
+            {
+                Span<char> characters = stackalloc char[128];
+                builder.CopyTo(0, characters, builder.Length);
+                Span<byte> utf8 = stackalloc byte[384];
+                var written = StrictUtf8.GetBytes(characters[..builder.Length], utf8);
+                return PyString.CopyFromUtf8(utf8[..written], context.MemoryGovernor, span);
+            }
+
+            // The large UTF-16 copy coexists with the builder and final UTF-8.
+            charge.Grow(builder.Length);
+            return CreateString(builder.ToString(), context, span);
         }
 
         /// <summary>

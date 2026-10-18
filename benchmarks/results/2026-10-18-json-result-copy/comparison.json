@@ -1,0 +1,189 @@
+{
+  "accepted": true,
+  "allocation": [
+    {
+      "asynchronous": false,
+      "route": "ascii",
+      "before": 353280.0,
+      "after": 348160.0,
+      "savedPerCall": 40.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "astral-edge",
+      "before": 512000.0,
+      "after": 476160.0,
+      "savedPerCall": 280.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "container",
+      "before": 486400.0,
+      "after": 471040.0,
+      "savedPerCall": 120.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "edge",
+      "before": 455680.0,
+      "after": 419840.0,
+      "savedPerCall": 280.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "encode",
+      "before": 252928.0,
+      "after": 247808.0,
+      "savedPerCall": 40.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "escaped",
+      "before": 148480.0,
+      "after": 139264.0,
+      "savedPerCall": 72.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "iterator",
+      "before": 317440.0,
+      "after": 312320.0,
+      "savedPerCall": 40.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "iterator-over",
+      "before": 461824.0,
+      "after": 461824.0,
+      "savedPerCall": 0.0,
+      "control": true,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "over",
+      "before": 498688.0,
+      "after": 498688.0,
+      "savedPerCall": 0.0,
+      "control": true,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "unicode",
+      "before": 354304.0,
+      "after": 349184.0,
+      "savedPerCall": 40.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "ascii",
+      "before": 356352.0,
+      "after": 351232.0,
+      "savedPerCall": 40.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "astral-edge",
+      "before": 515072.0,
+      "after": 479232.0,
+      "savedPerCall": 280.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "container",
+      "before": 495616.0,
+      "after": 480256.0,
+      "savedPerCall": 120.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "edge",
+      "before": 458752.0,
+      "after": 422912.0,
+      "savedPerCall": 280.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "encode",
+      "before": 251904.0,
+      "after": 246784.0,
+      "savedPerCall": 40.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "escaped",
+      "before": 151552.0,
+      "after": 142336.0,
+      "savedPerCall": 72.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "iterator",
+      "before": 326656.0,
+      "after": 321536.0,
+      "savedPerCall": 40.0,
+      "control": false,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "iterator-over",
+      "before": 471040.0,
+      "after": 471040.0,
+      "savedPerCall": 0.0,
+      "control": true,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "over",
+      "before": 501760.0,
+      "after": 501760.0,
+      "savedPerCall": 0.0,
+      "control": true,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "unicode",
+      "before": 357376.0,
+      "after": 352256.0,
+      "savedPerCall": 40.0,
+      "control": false,
+      "passed": true
+    }
+  ],
+  "exactWorkRecords": 560,
+  "byteChunkErrorSpanCallbackFuelIdentical": true,
+  "repeatedCapture": false,
+  "elapsedClaim": false
+}

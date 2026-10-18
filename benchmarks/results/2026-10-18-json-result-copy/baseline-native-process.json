@@ -1,0 +1,14 @@
+{
+  "source": "json-result-copy",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "414DDFA4FBBC61A35B8FEF03F76E95AE88077D154C0B0E5FB5012822F369303C",
+  "filter": "Category!=Stress&FullyQualifiedName~JsonResultCopyDiagnostic",
+  "pid": 41140,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1511,
+  "stdoutSha256": "FDBF7B82509B8C87CA3F0472F64507B9AAEDAC6A7C501BFCFD6E92146B9C705F",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

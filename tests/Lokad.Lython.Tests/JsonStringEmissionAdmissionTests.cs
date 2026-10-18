@@ -37,6 +37,65 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData("dumps", false, false)]
+    [InlineData("dumps", false, true)]
+    [InlineData("dumps", true, false)]
+    [InlineData("dumps", true, true)]
+    [InlineData("encode", false, false)]
+    [InlineData("encode", false, true)]
+    [InlineData("encode", true, false)]
+    [InlineData("encode", true, true)]
+    [InlineData("iterator", false, false)]
+    [InlineData("iterator", false, true)]
+    [InlineData("iterator", true, false)]
+    [InlineData("iterator", true, true)]
+    public async Task SmallResultStillRequiresAdmissionForRetainedUtf8(string route, bool asynchronous, bool shared)
+    {
+        const long limit = 1024 * 1024;
+        var budget = new LythonMemoryBudget(limit);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new Context(new MockLythonHost(), new LythonRunOptions
+                { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+            var governor = context.MemoryGovernor;
+            var input = PyString.FromString("a", governor, Span);
+            var callable = Load(context, route);
+            CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
+            var iterator = route == "iterator"
+                ? Assert.IsType<LythonRuntime.JsonEncodeIterator>(callable.Invoke(arguments, Span, context)) : null;
+            var resultBytes = PyString.EstimateApproximateBytes(3); // "a"
+            var padding = limit - budget.ReservedBytes - resultBytes + 1;
+            ILythonMemoryReservation? blocker = null;
+            if (shared) Assert.True(budget.TryReserve(padding, out blocker));
+            else { governor.Reserve(padding, Span); governor.Commit(padding); }
+            using (blocker)
+            {
+                var committed = governor.CurrentCommittedBytes;
+                object? published = null;
+                var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+                {
+                    if (iterator is null)
+                        published = asynchronous ? await callable.InvokeAsync(arguments, Span, context)
+                            : callable.Invoke(arguments, Span, context);
+                    else if (asynchronous) published = await iterator.TryMoveNextAsync();
+                    else { iterator.TryMoveNext(out var chunk); published = chunk; }
+                });
+                Assert.Null(published);
+                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+                    error.Attribution?.Reason);
+                Assert.Same(governor.AdmissionFailure, error);
+                Assert.Same(Span, error.Span);
+                Assert.Equal(resultBytes, governor.LastDeniedReservationBytes);
+                Assert.Equal(committed, governor.CurrentCommittedBytes);
+                Assert.Equal("a", input.AsString());
+                Assert.Equal(0, governor.CurrentReservedBytes);
+                Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     public static IEnumerable<object[]> Refusals()
     {
         foreach (var route in new[] { "dumps", "encode", "iterator" })

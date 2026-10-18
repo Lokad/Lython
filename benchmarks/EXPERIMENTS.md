@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 small JSON result conversion](results/2026-10-18-json-result-copy/README.md)
+shares eager and iterator finalization, replacing eligible UTF-16 heap copies with
+fixed managed control spans and the existing funded UTF-8 factory. One capture
+pair saves 40–280 bytes per call; large controls and all 560 exact work records
+remain unchanged. 788 focused checks pass, including 58 complete jobs. Tiny
+admission thresholds can change; retained-result funding and large-output
+accounting remain. No elapsed or CPython speedup claim.
+
 The [2026-10-18 complete configuration comparison](results/2026-10-18-config-checkpoint/README.md)
 uses immutable 348998dc, two identical Lython controls and CPython 3.13.16. Fresh
 compile/run takes 2.584–2.769 ms versus 1.399 ms; nominal 1.847–1.980× remains diagnostic

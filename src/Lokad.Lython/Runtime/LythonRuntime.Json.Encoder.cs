@@ -429,10 +429,7 @@ internal sealed partial class LythonRuntime
                         continue;
                     }
 
-                    // Fund the UTF-16 copy below like the eager path, then
-                    // transfer ownership to the retained chunk itself.
-                    charge.Grow(builder.Length);
-                    var chunk = LythonRuntime.CreateString(builder.ToString(), _context, _span);
+                    var chunk = JsonModule.FinishJsonText(builder, charge, _context, _span);
                     return PyIterationResult.Yield(chunk);
                 }
             }

@@ -1,0 +1,130 @@
+{
+  "baseline": "32867face7e702ef6b31e2a4486a0c2ce97c9c03",
+  "focusedDistinctPassed": 788,
+  "groups": {
+    "final-white": {
+      "passed": 168,
+      "process": {
+        "source": "json-result-copy",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "984763F02A14CCDA2FAE93BB8D198AE804B8374D74091FB5599696B83E01E1E5",
+        "filter": "Category!=Stress&FullyQualifiedName!~JsonResultCopyDiagnostic&(FullyQualifiedName~Json|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission)",
+        "pid": 50596,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1327,
+        "stdoutSha256": "0880FE73AB57A958DEE9804F3DEE68B9F45A1B59A09E346F2D6C9F09E01E2FB5",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "c2ee5101b230f34e691a0cc86d9bc44bd58531d4006debb116ab2711d08ff829"
+    },
+    "final-json": {
+      "passed": 455,
+      "process": {
+        "source": "json-result-copy",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "0558A16891FFA4CF6F891D69E32D9FEA3BE347855EE5A0198AF69631B165767D",
+        "filter": "Category!=Stress&FullyQualifiedName~Json&FullyQualifiedName!~JsonObjectGraphOwnershipTests",
+        "pid": 79312,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 7889,
+        "stdoutSha256": "6472D3C3BB94DC586B3D35F2ADF8321AD1784C8C7FFD07D030421BF7CB5BA38B",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "123b56db314acef3902b881dbf41b198c8c2fb98217db8c47343174580969d86"
+    },
+    "final-owners": {
+      "passed": 103,
+      "process": {
+        "source": "json-result-copy",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "0558A16891FFA4CF6F891D69E32D9FEA3BE347855EE5A0198AF69631B165767D",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests|FullyQualifiedName~JsonObjectGraphOwnershipTests)",
+        "pid": 78804,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2701,
+        "stdoutSha256": "7077061EDB2B20FB27717AF67A68A4B83F8DE37B6A690536DB45527DEC6382CA",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "7f03e5381c8e41d10a6665adaad5b2616e7cf62352921bbfdecd7448cb3fc764"
+    },
+    "final-goldens": {
+      "passed": 62,
+      "process": {
+        "source": "json-result-copy",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "0558A16891FFA4CF6F891D69E32D9FEA3BE347855EE5A0198AF69631B165767D",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 39000,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 9043,
+        "stdoutSha256": "31D79D91AF1BD1BBCC2A9514A308EF5E80C1222B3B71998A4CC6BDABEEBA626B",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "24d78fec3421b27d11456d9926c0a5f99961375ab3df44fc95f8eacec647b183"
+    }
+  },
+  "newRegressionCases": [
+    "Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: \"encode\", asynchronous: True, shared: False)",
+    "Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: \"encode\", asynchronous: False, shared: True)",
+    "Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: \"encode\", asynchronous: True, shared: True)",
+    "Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: \"encode\", asynchronous: False, shared: False)",
+    "Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: \"dumps\", asynchronous: True, shared: False)",
+    "Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: \"iterator\", asynchronous: True, shared: False)",
+    "Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: \"iterator\", asynchronous: False, shared: True)",
+    "Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: \"dumps\", asynchronous: False, shared: True)",
+    "Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: \"dumps\", asynchronous: False, shared: False)",
+    "Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: \"dumps\", asynchronous: True, shared: True)",
+    "Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: \"iterator\", asynchronous: True, shared: True)",
+    "Lokad.Lython.Tests.JsonStringEmissionAdmissionTests.SmallResultStillRequiresAdmissionForRetainedUtf8(route: \"iterator\", asynchronous: False, shared: False)",
+    "Lokad.Lython.PublicApi.Tests.JsonStringEmissionTests.RetainedEncodedResultsRemainFundedAcrossExecutions(route: \"iterator\", asynchronous: True)",
+    "Lokad.Lython.PublicApi.Tests.JsonStringEmissionTests.RetainedEncodedResultsRemainFundedAcrossExecutions(route: \"dumps\", asynchronous: True)",
+    "Lokad.Lython.PublicApi.Tests.JsonStringEmissionTests.RetainedEncodedResultsRemainFundedAcrossExecutions(route: \"iterator\", asynchronous: False)",
+    "Lokad.Lython.PublicApi.Tests.JsonStringEmissionTests.RetainedEncodedResultsRemainFundedAcrossExecutions(route: \"encode\", asynchronous: False)",
+    "Lokad.Lython.PublicApi.Tests.JsonStringEmissionTests.RetainedEncodedResultsRemainFundedAcrossExecutions(route: \"dumps\", asynchronous: False)",
+    "Lokad.Lython.PublicApi.Tests.JsonStringEmissionTests.RetainedEncodedResultsRemainFundedAcrossExecutions(route: \"encode\", asynchronous: True)"
+  ],
+  "completeJobs": 58,
+  "exactWorkRecords": 560,
+  "allocationCaptureRepeated": false,
+  "temporaryDiagnosticRemoved": true,
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs": {
+      "before": "056d0f9fe318f827fd16dd77a51ae68d5abbee97f31baf708a1f2cf0ede3573d",
+      "after": "8076b63f25aa53bf6091b2b0f84cb7758047bf25896575c5ffe830b68cb7e068",
+      "changed": true
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs": {
+      "before": "bb257c36a42a62b99ab03b88109dc964f78da45d2e784e2450e4b7f5d64a9eed",
+      "after": "60a65854b4b928cda511af84ff0b2e1a76afd161eca5ab0ed60b8e1d4ab5c035",
+      "changed": true
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.TextCodec.cs": {
+      "before": "a0adcad8ab1b1f29f5286c734bb742750551ddc447da8f6cbaddd39f3d6bcbd1",
+      "after": "a0adcad8ab1b1f29f5286c734bb742750551ddc447da8f6cbaddd39f3d6bcbd1",
+      "changed": false
+    },
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": {
+      "before": "08fae8f5ea2656aea17e8283d7f1b84cc927c7e6b03814f32b2752bdd65ec2e7",
+      "after": "08fae8f5ea2656aea17e8283d7f1b84cc927c7e6b03814f32b2752bdd65ec2e7",
+      "changed": false
+    }
+  },
+  "contract": "Existing retained UTF-8 factory admits before allocation. Small fixed control spans replace temporary CLR string and can change tiny admission thresholds. Larger output, growth accounting, escaping/traversal/checkpoints and owners remain unchanged.",
+  "newAdmissionCasesPassBaselineAndCandidate": 12,
+  "newPublicRetentionCasesPassCandidate": 6,
+  "regexPlanningOnly": true,
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "elapsedWholeJobOrCPythonSpeedupClaim": false
+}

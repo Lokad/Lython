@@ -1,0 +1,14 @@
+{
+  "baseline": "32867face7e702ef6b31e2a4486a0c2ce97c9c03",
+  "sourceSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs": "056d0f9fe318f827fd16dd77a51ae68d5abbee97f31baf708a1f2cf0ede3573d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs": "bb257c36a42a62b99ab03b88109dc964f78da45d2e784e2450e4b7f5d64a9eed",
+    "src/Lokad.Lython/Runtime/LythonRuntime.TextCodec.cs": "a0adcad8ab1b1f29f5286c734bb742750551ddc447da8f6cbaddd39f3d6bcbd1",
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "08fae8f5ea2656aea17e8283d7f1b84cc927c7e6b03814f32b2752bdd65ec2e7"
+  },
+  "diagnosticSha256": "2d8f6d4f3ee8b02b186361de06d18aa3a2c615ac2f1e8b6aa9bccf36c67dcca2",
+  "scope": "Share both JSON terminal conversion blocks; bounded managed128char/384byte spans reuse StrictUtf8 and funded PyString.CopyFromUtf8 for small outputs; preserve one existing funded large-output fallback. No new builder/encoder/cache/pool/factory/owner/API/configuration.",
+  "gate": "One native capture per source,4warmups/8samples/128calls; all eligible routes allocate less; ASCII129-UTF16-unit large controls keep identical arrays; all560 byte/chunk/error/span/callback/fuel records identical. Reject without retiming otherwise.",
+  "acceptance": "Focused JSON semantics/Unicode/chunks/hooks/sort/cycles/real suspension/cancellation, result and shared-budget lifetime, exact result-admission refusal and managed stack plus58 complete jobs. Original Stress/assertions/timeouts unchanged; full platform/package at delivery. No complete-configuration retiming.",
+  "performance": "Allocation only; no elapsed/whole-job/CPython claim."
+}

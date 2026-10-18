@@ -4,6 +4,48 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class JsonStringEmissionTests
 {
+    [Theory]
+    [InlineData("dumps", false)]
+    [InlineData("dumps", true)]
+    [InlineData("encode", false)]
+    [InlineData("encode", true)]
+    [InlineData("iterator", false)]
+    [InlineData("iterator", true)]
+    public async Task RetainedEncodedResultsRemainFundedAcrossExecutions(string route, bool asynchronous)
+    {
+        var expression = route switch
+        {
+            "encode" => "json.JSONEncoder(ensure_ascii=False).encode(payload)",
+            "iterator" => "list(json.JSONEncoder(ensure_ascii=False).iterencode(payload))",
+            _ => "json.dumps(payload,ensure_ascii=False)",
+        };
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile("import json\nreturn " + expression, budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["payload"] = "café😀" } };
+            using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(retained.Success, retained.Failure?.Message);
+                var expected = "\"café😀\"";
+                Assert.Equal(expected, route == "iterator"
+                    ? Assert.IsType<string>(Assert.Single(Assert.IsAssignableFrom<System.Collections.IEnumerable>(retained.ReturnValue).Cast<object?>()))
+                    : Assert.IsType<string>(retained.ReturnValue));
+                var held = budget.ReservedBytes;
+                Assert.True(held > baseline);
+                using (var next = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+                    Assert.True(next.Success, next.Failure?.Message);
+                Assert.Equal(held, budget.ReservedBytes);
+                Assert.Equal(expected, route == "iterator"
+                    ? Assert.IsType<string>(Assert.Single(Assert.IsAssignableFrom<System.Collections.IEnumerable>(retained.ReturnValue).Cast<object?>()))
+                    : Assert.IsType<string>(retained.ReturnValue));
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     public static IEnumerable<object[]> Cases()
     {
         foreach (var ensureAscii in new[] { false, true })

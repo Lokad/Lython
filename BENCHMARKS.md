@@ -275,6 +275,13 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [small JSON result conversion](benchmarks/results/2026-10-18-json-result-copy/README.md)
+at `32867fac` plus its frozen patch replaces the temporary CLR string with bounded
+managed spans for results up to 128 UTF-16 units. One fixed native capture saves
+40–280 bytes per eligible call in both hosting APIs; larger controls and all 560
+behavior/fuel records are unchanged. This is allocation against earlier Lython,
+with no elapsed-time, complete-job or CPython speedup claim.
+
 The [module namespace simplification](benchmarks/results/2026-10-18-builtin-namespace/README.md)
 corrects builtin fallback after deletion and removes the copied builtin dictionary
 and alias bookkeeping. One fixed warm context diagnostic reduces fresh allocation
