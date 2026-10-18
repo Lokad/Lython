@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 dictionary view calls](results/2026-10-18-dict-view-call/README.md)
+reuse existing receiver operations and view admission. One allocation-only pair
+saves 6,656/7,168 B per 64 distinct-dictionary calls sync/async. Raw controls and
+576 fuel/error/span records match; one baseline allocation outlier stays visible.
+All 360 focused checks and 58 complete jobs pass; 31 new rows pass before/after,
+with 10 independent CPython goldens. No elapsed measurement or new memory machinery.
+
 The [2026-10-18 reused function scope facts](results/2026-10-18-scope-facts/README.md)
 replace repeated runtime/compilation collection with the existing facts stored on
 the lowered definition. One frozen pair saves 108,544B per 64 class-method creations;

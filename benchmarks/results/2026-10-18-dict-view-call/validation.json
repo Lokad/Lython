@@ -1,0 +1,56 @@
+{
+  "baseline": "c362a081db760136579a8c0a6867ac23c79982c6",
+  "focusedDistinctPassed": 360,
+  "groups": {
+    "final-white": {
+      "count": 69,
+      "filter": "Category!=Stress&(FullyQualifiedName~DictionaryViewAdmissionTests|FullyQualifiedName~DirectDictionaryGetTests|FullyQualifiedName~DictionaryReadBoundaryTests|FullyQualifiedName~DictionaryEntryEvaluationTests|FullyQualifiedName~DictionaryItemBindingBoundaryTests|FullyQualifiedName~DictEntryStorageTests|FullyQualifiedName~DictWrapperStorageTests|FullyQualifiedName~OwnershipSnapshotContractTests|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~ExecutableStackAdmissionTests)",
+      "assemblySha256": "189D605C96170DAFA2EE60F8C75A4737DA3BFA22291D30932FA8AE85369ED3A9",
+      "elapsedMilliseconds": 1282,
+      "trxSha256": "4511b274ca771e8e937c162ea11c053e98ae94d02df7992a2b7ffb938427b278"
+    },
+    "final-public": {
+      "count": 139,
+      "filter": "Category!=Stress&(FullyQualifiedName~DictionaryViewCallTests|FullyQualifiedName~DictionaryReadTests|FullyQualifiedName~DictionaryDescriptorTests|FullyQualifiedName~DictionaryGetCallTests|FullyQualifiedName~MemberCacheBehaviorTests|FullyQualifiedName~ContextualDictTests|FullyQualifiedName~ReentrantDictRemovalTests|FullyQualifiedName~SuperMemberPreloadCompatibilityTests)",
+      "assemblySha256": "C23361AC1EDDF9F3A0E87E49BA32040872456CBE35CB1F18DFA2DE71B968EDF9",
+      "elapsedMilliseconds": 5577,
+      "trxSha256": "6b0a3b557ac69734c0f041a6f64a326938843d4675582cf905112719486bae2d"
+    },
+    "final-owners": {
+      "count": 90,
+      "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+      "assemblySha256": "C23361AC1EDDF9F3A0E87E49BA32040872456CBE35CB1F18DFA2DE71B968EDF9",
+      "elapsedMilliseconds": 2800,
+      "trxSha256": "f2e87e312bac4bb0f7cd6e6d40bb6fb2001131f57ddfde173a1262bd3ae40f93"
+    },
+    "final-goldens": {
+      "count": 62,
+      "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+      "assemblySha256": "C23361AC1EDDF9F3A0E87E49BA32040872456CBE35CB1F18DFA2DE71B968EDF9",
+      "elapsedMilliseconds": 8013,
+      "trxSha256": "a653684345bb3f7e5edcc7463dedd95222497023991ce764ad6caf6af620be8a"
+    }
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "7ccfefe0002b5ffbdae3d37c6ae1b7c34914fd895e9541587384f65cb57f2ce8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "dc91afc2ecb68c9fd2f20c379764a32746aebcc6aead1fee6adceadde7cc7730",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "befce2503a87e0b7735659bb88c1fd4a94be978434efb71edd01213baadb393a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "1b4c864ca14c2a495201628203e64d9f25b9c0828cb740867a92bbc3ef6f9d83",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs": "c53594d4168a6f7945508489650bb5df48d1cd885d1c30064b53293c488ea6a8"
+  },
+  "newTests": {
+    "tests/Lokad.Lython.Tests/DictionaryViewAdmissionTests.cs": "21661b4ef0dae73ecb2b34258b90089d2c2f435091da795c54af697a7829277e",
+    "tests/Lokad.Lython.PublicApi.Tests/DictionaryViewCallTests.cs": "09433e10723228f5c2c1ba8c08ecbe1dae02a6e143dd6be89522d21e358cf07a"
+  },
+  "newBaselineCasesPassed": 31,
+  "independentCPythonPrograms": 10,
+  "completeJobs": 58,
+  "exactBoundaryRecords": 576,
+  "temporaryDiagnosticRemoved": true,
+  "allNativeStepArraysIdentical": true,
+  "controlAllocationArraysIdentical": true,
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "regexPlanningOnly": true,
+  "contracts": "Existing view factories and64-byte preflights shared; receiver and live view retain original dictionary. Existing interpreter-frame/fuel/exception translation/stack transfer/owners reused. No memory or public contract change.",
+  "fixtureCorrections": "Before runtime edits: governed PyList constructor, awaited setup and PyDict.GetItem; original failed build receipts retained privately. No failing runtime regression or recapture."
+}

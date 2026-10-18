@@ -1,0 +1,14 @@
+{
+  "source": "c362a081-plus-direct-views",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "8A3141A3EE46BB83F90771E9C3950B9F13E07D93BA4C8560BD4C28303F0DEDFA",
+  "filter": "Category!=Stress&FullyQualifiedName~DictionaryViewCallDiagnostic",
+  "pid": 11088,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 2018,
+  "stdoutSha256": "24A22EDE92974A63B164D3814E460AA56DAD7671AF385F73F64D685FCEBD710B",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

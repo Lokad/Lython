@@ -1,0 +1,280 @@
+{
+  "accepted": true,
+  "comparisons": [
+    {
+      "method": "items",
+      "route": "custom",
+      "asynchronous": false,
+      "beforeBytes": 62264.0,
+      "afterBytes": 62264.0,
+      "savedBytes": 0.0,
+      "steps": 1419.0
+    },
+    {
+      "method": "items",
+      "route": "custom",
+      "asynchronous": true,
+      "beforeBytes": 62240.0,
+      "afterBytes": 62240.0,
+      "savedBytes": 0.0,
+      "steps": 1419.0
+    },
+    {
+      "method": "items",
+      "route": "distinct",
+      "asynchronous": false,
+      "beforeBytes": 13112.0,
+      "afterBytes": 6456.0,
+      "savedBytes": 6656.0,
+      "steps": 1163.0
+    },
+    {
+      "method": "items",
+      "route": "distinct",
+      "asynchronous": true,
+      "beforeBytes": 13600.0,
+      "afterBytes": 6432.0,
+      "savedBytes": 7168.0,
+      "steps": 1163.0
+    },
+    {
+      "method": "items",
+      "route": "expanded",
+      "asynchronous": false,
+      "beforeBytes": 48440.0,
+      "afterBytes": 48440.0,
+      "savedBytes": 0.0,
+      "steps": 1419.0
+    },
+    {
+      "method": "items",
+      "route": "expanded",
+      "asynchronous": true,
+      "beforeBytes": 55584.0,
+      "afterBytes": 55584.0,
+      "savedBytes": 0.0,
+      "steps": 1419.0
+    },
+    {
+      "method": "items",
+      "route": "exposed",
+      "asynchronous": false,
+      "beforeBytes": 6424.0,
+      "afterBytes": 6424.0,
+      "savedBytes": 0.0,
+      "steps": 1099.0
+    },
+    {
+      "method": "items",
+      "route": "exposed",
+      "asynchronous": true,
+      "beforeBytes": 8960.0,
+      "afterBytes": 8960.0,
+      "savedBytes": 0.0,
+      "steps": 1099.0
+    },
+    {
+      "method": "items",
+      "route": "repeated",
+      "asynchronous": false,
+      "beforeBytes": 6560.0,
+      "afterBytes": 6456.0,
+      "savedBytes": 104.0,
+      "steps": 1163.0
+    },
+    {
+      "method": "items",
+      "route": "repeated",
+      "asynchronous": true,
+      "beforeBytes": 13600.0,
+      "afterBytes": 6432.0,
+      "savedBytes": 7168.0,
+      "steps": 1163.0
+    },
+    {
+      "method": "keys",
+      "route": "custom",
+      "asynchronous": false,
+      "beforeBytes": 62264.0,
+      "afterBytes": 62264.0,
+      "savedBytes": 0.0,
+      "steps": 1419.0
+    },
+    {
+      "method": "keys",
+      "route": "custom",
+      "asynchronous": true,
+      "beforeBytes": 62240.0,
+      "afterBytes": 62240.0,
+      "savedBytes": 0.0,
+      "steps": 1419.0
+    },
+    {
+      "method": "keys",
+      "route": "distinct",
+      "asynchronous": false,
+      "beforeBytes": 13112.0,
+      "afterBytes": 6456.0,
+      "savedBytes": 6656.0,
+      "steps": 1163.0
+    },
+    {
+      "method": "keys",
+      "route": "distinct",
+      "asynchronous": true,
+      "beforeBytes": 13600.0,
+      "afterBytes": 6432.0,
+      "savedBytes": 7168.0,
+      "steps": 1163.0
+    },
+    {
+      "method": "keys",
+      "route": "expanded",
+      "asynchronous": false,
+      "beforeBytes": 48440.0,
+      "afterBytes": 48440.0,
+      "savedBytes": 0.0,
+      "steps": 1419.0
+    },
+    {
+      "method": "keys",
+      "route": "expanded",
+      "asynchronous": true,
+      "beforeBytes": 55584.0,
+      "afterBytes": 55584.0,
+      "savedBytes": 0.0,
+      "steps": 1419.0
+    },
+    {
+      "method": "keys",
+      "route": "exposed",
+      "asynchronous": false,
+      "beforeBytes": 6424.0,
+      "afterBytes": 6424.0,
+      "savedBytes": 0.0,
+      "steps": 1099.0
+    },
+    {
+      "method": "keys",
+      "route": "exposed",
+      "asynchronous": true,
+      "beforeBytes": 8960.0,
+      "afterBytes": 8960.0,
+      "savedBytes": 0.0,
+      "steps": 1099.0
+    },
+    {
+      "method": "keys",
+      "route": "repeated",
+      "asynchronous": false,
+      "beforeBytes": 6560.0,
+      "afterBytes": 6456.0,
+      "savedBytes": 104.0,
+      "steps": 1163.0
+    },
+    {
+      "method": "keys",
+      "route": "repeated",
+      "asynchronous": true,
+      "beforeBytes": 13600.0,
+      "afterBytes": 6432.0,
+      "savedBytes": 7168.0,
+      "steps": 1163.0
+    },
+    {
+      "method": "values",
+      "route": "custom",
+      "asynchronous": false,
+      "beforeBytes": 62264.0,
+      "afterBytes": 62264.0,
+      "savedBytes": 0.0,
+      "steps": 1419.0
+    },
+    {
+      "method": "values",
+      "route": "custom",
+      "asynchronous": true,
+      "beforeBytes": 62240.0,
+      "afterBytes": 62240.0,
+      "savedBytes": 0.0,
+      "steps": 1419.0
+    },
+    {
+      "method": "values",
+      "route": "distinct",
+      "asynchronous": false,
+      "beforeBytes": 13112.0,
+      "afterBytes": 6456.0,
+      "savedBytes": 6656.0,
+      "steps": 1163.0
+    },
+    {
+      "method": "values",
+      "route": "distinct",
+      "asynchronous": true,
+      "beforeBytes": 13600.0,
+      "afterBytes": 6432.0,
+      "savedBytes": 7168.0,
+      "steps": 1163.0
+    },
+    {
+      "method": "values",
+      "route": "expanded",
+      "asynchronous": false,
+      "beforeBytes": 48440.0,
+      "afterBytes": 48440.0,
+      "savedBytes": 0.0,
+      "steps": 1419.0
+    },
+    {
+      "method": "values",
+      "route": "expanded",
+      "asynchronous": true,
+      "beforeBytes": 55584.0,
+      "afterBytes": 55584.0,
+      "savedBytes": 0.0,
+      "steps": 1419.0
+    },
+    {
+      "method": "values",
+      "route": "exposed",
+      "asynchronous": false,
+      "beforeBytes": 6424.0,
+      "afterBytes": 6424.0,
+      "savedBytes": 0.0,
+      "steps": 1099.0
+    },
+    {
+      "method": "values",
+      "route": "exposed",
+      "asynchronous": true,
+      "beforeBytes": 8960.0,
+      "afterBytes": 8960.0,
+      "savedBytes": 0.0,
+      "steps": 1099.0
+    },
+    {
+      "method": "values",
+      "route": "repeated",
+      "asynchronous": false,
+      "beforeBytes": 6560.0,
+      "afterBytes": 6456.0,
+      "savedBytes": 104.0,
+      "steps": 1163.0
+    },
+    {
+      "method": "values",
+      "route": "repeated",
+      "asynchronous": true,
+      "beforeBytes": 13600.0,
+      "afterBytes": 6432.0,
+      "savedBytes": 7168.0,
+      "steps": 1163.0
+    }
+  ],
+  "exactBoundaryRecords": 576,
+  "unchangedControls": true,
+  "allStepArraysIdentical": true,
+  "elapsedMeasured": false,
+  "allocationOutlier": "Baseline items/distinct/async final sample108800->112312B per8 invocations; all raw samples retained, medians reported, no recapture."
+}

@@ -1,0 +1,19 @@
+{
+  "head": "c362a081db760136579a8c0a6867ac23c79982c6",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "bf96fdce1d4c94b41f6d2f9d2f09a1a0f091e7e56a6a213757bc0f65ed245958",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "e23f61b9e18da973c940a468b6a72b92c037b9e0d51838a2501b2cfb9fc4b297",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "92efbed6b10365f41d72beaa006c24594c722e0fda9459911bf40c979addec72",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "9e1e3665ab2467e721ff75201d5229411bb661cfe84daa985471c32bc6963d59",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs": "dcfa826cf5f39351e45e8151fc0798b34494f53b75256ec2e69edc3194525022",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "8f6449fcbd1d1a0267c4dbebad159245508ec3a22ce0ecce369912032872b974",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "9f756ed5cabd3b6d0e2a7d2954163b14d55881ae8ab9b558560215594b68cd1a"
+  },
+  "finding": "Exact PyDict items/keys/values no-argument calls still load a receiver-specific NoArgumentsReceiverBoundCallable. It already avoids general argument binding; only wrapper creation/dispatch is a candidate. Member caching keys receiver identity, so distinct dictionary rows can allocate repeatedly.",
+  "workloadEvidence": "WorkloadCatalog dicts.tuple-key-update and text Counter results call items;those final calls alone do not demonstrate material job cost. A new diagnostic must expose distinct-row dictionaries and a same-receiver control, with no whole-job claim.",
+  "proposal": "Reuse existing LoadCallReceiver/InvokeSingleInput machinery for zero-argument exact PyDict view calls. Centralize the current64-byte view preflight/factory so immediate/exposed paths share it. Static operation delegates carry no guest/host/root state. Keep existing exposed methods and custom/Counter/defaultdict/general call routes.",
+  "acceptance": "Freeze native before/after with distinct and repeated receivers, exposed/expanded/custom controls; require affected allocation reduction and exact semantics/fuel/error/spans. Views remain live, original receiver survives rebinding, iterator mutation errors and arity effects match Python. Refuse64-byte view admission before mutation while keeping dict/aliases funded; retained results/caches and actual receiver-expression I/O/cancellation still work.58 complete jobs;no new memory or regex work.",
+  "stopping": "Only items/keys/values exact PyDict zero-positional-argument form. No setdefault/pop/update/clear/copy, general dictionary/binder inventory, new dispatcher/cache/owner or retiming. Reject if this needs new ownership/iteration infrastructure. Decide value from bounded distinct-row diagnostic, not final-sort workload call counts.",
+  "runtimeEdits": false,
+  "measurements": false
+}

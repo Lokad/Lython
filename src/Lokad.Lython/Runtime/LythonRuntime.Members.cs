@@ -1997,6 +1997,30 @@ internal sealed partial class LythonRuntime
             return found.Found ? found.Value : fallback;
         }
 
+        internal static Func<PyDict, LythonSourceSpan, ExecutionContext, object>? GetNoArgumentsOperation(string name)
+            => name switch
+            {
+                "keys" => static (receiver, span, context) =>
+                {
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    return new DictKeysView(receiver);
+                },
+                "values" => static (receiver, span, context) =>
+                {
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    return new DictValuesView(receiver);
+                },
+                "items" => static (receiver, span, context) =>
+                {
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    return new DictItemsView(receiver);
+                },
+                _ => null
+            };
+
         public static bool TryGetMember(PyDict dict, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -2005,24 +2029,9 @@ internal sealed partial class LythonRuntime
                     (arguments, span, context) => Get(dict, arguments[0], arguments.Length == 2 ? arguments[1] : PyNone.Instance, span, context),
                     DictGetSignature,
                     (arguments, span, context) => GetAsync(dict, arguments[0], arguments.Length == 2 ? arguments[1] : PyNone.Instance, span, context)),
-                "keys" => BoundCallable.CreateNoArguments(dict, "dict.keys", static (receiver, span, context) =>
-                {
-                    context.MemoryGovernor.Reserve(64L, span);
-                    context.MemoryGovernor.Commit(64L);
-                    return new DictKeysView(receiver);
-                }),
-                "values" => BoundCallable.CreateNoArguments(dict, "dict.values", static (receiver, span, context) =>
-                {
-                    context.MemoryGovernor.Reserve(64L, span);
-                    context.MemoryGovernor.Commit(64L);
-                    return new DictValuesView(receiver);
-                }),
-                "items" => BoundCallable.CreateNoArguments(dict, "dict.items", static (receiver, span, context) =>
-                {
-                    context.MemoryGovernor.Reserve(64L, span);
-                    context.MemoryGovernor.Commit(64L);
-                    return new DictItemsView(receiver);
-                }),
+                "keys" => BoundCallable.CreateNoArguments(dict, "dict.keys", GetNoArgumentsOperation(name)!),
+                "values" => BoundCallable.CreateNoArguments(dict, "dict.values", GetNoArgumentsOperation(name)!),
+                "items" => BoundCallable.CreateNoArguments(dict, "dict.items", GetNoArgumentsOperation(name)!),
                 "update" => new RawBoundCallable((arguments, span, context) => UpdateDictionary(dict, arguments, span, context), async (arguments, span, context) => await UpdateDictionaryAsync(dict, arguments, span, context).ConfigureAwait(false)) { BoundName = "dict.update", BoundReceiver = dict },
                 "pop" => BoundCallable.Create((arguments, span, context) =>
                 {

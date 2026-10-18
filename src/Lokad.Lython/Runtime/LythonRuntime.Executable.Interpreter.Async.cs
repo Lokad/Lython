@@ -89,6 +89,11 @@ internal sealed partial class LythonRuntime
                         {
                             result = InvokeSingleInput(stringReceiver, stringOperation, call.CallSpan, _context);
                         }
+                        else if (call.HasReceiver && _stack[start] is PyDict dictionaryReceiver &&
+                            callable is Func<PyDict, LythonSourceSpan, ExecutionContext, object> dictionaryOperation)
+                        {
+                            result = InvokeSingleInput(dictionaryReceiver, dictionaryOperation, call.CallSpan, _context);
+                        }
                         else if (call.HasReceiver && ReferenceEquals(callable, DirectStringJoin))
                         {
                             result = await InvokeStringJoinAsync((Text.PyString)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context).ConfigureAwait(false);

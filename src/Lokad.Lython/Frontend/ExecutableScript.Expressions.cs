@@ -324,6 +324,7 @@ internal sealed partial class ExecutableScript
                     "writerow" => call.Arguments.Count == 1,
                     "replace" => call.Arguments.Count is 2 or 3,
                     "split" => call.Arguments.Count is >= 0 and <= 2,
+                    "keys" or "values" or "items" => call.Arguments.Count == 0,
                     "strip" or "lower" or "upper" or
                     "islower" or "isupper" or "istitle" or "isalpha" or "isdigit" or "isalnum" or
                     "isascii" or "isdecimal" or "isidentifier" or "isnumeric" or "isprintable" or "isspace"

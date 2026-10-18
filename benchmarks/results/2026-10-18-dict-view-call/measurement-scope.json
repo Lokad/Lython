@@ -1,0 +1,26 @@
+{
+  "baseline": "c362a081db760136579a8c0a6867ac23c79982c6",
+  "boundary": "Native warm execution only, precompiled module, prepared context/receivers; no context creation, frontend, public projection, scheduling, process startup, or host I/O. All async ValueTasks must complete synchronously on measured thread. No elapsed performance claim.",
+  "routes": [
+    "distinct",
+    "repeated",
+    "exposed",
+    "expanded",
+    "custom"
+  ],
+  "methods": [
+    "items",
+    "keys",
+    "values"
+  ],
+  "asynchronous": [
+    false,
+    true
+  ],
+  "warmups": 2,
+  "samples": 8,
+  "invocationsPerSample": 8,
+  "viewCallsPerInvocation": 64,
+  "acceptance": "Every native result is64; exact fuel/error/span/admission records identical before/after; distinct-receiver allocation must fall; exposed/expanded/custom controls identical. Repeated receiver may save only first wrapper. All frame/temp/shared-root owners clean. No recapture or tuning.",
+  "diagnosticSha256": "bf3d3b2cfc83e2ded7384cbcf9ba51d06c79ace4bb58222f5e67d55e30ae3bad"
+}

@@ -286,6 +286,13 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [dictionary view call change](benchmarks/results/2026-10-18-dict-view-call/README.md)
+at `c362a081` plus its frozen patch avoids receiver wrappers for immediate
+zero-argument `items`/`keys`/`values`. A 64-distinct-dictionary diagnostic allocates
+13,112→6,456 B sync and 13,600→6,432 B async. Exposed/expanded/custom controls
+and all 576 boundary records match. Elapsed was not measured; no CPython,
+compile-to-result or whole-job speedup is claimed.
+
 The [function-scope facts change](benchmarks/results/2026-10-18-scope-facts/README.md)
 at `241dd167` plus its frozen five-file patch reuses existing compiled metadata.
 A 64-class-method job allocates 789,400→680,856 bytes in both execution modes;
