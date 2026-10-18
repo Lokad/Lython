@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Execute ordinary single-positional text-file `write` calls from existing operand storage, reusing the same governed writer body. Remove bound-method and argument packaging on that path while preserving exposed/general calls, Unicode counts, encoding/newlines, fuel, error order, retained input, admission, cancellation and host publication/cleanup.
+
 - Release the unused whole-module lowered representation after executable compilation. Use existing syntax/entry-point metadata for both execution APIs, keeping required function/fallback data, annotations, host-capability diagnostics, managed stack admission, cancellation and cleanup. Conservative compilation ownership remains unchanged.
 
 - Encode ordinary single-positional `json.dumps` calls through existing serialization with immutable builtin defaults, omitting temporary binding/constructor/member packaging. Make the base encoder default stateless while preserving keyword/class/subclass and mutable-encoder behavior, errors, checkpoints, ownership and cancellation.

@@ -8,6 +8,14 @@ internal sealed partial class LythonRuntime
 {
     internal static class TextFileHandleMembers
     {
+        internal static object Write(ExecutionContext.TextFileHandle handle, object value, LythonSourceSpan span)
+        {
+            if (!PyStringOps.TryAsString(value, out var text))
+                throw new LythonRuntimeException("TypeError", "file.write(text) expects one string argument.", span);
+
+            return handle.Write(text);
+        }
+
         public static bool TryGetMember(ExecutionContext.TextFileHandle handle, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -116,15 +124,7 @@ internal sealed partial class LythonRuntime
 
                     return await handle.ReadLinesAsync(ParseOptionalSize(arguments, "file.readlines([hint])", span)).ConfigureAwait(false);
                 }),
-                "write" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text))
-                    {
-                        throw new LythonRuntimeException("TypeError", "file.write(text) expects one string argument.", span);
-                    }
-
-                    return handle.Write(text);
-                }, "file.write", ["text"]),
+                "write" => BoundCallable.Create((arguments, span, _) => Write(handle, arguments[0], span), "file.write", ["text"]),
                 "writelines" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)

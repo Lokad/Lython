@@ -175,6 +175,21 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    // Exact text-file writes stage governed output synchronously. Publication
+    // remains on the existing flush/close and execution cleanup paths.
+    private static object InvokeTextFileWrite(ExecutionContext.TextFileHandle receiver, object value, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            return TextFileHandleMembers.Write(receiver, value, span);
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private static object InvokeSingleInput<T>(T value,
         Func<T, LythonSourceSpan, ExecutionContext, object> operation, LythonSourceSpan span, ExecutionContext context) where T : class
     {

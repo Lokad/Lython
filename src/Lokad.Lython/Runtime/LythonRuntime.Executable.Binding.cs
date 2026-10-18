@@ -10,6 +10,7 @@ internal sealed partial class LythonRuntime
     // Internal operand only: its receiver occupies a separate slot. A guest
     // list-valued attribute can never be confused with this resolved method.
     private static readonly object DirectListAppend = new();
+    private static readonly object DirectTextFileWrite = new();
     private static readonly object DirectDictionaryGet = new();
     private static readonly object DirectStringStartsWith = new();
     private static readonly object DirectStringReplace = new();
@@ -557,6 +558,11 @@ internal sealed partial class LythonRuntime
             if (callSite.HasReceiver && ReferenceEquals(target, DirectListAppend))
             {
                 result = InvokeListAppend((PyList)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+            }
+            else if (callSite.HasReceiver && ReferenceEquals(target, DirectTextFileWrite))
+            {
+                result = InvokeTextFileWrite((ExecutionContext.TextFileHandle)stack[start],
+                    stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
             }
             else if (callSite.HasReceiver && stack[start] is PyString stringReceiver &&
                 target is Func<PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)

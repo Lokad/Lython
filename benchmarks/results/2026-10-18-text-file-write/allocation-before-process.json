@@ -1,0 +1,14 @@
+{
+  "source": "2b68d4ea",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "3E52BCB627C09729977C7A33393E59DF504281E4FF35A554708A3CE27F46CBA4",
+  "filter": "Category!=Stress&(FullyQualifiedName~TextFileWriteCallBoundaryTests|FullyQualifiedName~TextWriteAllocationDiagnostic)",
+  "pid": 37676,
+  "hasExited": true,
+  "exitCode": 1,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1334,
+  "stdoutSha256": "605FFFC4F1C47ED81F05D4B6FA089A9A304BCF70893EEBFBAFBFD8ED9A18D160",
+  "stderrSha256": "E41CE877F8C408B3BE608643D85B922FD83F134835BEE5D42E6ACAAD44D50BE6"
+}

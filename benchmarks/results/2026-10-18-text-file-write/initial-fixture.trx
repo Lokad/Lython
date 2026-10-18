@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="a5147405-a926-4fba-a974-7bd155630080" name="JoannesVermorel@LOKAD-0399 2026-10-18 03:56:19" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T03:56:19.2176612+02:00" queuing="2026-10-18T03:56:19.2176613+02:00" start="2026-10-18T03:56:18.1553013+02:00" finish="2026-10-18T03:56:19.2215329+02:00" />
+  <TestSettings name="default" id="dfed0302-9ecc-4488-818f-d4fc4128d36d">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_03_56_19" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="45696e17-ec62-454f-a7de-e7673b2c11b2" testId="e23eea1c-8cab-b6db-ad57-6824eace1334" testName="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.SuspendedArgumentKeepsReceiverFundedUntilCompletion(cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0112185" startTime="2026-10-18T03:56:19.0429163+02:00" endTime="2026-10-18T03:56:19.0545299+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="45696e17-ec62-454f-a7de-e7673b2c11b2" />
+    <UnitTestResult executionId="dcfd4b95-8e28-49e8-b9be-af47ff1c0920" testId="94573fb0-74a3-ef86-1a04-eaf29f51dca0" testName="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(asynchronous: False, invalidArgument: False)" computerName="LOKAD-0399" duration="00:00:00.1138561" startTime="2026-10-18T03:56:18.9098708+02:00" endTime="2026-10-18T03:56:19.0319474+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dcfd4b95-8e28-49e8-b9be-af47ff1c0920">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+                                       ↓ (pos 28)&#xD;
+Expected: "I/O operation on closed file."&#xD;
+Actual:   "I/O operation on closed file"</Message>
+          <StackTrace>   at Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(Boolean asynchronous, Boolean invalidArgument) in D:\code\Lython\tests\Lokad.Lython.Tests\TextFileWriteCallBoundaryTests.cs:line 82&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f8aa5a71-0a6b-4ca3-bfdd-8ed1bc984bae" testId="7c07b429-5bef-525f-445c-366995430c1d" testName="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(asynchronous: False, invalidArgument: True)" computerName="LOKAD-0399" duration="00:00:00.0000880" startTime="2026-10-18T03:56:19.0423994+02:00" endTime="2026-10-18T03:56:19.0424287+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f8aa5a71-0a6b-4ca3-bfdd-8ed1bc984bae" />
+    <UnitTestResult executionId="416b7e1d-a41a-4d0f-9c4c-b11da1bbd954" testId="11197854-5be4-b4aa-2022-cd2d904aa215" testName="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.SuspendedArgumentKeepsReceiverFundedUntilCompletion(cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0007485" startTime="2026-10-18T03:56:19.0548200+02:00" endTime="2026-10-18T03:56:19.0556003+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="416b7e1d-a41a-4d0f-9c4c-b11da1bbd954" />
+    <UnitTestResult executionId="4ab44359-6029-4d80-927c-c2c4d76feca0" testId="c137bf0e-b77b-785f-eac8-0c2594ba7c68" testName="Lokad.Lython.Tests.TextWriteAllocationDiagnostic.Capture" computerName="LOKAD-0399" duration="00:00:00.0737849" startTime="2026-10-18T03:56:19.0754538+02:00" endTime="2026-10-18T03:56:19.1492802+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4ab44359-6029-4d80-927c-c2c4d76feca0" />
+    <UnitTestResult executionId="180e2be0-370c-4950-b978-dd06674c5f10" testId="6ad6dad3-a35f-2a5a-6dd8-d74c0c9ebcf1" testName="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.EveryFuelCheckpointPreservesArgumentAndStagedOutput(asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.0163619" startTime="2026-10-18T03:56:19.0561295+02:00" endTime="2026-10-18T03:56:19.0730519+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="180e2be0-370c-4950-b978-dd06674c5f10">
+      <Output>
+        <StdOut>TEXT_WRITE_GUARDS:{"asynchronous":true,"steps":12,"checkpoints":["-:0:0","7,4,1,8:0:0","7,10,1,8:0:0","18,8,1,19:0:0","18,10,1,19:0:0","18,10,1,19:0:0","18,10,1,19:0:0","7,22,1,8:1:0","7,22,1,8:1:0","7,22,1,8:1:0","7,22,1,8:1:0","0,29,1,1:1:6"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4d44c6d4-7643-4d2d-8448-8b067f1cf31d" testId="f86c59b5-a7ec-4adb-eaed-9b2f3cabec12" testName="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.EveryFuelCheckpointPreservesArgumentAndStagedOutput(asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0006520" startTime="2026-10-18T03:56:19.0732274+02:00" endTime="2026-10-18T03:56:19.0732667+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4d44c6d4-7643-4d2d-8448-8b067f1cf31d">
+      <Output>
+        <StdOut>TEXT_WRITE_GUARDS:{"asynchronous":false,"steps":12,"checkpoints":["-:0:0","7,4,1,8:0:0","7,10,1,8:0:0","18,8,1,19:0:0","18,10,1,19:0:0","18,10,1,19:0:0","18,10,1,19:0:0","7,22,1,8:1:0","7,22,1,8:1:0","7,22,1,8:1:0","7,22,1,8:1:0","0,29,1,1:1:6"]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c0e731a2-f585-4be9-86fe-b7cf77f90cf1" testId="d618b202-fba6-125d-db05-809b41e4a991" testName="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(asynchronous: True, invalidArgument: False)" computerName="LOKAD-0399" duration="00:00:00.0001379" startTime="2026-10-18T03:56:19.0420302+02:00" endTime="2026-10-18T03:56:19.0420617+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c0e731a2-f585-4be9-86fe-b7cf77f90cf1">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+                                       ↓ (pos 28)&#xD;
+Expected: "I/O operation on closed file."&#xD;
+Actual:   "I/O operation on closed file"</Message>
+          <StackTrace>   at Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(Boolean asynchronous, Boolean invalidArgument) in D:\code\Lython\tests\Lokad.Lython.Tests\TextFileWriteCallBoundaryTests.cs:line 82&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4b351c78-8e9a-4409-9f34-7a10e81a94fd" testId="3eb980dd-2089-81f8-9b29-55a8079e655d" testName="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(asynchronous: True, invalidArgument: True)" computerName="LOKAD-0399" duration="00:00:00.0093464" startTime="2026-10-18T03:56:19.0395682+02:00" endTime="2026-10-18T03:56:19.0413721+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4b351c78-8e9a-4409-9f34-7a10e81a94fd" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(asynchronous: True, invalidArgument: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="d618b202-fba6-125d-db05-809b41e4a991">
+      <Execution id="c0e731a2-f585-4be9-86fe-b7cf77f90cf1" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests" name="TypeErrorPrecedesClosedHandleError" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(asynchronous: True, invalidArgument: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="3eb980dd-2089-81f8-9b29-55a8079e655d">
+      <Execution id="4b351c78-8e9a-4409-9f34-7a10e81a94fd" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests" name="TypeErrorPrecedesClosedHandleError" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.TextWriteAllocationDiagnostic.Capture" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="c137bf0e-b77b-785f-eac8-0c2594ba7c68">
+      <Execution id="4ab44359-6029-4d80-927c-c2c4d76feca0" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.TextWriteAllocationDiagnostic" name="Capture" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.EveryFuelCheckpointPreservesArgumentAndStagedOutput(asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="f86c59b5-a7ec-4adb-eaed-9b2f3cabec12">
+      <Execution id="4d44c6d4-7643-4d2d-8448-8b067f1cf31d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests" name="EveryFuelCheckpointPreservesArgumentAndStagedOutput" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(asynchronous: False, invalidArgument: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="7c07b429-5bef-525f-445c-366995430c1d">
+      <Execution id="f8aa5a71-0a6b-4ca3-bfdd-8ed1bc984bae" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests" name="TypeErrorPrecedesClosedHandleError" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.SuspendedArgumentKeepsReceiverFundedUntilCompletion(cancel: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="e23eea1c-8cab-b6db-ad57-6824eace1334">
+      <Execution id="45696e17-ec62-454f-a7de-e7673b2c11b2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests" name="SuspendedArgumentKeepsReceiverFundedUntilCompletion" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.EveryFuelCheckpointPreservesArgumentAndStagedOutput(asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="6ad6dad3-a35f-2a5a-6dd8-d74c0c9ebcf1">
+      <Execution id="180e2be0-370c-4950-b978-dd06674c5f10" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests" name="EveryFuelCheckpointPreservesArgumentAndStagedOutput" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.SuspendedArgumentKeepsReceiverFundedUntilCompletion(cancel: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="11197854-5be4-b4aa-2022-cd2d904aa215">
+      <Execution id="416b7e1d-a41a-4d0f-9c4c-b11da1bbd954" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests" name="SuspendedArgumentKeepsReceiverFundedUntilCompletion" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(asynchronous: False, invalidArgument: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="94573fb0-74a3-ef86-1a04-eaf29f51dca0">
+      <Execution id="dcfd4b95-8e28-49e8-b9be-af47ff1c0920" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.TextFileWriteCallBoundaryTests" name="TypeErrorPrecedesClosedHandleError" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="e23eea1c-8cab-b6db-ad57-6824eace1334" executionId="45696e17-ec62-454f-a7de-e7673b2c11b2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="94573fb0-74a3-ef86-1a04-eaf29f51dca0" executionId="dcfd4b95-8e28-49e8-b9be-af47ff1c0920" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7c07b429-5bef-525f-445c-366995430c1d" executionId="f8aa5a71-0a6b-4ca3-bfdd-8ed1bc984bae" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="11197854-5be4-b4aa-2022-cd2d904aa215" executionId="416b7e1d-a41a-4d0f-9c4c-b11da1bbd954" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c137bf0e-b77b-785f-eac8-0c2594ba7c68" executionId="4ab44359-6029-4d80-927c-c2c4d76feca0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6ad6dad3-a35f-2a5a-6dd8-d74c0c9ebcf1" executionId="180e2be0-370c-4950-b978-dd06674c5f10" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f86c59b5-a7ec-4adb-eaed-9b2f3cabec12" executionId="4d44c6d4-7643-4d2d-8448-8b067f1cf31d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d618b202-fba6-125d-db05-809b41e4a991" executionId="c0e731a2-f585-4be9-86fe-b7cf77f90cf1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3eb980dd-2089-81f8-9b29-55a8079e655d" executionId="4b351c78-8e9a-4409-9f34-7a10e81a94fd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="9" executed="9" passed="7" failed="2" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.16]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.43]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.45]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.59]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:00.59]                                              ↓ (pos 28)&#xD;
+[xUnit.net 00:00:00.59]       Expected: "I/O operation on closed file."&#xD;
+[xUnit.net 00:00:00.59]       Actual:   "I/O operation on closed file"&#xD;
+[xUnit.net 00:00:00.59]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.59]         D:\code\Lython\tests\Lokad.Lython.Tests\TextFileWriteCallBoundaryTests.cs(82,0): at Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(Boolean asynchronous, Boolean invalidArgument)&#xD;
+[xUnit.net 00:00:00.59]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:00.60]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:00.60]                                              ↓ (pos 28)&#xD;
+[xUnit.net 00:00:00.60]       Expected: "I/O operation on closed file."&#xD;
+[xUnit.net 00:00:00.60]       Actual:   "I/O operation on closed file"&#xD;
+[xUnit.net 00:00:00.60]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.60]         D:\code\Lython\tests\Lokad.Lython.Tests\TextFileWriteCallBoundaryTests.cs(82,0): at Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(Boolean asynchronous, Boolean invalidArgument)&#xD;
+[xUnit.net 00:00:00.60]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:00.71]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T03:56:19.0338896+02:00">
+        <Text>[xUnit.net 00:00:00.59]     Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(asynchronous: False, invalidArgument: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T03:56:19.0422495+02:00">
+        <Text>[xUnit.net 00:00:00.60]     Lokad.Lython.Tests.TextFileWriteCallBoundaryTests.TypeErrorPrecedesClosedHandleError(asynchronous: True, invalidArgument: False) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

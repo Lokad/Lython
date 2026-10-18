@@ -1,0 +1,126 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+index c3038d44..e6ffa0dd 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+@@ -319,6 +319,7 @@ internal sealed partial class ExecutableScript
+                 {
+                     "get" => call.Arguments.Count is 1 or 2,
+                     "append" => call.Arguments.Count == 1,
++                    "write" => call.Arguments.Count == 1,
+                     "replace" => call.Arguments.Count is 2 or 3,
+                     "strip" or "split" or "lower" or "upper" or
+                     "islower" or "isupper" or "istitle" or "isalpha" or "isdigit" or "isalnum" or
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+index 38ce7708..c5951dde 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+@@ -175,6 +175,21 @@ internal sealed partial class LythonRuntime
+         finally { context.LeaveInterpreterFrame(); }
+     }
+ 
++    // Exact text-file writes stage governed output synchronously. Publication
++    // remains on the existing flush/close and execution cleanup paths.
++    private static object InvokeTextFileWrite(ExecutionContext.TextFileHandle receiver, object value, LythonSourceSpan span, ExecutionContext context)
++    {
++        context.EnterInterpreterFrame(span);
++        try
++        {
++            context.CheckExecution(span);
++            context.CheckExecution(span);
++            return TextFileHandleMembers.Write(receiver, value, span);
++        }
++        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
++        finally { context.LeaveInterpreterFrame(); }
++    }
++
+     private static object InvokeSingleInput<T>(T value,
+         Func<T, LythonSourceSpan, ExecutionContext, object> operation, LythonSourceSpan span, ExecutionContext context) where T : class
+     {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 6e5faa7d..cc421de0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -10,6 +10,7 @@ internal sealed partial class LythonRuntime
+     // Internal operand only: its receiver occupies a separate slot. A guest
+     // list-valued attribute can never be confused with this resolved method.
+     private static readonly object DirectListAppend = new();
++    private static readonly object DirectTextFileWrite = new();
+     private static readonly object DirectDictionaryGet = new();
+     private static readonly object DirectStringStartsWith = new();
+     private static readonly object DirectStringReplace = new();
+@@ -558,6 +559,11 @@ internal sealed partial class LythonRuntime
+             {
+                 result = InvokeListAppend((PyList)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+             }
++            else if (callSite.HasReceiver && ReferenceEquals(target, DirectTextFileWrite))
++            {
++                result = InvokeTextFileWrite((ExecutionContext.TextFileHandle)stack[start],
++                    stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
++            }
+             else if (callSite.HasReceiver && stack[start] is PyString stringReceiver &&
+                 target is Func<PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
+             {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 98d6aa2a..a8002afb 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -74,6 +74,11 @@ internal sealed partial class LythonRuntime
+                         {
+                             result = InvokeListAppend((PyList)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context);
+                         }
++                        else if (call.HasReceiver && ReferenceEquals(callable, DirectTextFileWrite))
++                        {
++                            result = InvokeTextFileWrite((ExecutionContext.TextFileHandle)_stack[start],
++                                _stack[start + call.ArgumentOffset], call.CallSpan, _context);
++                        }
+                         else if (call.HasReceiver && _stack[start] is Text.PyString stringReceiver &&
+                             callable is Func<Text.PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
+                         {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index 1a068014..5df84122 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -23,6 +23,7 @@ internal sealed partial class LythonRuntime
+             var operation = _stack[_stack.Count - 1] switch
+             {
+                 PyList when name == "append" => DirectListAppend,
++                ExecutionContext.TextFileHandle when name == "write" => DirectTextFileWrite,
+                 PyDict when name == "get" => DirectDictionaryGet,
+                 Text.PyString when name == "startswith" => DirectStringStartsWith,
+                 Text.PyString when name == "replace" => DirectStringReplace,
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.HandleMembers.cs b/src/Lokad.Lython/Runtime/LythonRuntime.HandleMembers.cs
+index 723cc504..92f8f3bf 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.HandleMembers.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.HandleMembers.cs
+@@ -8,6 +8,14 @@ internal sealed partial class LythonRuntime
+ {
+     internal static class TextFileHandleMembers
+     {
++        internal static object Write(ExecutionContext.TextFileHandle handle, object value, LythonSourceSpan span)
++        {
++            if (!PyStringOps.TryAsString(value, out var text))
++                throw new LythonRuntimeException("TypeError", "file.write(text) expects one string argument.", span);
++
++            return handle.Write(text);
++        }
++
+         public static bool TryGetMember(ExecutionContext.TextFileHandle handle, string name, [MaybeNullWhen(false)] out object value)
+         {
+             value = name switch
+@@ -116,15 +124,7 @@ internal sealed partial class LythonRuntime
+ 
+                     return await handle.ReadLinesAsync(ParseOptionalSize(arguments, "file.readlines([hint])", span)).ConfigureAwait(false);
+                 }),
+-                "write" => BoundCallable.Create((arguments, span, _) =>
+-                {
+-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text))
+-                    {
+-                        throw new LythonRuntimeException("TypeError", "file.write(text) expects one string argument.", span);
+-                    }
+-
+-                    return handle.Write(text);
+-                }, "file.write", ["text"]),
++                "write" => BoundCallable.Create((arguments, span, _) => Write(handle, arguments[0], span), "file.write", ["text"]),
+                 "writelines" => BoundCallable.Create((arguments, span, context) =>
+                 {
+                     if (arguments.Length != 1)

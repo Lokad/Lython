@@ -74,6 +74,11 @@ internal sealed partial class LythonRuntime
                         {
                             result = InvokeListAppend((PyList)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context);
                         }
+                        else if (call.HasReceiver && ReferenceEquals(callable, DirectTextFileWrite))
+                        {
+                            result = InvokeTextFileWrite((ExecutionContext.TextFileHandle)_stack[start],
+                                _stack[start + call.ArgumentOffset], call.CallSpan, _context);
+                        }
                         else if (call.HasReceiver && _stack[start] is Text.PyString stringReceiver &&
                             callable is Func<Text.PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
                         {
