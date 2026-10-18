@@ -30,6 +30,7 @@ internal sealed partial class LythonRuntime
                 Text.PyString when name == "endswith" => DirectStringEndsWith,
                 Text.PyString when name == "replace" => DirectStringReplace,
                 Text.PyString when name == "split" => DirectStringSplit,
+                Text.PyString when name == "join" => DirectStringJoin,
                 Text.PyString => StringMembers.GetNoArgumentsOperation(name),
                 _ => null
             };

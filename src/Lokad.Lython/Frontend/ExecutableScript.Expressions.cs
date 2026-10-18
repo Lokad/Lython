@@ -319,6 +319,7 @@ internal sealed partial class ExecutableScript
                 {
                     "get" => call.Arguments.Count is 1 or 2,
                     "append" => call.Arguments.Count == 1,
+                    "join" => call.Arguments.Count == 1,
                     "write" => call.Arguments.Count == 1,
                     "writerow" => call.Arguments.Count == 1,
                     "replace" => call.Arguments.Count is 2 or 3,

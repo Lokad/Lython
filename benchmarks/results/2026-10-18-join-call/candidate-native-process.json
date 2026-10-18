@@ -1,0 +1,14 @@
+{
+  "source": "join-call",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "EDF468BF8FF65998FA2A332DE4CC594A0E3E1F328CC0140B82C52678DCA79145",
+  "filter": "Category!=Stress&FullyQualifiedName~JoinCallDiagnostic",
+  "pid": 50556,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1465,
+  "stdoutSha256": "85F7D1BF219B5B6F799365A27ED09F75B3AF15F3059E0F0A8132A5CEC8E59E28",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

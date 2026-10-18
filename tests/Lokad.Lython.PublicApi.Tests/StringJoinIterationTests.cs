@@ -22,6 +22,9 @@ public sealed class StringJoinIterationTests
                 }
             }
             yield return [asynchronous, "values", "print('|'.join([]),'|'.join(['one']),'|'.join(('café','😀')),'-'.join('ab'))", " one café|😀 a-b\n"];
+            yield return [asynchronous, "argument-rebinds-receiver", "separator='|'\nevents=[]\ndef items():\n global separator\n events.append('argument')\n separator='changed'\n return ['a','b']\nprint(separator.join(items()),separator,events)", "a|b changed ['argument']\n"];
+            yield return [asynchronous, "iterator-rebinds-receiver", "separator='|'\nevents=[]\ndef parts():\n global separator\n events.append('iteration')\n separator='changed'\n yield 'café'\n yield '😀'\nprint(separator.join(parts()),separator,events)", "café|😀 changed ['iteration']\n"];
+            yield return [asynchronous, "custom-receiver", "class Separator:\n def join(self,parts):return ['custom',parts]\nprint(Separator().join(['a','b']))", "['custom', ['a', 'b']]\n"];
             yield return [asynchronous, "custom-iterator", "events=[]\nclass Parts:\n def __iter__(self):\n  events.append('iter')\n  yield 1\n  events.append('after')\n  raise ValueError('custom')\ntry:'|'.join(Parts())\nexcept Exception as error:print(type(error).__name__,str(error))\nprint(events)", "ValueError custom\n['iter', 'after']\n"];
         }
     }
@@ -38,12 +41,17 @@ public sealed class StringJoinIterationTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DrainAwaitsHostIoBeforeValidationAndCleanup(bool cancel)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task DrainAwaitsHostIoBeforeValidationAndCleanup(bool cancel, bool argument)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("def parts():\n yield 1\n with open('audit.txt','a') as output:output.write('seen')\n yield 'valid'\nreturn '|'.join(parts())", budget);
+        var source = argument
+            ? "def parts():\n with open('audit.txt','a') as output:output.write('seen')\n return ['café','😀']\nreturn '|'.join(parts())"
+            : "def parts():\n yield 1\n with open('audit.txt','a') as output:output.write('seen')\n yield 'valid'\nreturn '|'.join(parts())";
+        using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -61,9 +69,21 @@ public sealed class StringJoinIterationTests
                 cancellation.Cancel();
             }
             using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
-            Assert.False(result.Success);
-            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
-            else Assert.Equal("TypeError", result.Failure?.ExceptionType);
+            if (cancel)
+            {
+                Assert.False(result.Success);
+                Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            }
+            else if (argument)
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("café|😀", result.ReturnValue);
+            }
+            else
+            {
+                Assert.False(result.Success);
+                Assert.Equal("TypeError", result.Failure?.ExceptionType);
+            }
             Assert.Equal(cancel ? "before" : "beforeseen", host.ReadText("/audit.txt"));
             Assert.True(host.CompletedAsynchronously > 0);
         }

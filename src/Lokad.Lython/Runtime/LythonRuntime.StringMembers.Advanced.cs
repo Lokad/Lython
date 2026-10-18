@@ -7,6 +7,22 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
+        internal static object Join(PyString text, object iterable, LythonSourceSpan span, ExecutionContext context)
+        {
+            // Consume arbitrary input before item validation so later effects
+            // and iteration errors retain Python precedence.
+            using var parts = PyIteration.MaterializeLeased(iterable, span, context);
+            return JoinStrings(text, EnumerateJoinParts(parts.Items, span), context.MemoryGovernor, span);
+        }
+
+        internal static async ValueTask<object> JoinAsync(PyString text, object iterable, LythonSourceSpan span, ExecutionContext context)
+        {
+            // Keep the drain funded through output admission, awaiting every
+            // guest callback and its cleanup before this scope ends.
+            using var parts = await PyIteration.MaterializeLeasedAsync(iterable, span, context).ConfigureAwait(false);
+            return JoinStrings(text, EnumerateJoinParts(parts.Items, span), context.MemoryGovernor, span);
+        }
+
         private static IEnumerable<PyString> EnumerateJoinParts(IEnumerable<object> parts, LythonSourceSpan span)
         {
             var index = 0;
@@ -45,21 +61,15 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.join(iterable) expects one argument.", span);
                         }
 
-                        // Python consumes arbitrary iterables before checking
-                        // item types; later effects/errors take precedence.
-                        using var parts = PyIteration.MaterializeLeased(arguments[0], span, context);
-                        return JoinStrings(text, EnumerateJoinParts(parts.Items, span), context.MemoryGovernor, span);
-                    }, StrJoinSignature, async (arguments, span, context) =>
+                        return Join(text, arguments[0], span, context);
+                    }, StrJoinSignature, (arguments, span, context) =>
                     {
                         if (arguments.Length != 1)
                         {
                             throw new LythonRuntimeException("TypeError", "str.join(iterable) expects one argument.", span);
                         }
 
-                        // Keep drained storage admitted through validation and
-                        // final output admission, including suspended callbacks.
-                        using var parts = await PyIteration.MaterializeLeasedAsync(arguments[0], span, context).ConfigureAwait(false);
-                        return JoinStrings(text, EnumerateJoinParts(parts.Items, span), context.MemoryGovernor, span);
+                        return JoinAsync(text, arguments[0], span, context);
                     }),
                     "center" => CreatePaddingMethod("center", PyStringOps.Center, StrCenterSignature),
                     "ljust" => CreatePaddingMethod("ljust", PyStringOps.LJust, StrLjustSignature),

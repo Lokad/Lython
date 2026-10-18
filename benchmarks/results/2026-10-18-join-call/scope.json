@@ -1,0 +1,18 @@
+{
+  "baseline": "c3d5a2d6e5da2f24ceff2898215ae2ff92343462",
+  "sourceSha256": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "6ff7c2cf8cbc92f4293bfd26aaf359c6417fdb3e2fbfe7142282fbd09d84e878",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "00536d122846a9ae439fd687933d88e243402e7ac0d747d31082144c1953a317",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "94d53b9b10f8d0621d59e32cb3b9a94feb31c11859691041d304c9bd89b15ad8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "e02b5156acc6508a2dbd93d982f5d7552cc395ad4767c86d5ec95562c64847d9",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "f9cf653fd1fa9999d3fa5594d4594703fe2851faebea2a92b6dff489982cc66b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs": "b9665cedcef33d8d7099a067b0453f17387ad67a1e5a24e87ccce8e62d70eabb"
+  },
+  "diagnosticSha256": "f1a7f60eda49ac0fcf7bb281ce11eeaf208f8da974809969482845db615bb25a",
+  "replacement": "Exactly one positional argument on an exact string receiver reuses LoadCallReceiver/operands/native call wrappers. Immediate and exposed calls share corrected leased sync/async join operations. Remove eligible bound callable/argument packaging; no binder/cache/owner/iteration redesign.",
+  "gate": "One native capture per source:2warmups/8samples/64calls. Direct exact-list/generator allocate less in both APIs; exposed/expanded/custom arrays identical;448 result/UTF8/error/message/span/callback/fuel records identical. Reject without retiming otherwise.",
+  "acceptance": "Permanent rebinding and actual argument/iterator suspension/cancellation controls; source direct-path/regression, preflights/refusal/cleanup/retained owners; existing string tests/CPython goldens and58 complete jobs. Original Stress/assertions/timeouts unchanged.",
+  "performance": "Allocation only. No elapsed/complete-job/CPython or total pending-I/O allocation claim.",
+  "regex": "Planning only; no regex runtime/dependency edits.",
+  "fixtureCorrectionBeforeRuntimeEdits": "Initial native trial: custom PyType omitted object base and cannot resolve attributes. Initial public trial: static rejection prevents invalid-literal argument case from reaching I/O. Preserve failed receipts; corrected valid argument success/cancellation and object-base custom controls before qualified capture. No production changes or gate relaxation."
+}

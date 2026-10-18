@@ -1,0 +1,332 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+index d129b650..179410d7 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+@@ -319,6 +319,7 @@ internal sealed partial class ExecutableScript
+                 {
+                     "get" => call.Arguments.Count is 1 or 2,
+                     "append" => call.Arguments.Count == 1,
++                    "join" => call.Arguments.Count == 1,
+                     "write" => call.Arguments.Count == 1,
+                     "writerow" => call.Arguments.Count == 1,
+                     "replace" => call.Arguments.Count is 2 or 3,
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+index bed19eb2..261dea29 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+@@ -268,6 +268,32 @@ internal sealed partial class LythonRuntime
+         finally { context.LeaveInterpreterFrame(); }
+     }
+ 
++    private static object InvokeStringJoin(PyString receiver, object parts, LythonSourceSpan span, ExecutionContext context)
++    {
++        context.EnterInterpreterFrame(span);
++        try
++        {
++            context.CheckExecution(span);
++            context.CheckExecution(span);
++            return StringMembers.Join(receiver, parts, span, context);
++        }
++        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
++        finally { context.LeaveInterpreterFrame(); }
++    }
++
++    private static async ValueTask<object> InvokeStringJoinAsync(PyString receiver, object parts, LythonSourceSpan span, ExecutionContext context)
++    {
++        context.EnterInterpreterFrame(span);
++        try
++        {
++            context.CheckExecution(span);
++            context.CheckExecution(span);
++            return await StringMembers.JoinAsync(receiver, parts, span, context).ConfigureAwait(false);
++        }
++        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
++        finally { context.LeaveInterpreterFrame(); }
++    }
++
+     private static object InvokeStringSplit(PyString receiver, object? separator, object? count, LythonSourceSpan span, ExecutionContext context)
+     {
+         context.EnterInterpreterFrame(span);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 1bbd8bc9..faa8af2b 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -17,6 +17,7 @@ internal sealed partial class LythonRuntime
+     private static readonly object DirectStringEndsWith = new();
+     private static readonly object DirectStringReplace = new();
+     private static readonly object DirectStringSplit = new();
++    private static readonly object DirectStringJoin = new();
+ 
+     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
+     {
+@@ -581,6 +582,10 @@ internal sealed partial class LythonRuntime
+             {
+                 result = InvokeSingleInput(stringReceiver, stringOperation, callSite.CallSpan, context);
+             }
++            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringJoin))
++            {
++                result = InvokeStringJoin((PyString)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
++            }
+             else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringSplit))
+             {
+                 result = InvokeStringSplit((PyString)stack[start],
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index c99513c0..e07877ad 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -89,6 +89,10 @@ internal sealed partial class LythonRuntime
+                         {
+                             result = InvokeSingleInput(stringReceiver, stringOperation, call.CallSpan, _context);
+                         }
++                        else if (call.HasReceiver && ReferenceEquals(callable, DirectStringJoin))
++                        {
++                            result = await InvokeStringJoinAsync((Text.PyString)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context).ConfigureAwait(false);
++                        }
+                         else if (call.HasReceiver && ReferenceEquals(callable, DirectStringSplit))
+                         {
+                             var splitSeparator = call.ArgumentCount >= 1 ? _stack[start + call.ArgumentOffset] : null;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index 61beae68..f314e62b 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -30,6 +30,7 @@ internal sealed partial class LythonRuntime
+                 Text.PyString when name == "endswith" => DirectStringEndsWith,
+                 Text.PyString when name == "replace" => DirectStringReplace,
+                 Text.PyString when name == "split" => DirectStringSplit,
++                Text.PyString when name == "join" => DirectStringJoin,
+                 Text.PyString => StringMembers.GetNoArgumentsOperation(name),
+                 _ => null
+             };
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs
+index 049bbf51..879fef74 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs
+@@ -7,6 +7,22 @@ internal sealed partial class LythonRuntime
+ {
+     internal static partial class StringMembers
+     {
++        internal static object Join(PyString text, object iterable, LythonSourceSpan span, ExecutionContext context)
++        {
++            // Consume arbitrary input before item validation so later effects
++            // and iteration errors retain Python precedence.
++            using var parts = PyIteration.MaterializeLeased(iterable, span, context);
++            return JoinStrings(text, EnumerateJoinParts(parts.Items, span), context.MemoryGovernor, span);
++        }
++
++        internal static async ValueTask<object> JoinAsync(PyString text, object iterable, LythonSourceSpan span, ExecutionContext context)
++        {
++            // Keep the drain funded through output admission, awaiting every
++            // guest callback and its cleanup before this scope ends.
++            using var parts = await PyIteration.MaterializeLeasedAsync(iterable, span, context).ConfigureAwait(false);
++            return JoinStrings(text, EnumerateJoinParts(parts.Items, span), context.MemoryGovernor, span);
++        }
++
+         private static IEnumerable<PyString> EnumerateJoinParts(IEnumerable<object> parts, LythonSourceSpan span)
+         {
+             var index = 0;
+@@ -45,21 +61,15 @@ internal sealed partial class LythonRuntime
+                             throw new LythonRuntimeException("TypeError", "str.join(iterable) expects one argument.", span);
+                         }
+ 
+-                        // Python consumes arbitrary iterables before checking
+-                        // item types; later effects/errors take precedence.
+-                        using var parts = PyIteration.MaterializeLeased(arguments[0], span, context);
+-                        return JoinStrings(text, EnumerateJoinParts(parts.Items, span), context.MemoryGovernor, span);
+-                    }, StrJoinSignature, async (arguments, span, context) =>
++                        return Join(text, arguments[0], span, context);
++                    }, StrJoinSignature, (arguments, span, context) =>
+                     {
+                         if (arguments.Length != 1)
+                         {
+                             throw new LythonRuntimeException("TypeError", "str.join(iterable) expects one argument.", span);
+                         }
+ 
+-                        // Keep drained storage admitted through validation and
+-                        // final output admission, including suspended callbacks.
+-                        using var parts = await PyIteration.MaterializeLeasedAsync(arguments[0], span, context).ConfigureAwait(false);
+-                        return JoinStrings(text, EnumerateJoinParts(parts.Items, span), context.MemoryGovernor, span);
++                        return JoinAsync(text, arguments[0], span, context);
+                     }),
+                     "center" => CreatePaddingMethod("center", PyStringOps.Center, StrCenterSignature),
+                     "ljust" => CreatePaddingMethod("ljust", PyStringOps.LJust, StrLjustSignature),
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/StringJoinIterationTests.cs b/tests/Lokad.Lython.PublicApi.Tests/StringJoinIterationTests.cs
+index a676fcd4..6d288e67 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/StringJoinIterationTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/StringJoinIterationTests.cs
+@@ -22,6 +22,9 @@ public sealed class StringJoinIterationTests
+                 }
+             }
+             yield return [asynchronous, "values", "print('|'.join([]),'|'.join(['one']),'|'.join(('café','😀')),'-'.join('ab'))", " one café|😀 a-b\n"];
++            yield return [asynchronous, "argument-rebinds-receiver", "separator='|'\nevents=[]\ndef items():\n global separator\n events.append('argument')\n separator='changed'\n return ['a','b']\nprint(separator.join(items()),separator,events)", "a|b changed ['argument']\n"];
++            yield return [asynchronous, "iterator-rebinds-receiver", "separator='|'\nevents=[]\ndef parts():\n global separator\n events.append('iteration')\n separator='changed'\n yield 'café'\n yield '😀'\nprint(separator.join(parts()),separator,events)", "café|😀 changed ['iteration']\n"];
++            yield return [asynchronous, "custom-receiver", "class Separator:\n def join(self,parts):return ['custom',parts]\nprint(Separator().join(['a','b']))", "['custom', ['a', 'b']]\n"];
+             yield return [asynchronous, "custom-iterator", "events=[]\nclass Parts:\n def __iter__(self):\n  events.append('iter')\n  yield 1\n  events.append('after')\n  raise ValueError('custom')\ntry:'|'.join(Parts())\nexcept Exception as error:print(type(error).__name__,str(error))\nprint(events)", "ValueError custom\n['iter', 'after']\n"];
+         }
+     }
+@@ -38,12 +41,17 @@ public sealed class StringJoinIterationTests
+     }
+ 
+     [Theory]
+-    [InlineData(false)]
+-    [InlineData(true)]
+-    public async Task DrainAwaitsHostIoBeforeValidationAndCleanup(bool cancel)
++    [InlineData(false, false)]
++    [InlineData(true, false)]
++    [InlineData(false, true)]
++    [InlineData(true, true)]
++    public async Task DrainAwaitsHostIoBeforeValidationAndCleanup(bool cancel, bool argument)
+     {
+         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+-        using var script = new LythonEngine().Compile("def parts():\n yield 1\n with open('audit.txt','a') as output:output.write('seen')\n yield 'valid'\nreturn '|'.join(parts())", budget);
++        var source = argument
++            ? "def parts():\n with open('audit.txt','a') as output:output.write('seen')\n return ['café','😀']\nreturn '|'.join(parts())"
++            : "def parts():\n yield 1\n with open('audit.txt','a') as output:output.write('seen')\n yield 'valid'\nreturn '|'.join(parts())";
++        using var script = new LythonEngine().Compile(source, budget);
+         Assert.True(script.IsValid);
+         var baseline = budget.ReservedBytes;
+         var host = new DelayedLythonHost();
+@@ -61,9 +69,21 @@ public sealed class StringJoinIterationTests
+                 cancellation.Cancel();
+             }
+             using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+-            Assert.False(result.Success);
+-            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+-            else Assert.Equal("TypeError", result.Failure?.ExceptionType);
++            if (cancel)
++            {
++                Assert.False(result.Success);
++                Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
++            }
++            else if (argument)
++            {
++                Assert.True(result.Success, result.Failure?.Message);
++                Assert.Equal("café|😀", result.ReturnValue);
++            }
++            else
++            {
++                Assert.False(result.Success);
++                Assert.Equal("TypeError", result.Failure?.ExceptionType);
++            }
+             Assert.Equal(cancel ? "before" : "beforeseen", host.ReadText("/audit.txt"));
+             Assert.True(host.CompletedAsynchronously > 0);
+         }
+diff --git a/tests/Lokad.Lython.Tests/DirectStringJoinTests.cs b/tests/Lokad.Lython.Tests/DirectStringJoinTests.cs
+new file mode 100644
+index 00000000..c5d59025
+--- /dev/null
++++ b/tests/Lokad.Lython.Tests/DirectStringJoinTests.cs
+@@ -0,0 +1,114 @@
++using System.Reflection;
++using Lokad.Lython.Frontend;
++using Lokad.Lython.Runtime;
++using Lokad.Lython.Runtime.Text;
++using Lokad.Lython.Tests.Harness;
++using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
++
++namespace Lokad.Lython.Tests;
++
++public sealed class DirectStringJoinTests
++{
++    [Theory]
++    [InlineData(false, false)]
++    [InlineData(true, false)]
++    [InlineData(false, true)]
++    [InlineData(true, true)]
++    public async Task DistinctReceiversProduceOwnedValuesWithoutBoundMethodCaches(bool asynchronous, bool generator)
++    {
++        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
++        using var owner = budget.CreateScope();
++        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
++        context.Variables["left"] = PyString.FromString("|", context.MemoryGovernor, null);
++        context.Variables["right"] = PyString.FromString("::", context.MemoryGovernor, null);
++        context.Variables["parts"] = new PyList([PyString.FromString("café"), PyString.FromString("😀")], context.MemoryGovernor, null);
++        var record = new Record();
++        context.Variables["record"] = record;
++        var code = Compile("for sep in [left,right]:\n result=sep.join(" + (generator ? "part for part in parts" : "parts") + ")\n record()\nreturn result");
++        _ = await Execute(code, context, asynchronous);
++        Assert.Equal(new[] { "café|😀", "café::😀" }, record.Values.Select(v => v.AsString()));
++        Assert.All(record.Values, value => Assert.Same(context.MemoryGovernor, value.OwnerMemoryGovernor));
++        var caches = (Array)record.Frame!.GetType().GetField("_memberCaches", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(record.Frame)!;
++        Assert.All(caches.Cast<object?>(), Assert.Null);
++        AssertUnwound(context);
++        owner.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    [Theory]
++    [InlineData(false, false)]
++    [InlineData(true, false)]
++    [InlineData(false, true)]
++    [InlineData(true, true)]
++    public async Task ResultAdmissionRefusesWithLiveOperandsAndPreservesInputs(bool asynchronous, bool shared)
++    {
++        const long limit = 65536;
++        var budget = new LythonMemoryBudget(shared ? limit : 4 * limit);
++        using var owner = budget.CreateScope();
++        var context = new Context(new MockLythonHost(), new LythonRunOptions
++            { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
++        var first = PyString.FromString("abcd", context.MemoryGovernor, null);
++        var last = PyString.FromString("efgh", context.MemoryGovernor, null);
++        var parts = new PyList([first, last], context.MemoryGovernor, null);
++        context.Variables["sep"] = PyString.FromString("|", context.MemoryGovernor, null);
++        var before = context.MemoryGovernor.CurrentCommittedBytes;
++        using (var pad = new Pad(parts, budget, limit, shared))
++        {
++            context.Variables["fill"] = pad;
++            object? published = null;
++            var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
++                published = await Execute(Compile("return sep.join(fill())"), context, asynchronous));
++            Assert.Null(published);
++            Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
++            Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
++            Assert.Equal(1, failure.Span?.Line);
++            Assert.Equal(PyString.EstimateApproximateBytes(9), context.MemoryGovernor.LastDeniedReservationBytes);
++            Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
++            Assert.Equal(1, pad.Calls);
++            Assert.Same(first, parts[0]);
++            Assert.Same(last, parts[1]);
++        }
++        AssertUnwound(context);
++        owner.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    private static ExecutableCodeObject Compile(string source)
++        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
++    private static ValueTask<object?> Execute(ExecutableCodeObject code, Context context, bool asynchronous)
++        => asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
++            : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
++    private static void AssertUnwound(Context context)
++    {
++        Assert.Null(context.CurrentExecutableFrame);
++        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
++        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
++    }
++    private sealed class Record : LythonRuntime.ICallable
++    {
++        internal List<PyString> Values = [];
++        internal LythonRuntime.ExecutableFrameState? Frame;
++        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
++        {
++            Frame = context.CurrentExecutableFrame;
++            Assert.True(Frame!.TryResolveOwnLocal("result", out var result));
++            Values.Add(Assert.IsType<PyString>(result));
++            return PyNone.Instance;
++        }
++    }
++    private sealed class Pad(PyList parts, LythonMemoryBudget budget, long limit, bool shared) : LythonRuntime.ICallable, IDisposable
++    {
++        private MemoryGovernor.TemporaryMemoryReservation? _temporary;
++        private ILythonMemoryReservation? _shared;
++        internal int Calls;
++        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
++        {
++            Calls++;
++            var available = 64 + 16 + PyString.EstimateApproximateBytes(9) - 1;
++            if (shared) Assert.True(budget.TryReserve(limit - budget.ReservedBytes - available, out _shared));
++            else _temporary = context.MemoryGovernor.ReserveTemporary(limit - context.MemoryGovernor.CurrentAccountedBytes - available, span);
++            return parts;
++        }
++        public void Dispose() { _temporary?.Dispose(); _shared?.Dispose(); }
++    }
++}

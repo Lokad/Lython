@@ -1,0 +1,100 @@
+{
+  "accepted": true,
+  "comparison": [
+    {
+      "asynchronous": false,
+      "route": "custom",
+      "control": true,
+      "beforePerCall": 344.0,
+      "afterPerCall": 344.0,
+      "savedPerCall": 0.0,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "direct",
+      "control": false,
+      "beforePerCall": 2456.0,
+      "afterPerCall": 2104.0,
+      "savedPerCall": 352.0,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "expanded",
+      "control": true,
+      "beforePerCall": 3200.0,
+      "afterPerCall": 3200.0,
+      "savedPerCall": 0.0,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "exposed",
+      "control": true,
+      "beforePerCall": 2104.0,
+      "afterPerCall": 2104.0,
+      "savedPerCall": 0.0,
+      "passed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "generator",
+      "control": false,
+      "beforePerCall": 3672.0,
+      "afterPerCall": 3320.0,
+      "savedPerCall": 352.0,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "custom",
+      "control": true,
+      "beforePerCall": 344.0,
+      "afterPerCall": 344.0,
+      "savedPerCall": 0.0,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "direct",
+      "control": false,
+      "beforePerCall": 2496.0,
+      "afterPerCall": 2176.0,
+      "savedPerCall": 320.0,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "expanded",
+      "control": true,
+      "beforePerCall": 3344.0,
+      "afterPerCall": 3344.0,
+      "savedPerCall": 0.0,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "exposed",
+      "control": true,
+      "beforePerCall": 2176.0,
+      "afterPerCall": 2176.0,
+      "savedPerCall": 0.0,
+      "passed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "generator",
+      "control": false,
+      "beforePerCall": 3720.0,
+      "afterPerCall": 3400.0,
+      "savedPerCall": 320.0,
+      "passed": true
+    }
+  ],
+  "exactWorkRecords": 448,
+  "workIdentical": true,
+  "fixtureCorrectionBeforeRuntimeEdits": "Initial native trial: custom PyType omitted object base and cannot resolve attributes. Initial public trial: static rejection prevents invalid-literal argument case from reaching I/O. Preserve failed receipts; corrected valid argument success/cancellation and object-base custom controls before qualified capture. No production changes or gate relaxation.",
+  "qualifiedCaptureRepeated": false,
+  "elapsedClaim": false
+}

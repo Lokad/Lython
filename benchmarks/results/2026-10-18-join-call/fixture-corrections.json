@@ -1,0 +1,61 @@
+{
+  "beforeRuntimeEdits": true,
+  "gateUnchanged": true,
+  "reason": "Initial native trial: custom PyType omitted object base and cannot resolve attributes. Initial public trial: static rejection prevents invalid-literal argument case from reaching I/O. Preserve failed receipts; corrected valid argument success/cancellation and object-base custom controls before qualified capture. No production changes or gate relaxation.",
+  "trials": {
+    "baseline-native": {
+      "process": {
+        "source": "join-call",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "3FD60EA8A0165870733F96F794131A9FECFCF5E147BADAEBB7A00F01B52E7569",
+        "filter": "Category!=Stress&FullyQualifiedName~JoinCallDiagnostic",
+        "pid": 52288,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1364,
+        "stdoutSha256": "0D3598BC2DCABF9F9FA35358562615F31D4480EE6F6A129F29FD7356B4EF0324",
+        "stderrSha256": "E0C70EA1A508D8895C990F0780ED6B99C1DE34A3011CD8C087387B9561304203"
+      },
+      "trxSha256": "d144c13048edeedfb6550e14fefc3741ae779e5bcdec4deb3e35a096b281e2e1",
+      "failures": [
+        {
+          "name": "Lokad.Lython.Tests.JoinCallDiagnostic.Allocation(asynchronous: False, route: \"custom\")",
+          "message": "Lokad.Lython.Runtime.LythonRuntimeException : 'Separator' object has no attribute 'join'"
+        },
+        {
+          "name": "Lokad.Lython.Tests.JoinCallDiagnostic.Allocation(asynchronous: True, route: \"custom\")",
+          "message": "Assert.True() Failure\r\nExpected: True\r\nActual:   False"
+        }
+      ]
+    },
+    "baseline-public": {
+      "process": {
+        "source": "join-call",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "9FA5ACE363773A1C5AF83D9F3E468A6EDF05D36C483128C4BC9FF15667B1A111",
+        "filter": "Category!=Stress&FullyQualifiedName~StringJoinIterationTests",
+        "pid": 69944,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2570,
+        "stdoutSha256": "AF8B83057BDD44E3372CD58EADB93E28452B264D29F754E0E36727C33FADC8B3",
+        "stderrSha256": "BC392C21B7DA493E3FE71F0C9517F9FE93577F5E945B6D9B5E6B5CD58960A732"
+      },
+      "trxSha256": "7754f29a1706e2af29ff89a9571fe56bd459285f09828bb2188840f1e03bcad1",
+      "failures": [
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.StringJoinIterationTests.DrainAwaitsHostIoBeforeValidationAndCleanup(cancel: False, argument: True)",
+          "message": "Assert.True() Failure\r\nExpected: True\r\nActual:   False"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.StringJoinIterationTests.DrainAwaitsHostIoBeforeValidationAndCleanup(cancel: True, argument: True)",
+          "message": "Assert.True() Failure\r\nExpected: True\r\nActual:   False"
+        }
+      ]
+    }
+  }
+}

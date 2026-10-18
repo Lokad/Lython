@@ -275,6 +275,13 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [ordinary join call path](benchmarks/results/2026-10-18-join-call/README.md)
+at `c3d5a2d6` plus its frozen six-file patch avoids eligible bound-method/argument
+packaging. One qualified native comparison saves 352 bytes per synchronous call
+and 320 per asynchronous call. Exposed/expanded/custom controls and all 448 exact
+behavior/fuel records are unchanged. This is an allocation result, with no
+elapsed-time, complete-job or CPython speedup claim.
+
 The [join correctness correction](benchmarks/results/2026-10-18-join-drain/README.md)
 is tracked separately from speedups: both APIs now preserve iterable effects/error
 order and fund scratch through output admission. At `deefa4a5` plus its frozen

@@ -268,6 +268,32 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    private static object InvokeStringJoin(PyString receiver, object parts, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            return StringMembers.Join(receiver, parts, span, context);
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
+    private static async ValueTask<object> InvokeStringJoinAsync(PyString receiver, object parts, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            return await StringMembers.JoinAsync(receiver, parts, span, context).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private static object InvokeStringSplit(PyString receiver, object? separator, object? count, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);

@@ -17,6 +17,7 @@ internal sealed partial class LythonRuntime
     private static readonly object DirectStringEndsWith = new();
     private static readonly object DirectStringReplace = new();
     private static readonly object DirectStringSplit = new();
+    private static readonly object DirectStringJoin = new();
 
     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
     {
@@ -580,6 +581,10 @@ internal sealed partial class LythonRuntime
                 target is Func<PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
             {
                 result = InvokeSingleInput(stringReceiver, stringOperation, callSite.CallSpan, context);
+            }
+            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringJoin))
+            {
+                result = InvokeStringJoin((PyString)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
             }
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringSplit))
             {

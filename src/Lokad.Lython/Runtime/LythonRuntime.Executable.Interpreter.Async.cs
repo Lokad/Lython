@@ -89,6 +89,10 @@ internal sealed partial class LythonRuntime
                         {
                             result = InvokeSingleInput(stringReceiver, stringOperation, call.CallSpan, _context);
                         }
+                        else if (call.HasReceiver && ReferenceEquals(callable, DirectStringJoin))
+                        {
+                            result = await InvokeStringJoinAsync((Text.PyString)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context).ConfigureAwait(false);
+                        }
                         else if (call.HasReceiver && ReferenceEquals(callable, DirectStringSplit))
                         {
                             var splitSeparator = call.ArgumentCount >= 1 ? _stack[start + call.ArgumentOffset] : null;

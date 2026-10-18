@@ -1,0 +1,101 @@
+{
+  "python": "C:\\Python313\\python.exe",
+  "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "priorGoldens": "../2026-10-18-join-drain/goldens.json",
+  "priorSha256": "4ab8e3731b700899f5ed0db3f9536fd8370ecb21717dd0b8bb680f27fa2c2e73",
+  "reusedCases": [
+    {
+      "name": "direct-drain",
+      "source": "events=[]\ndef parts():\n events.append('first')\n yield 1\n events.append('second')\n yield 'valid'\nmethod='|'.join\ntry:\n '|'.join(parts())\nexcept Exception as error:\n print(type(error).__name__,str(error))\nprint(events)",
+      "expected": "TypeError sequence item 0: expected str instance, int found\n['first', 'second']\n",
+      "stdout": "TypeError sequence item 0: expected str instance, int found\n['first', 'second']\n",
+      "exitCode": 0,
+      "sourceSha256": "b7b1afad7bd85b2b445276ca5767271bee3ad91baf5027cd2eda755d8ebb0315"
+    },
+    {
+      "name": "direct-late-error",
+      "source": "events=[]\ndef parts():\n events.append('first')\n yield 1\n events.append('second')\n raise ValueError('later iteration failure')\nmethod='|'.join\ntry:\n '|'.join(parts())\nexcept Exception as error:\n print(type(error).__name__,str(error))\nprint(events)",
+      "expected": "ValueError later iteration failure\n['first', 'second']\n",
+      "stdout": "ValueError later iteration failure\n['first', 'second']\n",
+      "exitCode": 0,
+      "sourceSha256": "91d9c6eb59c739a3d5164b9a3c493f4e77cd0bfcbe6407d6e6ef11d5c4c27cf5"
+    },
+    {
+      "name": "exposed-drain",
+      "source": "events=[]\ndef parts():\n events.append('first')\n yield 1\n events.append('second')\n yield 'valid'\nmethod='|'.join\ntry:\n method(parts())\nexcept Exception as error:\n print(type(error).__name__,str(error))\nprint(events)",
+      "expected": "TypeError sequence item 0: expected str instance, int found\n['first', 'second']\n",
+      "stdout": "TypeError sequence item 0: expected str instance, int found\n['first', 'second']\n",
+      "exitCode": 0,
+      "sourceSha256": "2415acb6e69c701bbb1ae4cde20a16634d144079349d053ae73cf8c070c41cc2"
+    },
+    {
+      "name": "exposed-late-error",
+      "source": "events=[]\ndef parts():\n events.append('first')\n yield 1\n events.append('second')\n raise ValueError('later iteration failure')\nmethod='|'.join\ntry:\n method(parts())\nexcept Exception as error:\n print(type(error).__name__,str(error))\nprint(events)",
+      "expected": "ValueError later iteration failure\n['first', 'second']\n",
+      "stdout": "ValueError later iteration failure\n['first', 'second']\n",
+      "exitCode": 0,
+      "sourceSha256": "4b55b1df36c8c90f34612b8b7010196cf2de7f3570aa80bee2bbf05ff334d037"
+    },
+    {
+      "name": "expanded-drain",
+      "source": "events=[]\ndef parts():\n events.append('first')\n yield 1\n events.append('second')\n yield 'valid'\nmethod='|'.join\ntry:\n '|'.join(*[parts()])\nexcept Exception as error:\n print(type(error).__name__,str(error))\nprint(events)",
+      "expected": "TypeError sequence item 0: expected str instance, int found\n['first', 'second']\n",
+      "stdout": "TypeError sequence item 0: expected str instance, int found\n['first', 'second']\n",
+      "exitCode": 0,
+      "sourceSha256": "adf119f624f27b7a37a468c864d0361e2fd497b72389da3c4cb99f0af3ad9e08"
+    },
+    {
+      "name": "expanded-late-error",
+      "source": "events=[]\ndef parts():\n events.append('first')\n yield 1\n events.append('second')\n raise ValueError('later iteration failure')\nmethod='|'.join\ntry:\n '|'.join(*[parts()])\nexcept Exception as error:\n print(type(error).__name__,str(error))\nprint(events)",
+      "expected": "ValueError later iteration failure\n['first', 'second']\n",
+      "stdout": "ValueError later iteration failure\n['first', 'second']\n",
+      "exitCode": 0,
+      "sourceSha256": "2c18cc824b0aff70dafbde2c925f1d438d65dab9371dcfd789a7dd4eba4055ff"
+    },
+    {
+      "name": "values",
+      "source": "print('|'.join([]),'|'.join(['one']),'|'.join(('caf\u00e9','\ud83d\ude00')),'-'.join('ab'))",
+      "expected": " one caf\u00e9|\ud83d\ude00 a-b\n",
+      "stdout": " one caf\u00e9|\ud83d\ude00 a-b\n",
+      "exitCode": 0,
+      "sourceSha256": "125da34253d50eb0b592ecf4d4b30315f37076c642505957c98f43223e9db086"
+    },
+    {
+      "name": "custom-iterator",
+      "source": "events=[]\nclass Parts:\n def __iter__(self):\n  events.append('iter')\n  yield 1\n  events.append('after')\n  raise ValueError('custom')\ntry:'|'.join(Parts())\nexcept Exception as error:print(type(error).__name__,str(error))\nprint(events)",
+      "expected": "ValueError custom\n['iter', 'after']\n",
+      "stdout": "ValueError custom\n['iter', 'after']\n",
+      "exitCode": 0,
+      "sourceSha256": "f29cd5ff9de809f5542bdb0c335091e181f479a589c39039f5c8a7babe5ad590"
+    }
+  ],
+  "freshCases": [
+    {
+      "name": "argument-rebinds-receiver",
+      "source": "separator='|'\nevents=[]\ndef items():\n global separator\n events.append('argument')\n separator='changed'\n return ['a','b']\nprint(separator.join(items()),separator,events)",
+      "expected": "a|b changed ['argument']\n",
+      "stdout": "a|b changed ['argument']\n",
+      "exitCode": 0,
+      "sourceSha256": "bec6a55ac933f9ccc1556bc87083bc10820b96b9bc3e4275d825600fb9569c82"
+    },
+    {
+      "name": "iterator-rebinds-receiver",
+      "source": "separator='|'\nevents=[]\ndef parts():\n global separator\n events.append('iteration')\n separator='changed'\n yield 'caf\u00e9'\n yield '\ud83d\ude00'\nprint(separator.join(parts()),separator,events)",
+      "expected": "caf\u00e9|\ud83d\ude00 changed ['iteration']\n",
+      "stdout": "caf\u00e9|\ud83d\ude00 changed ['iteration']\n",
+      "exitCode": 0,
+      "sourceSha256": "58e11d6e5757b0cfc7e9fa640a54cda8c442762c3ab640c720069dc890b797f5"
+    },
+    {
+      "name": "custom-receiver",
+      "source": "class Separator:\n def join(self,parts):return ['custom',parts]\nprint(Separator().join(['a','b']))",
+      "expected": "['custom', ['a', 'b']]\n",
+      "stdout": "['custom', ['a', 'b']]\n",
+      "exitCode": 0,
+      "sourceSha256": "155d40ef375ad71c72c4c46f4e3b02a1fb270e8809da9028e3c2a1d0b30c5143"
+    }
+  ],
+  "allMatchExpected": true,
+  "totalIndependentPrograms": 11,
+  "LythonEvidence": "All11 programs in StringJoinIterationTests run under both APIs; three new programs pass on baseline and candidate."
+}

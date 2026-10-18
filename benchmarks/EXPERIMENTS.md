@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 ordinary join call path](results/2026-10-18-join-call/README.md)
+uses existing receiver/operand machinery and shared corrected join operations.
+One qualified native pair saves 352 B/sync call and 320 B/async; exposed, expanded
+and custom arrays and all 448 behavior/fuel records remain unchanged. Initial
+fixture mistakes were corrected before runtime edits with receipts preserved.
+All 537 focused cases, 11 CPython goldens and 58 complete jobs pass. No new
+ownership/iteration framework, retiming, elapsed or CPython speedup claim.
+
 The [2026-10-18 join drain correction](results/2026-10-18-join-drain/README.md)
 fixes seven synchronous effect/error-order failures and two builder-scratch
 cleanup failures. Existing leased drains keep materialized input funded through
