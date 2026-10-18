@@ -1,0 +1,161 @@
+{
+  "captures": {
+    "baseline-white-run": [
+      {
+        "asynchronous": false,
+        "generator": false,
+        "callsPerSample": 64,
+        "samples": [
+          130560,
+          130560,
+          130560,
+          130560,
+          130560,
+          130560,
+          130560,
+          130560
+        ]
+      },
+      {
+        "asynchronous": false,
+        "generator": true,
+        "callsPerSample": 64,
+        "samples": [
+          208384,
+          208384,
+          208384,
+          208384,
+          208384,
+          208384,
+          208384,
+          208384
+        ]
+      },
+      {
+        "asynchronous": true,
+        "generator": false,
+        "callsPerSample": 64,
+        "samples": [
+          157184,
+          157184,
+          157184,
+          157184,
+          157184,
+          157184,
+          157184,
+          157184
+        ]
+      },
+      {
+        "asynchronous": true,
+        "generator": true,
+        "callsPerSample": 64,
+        "samples": [
+          235520,
+          235520,
+          235520,
+          235520,
+          235520,
+          235520,
+          235520,
+          235520
+        ]
+      }
+    ],
+    "candidate-white": [
+      {
+        "asynchronous": false,
+        "generator": false,
+        "callsPerSample": 64,
+        "samples": [
+          157184,
+          157184,
+          157184,
+          157184,
+          157184,
+          157184,
+          157184,
+          157184
+        ]
+      },
+      {
+        "asynchronous": false,
+        "generator": true,
+        "callsPerSample": 64,
+        "samples": [
+          235008,
+          235008,
+          235008,
+          235008,
+          235008,
+          235008,
+          235008,
+          235008
+        ]
+      },
+      {
+        "asynchronous": true,
+        "generator": false,
+        "callsPerSample": 64,
+        "samples": [
+          159744,
+          159744,
+          159744,
+          159744,
+          159744,
+          159744,
+          159744,
+          159744
+        ]
+      },
+      {
+        "asynchronous": true,
+        "generator": true,
+        "callsPerSample": 64,
+        "samples": [
+          238080,
+          238080,
+          238080,
+          238080,
+          238080,
+          238080,
+          238080,
+          238080
+        ]
+      }
+    ]
+  },
+  "comparison": [
+    {
+      "asynchronous": false,
+      "generator": false,
+      "beforePerCall": 2040.0,
+      "afterPerCall": 2456.0,
+      "changePerCall": 416.0
+    },
+    {
+      "asynchronous": false,
+      "generator": true,
+      "beforePerCall": 3256.0,
+      "afterPerCall": 3672.0,
+      "changePerCall": 416.0
+    },
+    {
+      "asynchronous": true,
+      "generator": false,
+      "beforePerCall": 2456.0,
+      "afterPerCall": 2496.0,
+      "changePerCall": 40.0
+    },
+    {
+      "asynchronous": true,
+      "generator": true,
+      "beforePerCall": 3680.0,
+      "afterPerCall": 3720.0,
+      "changePerCall": 40.0
+    }
+  ],
+  "repeat": false,
+  "allocationImprovementRequired": false,
+  "elapsedClaim": false
+}

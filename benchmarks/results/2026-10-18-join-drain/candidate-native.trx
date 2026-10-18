@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="fab73bd0-43f0-4c47-a8f6-16c047079a83" name="JoannesVermorel@LOKAD-0399 2026-10-18 14:51:49" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T14:51:49.8198595+02:00" queuing="2026-10-18T14:51:49.8198597+02:00" start="2026-10-18T14:51:48.7139765+02:00" finish="2026-10-18T14:51:49.8232740+02:00" />
+  <TestSettings name="default" id="ccd7a1b2-e5de-4bfb-9605-bc3cdc530b5a">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_14_51_49" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="7777a4c7-7690-4749-84e6-658b28f57d88" testId="416b54ee-e2ac-7519-6853-eba2e89e0805" testName="Lokad.Lython.Tests.StringJoinCleanupTests.InvalidItemReleasesDrainedAndOutputScratch(asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.1458960" startTime="2026-10-18T14:51:49.4702332+02:00" endTime="2026-10-18T14:51:49.6199791+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7777a4c7-7690-4749-84e6-658b28f57d88" />
+    <UnitTestResult executionId="affeec25-e1be-435b-9643-8fa32a0f1b67" testId="2d07f928-d1ec-dc08-3d49-8dd8abab6115" testName="Lokad.Lython.Tests.StringJoinCleanupTests.InvalidItemReleasesDrainedAndOutputScratch(asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0014122" startTime="2026-10-18T14:51:49.6260144+02:00" endTime="2026-10-18T14:51:49.6260744+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="affeec25-e1be-435b-9643-8fa32a0f1b67" />
+    <UnitTestResult executionId="11517658-92e1-40ad-bcb0-de396c4d8109" testId="8244c459-297e-1c04-6311-a022ad26b408" testName="Lokad.Lython.Tests.JoinDrainDiagnostic.Allocation(asynchronous: False, generator: False)" computerName="LOKAD-0399" duration="00:00:00.0408960" startTime="2026-10-18T14:51:49.6278554+02:00" endTime="2026-10-18T14:51:49.6645973+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="11517658-92e1-40ad-bcb0-de396c4d8109">
+      <Output>
+        <StdOut>JOIN_DRAIN_ALLOCATION:{"asynchronous":false,"generator":false,"callsPerSample":64,"samples":[157184,157184,157184,157184,157184,157184,157184,157184]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="eee7a14a-5835-4d70-86cd-7f5fb7c355b9" testId="8bd70ab3-71c5-6fea-75af-04a4c5d250b9" testName="Lokad.Lython.Tests.JoinDrainDiagnostic.Allocation(asynchronous: True, generator: False)" computerName="LOKAD-0399" duration="00:00:00.0060501" startTime="2026-10-18T14:51:49.7201297+02:00" endTime="2026-10-18T14:51:49.7260391+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eee7a14a-5835-4d70-86cd-7f5fb7c355b9">
+      <Output>
+        <StdOut>JOIN_DRAIN_ALLOCATION:{"asynchronous":true,"generator":false,"callsPerSample":64,"samples":[159744,159744,159744,159744,159744,159744,159744,159744]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="96e66553-3e87-41a1-8c0f-bddb3a434a8e" testId="83cf2307-fa24-cab2-7a2b-d7bf9fdb6834" testName="Lokad.Lython.Tests.JoinDrainDiagnostic.Allocation(asynchronous: False, generator: True)" computerName="LOKAD-0399" duration="00:00:00.0295631" startTime="2026-10-18T14:51:49.6647979+02:00" endTime="2026-10-18T14:51:49.6938267+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="96e66553-3e87-41a1-8c0f-bddb3a434a8e">
+      <Output>
+        <StdOut>JOIN_DRAIN_ALLOCATION:{"asynchronous":false,"generator":true,"callsPerSample":64,"samples":[235008,235008,235008,235008,235008,235008,235008,235008]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2002b2b9-7c78-4b9b-af49-e1091bb664f9" testId="e5bc31fb-8ea7-c68e-8fdf-6b1cb000cdc5" testName="Lokad.Lython.Tests.JoinDrainDiagnostic.Allocation(asynchronous: True, generator: True)" computerName="LOKAD-0399" duration="00:00:00.0260727" startTime="2026-10-18T14:51:49.6939057+02:00" endTime="2026-10-18T14:51:49.7200459+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2002b2b9-7c78-4b9b-af49-e1091bb664f9">
+      <Output>
+        <StdOut>JOIN_DRAIN_ALLOCATION:{"asynchronous":true,"generator":true,"callsPerSample":64,"samples":[238080,238080,238080,238080,238080,238080,238080,238080]}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.StringJoinCleanupTests.InvalidItemReleasesDrainedAndOutputScratch(asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="2d07f928-d1ec-dc08-3d49-8dd8abab6115">
+      <Execution id="affeec25-e1be-435b-9643-8fa32a0f1b67" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.StringJoinCleanupTests" name="InvalidItemReleasesDrainedAndOutputScratch" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.StringJoinCleanupTests.InvalidItemReleasesDrainedAndOutputScratch(asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="416b54ee-e2ac-7519-6853-eba2e89e0805">
+      <Execution id="7777a4c7-7690-4749-84e6-658b28f57d88" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.StringJoinCleanupTests" name="InvalidItemReleasesDrainedAndOutputScratch" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JoinDrainDiagnostic.Allocation(asynchronous: True, generator: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="e5bc31fb-8ea7-c68e-8fdf-6b1cb000cdc5">
+      <Execution id="2002b2b9-7c78-4b9b-af49-e1091bb664f9" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JoinDrainDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JoinDrainDiagnostic.Allocation(asynchronous: False, generator: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="83cf2307-fa24-cab2-7a2b-d7bf9fdb6834">
+      <Execution id="96e66553-3e87-41a1-8c0f-bddb3a434a8e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JoinDrainDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JoinDrainDiagnostic.Allocation(asynchronous: True, generator: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="8bd70ab3-71c5-6fea-75af-04a4c5d250b9">
+      <Execution id="eee7a14a-5835-4d70-86cd-7f5fb7c355b9" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JoinDrainDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.JoinDrainDiagnostic.Allocation(asynchronous: False, generator: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="8244c459-297e-1c04-6311-a022ad26b408">
+      <Execution id="11517658-92e1-40ad-bcb0-de396c4d8109" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.JoinDrainDiagnostic" name="Allocation" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="416b54ee-e2ac-7519-6853-eba2e89e0805" executionId="7777a4c7-7690-4749-84e6-658b28f57d88" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2d07f928-d1ec-dc08-3d49-8dd8abab6115" executionId="affeec25-e1be-435b-9643-8fa32a0f1b67" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8244c459-297e-1c04-6311-a022ad26b408" executionId="11517658-92e1-40ad-bcb0-de396c4d8109" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8bd70ab3-71c5-6fea-75af-04a4c5d250b9" executionId="eee7a14a-5835-4d70-86cd-7f5fb7c355b9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="83cf2307-fa24-cab2-7a2b-d7bf9fdb6834" executionId="96e66553-3e87-41a1-8c0f-bddb3a434a8e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e5bc31fb-8ea7-c68e-8fdf-6b1cb000cdc5" executionId="2002b2b9-7c78-4b9b-af49-e1091bb664f9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="6" executed="6" passed="6" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.18]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.47]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.49]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.76]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

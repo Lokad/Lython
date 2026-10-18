@@ -1,0 +1,48 @@
+{
+  "baseline-white-run": {
+    "total": 6,
+    "failures": [
+      {
+        "name": "Lokad.Lython.Tests.StringJoinCleanupTests.InvalidItemReleasesDrainedAndOutputScratch(asynchronous: False)",
+        "message": "Assert.Equal() Failure: Values differ\r\nExpected: 394\r\nActual:   404"
+      },
+      {
+        "name": "Lokad.Lython.Tests.StringJoinCleanupTests.InvalidItemReleasesDrainedAndOutputScratch(asynchronous: True)",
+        "message": "Assert.Equal() Failure: Values differ\r\nExpected: 394\r\nActual:   404"
+      }
+    ]
+  },
+  "baseline-public": {
+    "total": 20,
+    "failures": [
+      {
+        "name": "Lokad.Lython.PublicApi.Tests.StringJoinIterationTests.MatchesPythonDrainAndErrorOrder(asynchronous: False, name: \"direct-late-error\", source: \"events=[]\\ndef parts():\\n events.append('first')\\n\"\u00b7\u00b7\u00b7, expected: \"ValueError later iteration failure\\n['first', 'sec\"\u00b7\u00b7\u00b7)",
+        "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"ValueError later iteration failure\\n['firs\"\u00b7\u00b7\u00b7\r\nActual:   \"TypeError sequence item 0: expected str i\"\u00b7\u00b7\u00b7\r\n           \u2191 (pos 0)"
+      },
+      {
+        "name": "Lokad.Lython.PublicApi.Tests.StringJoinIterationTests.MatchesPythonDrainAndErrorOrder(asynchronous: False, name: \"exposed-drain\", source: \"events=[]\\ndef parts():\\n events.append('first')\\n\"\u00b7\u00b7\u00b7, expected: \"TypeError sequence item 0: expected str instance, \"\u00b7\u00b7\u00b7)",
+        "message": "Assert.Equal() Failure: Strings differ\r\n                                            \u2193 (pos 68)\r\nExpected: \u00b7\u00b7\u00b7\" instance, int found\\n['first', 'second']\\n\"\r\nActual:   \u00b7\u00b7\u00b7\"pected str instance, int found\\n['first']\\n\"\r\n                                                      \u2191 (pos 68)"
+      },
+      {
+        "name": "Lokad.Lython.PublicApi.Tests.StringJoinIterationTests.MatchesPythonDrainAndErrorOrder(asynchronous: False, name: \"custom-iterator\", source: \"events=[]\\nclass Parts:\\n def __iter__(self):\\n  e\"\u00b7\u00b7\u00b7, expected: \"ValueError custom\\n['iter', 'after']\\n\")",
+        "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"ValueError custom\\n['iter', 'after']\\n\"\r\nActual:   \"TypeError sequence item 0: expected str i\"\u00b7\u00b7\u00b7\r\n           \u2191 (pos 0)"
+      },
+      {
+        "name": "Lokad.Lython.PublicApi.Tests.StringJoinIterationTests.MatchesPythonDrainAndErrorOrder(asynchronous: False, name: \"expanded-late-error\", source: \"events=[]\\ndef parts():\\n events.append('first')\\n\"\u00b7\u00b7\u00b7, expected: \"ValueError later iteration failure\\n['first', 'sec\"\u00b7\u00b7\u00b7)",
+        "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"ValueError later iteration failure\\n['firs\"\u00b7\u00b7\u00b7\r\nActual:   \"TypeError sequence item 0: expected str i\"\u00b7\u00b7\u00b7\r\n           \u2191 (pos 0)"
+      },
+      {
+        "name": "Lokad.Lython.PublicApi.Tests.StringJoinIterationTests.MatchesPythonDrainAndErrorOrder(asynchronous: False, name: \"exposed-late-error\", source: \"events=[]\\ndef parts():\\n events.append('first')\\n\"\u00b7\u00b7\u00b7, expected: \"ValueError later iteration failure\\n['first', 'sec\"\u00b7\u00b7\u00b7)",
+        "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"ValueError later iteration failure\\n['firs\"\u00b7\u00b7\u00b7\r\nActual:   \"TypeError sequence item 0: expected str i\"\u00b7\u00b7\u00b7\r\n           \u2191 (pos 0)"
+      },
+      {
+        "name": "Lokad.Lython.PublicApi.Tests.StringJoinIterationTests.MatchesPythonDrainAndErrorOrder(asynchronous: False, name: \"direct-drain\", source: \"events=[]\\ndef parts():\\n events.append('first')\\n\"\u00b7\u00b7\u00b7, expected: \"TypeError sequence item 0: expected str instance, \"\u00b7\u00b7\u00b7)",
+        "message": "Assert.Equal() Failure: Strings differ\r\n                                            \u2193 (pos 68)\r\nExpected: \u00b7\u00b7\u00b7\" instance, int found\\n['first', 'second']\\n\"\r\nActual:   \u00b7\u00b7\u00b7\"pected str instance, int found\\n['first']\\n\"\r\n                                                      \u2191 (pos 68)"
+      },
+      {
+        "name": "Lokad.Lython.PublicApi.Tests.StringJoinIterationTests.MatchesPythonDrainAndErrorOrder(asynchronous: False, name: \"expanded-drain\", source: \"events=[]\\ndef parts():\\n events.append('first')\\n\"\u00b7\u00b7\u00b7, expected: \"TypeError sequence item 0: expected str instance, \"\u00b7\u00b7\u00b7)",
+        "message": "Assert.Equal() Failure: Strings differ\r\n                                            \u2193 (pos 68)\r\nExpected: \u00b7\u00b7\u00b7\" instance, int found\\n['first', 'second']\\n\"\r\nActual:   \u00b7\u00b7\u00b7\"pected str instance, int found\\n['first']\\n\"\r\n                                                      \u2191 (pos 68)"
+      }
+    ]
+  }
+}

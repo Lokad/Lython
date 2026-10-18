@@ -585,3 +585,13 @@ before allocating and copying it. The spans do not escape. Larger results retain
 the existing funded UTF-16 copy and UTF-8 conversion. Removing the small heap
 temporary changes admission thresholds without changing retained-result ownership,
 pending-user cleanup or the output builder's existing growth accounting.
+
+`str.join` drains its input before item validation in both hosting APIs, preserving
+Python's iteration effects and error precedence. The existing drain lease keeps
+the materialized capacity charged through validation and output admission. Output
+builder capacity is released in a `finally` block, including validation and
+admission failures; retained inputs/results keep their existing owners. Compared
+with incremental synchronous consumption, materialization adds temporary storage
+and can reject earlier. Async materialization also remains funded until conversion
+finishes. These are bounded execution working sets, not cumulative allocation
+counts or promises of identical tiny-budget thresholds.

@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 join drain correction](results/2026-10-18-join-drain/README.md)
+fixes seven synchronous effect/error-order failures and two builder-scratch
+cleanup failures. Existing leased drains keep materialized input funded through
+output admission. One native capture pair costs an extra416B/sync and40B/async
+call with16Unicode parts; this is a correctness cost, not a performance win.
+528 focused checks,8CPython goldens and58complete jobs pass. No new owner or
+iteration framework, retiming, elapsed or CPython speedup claim.
+
 The [2026-10-18 small JSON result conversion](results/2026-10-18-json-result-copy/README.md)
 shares eager and iterator finalization, replacing eligible UTF-16 heap copies with
 fixed managed control spans and the existing funded UTF-8 factory. One capture

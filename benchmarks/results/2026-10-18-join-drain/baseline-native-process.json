@@ -1,0 +1,14 @@
+{
+  "source": "join-drain",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "0F0991A1516432B4CE6825E1C74E0BD6E15D586ED9A369B8569FBD0B54D59758",
+  "filter": "Category!=Stress&(FullyQualifiedName~StringJoinCleanupTests|FullyQualifiedName~JoinDrainDiagnostic)",
+  "pid": 58432,
+  "hasExited": true,
+  "exitCode": 1,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1351,
+  "stdoutSha256": "B52B2B6B0574146189AC48D0AD6D1950FDD8E3ED4B87DE2B9FB92AEA6D33FBB8",
+  "stderrSha256": "CBC632A60C658F365E06694E6F49EF73B3F730F4DF9CA216A73897F1F1BE1F1B"
+}

@@ -275,6 +275,13 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [join correctness correction](benchmarks/results/2026-10-18-join-drain/README.md)
+is tracked separately from speedups: both APIs now preserve iterable effects/error
+order and fund scratch through output admission. At `deefa4a5` plus its frozen
+patch, a16-part native diagnostic costs an additional416 bytes/synchronous call
+and40 bytes/asynchronous call. Nine baseline defects are fixed; there is no
+elapsed-time, complete-job or CPython speedup claim.
+
 The [small JSON result conversion](benchmarks/results/2026-10-18-json-result-copy/README.md)
 at `32867fac` plus its frozen patch replaces the temporary CLR string with bounded
 managed spans for results up to 128 UTF-16 units. One fixed native capture saves

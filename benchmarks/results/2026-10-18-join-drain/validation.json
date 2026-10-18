@@ -1,0 +1,102 @@
+{
+  "baseline": "deefa4a50d3c6d1d0e864557ce00fdaef4c9e4e7",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs": {
+      "before": "41e68fd6f3953201b55d08e27318c0f3831c441c8a94b9a33c164cf123e3ed76",
+      "after": "b9665cedcef33d8d7099a067b0453f17387ad67a1e5a24e87ccce8e62d70eabb"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": {
+      "before": "0d447d0d03f01606228affc8706235b8424bc2ae4c5cf4934f47947f0d5806a0",
+      "after": "fbe7349197916b3c2cfe703d27103efd2b67e7be806f1f103542fffb52f24250"
+    }
+  },
+  "focusedDistinctPassed": 528,
+  "groups": {
+    "final-white": {
+      "passed": 50,
+      "process": {
+        "source": "join-drain",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "70A6A6FE56B801FCD7FD231BA3FAF845BC546983A16926F83987B713D638E499",
+        "filter": "Category!=Stress&(FullyQualifiedName~StringJoin|FullyQualifiedName~DrainLeaseOwnershipTests|FullyQualifiedName~DrainReservationTests|FullyQualifiedName~StringBuilderAdmissionTests|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission)",
+        "pid": 62284,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1265,
+        "stdoutSha256": "938F01717950933FDAA4EFB1549B9D6C71CBBF5D03CC4177C71AD01DE20CC607",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "4b50be82dbcce10172c99a939c02d7e4f897e8b2c67d388ec9300cdef86257c6"
+    },
+    "final-strings": {
+      "passed": 314,
+      "process": {
+        "source": "join-drain",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "02218B87EA83751012DCDF5EBEF6CA348D6665A18062C31AC6E7CE820982FF67",
+        "filter": "Category!=Stress&(FullyQualifiedName~StringJoinIterationTests|FullyQualifiedName~StringMethodCompatibilityTests|FullyQualifiedName~StringValidationScenarioTests|FullyQualifiedName~ExpandedString|FullyQualifiedName~StringProtocolTests|FullyQualifiedName~RawDrainClosureTests|FullyQualifiedName~BuiltinIterationCancellationTests)",
+        "pid": 34020,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4278,
+        "stdoutSha256": "15E0604E909BAC651A1FD1543A27B7C10A9A4700E8F8D446D9C3C6FDA5F9BAA8",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "1cec35314745e98ec993cbc009b4ed24f7642be6e49e5787ac955c20290af44a"
+    },
+    "final-owners": {
+      "passed": 102,
+      "process": {
+        "source": "join-drain",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "02218B87EA83751012DCDF5EBEF6CA348D6665A18062C31AC6E7CE820982FF67",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests|FullyQualifiedName~RenderJoinLifetimeScenarioTests)",
+        "pid": 32508,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2587,
+        "stdoutSha256": "95738757D1F5A78F7A712A0D666FD1F0680DC74B7CBD30775B3FC9CDB9D1C24F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "4b32b604f8ab57778fa6651bea133e3a787c14c5e6155937868e9f0a013ec610"
+    },
+    "final-goldens": {
+      "passed": 62,
+      "process": {
+        "source": "join-drain",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "02218B87EA83751012DCDF5EBEF6CA348D6665A18062C31AC6E7CE820982FF67",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 68124,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8776,
+        "stdoutSha256": "14DC30B37831F236907B9330F1114199B7C92C972BAF22281DECB7C8BF649F5F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "4ecaef6e20cb0eb3e5a4547a940ab68fffe918baec9f7d737ede515e7568b1d7"
+    }
+  },
+  "baselineSemanticFailures": 7,
+  "baselineScratchCleanupFailures": 2,
+  "newPublicCases": 20,
+  "newWhiteCases": 6,
+  "CPythonGoldens": 8,
+  "completeJobs": 58,
+  "temporaryDiagnosticRemoved": true,
+  "existingDrainLeaseAndGovernorReused": true,
+  "duplicateValidationRemoved": true,
+  "allPendingUsersAwaited": true,
+  "contract": "Drain before validation in both APIs. Keep materialization funded through output admission and release builder on all exits. Earlier memory denial and extra materialization allocation are documented.",
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "regexPlanningOnly": true,
+  "elapsedWholeJobOrCPythonSpeedupClaim": false
+}

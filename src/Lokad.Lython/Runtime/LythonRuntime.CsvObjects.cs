@@ -908,19 +908,26 @@ internal sealed partial class LythonRuntime
     private static PyString JoinStrings(PyString separator, IEnumerable<PyString> parts, MemoryGovernor governor, LythonSourceSpan? span)
     {
         var builder = new GovernedByteBuilder(governor, span);
-        var first = true;
-        foreach (var part in parts)
+        try
         {
-            if (!first)
+            var first = true;
+            foreach (var part in parts)
             {
-                builder.Append(separator);
+                if (!first)
+                {
+                    builder.Append(separator);
+                }
+
+                builder.Append(part);
+                first = false;
             }
 
-            builder.Append(part);
-            first = false;
+            return builder.ToPyString();
         }
-
-        return builder.ToPyStringAndRelease();
+        finally
+        {
+            builder.Release();
+        }
     }
 
     private static PyString SliceByByteCount(PyString text, int start, int length)

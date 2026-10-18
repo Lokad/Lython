@@ -7,6 +7,18 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
+        private static IEnumerable<PyString> EnumerateJoinParts(IEnumerable<object> parts, LythonSourceSpan span)
+        {
+            var index = 0;
+            foreach (var part in parts)
+            {
+                if (!PyStringOps.TryAsString(part, out var text))
+                    throw new LythonRuntimeException("TypeError", "sequence item " + index + ": expected str instance, " + RuntimeErrors.OperandTypeName(part) + " found", span);
+                yield return text;
+                index++;
+            }
+        }
+
         private sealed class StringLayoutSearchMemberProvider : IStringMemberProvider
         {
             // N17: hot fixed signatures hoisted per family.
@@ -33,23 +45,10 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.join(iterable) expects one argument.", span);
                         }
 
-                        return JoinStrings(text, EnumerateParts(), context.MemoryGovernor, span);
-
-                        IEnumerable<PyString> EnumerateParts()
-                        {
-                            var index = 0;
-                            var parts = ToSequence(arguments[0], span, context);
-                            foreach (var part in parts)
-                            {
-                                if (!PyStringOps.TryAsString(part, out var partText))
-                                {
-                                    throw new LythonRuntimeException("TypeError", "sequence item " + index + ": expected str instance, " + RuntimeErrors.OperandTypeName(part) + " found", span);
-                                }
-
-                                yield return partText;
-                                index++;
-                            }
-                        }
+                        // Python consumes arbitrary iterables before checking
+                        // item types; later effects/errors take precedence.
+                        using var parts = PyIteration.MaterializeLeased(arguments[0], span, context);
+                        return JoinStrings(text, EnumerateJoinParts(parts.Items, span), context.MemoryGovernor, span);
                     }, StrJoinSignature, async (arguments, span, context) =>
                     {
                         if (arguments.Length != 1)
@@ -57,25 +56,10 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.join(iterable) expects one argument.", span);
                         }
 
-                        // Async twin of the drain above: parts await each pull
-                        // while validation order and messages stay identical.
-                        var parts = await PyIteration.MaterializeAsync(arguments[0], span, context).ConfigureAwait(false);
-                        return JoinStrings(text, EnumerateParts(parts), context.MemoryGovernor, span);
-
-                        IEnumerable<PyString> EnumerateParts(List<object> parts)
-                        {
-                            var index = 0;
-                            foreach (var part in parts)
-                            {
-                                if (!PyStringOps.TryAsString(part, out var partText))
-                                {
-                                    throw new LythonRuntimeException("TypeError", "sequence item " + index + ": expected str instance, " + RuntimeErrors.OperandTypeName(part) + " found", span);
-                                }
-
-                                yield return partText;
-                                index++;
-                            }
-                        }
+                        // Keep drained storage admitted through validation and
+                        // final output admission, including suspended callbacks.
+                        using var parts = await PyIteration.MaterializeLeasedAsync(arguments[0], span, context).ConfigureAwait(false);
+                        return JoinStrings(text, EnumerateJoinParts(parts.Items, span), context.MemoryGovernor, span);
                     }),
                     "center" => CreatePaddingMethod("center", PyStringOps.Center, StrCenterSignature),
                     "ljust" => CreatePaddingMethod("ljust", PyStringOps.LJust, StrLjustSignature),

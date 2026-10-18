@@ -1,0 +1,14 @@
+{
+  "baseline": "deefa4a50d3c6d1d0e864557ce00fdaef4c9e4e7",
+  "sourceSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs": "41e68fd6f3953201b55d08e27318c0f3831c441c8a94b9a33c164cf123e3ed76",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "0d447d0d03f01606228affc8706235b8424bc2ae4c5cf4934f47947f0d5806a0"
+  },
+  "diagnosticSha256": "f6b6512ba10fd0d5933dd4995537213242634475a3b2b0b5b20e5042696012a5",
+  "provenDefect": "Sync join validates before draining arbitrary iterables, losing effects and late errors. Async CPython controls match.",
+  "replacement": "Use existing leased materialization in both APIs through output conversion; consolidate duplicate validator. Release existing builder in finally. No generic iteration/owner framework or direct-call extension.",
+  "tradeoff": "Sync now materializes arbitrary input before validation as Python requires. Both APIs keep scratch funded until consumption, which may deny earlier. Exact tiny thresholds and allocation reduction are not acceptance.",
+  "acceptance": "New pure CPython cases for both APIs; actual host suspension/cancellation; shared-budget refusal/result retention/cleanup; focused strings/drain/managed stack;58 complete jobs. Original Stress/assertions/timeouts remain.",
+  "diagnostic": "One allocation capture per source,2warmups/8samples/64calls for16Unicode parts, exact list/generator and both APIs. Report cost honestly; no fixed speedup gate for correctness, no retiming or elapsed/whole-job/CPython speedup claim.",
+  "regex": "Plan only; no regex dependency/runtime changes."
+}

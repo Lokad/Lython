@@ -1430,6 +1430,12 @@ invalid values still receive the corresponding argument diagnostic.
 
 Strings must behave as Python Unicode strings, not as byte arrays.
 
+`str.join` consumes its iterable before validating item types under both `Run`
+and `RunAsync`. Later iteration effects and exceptions therefore precede an
+invalid-item `TypeError`. Asynchronous hosting awaits user iteration and its
+host I/O before validation. Drained items remain funded through output admission;
+scratch is released on success, iteration/validation failure or cancellation.
+
 After argument binding, `str.split` converts `maxsplit` before validating the
 separator. Guest `__index__` lookup uses the type's MRO and binds its descriptor;
 instance attributes and ordinary attribute hooks do not override that implicit
