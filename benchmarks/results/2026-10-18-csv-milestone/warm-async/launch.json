@@ -1,0 +1,23 @@
+{
+  "unit": "lython-csv-milestone-warm-async-34d4da35-20261018",
+  "lane": "warm-async",
+  "arguments": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-csv-milestone-warm-async-34d4da35-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=28",
+    "--property=TimeoutStopSec=1",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/csv-milestone-34d4da35/warm-async/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/csv-milestone-34d4da35/warm-async/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/csv-milestone-34d4da35/run-capture.py",
+    "warm-async"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Running as unit: lython-csv-milestone-warm-async-34d4da35-20261018.service; invocation ID: d5f66949a6d74746be47d3fdea3f221b\n",
+  "launchedUtc": "2026-10-18T04:44:39.549856+00:00"
+}

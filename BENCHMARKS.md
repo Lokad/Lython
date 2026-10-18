@@ -2,11 +2,11 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Complete CSV summary with annotated helper [CE], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 8.549 ms | 3.962 ms | 2.158× diagnostic | Immutable `34d4da35`; one capture, unqualified; 6.72%/0.63% spreads |
+| Complete CSV summary with annotated helper [CF], warm `RunAsync` | 4,096 records / 57,361 UTF-8 bytes | 9.321 ms | 3.759 ms | 2.480× diagnostic | Immutable `34d4da35`; completed host operations, one capture, unqualified; 3.84%/0.59% spreads |
 | JSON file round-trip [CD], warm `RunAsync` | One file / 42 UTF-8 input bytes | 1.571 ms | 0.16484 ms | — | Four frozen runtime files on 22648c5a; nominal 9.533×, unqualified; 7.24%/1.07% spreads |
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Complete CSV summary [BP], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 7.503 ms | 3.849 ms | — | Short diagnostic at27a61681; nominal8.3% below prior Lython,7.5%/6.4% spreads; inconclusive |
-| Complete CSV summary with annotated helper [BU], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 8.581 ms | 3.718 ms | — | Dedicated-VM diagnostic at 463b7a7a; nominal 2.308×, unqualified; 4.36%/0.85% spreads |
-| Complete CSV summary with annotated helper [BW], warm `RunAsync` | 4,096 records / 57,361 UTF-8 bytes | 10.194 ms | 3.783 ms | — | Dedicated-VM diagnostic; one frozen CSV file on 1b6a1531; nominal 2.694×, unqualified; 2.43%/0.54% spreads |
 | Complete CSV helper with annotation-only local [BT], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 19.745 ms | 17.014 ms | — | Local Windows, 3f799746 + one-line guard deletion; 48.9%/13.5% spreads, inconclusive |
 | Complete text-summary file job [BR], fresh compile/run | 3,072 lines / 35,840 UTF-8 bytes | 14.994–16.539 ms | 11.188 ms | — | Local Windows diagnostic at 877f20e2; identical controls; 49%/107%/39% spreads, inconclusive |
 | Complete JSON-lines aggregation [AU], fresh compile/run | 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
@@ -25,13 +25,25 @@ for the detailed history and [Lython improvements](#improvements-against-earlier
 for changes against prior Lython versions.
 
 **Ratio convention:** Lython elapsed time divided by CPython elapsed time;
-above 1 means Lython takes longer. A dash means unavailable or unqualified,
-never zero. No workload ratio is qualified here. AF, AU, BO, BR and BX ranges contain the medians
+above 1 means Lython takes longer. Ratios marked diagnostic are unqualified point
+estimates. A dash means unavailable or not reported, never zero; historical
+unqualified observations retain their original notation. No workload ratio has
+completed milestone qualification here. AF, AU, BO, BR and BX ranges contain the medians
 of two identical Lython controls, not confidence intervals. Other entries show
 one diagnostic median. The jobs show performance gaps in those runs; their
 magnitudes and changes remain uncertain as marked.
 
 ## Which code and machine were measured?
+
+CE/CF measure immutable `34d4da35` on 2026-10-18 UTC, using the existing complete
+CSV helper script and pinned toolchains below. CE compiles afresh and calls
+public Run; CF reuses compilation and calls public RunAsync with completed host
+operations. Both include fresh invocation, result cleanup, file staging/reset and
+complete output checks; startup/transport are excluded. The lanes cannot be
+subtracted to estimate compile cost or compared to attribute async overhead.
+One short capture per lane leaves ratios diagnostic. Full provenance, samples
+and cleanup are [linked here](benchmarks/results/2026-10-18-csv-milestone/README.md).
+Earlier CSV snapshots BU/BW remain in the historical revision table below.
 
 The VM snapshots (all leading rows except BQ/BR/BT, and historical Q/L campaigns) used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
 x86_64, four AMD EPYC 9V45 vCPUs, one thread per core, 16 GiB RAM, no swap.
@@ -116,6 +128,7 @@ to infer a change from the quiet-VM measurements.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| CE/CF | 2026-10-18 UTC | Immutable `34d4da35`; complete CSV helper job, fresh compile/run and warm RunAsync | [CPython comparison, raw samples, immutable controls and cleanup](benchmarks/results/2026-10-18-csv-milestone/README.md) |
 | CD | 2026-10-18 UTC | Four frozen runtime files on 22648c5a; existing bridge JSON file job; warm public RunAsync | [Default-call allocation, checkpoints, CPython comparison and cleanup](benchmarks/results/2026-10-18-json-default-dumps/README.md) |
 | CC | 2026-10-18 UTC | One frozen text-reader file on 56526237; complete helper job; warm public RunAsync | [Admission, character limits, CPython comparison and cleanup](benchmarks/results/2026-10-18-text-read/README.md) |
 | CB | 2026-10-17 UTC | One frozen key-comparer file on aa9fc0ea; complete helper job; warm public RunAsync | [Key identity correction, string dispatch, CPython controls and final-source comparison](benchmarks/results/2026-10-17-string-key-identity/README.md) |
@@ -357,6 +370,7 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 | Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
 | --- | --- | ---: | --- |
+| Complete CSV helper milestone, 2026-10-18 UTC | Immutable `1b6a1531` → immutable `34d4da35`; same script/harness | Nominal fresh 6.92% and warm 5.66% lower; single captures do not establish improvement or attribute it to one change | [Separate earlier-Lython results and spread](benchmarks/results/2026-10-18-csv-milestone/README.md#comparison-with-earlier-lython) |
 | Bulk CSV writerows pipeline, 2026-10-18 UTC | 6bec0f34 → frozen one-file pipeline consolidation; one call / 128 rows | Allocation only: async native rows 153,856 → 144,640 bytes; sync and guest-generator controls unchanged. No elapsed or CPython timing claim | [Samples, exact bulk checkpoints and boundary](benchmarks/results/2026-10-18-csv-writerows/README.md) |
 | Native rows in async CSV writerow, 2026-10-18 UTC | bca120a4 → frozen one-file converter-selection patch; 128 raw-row operations | Allocation only: async helper 153,600 → 144,384 bytes, matching sync. Conversion/publication controls unchanged; not a whole interpreter/job comparison. No elapsed or CPython timing claim | [Isolated phases, samples, guards and ownership boundary](benchmarks/results/2026-10-18-csv-native-conversion/README.md) |
 | Ordinary CSV writerow calls, 2026-10-18 UTC | 75c03d02 → frozen six-file call-transport patch; 128 rows | Allocation only: sync 153,488 → 149,144 bytes; async interpreter 190,104 → 158,360. Exposed controls unchanged. No elapsed or CPython timing claim | [Samples, frozen checkpoints, ownership and boundary](benchmarks/results/2026-10-18-csv-writerow/README.md) |

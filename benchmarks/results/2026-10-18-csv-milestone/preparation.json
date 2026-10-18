@@ -1,0 +1,36 @@
+{
+  "startedUtc": "2026-10-18T04:43:11.792941+00:00",
+  "phase": "complete",
+  "workers": {
+    "old": {
+      "revision": "1b6a15318b00ec056af02e23b72fa64f861964df",
+      "root": "/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/source-candidate",
+      "worker": "/home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/source-candidate/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+      "workerSha256": "c5011cbe01157d6407339c22434618fac5e815c520f3077c532535bf508fe10f",
+      "librarySha256": "500fafeda98b8059fd6fdde3019f113ed3a38c3cd3eb3b6a8ff274b6e68843be",
+      "sourceClean": true
+    },
+    "candidate": {
+      "revision": "34d4da357c2fbd553fa8c049dd424e5149fae3e8",
+      "root": "/home/lokad/lython-bench-checks/csv-milestone-34d4da35/source-candidate",
+      "worker": "/home/lokad/lython-bench-checks/csv-milestone-34d4da35/source-candidate/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+      "workerSha256": "151d1426a0526e12385786afd1567e4717224d2598cb7e01008da00a0423dc5e",
+      "librarySha256": "cea4dae578f15f15ce52eb958c615b8a2686ebc27349eb91179679b821500d9b",
+      "sourceClean": true
+    }
+  },
+  "dotnetVersion": "10.0.401",
+  "loadBefore": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "catalog": "/home/lokad/lython-bench-checks/csv-milestone-34d4da35/catalog.json",
+  "catalogSha256": "a2b51dfe71c890faeda7198687298f58b377f0c615bce2ecec065c20db16587f",
+  "completedUtc": "2026-10-18T04:43:23.451598+00:00",
+  "loadAfter": [
+    1.8544921875,
+    0.4091796875,
+    0.1337890625
+  ]
+}

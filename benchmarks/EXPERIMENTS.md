@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 complete CSV comparison](results/2026-10-18-csv-milestone/README.md)
+closes two short captures at immutable `34d4da35`: fresh compile/run 8.549 ms vs
+CPython 3.962 ms, warm RunAsync 9.321 ms vs 3.759 ms. Ratios 2.158×/2.480× remain
+diagnostic. Earlier-Lython nominal reductions 6.92%/5.66% are separate and
+unqualified. All 70 responses / 957 invocations preserve full goldens; immutable
+sources, input hashes, all six worker/fixture cleanups and shared lease are
+verified. No runtime/framework change, repeat timing, trace or long lane.
+
 The [2026-10-18 lowered-module lifetime change](results/2026-10-18-lowered-root/README.md)
 removes unconditional whole-module lowering retention from executable programs
 and runners. Three native lifetime failures on4d3c90f9 become passing cases;

@@ -1,0 +1,12 @@
+
+  Determining projects to restore...
+  Restored /home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/source-candidate/src/Lokad.Lython/Lokad.Lython.csproj (in 152 ms).
+  Restored /home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/source-candidate/benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj (in 157 ms).
+  Lokad.Lython -> /home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/source-candidate/src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll
+  Lokad.Lython.Benchmarks -> /home/lokad/lython-bench-checks/csv-warm-async-1b6a1531/source-candidate/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:10.18

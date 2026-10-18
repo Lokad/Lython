@@ -1,0 +1,23 @@
+{
+  "unit": "lython-csv-milestone-compile-run-34d4da35-20261018",
+  "lane": "compile-run",
+  "arguments": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-csv-milestone-compile-run-34d4da35-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=28",
+    "--property=TimeoutStopSec=1",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/csv-milestone-34d4da35/compile-run/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/csv-milestone-34d4da35/compile-run/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/csv-milestone-34d4da35/run-capture.py",
+    "compile-run"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Running as unit: lython-csv-milestone-compile-run-34d4da35-20261018.service; invocation ID: 0f725c7e912c4e27b1c71385fc612477\n",
+  "launchedUtc": "2026-10-18T04:44:24.323981+00:00"
+}

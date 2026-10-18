@@ -1,0 +1,19 @@
+{
+  "arguments": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-csv-milestone-prepare-34d4da35-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=28",
+    "--property=TimeoutStopSec=1",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/csv-milestone-34d4da35/prepare-service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/csv-milestone-34d4da35/prepare-service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/csv-milestone-34d4da35/prepare.py"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Running as unit: lython-csv-milestone-prepare-34d4da35-20261018.service; invocation ID: cf06e065901b47479906279a25b4787e\n"
+}
