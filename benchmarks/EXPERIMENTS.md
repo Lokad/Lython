@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 complete JSON helper comparison](results/2026-10-18-json-checkpoint/README.md)
+uses immutable 6584ddd7 and identical Lython controls against CPython 3.13.16.
+Fresh compile/run takes 9.466–9.607 ms versus 4.441 ms; nominal 2.132–2.163×
+remains unqualified with 13.11% spread in one control. All 35 responses and 432
+invocations match complete goldens; source/input identities and all worker,
+fixture and lease cleanup are verified. One 8.659-second capture, no runtime or
+framework change, retiming, profile or ten-minute lane. Historical AU/CC remain
+separate; no individual-fix gain is inferred.
+
 The [2026-10-18 ordinary join call path](results/2026-10-18-join-call/README.md)
 uses existing receiver/operand machinery and shared corrected join operations.
 One qualified native pair saves 352 B/sync call and 320 B/async; exposed, expanded

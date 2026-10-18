@@ -1,0 +1,21 @@
+{
+  "unit": "lython-json-checkpoint-prepare-6584ddd7-20261018",
+  "arguments": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-json-checkpoint-prepare-6584ddd7-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=28",
+    "--property=TimeoutStopSec=1",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/json-checkpoint-6584ddd7/prepare-service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/json-checkpoint-6584ddd7/prepare-service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/json-checkpoint-6584ddd7/prepare.py"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Running as unit: lython-json-checkpoint-prepare-6584ddd7-20261018.service; invocation ID: 755787590e6348c5ace9e13f27d59055\n",
+  "launchedUtc": "2026-10-18T13:26:41.878608+00:00"
+}

@@ -1,0 +1,49 @@
+{
+  "unit": "lython-json-checkpoint-compile-run-6584ddd7-20261018",
+  "properties": "MainPID=0\nResult=success\nExecMainStartTimestampMonotonic=0\nExecMainExitTimestampMonotonic=0\nExecMainStatus=0\nControlGroup=\nActiveState=inactive\nSubState=dead\n",
+  "live": false,
+  "capturedUtc": "2026-10-18T13:28:18.126981+00:00",
+  "state": "Completed",
+  "summaries": [
+    {
+      "engine": "baseline",
+      "medianMicroseconds": 9465.975,
+      "iqrFraction": 0.1310619349829256
+    },
+    {
+      "engine": "candidate",
+      "medianMicroseconds": 9606.768,
+      "iqrFraction": 0.035210593198461745
+    },
+    {
+      "engine": "CPython",
+      "medianMicroseconds": 4440.51725,
+      "iqrFraction": 0.0035701499639486456
+    }
+  ],
+  "attemptCount": 35,
+  "error": null,
+  "success": true,
+  "workers": {
+    "baseline": {
+      "processId": 2454417,
+      "processGone": true,
+      "fixtureDirectory": "/tmp/lython-comparison-files-JolNq1",
+      "fixtureDirectoryGone": true
+    },
+    "candidate": {
+      "processId": 2454437,
+      "processGone": true,
+      "fixtureDirectory": "/tmp/lython-comparison-files-aStbq7",
+      "fixtureDirectoryGone": true
+    },
+    "CPython": {
+      "processId": 2454453,
+      "processGone": true,
+      "fixtureDirectory": "/tmp/lython-comparison-files-dsBJ7q",
+      "fixtureDirectoryGone": true
+    }
+  },
+  "leaseReleased": true,
+  "inputsUnchanged": true
+}

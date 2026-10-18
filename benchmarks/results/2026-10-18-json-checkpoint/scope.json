@@ -1,0 +1,61 @@
+{
+  "revision": "6584ddd7fb87ede96b8e017f2b3835c78b539a1f",
+  "case": "scripts.json-summary-helpers.large",
+  "lane": "compile-run",
+  "inputFiles": {
+    "input.jsonl": {
+      "bytes": 110592,
+      "sha256": "d26f64bb57fe996b5850c5dc352284967a997e59593434c953fa6407b5f8ba3f"
+    }
+  },
+  "scriptBytes": 607,
+  "scriptSha256": "beea66dfa7ab6333419678181ea8a6d5a5b030eb01ac35b993bb6d801e0c29a7",
+  "outputFiles": {
+    "report.json": {
+      "bytes": 25,
+      "sha256": "9efa1d3e163c11dce3412445a85150acfff0045eb26a16eaf1fa3f6a9ec568b7",
+      "expected": "{\"blue\":7168,\"red\":3072}\n"
+    }
+  },
+  "expectedStdout": "3072\n",
+  "stdoutSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+  "records": 4096,
+  "blankLines": 1024,
+  "acceptedRecords": 3072,
+  "sourceFiles": {
+    "benchmarks/scripts/json-summary-helpers.py": "beea66dfa7ab6333419678181ea8a6d5a5b030eb01ac35b993bb6d801e0c29a7",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "9f756ed5cabd3b6d0e2a7d2954163b14d55881ae8ab9b558560215594b68cd1a",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonMicroCommand.cs": "c94517c052799b925bb203a2bf398f8c55ac80e01a7bd2b6652dffa196f4f497"
+  },
+  "materialGap": "Published AU fresh JSON snapshot lacks the helper and predates recent invocation/runtime work; CC is warm RunAsync on a frozen earlier file. No fresh complete helper compile-to-result snapshot at this immutable source.",
+  "boundary": "Fresh compile plus one synchronous run in an already-running host, complete file reset/read/parse/helper/filter/aggregate/write and ownership cleanup; exclude process startup/transport. CPython primary; identical Lython controls; no individual-fix gain inferred.",
+  "stopping": "Reuse existing micro command. One15-second selected-case capture on a correctly leased quiet VM with bounded owned process, exact independent goldens/identities and cleanup. No new framework, profiling, repeated capture, warm/startup campaign, ten-minute lane or finite-budget/host-latency claim.",
+  "status": "Independent local CPython3.13.2 complete golden verified; actual worker readiness and shared VM lease remain. No timing capture or VM changes.",
+  "independentGoldenProofSha256": "b69e90291e0cfdccb935559e0d4710eb9115964ba472de580836dc321283bc30",
+  "independentGolden": {
+    "revision": "6584ddd7fb87ede96b8e017f2b3835c78b539a1f",
+    "case": "scripts.json-summary-helpers.large",
+    "python": "C:\\Python313\\python.exe",
+    "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "exitCode": 0,
+    "rawStdout": "3072\r\n",
+    "canonicalLFStdout": "3072\n",
+    "canonicalLFStdoutSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+    "output": {
+      "report.json": {
+        "bytes": 25,
+        "sha256": "9efa1d3e163c11dce3412445a85150acfff0045eb26a16eaf1fa3f6a9ec568b7",
+        "expected": "{\"blue\":7168,\"red\":3072}\n"
+      }
+    },
+    "inputAndSourceUnchanged": true,
+    "independentGoldenPassed": true,
+    "measurement": false,
+    "vmCaptureStarted": false,
+    "fixtureRemoved": true
+  },
+  "vmReadiness": null,
+  "readinessIsNotLeaseOwnership": true,
+  "captureStarted": false,
+  "comparison": "Two identical immutable Lython controls; CPython primary. Snapshot only, no individual-fix attribution."
+}

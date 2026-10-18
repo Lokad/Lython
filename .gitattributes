@@ -115,3 +115,5 @@ benchmarks/results/2026-10-18-join-drain/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-join-drain/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-join-call/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-join-call/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-json-checkpoint/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-json-checkpoint/input.jsonl -text -whitespace

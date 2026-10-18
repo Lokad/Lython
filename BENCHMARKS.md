@@ -11,6 +11,7 @@
 | Complete CSV summary [BP], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 7.503 ms | 3.849 ms | — | Short diagnostic at27a61681; nominal8.3% below prior Lython,7.5%/6.4% spreads; inconclusive |
 | Complete CSV helper with annotation-only local [BT], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 19.745 ms | 17.014 ms | — | Local Windows, 3f799746 + one-line guard deletion; 48.9%/13.5% spreads, inconclusive |
 | Complete text-summary file job [BR], fresh compile/run | 3,072 lines / 35,840 UTF-8 bytes | 14.994–16.539 ms | 11.188 ms | — | Local Windows diagnostic at 877f20e2; identical controls; 49%/107%/39% spreads, inconclusive |
+| Complete JSON-lines helper [CI], fresh compile/run | 4,096 records / 110,592 UTF-8 input bytes | 9.466–9.607 ms | 4.441 ms | 2.132–2.163× diagnostic | Immutable `6584ddd7`; identical controls; 13.11%/3.52% Lython spreads, 0.36% CPython; unqualified |
 | Complete JSON-lines aggregation [AU], fresh compile/run | 4,096 records / 110,592 UTF-8 bytes | 9.880–10.024 ms | 4.359 ms | — | Two identical Lython controls; unqualified (21.3%/8.7% spread); startup excluded |
 | Complete JSON-lines aggregation with helper [CC], warm `RunAsync` | 4,096 records / 110,592 UTF-8 bytes | 10.854 ms | 4.283 ms | — | One frozen text-reader file on 56526237; nominal 2.534×, unqualified; 1.77%/1.06% spreads |
 | Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | Historical warm diagnostic; elapsed change within spread |
@@ -30,12 +31,21 @@ for changes against prior Lython versions.
 above 1 means Lython takes longer. Ratios marked diagnostic are unqualified point
 estimates. A dash means unavailable or not reported, never zero; historical
 unqualified observations retain their original notation. No workload ratio has
-completed milestone qualification here. AF, AU, BO, BR, BX, CG and CH ranges contain the medians
+completed milestone qualification here. AF, AU, BO, BR, BX, CG, CH and CI ranges contain the medians
 of two identical Lython controls, not confidence intervals. Other entries show
 one diagnostic median. The jobs show performance gaps in those runs; their
 magnitudes and changes remain uncertain as marked.
 
 ## Which code and machine were measured?
+
+CI measures immutable `6584ddd7` on 2026-10-18 UTC with the existing complete
+JSON-lines helper job, two identical Lython controls and CPython 3.13.16. Each
+job compiles afresh in an already-running host and includes full file work/reset/
+checks; startup/transport are excluded. The sole 8.659-second capture gives
+9.466–9.607 ms versus 4.441 ms, a nominal 2.132–2.163× ratio. Controls differ by
+1.49%, but one Lython spread is 13.11%; this remains diagnostic/unqualified.
+Historical fresh AU and warm-async CC stay separate. No individual-fix gain,
+compilation-only timing, finite-budget or embedding-latency claim is inferred.
 
 CH measures immutable `348998dc` on 2026-10-18 UTC, using the existing complete
 configuration read/edit/write script, two identical Lython controls and CPython
@@ -151,6 +161,7 @@ to infer a change from the quiet-VM measurements.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| CI | 2026-10-18 UTC | Immutable `6584ddd7`; complete JSON helper job, fresh compile/run, identical controls | [CPython comparison, full goldens, raw samples and cleanup](benchmarks/results/2026-10-18-json-checkpoint/README.md) |
 | CH | 2026-10-18 UTC | Immutable `348998dc`; complete configuration job, fresh compile/run, identical controls | [CPython comparison, independent complete goldens, raw samples and cleanup](benchmarks/results/2026-10-18-config-checkpoint/README.md) |
 | CG | 2026-10-18 UTC | Immutable `4acd532f`; same runtime sources as `73deb8dc`; complete text helper, fresh compile/run, identical controls | [CPython comparison, full goldens, raw samples and cleanup](benchmarks/results/2026-10-18-text-milestone/README.md) |
 | CE/CF | 2026-10-18 UTC | Immutable `34d4da35`; complete CSV helper job, fresh compile/run and warm RunAsync | [CPython comparison, raw samples, immutable controls and cleanup](benchmarks/results/2026-10-18-csv-milestone/README.md) |
