@@ -1,0 +1,503 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "bca120a4a1cad064d81a7bffe0b83f68bcf93042",
+  "candidate": "baseline plus one frozen production file",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": {
+      "before": "361ddaf7f1dcaccfd6b84cac6e19a860bd031880808415624ceff8a6e40c827e",
+      "after": "379d64a94ba3f123c2dd3dc0fe3a760911f34524c4c3da0b1992b5b905c9feb7"
+    }
+  },
+  "groups": {
+    "baseline-allocation": {
+      "passed": 1,
+      "process": {
+        "source": "bca120a4",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "DB88F6971F2619304A2A9E6D933D76F548CDE15B4A2323B6D63281FE797C36E5",
+        "filter": "Category!=Stress&FullyQualifiedName~NativeCsvConversionAllocationDiagnostic",
+        "pid": 53784,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1162,
+        "stdoutSha256": "E07C79E35E79BBD733C739D6F2D9ABD3039AB30B5BC55BF86C4C1B4355E67E40",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "51ff5032a3c2d15990acd2a90ca2ff724cbf8bf6d55911ed252577332d7cb6a3"
+    },
+    "baseline-guards": {
+      "passed": 38,
+      "process": {
+        "source": "bca120a4",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "560BDEF6B9A1AC781DC322942F1D14A4492D9DB40E4BA8064214D6A6E4CE6BC0",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeCsvRowConversionTests|FullyQualifiedName~CsvWriterowCallBoundaryTests)",
+        "pid": 33224,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1257,
+        "stdoutSha256": "681DC04958A338DE7766951D6489B5605BBD079C1395C23F35195ED671C2313D",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "086e60b5c7becb0d7273196bd679bf9ceec911a0da65e466e86c6a8b66d03ac3"
+    },
+    "baseline-frozen": {
+      "passed": 38,
+      "process": {
+        "source": "bca120a4",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "A33359E6D353A6EE79D922D13AE7BDFD7A6339E6AEA69519F2726C61874AB049",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeCsvRowConversionTests|FullyQualifiedName~CsvWriterowCallBoundaryTests)",
+        "pid": 74924,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1252,
+        "stdoutSha256": "16B02E112040657CD27F61239784DF274BA7228A4C9D6EA67E1EDC8AF3717E11",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "b10873161dde30703696ba3989a78b2fb3cb33841cef771c631bf40109190ab0"
+    },
+    "candidate-guards": {
+      "passed": 38,
+      "process": {
+        "source": "bca120a4",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "DAA40E7C5505670BAE1F8C33EFE41470F87BB459903396F64EF431F5629DC191",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeCsvRowConversionTests|FullyQualifiedName~CsvWriterowCallBoundaryTests)",
+        "pid": 43788,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1281,
+        "stdoutSha256": "66FEC18D7D80071EEAA5C087689ECC6653C5780F4931736FD56880C8D6088006",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "a4776312834c688e7fabee56ebdef811d8895c1861a8f64c7dfa10f5b0495a00"
+    },
+    "candidate-allocation": {
+      "passed": 1,
+      "process": {
+        "source": "bca120a4",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "DAA40E7C5505670BAE1F8C33EFE41470F87BB459903396F64EF431F5629DC191",
+        "filter": "Category!=Stress&FullyQualifiedName~NativeCsvConversionAllocationDiagnostic",
+        "pid": 22648,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1220,
+        "stdoutSha256": "0F3037A1798FCDB66C0F2AD1A6E58BF27A6E895E6AA6E10584F07D4CDF7564C7",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "98b352d8cd109ac5b732767f882fedbb103e5eaed3c5aa871c21764d14b29782"
+    },
+    "final-white": {
+      "passed": 190,
+      "process": {
+        "source": "csv-native-conversion",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "AA55A79D01B4DF2DB0FF86AE22CE46C473C5C051249C68BFAE5EC62E3B1B7184",
+        "filter": "Category!=Stress&(FullyQualifiedName~Csv|FullyQualifiedName~CSV|FullyQualifiedName~CallArgumentEvaluation|FullyQualifiedName~ExpandedCall|FullyQualifiedName~ExecutableCallTransfer|FullyQualifiedName~PostfixCallAssignment|FullyQualifiedName~TextFileWrite|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission)",
+        "pid": 70284,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1991,
+        "stdoutSha256": "C9CD5C784D7B107FBF3D7EFBD60C8F016B079971B67DA92A6E060C4AD3DC5DCE",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "e4bbf93619f4d60e19263458f0fe11657f24739bab22c60f1682b53cd28201ea"
+    },
+    "final-calls": {
+      "passed": 220,
+      "process": {
+        "source": "csv-native-conversion",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "79E08E0418FA541C26F7191478E5E9AEBEE92862ED1C1E93897103FD2488A2D9",
+        "filter": "Category!=Stress&(FullyQualifiedName~CsvWriter|FullyQualifiedName~CsvTextStream|FullyQualifiedName~CsvCompatibility|FullyQualifiedName~CsvTranspose|FullyQualifiedName~CsvDialect|FullyQualifiedName~CallArgumentEvaluation|FullyQualifiedName~ExpandedCall|FullyQualifiedName~PostfixCallAssignment|FullyQualifiedName~PositionalCallSemantics|FullyQualifiedName~PrefixCallCompatibility|FullyQualifiedName~JsonCsvModuleFunction)",
+        "pid": 7016,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8805,
+        "stdoutSha256": "3A72A8AF071DF8F6E91F254E16E3B05917721BCBE0C529D88CE40BDB5A599833",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "030264cdde8baab1d2b193e780a55583ff8b525aac8b9f23bb5f34fd0e77688b"
+    },
+    "final-owners": {
+      "passed": 85,
+      "process": {
+        "source": "csv-native-conversion",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "79E08E0418FA541C26F7191478E5E9AEBEE92862ED1C1E93897103FD2488A2D9",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests)",
+        "pid": 69872,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2414,
+        "stdoutSha256": "F96C0FFFC4DA5E2ED7C7CD1C07366F1DE7142C6295FD2C119790CE5C345DD30F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "5d3a6f4f4a38898bc03352ae9232f3198da600ffb0ff2f594aeead9cab375c0a"
+    },
+    "final-goldens": {
+      "passed": 62,
+      "process": {
+        "source": "csv-native-conversion",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "79E08E0418FA541C26F7191478E5E9AEBEE92862ED1C1E93897103FD2488A2D9",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 23920,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8910,
+        "stdoutSha256": "3EB8A97FA450D6FAAF8D9F31974DB0C5AB26654DDE00F36A852458366CE5B8D0",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "1f4391e6b122f8fb98ecc541e43289d888b97863139e97e3d7c2cfef7b3d21f7"
+    }
+  },
+  "focusedFinalPassed": 557,
+  "exactGuardMatrices": 28,
+  "nativeGuardMatrices": 16,
+  "precedingCallGuardMatrices": 12,
+  "distinctCaseCounting": "190 whitebox and367 public TRX test identities. Two existing CSV theory cases share a truncated display name but have distinct testIds.",
+  "onlyNativeAsyncWriterowSelectionChanged": true,
+  "conversionRenderingHistoryCallbacksAndGenericIterationUnchanged": true,
+  "allocationBefore": [
+    {
+      "phase": "conversion",
+      "asynchronous": false,
+      "samples": [
+        46080,
+        46080,
+        46080,
+        46080,
+        46080,
+        46080,
+        46080,
+        46080
+      ],
+      "stepCounts": [
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384
+      ]
+    },
+    {
+      "phase": "conversion",
+      "asynchronous": true,
+      "samples": [
+        55296,
+        55296,
+        55296,
+        55296,
+        55296,
+        55296,
+        55296,
+        55296
+      ],
+      "stepCounts": [
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384
+      ]
+    },
+    {
+      "phase": "publication",
+      "asynchronous": false,
+      "samples": [
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304
+      ],
+      "stepCounts": [
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "phase": "publication",
+      "asynchronous": true,
+      "samples": [
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304
+      ],
+      "stepCounts": [
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "phase": "complete-row",
+      "asynchronous": false,
+      "samples": [
+        144384,
+        144384,
+        144384,
+        144384,
+        144512,
+        144384,
+        144384,
+        144384
+      ],
+      "stepCounts": [
+        640,
+        640,
+        640,
+        640,
+        640,
+        640,
+        640,
+        640
+      ]
+    },
+    {
+      "phase": "complete-row",
+      "asynchronous": true,
+      "samples": [
+        153600,
+        153600,
+        153600,
+        153600,
+        153600,
+        153600,
+        153600,
+        153600
+      ],
+      "stepCounts": [
+        640,
+        640,
+        640,
+        640,
+        640,
+        640,
+        640,
+        640
+      ]
+    }
+  ],
+  "allocationAfter": [
+    {
+      "phase": "conversion",
+      "asynchronous": false,
+      "samples": [
+        46080,
+        46080,
+        46080,
+        46080,
+        46080,
+        46080,
+        46080,
+        46080
+      ],
+      "stepCounts": [
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384
+      ]
+    },
+    {
+      "phase": "conversion",
+      "asynchronous": true,
+      "samples": [
+        55296,
+        55296,
+        55296,
+        55296,
+        55296,
+        55296,
+        55296,
+        55296
+      ],
+      "stepCounts": [
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384,
+        384
+      ]
+    },
+    {
+      "phase": "publication",
+      "asynchronous": false,
+      "samples": [
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304
+      ],
+      "stepCounts": [
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "phase": "publication",
+      "asynchronous": true,
+      "samples": [
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304,
+        98304
+      ],
+      "stepCounts": [
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "phase": "complete-row",
+      "asynchronous": false,
+      "samples": [
+        144384,
+        144384,
+        144384,
+        144384,
+        144512,
+        144384,
+        144384,
+        144384
+      ],
+      "stepCounts": [
+        640,
+        640,
+        640,
+        640,
+        640,
+        640,
+        640,
+        640
+      ]
+    },
+    {
+      "phase": "complete-row",
+      "asynchronous": true,
+      "samples": [
+        144384,
+        144384,
+        144384,
+        144384,
+        144384,
+        144384,
+        144384,
+        144384
+      ],
+      "stepCounts": [
+        640,
+        640,
+        640,
+        640,
+        640,
+        640,
+        640,
+        640
+      ]
+    }
+  ],
+  "environment": {
+    "machine": "LOKAD-0399",
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "architecture": "X64",
+    "cpu": {
+      "Name": "Intel(R) Core(TM) i7-14700KF",
+      "NumberOfCores": 20,
+      "NumberOfLogicalProcessors": 28
+    },
+    "recordedUtc": "2026-10-18T04:04:53.8399445+00:00"
+  },
+  "publicRuntimeDllSha256": "68f916d99a2f821a4bc22c14e0df6d89b2b5d9229cf801a28e299e1a685938af",
+  "publicRuntimeCopyMatches": true,
+  "nativeBoundary": "128 fixed native helper operations per phase; eight warmups/eight samples. Setup/funded source/writer/callback/preconverted control outside, conversion-only/publication-only/actual shared helper inside. Async operations complete synchronously. Identity/byte totals/funding/stepcounts/cleanup checked. No executable interpreter, public scheduling, startup/compile, actual host I/O, elapsed or CPython timing.",
+  "cpython": {
+    "source": "../2026-10-18-csv-writerow/cpython-oracle.json",
+    "semanticCasesReused": 10,
+    "timing": null
+  },
+  "contractChange": "None intended; existing scratch/cell/history/output/result admission, native scalar subset, first terminal failure, managed stack and awaited callback cleanup remain.",
+  "removed": [
+    "Generic async sequence/enumerator/cursor wrappers from exact native list/tuple writerow conversion"
+  ],
+  "retained": "Generic async conversion for other rows and all existing publication, ownership, cancellation and conversion bodies. writerows/DictWriter selection is outside this patch.",
+  "temporaryDiagnosticRemoved": true,
+  "fixtureCorrections": [
+    "Frozen test constants initially reused an existing local name expected, causing CS0136. Renamed the generated local guard before successful frozen baseline and before production edits. No assertion changed."
+  ],
+  "fullLocalStress": "Not repeated; platform/package qualification batched at delivery."
+}

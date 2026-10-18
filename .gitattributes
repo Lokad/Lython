@@ -62,3 +62,5 @@ benchmarks/results/2026-10-18-json-strings/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-json-strings/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-csv-writerow/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-csv-writerow/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-csv-native-conversion/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-csv-native-conversion/candidate.patch -text -whitespace

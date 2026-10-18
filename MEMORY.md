@@ -52,6 +52,13 @@ publication are awaited before the call frame or its inputs are released, includ
 failure and cancellation. This removes control allocation without changing the
 ownership contract or promising identical tiny-budget thresholds.
 
+For exact native list/tuple rows, asynchronous `csv.writerow` reuses the existing
+synchronous scalar converter and its scratch reservations. It still awaits the
+captured output callback before releasing its call frame or inputs. Custom and
+generator row acquisition retains the generic asynchronous path. This removes
+unneeded async iteration wrappers from native conversion without changing row,
+history, result or callback ownership, preflights, cleanup or supported cell types.
+
 Each invocation owns its working storage. Projection allocates under a result
 owner established before execution; this owner is a sibling of the invocation
 owner and survives execution cleanup. Disposing `LythonExecutionResult` clears

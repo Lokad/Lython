@@ -1,0 +1,20 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs b/src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs
+index e2818733..0c6c4dfc 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs
+@@ -445,7 +445,14 @@ internal sealed partial class LythonRuntime
+ 
+         public static async ValueTask<object> WriteRowFromValueAsync(CsvWriterObject writer, object row, LythonSourceSpan span, ExecutionContext context)
+         {
+-            var (cells, convertedBytes) = await ToCsvRowAsync(row, span, context).ConfigureAwait(false);
++            // Exact native rows use scalar-only conversion; only the captured
++            // publication callback can suspend. Other row protocols stay async.
++            CsvCell[] cells;
++            long convertedBytes;
++            if (row is PyList or PyTuple)
++                cells = ToCsvRow(row, span, context, out convertedBytes);
++            else
++                (cells, convertedBytes) = await ToCsvRowAsync(row, span, context).ConfigureAwait(false);
+             return await WriteRowAsync(writer, cells, span, context, convertedBytes).ConfigureAwait(false);
+         }
+ 
