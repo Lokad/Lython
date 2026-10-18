@@ -1,0 +1,14 @@
+{
+  "source": "split-count",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+  "assemblySha256": "ABAF4FE8071EB43663D13F6D9993EE2D0BD9E06D457DA4CA4806DDE97FE325AF",
+  "filter": "Category!=Stress&(FullyQualifiedName~NativeScalarDispatchTests|FullyQualifiedName~DirectStringSplitExecutionTests)",
+  "pid": 68452,
+  "hasExited": true,
+  "exitCode": 1,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 4382,
+  "stdoutSha256": "B8DD2DA0B660EB8B3EE058E8870B9FED9D5FC05983A8484785233347B2C2278C",
+  "stderrSha256": "75F8072F2D199BD3ED54C3BFF34B9ECD3E3FDFD40DA27D1775FA17BCDF79BEB0"
+}

@@ -1,0 +1,196 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs
+index 1adb2175..14f7a5c6 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs
+@@ -1,3 +1,4 @@
++using Lokad.Lython.Runtime.Numbers;
+ using Lokad.Lython.Runtime.Text;
+ 
+ namespace Lokad.Lython.Runtime;
+@@ -11,20 +12,50 @@ internal sealed partial class LythonRuntime
+ 
+         internal static PyList Split(PyString text, object? separatorArgument, object? maxSplitArgument,
+             LythonSourceSpan span, ExecutionContext context)
++        {
++            var count = maxSplitArgument is null ? -1 : NormalizeSplitCount(
++                maxSplitArgument is PyInstance
++                    ? CoerceTypeIndexAsync(maxSplitArgument, context, span, false).GetAwaiter().GetResult() ?? PyNone.Instance
++                    : maxSplitArgument, context, span);
++            return SplitWithCount(text, separatorArgument, count, span, context);
++        }
++
++        internal static ValueTask<object> SplitAsync(PyString text, object? separatorArgument, object? maxSplitArgument,
++            LythonSourceSpan span, ExecutionContext context)
++            => maxSplitArgument is PyInstance instance
++                ? SplitWithGuestCountAsync(text, separatorArgument, instance, span, context)
++                : new ValueTask<object>(Split(text, separatorArgument, maxSplitArgument, span, context));
++
++        private static async ValueTask<object> SplitWithGuestCountAsync(PyString text, object? separatorArgument,
++            PyInstance count, LythonSourceSpan span, ExecutionContext context)
++        {
++            var indexed = await CoerceTypeIndexAsync(count, context, span, true).ConfigureAwait(false);
++            return SplitWithCount(text, separatorArgument, NormalizeSplitCount(indexed ?? PyNone.Instance, context, span), span, context);
++        }
++
++        private static int NormalizeSplitCount(object value, ExecutionContext context, LythonSourceSpan span)
++        {
++            if (!PyNumberOps.TryAsInteger(value, out var integer))
++                throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
++            if (integer > long.MaxValue || integer < long.MinValue)
++                throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
++            // Only actual subject parts allocate storage. Larger representable
++            // counts are equivalent to the managed kernel's maximum count.
++            return integer.Sign < 0 ? -1 : integer > int.MaxValue ? int.MaxValue : (int)integer;
++        }
++
++        private static PyList SplitWithCount(PyString text, object? separatorArgument, int count,
++            LythonSourceSpan span, ExecutionContext context)
+         {
+             // Null is internal omission; Python None selects whitespace splitting.
+             if (separatorArgument is null or PyNone)
+             {
+-                var maxSplit = maxSplitArgument is null ? -1
+-                    : ParseStringOptionalInt(maxSplitArgument, "maxsplit", "str.split([sep[, maxsplit]])", span, context);
+-                return PyStringOps.SplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
++                return PyStringOps.SplitWhitespace(text, count, context.MemoryGovernor, span);
+             }
+ 
+             if (!PyStringOps.TryAsString(separatorArgument, out var separator))
+                 throw new LythonRuntimeException("TypeError", "must be str or None, not " + RuntimeErrors.OperandTypeName(separatorArgument), span);
+ 
+-            var count = maxSplitArgument is null ? -1
+-                : ParseStringOptionalInt(maxSplitArgument, "maxsplit", "str.split([sep[, maxsplit]])", span, context);
+             try
+             {
+                 return PyStringOps.Split(text, separator, count, context.MemoryGovernor, span);
+@@ -54,14 +85,10 @@ internal sealed partial class LythonRuntime
+                 {
+                     "split" => BoundCallable.Create((arguments, span, context) =>
+                     {
+-                        if (arguments.Length > 2)
+-                        {
+-                            throw new LythonRuntimeException("TypeError", "str.split([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.", span);
+-                        }
+-
+                         return Split(text, arguments.Length >= 1 ? arguments[0] : null,
+                             arguments.Length == 2 ? arguments[1] : null, span, context);
+-                    }, StrSplitSignature),
++                    }, StrSplitSignature, (arguments, span, context) => SplitAsync(text,
++                        arguments.Length >= 1 ? arguments[0] : null, arguments.Length == 2 ? arguments[1] : null, span, context)),
+                     "rsplit" => BoundCallable.Create((arguments, span, context) =>
+                     {
+                         if (arguments.Length == 0)
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/DirectStringSplitExecutionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/DirectStringSplitExecutionTests.cs
+index b93646c9..9d4d939c 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/DirectStringSplitExecutionTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/DirectStringSplitExecutionTests.cs
+@@ -22,8 +22,52 @@ public sealed class DirectStringSplitExecutionTests
+         { "dynamic-separator", "class Text:\n def split(self,sep):return ['custom',sep]\nprint(Text().split(','))", "['custom', ',']\n" },
+         { "exposed-and-expanded-separator", "method='a,b'.split\nprint(method(','),'a,b'.split(*[',']),'a,b'.split(**{'sep':','}))", "['a', 'b'] ['a', 'b'] ['a', 'b']\n" },
+         { "separator-errors", "def run(sep):\n try:\n  print('a,b'.split(sep))\n except (TypeError,ValueError) as error:\n  print(type(error).__name__,str(error))\nrun('')\nrun(1)", "ValueError empty separator\nTypeError must be str or None, not int\n" },
++        { "count-bounded_native", "print('key=a=b'.split('=',1))", "['key', 'a=b']\n" },
++        { "count-index_protocol", "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\nprint('a,b,c'.split(',',Count()),events)", "['a', 'b,c'] ['index']\n" },
++        { "count-separator_validation_order", "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\ndef run(sep):\n try:print('a,b,c'.split(sep,Count()))\n except Exception as error:print(type(error).__name__)\nrun(123)\nprint(events)", "TypeError\n['index']\n" },
++        { "count-index_error_precedence", "class Count:\n def __index__(self):raise ValueError('index')\ndef run(sep):\n try:print('a,b,c'.split(sep,Count()))\n except Exception as error:print(type(error).__name__,str(error))\nrun(123)", "ValueError index\n" },
++        { "count-large_representable_counts", "for count in ((1<<31)-1,1<<31,-(1<<31)-1,1<<62):\n try:print('a,b,c'.split(',',count))\n except Exception as error:print(type(error).__name__)", "['a', 'b', 'c']\n['a', 'b', 'c']\n['a', 'b', 'c']\n['a', 'b', 'c']\n" },
++        { "count-count_overflow", "for count in (1<<100,-(1<<100)):\n try:print('a,b,c'.split(',',count))\n except Exception as error:print(type(error).__name__)", "OverflowError\nOverflowError\n" },
++        { "count-count_64_boundaries", "for count in ((1<<63)-1,-(1<<63),1<<63,-(1<<63)-1):\n try:print('a,b,c'.split(',',count))\n except Exception as error:print(type(error).__name__,str(error))", "['a', 'b', 'c']\n['a', 'b', 'c']\nOverflowError Python int too large to convert to C ssize_t\nOverflowError Python int too large to convert to C ssize_t\n" },
++        { "count-count_whitespace_domain", "for count in (0,1,-1,1<<62,-(1<<62)):print('  café 😀 tail  '.split(None,count))", "['café\\u2009😀 tail  ']\n['café', '😀 tail  ']\n['café', '😀', 'tail']\n['café', '😀', 'tail']\n['café', '😀', 'tail']\n" },
++        { "count-count_type_slot", "class Count:\n def __index__(self):return 1\nclass Child(Count):pass\nvalue=Child()\nvalue.__index__=lambda:2\nprint('a,b,c'.split(',',value))", "['a', 'b,c']\n" },
++        { "count-count_getattribute_bypass", "class Count:\n def __getattribute__(self,name):raise AssertionError('instance lookup')\n def __index__(self):return 1\nprint('a,b,c'.split(',',Count()))", "['a', 'b,c']\n" },
++        { "count-count_invalid_values", "class Bad:\n def __index__(self):return 1.5\nclass Missing:pass\nclass Nil:__index__=None\nfor count in (1,None,1.5,Bad(),Missing(),Nil()):\n try:print('a,b,c'.split(',',count))\n except Exception as error:print(type(error).__name__)", "['a', 'b,c']\nTypeError\nTypeError\nTypeError\nTypeError\nTypeError\n" },
++        { "count-count_evaluation_order", "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\ndef text():\n events.append('receiver')\n return 'a,b,c'\ndef sep():\n events.append('separator')\n return ','\ndef count():\n events.append('count-object')\n return Count()\nprint(text().split(sep(),count()),events)", "['a', 'b,c'] ['receiver', 'separator', 'count-object', 'index']\n" },
++        { "count-count_method_forms", "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\nmethod='a,b,c'.split\nprint(method(',',Count()),'a,b,c'.split(sep=',',maxsplit=Count()),'a,b,c'.split(*[',',Count()]))\nprint(events)", "['a', 'b,c'] ['a', 'b,c'] ['a', 'b,c']\n['index', 'index', 'index']\n" },
++        { "count-index-rebinds-receiver", "text='a,b,c'\nclass Count:\n def __index__(self):\n  global text\n  text='changed'\n  return 1\nprint(text.split(',',Count()),text)", "['a', 'b,c'] changed\n" },
+     };
+ 
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task RetainedCountedSplitStaysFundedAcrossAnotherExecution(bool asynchronous)
++    {
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        var input = new string('x', 32768) + "," + new string('y', 32768) + ",tail";
++        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["text"] = input } };
++        using (var script = new LythonEngine().Compile("class Count:\n def __index__(self):return 1\nreturn text.split(',',Count())", budget))
++        {
++            Assert.True(script.IsValid);
++            var baseline = budget.ReservedBytes;
++            using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
++            {
++                Assert.True(retained.Success, retained.Failure?.Message);
++                var parts = Assert.IsType<List<object?>>(retained.ReturnValue);
++                Assert.Equal(2, parts.Count);
++                Assert.Equal(32768, Assert.IsType<string>(parts[0]).Length);
++                Assert.Equal(32773, Assert.IsType<string>(parts[1]).Length);
++                Assert.EndsWith(",tail", Assert.IsType<string>(parts[1]));
++                var held = budget.ReservedBytes;
++                Assert.True(held - baseline >= input.Length);
++                using (var next = script.Run(new MockLythonHost(), options)) Assert.True(next.Success, next.Failure?.Message);
++                Assert.Equal(held, budget.ReservedBytes);
++            }
++            Assert.Equal(baseline, budget.ReservedBytes);
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     [Theory]
+     [MemberData(nameof(Cases))]
+     public async Task OrdinaryAndGeneralCallsFollowPython(string name, string source, string expected)
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs b/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
+index 49844190..1395d892 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/NativeScalarDispatchTests.cs
+@@ -61,6 +61,16 @@ public sealed class NativeScalarDispatchTests
+     [InlineData("operator_negative_descriptor", true)]
+     [InlineData("absolute_argument", false)]
+     [InlineData("absolute_argument", true)]
++    [InlineData("split_count", false)]
++    [InlineData("split_count", true)]
++    [InlineData("split_count_exposed", false)]
++    [InlineData("split_count_exposed", true)]
++    [InlineData("split_count_keyword", false)]
++    [InlineData("split_count_keyword", true)]
++    [InlineData("split_count_expanded", false)]
++    [InlineData("split_count_expanded", true)]
++    [InlineData("split_count_descriptor", false)]
++    [InlineData("split_count_descriptor", true)]
+     public async Task AProtocolOperandStillSuspendsWithoutReplay(string operation, bool cancel)
+     {
+         var (method, expression, expected) = operation switch
+@@ -78,13 +88,18 @@ public sealed class NativeScalarDispatchTests
+             "operator_invert" => ("__invert__", "import operator\nprint(operator.invert(Operand()))", "3.5\n"),
+             "operator_negative_descriptor" => ("__neg__", "import operator\nprint(operator.neg(Operand()))", "3.5\n"),
+             "absolute_argument" => ("__abs__", "print(abs(abs(Operand())))", "3.5\n"),
++            "split_count" => ("__index__", "print('a,b,c'.split(',',Operand()))", "['a', 'b,c']\n"),
++            "split_count_exposed" => ("__index__", "method='a,b,c'.split\nprint(method(',',Operand()))", "['a', 'b,c']\n"),
++            "split_count_keyword" => ("__index__", "print('a,b,c'.split(sep=',',maxsplit=Operand()))", "['a', 'b,c']\n"),
++            "split_count_expanded" => ("__index__", "print('a,b,c'.split(*[',',Operand()]))", "['a', 'b,c']\n"),
++            "split_count_descriptor" => ("__index__", "print('a,b,c'.split(',',Operand()))", "['a', 'b,c']\n"),
+             _ => ("__bool__", "print(not Operand())", "False\n")
+         };
+-        var source = operation == "operator_negative_descriptor"
+-            ? $"class Descriptor:\n def __get__(self,instance,owner):\n  with open('events.txt','a') as output:output.write('{operation}')\n  return lambda:3.5\nclass Operand:\n __neg__=Descriptor()\n"
++        var source = operation is "operator_negative_descriptor" or "split_count_descriptor"
++            ? $"class Descriptor:\n def __get__(self,instance,owner):\n  with open('events.txt','a') as output:output.write('{operation}')\n  return lambda:{(method == "__index__" ? "1" : "3.5")}\nclass Operand:\n {method}=Descriptor()\n"
+             : $"class Operand:\n def {method}(self" + (method is "__radd__" or "__add__" ? ",other" : "") +
+                 $"):\n  with open('events.txt','a') as output:output.write('{operation}')\n  return " +
+-                (operation == "truth" ? "True" : "3.5") + "\n";
++                (method == "__index__" ? "1" : operation == "truth" ? "True" : "3.5") + "\n";
+         source += "value=1.5\nvalue+=True\n" + expression;
+         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+         using var script = new LythonEngine().Compile(source, budget);
+@@ -176,9 +191,12 @@ public sealed class NativeScalarDispatchTests
+     [InlineData(true, "operator.pos", "__pos__")]
+     [InlineData(false, "operator.invert", "__invert__")]
+     [InlineData(true, "operator.invert", "__invert__")]
++    [InlineData(false, "str.split", "__index__")]
++    [InlineData(true, "str.split", "__index__")]
+     public async Task UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(bool asynchronous, string operation, string method)
+     {
+-        var source = "import operator\nclass Number:\n def " + method + "(self):\n  with open('/events.txt','a') as output:output.write('entered')\n  try:\n   payload='x'*750000\n  finally:\n   return 7\ntry:\n print(" + operation + "(Number()))\nexcept MemoryError:\n print('swallowed')";
++        var call = operation == "str.split" ? "'a,b,c'.split(',',Number())" : operation + "(Number())";
++        var source = "import operator\nclass Number:\n def " + method + "(self):\n  with open('/events.txt','a') as output:output.write('entered')\n  try:\n   payload='x'*750000\n  finally:\n   return 7\ntry:\n print(" + call + ")\nexcept MemoryError:\n print('swallowed')";
+         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+         using (var script = new LythonEngine().Compile(source, budget))
+         {

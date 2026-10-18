@@ -43,6 +43,13 @@ pending user's storage early. Native numeric operations and their allocation
 preflights are shared with synchronous execution; this adds no reservation,
 cache or reclamation mechanism.
 
+`str.split` also retains its evaluated receiver and count argument while an
+`__index__` descriptor or callback awaits host I/O. Count conversion finishes
+before output allocation or publication. Large valid counts do not reserve
+storage proportional to the count: existing split kernels admit actual parts
+and their capacity. Retained results remain charged, and refused admission inside
+the callback fails the command through guest suppression or finally returns.
+
 Ordinary single-positional `json.dumps` uses immutable builtin-default metadata
 instead of per-call binding arrays, forwarded options and a temporary encoder.
 The shared default callback holds no guest value, receiver or execution owner.

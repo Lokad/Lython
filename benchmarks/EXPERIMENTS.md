@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 split count correction](results/2026-10-18-split-count/README.md)
+normalizes counts before separator validation, supports large signed 64-bit counts
+and awaits type-index descriptors/callbacks. Baseline 18 failures include 10 actual
+async-host cases; all 1,011 final focused cases and 30 CPython split goldens pass.
+Existing validators/kernels/frontend dispatch remain unchanged. No performance
+measurement or two-positional native call change is included.
+
 The [2026-10-18 int/float signature input reuse](results/2026-10-18-builtin-signatures/README.md)
 removes two fixed name arrays and repeated interning lookups during invocation
 setup. Native warm fresh-context allocation falls from 19,312 to 19,176 bytes;

@@ -1,0 +1,308 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "636c1664e53028c2bed373f8900c3f6c12f36a51",
+  "candidate": "One-file str.split count normalization and awaited type-index correction",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs": {
+      "before": "ad4fbdb63910cfd18b5da8bf4e7fad7e0c7febd0ef2953f0285e9da86b857e4f",
+      "after": "c3f30e1a2de373b850cc66ec9a92868296eab6840202ac9546748ef955338fb5",
+      "changed": true
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs": {
+      "before": "06941adbf02d241faa93783807966c39a76b1fa73bd1cfbb5364acfc07865bf0",
+      "after": "06941adbf02d241faa93783807966c39a76b1fa73bd1cfbb5364acfc07865bf0",
+      "changed": false
+    },
+    "src/Lokad.Lython/Runtime/RuntimeArgumentValidation.cs": {
+      "before": "e7edf3ff2cf92ce3e9bab05c48f1095ad27ea7fa67ba1989b19b3d46d6e2cb0b",
+      "after": "e7edf3ff2cf92ce3e9bab05c48f1095ad27ea7fa67ba1989b19b3d46d6e2cb0b",
+      "changed": false
+    },
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.cs": {
+      "before": "c60df2fb2320dbf1311f28071245cf6638e1c9fa1cc71034e726c2ae43571445",
+      "after": "c60df2fb2320dbf1311f28071245cf6638e1c9fa1cc71034e726c2ae43571445",
+      "changed": false
+    },
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": {
+      "before": "8619e42f9741fcdd3c86e24b736e4a41cface0c9a84e1f4112c12b2d2b976186",
+      "after": "8619e42f9741fcdd3c86e24b736e4a41cface0c9a84e1f4112c12b2d2b976186",
+      "changed": false
+    }
+  },
+  "focusedFinalPassed": 1011,
+  "groups": {
+    "final-split-v2": {
+      "passed": 124,
+      "process": {
+        "source": "split-count",
+        "production": "corrected",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "7D61FCBDCBBE34CB1A41DD4E487E92DCEF63674383930F0E9DAC1876A2FF55F8",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeScalarDispatchTests|FullyQualifiedName~DirectStringSplitExecutionTests)",
+        "pid": 53632,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4849,
+        "stdoutSha256": "8E6277489943C6B5BE8D0D24C7FB874F50ACDB9E8AB50F41ED95C0D196C337AA",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "09144104c16fd746765b647d638ad397b6f715fe11871889701fc0dfc9c71e80"
+    },
+    "final-string-controls": {
+      "passed": 176,
+      "process": {
+        "source": "split-count",
+        "production": "corrected",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "C6E52EA5F816BC6EABD9C79BDA888720611DA16D01B1FF4F3F92F1F2BC1EC857",
+        "filter": "Category!=Stress&(FullyQualifiedName~StringMethodCompatibilityTests|FullyQualifiedName~StringValidationScenarioTests|FullyQualifiedName~SplitLifetimeScenarioTests|FullyQualifiedName~DeferredSplitBehaviorTests)",
+        "pid": 28792,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2404,
+        "stdoutSha256": "41FE760B556134E1AC8F857DF2ACA016D95D2941300FC178221E456BA6286ADF",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "96255fddf386a5666683a7f77871808d9e96db8f9d8daa6b46fa0d007eb93da3"
+    },
+    "final-binding": {
+      "passed": 496,
+      "process": {
+        "source": "split-count",
+        "production": "corrected",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "C6E52EA5F816BC6EABD9C79BDA888720611DA16D01B1FF4F3F92F1F2BC1EC857",
+        "filter": "Category!=Stress&FullyQualifiedName~BuiltinValidationScenarioTests",
+        "pid": 47156,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3027,
+        "stdoutSha256": "72D6B17AFA924B9B1298D1A2B411A0BAF3D1964E7DAA385960514C83161FE351",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "07219769ce53685e59f13a8a4443829accfaa6f1d3f364caeb37aa342e7df215"
+    },
+    "final-owners": {
+      "passed": 89,
+      "process": {
+        "source": "split-count",
+        "production": "corrected",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "C6E52EA5F816BC6EABD9C79BDA888720611DA16D01B1FF4F3F92F1F2BC1EC857",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 14420,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2643,
+        "stdoutSha256": "DCD7401A799B01006797DA80E350FCFC9451B4205A89AF4C9986162C8068868D",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "50730924be4923373e8f9ba1a98d0ab4c27a5b4217eac85d3b1f92de91879810"
+    },
+    "final-goldens": {
+      "passed": 62,
+      "process": {
+        "source": "split-count",
+        "production": "corrected",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "C6E52EA5F816BC6EABD9C79BDA888720611DA16D01B1FF4F3F92F1F2BC1EC857",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 61948,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8849,
+        "stdoutSha256": "FB38EC7D73F24A454B29B968A201D8B57EDA61E2595AF55B685A63B62F2DCB1E",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "dbaea1fa643a4b4a42da3bdfb3d801ab71b74f0649945845e11fb75ee8e6458b"
+    },
+    "final-white": {
+      "passed": 64,
+      "process": {
+        "source": "split-count",
+        "production": "corrected",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "E7D5D911AACEE75666D1DBA9DBFABC973656688432CB9B445E8CA75DDACBE558",
+        "filter": "Category!=Stress&(FullyQualifiedName~DirectStringSplitTests|FullyQualifiedName~RuntimeProtocolSubsystemTests|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~IntegerProtocolAsyncTests|FullyQualifiedName~RawDescriptorGetDispatchTests|FullyQualifiedName~DescriptorMethodBindingTests|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission)",
+        "pid": 70748,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1249,
+        "stdoutSha256": "2DB6925F1C90E6D2AAF54B88CDF5B4F41911FF1C109F6B5073455EE00C07FCEB",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "e7bd9b6a1e95060d4dc09d62f5a1c900eb063f44199d4b77fd4e78149a12dbbf"
+    },
+    "baseline-split": {
+      "passed": 101,
+      "failed": 18,
+      "failures": [
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"split_count_keyword\", cancel: False)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: True\r\nActual:   False"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"split_count_keyword\", cancel: True)",
+          "message": "stat cannot run synchronously; use RunAsync because the host capability is asynchronous."
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.DirectStringSplitExecutionTests.OrdinaryAndGeneralCallsFollowPython(name: \"count-count_64_boundaries\", source: \"for count in ((1<<63)-1,-(1<<63),1<<63,-(1<<63)-1)\"\u00b7\u00b7\u00b7, expected: \"['a', 'b', 'c']\\n['a', 'b', 'c']\\nOverflowError Py\"\u00b7\u00b7\u00b7)",
+          "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"['a', 'b', 'c']\\n['a', 'b', 'c']\\nOverflowE\"\u00b7\u00b7\u00b7\r\nActual:   \"ValueError str.split([sep[, maxsplit]]) m\"\u00b7\u00b7\u00b7\r\n           \u2191 (pos 0)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.DirectStringSplitExecutionTests.OrdinaryAndGeneralCallsFollowPython(name: \"count-count_whitespace_domain\", source: \"for count in (0,1,-1,1<<62,-(1<<62)):print('  caf\u00e9\"\u00b7\u00b7\u00b7, expected: \"['caf\u00e9\\\\u2009\\ud83d\\ude00 tail  ']\\n['caf\u00e9', '\\ud83d\\ude00 tail  ']\\n[\"\u00b7\u00b7\u00b7)",
+          "message": "count-count_whitespace_domain: str.split([sep[, maxsplit]]) maxsplit is out of range."
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"split_count_exposed\", cancel: False)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: True\r\nActual:   False"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"split_count_descriptor\", cancel: True)",
+          "message": "stat cannot run synchronously; use RunAsync because the host capability is asynchronous."
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"split_count_expanded\", cancel: True)",
+          "message": "stat cannot run synchronously; use RunAsync because the host capability is asynchronous."
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.DirectStringSplitExecutionTests.OrdinaryAndGeneralCallsFollowPython(name: \"count-count_type_slot\", source: \"class Count:\\n def __index__(self):return 1\\nclass\"\u00b7\u00b7\u00b7, expected: \"['a', 'b,c']\\n\")",
+          "message": "Assert.Equal() Failure: Strings differ\r\n                   \u2193 (pos 8)\r\nExpected: \"['a', 'b,c']\\n\"\r\nActual:   \"['a', 'b', 'c']\\n\"\r\n                   \u2191 (pos 8)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.DirectStringSplitExecutionTests.OrdinaryAndGeneralCallsFollowPython(name: \"count-index_error_precedence\", source: \"class Count:\\n def __index__(self):raise ValueErro\"\u00b7\u00b7\u00b7, expected: \"ValueError index\\n\")",
+          "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"ValueError index\\n\"\r\nActual:   \"TypeError must be str or None, not int\\n\"\r\n           \u2191 (pos 0)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"split_count\", cancel: False)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: True\r\nActual:   False"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.DirectStringSplitExecutionTests.OrdinaryAndGeneralCallsFollowPython(name: \"count-large_representable_counts\", source: \"for count in ((1<<31)-1,1<<31,-(1<<31)-1,1<<62):\\n\"\u00b7\u00b7\u00b7, expected: \"['a', 'b', 'c']\\n['a', 'b', 'c']\\n['a', 'b', 'c']\\\"\u00b7\u00b7\u00b7)",
+          "message": "Assert.Equal() Failure: Strings differ\r\n                            \u2193 (pos 16)\r\nExpected: \"['a', 'b', 'c']\\n['a', 'b', 'c']\\n['a', 'b'\"\u00b7\u00b7\u00b7\r\nActual:   \"['a', 'b', 'c']\\nValueError\\nValueError\\nVal\"\u00b7\u00b7\u00b7\r\n                            \u2191 (pos 16)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.DirectStringSplitExecutionTests.OrdinaryAndGeneralCallsFollowPython(name: \"count-count_overflow\", source: \"for count in (1<<100,-(1<<100)):\\n try:print('a,b,\"\u00b7\u00b7\u00b7, expected: \"OverflowError\\nOverflowError\\n\")",
+          "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"OverflowError\\nOverflowError\\n\"\r\nActual:   \"ValueError\\nValueError\\n\"\r\n           \u2191 (pos 0)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.DirectStringSplitExecutionTests.OrdinaryAndGeneralCallsFollowPython(name: \"count-separator_validation_order\", source: \"events=[]\\nclass Count:\\n def __index__(self):\\n  \"\u00b7\u00b7\u00b7, expected: \"TypeError\\n['index']\\n\")",
+          "message": "Assert.Equal() Failure: Strings differ\r\n                       \u2193 (pos 11)\r\nExpected: \"TypeError\\n['index']\\n\"\r\nActual:   \"TypeError\\n[]\\n\"\r\n                       \u2191 (pos 11)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"split_count_descriptor\", cancel: False)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: True\r\nActual:   False"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"split_count_expanded\", cancel: False)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: True\r\nActual:   False"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"split_count_exposed\", cancel: True)",
+          "message": "stat cannot run synchronously; use RunAsync because the host capability is asynchronous."
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.DirectStringSplitExecutionTests.OrdinaryAndGeneralCallsFollowPython(name: \"count-count_getattribute_bypass\", source: \"class Count:\\n def __getattribute__(self,name):rai\"\u00b7\u00b7\u00b7, expected: \"['a', 'b,c']\\n\")",
+          "message": "count-count_getattribute_bypass: instance lookup"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"split_count\", cancel: True)",
+          "message": "stat cannot run synchronously; use RunAsync because the host capability is asynchronous."
+        }
+      ],
+      "process": {
+        "source": "split-count",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "ABAF4FE8071EB43663D13F6D9993EE2D0BD9E06D457DA4CA4806DDE97FE325AF",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeScalarDispatchTests|FullyQualifiedName~DirectStringSplitExecutionTests)",
+        "pid": 68452,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4382,
+        "stdoutSha256": "B8DD2DA0B660EB8B3EE058E8870B9FED9D5FC05983A8484785233347B2C2278C",
+        "stderrSha256": "75F8072F2D199BD3ED54C3BFF34B9ECD3E3FDFD40DA27D1775FA17BCDF79BEB0"
+      }
+    },
+    "corrected-split": {
+      "passed": 119,
+      "failed": 0,
+      "failures": [],
+      "process": {
+        "source": "split-count",
+        "production": "corrected",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "06A303C75633B4AE4B149D47CB706040877D4F9B81DCCA7695B4B62DBCCA5820",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeScalarDispatchTests|FullyQualifiedName~DirectStringSplitExecutionTests)",
+        "pid": 38904,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 5051,
+        "stdoutSha256": "F515D97F74A5A6E50D51F2D51F649E83103504E611CECBCD7948EEA99BFE04D7",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      }
+    }
+  },
+  "completeJobs": 58,
+  "pythonGoldens": 30,
+  "baselineCases": 119,
+  "baselineFailed": 18,
+  "confirmedAsyncHostFailures": 10,
+  "finalUnicodeAndRebindVariantsNotSeparatelyBaselined": true,
+  "existingIndexHelperValidatorKernelsAndFrontendUnchanged": true,
+  "nativeDispatchChanged": false,
+  "newMemoryInfrastructure": false,
+  "performanceMeasurement": false,
+  "runtimeCoreAndTestCopySha256": "54399216302394690a00ad1c12bc8c9ebff30de05197a9024bcdc904f34ae1fa",
+  "regexPlanningOnly": true,
+  "artifacts": {
+    "baseline-split-process.json": {
+      "bytes": 710,
+      "sha256": "0d7349fdeddca4df72154d783f3648ae9092f5fd96ceb29a0f26243ce8beb4ef"
+    },
+    "baseline-split.trx": {
+      "bytes": 229222,
+      "sha256": "dcd704fd0cbcd42d0eeb293c0930b1e591540085fdface641107608ea396714e"
+    },
+    "candidate.patch": {
+      "bytes": 16429,
+      "sha256": "59d0423cb4336c859ffc469805e48541a7e8bcfc112b3458e808364c5e9d8117"
+    },
+    "corrected-split-process.json": {
+      "bytes": 711,
+      "sha256": "79d8db0c1c15bd422386e1fda1aeadf121ef65d7b55d6941a88e182a65f935e5"
+    },
+    "corrected-split.trx": {
+      "bytes": 196017,
+      "sha256": "1e3c379446f2ed8380bcad35efbc358fd667a545c1fd057f9245e598ccf6a43a"
+    },
+    "final-split-v2-process.json": {
+      "bytes": 711,
+      "sha256": "799e47d7213d323e4b552c690702f155a2ba792d2b6e47ddacee4a40cf320f6a"
+    },
+    "final-split-v2.trx": {
+      "bytes": 203922,
+      "sha256": "09144104c16fd746765b647d638ad397b6f715fe11871889701fc0dfc9c71e80"
+    },
+    "python-goldens.json": {
+      "bytes": 11644,
+      "sha256": "fc59b2ad9011701035d9231be7bc237f9ce54d81702e1b6a795044218b9febfd"
+    },
+    "scope.json": {
+      "bytes": 2113,
+      "sha256": "97ed3a8b03699830a20fd4790caa5dffba9dad2be3790858f8f302ab04f68bb5"
+    },
+    "split-limit-probes.json": {
+      "bytes": 14713,
+      "sha256": "51de5f869d02c80293ac79e6deaa9569de9f9897b78f60ce9cd251bf486a4214"
+    }
+  }
+}

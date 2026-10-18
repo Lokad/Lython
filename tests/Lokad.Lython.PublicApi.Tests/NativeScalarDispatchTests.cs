@@ -61,6 +61,16 @@ public sealed class NativeScalarDispatchTests
     [InlineData("operator_negative_descriptor", true)]
     [InlineData("absolute_argument", false)]
     [InlineData("absolute_argument", true)]
+    [InlineData("split_count", false)]
+    [InlineData("split_count", true)]
+    [InlineData("split_count_exposed", false)]
+    [InlineData("split_count_exposed", true)]
+    [InlineData("split_count_keyword", false)]
+    [InlineData("split_count_keyword", true)]
+    [InlineData("split_count_expanded", false)]
+    [InlineData("split_count_expanded", true)]
+    [InlineData("split_count_descriptor", false)]
+    [InlineData("split_count_descriptor", true)]
     public async Task AProtocolOperandStillSuspendsWithoutReplay(string operation, bool cancel)
     {
         var (method, expression, expected) = operation switch
@@ -78,13 +88,18 @@ public sealed class NativeScalarDispatchTests
             "operator_invert" => ("__invert__", "import operator\nprint(operator.invert(Operand()))", "3.5\n"),
             "operator_negative_descriptor" => ("__neg__", "import operator\nprint(operator.neg(Operand()))", "3.5\n"),
             "absolute_argument" => ("__abs__", "print(abs(abs(Operand())))", "3.5\n"),
+            "split_count" => ("__index__", "print('a,b,c'.split(',',Operand()))", "['a', 'b,c']\n"),
+            "split_count_exposed" => ("__index__", "method='a,b,c'.split\nprint(method(',',Operand()))", "['a', 'b,c']\n"),
+            "split_count_keyword" => ("__index__", "print('a,b,c'.split(sep=',',maxsplit=Operand()))", "['a', 'b,c']\n"),
+            "split_count_expanded" => ("__index__", "print('a,b,c'.split(*[',',Operand()]))", "['a', 'b,c']\n"),
+            "split_count_descriptor" => ("__index__", "print('a,b,c'.split(',',Operand()))", "['a', 'b,c']\n"),
             _ => ("__bool__", "print(not Operand())", "False\n")
         };
-        var source = operation == "operator_negative_descriptor"
-            ? $"class Descriptor:\n def __get__(self,instance,owner):\n  with open('events.txt','a') as output:output.write('{operation}')\n  return lambda:3.5\nclass Operand:\n __neg__=Descriptor()\n"
+        var source = operation is "operator_negative_descriptor" or "split_count_descriptor"
+            ? $"class Descriptor:\n def __get__(self,instance,owner):\n  with open('events.txt','a') as output:output.write('{operation}')\n  return lambda:{(method == "__index__" ? "1" : "3.5")}\nclass Operand:\n {method}=Descriptor()\n"
             : $"class Operand:\n def {method}(self" + (method is "__radd__" or "__add__" ? ",other" : "") +
                 $"):\n  with open('events.txt','a') as output:output.write('{operation}')\n  return " +
-                (operation == "truth" ? "True" : "3.5") + "\n";
+                (method == "__index__" ? "1" : operation == "truth" ? "True" : "3.5") + "\n";
         source += "value=1.5\nvalue+=True\n" + expression;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
@@ -176,9 +191,12 @@ public sealed class NativeScalarDispatchTests
     [InlineData(true, "operator.pos", "__pos__")]
     [InlineData(false, "operator.invert", "__invert__")]
     [InlineData(true, "operator.invert", "__invert__")]
+    [InlineData(false, "str.split", "__index__")]
+    [InlineData(true, "str.split", "__index__")]
     public async Task UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(bool asynchronous, string operation, string method)
     {
-        var source = "import operator\nclass Number:\n def " + method + "(self):\n  with open('/events.txt','a') as output:output.write('entered')\n  try:\n   payload='x'*750000\n  finally:\n   return 7\ntry:\n print(" + operation + "(Number()))\nexcept MemoryError:\n print('swallowed')";
+        var call = operation == "str.split" ? "'a,b,c'.split(',',Number())" : operation + "(Number())";
+        var source = "import operator\nclass Number:\n def " + method + "(self):\n  with open('/events.txt','a') as output:output.write('entered')\n  try:\n   payload='x'*750000\n  finally:\n   return 7\ntry:\n print(" + call + ")\nexcept MemoryError:\n print('swallowed')";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var script = new LythonEngine().Compile(source, budget))
         {

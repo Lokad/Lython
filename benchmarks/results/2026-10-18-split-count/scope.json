@@ -1,0 +1,15 @@
+{
+  "baseline": "636c1664e53028c2bed373f8900c3f6c12f36a51",
+  "sourceSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs": "ad4fbdb63910cfd18b5da8bf4e7fad7e0c7febd0ef2953f0285e9da86b857e4f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs": "06941adbf02d241faa93783807966c39a76b1fa73bd1cfbb5364acfc07865bf0",
+    "src/Lokad.Lython/Runtime/RuntimeArgumentValidation.cs": "e7edf3ff2cf92ce3e9bab05c48f1095ad27ea7fa67ba1989b19b3d46d6e2cb0b",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.cs": "c60df2fb2320dbf1311f28071245cf6638e1c9fa1cc71034e726c2ae43571445",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "8619e42f9741fcdd3c86e24b736e4a41cface0c9a84e1f4112c12b2d2b976186"
+  },
+  "scope": "str.split maxsplit correctness only, before two-positional native dispatch optimization. Use existing type-index coercion/binding and string splitting kernels. One production segmentation file expected.",
+  "replacement": "Normalize once before separator validation; type-level sync/async __index__ and awaited descriptors; reject outside signed64-bit range with OverflowError, clamp representable counts for managed storage; remove duplicated int32 conversion and redundant registration arity guard.",
+  "tradeoff": "Correct observable count effects/exception precedence and oversized count exceptions change. Nonnegative representable counts above int32 split tiny subjects normally; negative counts remain unlimited. Ordinary counts stay synchronous until guest suspension. No global index/parser rewrite or new memory infrastructure.",
+  "validation": "Permanent independent CPython goldens for order/errors/large counts/type slots/whitespace; delayed-host direct/exposed/keyword/expanded and descriptor callbacks success/cancel; terminal refusal and funded retained results; existing semantic/ownership/complete-job controls.",
+  "stop": "Do not change rsplit/bytes, shared index validators, frontend call markers or storage kernels. No native call optimization, elapsed/CPython benchmark claim or broad audit in this correctness delivery."
+}

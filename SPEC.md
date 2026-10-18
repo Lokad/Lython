@@ -1423,6 +1423,16 @@ invalid values still receive the corresponding argument diagnostic.
 
 Strings must behave as Python Unicode strings, not as byte arrays.
 
+After argument binding, `str.split` converts `maxsplit` before validating the
+separator. Guest `__index__` lookup uses the type's MRO and binds its descriptor;
+instance attributes and ordinary attribute hooks do not override that implicit
+lookup. `RunAsync` awaits descriptor binding and the index callback. The count
+is converted once, with signed 64-bit bounds and `OverflowError` outside that
+range. Valid large counts still split bounded subjects normally; negative counts
+mean unlimited splitting. Output storage follows actual parts, not the requested
+count. Cancellation and refused admission retain the evaluated receiver and
+arguments through awaited cleanup.
+
 Ordinary two-positional-argument `text.replace(old, new)` executable calls use
 the same native replacement operation under `Run` and `RunAsync`, retaining the
 evaluated receiver through argument effects and suspension. Exposed methods,

@@ -1,0 +1,432 @@
+{
+  "head": "636c1664e53028c2bed373f8900c3f6c12f36a51",
+  "capturedUtc": "2026-10-18T10:17:32.363503+00:00",
+  "coreSha256": "ad19abdecc47b63e90e5dea2b92bc8c80bf6603e681e4e5c1f273d425bd323d6",
+  "toolSha256": "0f858872a7f4d89d3e8edccea136d1ceaca66b9786db43a7667e867a49dd5499",
+  "source": {
+    "bounded_native": "print('key=a=b'.split('=',1))",
+    "index_protocol": "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\nprint('a,b,c'.split(',',Count()),events)",
+    "separator_validation_order": "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\ndef run(sep):\n try:print('a,b,c'.split(sep,Count()))\n except Exception as error:print(type(error).__name__)\nrun(123)\nprint(events)",
+    "index_error_precedence": "class Count:\n def __index__(self):raise ValueError('index')\ndef run(sep):\n try:print('a,b,c'.split(sep,Count()))\n except Exception as error:print(type(error).__name__,str(error))\nrun(123)",
+    "large_representable_counts": "for count in ((1<<31)-1,1<<31,-(1<<31)-1,1<<62):\n try:print('a,b,c'.split(',',count))\n except Exception as error:print(type(error).__name__)",
+    "count_overflow": "for count in (1<<100,-(1<<100)):\n try:print('a,b,c'.split(',',count))\n except Exception as error:print(type(error).__name__)"
+  },
+  "records": [
+    {
+      "asynchronous": false,
+      "arguments": [
+        "dotnet",
+        "D:\\code\\Lython\\tools\\LythonProbe\\bin\\Release\\net10.0\\LythonProbe.dll",
+        "--batch-json",
+        "--compare-python"
+      ],
+      "exitCode": 1,
+      "elapsedSeconds": 0.6754189999774098,
+      "cases": {
+        "bounded_native": {
+          "Index": 0,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "['key', 'a=b']\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1064,
+            "PeakProjectionMemoryBytes": 62,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "['key', 'a=b']\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        "index_protocol": {
+          "Index": 1,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "['a', 'b,c'] ['index']\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 3214,
+            "PeakProjectionMemoryBytes": 78,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "['a', 'b,c'] ['index']\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        "separator_validation_order": {
+          "Index": 2,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "TypeError\n[]\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2940,
+            "PeakProjectionMemoryBytes": 58,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "TypeError\n['index']\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        "index_error_precedence": {
+          "Index": 3,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "TypeError must be str or None, not int\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2959,
+            "PeakProjectionMemoryBytes": 110,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "ValueError index\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        "large_representable_counts": {
+          "Index": 4,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "['a', 'b', 'c']\nValueError\nValueError\nValueError\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2167,
+            "PeakProjectionMemoryBytes": 130,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "['a', 'b', 'c']\n['a', 'b', 'c']\n['a', 'b', 'c']\n['a', 'b', 'c']\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        "count_overflow": {
+          "Index": 5,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "ValueError\nValueError\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 893,
+            "PeakProjectionMemoryBytes": 76,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "OverflowError\nOverflowError\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        }
+      },
+      "stderr": ""
+    },
+    {
+      "asynchronous": true,
+      "arguments": [
+        "dotnet",
+        "D:\\code\\Lython\\tools\\LythonProbe\\bin\\Release\\net10.0\\LythonProbe.dll",
+        "--batch-json",
+        "--compare-python",
+        "--async"
+      ],
+      "exitCode": 1,
+      "elapsedSeconds": 0.6194821000099182,
+      "cases": {
+        "bounded_native": {
+          "Index": 0,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "['key', 'a=b']\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1064,
+            "PeakProjectionMemoryBytes": 62,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "['key', 'a=b']\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        "index_protocol": {
+          "Index": 1,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "['a', 'b,c'] ['index']\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 3214,
+            "PeakProjectionMemoryBytes": 78,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "['a', 'b,c'] ['index']\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        "separator_validation_order": {
+          "Index": 2,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "TypeError\n[]\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2940,
+            "PeakProjectionMemoryBytes": 58,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "TypeError\n['index']\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        "index_error_precedence": {
+          "Index": 3,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "TypeError must be str or None, not int\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2959,
+            "PeakProjectionMemoryBytes": 110,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "ValueError index\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        "large_representable_counts": {
+          "Index": 4,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "['a', 'b', 'c']\nValueError\nValueError\nValueError\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2167,
+            "PeakProjectionMemoryBytes": 130,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "['a', 'b', 'c']\n['a', 'b', 'c']\n['a', 'b', 'c']\n['a', 'b', 'c']\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        "count_overflow": {
+          "Index": 5,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "ValueError\nValueError\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 893,
+            "PeakProjectionMemoryBytes": 76,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "OverflowError\nOverflowError\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        }
+      },
+      "stderr": ""
+    }
+  ],
+  "performanceMeasurement": false,
+  "capabilityFreeHost": true,
+  "asyncHostSuspensionNotTested": true
+}

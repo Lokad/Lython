@@ -1,0 +1,225 @@
+{
+  "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "executable": "C:\\Python313\\python.exe",
+  "flags": [
+    "-I",
+    "-S",
+    "-X",
+    "utf8"
+  ],
+  "cases": [
+    {
+      "name": "unicode-whitespace",
+      "source": "print(' alpha\\tbeta\\n café\\u00a0😀\\u2009tail '.split())",
+      "expected": "['alpha', 'beta', 'café', '😀', 'tail']\n",
+      "sourceSha256": "5007d3d9ee6333d7a39eec386e29b401a6fbf96f2c03bacd3464dbe48b3f94bd",
+      "passed": true
+    },
+    {
+      "name": "empty-and-boundaries",
+      "source": "for text in ('',' ','\\t\\n','word',' word ',' a  b '):print(text.split())",
+      "expected": "[]\n[]\n[]\n['word']\n['word']\n['a', 'b']\n",
+      "sourceSha256": "4a48d5f598c679957282393b555dc38aba578df2d627a65143fd1c1dd142174e",
+      "passed": true
+    },
+    {
+      "name": "fresh-results",
+      "source": "text='one two'\na=text.split()\nb=text.split()\na.append('three')\nprint(a,b,a is b,text)",
+      "expected": "['one', 'two', 'three'] ['one', 'two'] False one two\n",
+      "sourceSha256": "390136d36db50d5d009f28ab2f812f35a635ab722cad81c79b64ee41139173a4",
+      "passed": true
+    },
+    {
+      "name": "explicit-options",
+      "source": "text=' a  b c '\nprint(text.split(None),text.split(sep=None,maxsplit=1),text.split(' '),text.split(None,0))",
+      "expected": "['a', 'b', 'c'] ['a', 'b c '] ['', 'a', '', 'b', 'c', ''] ['a  b c ']\n",
+      "sourceSha256": "84813f6d6714d2a9aad60219985e73811291332ddc82e6d887048c8d8df80987",
+      "passed": true
+    },
+    {
+      "name": "exposed",
+      "source": "method=' a b '.split\nprint(method(),method(None,1))",
+      "expected": "['a', 'b'] ['a', 'b ']\n",
+      "sourceSha256": "db3f6d0ade41437a400c89a0a7bdd3715672755a5044e61110502330fe8ade13",
+      "passed": true
+    },
+    {
+      "name": "custom-receiver",
+      "source": "class Text:\n def split(self):return ['custom']\nprint(Text().split())",
+      "expected": "['custom']\n",
+      "sourceSha256": "06a00061b90f15c03e1008129f02a024aaec8406dea59543f7b5bc25c3a66e38",
+      "passed": true
+    },
+    {
+      "name": "expanded",
+      "source": "print(' a b '.split(*[],**{}))",
+      "expected": "['a', 'b']\n",
+      "sourceSha256": "6b0993def93d2fe5620187ef268a2eac47211fdb695ba6d950dc8cce24713ca4",
+      "passed": true
+    },
+    {
+      "name": "receiver-once",
+      "source": "events=[]\ndef text():\n events.append('receiver')\n return ' a b '\nprint(text().split(),events)",
+      "expected": "['a', 'b'] ['receiver']\n",
+      "sourceSha256": "a2db8bc5c0a3ae4d8c20ede04332879ffab856aab70ca53e11c887c000b441f4",
+      "passed": true
+    },
+    {
+      "name": "unicode-separator",
+      "source": "print('café😀tail😀'.split('😀'),'a<>b<><>c'.split('<>'))",
+      "expected": "['café', 'tail', ''] ['a', 'b', '', 'c']\n",
+      "sourceSha256": "6fa4eca9ef7696be0f270141f73c8fb8e8ccc6124a63fd3b679c03750c38e355",
+      "passed": true
+    },
+    {
+      "name": "explicit-none",
+      "source": "print(' a\\tb café '.split(None),'word'.split(None),''.split(','))",
+      "expected": "['a', 'b', 'café'] ['word'] ['']\n",
+      "sourceSha256": "f92db539e17b6a7a0a02c92aba40dabe78dae56766d9b065c9d7cf14a0d9acd2",
+      "passed": true
+    },
+    {
+      "name": "separator-alias",
+      "source": "text='a,b'\na=text.split(',')\nb=text.split(',')\na.append('c')\nprint(a,b,text)",
+      "expected": "['a', 'b', 'c'] ['a', 'b'] a,b\n",
+      "sourceSha256": "0cd8112f14f8baa4b3a38981c419a707a87ddd90cfe55a682a80d3dd168b9cb4",
+      "passed": true
+    },
+    {
+      "name": "separator-effects",
+      "source": "events=[]\ndef text():\n events.append('receiver')\n return 'a,b'\ndef sep():\n events.append('separator')\n return ','\nprint(text().split(sep()),events)",
+      "expected": "['a', 'b'] ['receiver', 'separator']\n",
+      "sourceSha256": "457ff8669dea5494e2af0503c816e63e816ec598f5e8f357ee0f1e09bb183c92",
+      "passed": true
+    },
+    {
+      "name": "receiver-rebinding",
+      "source": "text='a,b'\ndef sep():\n global text\n text='changed'\n return ','\nprint(text.split(sep()),text)",
+      "expected": "['a', 'b'] changed\n",
+      "sourceSha256": "2f0d2b445e86cadfd8c7f4951dd0d13178fdc807c89865d631b3aa516c89c551",
+      "passed": true
+    },
+    {
+      "name": "dynamic-separator",
+      "source": "class Text:\n def split(self,sep):return ['custom',sep]\nprint(Text().split(','))",
+      "expected": "['custom', ',']\n",
+      "sourceSha256": "a94e2497ded7bd8ddb7ed9a6a69d67a5277bbb76c814e238023ce35ed87757fc",
+      "passed": true
+    },
+    {
+      "name": "exposed-and-expanded-separator",
+      "source": "method='a,b'.split\nprint(method(','),'a,b'.split(*[',']),'a,b'.split(**{'sep':','}))",
+      "expected": "['a', 'b'] ['a', 'b'] ['a', 'b']\n",
+      "sourceSha256": "689710db6f644d751802c619bb4690b133f098befbe890f10b3f9986b6ffd642",
+      "passed": true
+    },
+    {
+      "name": "separator-errors",
+      "source": "def run(sep):\n try:\n  print('a,b'.split(sep))\n except (TypeError,ValueError) as error:\n  print(type(error).__name__,str(error))\nrun('')\nrun(1)",
+      "expected": "ValueError empty separator\nTypeError must be str or None, not int\n",
+      "sourceSha256": "a384a7dbfbcdadfb12684d7ec51bbb551ca408de9a0eb0352d646721e35a7112",
+      "passed": true
+    },
+    {
+      "name": "count-bounded_native",
+      "source": "print('key=a=b'.split('=',1))",
+      "expected": "['key', 'a=b']\n",
+      "sourceSha256": "e5c49cf53a73ddebd3130c67a511440794bacd17c0f24fe1315c4d39aa8b8255",
+      "passed": true
+    },
+    {
+      "name": "count-index_protocol",
+      "source": "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\nprint('a,b,c'.split(',',Count()),events)",
+      "expected": "['a', 'b,c'] ['index']\n",
+      "sourceSha256": "0b28b6c44f7e7637fcfb632f67d9f261d3da08ffe0c7c36a08568d82f952ba93",
+      "passed": true
+    },
+    {
+      "name": "count-separator_validation_order",
+      "source": "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\ndef run(sep):\n try:print('a,b,c'.split(sep,Count()))\n except Exception as error:print(type(error).__name__)\nrun(123)\nprint(events)",
+      "expected": "TypeError\n['index']\n",
+      "sourceSha256": "b31a79f6ac6e177bc83d73110eef9551ae9bdcb922cb25bc85e90d3e5cf4ecfe",
+      "passed": true
+    },
+    {
+      "name": "count-index_error_precedence",
+      "source": "class Count:\n def __index__(self):raise ValueError('index')\ndef run(sep):\n try:print('a,b,c'.split(sep,Count()))\n except Exception as error:print(type(error).__name__,str(error))\nrun(123)",
+      "expected": "ValueError index\n",
+      "sourceSha256": "c940c6bc3dd9ff0dbd74da6bdc5c411e80ecd59f66b2ede94b3ad3cd417a0823",
+      "passed": true
+    },
+    {
+      "name": "count-large_representable_counts",
+      "source": "for count in ((1<<31)-1,1<<31,-(1<<31)-1,1<<62):\n try:print('a,b,c'.split(',',count))\n except Exception as error:print(type(error).__name__)",
+      "expected": "['a', 'b', 'c']\n['a', 'b', 'c']\n['a', 'b', 'c']\n['a', 'b', 'c']\n",
+      "sourceSha256": "1ead2ab60a34d4f8376be0131791fd4a57c24a7f28d2d6e8349ae3c5ea89685b",
+      "passed": true
+    },
+    {
+      "name": "count-count_overflow",
+      "source": "for count in (1<<100,-(1<<100)):\n try:print('a,b,c'.split(',',count))\n except Exception as error:print(type(error).__name__)",
+      "expected": "OverflowError\nOverflowError\n",
+      "sourceSha256": "1deec548ae0182c15f80f3eb1b03466e7aabf6b60ca731a887e001171df4053e",
+      "passed": true
+    },
+    {
+      "name": "count-count_64_boundaries",
+      "source": "for count in ((1<<63)-1,-(1<<63),1<<63,-(1<<63)-1):\n try:print('a,b,c'.split(',',count))\n except Exception as error:print(type(error).__name__,str(error))",
+      "expected": "['a', 'b', 'c']\n['a', 'b', 'c']\nOverflowError Python int too large to convert to C ssize_t\nOverflowError Python int too large to convert to C ssize_t\n",
+      "sourceSha256": "c53d04d0ae77c618c3704901bf13cfffb663f22d8133e1af287a497e1be62f54",
+      "passed": true
+    },
+    {
+      "name": "count-count_whitespace_domain",
+      "source": "for count in (0,1,-1,1<<62,-(1<<62)):print('  café 😀 tail  '.split(None,count))",
+      "expected": "['café\\u2009😀 tail  ']\n['café', '😀 tail  ']\n['café', '😀', 'tail']\n['café', '😀', 'tail']\n['café', '😀', 'tail']\n",
+      "sourceSha256": "dd8748e1d5f1123a1ef099744b00273307fde0278d7750e8a0d20a4772a83d38",
+      "passed": true
+    },
+    {
+      "name": "count-count_type_slot",
+      "source": "class Count:\n def __index__(self):return 1\nclass Child(Count):pass\nvalue=Child()\nvalue.__index__=lambda:2\nprint('a,b,c'.split(',',value))",
+      "expected": "['a', 'b,c']\n",
+      "sourceSha256": "ce0bfc5249bd94bbe4af48e7d0641c234514c873bbae11a4710515947e855bcd",
+      "passed": true
+    },
+    {
+      "name": "count-count_getattribute_bypass",
+      "source": "class Count:\n def __getattribute__(self,name):raise AssertionError('instance lookup')\n def __index__(self):return 1\nprint('a,b,c'.split(',',Count()))",
+      "expected": "['a', 'b,c']\n",
+      "sourceSha256": "137b4f3ae833e57a4328c4c523adccd8d5a967162b62fa69954b67f984d39006",
+      "passed": true
+    },
+    {
+      "name": "count-count_invalid_values",
+      "source": "class Bad:\n def __index__(self):return 1.5\nclass Missing:pass\nclass Nil:__index__=None\nfor count in (1,None,1.5,Bad(),Missing(),Nil()):\n try:print('a,b,c'.split(',',count))\n except Exception as error:print(type(error).__name__)",
+      "expected": "['a', 'b,c']\nTypeError\nTypeError\nTypeError\nTypeError\nTypeError\n",
+      "sourceSha256": "4e2fa76bd94078c9c0a9f0fd6c90afcc210ad9368ffe4d8abd8007023fc34b7c",
+      "passed": true
+    },
+    {
+      "name": "count-count_evaluation_order",
+      "source": "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\ndef text():\n events.append('receiver')\n return 'a,b,c'\ndef sep():\n events.append('separator')\n return ','\ndef count():\n events.append('count-object')\n return Count()\nprint(text().split(sep(),count()),events)",
+      "expected": "['a', 'b,c'] ['receiver', 'separator', 'count-object', 'index']\n",
+      "sourceSha256": "04d585d003cb257b017e4a95c3791364113d01155bde8d1a8705b846b890027e",
+      "passed": true
+    },
+    {
+      "name": "count-count_method_forms",
+      "source": "events=[]\nclass Count:\n def __index__(self):\n  events.append('index')\n  return 1\nmethod='a,b,c'.split\nprint(method(',',Count()),'a,b,c'.split(sep=',',maxsplit=Count()),'a,b,c'.split(*[',',Count()]))\nprint(events)",
+      "expected": "['a', 'b,c'] ['a', 'b,c'] ['a', 'b,c']\n['index', 'index', 'index']\n",
+      "sourceSha256": "8faee978cc8b6eb6e80332eb6607c376e083c5bbae3e0deed0bcf3e4ac836f71",
+      "passed": true
+    },
+    {
+      "name": "count-index-rebinds-receiver",
+      "source": "text='a,b,c'\nclass Count:\n def __index__(self):\n  global text\n  text='changed'\n  return 1\nprint(text.split(',',Count()),text)",
+      "expected": "['a', 'b,c'] changed\n",
+      "sourceSha256": "da5e7968d4d8aa744af72673bc4ed564b5658836576108e1324425c022a89ecd",
+      "passed": true
+    }
+  ],
+  "unicodeWhitespaceFixtureCorrected": true,
+  "baselineDidNotSeparatelyRunFinalUnicodeVariant": true,
+  "baselineDidNotSeparatelyRunRebindVariant": true
+}

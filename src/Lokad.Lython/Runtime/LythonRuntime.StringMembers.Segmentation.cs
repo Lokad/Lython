@@ -1,3 +1,4 @@
+using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -12,19 +13,49 @@ internal sealed partial class LythonRuntime
         internal static PyList Split(PyString text, object? separatorArgument, object? maxSplitArgument,
             LythonSourceSpan span, ExecutionContext context)
         {
+            var count = maxSplitArgument is null ? -1 : NormalizeSplitCount(
+                maxSplitArgument is PyInstance
+                    ? CoerceTypeIndexAsync(maxSplitArgument, context, span, false).GetAwaiter().GetResult() ?? PyNone.Instance
+                    : maxSplitArgument, context, span);
+            return SplitWithCount(text, separatorArgument, count, span, context);
+        }
+
+        internal static ValueTask<object> SplitAsync(PyString text, object? separatorArgument, object? maxSplitArgument,
+            LythonSourceSpan span, ExecutionContext context)
+            => maxSplitArgument is PyInstance instance
+                ? SplitWithGuestCountAsync(text, separatorArgument, instance, span, context)
+                : new ValueTask<object>(Split(text, separatorArgument, maxSplitArgument, span, context));
+
+        private static async ValueTask<object> SplitWithGuestCountAsync(PyString text, object? separatorArgument,
+            PyInstance count, LythonSourceSpan span, ExecutionContext context)
+        {
+            var indexed = await CoerceTypeIndexAsync(count, context, span, true).ConfigureAwait(false);
+            return SplitWithCount(text, separatorArgument, NormalizeSplitCount(indexed ?? PyNone.Instance, context, span), span, context);
+        }
+
+        private static int NormalizeSplitCount(object value, ExecutionContext context, LythonSourceSpan span)
+        {
+            if (!PyNumberOps.TryAsInteger(value, out var integer))
+                throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+            if (integer > long.MaxValue || integer < long.MinValue)
+                throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
+            // Only actual subject parts allocate storage. Larger representable
+            // counts are equivalent to the managed kernel's maximum count.
+            return integer.Sign < 0 ? -1 : integer > int.MaxValue ? int.MaxValue : (int)integer;
+        }
+
+        private static PyList SplitWithCount(PyString text, object? separatorArgument, int count,
+            LythonSourceSpan span, ExecutionContext context)
+        {
             // Null is internal omission; Python None selects whitespace splitting.
             if (separatorArgument is null or PyNone)
             {
-                var maxSplit = maxSplitArgument is null ? -1
-                    : ParseStringOptionalInt(maxSplitArgument, "maxsplit", "str.split([sep[, maxsplit]])", span, context);
-                return PyStringOps.SplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
+                return PyStringOps.SplitWhitespace(text, count, context.MemoryGovernor, span);
             }
 
             if (!PyStringOps.TryAsString(separatorArgument, out var separator))
                 throw new LythonRuntimeException("TypeError", "must be str or None, not " + RuntimeErrors.OperandTypeName(separatorArgument), span);
 
-            var count = maxSplitArgument is null ? -1
-                : ParseStringOptionalInt(maxSplitArgument, "maxsplit", "str.split([sep[, maxsplit]])", span, context);
             try
             {
                 return PyStringOps.Split(text, separator, count, context.MemoryGovernor, span);
@@ -54,14 +85,10 @@ internal sealed partial class LythonRuntime
                 {
                     "split" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        if (arguments.Length > 2)
-                        {
-                            throw new LythonRuntimeException("TypeError", "str.split([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.", span);
-                        }
-
                         return Split(text, arguments.Length >= 1 ? arguments[0] : null,
                             arguments.Length == 2 ? arguments[1] : null, span, context);
-                    }, StrSplitSignature),
+                    }, StrSplitSignature, (arguments, span, context) => SplitAsync(text,
+                        arguments.Length >= 1 ? arguments[0] : null, arguments.Length == 2 ? arguments[1] : null, span, context)),
                     "rsplit" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length == 0)
