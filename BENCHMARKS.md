@@ -2,6 +2,7 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Complete text summary with annotated helper [CG], fresh compile/run | 3,072 lines / 35,840 UTF-8 bytes | 7.354–7.451 ms | 1.527 ms | 4.818–4.881× diagnostic | Immutable `4acd532f`; identical controls; 16.27%/3.41% Lython spreads, 1.96% CPython; unqualified |
 | Complete CSV summary with annotated helper [CE], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 8.549 ms | 3.962 ms | 2.158× diagnostic | Immutable `34d4da35`; one capture, unqualified; 6.72%/0.63% spreads |
 | Complete CSV summary with annotated helper [CF], warm `RunAsync` | 4,096 records / 57,361 UTF-8 bytes | 9.321 ms | 3.759 ms | 2.480× diagnostic | Immutable `34d4da35`; completed host operations, one capture, unqualified; 3.84%/0.59% spreads |
 | JSON file round-trip [CD], warm `RunAsync` | One file / 42 UTF-8 input bytes | 1.571 ms | 0.16484 ms | — | Four frozen runtime files on 22648c5a; nominal 9.533×, unqualified; 7.24%/1.07% spreads |
@@ -28,12 +29,23 @@ for changes against prior Lython versions.
 above 1 means Lython takes longer. Ratios marked diagnostic are unqualified point
 estimates. A dash means unavailable or not reported, never zero; historical
 unqualified observations retain their original notation. No workload ratio has
-completed milestone qualification here. AF, AU, BO, BR and BX ranges contain the medians
+completed milestone qualification here. AF, AU, BO, BR, BX and CG ranges contain the medians
 of two identical Lython controls, not confidence intervals. Other entries show
 one diagnostic median. The jobs show performance gaps in those runs; their
 magnitudes and changes remain uncertain as marked.
 
 ## Which code and machine were measured?
+
+CG measures immutable `4acd532f` on 2026-10-18 UTC, whose runtime source is
+identical to qualified `73deb8dc`. Two distinct workers load identical Lython
+binaries. This complete text helper job compiles afresh and calls public Run
+inside an already-running host; file setup/reset and full output checks are
+included, startup/transport excluded. CPython is 3.13.16 with the VM toolchains
+below. The one 7.725-second collection gives a diagnostic 4.818–4.881× gap;
+16.27% spread in one Lython control leaves its magnitude uncertain. It is not
+an earlier-Lython improvement or a measurement of the rejected casing prototype.
+[Source, boundary, raw samples and cleanup](benchmarks/results/2026-10-18-text-milestone/README.md)
+are retained. Historical Windows text snapshot BR remains separate.
 
 CE/CF measure immutable `34d4da35` on 2026-10-18 UTC, using the existing complete
 CSV helper script and pinned toolchains below. CE compiles afresh and calls
@@ -128,6 +140,7 @@ to infer a change from the quiet-VM measurements.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| CG | 2026-10-18 UTC | Immutable `4acd532f`; same runtime sources as `73deb8dc`; complete text helper, fresh compile/run, identical controls | [CPython comparison, full goldens, raw samples and cleanup](benchmarks/results/2026-10-18-text-milestone/README.md) |
 | CE/CF | 2026-10-18 UTC | Immutable `34d4da35`; complete CSV helper job, fresh compile/run and warm RunAsync | [CPython comparison, raw samples, immutable controls and cleanup](benchmarks/results/2026-10-18-csv-milestone/README.md) |
 | CD | 2026-10-18 UTC | Four frozen runtime files on 22648c5a; existing bridge JSON file job; warm public RunAsync | [Default-call allocation, checkpoints, CPython comparison and cleanup](benchmarks/results/2026-10-18-json-default-dumps/README.md) |
 | CC | 2026-10-18 UTC | One frozen text-reader file on 56526237; complete helper job; warm public RunAsync | [Admission, character limits, CPython comparison and cleanup](benchmarks/results/2026-10-18-text-read/README.md) |

@@ -1,0 +1,21 @@
+{
+  "unit": "lython-text-milestone-prepare-4acd532f-20261018",
+  "arguments": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-text-milestone-prepare-4acd532f-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=28",
+    "--property=TimeoutStopSec=1",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/text-milestone-4acd532f/prepare-service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/text-milestone-4acd532f/prepare-service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/text-milestone-4acd532f/prepare.py"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Running as unit: lython-text-milestone-prepare-4acd532f-20261018.service; invocation ID: 0060cc93e901453ebf1321738cc77b1a\n",
+  "launchedUtc": "2026-10-18T07:38:11.616697+00:00"
+}

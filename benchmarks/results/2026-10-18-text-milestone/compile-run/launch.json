@@ -1,0 +1,22 @@
+{
+  "unit": "lython-text-milestone-compile-run-4acd532f-20261018",
+  "arguments": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-text-milestone-compile-run-4acd532f-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=28",
+    "--property=TimeoutStopSec=1",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/text-milestone-4acd532f/compile-run/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/text-milestone-4acd532f/compile-run/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/text-milestone-4acd532f/run-capture.py",
+    "compile-run"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Running as unit: lython-text-milestone-compile-run-4acd532f-20261018.service; invocation ID: 3bf5ce6a92c249889f628217e1e0c19f\n",
+  "launchedUtc": "2026-10-18T07:38:46.074788+00:00"
+}

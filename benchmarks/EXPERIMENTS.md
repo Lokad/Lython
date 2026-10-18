@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 complete text comparison](results/2026-10-18-text-milestone/README.md)
+closes one short capture at immutable `4acd532f`, using unchanged runtime73deb8dc
+and two identical Lython controls. Fresh compile/run takes7.354–7.451ms versus
+CPython1.527ms; nominal4.818–4.881× remains unqualified with16.27% spread in one
+control. All35responses/1,074invocations match complete goldens; immutable source,
+inputs, all three worker/fixture cleanups and shared lease are verified. No
+runtime/framework change, repeat timing, trace or ten-minute lane.
+
 The [2026-10-18 ASCII casing shortcut](results/2026-10-18-ascii-casing-rejected/README.md)
 was rejected: ASCII improved in one native capture, but the Greek-only lower
 control rose from 1.913 to 6.124 ms and failed the fixed gate. Allocations and four

@@ -1,0 +1,70 @@
+{
+  "capturedUtc": "2026-10-18T07:39:05.160068+00:00",
+  "sources": {
+    "candidate": {
+      "revision": "4acd532f7848f8a3a4cd54ff5c02d75320190830",
+      "sourceClean": true,
+      "workerSha256": "5fc5936ac69f0114c1e65bf4f4f4b43577137c9739328bbe09d92c161af297d8",
+      "librarySha256": "d875710f331f0fba30a7291d7f5d625994c91beb456e4666f54fed5d5fcbaf7d"
+    },
+    "old": {
+      "revision": "4acd532f7848f8a3a4cd54ff5c02d75320190830",
+      "sourceClean": true,
+      "workerSha256": "5fc5936ac69f0114c1e65bf4f4f4b43577137c9739328bbe09d92c161af297d8",
+      "librarySha256": "d875710f331f0fba30a7291d7f5d625994c91beb456e4666f54fed5d5fcbaf7d"
+    }
+  },
+  "lanes": {
+    "compile-run": {
+      "unit": "lython-text-milestone-compile-run-4acd532f-20261018",
+      "properties": "MainPID=0\nResult=success\nExecMainStartTimestampMonotonic=0\nExecMainExitTimestampMonotonic=0\nExecMainStatus=0\nControlGroup=\nActiveState=inactive\nSubState=dead\n",
+      "live": false,
+      "capturedUtc": "2026-10-18T07:38:59.630256+00:00",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 7451.244,
+          "iqrFraction": 0.034093434599645436
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 7354.4580000000005,
+          "iqrFraction": 0.16265909738011963
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1526.552894736842,
+          "iqrFraction": 0.019581958044103783
+        }
+      ],
+      "attemptCount": 35,
+      "error": null,
+      "success": true,
+      "workers": {
+        "baseline": {
+          "processId": 2450133,
+          "processGone": true,
+          "fixtureDirectory": "/tmp/lython-comparison-files-3vxxz7",
+          "fixtureDirectoryGone": true
+        },
+        "candidate": {
+          "processId": 2450154,
+          "processGone": true,
+          "fixtureDirectory": "/tmp/lython-comparison-files-9zhgHo",
+          "fixtureDirectoryGone": true
+        },
+        "CPython": {
+          "processId": 2450169,
+          "processGone": true,
+          "fixtureDirectory": "/tmp/lython-comparison-files-82IwgV",
+          "fixtureDirectoryGone": true
+        }
+      },
+      "leaseReleased": true,
+      "inputsUnchanged": true
+    }
+  },
+  "leaseAvailable": true,
+  "catalogSha256": "a2b51dfe71c890faeda7198687298f58b377f0c615bce2ecec065c20db16587f"
+}
