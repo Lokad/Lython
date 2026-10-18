@@ -1,0 +1,14 @@
+{
+  "source": "74804edc-plus-sum-cursor-order",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "FE4EF520CEF01870B732E6F278702DF0C7BDA6209C5AC8DB22DE2336EC52466E",
+  "filter": "Category!=Stress&FullyQualifiedName~SumCursorDiagnostic",
+  "pid": 61500,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1350,
+  "stdoutSha256": "08C79A64977B2C9190DC309B204A68CCB84BC7685BC89D02377C4E24F84095A9",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

@@ -1,0 +1,74 @@
+{
+  "baseline": "74804edcc9cf4f5b382470bdc9dd8b3f358dd5ca",
+  "focusedDistinctPassed": 328,
+  "groups": {
+    "final-white-boundary": {
+      "count": 120,
+      "filter": "Category!=Stress&(FullyQualifiedName~SumCursorCleanupTests|FullyQualifiedName~NativeAggregateStateTests|FullyQualifiedName~ExactBytesSumTests|FullyQualifiedName~NativeAnyAllCleanupTests|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~ExecutableStackAdmissionTests)",
+      "assemblySha256": "0417EF6436CCBFA4CDB3240743E6C0C405CF736B955ED45D30B369DD9B18D362",
+      "elapsedMilliseconds": 1321,
+      "trxSha256": "be0ff9b6c25a098da1419cc2e154de56fc13d29f2e6eda8faa23c0a758f3a290"
+    },
+    "final-public": {
+      "count": 54,
+      "filter": "Category!=Stress&(FullyQualifiedName~SumCursorCompatibilityTests|FullyQualifiedName~SumIteratorAcquisitionTests|FullyQualifiedName~BytesSumTests|FullyQualifiedName~BuiltinIterationCancellationTests|FullyQualifiedName~AnyAllCursorCompatibilityTests)",
+      "assemblySha256": "D1B5564D8C74C1BA0B289ABC070F20C8BA6AC8EA7EFF566D71A301D34D234AFD",
+      "elapsedMilliseconds": 3847,
+      "trxSha256": "136e6c72bda62818aaba382562ad5595dbf104513ff8c06b991ce0d4f64df73c"
+    },
+    "final-admission": {
+      "count": 2,
+      "filter": "Category!=Stress&FullyQualifiedName~SumIteratorAcquisitionTests.RefusedIteratorAcquisitionPrecedesStartRejection",
+      "assemblySha256": "EC47226C5CC8D6A48B5B567B5D36440F314CAEDD0A7306631789338EC148C5DD",
+      "elapsedMilliseconds": 2146,
+      "trxSha256": "fed4417aec29725efa20a0fcaa7fec3cfd2bbd5483ae4a2bf8211e30471e465f"
+    },
+    "final-owners": {
+      "count": 90,
+      "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+      "assemblySha256": "D1B5564D8C74C1BA0B289ABC070F20C8BA6AC8EA7EFF566D71A301D34D234AFD",
+      "elapsedMilliseconds": 3002,
+      "trxSha256": "cfe68ff34c5649936849b41a62edaa067ba89855401c828bbb29c7895aa01cc9"
+    },
+    "final-goldens": {
+      "count": 62,
+      "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+      "assemblySha256": "D1B5564D8C74C1BA0B289ABC070F20C8BA6AC8EA7EFF566D71A301D34D234AFD",
+      "elapsedMilliseconds": 7923,
+      "trxSha256": "b1cde3550ccf67ed40ec84f1a910d3c51d3cd051f00f91fb629affa142c73823"
+    }
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs": "902a7c38ff57a923570efd233ecae186936392fb0f99f2ec90baf65d07d22e24"
+  },
+  "newTests": {
+    "tests/Lokad.Lython.Tests/SumCursorCleanupTests.cs": "ce16678246ffa15fe117c449ce0a9889c16eabc9590de4f94d5b60f7551654db",
+    "tests/Lokad.Lython.PublicApi.Tests/SumCursorCompatibilityTests.cs": "0c28c5683116085814ebe9d92188dced39ff32e647486be10abb8480a56647af",
+    "tests/Lokad.Lython.PublicApi.Tests/SumIteratorAcquisitionTests.cs": "36fd7c1e3853ea54207acc73d618691fd195bd2d7e758e702be43f9964422c20"
+  },
+  "baselineCompatibility": {
+    "passed": 10,
+    "failed": 8,
+    "total": 18
+  },
+  "nativeCleanupBaselineCasesPassed": 8,
+  "nativeCleanupFinalCasesPassed": 9,
+  "independentCPythonPrograms": 8,
+  "completeJobs": 58,
+  "exactValidPathBoundaryRecords": 126,
+  "temporaryDiagnosticRemoved": true,
+  "allNativeStepArraysIdentical": true,
+  "allSyncAndExactByteControlArraysIdentical": true,
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "regexPlanningOnly": true,
+  "supportingSourcesUnchanged": {
+    "src/Lokad.Lython/Runtime/PyIteration.cs": "c760a1e0f09ea68d045036b198e02d27dc63c08130a18e4bcebc24b208388ee6",
+    "src/Lokad.Lython/Runtime/PyIteration.Sequences.cs": "90723e5015f5fea7b733442e59663858e1c15d876f2b402e95f210820d799d84",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs": "7f0d6a73c6ea9bc1c0bfde04b527c82aa6e747787ad7b81a107957d051e9af13",
+    "tests/Lokad.Lython.Tests/NativeAggregateStateTests.cs": "330b638290126704b34f9db9e57dd29fddb6be936674cc5f20aa71fab74143be",
+    "tests/Lokad.Lython.PublicApi.Tests/BytesSumTests.cs": "648d778b52bfaf738accee919ced9a45d79d62799c78485bb292daf4fd682936",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "9f756ed5cabd3b6d0e2a7d2954163b14d55881ae8ab9b558560215594b68cd1a"
+  },
+  "contracts": "Arity binds before acquisition;guest iterator acquisition precedes invalid-start rejection without pulling. This intentionally changes old effects/error precedence to match Python. Awaited cleanup,accumulator/alias funding and structured refusal remain. General async sum consumes existing cursor;sync iteration and exact-byte implementation unchanged.",
+  "fixtureCorrection": "One extra native refusal+cleanup-failure test initially asserted public error selection at an internal executor boundary. Corrected it to assert retained original governor refusal plus raw cleanup error;public terminal-refusal controls remain. No runtime tuning or relaxed timeout/assertion."
+}

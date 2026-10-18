@@ -1,0 +1,9 @@
+{
+  "baseline": "74804edc",
+  "baselineTestsPassed": 5,
+  "baselineTestsFailed": 3,
+  "reference": "CPython3.13.2",
+  "cause": "ValidateSumStart rejects types before acquiring the guest iterator in both Sum and SumAsync.",
+  "correction": "Argument count/start selection before acquisition,start type validation after acquisition. Reuse sync ToSequence;async native Cursor disposal encloses type validation. No core cursor or ownership redesign.",
+  "proposedScopeSuperseded": "Preserving start rejection before iteration is incompatible with CPython. Sync acquisition must participate in this correctness fix,not remain byte-identical."
+}

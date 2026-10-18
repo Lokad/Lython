@@ -286,6 +286,13 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [sum cursor/acquisition change](benchmarks/results/2026-10-18-sum-cursor/README.md)
+at `74804edc` plus its frozen one-file patch fixes iterator acquisition before
+invalid-start rejection. General async sum also removes two forwarding objects,
+saving 96 B per affected call; sync/exact-byte controls and 126 valid-path boundary
+records match. Eight initial public compatibility/I/O failures are corrected.
+Elapsed was not measured; no CPython, fresh-compilation or whole-job gain is claimed.
+
 The [JSON dictionary-helper capture removal](benchmarks/results/2026-10-18-json-dictionary-capture/README.md)
 at `15b4bc03` plus its frozen one-file patch avoids an 80-byte capture per value.
 A 64-value sequence saves 5,200 B and 64 small dictionaries save 15,440 B in

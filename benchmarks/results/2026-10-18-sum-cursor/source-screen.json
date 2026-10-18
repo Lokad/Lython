@@ -1,0 +1,19 @@
+{
+  "head": "74804edcc9cf4f5b382470bdc9dd8b3f358dd5ca",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs": "f360a8adfd22fd7cfc94e697602a7e9e428780895f7b9729df0708a2b46ac59d",
+    "src/Lokad.Lython/Runtime/PyIteration.cs": "c760a1e0f09ea68d045036b198e02d27dc63c08130a18e4bcebc24b208388ee6",
+    "src/Lokad.Lython/Runtime/PyIteration.Sequences.cs": "90723e5015f5fea7b733442e59663858e1c15d876f2b402e95f210820d799d84",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs": "7f0d6a73c6ea9bc1c0bfde04b527c82aa6e747787ad7b81a107957d051e9af13",
+    "tests/Lokad.Lython.Tests/NativeAggregateStateTests.cs": "330b638290126704b34f9db9e57dd29fddb6be936674cc5f20aa71fab74143be",
+    "tests/Lokad.Lython.PublicApi.Tests/BytesSumTests.cs": "648d778b52bfaf738accee919ced9a45d79d62799c78485bb292daf4fd682936",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "9f756ed5cabd3b6d0e2a7d2954163b14d55881ae8ab9b558560215594b68cd1a"
+  },
+  "finding": "SumAsync general path alone still await-foreaches ToSequenceAsync. Resolution forwards without effects;PyIteration creates AsyncSequence and AsyncEnumerator wrapping the existing Cursor. Their pulls await/forward cursor results;Any/All already use that Cursor directly. This is a concrete remaining consumer,not a blanket iterator rewrite.",
+  "workload": "Catalog comprehensions.helper-call and helper-list end with sum(values),using list numeric inputs. File-manifest scripts sum exact bytes and are unchanged controls. This does not establish complete-job performance importance.",
+  "proposal": "Replace only SumAsync general await-foreach with Cursor.CreateAsync plus await-using/TryMoveNextAsync. Keep ValidateSumStart before cursor acquisition,exact-bytes shortcut,addition dispatch and await,accumulator,span/context and all sync/common iteration sources unchanged. Remove two wrapper objects and per-pull forwarding for this consumer;no new cursor or owner.",
+  "acceptance": "One predeclared native pair with empty/65 item list/tuple,range,generator and custom addition,alongside sync/exact-bytes controls. Require affected allocation reduction,exact numeric/result identity,fuel/error/span and denial before mutation. Preserve suspended __iter__/__add__/__radd__,nested sum/current accumulator/live aliases and native cleanup once/funded on exhaustion,pull/add fault,cancel,admission or cleanup failure. Reuse existing NativeAggregateState/BytesSum and cancellation coverage,adding only a missing focused external witness.58 complete jobs,one short comparison,no new broad measurement.",
+  "stopping": "Only general SumAsync. Leave Any/All,sync Sum,bytes shortcut,Cursor,ToSequence and other consumers untouched. No scalar/numeric semantics or generator ownership redesign,retiming,dispatcher/cache/owner. Reject if core cursor/lifetime infrastructure must change.",
+  "runtimeEdits": false,
+  "measurements": false
+}

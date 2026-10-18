@@ -1,0 +1,37 @@
+{
+  "python": "CPython3.13.2",
+  "programs": [
+    {
+      "source": "marker=[]\nprint(sum([],marker) is marker,sum([],True) is True,sum([True,False,True]),sum([1,2],start=4))",
+      "stdout": "True True 2 7\n"
+    },
+    {
+      "source": "events=[]\nclass Source:\n def __iter__(self):\n  events.append('iter')\n  return iter([1])\nfor start in ('x',b'x'):\n try:sum(Source(),start)\n except TypeError:print('start')\nprint(events)",
+      "stdout": "start\nstart\n['iter', 'iter']\n"
+    },
+    {
+      "source": "def values():\n yield 1\n yield 'bad'\n yield 3\nit=values()\ntry:sum(it)\nexcept TypeError:print('item')\nprint(next(it),list(it))",
+      "stdout": "item\n3 []\n"
+    },
+    {
+      "source": "values=[1,2]\nevents=[]\nclass Total:\n def __add__(self,item):\n  events.append(item)\n  if item==1:values.append(3)\n  return self\nstart=Total()\nprint(sum(values,start) is start,events,values)",
+      "stdout": "True [1, 2, 3] [1, 2, 3]\n"
+    },
+    {
+      "source": "events=[]\nclass Value:\n def __radd__(self,left):\n  events.append(left)\n  return 7\nprint(sum([Value(),2]),events)\nprint(sum(iter((1,2,3))),sum(range(65)),sum([0.5,1.5,2.0]))",
+      "stdout": "9 [0]\n6 2080 4.0\n"
+    },
+    {
+      "source": "mapping={'a':1,'b':2}\nclass Total:\n def __add__(self,key):\n  mapping['c']=3\n  return self\ntry:sum(mapping,Total())\nexcept RuntimeError:print('changed')\nprint(mapping)",
+      "stdout": "changed\n{'a': 1, 'b': 2, 'c': 3}\n"
+    },
+    {
+      "source": "class Source:\n def __iter__(self):raise ValueError('iterator')\nfor start in ('x',b'x'):\n try:sum(Source(),start)\n except Exception as error:print(type(error).__name__,str(error))",
+      "stdout": "ValueError iterator\nValueError iterator\n"
+    },
+    {
+      "source": "events=[]\nclass Source:\n def __iter__(self):\n  events.append('iter')\n  return self\n def __next__(self):\n  events.append('next')\n  raise StopIteration\ntry:sum(Source(),'bad')\nexcept TypeError:print(events)",
+      "stdout": "['iter']\n"
+    }
+  ]
+}

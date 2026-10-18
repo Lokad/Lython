@@ -1,0 +1,37 @@
+{
+  "baseline": "74804edcc9cf4f5b382470bdc9dd8b3f358dd5ca",
+  "boundary": "Native warm compiled sum execution;prepared context/input. Compilation,setup,scheduling,projection,startup/I/O excluded. Async CPU values complete synchronously on measured thread. Allocation only,no elapsed claim.",
+  "routes": [
+    "list0",
+    "list65",
+    "tuple0",
+    "tuple65",
+    "range65",
+    "generator65",
+    "custom65",
+    "bytes65"
+  ],
+  "modes": [
+    "sync",
+    "async"
+  ],
+  "warmups": 2,
+  "samples": 8,
+  "invocationsPerSample": 8,
+  "workMatrixRoutes": 7,
+  "fuelLevels": [
+    1,
+    4,
+    8,
+    12,
+    16,
+    32,
+    64,
+    128,
+    512
+  ],
+  "diagnosticSha256": "a952e2c61815279cca27e7129cd79b0987ebf6ea696339351c7c791ad0f32ffd",
+  "gate": "Async non-byte allocation falls;all sync and exact-byte arrays unchanged. Valid-start/item-failure matrix output,identity,fuel/errors/spans identical. Invalid-start acquisition order intentionally corrected and qualified separately against independent Python goldens/actual I/O;no false equivalence claim.",
+  "scope": "One aggregate file:arity/start selection before iterator acquisition,type validation after it,sync ToSequence preserved,async cursor direct. No core cursor,owner,scalar or shared iterator changes.",
+  "noRecapture": true
+}

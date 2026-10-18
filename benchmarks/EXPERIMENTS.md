@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 sum cursor/acquisition change](results/2026-10-18-sum-cursor/README.md)
+fixes a demonstrated Python ordering bug and removes general async sum's two
+forwarding objects. One frozen allocation pair saves 96 B per affected call;
+sync/bytes controls and 126 valid-path fuel/error/span records match. Eight initial
+public failures become successes against eight CPython programs; 328 focused
+checks and 58 complete jobs pass. Nine native cleanup cases preserve funding and
+stored refusal through cleanup. An internal/public-boundary fixture correction
+is explicit. No elapsed measurement, recapture or new memory/cursor machinery.
+
 The [2026-10-18 JSON dictionary-helper capture removal](results/2026-10-18-json-dictionary-capture/README.md)
 moves one captured local function into a static helper with explicit inputs.
 The same helper body, awaits, cycle tracking and funding remain; 80 B per value

@@ -1,0 +1,316 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="22fde4eb-dd70-48d6-92a9-ac2c3e378c98" name="JoannesVermorel@LOKAD-0399 2026-10-18 18:55:28" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T18:55:28.6103428+02:00" queuing="2026-10-18T18:55:28.6103429+02:00" start="2026-10-18T18:55:26.6739590+02:00" finish="2026-10-18T18:55:28.6872441+02:00" />
+  <TestSettings name="default" id="d8feac29-fa36-4d80-b844-ae4cd28ce40d">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_18_55_28" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="74ac0eb1-645b-4fc4-95a8-996141d38c45" testId="b4d2b1ab-403b-9aec-8c8d-4ffabd4d1b41" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;class Source:\n def __iter__(self):raise ValueErro&quot;···, expected: &quot;ValueError iterator\nValueError iterator\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0020436" startTime="2026-10-18T18:55:28.5740999+02:00" endTime="2026-10-18T18:55:28.5756837+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="74ac0eb1-645b-4fc4-95a8-996141d38c45">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ValueError iterator\nValueError iterator\n"&#xD;
+Actual:   "TypeError sum() can't sum strings [use ''"···&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(Boolean asynchronous, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumCursorCompatibilityTests.cs:line 39&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2c1d2297-d2cb-4425-bd51-7da47be33079" testId="91103eed-9a27-b89f-877b-da571c8f4f1d" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;def values():\n yield 1\n yield 'bad'\n yield 3\ni&quot;···, expected: &quot;item\n3 []\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0094836" startTime="2026-10-18T18:55:28.5778086+02:00" endTime="2026-10-18T18:55:28.5871828+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2c1d2297-d2cb-4425-bd51-7da47be33079" />
+    <UnitTestResult executionId="1f5bc786-bc28-418c-ae4b-9b67e8aca492" testId="8aa45287-bc9f-d8f3-06e0-d7ab25ff62eb" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;values=[1,2]\nevents=[]\nclass Total:\n def __add_&quot;···, expected: &quot;True [1, 2, 3] [1, 2, 3]\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0103035" startTime="2026-10-18T18:55:28.5872803+02:00" endTime="2026-10-18T18:55:28.5976735+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1f5bc786-bc28-418c-ae4b-9b67e8aca492" />
+    <UnitTestResult executionId="aa452a2f-f706-40e7-a43e-4b1caa4f9c7a" testId="56ada945-1ef8-e269-44df-f051dacb442d" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;events=[]\nclass Value:\n def __radd__(self,left):&quot;···, expected: &quot;9 [0]\n6 2080 4.0\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0021449" startTime="2026-10-18T18:55:28.6193679+02:00" endTime="2026-10-18T18:55:28.6214602+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="aa452a2f-f706-40e7-a43e-4b1caa4f9c7a" />
+    <UnitTestResult executionId="bd4cd2f2-502c-4035-91f0-e3ea65be0954" testId="aa2ea4bc-c485-b1e3-2f61-4d9a9ef1b2a6" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;values=[1,2]\nevents=[]\nclass Total:\n def __add_&quot;···, expected: &quot;True [1, 2, 3] [1, 2, 3]\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0012374" startTime="2026-10-18T18:55:28.6221491+02:00" endTime="2026-10-18T18:55:28.6233458+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bd4cd2f2-502c-4035-91f0-e3ea65be0954" />
+    <UnitTestResult executionId="8dbcbb49-1aad-4f9f-97f4-b9f73f72db1d" testId="94dc5f65-43d8-3109-2c75-6ffb442792c4" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;events=[]\nclass Source:\n def __iter__(self):\n  &quot;···, expected: &quot;['iter']\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0012432" startTime="2026-10-18T18:55:28.6019625+02:00" endTime="2026-10-18T18:55:28.6020042+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8dbcbb49-1aad-4f9f-97f4-b9f73f72db1d">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+            ↓ (pos 1)&#xD;
+Expected: "['iter']\n"&#xD;
+Actual:   "[]\n"&#xD;
+            ↑ (pos 1)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(Boolean asynchronous, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumCursorCompatibilityTests.cs:line 39&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f8b96b81-e716-4250-ac3c-6e1c0bcfaa19" testId="a68a6c2e-d816-0fe8-3013-c8143d145747" testName="Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0022615" startTime="2026-10-18T18:55:28.5548041+02:00" endTime="2026-10-18T18:55:28.5548350+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f8b96b81-e716-4250-ac3c-6e1c0bcfaa19">
+      <Output>
+        <ErrorInfo>
+          <Message>Iterator acquisition was skipped.</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumIteratorAcquisitionTests.cs:line 38&#xD;
+   at Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumIteratorAcquisitionTests.cs:line 54&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b3075e8d-69d3-4efd-a529-5ebcd13bd359" testId="4cc058a8-47e4-c21f-87ac-70f4511eea22" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;class Source:\n def __iter__(self):raise ValueErro&quot;···, expected: &quot;ValueError iterator\nValueError iterator\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.1786917" startTime="2026-10-18T18:55:28.3576880+02:00" endTime="2026-10-18T18:55:28.5504982+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b3075e8d-69d3-4efd-a529-5ebcd13bd359">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ValueError iterator\nValueError iterator\n"&#xD;
+Actual:   "TypeError sum() can't sum strings [use ''"···&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(Boolean asynchronous, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumCursorCompatibilityTests.cs:line 39&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b975f20a-fa5f-49e6-b20a-8fec868788b1" testId="7ed09eb4-6024-d542-055d-28c026095526" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;def values():\n yield 1\n yield 'bad'\n yield 3\ni&quot;···, expected: &quot;item\n3 []\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0017714" startTime="2026-10-18T18:55:28.6175454+02:00" endTime="2026-10-18T18:55:28.6192907+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b975f20a-fa5f-49e6-b20a-8fec868788b1" />
+    <UnitTestResult executionId="59ced821-3530-4d99-8cd2-c68fbfb0418e" testId="d6bf60bb-7cf4-f132-fc36-89a13fe2bd42" testName="Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(cancel: False)" computerName="LOKAD-0399" duration="00:00:00.1812956" startTime="2026-10-18T18:55:28.3585363+02:00" endTime="2026-10-18T18:55:28.5457525+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="59ced821-3530-4d99-8cd2-c68fbfb0418e">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+                 ↓ (pos 6)&#xD;
+Expected: "beforeiter"&#xD;
+Actual:   "before"</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumIteratorAcquisitionTests.cs:line 47&#xD;
+   at Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumIteratorAcquisitionTests.cs:line 54&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="965859b7-89af-4b08-92f4-ca99094a19b5" testId="85423f0f-adbc-080a-e874-2721af667b84" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;events=[]\nclass Source:\n def __iter__(self):\n  &quot;···, expected: &quot;start\nstart\n['iter', 'iter']\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0009840" startTime="2026-10-18T18:55:28.6142789+02:00" endTime="2026-10-18T18:55:28.6153056+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="965859b7-89af-4b08-92f4-ca99094a19b5">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+                          ↓ (pos 13)&#xD;
+Expected: "start\nstart\n['iter', 'iter']\n"&#xD;
+Actual:   "start\nstart\n[]\n"&#xD;
+                          ↑ (pos 13)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(Boolean asynchronous, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumCursorCompatibilityTests.cs:line 39&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="969d5da1-4a33-4cf5-bb52-7d2554965d7e" testId="ea36130f-0a74-19b2-e281-c6e7cda6ed04" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;events=[]\nclass Value:\n def __radd__(self,left):&quot;···, expected: &quot;9 [0]\n6 2080 4.0\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0185964" startTime="2026-10-18T18:55:28.5565197+02:00" endTime="2026-10-18T18:55:28.5735626+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="969d5da1-4a33-4cf5-bb52-7d2554965d7e" />
+    <UnitTestResult executionId="a383fae1-af00-4829-ba86-17b30efe96d8" testId="6e607c8f-1109-3ed7-cfe3-10049d3b88ff" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;mapping={'a':1,'b':2}\nclass Total:\n def __add__(&quot;···, expected: &quot;changed\n{'a': 1, 'b': 2, 'c': 3}\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0120333" startTime="2026-10-18T18:55:28.6022818+02:00" endTime="2026-10-18T18:55:28.6114321+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a383fae1-af00-4829-ba86-17b30efe96d8" />
+    <UnitTestResult executionId="033c5588-04ae-47ab-b8e1-b4d9169c6cd9" testId="76e58571-b0b4-b357-fda7-fae9b9d81477" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;events=[]\nclass Source:\n def __iter__(self):\n  &quot;···, expected: &quot;start\nstart\n['iter', 'iter']\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0015448" startTime="2026-10-18T18:55:28.5760157+02:00" endTime="2026-10-18T18:55:28.5774824+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="033c5588-04ae-47ab-b8e1-b4d9169c6cd9">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+                          ↓ (pos 13)&#xD;
+Expected: "start\nstart\n['iter', 'iter']\n"&#xD;
+Actual:   "start\nstart\n[]\n"&#xD;
+                          ↑ (pos 13)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(Boolean asynchronous, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumCursorCompatibilityTests.cs:line 39&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="62c103e5-6b47-472f-a77b-69abe64b15b2" testId="8a4ef5f7-98c3-ea48-4a4c-504c89613a4e" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;marker=[]\nprint(sum([],marker) is marker,sum([],T&quot;···, expected: &quot;True True 2 7\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0020180" startTime="2026-10-18T18:55:28.6156735+02:00" endTime="2026-10-18T18:55:28.6174732+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="62c103e5-6b47-472f-a77b-69abe64b15b2" />
+    <UnitTestResult executionId="8f0bf448-70b1-4e9a-9f01-56af3e6c1ee9" testId="95e7fde3-7b07-63d8-8d4a-4bfccaf6edb0" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;marker=[]\nprint(sum([],marker) is marker,sum([],T&quot;···, expected: &quot;True True 2 7\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0005796" startTime="2026-10-18T18:55:28.6215314+02:00" endTime="2026-10-18T18:55:28.6220674+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8f0bf448-70b1-4e9a-9f01-56af3e6c1ee9" />
+    <UnitTestResult executionId="2450bc27-ac19-4816-804e-5aac5340cb0e" testId="cc874721-0bd3-7093-2b95-5fc95986722f" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;mapping={'a':1,'b':2}\nclass Total:\n def __add__(&quot;···, expected: &quot;changed\n{'a': 1, 'b': 2, 'c': 3}\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0027051" startTime="2026-10-18T18:55:28.6115155+02:00" endTime="2026-10-18T18:55:28.6141905+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2450bc27-ac19-4816-804e-5aac5340cb0e" />
+    <UnitTestResult executionId="1d9c119d-d14d-49d4-acae-a9b9b00f84f4" testId="6efc5c20-0088-5141-38f6-4c78fe13d1b2" testName="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;events=[]\nclass Source:\n def __iter__(self):\n  &quot;···, expected: &quot;['iter']\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0088015" startTime="2026-10-18T18:55:28.5547355+02:00" endTime="2026-10-18T18:55:28.5561929+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1d9c119d-d14d-49d4-acae-a9b9b00f84f4">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+            ↓ (pos 1)&#xD;
+Expected: "['iter']\n"&#xD;
+Actual:   "[]\n"&#xD;
+            ↑ (pos 1)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(Boolean asynchronous, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumCursorCompatibilityTests.cs:line 39&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;marker=[]\nprint(sum([],marker) is marker,sum([],T&quot;···, expected: &quot;True True 2 7\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="95e7fde3-7b07-63d8-8d4a-4bfccaf6edb0">
+      <Execution id="8f0bf448-70b1-4e9a-9f01-56af3e6c1ee9" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;events=[]\nclass Source:\n def __iter__(self):\n  &quot;···, expected: &quot;['iter']\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="94dc5f65-43d8-3109-2c75-6ffb442792c4">
+      <Execution id="8dbcbb49-1aad-4f9f-97f4-b9f73f72db1d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;marker=[]\nprint(sum([],marker) is marker,sum([],T&quot;···, expected: &quot;True True 2 7\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="8a4ef5f7-98c3-ea48-4a4c-504c89613a4e">
+      <Execution id="62c103e5-6b47-472f-a77b-69abe64b15b2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;class Source:\n def __iter__(self):raise ValueErro&quot;···, expected: &quot;ValueError iterator\nValueError iterator\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="4cc058a8-47e4-c21f-87ac-70f4511eea22">
+      <Execution id="b3075e8d-69d3-4efd-a529-5ebcd13bd359" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="d6bf60bb-7cf4-f132-fc36-89a13fe2bd42">
+      <Execution id="59ced821-3530-4d99-8cd2-c68fbfb0418e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests" name="InvalidStartStillAwaitsIteratorAcquisitionAndCancellation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;mapping={'a':1,'b':2}\nclass Total:\n def __add__(&quot;···, expected: &quot;changed\n{'a': 1, 'b': 2, 'c': 3}\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="cc874721-0bd3-7093-2b95-5fc95986722f">
+      <Execution id="2450bc27-ac19-4816-804e-5aac5340cb0e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;def values():\n yield 1\n yield 'bad'\n yield 3\ni&quot;···, expected: &quot;item\n3 []\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="7ed09eb4-6024-d542-055d-28c026095526">
+      <Execution id="b975f20a-fa5f-49e6-b20a-8fec868788b1" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;events=[]\nclass Source:\n def __iter__(self):\n  &quot;···, expected: &quot;start\nstart\n['iter', 'iter']\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="76e58571-b0b4-b357-fda7-fae9b9d81477">
+      <Execution id="033c5588-04ae-47ab-b8e1-b4d9169c6cd9" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;events=[]\nclass Value:\n def __radd__(self,left):&quot;···, expected: &quot;9 [0]\n6 2080 4.0\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="56ada945-1ef8-e269-44df-f051dacb442d">
+      <Execution id="aa452a2f-f706-40e7-a43e-4b1caa4f9c7a" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;class Source:\n def __iter__(self):raise ValueErro&quot;···, expected: &quot;ValueError iterator\nValueError iterator\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="b4d2b1ab-403b-9aec-8c8d-4ffabd4d1b41">
+      <Execution id="74ac0eb1-645b-4fc4-95a8-996141d38c45" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;values=[1,2]\nevents=[]\nclass Total:\n def __add_&quot;···, expected: &quot;True [1, 2, 3] [1, 2, 3]\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="aa2ea4bc-c485-b1e3-2f61-4d9a9ef1b2a6">
+      <Execution id="bd4cd2f2-502c-4035-91f0-e3ea65be0954" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;mapping={'a':1,'b':2}\nclass Total:\n def __add__(&quot;···, expected: &quot;changed\n{'a': 1, 'b': 2, 'c': 3}\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="6e607c8f-1109-3ed7-cfe3-10049d3b88ff">
+      <Execution id="a383fae1-af00-4829-ba86-17b30efe96d8" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="a68a6c2e-d816-0fe8-3013-c8143d145747">
+      <Execution id="f8b96b81-e716-4250-ac3c-6e1c0bcfaa19" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests" name="InvalidStartStillAwaitsIteratorAcquisitionAndCancellation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;def values():\n yield 1\n yield 'bad'\n yield 3\ni&quot;···, expected: &quot;item\n3 []\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="91103eed-9a27-b89f-877b-da571c8f4f1d">
+      <Execution id="2c1d2297-d2cb-4425-bd51-7da47be33079" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;events=[]\nclass Source:\n def __iter__(self):\n  &quot;···, expected: &quot;['iter']\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="6efc5c20-0088-5141-38f6-4c78fe13d1b2">
+      <Execution id="1d9c119d-d14d-49d4-acae-a9b9b00f84f4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: &quot;events=[]\nclass Source:\n def __iter__(self):\n  &quot;···, expected: &quot;start\nstart\n['iter', 'iter']\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="85423f0f-adbc-080a-e874-2721af667b84">
+      <Execution id="965859b7-89af-4b08-92f4-ca99094a19b5" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;events=[]\nclass Value:\n def __radd__(self,left):&quot;···, expected: &quot;9 [0]\n6 2080 4.0\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="ea36130f-0a74-19b2-e281-c6e7cda6ed04">
+      <Execution id="969d5da1-4a33-4cf5-bb52-7d2554965d7e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: &quot;values=[1,2]\nevents=[]\nclass Total:\n def __add_&quot;···, expected: &quot;True [1, 2, 3] [1, 2, 3]\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="8aa45287-bc9f-d8f3-06e0-d7ab25ff62eb">
+      <Execution id="1f5bc786-bc28-418c-ae4b-9b67e8aca492" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests" name="SumPreservesAcquisitionAliasesAndIteratorState" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="b4d2b1ab-403b-9aec-8c8d-4ffabd4d1b41" executionId="74ac0eb1-645b-4fc4-95a8-996141d38c45" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="91103eed-9a27-b89f-877b-da571c8f4f1d" executionId="2c1d2297-d2cb-4425-bd51-7da47be33079" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8aa45287-bc9f-d8f3-06e0-d7ab25ff62eb" executionId="1f5bc786-bc28-418c-ae4b-9b67e8aca492" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="56ada945-1ef8-e269-44df-f051dacb442d" executionId="aa452a2f-f706-40e7-a43e-4b1caa4f9c7a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="aa2ea4bc-c485-b1e3-2f61-4d9a9ef1b2a6" executionId="bd4cd2f2-502c-4035-91f0-e3ea65be0954" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="94dc5f65-43d8-3109-2c75-6ffb442792c4" executionId="8dbcbb49-1aad-4f9f-97f4-b9f73f72db1d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a68a6c2e-d816-0fe8-3013-c8143d145747" executionId="f8b96b81-e716-4250-ac3c-6e1c0bcfaa19" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4cc058a8-47e4-c21f-87ac-70f4511eea22" executionId="b3075e8d-69d3-4efd-a529-5ebcd13bd359" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7ed09eb4-6024-d542-055d-28c026095526" executionId="b975f20a-fa5f-49e6-b20a-8fec868788b1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d6bf60bb-7cf4-f132-fc36-89a13fe2bd42" executionId="59ced821-3530-4d99-8cd2-c68fbfb0418e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="85423f0f-adbc-080a-e874-2721af667b84" executionId="965859b7-89af-4b08-92f4-ca99094a19b5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ea36130f-0a74-19b2-e281-c6e7cda6ed04" executionId="969d5da1-4a33-4cf5-bb52-7d2554965d7e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6e607c8f-1109-3ed7-cfe3-10049d3b88ff" executionId="a383fae1-af00-4829-ba86-17b30efe96d8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="76e58571-b0b4-b357-fda7-fae9b9d81477" executionId="033c5588-04ae-47ab-b8e1-b4d9169c6cd9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8a4ef5f7-98c3-ea48-4a4c-504c89613a4e" executionId="62c103e5-6b47-472f-a77b-69abe64b15b2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="95e7fde3-7b07-63d8-8d4a-4bfccaf6edb0" executionId="8f0bf448-70b1-4e9a-9f01-56af3e6c1ee9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cc874721-0bd3-7093-2b95-5fc95986722f" executionId="2450bc27-ac19-4816-804e-5aac5340cb0e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6efc5c20-0088-5141-38f6-4c78fe13d1b2" executionId="1d9c119d-d14d-49d4-acae-a9b9b00f84f4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="18" executed="18" passed="10" failed="8" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.12]   Discovering: Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.37]   Discovered:  Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.41]   Starting:    Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.61]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:01.61]                        ↓ (pos 6)&#xD;
+[xUnit.net 00:00:01.61]       Expected: "beforeiter"&#xD;
+[xUnit.net 00:00:01.61]       Actual:   "before"&#xD;
+[xUnit.net 00:00:01.61]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.61]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumIteratorAcquisitionTests.cs(47,0): at Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(Boolean cancel)&#xD;
+[xUnit.net 00:00:01.61]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumIteratorAcquisitionTests.cs(54,0): at Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(Boolean cancel)&#xD;
+[xUnit.net 00:00:01.61]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.61]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:01.61]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:01.61]       Expected: "ValueError iterator\nValueError iterator\n"&#xD;
+[xUnit.net 00:00:01.61]       Actual:   "TypeError sum() can't sum strings [use ''"···&#xD;
+[xUnit.net 00:00:01.61]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:01.61]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.61]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumCursorCompatibilityTests.cs(39,0): at Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(Boolean asynchronous, String source, String expected)&#xD;
+[xUnit.net 00:00:01.61]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.62]       Iterator acquisition was skipped.&#xD;
+[xUnit.net 00:00:01.62]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.62]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumIteratorAcquisitionTests.cs(38,0): at Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(Boolean cancel)&#xD;
+[xUnit.net 00:00:01.62]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumIteratorAcquisitionTests.cs(54,0): at Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(Boolean cancel)&#xD;
+[xUnit.net 00:00:01.62]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.62]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:01.62]                   ↓ (pos 1)&#xD;
+[xUnit.net 00:00:01.62]       Expected: "['iter']\n"&#xD;
+[xUnit.net 00:00:01.62]       Actual:   "[]\n"&#xD;
+[xUnit.net 00:00:01.62]                   ↑ (pos 1)&#xD;
+[xUnit.net 00:00:01.62]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.62]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumCursorCompatibilityTests.cs(39,0): at Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(Boolean asynchronous, String source, String expected)&#xD;
+[xUnit.net 00:00:01.62]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.64]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:01.64]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:01.64]       Expected: "ValueError iterator\nValueError iterator\n"&#xD;
+[xUnit.net 00:00:01.64]       Actual:   "TypeError sum() can't sum strings [use ''"···&#xD;
+[xUnit.net 00:00:01.64]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:01.64]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.64]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumCursorCompatibilityTests.cs(39,0): at Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(Boolean asynchronous, String source, String expected)&#xD;
+[xUnit.net 00:00:01.64]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.64]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:01.64]                                 ↓ (pos 13)&#xD;
+[xUnit.net 00:00:01.64]       Expected: "start\nstart\n['iter', 'iter']\n"&#xD;
+[xUnit.net 00:00:01.64]       Actual:   "start\nstart\n[]\n"&#xD;
+[xUnit.net 00:00:01.64]                                 ↑ (pos 13)&#xD;
+[xUnit.net 00:00:01.64]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.64]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumCursorCompatibilityTests.cs(39,0): at Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(Boolean asynchronous, String source, String expected)&#xD;
+[xUnit.net 00:00:01.64]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.67]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:01.67]                   ↓ (pos 1)&#xD;
+[xUnit.net 00:00:01.67]       Expected: "['iter']\n"&#xD;
+[xUnit.net 00:00:01.67]       Actual:   "[]\n"&#xD;
+[xUnit.net 00:00:01.67]                   ↑ (pos 1)&#xD;
+[xUnit.net 00:00:01.67]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.67]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumCursorCompatibilityTests.cs(39,0): at Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(Boolean asynchronous, String source, String expected)&#xD;
+[xUnit.net 00:00:01.67]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.68]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:01.68]                                 ↓ (pos 13)&#xD;
+[xUnit.net 00:00:01.68]       Expected: "start\nstart\n['iter', 'iter']\n"&#xD;
+[xUnit.net 00:00:01.68]       Actual:   "start\nstart\n[]\n"&#xD;
+[xUnit.net 00:00:01.68]                                 ↑ (pos 13)&#xD;
+[xUnit.net 00:00:01.68]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.68]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SumCursorCompatibilityTests.cs(39,0): at Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(Boolean asynchronous, String source, String expected)&#xD;
+[xUnit.net 00:00:01.68]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.69]   Finished:    Lokad.Lython.PublicApi.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T18:55:28.5473827+02:00">
+        <Text>[xUnit.net 00:00:01.61]     Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(cancel: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T18:55:28.5506876+02:00">
+        <Text>[xUnit.net 00:00:01.61]     Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: "class Source:\n def __iter__(self):raise ValueErro"···, expected: "ValueError iterator\nValueError iterator\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T18:55:28.5550465+02:00">
+        <Text>[xUnit.net 00:00:01.62]     Lokad.Lython.PublicApi.Tests.SumIteratorAcquisitionTests.InvalidStartStillAwaitsIteratorAcquisitionAndCancellation(cancel: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T18:55:28.5563849+02:00">
+        <Text>[xUnit.net 00:00:01.62]     Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: "events=[]\nclass Source:\n def __iter__(self):\n  "···, expected: "['iter']\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T18:55:28.5759205+02:00">
+        <Text>[xUnit.net 00:00:01.64]     Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: "class Source:\n def __iter__(self):raise ValueErro"···, expected: "ValueError iterator\nValueError iterator\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T18:55:28.5776027+02:00">
+        <Text>[xUnit.net 00:00:01.64]     Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: "events=[]\nclass Source:\n def __iter__(self):\n  "···, expected: "start\nstart\n['iter', 'iter']\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T18:55:28.6143863+02:00">
+        <Text>[xUnit.net 00:00:01.67]     Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: True, source: "events=[]\nclass Source:\n def __iter__(self):\n  "···, expected: "['iter']\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T18:55:28.6155477+02:00">
+        <Text>[xUnit.net 00:00:01.68]     Lokad.Lython.PublicApi.Tests.SumCursorCompatibilityTests.SumPreservesAcquisitionAliasesAndIteratorState(asynchronous: False, source: "events=[]\nclass Source:\n def __iter__(self):\n  "···, expected: "start\nstart\n['iter', 'iter']\n") [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,139 @@
+{
+  "accepted": true,
+  "comparisons": [
+    {
+      "route": "bytes65",
+      "asynchronous": false,
+      "beforeBytes": 384.0,
+      "afterBytes": 384.0,
+      "savedBytes": 0.0,
+      "steps": 11.0
+    },
+    {
+      "route": "bytes65",
+      "asynchronous": true,
+      "beforeBytes": 384.0,
+      "afterBytes": 384.0,
+      "savedBytes": 0.0,
+      "steps": 11.0
+    },
+    {
+      "route": "custom65",
+      "asynchronous": false,
+      "beforeBytes": 38464.0,
+      "afterBytes": 38464.0,
+      "savedBytes": 0.0,
+      "steps": 206.0
+    },
+    {
+      "route": "custom65",
+      "asynchronous": true,
+      "beforeBytes": 38536.0,
+      "afterBytes": 38440.0,
+      "savedBytes": 96.0,
+      "steps": 206.0
+    },
+    {
+      "route": "generator65",
+      "asynchronous": false,
+      "beforeBytes": 3800.0,
+      "afterBytes": 3800.0,
+      "savedBytes": 0.0,
+      "steps": 606.0
+    },
+    {
+      "route": "generator65",
+      "asynchronous": true,
+      "beforeBytes": 3880.0,
+      "afterBytes": 3784.0,
+      "savedBytes": 96.0,
+      "steps": 606.0
+    },
+    {
+      "route": "list0",
+      "asynchronous": false,
+      "beforeBytes": 504.0,
+      "afterBytes": 504.0,
+      "savedBytes": 0.0,
+      "steps": 10.0
+    },
+    {
+      "route": "list0",
+      "asynchronous": true,
+      "beforeBytes": 576.0,
+      "afterBytes": 480.0,
+      "savedBytes": 96.0,
+      "steps": 10.0
+    },
+    {
+      "route": "list65",
+      "asynchronous": false,
+      "beforeBytes": 2584.0,
+      "afterBytes": 2584.0,
+      "savedBytes": 0.0,
+      "steps": 11.0
+    },
+    {
+      "route": "list65",
+      "asynchronous": true,
+      "beforeBytes": 2656.0,
+      "afterBytes": 2560.0,
+      "savedBytes": 96.0,
+      "steps": 11.0
+    },
+    {
+      "route": "range65",
+      "asynchronous": false,
+      "beforeBytes": 4712.0,
+      "afterBytes": 4712.0,
+      "savedBytes": 0.0,
+      "steps": 11.0
+    },
+    {
+      "route": "range65",
+      "asynchronous": true,
+      "beforeBytes": 4808.0,
+      "afterBytes": 4712.0,
+      "savedBytes": 96.0,
+      "steps": 11.0
+    },
+    {
+      "route": "tuple0",
+      "asynchronous": false,
+      "beforeBytes": 464.0,
+      "afterBytes": 464.0,
+      "savedBytes": 0.0,
+      "steps": 10.0
+    },
+    {
+      "route": "tuple0",
+      "asynchronous": true,
+      "beforeBytes": 536.0,
+      "afterBytes": 440.0,
+      "savedBytes": 96.0,
+      "steps": 10.0
+    },
+    {
+      "route": "tuple65",
+      "asynchronous": false,
+      "beforeBytes": 2576.0,
+      "afterBytes": 2576.0,
+      "savedBytes": 0.0,
+      "steps": 11.0
+    },
+    {
+      "route": "tuple65",
+      "asynchronous": true,
+      "beforeBytes": 2648.0,
+      "afterBytes": 2552.0,
+      "savedBytes": 96.0,
+      "steps": 11.0
+    }
+  ],
+  "validPathBoundaryRecords": 126,
+  "allNativeStepArraysIdentical": true,
+  "allSyncAndExactByteControlArraysIdentical": true,
+  "invalidStartOrderingIntentionallyCorrected": true,
+  "elapsedMeasured": false,
+  "rawSampleStatus": "All allocation arrays stable;no recapture or tuning."
+}

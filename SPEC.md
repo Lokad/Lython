@@ -1751,6 +1751,14 @@ remains ordinary attribute access. Missing and non-callable slots fail with
 binding and the length callback without replay; exact builtin lengths keep their
 synchronous kernels. The existing integer and nonnegative result checks apply.
 
+After binding arguments, `sum(iterable, start=0)` acquires the iterator before
+rejecting a string or bytes start with `TypeError`. Acquisition effects and
+errors therefore precede start rejection; no item is pulled to validate the
+start. An empty iterable returns the original start object. `RunAsync` awaits
+user iterator and addition callbacks, including host I/O, and awaits native
+iterator cleanup before completing. A retained Python iterator remains usable
+after an item error, at the position reached by the failed sum.
+
 `property(fget=None, fset=None, fdel=None, doc=None)` supports all four positional
 or keyword arguments. Its readonly `fget`, `fset` and `fdel` metadata retains the
 original accessor objects, including `None`. Construction accepts non-callable
