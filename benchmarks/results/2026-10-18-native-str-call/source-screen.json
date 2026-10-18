@@ -1,0 +1,23 @@
+{
+  "head": "7cb7e8ec89e592067398d7b2754fde340adf8667",
+  "screenedUtc": "2026-10-18T18:10:58.095244+00:00",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "5d2cdd49739ffae72250639f30dce50ac908dd9b3bb6951810f40fc3b58467f6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "dc91afc2ecb68c9fd2f20c379764a32746aebcc6aead1fee6adceadde7cc7730",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "0df6bf79015612b3216d3591af203a196a24579dc3be012b9ae6abcb47debd02",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "8f6449fcbd1d1a0267c4dbebad159245508ec3a22ce0ecce369912032872b974",
+    "src/Lokad.Lython/Runtime/Calls/CallBinder.cs": "26b06815e595d18cd38c0bd3e71efe7b6ab5914f67049c354b87dbd35a00a8ed",
+    "src/Lokad.Lython/Runtime/PyRendering.cs": "1da886225f3938db8f3f958990c4d976fec85104e34ca9912e55961220b67cc8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "6f8523e69f62eea8f61cb4176de0080f1fbfc6a5cfbbe67d6329ddf0aafc4a31",
+    "benchmarks/scripts/text-summary-helpers.py": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+    "benchmarks/scripts/text-summary.py": "d34b08e1864b76f5be1bea22d8aef6b43be63262aed98e2ac5c0bc76e168253f"
+  },
+  "consumer": "Both existing text-summary jobs call str(counts[word]) once per distinct output word. Exact ordinary int/string one-positional calls currently package CallArgumentValue storage and allocate a one-element bound object array in CallBinder.",
+  "proposal": "Reuse InvokeSingleInput for actual BuiltinCallable str with one positional exact BigInteger or PyString operand. Share the existing single-value Str rendering expression via one static operation;both synchronous and async executable call consumers use it. Keep the same PyRendering entry,frame/check/exception translation/result transfer and preflights.",
+  "expectedRemoval": "Argument packaging/binding allocation and dispatch for this ordinary call form. No new binder,registry,owner,pool,cache,mode or rendering kernel;no changes to str type construction/metadata.",
+  "compatibility": "No public signature or Python behavior change. Alias of actual builtin can qualify;guest shadowed callable cannot. Keywords,expanded calls,codecs,custom instances,containers and other native kinds remain on the existing general routes;custom protocols must still suspend/cancel correctly. No new async capability or lifetime policy.",
+  "acceptance": "Freeze one short native warm allocation/work pair before source edits:integer and string forms plus dynamic/expanded/non-native controls. Compare every fuel/refusal/error/span boundary;wide integer formatting,identity,retained aliases,rebinding,codec diagnostics and actual __str__/__repr__/descriptor I/O/cancellation. Reuse IntegerRenderingAdmissionTests,StringProtocolBoundaryTests,IntegerRenderingTests,StringProtocolTests,codec tests,90 owner cases and58 complete jobs. No elapsed/CPython gain prediction;no VM lane.",
+  "stop": "Only single-positional BigInteger/PyString str call transport. Reject if semantics/fuel/spans/funding change or new lifetime/validation infrastructure is needed. No repr/ascii/format,all-builtin binder,scalar representation,rendering rewrite or metadata audit.",
+  "runtimeEdits": false,
+  "measurements": false
+}

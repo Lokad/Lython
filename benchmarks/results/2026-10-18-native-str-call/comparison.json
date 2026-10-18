@@ -1,0 +1,650 @@
+{
+  "accepted": true,
+  "comparisons": [
+    {
+      "shape": "alias",
+      "asynchronous": false,
+      "affected": true,
+      "beforeBytes": 496.0,
+      "afterBytes": 464.0,
+      "savedBytes": 32.0,
+      "stepsPerCall": 11.0,
+      "beforeSamples": [
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968
+      ],
+      "afterSamples": [
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712
+      ]
+    },
+    {
+      "shape": "alias",
+      "asynchronous": true,
+      "affected": true,
+      "beforeBytes": 496.0,
+      "afterBytes": 464.0,
+      "savedBytes": 32.0,
+      "stepsPerCall": 11.0,
+      "beforeSamples": [
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968
+      ],
+      "afterSamples": [
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712,
+        3712
+      ]
+    },
+    {
+      "shape": "bytes-control",
+      "asynchronous": false,
+      "affected": false,
+      "beforeBytes": 560.0,
+      "afterBytes": 560.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 9.0,
+      "beforeSamples": [
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480
+      ],
+      "afterSamples": [
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480
+      ]
+    },
+    {
+      "shape": "bytes-control",
+      "asynchronous": true,
+      "affected": false,
+      "beforeBytes": 560.0,
+      "afterBytes": 560.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 9.0,
+      "beforeSamples": [
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480
+      ],
+      "afterSamples": [
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480,
+        4480
+      ]
+    },
+    {
+      "shape": "codec-control",
+      "asynchronous": false,
+      "affected": false,
+      "beforeBytes": 496.0,
+      "afterBytes": 496.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 11.0,
+      "beforeSamples": [
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968
+      ],
+      "afterSamples": [
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968
+      ]
+    },
+    {
+      "shape": "codec-control",
+      "asynchronous": true,
+      "affected": false,
+      "beforeBytes": 496.0,
+      "afterBytes": 496.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 11.0,
+      "beforeSamples": [
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968
+      ],
+      "afterSamples": [
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968,
+        3968
+      ]
+    },
+    {
+      "shape": "custom-control",
+      "asynchronous": false,
+      "affected": false,
+      "beforeBytes": 960.0,
+      "afterBytes": 960.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 13.0,
+      "beforeSamples": [
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680
+      ],
+      "afterSamples": [
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680
+      ]
+    },
+    {
+      "shape": "custom-control",
+      "asynchronous": true,
+      "affected": false,
+      "beforeBytes": 960.0,
+      "afterBytes": 960.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 13.0,
+      "beforeSamples": [
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680
+      ],
+      "afterSamples": [
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680,
+        7680
+      ]
+    },
+    {
+      "shape": "expanded-control",
+      "asynchronous": false,
+      "affected": false,
+      "beforeBytes": 1088.0,
+      "afterBytes": 1088.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 14.0,
+      "beforeSamples": [
+        8704,
+        8704,
+        8704,
+        8704,
+        8704,
+        8704,
+        8704,
+        8704
+      ],
+      "afterSamples": [
+        8704,
+        8704,
+        8704,
+        8704,
+        8704,
+        8704,
+        8704,
+        8704
+      ]
+    },
+    {
+      "shape": "expanded-control",
+      "asynchronous": true,
+      "affected": false,
+      "beforeBytes": 1160.0,
+      "afterBytes": 1160.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 14.0,
+      "beforeSamples": [
+        9280,
+        9280,
+        9280,
+        9280,
+        9280,
+        9280,
+        9280,
+        9280
+      ],
+      "afterSamples": [
+        9280,
+        9280,
+        9280,
+        9280,
+        9280,
+        9280,
+        9280,
+        9280
+      ]
+    },
+    {
+      "shape": "float-control",
+      "asynchronous": false,
+      "affected": false,
+      "beforeBytes": 520.0,
+      "afterBytes": 520.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 9.0,
+      "beforeSamples": [
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160
+      ],
+      "afterSamples": [
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160
+      ]
+    },
+    {
+      "shape": "float-control",
+      "asynchronous": true,
+      "affected": false,
+      "beforeBytes": 520.0,
+      "afterBytes": 520.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 9.0,
+      "beforeSamples": [
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160
+      ],
+      "afterSamples": [
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160,
+        4160
+      ]
+    },
+    {
+      "shape": "int",
+      "asynchronous": false,
+      "affected": true,
+      "beforeBytes": 488.0,
+      "afterBytes": 456.0,
+      "savedBytes": 32.0,
+      "stepsPerCall": 9.0,
+      "beforeSamples": [
+        3904,
+        3904,
+        3904,
+        3904,
+        3904,
+        3904,
+        3904,
+        3904
+      ],
+      "afterSamples": [
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648
+      ]
+    },
+    {
+      "shape": "int",
+      "asynchronous": true,
+      "affected": true,
+      "beforeBytes": 488.0,
+      "afterBytes": 456.0,
+      "savedBytes": 32.0,
+      "stepsPerCall": 9.0,
+      "beforeSamples": [
+        3904,
+        3904,
+        3904,
+        3904,
+        3904,
+        3904,
+        3904,
+        3904
+      ],
+      "afterSamples": [
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648,
+        3648
+      ]
+    },
+    {
+      "shape": "shadow-control",
+      "asynchronous": false,
+      "affected": false,
+      "beforeBytes": 472.0,
+      "afterBytes": 472.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 12.0,
+      "beforeSamples": [
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776
+      ],
+      "afterSamples": [
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776
+      ]
+    },
+    {
+      "shape": "shadow-control",
+      "asynchronous": true,
+      "affected": false,
+      "beforeBytes": 472.0,
+      "afterBytes": 472.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 12.0,
+      "beforeSamples": [
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776
+      ],
+      "afterSamples": [
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776,
+        3776
+      ]
+    },
+    {
+      "shape": "string",
+      "asynchronous": false,
+      "affected": true,
+      "beforeBytes": 344.0,
+      "afterBytes": 312.0,
+      "savedBytes": 32.0,
+      "stepsPerCall": 9.0,
+      "beforeSamples": [
+        2752,
+        2752,
+        2752,
+        2752,
+        2752,
+        2752,
+        2752,
+        2752
+      ],
+      "afterSamples": [
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496
+      ]
+    },
+    {
+      "shape": "string",
+      "asynchronous": true,
+      "affected": true,
+      "beforeBytes": 344.0,
+      "afterBytes": 312.0,
+      "savedBytes": 32.0,
+      "stepsPerCall": 9.0,
+      "beforeSamples": [
+        2752,
+        2752,
+        2752,
+        2752,
+        2752,
+        2752,
+        2752,
+        2752
+      ],
+      "afterSamples": [
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496
+      ]
+    },
+    {
+      "shape": "wide",
+      "asynchronous": false,
+      "affected": true,
+      "beforeBytes": 776.0,
+      "afterBytes": 744.0,
+      "savedBytes": 32.0,
+      "stepsPerCall": 9.0,
+      "beforeSamples": [
+        6208,
+        6208,
+        6208,
+        6208,
+        6208,
+        6208,
+        6208,
+        6208
+      ],
+      "afterSamples": [
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952
+      ]
+    },
+    {
+      "shape": "wide",
+      "asynchronous": true,
+      "affected": true,
+      "beforeBytes": 776.0,
+      "afterBytes": 744.0,
+      "savedBytes": 32.0,
+      "stepsPerCall": 9.0,
+      "beforeSamples": [
+        6208,
+        6208,
+        6208,
+        6208,
+        6208,
+        6208,
+        6208,
+        6208
+      ],
+      "afterSamples": [
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952,
+        5952
+      ]
+    },
+    {
+      "shape": "zero-control",
+      "asynchronous": false,
+      "affected": false,
+      "beforeBytes": 312.0,
+      "afterBytes": 312.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 7.0,
+      "beforeSamples": [
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496
+      ],
+      "afterSamples": [
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496
+      ]
+    },
+    {
+      "shape": "zero-control",
+      "asynchronous": true,
+      "affected": false,
+      "beforeBytes": 312.0,
+      "afterBytes": 312.0,
+      "savedBytes": 0.0,
+      "stepsPerCall": 7.0,
+      "beforeSamples": [
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496
+      ],
+      "afterSamples": [
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496,
+        2496
+      ]
+    }
+  ],
+  "exactFuelRecords": 216,
+  "exactAdmissionRecords": 36,
+  "allWorkFundingSourceOutputArraysIdentical": true,
+  "all14ControlAllocationArraysIdentical": true,
+  "affectedSavedBytesPerCall": 32,
+  "elapsedMeasured": false,
+  "rawCaptures": "Full samples/work/funding/hashes and252 boundary records in baseline.trx and candidate.trx;one frozen pair,no tuning."
+}

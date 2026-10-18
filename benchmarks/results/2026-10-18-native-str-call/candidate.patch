@@ -1,0 +1,55 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs
+index df61219d..4d508750 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs
+@@ -189,6 +189,9 @@ internal sealed partial class LythonRuntime
+         return PyStringOps.TrimTrailingNewline(line);
+     }
+ 
++    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> NativeStrOperation
++        = static (value, _, context) => PyRendering.ToInterpolatedPyString(value, new PyRenderingContext(context));
++
+     private static object Str(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+     {
+         if (arguments.Length == 0)
+@@ -198,7 +201,7 @@ internal sealed partial class LythonRuntime
+ 
+         if (arguments.Length == 1)
+         {
+-            return PyRendering.ToInterpolatedPyString(arguments[0], new PyRenderingContext(context));
++            return NativeStrOperation(arguments[0], span, context);
+         }
+ 
+         if (arguments.Length == 2 || arguments.Length == 3)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 84a2228a..691a80f4 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -628,6 +628,11 @@ internal sealed partial class LythonRuntime
+             {
+                 result = InvokeSingleInput(stack[start + callSite.ArgumentOffset], LengthOperation, callSite.CallSpan, context);
+             }
++            else if (callSite.IsPositionalOnly && callSite.ArgumentCount == 1 && target is BuiltinCallable { Name: "str" } &&
++                stack[start + callSite.ArgumentOffset] is System.Numerics.BigInteger or PyString)
++            {
++                result = InvokeSingleInput(stack[start + callSite.ArgumentOffset], NativeStrOperation, callSite.CallSpan, context);
++            }
+             else if (callSite.IsPositionalOnly && callSite.ArgumentCount == 1 && target is BuiltinCallable { Name: "int" } &&
+                 stack[start + callSite.ArgumentOffset] is PyString or PyBytes)
+             {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 1f556ed7..59d59a3d 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -146,6 +146,11 @@ internal sealed partial class LythonRuntime
+                         {
+                             result = InvokeSingleInput(_stack[start + call.ArgumentOffset], LengthOperation, call.CallSpan, _context);
+                         }
++                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 && callable is BuiltinCallable { Name: "str" } &&
++                            _stack[start + call.ArgumentOffset] is System.Numerics.BigInteger or Text.PyString)
++                        {
++                            result = InvokeSingleInput(_stack[start + call.ArgumentOffset], NativeStrOperation, call.CallSpan, _context);
++                        }
+                         else if (call.IsPositionalOnly && call.ArgumentCount == 1 && callable is BuiltinCallable { Name: "int" } &&
+                             _stack[start + call.ArgumentOffset] is Text.PyString or PyBytes)
+                         {

@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 ordinary native str calls](results/2026-10-18-native-str-call/README.md)
+reuse existing call frames and rendering,removing a bound array per affected
+call. One frozen allocation pair saves32B;14 controls and252 boundary records
+match.366 focused checks and58 complete jobs pass. Eight CPython programs match;
+two object-keyword failures reproduce on the immutable baseline and are queued
+separately. No elapsed measurement or new binder/rendering/ownership machinery.
+
 The [2026-10-18 finalized slot-map handoff](results/2026-10-18-slot-map-handoff/README.md)
 removes two compiler dictionary copies. One native/public compilation pair saves
 816-984 B per representative source, retaining roughly 168 B more cell payload

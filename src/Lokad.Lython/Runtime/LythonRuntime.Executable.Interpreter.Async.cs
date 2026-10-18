@@ -146,6 +146,11 @@ internal sealed partial class LythonRuntime
                         {
                             result = InvokeSingleInput(_stack[start + call.ArgumentOffset], LengthOperation, call.CallSpan, _context);
                         }
+                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 && callable is BuiltinCallable { Name: "str" } &&
+                            _stack[start + call.ArgumentOffset] is System.Numerics.BigInteger or Text.PyString)
+                        {
+                            result = InvokeSingleInput(_stack[start + call.ArgumentOffset], NativeStrOperation, call.CallSpan, _context);
+                        }
                         else if (call.IsPositionalOnly && call.ArgumentCount == 1 && callable is BuiltinCallable { Name: "int" } &&
                             _stack[start + call.ArgumentOffset] is Text.PyString or PyBytes)
                         {

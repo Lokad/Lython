@@ -189,6 +189,9 @@ internal sealed partial class LythonRuntime
         return PyStringOps.TrimTrailingNewline(line);
     }
 
+    private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> NativeStrOperation
+        = static (value, _, context) => PyRendering.ToInterpolatedPyString(value, new PyRenderingContext(context));
+
     private static object Str(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length == 0)
@@ -198,7 +201,7 @@ internal sealed partial class LythonRuntime
 
         if (arguments.Length == 1)
         {
-            return PyRendering.ToInterpolatedPyString(arguments[0], new PyRenderingContext(context));
+            return NativeStrOperation(arguments[0], span, context);
         }
 
         if (arguments.Length == 2 || arguments.Length == 3)

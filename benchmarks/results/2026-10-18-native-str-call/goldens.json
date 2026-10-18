@@ -1,0 +1,1056 @@
+{
+  "reference": "CPython3.13.2",
+  "semanticOnly": true,
+  "candidateProgramsMatched": 8,
+  "candidateMatchedRuns": 16,
+  "confirmedExistingObjectKeywordMismatches": 2,
+  "baselineRevision": "7cb7e8ec89e592067398d7b2754fde340adf8667",
+  "baselineLibrarySha256": "d9ac548f5008e0106838866536a3cbb77fe8f73bbd73a8930c52aad80d4b4e6d",
+  "candidateLibrarySha256": "6eea453310070082b7abc7e669b19a79316ec96c971df86dd4c54f1927fe8099",
+  "captures": [
+    {
+      "revision": "candidate",
+      "label": "integers",
+      "source": "print(str(12),str(-(1<<63)),str(1<<256))",
+      "asynchronous": false,
+      "report": {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "12 -9223372036854775808 115792089237316195423570985008687907853269984665640564039457584007913129639936\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1661,
+          "PeakProjectionMemoryBytes": 238,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "12 -9223372036854775808 115792089237316195423570985008687907853269984665640564039457584007913129639936\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "identity",
+      "source": "value='caf\u00e9 \ud83d\ude00'\nalias=str\nprint(str(value) is value,alias(value) is value,str(value))",
+      "asynchronous": false,
+      "report": {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "True True caf\u00e9 \ud83d\ude00\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 208,
+          "PeakProjectionMemoryBytes": 74,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "True True caf\u00e9 \ud83d\ude00\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "rebinding",
+      "source": "original=str\nstr=lambda value:'shadow'\nprint(original(12),str(12))",
+      "asynchronous": false,
+      "report": {
+        "Index": 2,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "12 shadow\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1306,
+          "PeakProjectionMemoryBytes": 52,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "12 shadow\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "general-controls",
+      "source": "print(str(*[12]),str(1.5),str(b'x'),str(),str(b'\\xc3\\xa9','utf-8'))",
+      "asynchronous": false,
+      "report": {
+        "Index": 3,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "12 1.5 b'x'  \u00e9\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 930,
+          "PeakProjectionMemoryBytes": 64,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "12 1.5 b'x'  \u00e9\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "custom",
+      "source": "class Value:\n def __str__(self):return 'custom'\nprint(str(Value()))",
+      "asynchronous": false,
+      "report": {
+        "Index": 4,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "custom\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1828,
+          "PeakProjectionMemoryBytes": 46,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "custom\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "codec-keyword",
+      "source": "print(str(b'\\xc3\\xa9',encoding='utf-8'))",
+      "asynchronous": false,
+      "report": {
+        "Index": 5,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "\u00e9\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 298,
+          "PeakProjectionMemoryBytes": 38,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\u00e9\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "codec-error",
+      "source": "try:str('x','utf-8')\nexcept TypeError as error:print(type(error).__name__,str(error))",
+      "asynchronous": false,
+      "report": {
+        "Index": 6,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "TypeError decoding str is not supported\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 594,
+          "PeakProjectionMemoryBytes": 112,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "TypeError decoding str is not supported\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "aliases",
+      "source": "value='retained'\nitems=[str(value),value]\ndel value\nprint(items[0] is items[1],items)",
+      "asynchronous": false,
+      "report": {
+        "Index": 7,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "True ['retained', 'retained']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 867,
+          "PeakProjectionMemoryBytes": 92,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "True ['retained', 'retained']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "object-keyword",
+      "source": "print(str(object=12))",
+      "asynchronous": false,
+      "report": {
+        "Index": 8,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 160,
+          "PeakProjectionMemoryBytes": 196,
+          "DeniedReservationBytes": 0,
+          "Failure": {
+            "ExceptionType": "TypeError",
+            "Message": "Builtin 'str' got an unexpected keyword argument 'object'.",
+            "Span": "line 1, column 7",
+            "Frames": [
+              "<module> (line 1)"
+            ]
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "12\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "object-codec-keyword",
+      "source": "print(str(object=b'\\xc3\\xa9',encoding='utf-8'))",
+      "asynchronous": false,
+      "report": {
+        "Index": 9,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 160,
+          "PeakProjectionMemoryBytes": 196,
+          "DeniedReservationBytes": 0,
+          "Failure": {
+            "ExceptionType": "TypeError",
+            "Message": "Builtin 'str' got an unexpected keyword argument 'object'.",
+            "Span": "line 1, column 7",
+            "Frames": [
+              "<module> (line 1)"
+            ]
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\u00e9\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "integers",
+      "source": "print(str(12),str(-(1<<63)),str(1<<256))",
+      "asynchronous": true,
+      "report": {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "12 -9223372036854775808 115792089237316195423570985008687907853269984665640564039457584007913129639936\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1661,
+          "PeakProjectionMemoryBytes": 238,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "12 -9223372036854775808 115792089237316195423570985008687907853269984665640564039457584007913129639936\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "identity",
+      "source": "value='caf\u00e9 \ud83d\ude00'\nalias=str\nprint(str(value) is value,alias(value) is value,str(value))",
+      "asynchronous": true,
+      "report": {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "True True caf\u00e9 \ud83d\ude00\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 208,
+          "PeakProjectionMemoryBytes": 74,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "True True caf\u00e9 \ud83d\ude00\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "rebinding",
+      "source": "original=str\nstr=lambda value:'shadow'\nprint(original(12),str(12))",
+      "asynchronous": true,
+      "report": {
+        "Index": 2,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "12 shadow\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1306,
+          "PeakProjectionMemoryBytes": 52,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "12 shadow\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "general-controls",
+      "source": "print(str(*[12]),str(1.5),str(b'x'),str(),str(b'\\xc3\\xa9','utf-8'))",
+      "asynchronous": true,
+      "report": {
+        "Index": 3,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "12 1.5 b'x'  \u00e9\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 930,
+          "PeakProjectionMemoryBytes": 64,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "12 1.5 b'x'  \u00e9\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "custom",
+      "source": "class Value:\n def __str__(self):return 'custom'\nprint(str(Value()))",
+      "asynchronous": true,
+      "report": {
+        "Index": 4,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "custom\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1828,
+          "PeakProjectionMemoryBytes": 46,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "custom\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "codec-keyword",
+      "source": "print(str(b'\\xc3\\xa9',encoding='utf-8'))",
+      "asynchronous": true,
+      "report": {
+        "Index": 5,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "\u00e9\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 298,
+          "PeakProjectionMemoryBytes": 38,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\u00e9\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "codec-error",
+      "source": "try:str('x','utf-8')\nexcept TypeError as error:print(type(error).__name__,str(error))",
+      "asynchronous": true,
+      "report": {
+        "Index": 6,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "TypeError decoding str is not supported\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 594,
+          "PeakProjectionMemoryBytes": 112,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "TypeError decoding str is not supported\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "aliases",
+      "source": "value='retained'\nitems=[str(value),value]\ndel value\nprint(items[0] is items[1],items)",
+      "asynchronous": true,
+      "report": {
+        "Index": 7,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "True ['retained', 'retained']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 867,
+          "PeakProjectionMemoryBytes": 92,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "True ['retained', 'retained']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "object-keyword",
+      "source": "print(str(object=12))",
+      "asynchronous": true,
+      "report": {
+        "Index": 8,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 160,
+          "PeakProjectionMemoryBytes": 196,
+          "DeniedReservationBytes": 0,
+          "Failure": {
+            "ExceptionType": "TypeError",
+            "Message": "Builtin 'str' got an unexpected keyword argument 'object'.",
+            "Span": "line 1, column 7",
+            "Frames": [
+              "<module> (line 1)"
+            ]
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "12\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "revision": "candidate",
+      "label": "object-codec-keyword",
+      "source": "print(str(object=b'\\xc3\\xa9',encoding='utf-8'))",
+      "asynchronous": true,
+      "report": {
+        "Index": 9,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 160,
+          "PeakProjectionMemoryBytes": 196,
+          "DeniedReservationBytes": 0,
+          "Failure": {
+            "ExceptionType": "TypeError",
+            "Message": "Builtin 'str' got an unexpected keyword argument 'object'.",
+            "Span": "line 1, column 7",
+            "Frames": [
+              "<module> (line 1)"
+            ]
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\u00e9\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "revision": "baseline",
+      "label": "integers",
+      "source": "print(str(12),str(-(1<<63)),str(1<<256))",
+      "asynchronous": false,
+      "report": {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "12 -9223372036854775808 115792089237316195423570985008687907853269984665640564039457584007913129639936\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1661,
+          "PeakProjectionMemoryBytes": 238,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "12 -9223372036854775808 115792089237316195423570985008687907853269984665640564039457584007913129639936\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "baseline",
+      "label": "object-keyword",
+      "source": "print(str(object=12))",
+      "asynchronous": false,
+      "report": {
+        "Index": 1,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 160,
+          "PeakProjectionMemoryBytes": 196,
+          "DeniedReservationBytes": 0,
+          "Failure": {
+            "ExceptionType": "TypeError",
+            "Message": "Builtin 'str' got an unexpected keyword argument 'object'.",
+            "Span": "line 1, column 7",
+            "Frames": [
+              "<module> (line 1)"
+            ]
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "12\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "baseline",
+      "label": "object-codec-keyword",
+      "source": "print(str(object=b'\\xc3\\xa9',encoding='utf-8'))",
+      "asynchronous": false,
+      "report": {
+        "Index": 2,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 160,
+          "PeakProjectionMemoryBytes": 196,
+          "DeniedReservationBytes": 0,
+          "Failure": {
+            "ExceptionType": "TypeError",
+            "Message": "Builtin 'str' got an unexpected keyword argument 'object'.",
+            "Span": "line 1, column 7",
+            "Frames": [
+              "<module> (line 1)"
+            ]
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\u00e9\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "revision": "baseline",
+      "label": "integers",
+      "source": "print(str(12),str(-(1<<63)),str(1<<256))",
+      "asynchronous": true,
+      "report": {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "12 -9223372036854775808 115792089237316195423570985008687907853269984665640564039457584007913129639936\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1661,
+          "PeakProjectionMemoryBytes": 238,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "12 -9223372036854775808 115792089237316195423570985008687907853269984665640564039457584007913129639936\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "revision": "baseline",
+      "label": "object-keyword",
+      "source": "print(str(object=12))",
+      "asynchronous": true,
+      "report": {
+        "Index": 1,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 160,
+          "PeakProjectionMemoryBytes": 196,
+          "DeniedReservationBytes": 0,
+          "Failure": {
+            "ExceptionType": "TypeError",
+            "Message": "Builtin 'str' got an unexpected keyword argument 'object'.",
+            "Span": "line 1, column 7",
+            "Frames": [
+              "<module> (line 1)"
+            ]
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "12\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "revision": "baseline",
+      "label": "object-codec-keyword",
+      "source": "print(str(object=b'\\xc3\\xa9',encoding='utf-8'))",
+      "asynchronous": true,
+      "report": {
+        "Index": 2,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 160,
+          "PeakProjectionMemoryBytes": 196,
+          "DeniedReservationBytes": 0,
+          "Failure": {
+            "ExceptionType": "TypeError",
+            "Message": "Builtin 'str' got an unexpected keyword argument 'object'.",
+            "Span": "line 1, column 7",
+            "Frames": [
+              "<module> (line 1)"
+            ]
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\u00e9\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    }
+  ]
+}

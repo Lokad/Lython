@@ -1,0 +1,32 @@
+{
+  "base": "7cb7e8ec89e592067398d7b2754fde340adf8667",
+  "diagnosticSha256": "5e0ae0349dadd9115ba0fa0f31db9ffc346145472bbbb3081dae68c71cf7d7dc",
+  "captureCountPerRevision": 1,
+  "warmups": 2,
+  "samples": 8,
+  "invocationsPerSample": 8,
+  "allocationForms": 11,
+  "allocationCases": 22,
+  "fuelRecords": 216,
+  "admissionRecords": 36,
+  "tests": 28,
+  "boundary": "Native warm execution with prepared code/context/input;pure async values complete on measured thread. Compilation,context/setup,startup scheduling,public projection,host IO excluded. Boundary cases prepare code before counter/budget restriction. No elapsed timing.",
+  "affected": [
+    "int",
+    "wide",
+    "alias",
+    "string"
+  ],
+  "controls": [
+    "expanded-control",
+    "float-control",
+    "bytes-control",
+    "codec-control",
+    "zero-control",
+    "custom-control",
+    "shadow-control"
+  ],
+  "metrics": "Current-thread allocated bytes,work,committed funding,source/output hashes;exact fuel,error/span/refusal origin/denied bytes/publication snapshots.",
+  "acceptance": "Affected allocations decrease;controls unchanged;all work/funding and252 fuel/admission records exactly match. Existing rendering/admission/protocol/codec/lifetime tests remain. No capture retry or post-gate tuning.",
+  "stopping": "One positional exact BigInteger/PyString str call transport only;no rendering/binder/type/owner/representation redesign."
+}

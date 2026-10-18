@@ -292,6 +292,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [ordinary native str call change](benchmarks/results/2026-10-18-native-str-call/README.md)
+at `7cb7e8ec` plus its frozen three-file patch saves 32 B per integer/string call
+through either API. All 14 allocation controls and 252 fuel/admission records
+match. Eight public CPython programs match; two existing object-keyword failures
+remain explicit. Elapsed was not measured; no CPython or whole-job gain is claimed.
+
 The [finalized slot-map handoff](benchmarks/results/2026-10-18-slot-map-handoff/README.md)
 at `b683730f` plus its frozen one-file patch removes two compiler dictionary
 copies. The four representative sources allocate 816-984 B less per compilation;
