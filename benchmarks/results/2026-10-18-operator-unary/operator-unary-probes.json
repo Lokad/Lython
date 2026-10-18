@@ -1,0 +1,501 @@
+{
+  "head": "21a2dd91d8242609cbc79863c949c1f6cccf7980",
+  "capturedUtc": "2026-10-18T09:31:46.829241+00:00",
+  "coreSha256": "70c1aed2d2a9885f6392cf0e9d352b333c70115c0d224fa7f2a809df22fc1fca",
+  "toolSha256": "ce64b70c545b8a3d463428dfd3e08e9ed10cf3ee427eb10b87fb8a9d111b4990",
+  "source": {
+    "neg_protocol": "import operator\nclass Number:\n def __neg__(self):return 'custom-neg'\nprint(operator.neg(Number()))",
+    "pos_protocol": "import operator\nclass Number:\n def __pos__(self):return 'custom-pos'\nprint(operator.pos(Number()))",
+    "invert_protocol": "import operator\nclass Number:\n def __invert__(self):return 'custom-invert'\nprint(operator.invert(Number()))",
+    "neg_complex": "import operator\nprint(operator.neg(3+4j))",
+    "pos_complex": "import operator\nprint(operator.pos(3+4j))",
+    "native_control": "import operator\nprint(operator.neg(4),operator.pos(-4),operator.invert(2))"
+  },
+  "records": [
+    {
+      "asynchronous": false,
+      "arguments": [
+        "dotnet",
+        "D:\\code\\Lython\\tools\\LythonProbe\\bin\\Release\\net10.0\\LythonProbe.dll",
+        "--batch-json",
+        "--compare-python"
+      ],
+      "exitCode": 1,
+      "elapsedSeconds": 0.5834775000112131,
+      "cases": {
+        "neg_protocol": {
+          "Index": 0,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2365,
+            "PeakProjectionMemoryBytes": 156,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "TypeError",
+              "Message": "bad operand type for unary -: 'Number'",
+              "Span": "line 4, column 7",
+              "Frames": [
+                "<module> (line 4)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "custom-neg\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        "pos_protocol": {
+          "Index": 1,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2365,
+            "PeakProjectionMemoryBytes": 156,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "TypeError",
+              "Message": "bad operand type for unary +: 'Number'",
+              "Span": "line 4, column 7",
+              "Frames": [
+                "<module> (line 4)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "custom-pos\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        "invert_protocol": {
+          "Index": 2,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2368,
+            "PeakProjectionMemoryBytes": 156,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "TypeError",
+              "Message": "bad operand type for unary ~: 'Number'",
+              "Span": "line 4, column 7",
+              "Frames": [
+                "<module> (line 4)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "custom-invert\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        "neg_complex": {
+          "Index": 3,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 768,
+            "PeakProjectionMemoryBytes": 158,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "TypeError",
+              "Message": "bad operand type for unary -: 'complex'",
+              "Span": "line 2, column 7",
+              "Frames": [
+                "<module> (line 2)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "(-3-4j)\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        "pos_complex": {
+          "Index": 4,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 768,
+            "PeakProjectionMemoryBytes": 158,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "TypeError",
+              "Message": "bad operand type for unary +: 'complex'",
+              "Span": "line 2, column 7",
+              "Frames": [
+                "<module> (line 2)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "(3+4j)\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        "native_control": {
+          "Index": 5,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "-4 -4 -3\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1086,
+            "PeakProjectionMemoryBytes": 50,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "-4 -4 -3\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        }
+      },
+      "stderr": ""
+    },
+    {
+      "asynchronous": true,
+      "arguments": [
+        "dotnet",
+        "D:\\code\\Lython\\tools\\LythonProbe\\bin\\Release\\net10.0\\LythonProbe.dll",
+        "--batch-json",
+        "--compare-python",
+        "--async"
+      ],
+      "exitCode": 1,
+      "elapsedSeconds": 0.6057849999633618,
+      "cases": {
+        "neg_protocol": {
+          "Index": 0,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2365,
+            "PeakProjectionMemoryBytes": 156,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "TypeError",
+              "Message": "bad operand type for unary -: 'Number'",
+              "Span": "line 4, column 7",
+              "Frames": [
+                "<module> (line 4)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "custom-neg\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        "pos_protocol": {
+          "Index": 1,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2365,
+            "PeakProjectionMemoryBytes": 156,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "TypeError",
+              "Message": "bad operand type for unary +: 'Number'",
+              "Span": "line 4, column 7",
+              "Frames": [
+                "<module> (line 4)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "custom-pos\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        "invert_protocol": {
+          "Index": 2,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2368,
+            "PeakProjectionMemoryBytes": 156,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "TypeError",
+              "Message": "bad operand type for unary ~: 'Number'",
+              "Span": "line 4, column 7",
+              "Frames": [
+                "<module> (line 4)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "custom-invert\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        "neg_complex": {
+          "Index": 3,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 768,
+            "PeakProjectionMemoryBytes": 158,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "TypeError",
+              "Message": "bad operand type for unary -: 'complex'",
+              "Span": "line 2, column 7",
+              "Frames": [
+                "<module> (line 2)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "(-3-4j)\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        "pos_complex": {
+          "Index": 4,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 768,
+            "PeakProjectionMemoryBytes": 158,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "TypeError",
+              "Message": "bad operand type for unary +: 'complex'",
+              "Span": "line 2, column 7",
+              "Frames": [
+                "<module> (line 2)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "(3+4j)\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        "native_control": {
+          "Index": 5,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "-4 -4 -3\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1086,
+            "PeakProjectionMemoryBytes": 50,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "-4 -4 -3\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        }
+      },
+      "stderr": ""
+    }
+  ],
+  "performanceMeasurement": false,
+  "capabilityFreeHost": true
+}

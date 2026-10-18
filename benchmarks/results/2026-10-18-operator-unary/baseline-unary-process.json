@@ -1,0 +1,14 @@
+{
+  "source": "unary",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+  "assemblySha256": "E57212C25AB9DFEB6A278354D46EA57450375F397F74E3144D11EF3633351040",
+  "filter": "Category!=Stress&FullyQualifiedName~NativeScalarDispatchTests",
+  "pid": 21112,
+  "hasExited": true,
+  "exitCode": 1,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 3803,
+  "stdoutSha256": "4240030A43B7EA049EDC4BDB1B20FB6BF2C5305C27DFAF9A9293516726EE0032",
+  "stderrSha256": "8AF19F5945FC1A3D9729F133B46893AE845D56667227E8ED50963E7AD38DB4A3"
+}

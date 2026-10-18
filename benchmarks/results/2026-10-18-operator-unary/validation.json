@@ -1,0 +1,327 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "21a2dd91d8242609cbc79863c949c1f6cccf7980",
+  "candidate": "Two-file unary protocol registration and type-slot/awaited-descriptor correction",
+  "focusedFinalPassed": 1071,
+  "groups": {
+    "final-unary": {
+      "passed": 77,
+      "process": {
+        "source": "unary",
+        "production": "type-slots",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "147698AD0CA53035E29943D22909EE5518DA35B4FE511C3A932A6E8E09F7A31D",
+        "filter": "Category!=Stress&FullyQualifiedName~NativeScalarDispatchTests",
+        "pid": 11400,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4342,
+        "stdoutSha256": "34AD9FE82670C0BD8082DCBE0F6C76ABA3990376B44A53D30FD902FF9EB0F8BF",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "b67d28c032504d465e4690638f62753f2c21911bada715e881fd8261b2454919"
+    },
+    "final-controls": {
+      "passed": 665,
+      "process": {
+        "source": "unary",
+        "production": "type-slots",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "147698AD0CA53035E29943D22909EE5518DA35B4FE511C3A932A6E8E09F7A31D",
+        "filter": "Category!=Stress&(FullyQualifiedName~OperatorModuleFunctionTests|FullyQualifiedName~BuiltinValidationScenarioTests|FullyQualifiedName~NumericAugmentedAsyncTests|FullyQualifiedName~AugmentedProtocolFallbackTests)",
+        "pid": 73944,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 7064,
+        "stdoutSha256": "DB0838241A3C533BFF5F62C7C48CB0BE515C3C9B4E35BEB05FE751A48A5681F6",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "c35e455ad26833937e271302e0b57044aa04884928e05fcd357c38d4a7585b2e"
+    },
+    "final-descriptors": {
+      "passed": 67,
+      "process": {
+        "source": "unary",
+        "production": "type-slots",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "147698AD0CA53035E29943D22909EE5518DA35B4FE511C3A932A6E8E09F7A31D",
+        "filter": "Category!=Stress&(FullyQualifiedName~MatrixAndComplexScenarioTests|FullyQualifiedName~ExactIntegerUnaryTests|FullyQualifiedName~RawDescriptorGetTests|FullyQualifiedName~DescriptorValueAccountingScenarioTests|FullyQualifiedName~SuperDescriptorParityTests)",
+        "pid": 43196,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3567,
+        "stdoutSha256": "25E2ED4FBC814F0A8EAE389A6C197476A77CBF0D94A9EC66000ADDDAD2127373",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "bde388a46d36cf1a26c87b90a5b42f5545edbc09a818b5479a2724a4f6b3af9e"
+    },
+    "final-owners": {
+      "passed": 89,
+      "process": {
+        "source": "unary",
+        "production": "type-slots",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "147698AD0CA53035E29943D22909EE5518DA35B4FE511C3A932A6E8E09F7A31D",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 54464,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2589,
+        "stdoutSha256": "952C747617BABCFF1DC1E789E9D51413ACC088CE85122716C54AEDF6A1C8C030",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "92340ab0ce14f413adb23800372a0618d63ea3665c54acef367195b937bc9fb1"
+    },
+    "final-goldens": {
+      "passed": 62,
+      "process": {
+        "source": "unary",
+        "production": "type-slots",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "147698AD0CA53035E29943D22909EE5518DA35B4FE511C3A932A6E8E09F7A31D",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 70036,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8951,
+        "stdoutSha256": "032CEE1B4AAF57987C8821C541D919E4E575D58375126E9F1E65290A44363089",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "7e1c0b9a7d68629013dccd20c47b993a483bc3174f1a104b3b716418caaf502a"
+    },
+    "final-white": {
+      "passed": 111,
+      "process": {
+        "source": "unary",
+        "production": "type-slots",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "8DEDF9CE8F7F284838F24A303A53B25E3B9F1B11A5BC790DBF4AD515F20D3AE5",
+        "filter": "Category!=Stress&(FullyQualifiedName~NativeScalarDispatchBoundaryTests|FullyQualifiedName~RuntimeProtocolSubsystemTests|FullyQualifiedName~NumericArchitectureSubsystemTests|FullyQualifiedName~IntegerProtocolAsyncTests|FullyQualifiedName~FloatProtocolAsyncTests|FullyQualifiedName~LoweringArchitectureSubsystemTests|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission|FullyQualifiedName~ExactIntegerUnaryAdmissionTests|FullyQualifiedName~RawDescriptorGetDispatchTests|FullyQualifiedName~DescriptorMethodBindingTests)",
+        "pid": 71320,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1472,
+        "stdoutSha256": "DA2C6F634D8A9CC239C3966D2E2D8EEB6F55529476FFE439E2199C1ACABD63D2",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "210b899cddbf4fc9bd9e8d419cbce509348b8343e7db797797c32192a1054600"
+    },
+    "baseline-unary": {
+      "passed": 53,
+      "failed": 21,
+      "failures": [
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: \"operator_unary_type_lookup\", source: \"import operator\\nclass Number:\\n def __neg__(self)\"\u00b7\u00b7\u00b7, expected: \"type-neg type-pos type-invert\\n\")",
+          "message": "bad operand type for unary -: 'Child'"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: \"operator.invert\", method: \"__invert__\")",
+          "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"MemoryError\"\r\nActual:   \"TypeError\"\r\n           \u2191 (pos 0)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"operator_negative\", cancel: False)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: True\r\nActual:   False"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: \"operator_pos_protocol\", source: \"import operator\\nclass Number:\\n def __pos__(self)\"\u00b7\u00b7\u00b7, expected: \"['custom-pos']\\n\")",
+          "message": "bad operand type for unary +: 'Number'"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: \"operator.pos\", method: \"__pos__\")",
+          "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"MemoryError\"\r\nActual:   \"TypeError\"\r\n           \u2191 (pos 0)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: \"operator_invert_protocol\", source: \"import operator\\nclass Number:\\n def __invert__(se\"\u00b7\u00b7\u00b7, expected: \"None\\n\")",
+          "message": "bad operand type for unary ~: 'Number'"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(operation: \"neg\", method: \"__neg__\")",
+          "message": "bad operand type for unary -: 'Number'"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"operator_positive\", cancel: False)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: True\r\nActual:   False"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(operation: \"invert\", method: \"__invert__\")",
+          "message": "bad operand type for unary ~: 'Number'"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"operator_invert\", cancel: False)",
+          "message": "Assert.Equal() Failure: Values differ\r\nExpected: True\r\nActual:   False"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: \"operator.pos\", method: \"__pos__\")",
+          "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"MemoryError\"\r\nActual:   \"TypeError\"\r\n           \u2191 (pos 0)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"operator_positive\", cancel: True)",
+          "message": "bad operand type for unary +: 'Operand'"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: \"operator_neg_protocol\", source: \"import operator\\nclass Number:\\n def __neg__(self)\"\u00b7\u00b7\u00b7, expected: \"custom-neg\\n\")",
+          "message": "bad operand type for unary -: 'Number'"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(operation: \"pos\", method: \"__pos__\")",
+          "message": "bad operand type for unary +: 'Number'"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: \"operator.neg\", method: \"__neg__\")",
+          "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"MemoryError\"\r\nActual:   \"TypeError\"\r\n           \u2191 (pos 0)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"operator_invert\", cancel: True)",
+          "message": "bad operand type for unary ~: 'Operand'"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: \"operator_unary_protocol_errors\", source: \"import operator\\nclass Number:\\n def __neg__(self)\"\u00b7\u00b7\u00b7, expected: \"ValueError neg\\nValueError pos\\nValueError invert\\\"\u00b7\u00b7\u00b7)",
+          "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"ValueError neg\\nValueError pos\\nValueError \"\u00b7\u00b7\u00b7\r\nActual:   \"TypeError bad operand type for unary -: '\"\u00b7\u00b7\u00b7\r\n           \u2191 (pos 0)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: \"operator.neg\", method: \"__neg__\")",
+          "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"MemoryError\"\r\nActual:   \"TypeError\"\r\n           \u2191 (pos 0)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: \"operator_negative\", cancel: True)",
+          "message": "bad operand type for unary -: 'Operand'"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: \"operator.invert\", method: \"__invert__\")",
+          "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"MemoryError\"\r\nActual:   \"TypeError\"\r\n           \u2191 (pos 0)"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: \"operator_unary_complex\", source: \"import operator\\nvalue=3+4j\\nprint(operator.neg(va\"\u00b7\u00b7\u00b7, expected: \"(-3-4j) (3+4j) True\\n\")",
+          "message": "bad operand type for unary -: 'complex'"
+        }
+      ],
+      "process": {
+        "source": "unary",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "E57212C25AB9DFEB6A278354D46EA57450375F397F74E3144D11EF3633351040",
+        "filter": "Category!=Stress&FullyQualifiedName~NativeScalarDispatchTests",
+        "pid": 21112,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3803,
+        "stdoutSha256": "4240030A43B7EA049EDC4BDB1B20FB6BF2C5305C27DFAF9A9293516726EE0032",
+        "stderrSha256": "8AF19F5945FC1A3D9729F133B46893AE845D56667227E8ED50963E7AD38DB4A3"
+      }
+    },
+    "corrected-unary": {
+      "passed": 73,
+      "failed": 1,
+      "failures": [
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: \"operator_unary_type_lookup\", source: \"import operator\\nclass Number:\\n def __neg__(self)\"\u00b7\u00b7\u00b7, expected: \"type-neg type-pos type-invert\\n\")",
+          "message": "Assert.Equal() Failure: Strings differ\r\n           \u2193 (pos 0)\r\nExpected: \"type-neg type-pos type-invert\\n\"\r\nActual:   \"instance-neg instance-pos instance-invert\"\u00b7\u00b7\u00b7\r\n           \u2191 (pos 0)"
+        }
+      ],
+      "process": {
+        "source": "unary",
+        "production": "corrected",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "632C661B864AB7090636F7227917D090E4232CAEA9E48F0E78E29E5E52984C16",
+        "filter": "Category!=Stress&FullyQualifiedName~NativeScalarDispatchTests",
+        "pid": 20644,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4530,
+        "stdoutSha256": "9A289BAFEC1137C598180AB92F33FF7A6C32A650F7DA55000134F2007868FE99",
+        "stderrSha256": "3C186DB7CD689DE50C2F1AF47528CD62AEC3EBC07A05437C3F864E43F7AA7005"
+      }
+    }
+  },
+  "completeJobs": 58,
+  "pythonGoldens": 36,
+  "baselineCases": 74,
+  "finalScalarProtocolCases": 77,
+  "baselineFailed": 21,
+  "registrationOnlyFailed": 1,
+  "numericKernelsAndSignaturesUnchanged": true,
+  "noNewDispatcherBinderCacheOrOwner": true,
+  "performanceMeasurement": false,
+  "regexPlanningOnly": true,
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.OperatorModule.cs": {
+      "before": "5b8eea31b5bb1f90d11d34a68d4919aafd460ccf5f9ac16ba76d292b8cfd283f",
+      "after": "1b7546190478d43898590981b28e75afab18ee44bd0fd42f71f615d60ffe5d43",
+      "changed": true
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.OperatorDispatch.cs": {
+      "before": "3a366896b06f355dfa18b7b392f805e5dfd9c163f234ee6eefc3d6c32399aec5",
+      "after": "d88f57ce7fd47224e4b6c5b83a66d6afcfa7f24a2f6c6a697def4179e413cedb",
+      "changed": true
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.cs": {
+      "before": "ad1144c5de2003b67d47867e0dcf9dc304138791931efb227c4d7a4348bd1da5",
+      "after": "ad1144c5de2003b67d47867e0dcf9dc304138791931efb227c4d7a4348bd1da5",
+      "changed": false
+    },
+    "src/Lokad.Lython/Runtime/Calls/LythonKnownCallableSignatures.Core.cs": {
+      "before": "138249d75ad9c0e5e2c4557eeacc7642317d35e08a955d16fda0b6900dede42d",
+      "after": "138249d75ad9c0e5e2c4557eeacc7642317d35e08a955d16fda0b6900dede42d",
+      "changed": false
+    }
+  },
+  "runtimeCoreAndTestCopySha256": "e2a1a2f18ecc883c8a041674c65420ad8a7b2e5f41486f92468668f8598abbef",
+  "artifacts": {
+    "baseline-unary-process.json": {
+      "bytes": 651,
+      "sha256": "240dfbf51076a5e907a6d2b12bb50e4b29f3b610a36820d6cc018d717bf99d7c"
+    },
+    "baseline-unary.trx": {
+      "bytes": 155017,
+      "sha256": "be9e5f8e4fc3260157496d4a758aa05f15d84d7ef32982793fb77d081d9d00b0"
+    },
+    "candidate.patch": {
+      "bytes": 15545,
+      "sha256": "ebc8e0975a82fe3e379ea637bb7e99a379daa08967728a94a2bb6122024b6d57"
+    },
+    "corrected-unary-process.json": {
+      "bytes": 652,
+      "sha256": "f3cc38921bd22e77b3765c13cceb6fa05f14e876eca05d6188d7e9acf5b3cd9f"
+    },
+    "corrected-unary.trx": {
+      "bytes": 122729,
+      "sha256": "0ae0baabf4b3df81f946f134e55543fe080dba515724b26a9d259f770c4f38e0"
+    },
+    "final-unary-process.json": {
+      "bytes": 653,
+      "sha256": "9457f5c5fba6ebad0ee9969bc64508522254f0482b956f4b306d688e3ed78e07"
+    },
+    "final-unary.trx": {
+      "bytes": 125651,
+      "sha256": "b67d28c032504d465e4690638f62753f2c21911bada715e881fd8261b2454919"
+    },
+    "operator-unary-probes.json": {
+      "bytes": 16117,
+      "sha256": "e07f4af6017d5fdcfe7b67080abb989dfa3935ae91e5c58ffdb36597c1eed711"
+    },
+    "python-goldens.json": {
+      "bytes": 9458,
+      "sha256": "8f9cb52559b09e0aae20bebf4973ddff60da9758070d07f4e3c2c0970c12d80c"
+    },
+    "registration-only.patch": {
+      "bytes": 3026,
+      "sha256": "f084c80eecdeb1fbf1c39513a11dc31b3f983dd2fccd89d11acc7bcbd4b05628"
+    },
+    "scope-amendment.json": {
+      "bytes": 1518,
+      "sha256": "4da77ec966d3df575cc303020630d0b76e7faba891349ccabe263cfe1695d7b1"
+    },
+    "scope.json": {
+      "bytes": 1276,
+      "sha256": "6e5145b890cc9144c9b2bb1fb571e44011cfd22303e840223183bfb72fd4441f"
+    }
+  }
+}

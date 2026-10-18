@@ -388,8 +388,9 @@ internal sealed partial class LythonRuntime
         // A resolved non-callable member raises not-callable like CPython
         // instead of reading as missing (see the sync twin below).
         if (target is PyInstance unaryInstance &&
-            unaryInstance.TryGetAttribute(method, context, span, out var unaryMember))
+            unaryInstance.Type.TryLookupInMro(method, 0, out var rawMember, out _))
         {
+            var unaryMember = await PyAttributeLookup.BindForInstanceAsync(unaryInstance, rawMember, context, span).ConfigureAwait(false);
             if (unaryMember is not ICallable unaryCallable)
             {
                 throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(unaryMember, context) + "' object is not callable", span);
@@ -446,8 +447,9 @@ internal sealed partial class LythonRuntime
         // A resolved non-callable member raises not-callable like CPython
         // instead of reading as missing (round/pow builtins do the same).
         if (target is PyInstance unaryInstance &&
-            unaryInstance.TryGetAttribute(method, context, span, out var unaryMember))
+            unaryInstance.Type.TryLookupInMro(method, 0, out var rawMember, out _))
         {
+            var unaryMember = PyAttributeLookup.BindForInstance(unaryInstance, rawMember, context, span);
             if (unaryMember is not ICallable unaryCallable)
             {
                 throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(unaryMember, context) + "' object is not callable", span);

@@ -1,0 +1,12 @@
+{
+  "baseline": "21a2dd91d8242609cbc79863c949c1f6cccf7980",
+  "sourceSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.OperatorModule.cs": "5b8eea31b5bb1f90d11d34a68d4919aafd460ccf5f9ac16ba76d292b8cfd283f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.OperatorDispatch.cs": "3a366896b06f355dfa18b7b392f805e5dfd9c163f234ee6eefc3d6c32399aec5",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.cs": "ad1144c5de2003b67d47867e0dcf9dc304138791931efb227c4d7a4348bd1da5",
+    "src/Lokad.Lython/Runtime/Calls/LythonKnownCallableSignatures.Core.cs": "138249d75ad9c0e5e2c4557eeacc7642317d35e08a955d16fda0b6900dede42d"
+  },
+  "scope": "Only operator.neg/pos/invert registration: reuse the existing unary dispatcher for both APIs, including custom protocols and complex fallback. No kernel, binder, cache, owner or mode changes.",
+  "confirmed": "Five discrepancies on each API versus isolated CPython: three guest hooks and complex negation/positive; native integer control passes.",
+  "acceptance": "Permanent semantic cases; real host suspension/cancellation; terminal refusal through finally/catch; funded retained callback aliases; existing operator/numeric/managed-stack and ownership/complete-job controls. No performance claim or broad operator inventory."
+}

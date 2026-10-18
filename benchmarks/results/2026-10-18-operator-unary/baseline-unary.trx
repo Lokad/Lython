@@ -1,0 +1,869 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="8781b941-184d-44e8-9132-a3fb1eb847cc" name="JoannesVermorel@LOKAD-0399 2026-10-18 11:35:35" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T11:35:35.7962564+02:00" queuing="2026-10-18T11:35:35.7962566+02:00" start="2026-10-18T11:35:33.4073961+02:00" finish="2026-10-18T11:35:36.9024713+02:00" />
+  <TestSettings name="default" id="30d2602f-b69b-4a2b-a91a-5a9bae54b729">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_11_35_35" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="36e65403-eb4a-4180-bf9b-7fe32dff2087" testId="844b3d38-dcff-f0f4-d04c-8efda95ceb24" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;truth_protocol&quot;, source: &quot;events=[]\nclass N:\n def __bool__(self):\n  event&quot;···, expected: &quot;False ['truth']\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0038790" startTime="2026-10-18T11:35:36.6253723+02:00" endTime="2026-10-18T11:35:36.6293764+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="36e65403-eb4a-4180-bf9b-7fe32dff2087" />
+    <UnitTestResult executionId="749da5b8-01b8-4c3f-aae7-b66da817d123" testId="6e8999b5-81df-9fa5-93ec-98f703bf2eb4" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_unary_type_lookup&quot;, source: &quot;import operator\nclass Number:\n def __neg__(self)&quot;···, expected: &quot;type-neg type-pos type-invert\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0057623" startTime="2026-10-18T11:35:36.6098342+02:00" endTime="2026-10-18T11:35:36.6165883+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="749da5b8-01b8-4c3f-aae7-b66da817d123">
+      <Output>
+        <ErrorInfo>
+          <Message>bad operand type for unary -: 'Child'</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 235&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d061c87f-300e-4292-a40a-450e0cc96563" testId="62485da4-f537-0f1c-d53d-749abb21b54b" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;float_augmented&quot;, source: &quot;value=1.5\nvalue+=2.25\nvalue*=2.0\nvalue-=0.5\nva&quot;···, expected: &quot;3.5\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0044056" startTime="2026-10-18T11:35:36.6323887+02:00" endTime="2026-10-18T11:35:36.6341477+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d061c87f-300e-4292-a40a-450e0cc96563" />
+    <UnitTestResult executionId="00ec4a4a-3baf-49ad-a305-6ea045055759" testId="f0b67c74-e8d0-5c7a-793d-93fd84274828" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;float_arithmetic&quot;, source: &quot;print(1.5+2.25,5.5-2.0,1.5*2.0,3.0/2.0,5.5//2.0,5.&quot;···, expected: &quot;3.75 3.5 3.0 1.5 2.0 1.5 2.25\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0041486" startTime="2026-10-18T11:35:36.6494518+02:00" endTime="2026-10-18T11:35:36.6535331+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="00ec4a4a-3baf-49ad-a305-6ea045055759" />
+    <UnitTestResult executionId="328eed92-906b-443e-a40c-d4448b71ef91" testId="44ffa67d-ad31-fd44-22f3-871f2243b7ea" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;bad_bitwise&quot;, source: &quot;def op(value):return ~value\ntry:print(op(1.5))\ne&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0026629" startTime="2026-10-18T11:35:36.6447738+02:00" endTime="2026-10-18T11:35:36.6477935+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="328eed92-906b-443e-a40c-d4448b71ef91" />
+    <UnitTestResult executionId="44e766d9-8922-4d96-9be7-a172e6d47371" testId="b9a9dbcf-49fd-aab2-5f22-12f6a4843bc3" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;abs_primitives&quot;, source: &quot;import math\nprint(abs(-7),abs(7),abs(True),abs(Fa&quot;···, expected: &quot;7 7 1 0 1.25 0.0\n1.0 inf\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0024690" startTime="2026-10-18T11:35:36.5796760+02:00" endTime="2026-10-18T11:35:36.5814945+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="44e766d9-8922-4d96-9be7-a172e6d47371" />
+    <UnitTestResult executionId="d2743c7b-54fd-4db3-ab0b-d26558218337" testId="de8c3eff-5a2c-f5ce-1c48-30efa4ecad75" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;augmented&quot;, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0385036" startTime="2026-10-18T11:35:35.8415579+02:00" endTime="2026-10-18T11:35:35.8690346+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d2743c7b-54fd-4db3-ab0b-d26558218337" />
+    <UnitTestResult executionId="a0fe2a45-8b34-4910-9e91-47e64594efc2" testId="f9f5394f-17dc-99ee-cb1c-0c8e83b10cda" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedScalarResultKeepsItsOwner(text: False)" computerName="LOKAD-0399" duration="00:00:00.0027513" startTime="2026-10-18T11:35:36.8312788+02:00" endTime="2026-10-18T11:35:36.8332862+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a0fe2a45-8b34-4910-9e91-47e64594efc2" />
+    <UnitTestResult executionId="4ea029d7-dc6d-428f-bced-46b125fda2db" testId="78a0c20d-df08-e335-d8a5-00979a948e34" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: &quot;operator.abs&quot;, method: &quot;__abs__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0134261" startTime="2026-10-18T11:35:36.6663346+02:00" endTime="2026-10-18T11:35:36.6744622+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4ea029d7-dc6d-428f-bced-46b125fda2db" />
+    <UnitTestResult executionId="867ebe89-54fb-4fe2-8b2f-6fbbc97c6822" testId="651a2d1f-42c2-8e47-3b72-e2212d5090dd" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;truth&quot;, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0624289" startTime="2026-10-18T11:35:35.9948141+02:00" endTime="2026-10-18T11:35:36.0573451+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="867ebe89-54fb-4fe2-8b2f-6fbbc97c6822" />
+    <UnitTestResult executionId="5d2cdc99-ffe0-4cc8-b4fc-ba8efcf63886" testId="7f3d4a97-c9c3-760f-09c7-af7dbd4f1e08" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_absolute&quot;, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0704637" startTime="2026-10-18T11:35:35.4589006+02:00" endTime="2026-10-18T11:35:35.5283863+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5d2cdc99-ffe0-4cc8-b4fc-ba8efcf63886" />
+    <UnitTestResult executionId="17948725-3c28-4b60-84e0-ed2d43b54ec8" testId="4391d1d9-223e-771f-da11-1d3ae81957b3" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;augmented&quot;, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0623679" startTime="2026-10-18T11:35:35.7165385+02:00" endTime="2026-10-18T11:35:35.7791334+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="17948725-3c28-4b60-84e0-ed2d43b54ec8" />
+    <UnitTestResult executionId="ff226e11-07d7-4e7b-9393-2a3d72fc1e99" testId="5bf9047f-be3b-2e9f-3284-ed877fa680b9" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;text_binary&quot;, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0663185" startTime="2026-10-18T11:35:35.6498669+02:00" endTime="2026-10-18T11:35:35.7163883+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ff226e11-07d7-4e7b-9393-2a3d72fc1e99" />
+    <UnitTestResult executionId="e7aa147c-3400-4490-bcb2-69f8511d6134" testId="94910957-3071-af69-c65c-79bb96e8dcb5" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;binary&quot;, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0614107" startTime="2026-10-18T11:35:35.5559712+02:00" endTime="2026-10-18T11:35:35.6174930+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e7aa147c-3400-4490-bcb2-69f8511d6134" />
+    <UnitTestResult executionId="a5458d0f-4cdb-48c2-b60f-ceb64d88e8d6" testId="ba64fdde-46e1-d212-de0d-db760452662a" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: &quot;operator.invert&quot;, method: &quot;__invert__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0018308" startTime="2026-10-18T11:35:36.6746353+02:00" endTime="2026-10-18T11:35:36.6762795+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a5458d0f-4cdb-48c2-b60f-ceb64d88e8d6">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "MemoryError"&#xD;
+Actual:   "TypeError"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(Boolean asynchronous, String operation, String method) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 184&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b2b40e24-2f3c-4f51-b496-129ec2f2fde7" testId="acd5c7bf-bf72-72af-66d8-988c49380232" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: &quot;abs&quot;, method: &quot;__abs__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0701973" startTime="2026-10-18T11:35:36.7459587+02:00" endTime="2026-10-18T11:35:36.8164096+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b2b40e24-2f3c-4f51-b496-129ec2f2fde7" />
+    <UnitTestResult executionId="9de56a8f-649a-49b0-ae1a-269017f3f51d" testId="289864e3-3fae-e3f8-9356-71b1ffe6077d" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;text_augmented&quot;, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0690989" startTime="2026-10-18T11:35:36.2574378+02:00" endTime="2026-10-18T11:35:36.3263882+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9de56a8f-649a-49b0-ae1a-269017f3f51d" />
+    <UnitTestResult executionId="38aa011b-16c6-4a1a-bd82-efefcfbff3c0" testId="24fed424-87a1-839f-0005-566a7b59059c" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_negative&quot;, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0012771" startTime="2026-10-18T11:35:36.2554925+02:00" endTime="2026-10-18T11:35:36.2570676+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="38aa011b-16c6-4a1a-bd82-efefcfbff3c0">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ&#xD;
+Expected: True&#xD;
+Actual:   False</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 104&#xD;
+   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 112&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0f7ffb77-42c5-40ed-9598-4bedbd75bd26" testId="fe6bc352-fff0-50f0-cfce-b79dfa280b08" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;abs_missing_and_noncallable&quot;, source: &quot;import operator\nclass Missing:pass\nclass Nil:__a&quot;···, expected: &quot;TypeError\nTypeError\nTypeError\nTypeError\nTypeEr&quot;···)" computerName="LOKAD-0399" duration="00:00:00.0039850" startTime="2026-10-18T11:35:36.6375336+02:00" endTime="2026-10-18T11:35:36.6419774+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0f7ffb77-42c5-40ed-9598-4bedbd75bd26" />
+    <UnitTestResult executionId="be4f13ce-b347-45c9-a1b5-624dde8e604e" testId="84cc761a-ef72-0f38-6973-6bb768bd50e9" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;bad_shift&quot;, source: &quot;def op(value):return value&lt;&lt;1\ntry:print(op(1.5))\&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0109658" startTime="2026-10-18T11:35:36.5524628+02:00" endTime="2026-10-18T11:35:36.5639993+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="be4f13ce-b347-45c9-a1b5-624dde8e604e" />
+    <UnitTestResult executionId="5ae31aa6-fe8b-4cbd-add7-3138850975b9" testId="ef21a190-4103-365a-3167-9c37641fe7dc" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;text_left&quot;, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0624824" startTime="2026-10-18T11:35:36.1528608+02:00" endTime="2026-10-18T11:35:36.2154769+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5ae31aa6-fe8b-4cbd-add7-3138850975b9" />
+    <UnitTestResult executionId="d09bc3e2-5ff2-4d93-b0d1-16a50ce4ffa2" testId="c8fd467e-f0a4-bbb9-3d7f-f4db02686bc4" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;chain_nonbool&quot;, source: &quot;class N:\n def __gt__(self,other):return [1]\nprin&quot;···, expected: &quot;[1]\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0122828" startTime="2026-10-18T11:35:36.5119566+02:00" endTime="2026-10-18T11:35:36.5245732+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d09bc3e2-5ff2-4d93-b0d1-16a50ce4ffa2" />
+    <UnitTestResult executionId="7ec2430c-84ef-4be9-bff0-69ad3705402d" testId="772dd23e-7810-4d2a-9a5e-a0698b289b46" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;binary&quot;, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0449975" startTime="2026-10-18T11:35:35.8710148+02:00" endTime="2026-10-18T11:35:35.9158747+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7ec2430c-84ef-4be9-bff0-69ad3705402d" />
+    <UnitTestResult executionId="e6155a3f-c98b-435f-b1be-83fdea84bf56" testId="25e1429c-68f6-755f-6fe9-6b39471402f1" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_pos_protocol&quot;, source: &quot;import operator\nclass Number:\n def __pos__(self)&quot;···, expected: &quot;['custom-pos']\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0009133" startTime="2026-10-18T11:35:36.6343754+02:00" endTime="2026-10-18T11:35:36.6355825+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e6155a3f-c98b-435f-b1be-83fdea84bf56">
+      <Output>
+        <ErrorInfo>
+          <Message>bad operand type for unary +: 'Number'</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 235&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="98968e74-a70b-4cf3-8acf-957a7a1ecaf5" testId="6464d427-8826-e20d-88a7-b3a06319c60b" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: &quot;operator.pos&quot;, method: &quot;__pos__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0014610" startTime="2026-10-18T11:35:36.7434774+02:00" endTime="2026-10-18T11:35:36.7450242+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="98968e74-a70b-4cf3-8acf-957a7a1ecaf5">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "MemoryError"&#xD;
+Actual:   "TypeError"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(Boolean asynchronous, String operation, String method) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 184&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="ba0d1dc0-a41a-46d2-89f9-c5c4c65646d7" testId="34e47b64-9deb-7feb-b9b8-c9e247afdab5" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;unary&quot;, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0396300" startTime="2026-10-18T11:35:36.2155890+02:00" endTime="2026-10-18T11:35:36.2553796+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ba0d1dc0-a41a-46d2-89f9-c5c4c65646d7" />
+    <UnitTestResult executionId="2b1d0035-ce47-45cd-83cf-61d5ad965cdc" testId="b3479f1d-a061-5d73-3af3-8229716edc50" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;chain_false&quot;, source: &quot;events=[]\ndef tail():\n events.append(\&quot;tail\&quot;)\n&quot;···, expected: &quot;False []\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0037755" startTime="2026-10-18T11:35:36.5710084+02:00" endTime="2026-10-18T11:35:36.5748544+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2b1d0035-ce47-45cd-83cf-61d5ad965cdc" />
+    <UnitTestResult executionId="2a529787-c803-410c-a22b-e609454c8ea1" testId="77f381e7-977a-cde2-d843-5f9631f39485" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;text_left&quot;, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0616033" startTime="2026-10-18T11:35:35.4034693+02:00" endTime="2026-10-18T11:35:35.4578168+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2a529787-c803-410c-a22b-e609454c8ea1" />
+    <UnitTestResult executionId="01d887b0-6f0e-40d9-be40-ed660fceee4f" testId="1bed60f6-fcce-ecb4-503a-79c118e2075b" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;bool_bitwise&quot;, source: &quot;for a,b in ((True,False),(True,True),(False,False)&quot;···, expected: &quot;False bool\nTrue bool\nTrue bool\nTrue bool\nTrue &quot;···)" computerName="LOKAD-0399" duration="00:00:00.0617975" startTime="2026-10-18T11:35:36.4480038+02:00" endTime="2026-10-18T11:35:36.5099502+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="01d887b0-6f0e-40d9-be40-ed660fceee4f" />
+    <UnitTestResult executionId="e4a53741-efad-431d-af7e-b0df3ef368ac" testId="c95cef3e-4ee5-be27-1dc6-83bbbb8c322e" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;reflected&quot;, source: &quot;class N:\n def __radd__(self,other):return other+2&quot;···, expected: &quot;4.0\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0030466" startTime="2026-10-18T11:35:36.6479598+02:00" endTime="2026-10-18T11:35:36.6493041+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e4a53741-efad-431d-af7e-b0df3ef368ac" />
+    <UnitTestResult executionId="3dbad814-e902-465f-8428-c987db0968bf" testId="79449e56-1428-61d6-6964-278c11e74b39" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;text_augmented&quot;, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0318294" startTime="2026-10-18T11:35:36.0574584+02:00" endTime="2026-10-18T11:35:36.0894363+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3dbad814-e902-465f-8428-c987db0968bf" />
+    <UnitTestResult executionId="8ec2f4b0-7bd5-4a32-ad75-2da61e584cff" testId="6e2207e5-91bf-e4b0-b973-1ead44ed0057" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;chain_true&quot;, source: &quot;print(0.5&lt;1.5&lt;2.5,False&lt;True&lt;=1,0&lt;True&lt;1.5)&quot;, expected: &quot;True True True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0043044" startTime="2026-10-18T11:35:36.4124088+02:00" endTime="2026-10-18T11:35:36.4167871+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8ec2f4b0-7bd5-4a32-ad75-2da61e584cff" />
+    <UnitTestResult executionId="a092cc12-1b72-4fef-a567-dc237dc07927" testId="8c242cc1-1511-5751-f2ed-f1645ef94814" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_unary_missing_and_noncallable&quot;, source: &quot;import operator\nclass Missing:pass\nclass Nil:__n&quot;···, expected: &quot;TypeError\nTypeError\nTypeError\nTypeError\nTypeEr&quot;···)" computerName="LOKAD-0399" duration="00:00:00.0092401" startTime="2026-10-18T11:35:36.5816465+02:00" endTime="2026-10-18T11:35:36.5911032+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a092cc12-1b72-4fef-a567-dc237dc07927" />
+    <UnitTestResult executionId="17835390-14b5-4bd4-b71f-40ebf64b1109" testId="ceb004fe-f25c-2622-0e63-50c2127e9e60" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;bool_augmented&quot;, source: &quot;value=True\nvalue&amp;=False\nprint(value,type(value).&quot;···, expected: &quot;False bool\n3 int\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0099642" startTime="2026-10-18T11:35:36.3810094+02:00" endTime="2026-10-18T11:35:36.3905158+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="17835390-14b5-4bd4-b71f-40ebf64b1109" />
+    <UnitTestResult executionId="02ac1e87-40d6-4671-813a-424d1cfcfe71" testId="a9889b41-ac47-2ea8-818b-96ddad034f68" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;abs_protocol_values&quot;, source: &quot;import operator\nclass Number:\n def __abs__(self)&quot;···, expected: &quot;custom custom\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0022177" startTime="2026-10-18T11:35:36.4044346+02:00" endTime="2026-10-18T11:35:36.4067458+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="02ac1e87-40d6-4671-813a-424d1cfcfe71" />
+    <UnitTestResult executionId="28c1d679-e79b-44a9-b10f-67505960815c" testId="a478baed-0143-f265-abb0-cafef95cf67e" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_invert_protocol&quot;, source: &quot;import operator\nclass Number:\n def __invert__(se&quot;···, expected: &quot;None\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0010108" startTime="2026-10-18T11:35:36.6421372+02:00" endTime="2026-10-18T11:35:36.6439516+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="28c1d679-e79b-44a9-b10f-67505960815c">
+      <Output>
+        <ErrorInfo>
+          <Message>bad operand type for unary ~: 'Number'</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 235&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d5f73a41-916e-4f1e-88ad-3d26c531bb55" testId="d48638a0-00ba-4605-263f-38f1c719c036" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_unary_arity&quot;, source: &quot;import operator\nfor call in (operator.neg,operato&quot;···, expected: &quot;TypeError\nTypeError\nTypeError\nTypeError\nTypeEr&quot;···)" computerName="LOKAD-0399" duration="00:00:00.0026650" startTime="2026-10-18T11:35:36.6171757+02:00" endTime="2026-10-18T11:35:36.6187074+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d5f73a41-916e-4f1e-88ad-3d26c531bb55" />
+    <UnitTestResult executionId="617f2820-afe5-4675-968c-c3534f0f55cf" testId="ae4d3982-7063-2803-bcce-fee2bd5df03d" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(operation: &quot;neg&quot;, method: &quot;__neg__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0007821" startTime="2026-10-18T11:35:36.3791217+02:00" endTime="2026-10-18T11:35:36.3796895+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="617f2820-afe5-4675-968c-c3534f0f55cf">
+      <Output>
+        <ErrorInfo>
+          <Message>bad operand type for unary -: 'Number'</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(String operation, String method) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 210&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d8d57db5-7a3f-4257-9b96-dfefc11593a7" testId="25355084-30b5-b0e3-8d2e-5f36f821e2e0" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_positive&quot;, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0020513" startTime="2026-10-18T11:35:35.8259296+02:00" endTime="2026-10-18T11:35:35.8282296+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d8d57db5-7a3f-4257-9b96-dfefc11593a7">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ&#xD;
+Expected: True&#xD;
+Actual:   False</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 104&#xD;
+   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 112&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="fa69f6db-a6f2-4cfb-9cc2-dd1fa02b057a" testId="0bcffa73-ac1b-825b-57b9-cbc2433d1f6d" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;mixed&quot;, source: &quot;print(2+True,True+1.5,1.5+True,3*False,5.5//True,5&quot;···, expected: &quot;3 2.5 2.5 0 5.0 0.5\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0053813" startTime="2026-10-18T11:35:36.4068344+02:00" endTime="2026-10-18T11:35:36.4123151+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fa69f6db-a6f2-4cfb-9cc2-dd1fa02b057a" />
+    <UnitTestResult executionId="95571ee5-2c88-4460-ac5b-89a818c4a8ba" testId="000dec11-e4b7-08cb-8f4f-ec75da574a4e" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;nonfinite&quot;, source: &quot;a=float(\&quot;nan\&quot;)\nb=float(\&quot;inf\&quot;)\nprint(a==a,a!=&quot;···, expected: &quot;False True False False True -inf inf\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0095100" startTime="2026-10-18T11:35:36.3950070+02:00" endTime="2026-10-18T11:35:36.4043335+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="95571ee5-2c88-4460-ac5b-89a818c4a8ba" />
+    <UnitTestResult executionId="ad04d152-e46a-41c5-bfab-417f0a537bd5" testId="4fceac9b-230c-b07d-0416-6b99fa340cea" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;truth&quot;, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0427198" startTime="2026-10-18T11:35:35.7874640+02:00" endTime="2026-10-18T11:35:35.8258186+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ad04d152-e46a-41c5-bfab-417f0a537bd5" />
+    <UnitTestResult executionId="7c2c65ce-ceb8-4d08-8a63-54c9f035d47d" testId="3b08b598-611b-75cd-4df6-d35a90ff794d" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(operation: &quot;invert&quot;, method: &quot;__invert__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0004968" startTime="2026-10-18T11:35:36.3799301+02:00" endTime="2026-10-18T11:35:36.3803077+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7c2c65ce-ceb8-4d08-8a63-54c9f035d47d">
+      <Output>
+        <ErrorInfo>
+          <Message>bad operand type for unary ~: 'Number'</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(String operation, String method) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 210&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8a1880f4-2649-4fa6-87b7-823bf2355462" testId="6d738d66-84cc-0ba8-77d1-b8a192b94f3a" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;abs_arity&quot;, source: &quot;import operator\nfor call in (abs,operator.abs):\n&quot;···, expected: &quot;TypeError\nTypeError\nTypeError\nTypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0049317" startTime="2026-10-18T11:35:36.5661774+02:00" endTime="2026-10-18T11:35:36.5708603+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8a1880f4-2649-4fa6-87b7-823bf2355462" />
+    <UnitTestResult executionId="fd3cffd0-0e05-448d-ab0e-1edacda6602b" testId="314efcd8-0fd0-aa0e-574f-fa64988bc1f4" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: &quot;operator.abs&quot;, method: &quot;__abs__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0648846" startTime="2026-10-18T11:35:36.6769069+02:00" endTime="2026-10-18T11:35:36.7402127+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fd3cffd0-0e05-448d-ab0e-1edacda6602b" />
+    <UnitTestResult executionId="4192cfb9-6182-441f-b3f2-e6fefb744786" testId="2fe01d94-e51f-538e-c858-26ad2656fdda" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_unary_native&quot;, source: &quot;import operator,math,decimal,datetime\nprint(opera&quot;···, expected: &quot;-1 0 -2 -1.5\n1.0 -1.0\n1.25 0:00:02\n-1.25 -1 day&quot;···)" computerName="LOKAD-0399" duration="00:00:00.0033566" startTime="2026-10-18T11:35:36.5749950+02:00" endTime="2026-10-18T11:35:36.5785518+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4192cfb9-6182-441f-b3f2-e6fefb744786" />
+    <UnitTestResult executionId="573b59c8-d273-4562-ab5a-7ae3c60e5cb2" testId="c4f0a46d-b577-77e9-634f-72e1c870a0b7" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_invert&quot;, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0011830" startTime="2026-10-18T11:35:35.8691459+02:00" endTime="2026-10-18T11:35:35.8706428+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="573b59c8-d273-4562-ab5a-7ae3c60e5cb2">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ&#xD;
+Expected: True&#xD;
+Actual:   False</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 104&#xD;
+   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 112&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1133cc11-c0fe-4918-8f46-d858d11a54b4" testId="11b62710-a7ff-4d39-b0a6-90520486f819" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: &quot;operator.pos&quot;, method: &quot;__pos__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0016925" startTime="2026-10-18T11:35:36.8223372+02:00" endTime="2026-10-18T11:35:36.8239297+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1133cc11-c0fe-4918-8f46-d858d11a54b4">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "MemoryError"&#xD;
+Actual:   "TypeError"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(Boolean asynchronous, String operation, String method) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 184&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9a2557ed-7dd6-4d7f-a009-abec8e2c0c04" testId="49a29175-6be8-9485-b0fc-24aff112263d" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;modulo_zero&quot;, source: &quot;def op(value):return value%0.0\ntry:print(op(1.5))&quot;···, expected: &quot;ZeroDivisionError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0011703" startTime="2026-10-18T11:35:36.6362234+02:00" endTime="2026-10-18T11:35:36.6373213+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9a2557ed-7dd6-4d7f-a009-abec8e2c0c04" />
+    <UnitTestResult executionId="216ed4b7-b6dc-46be-8305-116abc4ade40" testId="756380c6-a322-5d3b-8beb-ca55ff4264d4" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;unary&quot;, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0785724" startTime="2026-10-18T11:35:35.9159819+02:00" endTime="2026-10-18T11:35:35.9946914+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="216ed4b7-b6dc-46be-8305-116abc4ade40" />
+    <UnitTestResult executionId="9a7965da-4271-4b87-9f9a-349222b9f224" testId="1577becc-018b-0657-17c9-7aa026775352" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_positive&quot;, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.2443089" startTime="2026-10-18T11:35:35.1548383+02:00" endTime="2026-10-18T11:35:35.3954493+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9a7965da-4271-4b87-9f9a-349222b9f224">
+      <Output>
+        <ErrorInfo>
+          <Message>bad operand type for unary +: 'Operand'</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 97&#xD;
+   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 112&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f030a8b5-29dd-4a4d-a52e-2ed299c929e1" testId="365b7ec9-9ac0-bc6d-26f0-e30773af946e" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;abs_alias_and_expansion&quot;, source: &quot;import operator\nsaved=abs\nprint(saved(-7),abs(*[&quot;···, expected: &quot;7 7 7\ncustom 7\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0167358" startTime="2026-10-18T11:35:36.5247902+02:00" endTime="2026-10-18T11:35:36.5416468+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f030a8b5-29dd-4a4d-a52e-2ed299c929e1" />
+    <UnitTestResult executionId="804e6221-90cf-42c9-b49b-e6ab70867059" testId="887ed9f8-cadb-313d-cb61-aa3021bc8aaa" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedScalarResultKeepsItsOwner(text: True)" computerName="LOKAD-0399" duration="00:00:00.0061006" startTime="2026-10-18T11:35:36.8261096+02:00" endTime="2026-10-18T11:35:36.8297136+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="804e6221-90cf-42c9-b49b-e6ab70867059" />
+    <UnitTestResult executionId="259e988f-8f55-4419-a711-788b09c5afbb" testId="7cb4ac2f-df63-ddf9-7c0e-d7fdd09cbeb5" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;absolute&quot;, cancel: False)" computerName="LOKAD-0399" duration="00:00:00.0630602" startTime="2026-10-18T11:35:36.0904211+02:00" endTime="2026-10-18T11:35:36.1527513+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="259e988f-8f55-4419-a711-788b09c5afbb" />
+    <UnitTestResult executionId="835f26e4-a8ff-4f50-b615-672eac728d4a" testId="a2185e4c-cc0b-0ae9-19cf-0e5b880fb567" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: &quot;abs&quot;, method: &quot;__abs__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0019402" startTime="2026-10-18T11:35:36.8166193+02:00" endTime="2026-10-18T11:35:36.8197929+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="835f26e4-a8ff-4f50-b615-672eac728d4a" />
+    <UnitTestResult executionId="7a8b0a71-cf99-460a-8ff6-a1f550fbbb74" testId="061cb4ae-f59b-2021-2913-fe434589d211" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;floor_zero&quot;, source: &quot;def op(value):return value//0.0\ntry:print(op(1.5)&quot;···, expected: &quot;ZeroDivisionError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0064976" startTime="2026-10-18T11:35:36.5912960+02:00" endTime="2026-10-18T11:35:36.5980196+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7a8b0a71-cf99-460a-8ff6-a1f550fbbb74" />
+    <UnitTestResult executionId="4f95405b-ca36-4240-abf7-625c3fe9ff38" testId="e9f8389f-b722-b4f6-1c2d-1ede138ef63d" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_neg_protocol&quot;, source: &quot;import operator\nclass Number:\n def __neg__(self)&quot;···, expected: &quot;custom-neg\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0012464" startTime="2026-10-18T11:35:36.5642125+02:00" endTime="2026-10-18T11:35:36.5656430+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4f95405b-ca36-4240-abf7-625c3fe9ff38">
+      <Output>
+        <ErrorInfo>
+          <Message>bad operand type for unary -: 'Number'</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 235&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4e6349ae-a3fd-4e7e-8372-da030bba8a1f" testId="a92fae5b-83eb-1184-f9df-57480ae0bdc0" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(operation: &quot;pos&quot;, method: &quot;__pos__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0096313" startTime="2026-10-18T11:35:36.3691154+02:00" endTime="2026-10-18T11:35:36.3787764+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4e6349ae-a3fd-4e7e-8372-da030bba8a1f">
+      <Output>
+        <ErrorInfo>
+          <Message>bad operand type for unary +: 'Number'</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(String operation, String method) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 210&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="98f63407-6c8a-4de3-bf53-9ebd8b186a1f" testId="6c7326ce-883c-b125-afa6-2d7c914729ad" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: &quot;operator.neg&quot;, method: &quot;__neg__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0017131" startTime="2026-10-18T11:35:36.7404116+02:00" endTime="2026-10-18T11:35:36.7422595+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="98f63407-6c8a-4de3-bf53-9ebd8b186a1f">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "MemoryError"&#xD;
+Actual:   "TypeError"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(Boolean asynchronous, String operation, String method) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 184&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8cb2c535-d347-4360-a4ab-98b878965ffe" testId="45a6dff9-9fa9-f800-4845-393960641945" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_invert&quot;, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0017714" startTime="2026-10-18T11:35:35.8285921+02:00" endTime="2026-10-18T11:35:35.8303239+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8cb2c535-d347-4360-a4ab-98b878965ffe">
+      <Output>
+        <ErrorInfo>
+          <Message>bad operand type for unary ~: 'Operand'</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 97&#xD;
+   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 112&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e087c1e7-dda1-4603-b359-8e049880c2e4" testId="187e361c-7434-c95f-41fd-81eed76e15db" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_unary_protocol_errors&quot;, source: &quot;import operator\nclass Number:\n def __neg__(self)&quot;···, expected: &quot;ValueError neg\nValueError pos\nValueError invert\&quot;···)" computerName="LOKAD-0399" duration="00:00:00.0048957" startTime="2026-10-18T11:35:36.6213653+02:00" endTime="2026-10-18T11:35:36.6241850+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e087c1e7-dda1-4603-b359-8e049880c2e4">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "ValueError neg\nValueError pos\nValueError "···&#xD;
+Actual:   "TypeError bad operand type for unary -: '"···&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 236&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="04ab858b-390c-485a-9b17-35b1327b56d3" testId="84670e2f-5217-691d-6d1d-36fd6751e735" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;text_binary&quot;, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0414663" startTime="2026-10-18T11:35:36.3265129+02:00" endTime="2026-10-18T11:35:36.3680737+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="04ab858b-390c-485a-9b17-35b1327b56d3" />
+    <UnitTestResult executionId="26fec568-0dce-4446-a78b-2c517ed6d5d6" testId="781f535f-16a9-b029-7471-af59195e4c5f" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: &quot;operator.neg&quot;, method: &quot;__neg__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0027239" startTime="2026-10-18T11:35:36.8199905+02:00" endTime="2026-10-18T11:35:36.8216796+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="26fec568-0dce-4446-a78b-2c517ed6d5d6">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "MemoryError"&#xD;
+Actual:   "TypeError"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(Boolean asynchronous, String operation, String method) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 184&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="261fc7f6-fe33-428e-9e24-dbcd32c07f63" testId="a2fba1fe-4111-7174-c3fc-a8c73ca8874e" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_negative&quot;, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0033941" startTime="2026-10-18T11:35:35.7792445+02:00" endTime="2026-10-18T11:35:35.7829129+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="261fc7f6-fe33-428e-9e24-dbcd32c07f63">
+      <Output>
+        <ErrorInfo>
+          <Message>bad operand type for unary -: 'Operand'</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 97&#xD;
+   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 112&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="ce422514-52d1-4222-89a7-855c3c2215ff" testId="34d32239-01aa-0107-4e9c-511b1389df7b" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: &quot;operator.invert&quot;, method: &quot;__invert__&quot;)" computerName="LOKAD-0399" duration="00:00:00.0049039" startTime="2026-10-18T11:35:36.6539110+02:00" endTime="2026-10-18T11:35:36.6594966+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ce422514-52d1-4222-89a7-855c3c2215ff">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+           ↓ (pos 0)&#xD;
+Expected: "MemoryError"&#xD;
+Actual:   "TypeError"&#xD;
+           ↑ (pos 0)</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(Boolean asynchronous, String operation, String method) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 184&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9d556889-5a1f-42c3-aade-7111edfe0d75" testId="04e65024-1910-9fa3-f6a2-0135001da493" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;chain_once&quot;, source: &quot;events=[]\ndef middle():\n events.append(\&quot;middle\&quot;···, expected: &quot;True ['middle']\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0070900" startTime="2026-10-18T11:35:36.5981759+02:00" endTime="2026-10-18T11:35:36.6054304+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9d556889-5a1f-42c3-aade-7111edfe0d75" />
+    <UnitTestResult executionId="351c674b-ea0e-4978-a7e2-71e19c5b16fc" testId="5a2f72e9-4d8e-1343-e592-1ff8d0e17b2f" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;negative_zero&quot;, source: &quot;import math\na=-0.0\nprint(math.copysign(1.0,a),ma&quot;···, expected: &quot;-1.0 1.0 False\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0040904" startTime="2026-10-18T11:35:36.4168796+02:00" endTime="2026-10-18T11:35:36.4210500+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="351c674b-ea0e-4978-a7e2-71e19c5b16fc" />
+    <UnitTestResult executionId="01a382b7-eeec-4b2a-9028-56114c618263" testId="dba5bdc7-93e3-cbf0-bacc-bba9dc4db05e" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;divide_zero&quot;, source: &quot;def op(value):return value/0.0\ntry:print(op(1.5))&quot;···, expected: &quot;ZeroDivisionError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0263860" startTime="2026-10-18T11:35:36.4211401+02:00" endTime="2026-10-18T11:35:36.4477882+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="01a382b7-eeec-4b2a-9028-56114c618263" />
+    <UnitTestResult executionId="0c8a80aa-4afc-430a-93cd-9911ddc868b9" testId="e58c5aed-f16d-9794-541b-05f7415e432e" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_absolute&quot;, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0272925" startTime="2026-10-18T11:35:35.5285965+02:00" endTime="2026-10-18T11:35:35.5558646+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0c8a80aa-4afc-430a-93cd-9911ddc868b9" />
+    <UnitTestResult executionId="859a5fc3-64c0-48c6-87d5-70935894ba57" testId="1ffae173-ebe8-e084-f1cd-672b27f9fd4e" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;absolute&quot;, cancel: True)" computerName="LOKAD-0399" duration="00:00:00.0320013" startTime="2026-10-18T11:35:35.6175983+02:00" endTime="2026-10-18T11:35:35.6497591+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="859a5fc3-64c0-48c6-87d5-70935894ba57" />
+    <UnitTestResult executionId="cbcceee9-088f-4988-9db3-00efd7ba6d1d" testId="e0fe69fd-163b-4951-f0eb-0c7f1aafee22" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_unary_complex&quot;, source: &quot;import operator\nvalue=3+4j\nprint(operator.neg(va&quot;···, expected: &quot;(-3-4j) (3+4j) True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0039009" startTime="2026-10-18T11:35:36.3906306+02:00" endTime="2026-10-18T11:35:36.3946373+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cbcceee9-088f-4988-9db3-00efd7ba6d1d">
+      <Output>
+        <ErrorInfo>
+          <Message>bad operand type for unary -: 'complex'</Message>
+          <StackTrace>   at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(String label, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs:line 235&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="fd7a8d00-e69e-4e75-9004-05d93a370687" testId="cd5cca3a-3872-8617-c66f-f444b0969872" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;abs_numeric_types&quot;, source: &quot;import operator,decimal,datetime\nfor call in (abs&quot;···, expected: &quot;5.0 1.25 0:00:02\n5.0 1.25 0:00:02\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0103105" startTime="2026-10-18T11:35:36.5418523+02:00" endTime="2026-10-18T11:35:36.5522615+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fd7a8d00-e69e-4e75-9004-05d93a370687" />
+    <UnitTestResult executionId="c21b3c70-970e-4f2a-ae1b-d91d8b0dcd94" testId="0cc5cfb9-2084-1ba6-f139-d9ad127a2a81" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;unary&quot;, source: &quot;print(+1.5,-1.5,not 0.0,not 1.5,+True,-False,not F&quot;···, expected: &quot;1.5 -1.5 True False 1 0 True\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0014985" startTime="2026-10-18T11:35:36.5111037+02:00" endTime="2026-10-18T11:35:36.5118111+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c21b3c70-970e-4f2a-ae1b-d91d8b0dcd94" />
+    <UnitTestResult executionId="fc207c90-a50e-4776-97be-f24d14457767" testId="0d430589-689f-3225-78fd-4431869df481" testName="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;bad_matrix&quot;, source: &quot;def op(value):return value@value\ntry:print(op(1.5&quot;···, expected: &quot;TypeError\n&quot;)" computerName="LOKAD-0399" duration="00:00:00.0041234" startTime="2026-10-18T11:35:36.6056178+02:00" endTime="2026-10-18T11:35:36.6096162+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fc207c90-a50e-4776-97be-f24d14457767" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;modulo_zero&quot;, source: &quot;def op(value):return value%0.0\ntry:print(op(1.5))&quot;···, expected: &quot;ZeroDivisionError\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="49a29175-6be8-9485-b0fc-24aff112263d">
+      <Execution id="9a2557ed-7dd6-4d7f-a009-abec8e2c0c04" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;abs_alias_and_expansion&quot;, source: &quot;import operator\nsaved=abs\nprint(saved(-7),abs(*[&quot;···, expected: &quot;7 7 7\ncustom 7\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="365b7ec9-9ac0-bc6d-26f0-e30773af946e">
+      <Execution id="f030a8b5-29dd-4a4d-a52e-2ed299c929e1" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;truth&quot;, cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="4fceac9b-230c-b07d-0416-6b99fa340cea">
+      <Execution id="ad04d152-e46a-41c5-bfab-417f0a537bd5" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;text_augmented&quot;, cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="289864e3-3fae-e3f8-9356-71b1ffe6077d">
+      <Execution id="9de56a8f-649a-49b0-ae1a-269017f3f51d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: &quot;operator.neg&quot;, method: &quot;__neg__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="6c7326ce-883c-b125-afa6-2d7c914729ad">
+      <Execution id="98f63407-6c8a-4de3-bf53-9ebd8b186a1f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;bad_bitwise&quot;, source: &quot;def op(value):return ~value\ntry:print(op(1.5))\ne&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="44ffa67d-ad31-fd44-22f3-871f2243b7ea">
+      <Execution id="328eed92-906b-443e-a40c-d4448b71ef91" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: &quot;operator.neg&quot;, method: &quot;__neg__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="781f535f-16a9-b029-7471-af59195e4c5f">
+      <Execution id="26fec568-0dce-4446-a78b-2c517ed6d5d6" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: &quot;abs&quot;, method: &quot;__abs__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="a2185e4c-cc0b-0ae9-19cf-0e5b880fb567">
+      <Execution id="835f26e4-a8ff-4f50-b615-672eac728d4a" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;text_augmented&quot;, cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="79449e56-1428-61d6-6964-278c11e74b39">
+      <Execution id="3dbad814-e902-465f-8428-c987db0968bf" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedScalarResultKeepsItsOwner(text: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="f9f5394f-17dc-99ee-cb1c-0c8e83b10cda">
+      <Execution id="a0fe2a45-8b34-4910-9e91-47e64594efc2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="RetainedScalarResultKeepsItsOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;bool_bitwise&quot;, source: &quot;for a,b in ((True,False),(True,True),(False,False)&quot;···, expected: &quot;False bool\nTrue bool\nTrue bool\nTrue bool\nTrue &quot;···)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="1bed60f6-fcce-ecb4-503a-79c118e2075b">
+      <Execution id="01d887b0-6f0e-40d9-be40-ed660fceee4f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_absolute&quot;, cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="e58c5aed-f16d-9794-541b-05f7415e432e">
+      <Execution id="0c8a80aa-4afc-430a-93cd-9911ddc868b9" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_negative&quot;, cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="a2fba1fe-4111-7174-c3fc-a8c73ca8874e">
+      <Execution id="261fc7f6-fe33-428e-9e24-dbcd32c07f63" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;text_left&quot;, cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="ef21a190-4103-365a-3167-9c37641fe7dc">
+      <Execution id="5ae31aa6-fe8b-4cbd-add7-3138850975b9" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: &quot;operator.invert&quot;, method: &quot;__invert__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="ba64fdde-46e1-d212-de0d-db760452662a">
+      <Execution id="a5458d0f-4cdb-48c2-b60f-ceb64d88e8d6" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;float_augmented&quot;, source: &quot;value=1.5\nvalue+=2.25\nvalue*=2.0\nvalue-=0.5\nva&quot;···, expected: &quot;3.5\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="62485da4-f537-0f1c-d53d-749abb21b54b">
+      <Execution id="d061c87f-300e-4292-a40a-450e0cc96563" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;floor_zero&quot;, source: &quot;def op(value):return value//0.0\ntry:print(op(1.5)&quot;···, expected: &quot;ZeroDivisionError\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="061cb4ae-f59b-2021-2913-fe434589d211">
+      <Execution id="7a8b0a71-cf99-460a-8ff6-a1f550fbbb74" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;chain_once&quot;, source: &quot;events=[]\ndef middle():\n events.append(\&quot;middle\&quot;···, expected: &quot;True ['middle']\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="04e65024-1910-9fa3-f6a2-0135001da493">
+      <Execution id="9d556889-5a1f-42c3-aade-7111edfe0d75" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_absolute&quot;, cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="7f3d4a97-c9c3-760f-09c7-af7dbd4f1e08">
+      <Execution id="5d2cdc99-ffe0-4cc8-b4fc-ba8efcf63886" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;chain_false&quot;, source: &quot;events=[]\ndef tail():\n events.append(\&quot;tail\&quot;)\n&quot;···, expected: &quot;False []\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="b3479f1d-a061-5d73-3af3-8229716edc50">
+      <Execution id="2b1d0035-ce47-45cd-83cf-61d5ad965cdc" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_invert&quot;, cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="45a6dff9-9fa9-f800-4845-393960641945">
+      <Execution id="8cb2c535-d347-4360-a4ab-98b878965ffe" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;augmented&quot;, cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="4391d1d9-223e-771f-da11-1d3ae81957b3">
+      <Execution id="17948725-3c28-4b60-84e0-ed2d43b54ec8" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_unary_native&quot;, source: &quot;import operator,math,decimal,datetime\nprint(opera&quot;···, expected: &quot;-1 0 -2 -1.5\n1.0 -1.0\n1.25 0:00:02\n-1.25 -1 day&quot;···)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="2fe01d94-e51f-538e-c858-26ad2656fdda">
+      <Execution id="4192cfb9-6182-441f-b3f2-e6fefb744786" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;text_binary&quot;, cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="84670e2f-5217-691d-6d1d-36fd6751e735">
+      <Execution id="04ab858b-390c-485a-9b17-35b1327b56d3" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;abs_primitives&quot;, source: &quot;import math\nprint(abs(-7),abs(7),abs(True),abs(Fa&quot;···, expected: &quot;7 7 1 0 1.25 0.0\n1.0 inf\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="b9a9dbcf-49fd-aab2-5f22-12f6a4843bc3">
+      <Execution id="44e766d9-8922-4d96-9be7-a172e6d47371" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_unary_protocol_errors&quot;, source: &quot;import operator\nclass Number:\n def __neg__(self)&quot;···, expected: &quot;ValueError neg\nValueError pos\nValueError invert\&quot;···)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="187e361c-7434-c95f-41fd-81eed76e15db">
+      <Execution id="e087c1e7-dda1-4603-b359-8e049880c2e4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;abs_numeric_types&quot;, source: &quot;import operator,decimal,datetime\nfor call in (abs&quot;···, expected: &quot;5.0 1.25 0:00:02\n5.0 1.25 0:00:02\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="cd5cca3a-3872-8617-c66f-f444b0969872">
+      <Execution id="fd7a8d00-e69e-4e75-9004-05d93a370687" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;binary&quot;, cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="94910957-3071-af69-c65c-79bb96e8dcb5">
+      <Execution id="e7aa147c-3400-4490-bcb2-69f8511d6134" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: &quot;operator.pos&quot;, method: &quot;__pos__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="11b62710-a7ff-4d39-b0a6-90520486f819">
+      <Execution id="1133cc11-c0fe-4918-8f46-d858d11a54b4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;truth_protocol&quot;, source: &quot;events=[]\nclass N:\n def __bool__(self):\n  event&quot;···, expected: &quot;False ['truth']\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="844b3d38-dcff-f0f4-d04c-8efda95ceb24">
+      <Execution id="36e65403-eb4a-4180-bf9b-7fe32dff2087" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;bool_augmented&quot;, source: &quot;value=True\nvalue&amp;=False\nprint(value,type(value).&quot;···, expected: &quot;False bool\n3 int\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="ceb004fe-f25c-2622-0e63-50c2127e9e60">
+      <Execution id="17835390-14b5-4bd4-b71f-40ebf64b1109" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;unary&quot;, cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="34e47b64-9deb-7feb-b9b8-c9e247afdab5">
+      <Execution id="ba0d1dc0-a41a-46d2-89f9-c5c4c65646d7" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;text_left&quot;, cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="77f381e7-977a-cde2-d843-5f9631f39485">
+      <Execution id="2a529787-c803-410c-a22b-e609454c8ea1" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_negative&quot;, cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="24fed424-87a1-839f-0005-566a7b59059c">
+      <Execution id="38aa011b-16c6-4a1a-bd82-efefcfbff3c0" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_neg_protocol&quot;, source: &quot;import operator\nclass Number:\n def __neg__(self)&quot;···, expected: &quot;custom-neg\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="e9f8389f-b722-b4f6-1c2d-1ede138ef63d">
+      <Execution id="4f95405b-ca36-4240-abf7-625c3fe9ff38" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: &quot;operator.abs&quot;, method: &quot;__abs__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="78a0c20d-df08-e335-d8a5-00979a948e34">
+      <Execution id="4ea029d7-dc6d-428f-bced-46b125fda2db" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(operation: &quot;invert&quot;, method: &quot;__invert__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="3b08b598-611b-75cd-4df6-d35a90ff794d">
+      <Execution id="7c2c65ce-ceb8-4d08-8a63-54c9f035d47d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="RetainedUnaryProtocolResultKeepsItsOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_invert_protocol&quot;, source: &quot;import operator\nclass Number:\n def __invert__(se&quot;···, expected: &quot;None\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="a478baed-0143-f265-abb0-cafef95cf67e">
+      <Execution id="28c1d679-e79b-44a9-b10f-67505960815c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;nonfinite&quot;, source: &quot;a=float(\&quot;nan\&quot;)\nb=float(\&quot;inf\&quot;)\nprint(a==a,a!=&quot;···, expected: &quot;False True False False True -inf inf\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="000dec11-e4b7-08cb-8f4f-ec75da574a4e">
+      <Execution id="95571ee5-2c88-4460-ac5b-89a818c4a8ba" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_unary_complex&quot;, source: &quot;import operator\nvalue=3+4j\nprint(operator.neg(va&quot;···, expected: &quot;(-3-4j) (3+4j) True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="e0fe69fd-163b-4951-f0eb-0c7f1aafee22">
+      <Execution id="cbcceee9-088f-4988-9db3-00efd7ba6d1d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;unary&quot;, source: &quot;print(+1.5,-1.5,not 0.0,not 1.5,+True,-False,not F&quot;···, expected: &quot;1.5 -1.5 True False 1 0 True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="0cc5cfb9-2084-1ba6-f139-d9ad127a2a81">
+      <Execution id="c21b3c70-970e-4f2a-ae1b-d91d8b0dcd94" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;binary&quot;, cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="772dd23e-7810-4d2a-9a5e-a0698b289b46">
+      <Execution id="7ec2430c-84ef-4be9-bff0-69ad3705402d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: &quot;operator.pos&quot;, method: &quot;__pos__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="6464d427-8826-e20d-88a7-b3a06319c60b">
+      <Execution id="98968e74-a70b-4cf3-8acf-957a7a1ecaf5" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;abs_missing_and_noncallable&quot;, source: &quot;import operator\nclass Missing:pass\nclass Nil:__a&quot;···, expected: &quot;TypeError\nTypeError\nTypeError\nTypeError\nTypeEr&quot;···)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="fe6bc352-fff0-50f0-cfce-b79dfa280b08">
+      <Execution id="0f7ffb77-42c5-40ed-9598-4bedbd75bd26" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;mixed&quot;, source: &quot;print(2+True,True+1.5,1.5+True,3*False,5.5//True,5&quot;···, expected: &quot;3 2.5 2.5 0 5.0 0.5\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="0bcffa73-ac1b-825b-57b9-cbc2433d1f6d">
+      <Execution id="fa69f6db-a6f2-4cfb-9cc2-dd1fa02b057a" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;bad_matrix&quot;, source: &quot;def op(value):return value@value\ntry:print(op(1.5&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="0d430589-689f-3225-78fd-4431869df481">
+      <Execution id="fc207c90-a50e-4776-97be-f24d14457767" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;chain_nonbool&quot;, source: &quot;class N:\n def __gt__(self,other):return [1]\nprin&quot;···, expected: &quot;[1]\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="c8fd467e-f0a4-bbb9-3d7f-f4db02686bc4">
+      <Execution id="d09bc3e2-5ff2-4d93-b0d1-16a50ce4ffa2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedScalarResultKeepsItsOwner(text: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="887ed9f8-cadb-313d-cb61-aa3021bc8aaa">
+      <Execution id="804e6221-90cf-42c9-b49b-e6ab70867059" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="RetainedScalarResultKeepsItsOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;chain_true&quot;, source: &quot;print(0.5&lt;1.5&lt;2.5,False&lt;True&lt;=1,0&lt;True&lt;1.5)&quot;, expected: &quot;True True True\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="6e2207e5-91bf-e4b0-b973-1ead44ed0057">
+      <Execution id="8ec2f4b0-7bd5-4a32-ad75-2da61e584cff" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(operation: &quot;neg&quot;, method: &quot;__neg__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="ae4d3982-7063-2803-bcce-fee2bd5df03d">
+      <Execution id="617f2820-afe5-4675-968c-c3534f0f55cf" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="RetainedUnaryProtocolResultKeepsItsOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;negative_zero&quot;, source: &quot;import math\na=-0.0\nprint(math.copysign(1.0,a),ma&quot;···, expected: &quot;-1.0 1.0 False\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="5a2f72e9-4d8e-1343-e592-1ff8d0e17b2f">
+      <Execution id="351c674b-ea0e-4978-a7e2-71e19c5b16fc" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_invert&quot;, cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="c4f0a46d-b577-77e9-634f-72e1c870a0b7">
+      <Execution id="573b59c8-d273-4562-ab5a-7ae3c60e5cb2" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: &quot;operator.abs&quot;, method: &quot;__abs__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="314efcd8-0fd0-aa0e-574f-fa64988bc1f4">
+      <Execution id="fd3cffd0-0e05-448d-ab0e-1edacda6602b" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;abs_arity&quot;, source: &quot;import operator\nfor call in (abs,operator.abs):\n&quot;···, expected: &quot;TypeError\nTypeError\nTypeError\nTypeError\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="6d738d66-84cc-0ba8-77d1-b8a192b94f3a">
+      <Execution id="8a1880f4-2649-4fa6-87b7-823bf2355462" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_unary_type_lookup&quot;, source: &quot;import operator\nclass Number:\n def __neg__(self)&quot;···, expected: &quot;type-neg type-pos type-invert\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="6e8999b5-81df-9fa5-93ec-98f703bf2eb4">
+      <Execution id="749da5b8-01b8-4c3f-aae7-b66da817d123" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_pos_protocol&quot;, source: &quot;import operator\nclass Number:\n def __pos__(self)&quot;···, expected: &quot;['custom-pos']\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="25e1429c-68f6-755f-6fe9-6b39471402f1">
+      <Execution id="e6155a3f-c98b-435f-b1be-83fdea84bf56" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;augmented&quot;, cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="de8c3eff-5a2c-f5ce-1c48-30efa4ecad75">
+      <Execution id="d2743c7b-54fd-4db3-ab0b-d26558218337" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;absolute&quot;, cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="1ffae173-ebe8-e084-f1cd-672b27f9fd4e">
+      <Execution id="859a5fc3-64c0-48c6-87d5-70935894ba57" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;bad_shift&quot;, source: &quot;def op(value):return value&lt;&lt;1\ntry:print(op(1.5))\&quot;···, expected: &quot;TypeError\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="84cc761a-ef72-0f38-6973-6bb768bd50e9">
+      <Execution id="be4f13ce-b347-45c9-a1b5-624dde8e604e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;reflected&quot;, source: &quot;class N:\n def __radd__(self,other):return other+2&quot;···, expected: &quot;4.0\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="c95cef3e-4ee5-be27-1dc6-83bbbb8c322e">
+      <Execution id="e4a53741-efad-431d-af7e-b0df3ef368ac" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: &quot;operator.invert&quot;, method: &quot;__invert__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="34d32239-01aa-0107-4e9c-511b1389df7b">
+      <Execution id="ce422514-52d1-4222-89a7-855c3c2215ff" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;absolute&quot;, cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="7cb4ac2f-df63-ddf9-7c0e-d7fdd09cbeb5">
+      <Execution id="259e988f-8f55-4419-a711-788b09c5afbb" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;truth&quot;, cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="651a2d1f-42c2-8e47-3b72-e2212d5090dd">
+      <Execution id="867ebe89-54fb-4fe2-8b2f-6fbbc97c6822" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;divide_zero&quot;, source: &quot;def op(value):return value/0.0\ntry:print(op(1.5))&quot;···, expected: &quot;ZeroDivisionError\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="dba5bdc7-93e3-cbf0-bacc-bba9dc4db05e">
+      <Execution id="01a382b7-eeec-4b2a-9028-56114c618263" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_positive&quot;, cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="1577becc-018b-0657-17c9-7aa026775352">
+      <Execution id="9a7965da-4271-4b87-9f9a-349222b9f224" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(operation: &quot;pos&quot;, method: &quot;__pos__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="a92fae5b-83eb-1184-f9df-57480ae0bdc0">
+      <Execution id="4e6349ae-a3fd-4e7e-8372-da030bba8a1f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="RetainedUnaryProtocolResultKeepsItsOwner" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;float_arithmetic&quot;, source: &quot;print(1.5+2.25,5.5-2.0,1.5*2.0,3.0/2.0,5.5//2.0,5.&quot;···, expected: &quot;3.75 3.5 3.0 1.5 2.0 1.5 2.25\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="f0b67c74-e8d0-5c7a-793d-93fd84274828">
+      <Execution id="00ec4a4a-3baf-49ad-a305-6ea045055759" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;abs_protocol_values&quot;, source: &quot;import operator\nclass Number:\n def __abs__(self)&quot;···, expected: &quot;custom custom\n&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="a9889b41-ac47-2ea8-818b-96ddad034f68">
+      <Execution id="02ac1e87-40d6-4671-813a-424d1cfcfe71" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;text_binary&quot;, cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="5bf9047f-be3b-2e9f-3284-ed877fa680b9">
+      <Execution id="ff226e11-07d7-4e7b-9393-2a3d72fc1e99" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: &quot;abs&quot;, method: &quot;__abs__&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="acd5c7bf-bf72-72af-66d8-988c49380232">
+      <Execution id="b2b40e24-2f3c-4f51-b496-129ec2f2fde7" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_unary_missing_and_noncallable&quot;, source: &quot;import operator\nclass Missing:pass\nclass Nil:__n&quot;···, expected: &quot;TypeError\nTypeError\nTypeError\nTypeError\nTypeEr&quot;···)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="8c242cc1-1511-5751-f2ed-f1645ef94814">
+      <Execution id="a092cc12-1b72-4fef-a567-dc237dc07927" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;unary&quot;, cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="756380c6-a322-5d3b-8beb-ca55ff4264d4">
+      <Execution id="216ed4b7-b6dc-46be-8305-116abc4ade40" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: &quot;operator_unary_arity&quot;, source: &quot;import operator\nfor call in (operator.neg,operato&quot;···, expected: &quot;TypeError\nTypeError\nTypeError\nTypeError\nTypeEr&quot;···)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="d48638a0-00ba-4605-263f-38f1c719c036">
+      <Execution id="d5f73a41-916e-4f1e-88ad-3d26c531bb55" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="ScalarOperationsKeepPythonResultsAndErrors" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: &quot;operator_positive&quot;, cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net10.0\lokad.lython.publicapi.tests.dll" id="25355084-30b5-b0e3-8d2e-5f36f821e2e0">
+      <Execution id="d8d57db5-7a3f-4257-9b96-dfefc11593a7" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests" name="AProtocolOperandStillSuspendsWithoutReplay" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="844b3d38-dcff-f0f4-d04c-8efda95ceb24" executionId="36e65403-eb4a-4180-bf9b-7fe32dff2087" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6e8999b5-81df-9fa5-93ec-98f703bf2eb4" executionId="749da5b8-01b8-4c3f-aae7-b66da817d123" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="62485da4-f537-0f1c-d53d-749abb21b54b" executionId="d061c87f-300e-4292-a40a-450e0cc96563" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f0b67c74-e8d0-5c7a-793d-93fd84274828" executionId="00ec4a4a-3baf-49ad-a305-6ea045055759" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="44ffa67d-ad31-fd44-22f3-871f2243b7ea" executionId="328eed92-906b-443e-a40c-d4448b71ef91" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b9a9dbcf-49fd-aab2-5f22-12f6a4843bc3" executionId="44e766d9-8922-4d96-9be7-a172e6d47371" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="de8c3eff-5a2c-f5ce-1c48-30efa4ecad75" executionId="d2743c7b-54fd-4db3-ab0b-d26558218337" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f9f5394f-17dc-99ee-cb1c-0c8e83b10cda" executionId="a0fe2a45-8b34-4910-9e91-47e64594efc2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="78a0c20d-df08-e335-d8a5-00979a948e34" executionId="4ea029d7-dc6d-428f-bced-46b125fda2db" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="651a2d1f-42c2-8e47-3b72-e2212d5090dd" executionId="867ebe89-54fb-4fe2-8b2f-6fbbc97c6822" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7f3d4a97-c9c3-760f-09c7-af7dbd4f1e08" executionId="5d2cdc99-ffe0-4cc8-b4fc-ba8efcf63886" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4391d1d9-223e-771f-da11-1d3ae81957b3" executionId="17948725-3c28-4b60-84e0-ed2d43b54ec8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5bf9047f-be3b-2e9f-3284-ed877fa680b9" executionId="ff226e11-07d7-4e7b-9393-2a3d72fc1e99" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="94910957-3071-af69-c65c-79bb96e8dcb5" executionId="e7aa147c-3400-4490-bcb2-69f8511d6134" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ba64fdde-46e1-d212-de0d-db760452662a" executionId="a5458d0f-4cdb-48c2-b60f-ceb64d88e8d6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="acd5c7bf-bf72-72af-66d8-988c49380232" executionId="b2b40e24-2f3c-4f51-b496-129ec2f2fde7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="289864e3-3fae-e3f8-9356-71b1ffe6077d" executionId="9de56a8f-649a-49b0-ae1a-269017f3f51d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="24fed424-87a1-839f-0005-566a7b59059c" executionId="38aa011b-16c6-4a1a-bd82-efefcfbff3c0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fe6bc352-fff0-50f0-cfce-b79dfa280b08" executionId="0f7ffb77-42c5-40ed-9598-4bedbd75bd26" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="84cc761a-ef72-0f38-6973-6bb768bd50e9" executionId="be4f13ce-b347-45c9-a1b5-624dde8e604e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ef21a190-4103-365a-3167-9c37641fe7dc" executionId="5ae31aa6-fe8b-4cbd-add7-3138850975b9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c8fd467e-f0a4-bbb9-3d7f-f4db02686bc4" executionId="d09bc3e2-5ff2-4d93-b0d1-16a50ce4ffa2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="772dd23e-7810-4d2a-9a5e-a0698b289b46" executionId="7ec2430c-84ef-4be9-bff0-69ad3705402d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="25e1429c-68f6-755f-6fe9-6b39471402f1" executionId="e6155a3f-c98b-435f-b1be-83fdea84bf56" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6464d427-8826-e20d-88a7-b3a06319c60b" executionId="98968e74-a70b-4cf3-8acf-957a7a1ecaf5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="34e47b64-9deb-7feb-b9b8-c9e247afdab5" executionId="ba0d1dc0-a41a-46d2-89f9-c5c4c65646d7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b3479f1d-a061-5d73-3af3-8229716edc50" executionId="2b1d0035-ce47-45cd-83cf-61d5ad965cdc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="77f381e7-977a-cde2-d843-5f9631f39485" executionId="2a529787-c803-410c-a22b-e609454c8ea1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1bed60f6-fcce-ecb4-503a-79c118e2075b" executionId="01d887b0-6f0e-40d9-be40-ed660fceee4f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c95cef3e-4ee5-be27-1dc6-83bbbb8c322e" executionId="e4a53741-efad-431d-af7e-b0df3ef368ac" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="79449e56-1428-61d6-6964-278c11e74b39" executionId="3dbad814-e902-465f-8428-c987db0968bf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6e2207e5-91bf-e4b0-b973-1ead44ed0057" executionId="8ec2f4b0-7bd5-4a32-ad75-2da61e584cff" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8c242cc1-1511-5751-f2ed-f1645ef94814" executionId="a092cc12-1b72-4fef-a567-dc237dc07927" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ceb004fe-f25c-2622-0e63-50c2127e9e60" executionId="17835390-14b5-4bd4-b71f-40ebf64b1109" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a9889b41-ac47-2ea8-818b-96ddad034f68" executionId="02ac1e87-40d6-4671-813a-424d1cfcfe71" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a478baed-0143-f265-abb0-cafef95cf67e" executionId="28c1d679-e79b-44a9-b10f-67505960815c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d48638a0-00ba-4605-263f-38f1c719c036" executionId="d5f73a41-916e-4f1e-88ad-3d26c531bb55" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ae4d3982-7063-2803-bcce-fee2bd5df03d" executionId="617f2820-afe5-4675-968c-c3534f0f55cf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="25355084-30b5-b0e3-8d2e-5f36f821e2e0" executionId="d8d57db5-7a3f-4257-9b96-dfefc11593a7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0bcffa73-ac1b-825b-57b9-cbc2433d1f6d" executionId="fa69f6db-a6f2-4cfb-9cc2-dd1fa02b057a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="000dec11-e4b7-08cb-8f4f-ec75da574a4e" executionId="95571ee5-2c88-4460-ac5b-89a818c4a8ba" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4fceac9b-230c-b07d-0416-6b99fa340cea" executionId="ad04d152-e46a-41c5-bfab-417f0a537bd5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3b08b598-611b-75cd-4df6-d35a90ff794d" executionId="7c2c65ce-ceb8-4d08-8a63-54c9f035d47d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6d738d66-84cc-0ba8-77d1-b8a192b94f3a" executionId="8a1880f4-2649-4fa6-87b7-823bf2355462" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="314efcd8-0fd0-aa0e-574f-fa64988bc1f4" executionId="fd3cffd0-0e05-448d-ab0e-1edacda6602b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2fe01d94-e51f-538e-c858-26ad2656fdda" executionId="4192cfb9-6182-441f-b3f2-e6fefb744786" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c4f0a46d-b577-77e9-634f-72e1c870a0b7" executionId="573b59c8-d273-4562-ab5a-7ae3c60e5cb2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="11b62710-a7ff-4d39-b0a6-90520486f819" executionId="1133cc11-c0fe-4918-8f46-d858d11a54b4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="49a29175-6be8-9485-b0fc-24aff112263d" executionId="9a2557ed-7dd6-4d7f-a009-abec8e2c0c04" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="756380c6-a322-5d3b-8beb-ca55ff4264d4" executionId="216ed4b7-b6dc-46be-8305-116abc4ade40" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1577becc-018b-0657-17c9-7aa026775352" executionId="9a7965da-4271-4b87-9f9a-349222b9f224" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="365b7ec9-9ac0-bc6d-26f0-e30773af946e" executionId="f030a8b5-29dd-4a4d-a52e-2ed299c929e1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="887ed9f8-cadb-313d-cb61-aa3021bc8aaa" executionId="804e6221-90cf-42c9-b49b-e6ab70867059" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7cb4ac2f-df63-ddf9-7c0e-d7fdd09cbeb5" executionId="259e988f-8f55-4419-a711-788b09c5afbb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a2185e4c-cc0b-0ae9-19cf-0e5b880fb567" executionId="835f26e4-a8ff-4f50-b615-672eac728d4a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="061cb4ae-f59b-2021-2913-fe434589d211" executionId="7a8b0a71-cf99-460a-8ff6-a1f550fbbb74" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e9f8389f-b722-b4f6-1c2d-1ede138ef63d" executionId="4f95405b-ca36-4240-abf7-625c3fe9ff38" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a92fae5b-83eb-1184-f9df-57480ae0bdc0" executionId="4e6349ae-a3fd-4e7e-8372-da030bba8a1f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6c7326ce-883c-b125-afa6-2d7c914729ad" executionId="98f63407-6c8a-4de3-bf53-9ebd8b186a1f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="45a6dff9-9fa9-f800-4845-393960641945" executionId="8cb2c535-d347-4360-a4ab-98b878965ffe" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="187e361c-7434-c95f-41fd-81eed76e15db" executionId="e087c1e7-dda1-4603-b359-8e049880c2e4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="84670e2f-5217-691d-6d1d-36fd6751e735" executionId="04ab858b-390c-485a-9b17-35b1327b56d3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="781f535f-16a9-b029-7471-af59195e4c5f" executionId="26fec568-0dce-4446-a78b-2c517ed6d5d6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a2fba1fe-4111-7174-c3fc-a8c73ca8874e" executionId="261fc7f6-fe33-428e-9e24-dbcd32c07f63" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="34d32239-01aa-0107-4e9c-511b1389df7b" executionId="ce422514-52d1-4222-89a7-855c3c2215ff" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="04e65024-1910-9fa3-f6a2-0135001da493" executionId="9d556889-5a1f-42c3-aade-7111edfe0d75" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5a2f72e9-4d8e-1343-e592-1ff8d0e17b2f" executionId="351c674b-ea0e-4978-a7e2-71e19c5b16fc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dba5bdc7-93e3-cbf0-bacc-bba9dc4db05e" executionId="01a382b7-eeec-4b2a-9028-56114c618263" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e58c5aed-f16d-9794-541b-05f7415e432e" executionId="0c8a80aa-4afc-430a-93cd-9911ddc868b9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1ffae173-ebe8-e084-f1cd-672b27f9fd4e" executionId="859a5fc3-64c0-48c6-87d5-70935894ba57" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e0fe69fd-163b-4951-f0eb-0c7f1aafee22" executionId="cbcceee9-088f-4988-9db3-00efd7ba6d1d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cd5cca3a-3872-8617-c66f-f444b0969872" executionId="fd7a8d00-e69e-4e75-9004-05d93a370687" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0cc5cfb9-2084-1ba6-f139-d9ad127a2a81" executionId="c21b3c70-970e-4f2a-ae1b-d91d8b0dcd94" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0d430589-689f-3225-78fd-4431869df481" executionId="fc207c90-a50e-4776-97be-f24d14457767" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="74" executed="74" passed="53" failed="21" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.21]   Discovering: Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.40]   Discovered:  Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.45]   Starting:    Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:01.72]       bad operand type for unary +: 'Operand'&#xD;
+[xUnit.net 00:00:01.72]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.72]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(97,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel)&#xD;
+[xUnit.net 00:00:01.72]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(112,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel)&#xD;
+[xUnit.net 00:00:01.72]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.11]       bad operand type for unary -: 'Operand'&#xD;
+[xUnit.net 00:00:02.11]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.11]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(97,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.11]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(112,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.11]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.15]       Assert.Equal() Failure: Values differ&#xD;
+[xUnit.net 00:00:02.15]       Expected: True&#xD;
+[xUnit.net 00:00:02.15]       Actual:   False&#xD;
+[xUnit.net 00:00:02.15]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.15]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(104,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.15]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(112,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.15]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.16]       bad operand type for unary ~: 'Operand'&#xD;
+[xUnit.net 00:00:02.17]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.17]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(97,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.17]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(112,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.17]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.20]       Assert.Equal() Failure: Values differ&#xD;
+[xUnit.net 00:00:02.20]       Expected: True&#xD;
+[xUnit.net 00:00:02.20]       Actual:   False&#xD;
+[xUnit.net 00:00:02.20]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.20]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(104,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.20]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(112,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.20]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.58]       Assert.Equal() Failure: Values differ&#xD;
+[xUnit.net 00:00:02.58]       Expected: True&#xD;
+[xUnit.net 00:00:02.58]       Actual:   False&#xD;
+[xUnit.net 00:00:02.58]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.58]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(104,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.58]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(112,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(String operation, Boolean cancel)&#xD;
+[xUnit.net 00:00:02.58]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.71]       bad operand type for unary +: 'Number'&#xD;
+[xUnit.net 00:00:02.71]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.71]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(210,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(String operation, String method)&#xD;
+[xUnit.net 00:00:02.71]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.71]       bad operand type for unary -: 'Number'&#xD;
+[xUnit.net 00:00:02.71]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.71]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(210,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(String operation, String method)&#xD;
+[xUnit.net 00:00:02.71]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.71]       bad operand type for unary ~: 'Number'&#xD;
+[xUnit.net 00:00:02.71]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.71]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(210,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(String operation, String method)&#xD;
+[xUnit.net 00:00:02.71]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.72]       bad operand type for unary -: 'complex'&#xD;
+[xUnit.net 00:00:02.72]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.72]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(235,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.72]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.89]       bad operand type for unary -: 'Number'&#xD;
+[xUnit.net 00:00:02.89]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.89]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(235,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.89]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.94]       bad operand type for unary -: 'Child'&#xD;
+[xUnit.net 00:00:02.94]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.94]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(235,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.94]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.95]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.95]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.95]       Expected: "ValueError neg\nValueError pos\nValueError "···&#xD;
+[xUnit.net 00:00:02.95]       Actual:   "TypeError bad operand type for unary -: '"···&#xD;
+[xUnit.net 00:00:02.95]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.95]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.95]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(236,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.95]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.96]       bad operand type for unary +: 'Number'&#xD;
+[xUnit.net 00:00:02.96]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.96]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(235,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.96]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.97]       bad operand type for unary ~: 'Number'&#xD;
+[xUnit.net 00:00:02.97]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.97]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(235,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(String label, String source, String expected)&#xD;
+[xUnit.net 00:00:02.97]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:02.99]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:02.99]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:02.99]       Expected: "MemoryError"&#xD;
+[xUnit.net 00:00:02.99]       Actual:   "TypeError"&#xD;
+[xUnit.net 00:00:02.99]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:02.99]       Stack Trace:&#xD;
+[xUnit.net 00:00:02.99]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(184,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(Boolean asynchronous, String operation, String method)&#xD;
+[xUnit.net 00:00:02.99]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:03.00]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:03.00]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:03.00]       Expected: "MemoryError"&#xD;
+[xUnit.net 00:00:03.00]       Actual:   "TypeError"&#xD;
+[xUnit.net 00:00:03.00]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:03.00]       Stack Trace:&#xD;
+[xUnit.net 00:00:03.00]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(184,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(Boolean asynchronous, String operation, String method)&#xD;
+[xUnit.net 00:00:03.00]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:03.07]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:03.07]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:03.07]       Expected: "MemoryError"&#xD;
+[xUnit.net 00:00:03.07]       Actual:   "TypeError"&#xD;
+[xUnit.net 00:00:03.07]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:03.07]       Stack Trace:&#xD;
+[xUnit.net 00:00:03.07]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(184,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(Boolean asynchronous, String operation, String method)&#xD;
+[xUnit.net 00:00:03.07]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:03.07]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:03.07]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:03.07]       Expected: "MemoryError"&#xD;
+[xUnit.net 00:00:03.07]       Actual:   "TypeError"&#xD;
+[xUnit.net 00:00:03.07]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:03.07]       Stack Trace:&#xD;
+[xUnit.net 00:00:03.07]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(184,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(Boolean asynchronous, String operation, String method)&#xD;
+[xUnit.net 00:00:03.07]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:03.15]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:03.15]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:03.15]       Expected: "MemoryError"&#xD;
+[xUnit.net 00:00:03.15]       Actual:   "TypeError"&#xD;
+[xUnit.net 00:00:03.15]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:03.15]       Stack Trace:&#xD;
+[xUnit.net 00:00:03.15]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(184,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(Boolean asynchronous, String operation, String method)&#xD;
+[xUnit.net 00:00:03.15]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:03.15]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:03.15]                  ↓ (pos 0)&#xD;
+[xUnit.net 00:00:03.15]       Expected: "MemoryError"&#xD;
+[xUnit.net 00:00:03.15]       Actual:   "TypeError"&#xD;
+[xUnit.net 00:00:03.15]                  ↑ (pos 0)&#xD;
+[xUnit.net 00:00:03.15]       Stack Trace:&#xD;
+[xUnit.net 00:00:03.15]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeScalarDispatchTests.cs(184,0): at Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(Boolean asynchronous, String operation, String method)&#xD;
+[xUnit.net 00:00:03.15]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:03.17]   Finished:    Lokad.Lython.PublicApi.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:35.3971808+02:00">
+        <Text>[xUnit.net 00:00:01.72]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: "operator_positive", cancel: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:35.7832476+02:00">
+        <Text>[xUnit.net 00:00:02.11]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: "operator_negative", cancel: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:35.8286148+02:00">
+        <Text>[xUnit.net 00:00:02.15]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: "operator_positive", cancel: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:35.8305318+02:00">
+        <Text>[xUnit.net 00:00:02.16]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: "operator_invert", cancel: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:35.8709384+02:00">
+        <Text>[xUnit.net 00:00:02.20]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: "operator_invert", cancel: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.2573409+02:00">
+        <Text>[xUnit.net 00:00:02.58]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.AProtocolOperandStillSuspendsWithoutReplay(operation: "operator_negative", cancel: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.3791235+02:00">
+        <Text>[xUnit.net 00:00:02.71]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(operation: "pos", method: "__pos__") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.3798932+02:00">
+        <Text>[xUnit.net 00:00:02.71]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(operation: "neg", method: "__neg__") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.3804459+02:00">
+        <Text>[xUnit.net 00:00:02.71]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.RetainedUnaryProtocolResultKeepsItsOwner(operation: "invert", method: "__invert__") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.3950050+02:00">
+        <Text>[xUnit.net 00:00:02.72]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: "operator_unary_complex", source: "import operator\nvalue=3+4j\nprint(operator.neg(va"···, expected: "(-3-4j) (3+4j) True\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.5660315+02:00">
+        <Text>[xUnit.net 00:00:02.89]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: "operator_neg_protocol", source: "import operator\nclass Number:\n def __neg__(self)"···, expected: "custom-neg\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.6169956+02:00">
+        <Text>[xUnit.net 00:00:02.94]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: "operator_unary_type_lookup", source: "import operator\nclass Number:\n def __neg__(self)"···, expected: "type-neg type-pos type-invert\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.6248043+02:00">
+        <Text>[xUnit.net 00:00:02.95]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: "operator_unary_protocol_errors", source: "import operator\nclass Number:\n def __neg__(self)"···, expected: "ValueError neg\nValueError pos\nValueError invert\"···) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.6359144+02:00">
+        <Text>[xUnit.net 00:00:02.96]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: "operator_pos_protocol", source: "import operator\nclass Number:\n def __pos__(self)"···, expected: "['custom-pos']\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.6442453+02:00">
+        <Text>[xUnit.net 00:00:02.97]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.ScalarOperationsKeepPythonResultsAndErrors(label: "operator_invert_protocol", source: "import operator\nclass Number:\n def __invert__(se"···, expected: "None\n") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.6598293+02:00">
+        <Text>[xUnit.net 00:00:02.99]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: "operator.invert", method: "__invert__") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.6767910+02:00">
+        <Text>[xUnit.net 00:00:03.00]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: "operator.invert", method: "__invert__") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.7428802+02:00">
+        <Text>[xUnit.net 00:00:03.07]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: "operator.neg", method: "__neg__") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.7454479+02:00">
+        <Text>[xUnit.net 00:00:03.07]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: "operator.pos", method: "__pos__") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.8219859+02:00">
+        <Text>[xUnit.net 00:00:03.15]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: True, operation: "operator.neg", method: "__neg__") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-10-18T11:35:36.8241977+02:00">
+        <Text>[xUnit.net 00:00:03.15]     Lokad.Lython.PublicApi.Tests.NativeScalarDispatchTests.UnaryProtocolRefusalStopsGuestSuppressionAndReturnsAllowance(asynchronous: False, operation: "operator.pos", method: "__pos__") [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

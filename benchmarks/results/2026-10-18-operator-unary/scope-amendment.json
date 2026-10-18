@@ -1,0 +1,13 @@
+{
+  "reason": "Initial registration-only candidate passes 73/74 public cases; instance shadowing case returns instance-neg/pos/invert instead of CPython type slots.",
+  "replacement": "In the existing sync/async unary helpers, resolve the raw member in the type MRO and use existing BindForInstance / BindForInstanceAsync. Bypass instance dictionary/__getattribute__/__getattr__, await descriptor binding. No new helper or dispatcher.",
+  "affected": "Existing unary helpers also serve ordinary unary syntax, abs and complex numeric conversion; retain those controls. Binary lookup is unchanged.",
+  "productionFiles": [
+    "LythonRuntime.OperatorModule.cs",
+    "LythonRuntime.OperatorDispatch.cs"
+  ],
+  "expectedRemoval": "Three nested per-call unary lambdas/arity checks (shared binder already validates); two ordinary instance-attribute lookups in unary helper twins.",
+  "validation": "36 CPython goldens, type-slot/shadow/custom-getattribute cases, actual descriptor suspension/cancellation, terminal refusal, retained callback aliases, existing numeric/protocol/complex/descriptor/stack and governed lifetime controls.",
+  "excluded": "No binary protocol audit, binder/cache/ownership redesign, native primitive abs optimization or regex implementation.",
+  "goldenCorrection": "Initial native fixture used bool inversion and hit CPython 3.13 deprecation stderr; use integer inversion with the identical -2 result while retaining bool positive/negative cases. No assertion or timeout relaxed."
+}

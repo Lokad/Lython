@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 operator unary correction](results/2026-10-18-operator-unary/README.md)
+routes neg/pos/invert through the existing unary dispatcher and corrects shared
+type-slot lookup, including awaited descriptor binding. Baseline regressions and
+the registration-only failure are preserved; 1,071 final focused cases and 36
+CPython source goldens pass. Numeric kernels/signatures are unchanged. No new
+dispatcher/owner or performance measurement is included.
+
 The [2026-10-18 absolute-value correction](results/2026-10-18-abs-async/README.md)
 makes abs and operator.abs await guest __abs__ hooks through the existing unary
 dispatcher. Two global-abs async-host regressions fail before the correction;
