@@ -460,7 +460,7 @@ Parameter-heavy definition batches can therefore refuse earlier than older
 revisions that omitted layout capacity. Use bounded execution batches; immutable
 layout sharing remains a performance opportunity, not an accounting exemption.
 The fixed `len`, `repr`, `ascii`, `format`, `abs`, `pow`, `round`, `divmod`, `bin`,
-`oct`, `hex`, `chr` and `ord` builtin definitions are shared trusted runtime
+`oct`, `hex`, `chr`, `ord` and `sorted` builtin definitions are shared trusted runtime
 metadata covered by host/control headroom. They retain no execution context,
 guest storage or host; their module is resolved through the current caller.
 Builtin dictionaries, mutable type graphs and owned results remain per execution.

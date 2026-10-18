@@ -1,0 +1,54 @@
+{
+  "beforeRuntimeEdits": true,
+  "problem": "New overlap fixture supplied unsupported CLR int[] host globals; use documented object[] with BigInteger values. Existing assertions/timeouts kept; detailed early failure assertion retained. Fixed10 baseline cases pass.",
+  "trials": {
+    "baseline-public": {
+      "process": {
+        "source": "sorted-definition",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "261CC945AF527F270934997E08389B8423D5E54781D2E3CB54EDEF58FCFD1049",
+        "filter": "Category!=Stress&(FullyQualifiedName~BuiltinDefinitionIsolationTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 17736,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2769,
+        "stdoutSha256": "FBA88E52F759EF35D914407E102FA4B8994AF785F2CF846683F5A8E40454DB15",
+        "stderrSha256": "A58D5B1C900F814888B3BFABDAAB90CA105513BEC5FC206DC7FB3B74F285925B"
+      },
+      "failures": [
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.BuiltinCallbackLifetimeTests.OverlappingSortCallbacksKeepPrivateRunsAndRetainedResultFunding",
+          "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: Task { Status = WaitingForActivation }\r\nActual:   Task<LythonExecutionResult,<<RunAsyncCore>g__RunAndDisposeAsync|26_1>d> { Status = RanToCompletion }"
+        }
+      ],
+      "trxSha256": "f5d4dba3b7cbf90ceb7d7731cf0c25bf1a7424ab79a628524221bfe715cc51f9"
+    },
+    "baseline-overlap-diagnostic": {
+      "process": {
+        "source": "sorted-definition",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "E9C1DED23B5CE55FFA157447E524883CD721DD4755D1DB61205D8C6E3139CC49",
+        "filter": "Category!=Stress&FullyQualifiedName~OverlappingSortCallbacksKeepPrivateRunsAndRetainedResultFunding",
+        "pid": 47856,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2244,
+        "stdoutSha256": "2D6C8700B67195B0818EBBDDAF50A8FFD332F5D3ADA849B581CC5274EF5C5E7F",
+        "stderrSha256": "959B148B66AA6DC5B0595A72D5DECBF95B48CF5D746D3640E5B11BD924DF262F"
+      },
+      "failures": [
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.BuiltinCallbackLifetimeTests.OverlappingSortCallbacksKeepPrivateRunsAndRetainedResultFunding",
+          "message": "initial global values may contain only supported scalar and collection values"
+        }
+      ],
+      "trxSha256": "fffab5a6503d6cb4448c058f19e4a023c4fc8b38366414a4c03a7df6e4d3cce3"
+    }
+  },
+  "diagnosticHashCorrection": "Before runtime edits, pin actual Windows CRLF file bytes rather than normalized in-memory LF text; code/diagnostic/native capture unchanged, no repeat.",
+  "allocationCaptureRepeated": false
+}

@@ -286,6 +286,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [immutable sorted definition](benchmarks/results/2026-10-18-sorted-definition/README.md)
+at `75ad9b2e` plus its frozen one-file runtime patch removes per-run callable/
+signature construction. One fixed warm-context comparison reduces fresh-root
+allocation from 16,240 to 16,080 bytes; child controls stay at 240 bytes. This is
+an allocation saving, not an elapsed, startup, complete-job or CPython speedup.
+
 The [ordinary join call path](benchmarks/results/2026-10-18-join-call/README.md)
 at `c3d5a2d6` plus its frozen six-file patch avoids eligible bound-method/argument
 packaging. One qualified native comparison saves 352 bytes per synchronous call

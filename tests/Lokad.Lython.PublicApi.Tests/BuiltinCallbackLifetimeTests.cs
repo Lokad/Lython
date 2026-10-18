@@ -5,6 +5,75 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class BuiltinCallbackLifetimeTests
 {
+    [Fact]
+    public async Task OverlappingSortCallbacksKeepPrivateRunsAndRetainedResultFunding()
+    {
+        const string source = """
+import builtins
+assert sorted.__self__ is builtins
+def key(value):
+    with open('audit.txt','a') as output: output.write(tag + str(value))
+    return -value
+return sorted(items, key=key)
+""";
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var pausedHost = new DelayedLythonHost();
+        pausedHost.SeedFile("/audit.txt", "before");
+        var entered = pausedHost.PauseWriteUntilCancellation("/audit.txt");
+        using var cancellation = new CancellationTokenSource();
+        var firstOptions = new LythonRunOptions { Globals = new Dictionary<string, object?>
+            { ["tag"] = "first", ["items"] = new object?[] { new BigInteger(3), new BigInteger(1), new BigInteger(2) } } };
+        var pending = script.RunAsync(pausedHost, firstOptions, cancellation.Token);
+        try
+        {
+            var ready = await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(10));
+            if (ReferenceEquals(ready, pending))
+            {
+                using var early = await pending;
+                Assert.Fail(early.Failure?.Message ?? "Sort finished before controlled callback suspension.");
+            }
+            Assert.Same(entered, ready);
+            Assert.False(pending.IsCompleted);
+            var suspended = budget.ReservedBytes;
+            Assert.True(suspended > baseline);
+            var otherHost = new DelayedLythonHost();
+            otherHost.SeedFile("/audit.txt", "before");
+            var otherOptions = new LythonRunOptions { Globals = new Dictionary<string, object?>
+                { ["tag"] = "other", ["items"] = new object?[] { new BigInteger(6), new BigInteger(4), new BigInteger(5) } } };
+            using (var retained = await script.RunAsync(otherHost, otherOptions).WaitAsync(TimeSpan.FromSeconds(10)))
+            {
+                Assert.True(retained.Success, retained.Failure?.Message);
+                var expected = new object?[] { new BigInteger(6), new BigInteger(5), new BigInteger(4) };
+                Assert.Equal(expected, Assert.IsType<List<object?>>(retained.ReturnValue));
+                Assert.True(budget.ReservedBytes > suspended);
+                Assert.False(pending.IsCompleted);
+                cancellation.Cancel();
+                using (var cancelled = await pending.WaitAsync(TimeSpan.FromSeconds(10)))
+                {
+                    Assert.False(cancelled.Success);
+                    Assert.Equal(LythonFailureReason.Cancelled, cancelled.FailureAttribution?.Reason);
+                }
+                Assert.True(budget.ReservedBytes > baseline);
+                Assert.Equal(expected, Assert.IsType<List<object?>>(retained.ReturnValue));
+                Assert.Equal("before", pausedHost.ReadText("/audit.txt"));
+                Assert.Equal("beforeother6other4other5", otherHost.ReadText("/audit.txt"));
+                Assert.True(pausedHost.CompletedAsynchronously > 0);
+                Assert.True(otherHost.CompletedAsynchronously > 0);
+            }
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]

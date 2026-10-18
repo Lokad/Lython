@@ -10,7 +10,7 @@ assert not hasattr(object, 'run_marker'), 'object mutation leaked'
 class Marker:
     run_marker = tag
 assert Marker.__mro__[1] is object, 'guest base identity'
-for name in ['len', 'repr', 'ascii', 'abs', 'pow', 'round', 'divmod', 'bin', 'oct', 'hex', 'chr', 'ord', 'format']:
+for name in ['len', 'repr', 'ascii', 'abs', 'pow', 'round', 'divmod', 'bin', 'oct', 'hex', 'chr', 'ord', 'format', 'sorted']:
     function = getattr(builtins, name)
     assert function.__self__ is builtins, name + ' module identity'
     assert function.__name__ == name, name + ' name'
@@ -26,6 +26,7 @@ for name in ['len', 'repr', 'ascii', 'abs', 'pow', 'round', 'divmod', 'bin', 'oc
         pass
     else:
         assert False, name + ' allowed mutation'
+assert sorted([3, 1, 2]) == [1, 2, 3], 'ordinary sorted result'
 with open('input.txt') as source:
     text = source.read()
 values = [repr(text), ascii(text)]

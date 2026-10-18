@@ -1,0 +1,21 @@
+{
+  "accepted": true,
+  "comparison": [
+    {
+      "child": false,
+      "before": 16240.0,
+      "after": 16080.0,
+      "savedPerContext": 160.0,
+      "passed": true
+    },
+    {
+      "child": true,
+      "before": 240.0,
+      "after": 240.0,
+      "savedPerContext": 0.0,
+      "passed": true
+    }
+  ],
+  "qualifiedCaptureRepeated": false,
+  "elapsedClaim": false
+}

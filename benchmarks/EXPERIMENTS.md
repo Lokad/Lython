@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 immutable sorted definition](results/2026-10-18-sorted-definition/README.md)
+reuses the existing fixed-metadata mechanism for one consumer. One allocation pair
+saves160 bytes per warm fresh context; child samples are identical. 1014 focused
+checks and58 complete jobs pass, including readonly metadata and an overlapping
+sort callback/cancellation/retained-result owner witness. Initial host-array fixture
+and diagnostic-hash metadata mistakes were corrected before runtime edits with
+receipts retained. No new owner/cache, timing capture or CPython speedup claim.
+
 The [2026-10-18 complete JSON helper comparison](results/2026-10-18-json-checkpoint/README.md)
 uses immutable 6584ddd7 and identical Lython controls against CPython 3.13.16.
 Fresh compile/run takes 9.466–9.607 ms versus 4.441 ms; nominal 2.132–2.163×

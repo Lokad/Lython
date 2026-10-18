@@ -1,0 +1,122 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs b/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs
+index 37b18eee..7f1cf3ce 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs
+@@ -25,6 +25,7 @@ internal sealed partial class LythonRuntime
+         private static readonly BuiltinCallable SharedHex = BuiltinCallable.Create("hex", Hex, ["number"]);
+         private static readonly BuiltinCallable SharedChr = BuiltinCallable.Create("chr", Chr, ["i"]);
+         private static readonly BuiltinCallable SharedOrd = BuiltinCallable.Create("ord", Ord, ["c"]);
++        private static readonly BuiltinCallable SharedSorted = BuiltinCallable.Create(LythonCallableSignature.Create("sorted", ["iterable", "key", "reverse"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sorted, SortedAsync);
+ 
+         internal static bool IsLengthBuiltin(object value) => ReferenceEquals(value, SharedLen);
+         internal static bool IsAbsoluteBuiltin(object value) => ReferenceEquals(value, SharedAbs);
+@@ -78,7 +79,7 @@ internal sealed partial class LythonRuntime
+                 ["ascii"] = SharedAscii,
+                 ["format"] = SharedFormat,
+                 ["len"] = SharedLen,
+-                ["sorted"] = BuiltinCallable.Create(LythonCallableSignature.Create("sorted", ["iterable", "key", "reverse"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sorted, SortedAsync),
++                ["sorted"] = SharedSorted,
+                 ["any"] = BuiltinCallable.Create("any", Any, AnyAsync),
+                 ["all"] = BuiltinCallable.Create("all", All, AllAsync),
+                 ["min"] = new MinMaxCallable(ExtremumOperation.Minimum),
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/BuiltinCallbackLifetimeTests.cs b/tests/Lokad.Lython.PublicApi.Tests/BuiltinCallbackLifetimeTests.cs
+index ebd21627..851ed522 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/BuiltinCallbackLifetimeTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/BuiltinCallbackLifetimeTests.cs
+@@ -5,6 +5,75 @@ namespace Lokad.Lython.PublicApi.Tests;
+ 
+ public sealed class BuiltinCallbackLifetimeTests
+ {
++    [Fact]
++    public async Task OverlappingSortCallbacksKeepPrivateRunsAndRetainedResultFunding()
++    {
++        const string source = """
++import builtins
++assert sorted.__self__ is builtins
++def key(value):
++    with open('audit.txt','a') as output: output.write(tag + str(value))
++    return -value
++return sorted(items, key=key)
++""";
++        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
++        using var script = new LythonEngine().Compile(source, budget);
++        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
++        var baseline = budget.ReservedBytes;
++        var pausedHost = new DelayedLythonHost();
++        pausedHost.SeedFile("/audit.txt", "before");
++        var entered = pausedHost.PauseWriteUntilCancellation("/audit.txt");
++        using var cancellation = new CancellationTokenSource();
++        var firstOptions = new LythonRunOptions { Globals = new Dictionary<string, object?>
++            { ["tag"] = "first", ["items"] = new object?[] { new BigInteger(3), new BigInteger(1), new BigInteger(2) } } };
++        var pending = script.RunAsync(pausedHost, firstOptions, cancellation.Token);
++        try
++        {
++            var ready = await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(10));
++            if (ReferenceEquals(ready, pending))
++            {
++                using var early = await pending;
++                Assert.Fail(early.Failure?.Message ?? "Sort finished before controlled callback suspension.");
++            }
++            Assert.Same(entered, ready);
++            Assert.False(pending.IsCompleted);
++            var suspended = budget.ReservedBytes;
++            Assert.True(suspended > baseline);
++            var otherHost = new DelayedLythonHost();
++            otherHost.SeedFile("/audit.txt", "before");
++            var otherOptions = new LythonRunOptions { Globals = new Dictionary<string, object?>
++                { ["tag"] = "other", ["items"] = new object?[] { new BigInteger(6), new BigInteger(4), new BigInteger(5) } } };
++            using (var retained = await script.RunAsync(otherHost, otherOptions).WaitAsync(TimeSpan.FromSeconds(10)))
++            {
++                Assert.True(retained.Success, retained.Failure?.Message);
++                var expected = new object?[] { new BigInteger(6), new BigInteger(5), new BigInteger(4) };
++                Assert.Equal(expected, Assert.IsType<List<object?>>(retained.ReturnValue));
++                Assert.True(budget.ReservedBytes > suspended);
++                Assert.False(pending.IsCompleted);
++                cancellation.Cancel();
++                using (var cancelled = await pending.WaitAsync(TimeSpan.FromSeconds(10)))
++                {
++                    Assert.False(cancelled.Success);
++                    Assert.Equal(LythonFailureReason.Cancelled, cancelled.FailureAttribution?.Reason);
++                }
++                Assert.True(budget.ReservedBytes > baseline);
++                Assert.Equal(expected, Assert.IsType<List<object?>>(retained.ReturnValue));
++                Assert.Equal("before", pausedHost.ReadText("/audit.txt"));
++                Assert.Equal("beforeother6other4other5", otherHost.ReadText("/audit.txt"));
++                Assert.True(pausedHost.CompletedAsynchronously > 0);
++                Assert.True(otherHost.CompletedAsynchronously > 0);
++            }
++        }
++        finally
++        {
++            cancellation.Cancel();
++            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        script.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     [Theory]
+     [InlineData(false, false)]
+     [InlineData(true, false)]
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/BuiltinDefinitionIsolationTests.cs b/tests/Lokad.Lython.PublicApi.Tests/BuiltinDefinitionIsolationTests.cs
+index 5ee1d172..4ff6e8ac 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/BuiltinDefinitionIsolationTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/BuiltinDefinitionIsolationTests.cs
+@@ -10,7 +10,7 @@ assert not hasattr(object, 'run_marker'), 'object mutation leaked'
+ class Marker:
+     run_marker = tag
+ assert Marker.__mro__[1] is object, 'guest base identity'
+-for name in ['len', 'repr', 'ascii', 'abs', 'pow', 'round', 'divmod', 'bin', 'oct', 'hex', 'chr', 'ord', 'format']:
++for name in ['len', 'repr', 'ascii', 'abs', 'pow', 'round', 'divmod', 'bin', 'oct', 'hex', 'chr', 'ord', 'format', 'sorted']:
+     function = getattr(builtins, name)
+     assert function.__self__ is builtins, name + ' module identity'
+     assert function.__name__ == name, name + ' name'
+@@ -26,6 +26,7 @@ for name in ['len', 'repr', 'ascii', 'abs', 'pow', 'round', 'divmod', 'bin', 'oc
+         pass
+     else:
+         assert False, name + ' allowed mutation'
++assert sorted([3, 1, 2]) == [1, 2, 3], 'ordinary sorted result'
+ with open('input.txt') as source:
+     text = source.read()
+ values = [repr(text), ascii(text)]

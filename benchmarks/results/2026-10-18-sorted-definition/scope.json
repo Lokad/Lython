@@ -1,0 +1,12 @@
+{
+  "baseline": "75ad9b2eb13933d32b981c624f9bd8327a701ffc",
+  "sourceFile": "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs",
+  "sourceSha256": "6c6e0311934477379eaaf597c466da057948a30310f90f00c158d4acada698ff",
+  "diagnosticSha256": "ceda464531ed20ceb9fe8863a978c5491cc067a5beb1724f25dc2eb297eac61e",
+  "replacement": "Move exactly the existing sorted callable/signature factory to one static readonly definition. Reuse current fixed immutable metadata mechanism. No caller/root/args/results captured; types/modules mutable state stays private. No new cache/owner/configuration.",
+  "gate": "One warm context construction allocation pair,2warmups/32samples per fresh/child route. All fresh-context samples allocate less; child allocation arrays identical. Builtin103 inventory, private int/float/object root identity, shared child identity, exception aliases and allowance cleanup unchanged. Reject without retiming if mutable run state can be acquired or no useful reduction.",
+  "acceptance": "Extend existing readonly/name/hash/module and type/root isolation checks to sorted; actual overlapping sort callback suspension/cancellation and retained result funding; focused builtin/sort/callback/refusal/ownership and58 complete jobs; original Stress/assertions/timeouts unchanged.",
+  "performance": "Allocation-only warmed fresh-root construction, not startup or execution/compilation/whole-job/CPython timing. One new process-global immutable definition uses existing bounded runtime metadata headroom, no host allowance captured.",
+  "regex": "Planning only; no regex runtime/dependency changes.",
+  "diagnosticHashCorrection": "Before runtime edits, pin actual Windows CRLF file bytes rather than normalized in-memory LF text; code/diagnostic/native capture unchanged, no repeat."
+}

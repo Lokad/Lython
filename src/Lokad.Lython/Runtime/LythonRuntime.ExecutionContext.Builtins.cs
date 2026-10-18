@@ -25,6 +25,7 @@ internal sealed partial class LythonRuntime
         private static readonly BuiltinCallable SharedHex = BuiltinCallable.Create("hex", Hex, ["number"]);
         private static readonly BuiltinCallable SharedChr = BuiltinCallable.Create("chr", Chr, ["i"]);
         private static readonly BuiltinCallable SharedOrd = BuiltinCallable.Create("ord", Ord, ["c"]);
+        private static readonly BuiltinCallable SharedSorted = BuiltinCallable.Create(LythonCallableSignature.Create("sorted", ["iterable", "key", "reverse"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sorted, SortedAsync);
 
         internal static bool IsLengthBuiltin(object value) => ReferenceEquals(value, SharedLen);
         internal static bool IsAbsoluteBuiltin(object value) => ReferenceEquals(value, SharedAbs);
@@ -78,7 +79,7 @@ internal sealed partial class LythonRuntime
                 ["ascii"] = SharedAscii,
                 ["format"] = SharedFormat,
                 ["len"] = SharedLen,
-                ["sorted"] = BuiltinCallable.Create(LythonCallableSignature.Create("sorted", ["iterable", "key", "reverse"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sorted, SortedAsync),
+                ["sorted"] = SharedSorted,
                 ["any"] = BuiltinCallable.Create("any", Any, AnyAsync),
                 ["all"] = BuiltinCallable.Create("all", All, AllAsync),
                 ["min"] = new MinMaxCallable(ExtremumOperation.Minimum),

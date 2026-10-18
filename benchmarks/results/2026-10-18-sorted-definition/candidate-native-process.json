@@ -1,0 +1,14 @@
+{
+  "source": "sorted-definition",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "79E03701220526B83A008CCFFC75CFB3A7D71E5B2D9618BD135B23CD5A762C16",
+  "filter": "Category!=Stress&FullyQualifiedName~SortedDefinitionAllocationDiagnostic",
+  "pid": 38624,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1157,
+  "stdoutSha256": "B41079FDA7D803EC3CF78B6A41D79E007D5A28FA9A38D2F52FBCE5E5BA6CCF62",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}
