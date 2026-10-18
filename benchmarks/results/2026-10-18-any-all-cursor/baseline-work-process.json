@@ -1,0 +1,14 @@
+{
+  "source": "7c79191f",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "BEA3A328076755E0C440327213785DB77FE209DC7DE3AFDED327F356E891E9DE",
+  "filter": "Category!=Stress&(FullyQualifiedName~NativeAnyAllTests|FullyQualifiedName~NativeAnyAllAdmissionTests)",
+  "pid": 47780,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1324,
+  "stdoutSha256": "6A671958A03ADC4B8F5F9F900F01DBD333791C54F083A87949BA7E451AB0085B",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

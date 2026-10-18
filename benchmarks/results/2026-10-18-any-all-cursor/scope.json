@@ -1,0 +1,16 @@
+{
+  "baseline": "7c79191f03d0fcd6f9dbd81d4d68f6c1c61b284d",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs": "475bb8ac80af303b8815aec4d3ee974b3b5a90f0882104dcecdd15ef4417a590",
+    "src/Lokad.Lython/Runtime/PyIteration.cs": "c760a1e0f09ea68d045036b198e02d27dc63c08130a18e4bcebc24b208388ee6",
+    "src/Lokad.Lython/Runtime/PyIteration.Sequences.cs": "90723e5015f5fea7b733442e59663858e1c15d876f2b402e95f210820d799d84"
+  },
+  "change": "In the2 general async any/all bodies consume the existing PyIteration.Cursor directly with awaited disposal, removing AsyncSequence/AsyncEnumerator objects and forwarding pulls. Keep bytes/range routes and sync bodies unchanged. No new iteration/owner abstraction.",
+  "gate": "One native before/after:2warmups/8samples/64calls, native list/tuple empty/full/short-circuit routes improve; sync, bytes and range controls arrays identical. Exact existing NativeAnyAll/Admission records match. Reject without retiming on semantic/fuel/cleanup/owner regression.",
+  "acceptance": "Existing Python/CPython any/all and truth protocol rows; actual iterator/truth suspension/cancellation, retained iterator resumability, async disposal success/failure, admission and bounded owners,58 complete jobs. New tests only where existing coverage lacks externally meaningful lifecycle regression.",
+  "boundary": "Native allocation only; no elapsed/startup/whole-job/CPython gain claim.",
+  "stopping": "Only these2 aggregate bodies; no Cursor/ToSequence framework edits, no sum or other aggregate inventory, no new pool/cache/owner. Await native cleanup; do not close retained guest iterators.",
+  "runtimeEdits": false,
+  "diagnosticSha256": "2284972d046e441674c2f353fef55915e42f873e207826adafc9e174b1b6f60d",
+  "rangeControls": "any(range(0,1)) drains1 zero; all(range(1,66)) drains65 nonzero. Native async measurement asserts completed ValueTasks before await; no actual suspension in allocation capture."
+}

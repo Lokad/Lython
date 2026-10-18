@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 async any/all cursor change](results/2026-10-18-any-all-cursor/README.md)
+consumes the existing cursor without two outer wrappers or per-pull forwarding.
+One pair saves 96 bytes per affected native call; all 68 exact behavior/fuel/error/
+admission records and control arrays match. All 354 focused checks and 58 complete
+jobs pass, including paused/funded native cleanup, actual iterator/truth suspension,
+cancellation and resumable guest iterators. Initial cleanup exception expectations
+were corrected before edits. No new cursor/owner/framework or elapsed claim.
+
 The [2026-10-18 general default-map capacity change](results/2026-10-18-default-map/README.md)
 removes intermediate dictionary growth in the two general builders. One native
 pair saves 552/912 bytes for 8/32 defaults; empty/single/executable controls and

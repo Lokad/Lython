@@ -1,0 +1,206 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs b/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs
+index c28c9965..62185700 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs
+@@ -42,15 +42,16 @@ internal sealed partial class LythonRuntime
+             throw new LythonRuntimeException("TypeError", "any() takes exactly one argument (" + arguments.Length + " given)", span);
+         }
+ 
+-        await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
++        var cursor = await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false);
++        await using (cursor.ConfigureAwait(false))
+         {
+-            if (await IsTruthyAsync(item, context, span).ConfigureAwait(false))
++            while (true)
+             {
+-                return true;
++                var item = await cursor.TryMoveNextAsync().ConfigureAwait(false);
++                if (!item.HasValue) return false;
++                if (await IsTruthyAsync(item.Value, context, span).ConfigureAwait(false)) return true;
+             }
+         }
+-
+-        return false;
+     }
+ 
+     private static object All(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+@@ -85,15 +86,16 @@ internal sealed partial class LythonRuntime
+             throw new LythonRuntimeException("TypeError", "all() takes exactly one argument (" + arguments.Length + " given)", span);
+         }
+ 
+-        await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
++        var cursor = await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false);
++        await using (cursor.ConfigureAwait(false))
+         {
+-            if (!await IsTruthyAsync(item, context, span).ConfigureAwait(false))
++            while (true)
+             {
+-                return false;
++                var item = await cursor.TryMoveNextAsync().ConfigureAwait(false);
++                if (!item.HasValue) return true;
++                if (!await IsTruthyAsync(item.Value, context, span).ConfigureAwait(false)) return false;
+             }
+         }
+-
+-        return true;
+     }
+ 
+     private static bool ReduceBytesTruth(PyBytes bytes, bool all, LythonSourceSpan span, ExecutionContext context)
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/AnyAllCursorCompatibilityTests.cs b/tests/Lokad.Lython.PublicApi.Tests/AnyAllCursorCompatibilityTests.cs
+new file mode 100644
+index 00000000..a3c5f3f5
+--- /dev/null
++++ b/tests/Lokad.Lython.PublicApi.Tests/AnyAllCursorCompatibilityTests.cs
+@@ -0,0 +1,32 @@
++using Lokad.Lython.Tests.Harness;
++
++namespace Lokad.Lython.PublicApi.Tests;
++
++public sealed class AnyAllCursorCompatibilityTests
++{
++    public static IEnumerable<object[]> Cases()
++    {
++        yield return [false, "retained-iterator", "def values(a,b):\n yield a\n yield b\n yield 2\ng=values(0,1)\nprint(any(g),list(g))\ng=values(1,0)\nprint(all(g),list(g))", "True [2]\nFalse [2]\n"];
++        yield return [true, "retained-iterator", "def values(a,b):\n yield a\n yield b\n yield 2\ng=values(0,1)\nprint(any(g),list(g))\ng=values(1,0)\nprint(all(g),list(g))", "True [2]\nFalse [2]\n"];
++        yield return [false, "list-mutation", "class Value:\n def __bool__(self):\n  values.clear()\n  return False\nvalues=[Value(),0,1]\nprint(any(values),values)\nclass More:\n def __bool__(self):\n  values.append(0)\n  return True\nvalues=[More()]\nprint(all(values),len(values))", "False []\nFalse 2\n"];
++        yield return [true, "list-mutation", "class Value:\n def __bool__(self):\n  values.clear()\n  return False\nvalues=[Value(),0,1]\nprint(any(values),values)\nclass More:\n def __bool__(self):\n  values.append(0)\n  return True\nvalues=[More()]\nprint(all(values),len(values))", "False []\nFalse 2\n"];
++        yield return [false, "dict-mutation", "class Value:\n def __bool__(self):\n  values['b']=1\n  return True\nvalues={'a':Value()}\ntry:print(all(values.values()))\nexcept RuntimeError:print('changed')", "changed\n"];
++        yield return [true, "dict-mutation", "class Value:\n def __bool__(self):\n  values['b']=1\n  return True\nvalues={'a':Value()}\ntry:print(all(values.values()))\nexcept RuntimeError:print('changed')", "changed\n"];
++    }
++
++    [Theory]
++    [MemberData(nameof(Cases))]
++    public async Task ShortCircuitAndMutationMatchPython(bool asynchronous, string name, string source, string expected)
++    {
++        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
++        using var script = new LythonEngine().Compile(source, budget);
++        Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
++        var baseline = budget.ReservedBytes;
++        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
++        {
++            Assert.True(result.Success, result.Failure?.Message);
++            Assert.Equal(expected, result.StandardOutput);
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++    }
++}
+diff --git a/tests/Lokad.Lython.Tests/NativeAnyAllCleanupTests.cs b/tests/Lokad.Lython.Tests/NativeAnyAllCleanupTests.cs
+new file mode 100644
+index 00000000..6f39be94
+--- /dev/null
++++ b/tests/Lokad.Lython.Tests/NativeAnyAllCleanupTests.cs
+@@ -0,0 +1,114 @@
++using Lokad.Lython.Frontend;
++using Lokad.Lython.Runtime;
++using Lokad.Lython.Tests.Harness;
++using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
++
++namespace Lokad.Lython.Tests;
++
++public sealed class NativeAnyAllCleanupTests
++{
++    public static IEnumerable<object[]> Routes()
++    {
++        foreach (var all in new[] { false, true })
++        {
++            foreach (var route in new[] { "short", "exhaust", "fault" })
++            foreach (var cleanupFails in new[] { false, true })
++                yield return [all, route, cleanupFails];
++            yield return [all, "cancel", false];
++            yield return [all, "admission", false];
++        }
++    }
++
++    [Theory]
++    [MemberData(nameof(Routes))]
++    public async Task AggregateAwaitsFundedNativeCleanupExactlyOnce(bool all, string route, bool cleanupFails)
++    {
++        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
++        using var owner = budget.CreateScope();
++        using var cancellation = new CancellationTokenSource();
++        var context = new Context(new MockLythonHost(), new LythonRunOptions
++        {
++            MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024,
++            CancellationToken = cancellation.Token,
++        });
++        var source = new PausedSource(context.MemoryGovernor, cancellation, all, route);
++        if (cleanupFails) source.CleanupFailure = new InvalidOperationException("native cleanup failed");
++        context.Variables["source"] = source;
++        var syntax = LythonFrontend.Compile("return " + (all ? "all" : "any") + "(source)").Script!;
++        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
++        var baseline = budget.ReservedBytes;
++        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
++        Exception? failure = null;
++        try
++        {
++            var first = await Task.WhenAny(source.Disposing.Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
++            Assert.Same(source.Disposing.Task, first);
++            Assert.False(pending.IsCompleted);
++            Assert.Equal(1, source.Disposals);
++            Assert.True(context.MemoryGovernor.CurrentReservedBytes >= 4096);
++            Assert.True(budget.ReservedBytes >= baseline + 4096);
++        }
++        finally
++        {
++            source.Release.TrySetResult();
++            failure = await Record.ExceptionAsync(async () => await pending.WaitAsync(TimeSpan.FromSeconds(5)));
++        }
++
++        if (cleanupFails)
++        {
++            var error = Assert.IsType<LythonRuntimeException>(failure);
++            Assert.Equal("RuntimeError", error.ExceptionType);
++            Assert.Equal("native cleanup failed", error.Message);
++        }
++        else if (route == "fault") Assert.Equal("ValueError", Assert.IsType<LythonRuntimeException>(failure).ExceptionType);
++        else if (route == "cancel") Assert.Equal(LythonFailureReason.Cancelled, Assert.IsType<LythonRuntimeException>(failure).Attribution?.Reason);
++        else if (route == "admission") Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
++        else
++        {
++            Assert.Null(failure);
++            Assert.Equal(route == "short" ? !all : all, Assert.IsType<bool>(await pending));
++            Assert.Equal(route == "short" ? 1 : 3, source.Moves);
++        }
++        Assert.Equal(1, source.Disposals);
++        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
++        Assert.Null(context.CurrentExecutableFrame);
++        owner.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    private sealed class PausedSource(MemoryGovernor governor, CancellationTokenSource cancellation, bool all, string route)
++        : IPyAsyncIterableValue, IAsyncEnumerable<object>, IAsyncEnumerator<object>
++    {
++        private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
++        private MemoryGovernor.TemporaryMemoryReservation? _storage;
++        internal readonly TaskCompletionSource Disposing = new(TaskCreationOptions.RunContinuationsAsynchronously);
++        internal readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
++        internal Exception? CleanupFailure;
++        internal int Disposals;
++        internal int Moves;
++        public object Current => route == "short" ? !all : all;
++        public IEnumerable<object> Iterate() => [];
++        public IAsyncEnumerable<object> IterateAsync() => this;
++        public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
++        {
++            _storage = governor.ReserveTemporary(4096, Span);
++            return this;
++        }
++        public ValueTask<bool> MoveNextAsync()
++        {
++            Moves++;
++            if (route == "fault") throw new LythonRuntimeException("ValueError", "pull failed", Span);
++            if (route == "admission") governor.Reserve(governor.MaxAccountedBytes!.Value + 1, Span);
++            if (route == "cancel") cancellation.Cancel();
++            return new(route != "exhaust" || Moves <= 2);
++        }
++        public async ValueTask DisposeAsync()
++        {
++            Disposals++;
++            Disposing.TrySetResult();
++            try { await Release.Task.ConfigureAwait(false); }
++            finally { _storage?.Dispose(); _storage = null; }
++            if (CleanupFailure is not null) throw CleanupFailure;
++        }
++    }
++}

@@ -1,0 +1,49 @@
+{
+  "beforeRuntimeEdits": true,
+  "problem": "Fixture expected raw native InvalidOperationException identity across the guest callable boundary. That boundary translates it to RuntimeError. Pin exact translated type/message while preserving actual pause, funded ownership, exactly-once cleanup, timeouts and all route assertions.",
+  "baselinePassed": 10,
+  "baselineFailed": 6,
+  "failures": [
+    {
+      "name": "Lokad.Lython.Tests.NativeAnyAllCleanupTests.AggregateAwaitsFundedNativeCleanupExactlyOnce(all: True, route: \"exhaust\", cleanupFails: True)",
+      "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: System.InvalidOperationException: native cleanup failed\r\n   at Lokad.Lython.Tests.NativeAnyAllCleanupTests.PausedSource.DisposeAsync() in D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\NativeAnyAllCleanupTests.cs:line 106\r\n   at Lokad.Lython.Runtime.PyIteration.Cursor.DisposeAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.cs:line 565\r\n   at Lokad.Lython.Runtime.PyIteration.AsyncEnumerator.DisposeAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.Sequences.cs:line 115\r\n   at Lokad.Lython.Runtime.PyIteration.AsyncEnumerator.MoveNextAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.Sequences.cs:line 105\r\n   at Lokad.Lython.Runtime.PyIteration.AsyncEnumerator.MoveNextAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.Sequences.cs:line 108\r\n   at Lokad.Lython.Runtime.LythonRuntime.A"
+    },
+    {
+      "name": "Lokad.Lython.Tests.NativeAnyAllCleanupTests.AggregateAwaitsFundedNativeCleanupExactlyOnce(all: False, route: \"short\", cleanupFails: True)",
+      "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: System.InvalidOperationException: native cleanup failed\r\n   at Lokad.Lython.Tests.NativeAnyAllCleanupTests.PausedSource.DisposeAsync() in D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\NativeAnyAllCleanupTests.cs:line 106\r\n   at Lokad.Lython.Runtime.PyIteration.Cursor.DisposeAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.cs:line 565\r\n   at Lokad.Lython.Runtime.PyIteration.AsyncEnumerator.DisposeAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.Sequences.cs:line 115\r\n   at Lokad.Lython.Runtime.LythonRuntime.AnyGeneralAsync(Object[] arguments, LythonSourceSpan span, ExecutionContext context) in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\LythonRuntime.BuiltinIterables.Aggregates.cs:line 45\r\n   at Lokad.Lython.Runtime.LythonRuntime.InvokeCallableTargetAsync[TArguments](Object target, LythonSourceSpan target"
+    },
+    {
+      "name": "Lokad.Lython.Tests.NativeAnyAllCleanupTests.AggregateAwaitsFundedNativeCleanupExactlyOnce(all: False, route: \"fault\", cleanupFails: True)",
+      "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: System.InvalidOperationException: native cleanup failed\r\n   at Lokad.Lython.Tests.NativeAnyAllCleanupTests.PausedSource.DisposeAsync() in D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\NativeAnyAllCleanupTests.cs:line 106\r\n   at Lokad.Lython.Runtime.PyIteration.Cursor.DisposeAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.cs:line 565\r\n   at Lokad.Lython.Runtime.PyIteration.AsyncEnumerator.DisposeAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.Sequences.cs:line 115\r\n   at Lokad.Lython.Runtime.PyIteration.AsyncEnumerator.MoveNextAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.Sequences.cs:line 108\r\n   at Lokad.Lython.Runtime.LythonRuntime.AnyGeneralAsync(Object[] arguments, LythonSourceSpan span, ExecutionContext context) in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\LythonRuntime.BuiltinI"
+    },
+    {
+      "name": "Lokad.Lython.Tests.NativeAnyAllCleanupTests.AggregateAwaitsFundedNativeCleanupExactlyOnce(all: True, route: \"short\", cleanupFails: True)",
+      "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: System.InvalidOperationException: native cleanup failed\r\n   at Lokad.Lython.Tests.NativeAnyAllCleanupTests.PausedSource.DisposeAsync() in D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\NativeAnyAllCleanupTests.cs:line 106\r\n   at Lokad.Lython.Runtime.PyIteration.Cursor.DisposeAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.cs:line 565\r\n   at Lokad.Lython.Runtime.PyIteration.AsyncEnumerator.DisposeAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.Sequences.cs:line 115\r\n   at Lokad.Lython.Runtime.LythonRuntime.AllGeneralAsync(Object[] arguments, LythonSourceSpan span, ExecutionContext context) in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\LythonRuntime.BuiltinIterables.Aggregates.cs:line 88\r\n   at Lokad.Lython.Runtime.LythonRuntime.InvokeCallableTargetAsync[TArguments](Object target, LythonSourceSpan target"
+    },
+    {
+      "name": "Lokad.Lython.Tests.NativeAnyAllCleanupTests.AggregateAwaitsFundedNativeCleanupExactlyOnce(all: False, route: \"exhaust\", cleanupFails: True)",
+      "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: System.InvalidOperationException: native cleanup failed\r\n   at Lokad.Lython.Tests.NativeAnyAllCleanupTests.PausedSource.DisposeAsync() in D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\NativeAnyAllCleanupTests.cs:line 106\r\n   at Lokad.Lython.Runtime.PyIteration.Cursor.DisposeAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.cs:line 565\r\n   at Lokad.Lython.Runtime.PyIteration.AsyncEnumerator.DisposeAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.Sequences.cs:line 115\r\n   at Lokad.Lython.Runtime.PyIteration.AsyncEnumerator.MoveNextAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.Sequences.cs:line 105\r\n   at Lokad.Lython.Runtime.PyIteration.AsyncEnumerator.MoveNextAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.Sequences.cs:line 108\r\n   at Lokad.Lython.Runtime.LythonRuntime.A"
+    },
+    {
+      "name": "Lokad.Lython.Tests.NativeAnyAllCleanupTests.AggregateAwaitsFundedNativeCleanupExactlyOnce(all: True, route: \"fault\", cleanupFails: True)",
+      "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: System.InvalidOperationException: native cleanup failed\r\n   at Lokad.Lython.Tests.NativeAnyAllCleanupTests.PausedSource.DisposeAsync() in D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\NativeAnyAllCleanupTests.cs:line 106\r\n   at Lokad.Lython.Runtime.PyIteration.Cursor.DisposeAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.cs:line 565\r\n   at Lokad.Lython.Runtime.PyIteration.AsyncEnumerator.DisposeAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.Sequences.cs:line 115\r\n   at Lokad.Lython.Runtime.PyIteration.AsyncEnumerator.MoveNextAsync() in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\PyIteration.Sequences.cs:line 108\r\n   at Lokad.Lython.Runtime.LythonRuntime.AllGeneralAsync(Object[] arguments, LythonSourceSpan span, ExecutionContext context) in D:\\code\\Lython\\src\\Lokad.Lython\\Runtime\\LythonRuntime.BuiltinI"
+    }
+  ],
+  "nativeAllocationCaptureRepeated": false,
+  "process": {
+    "source": "7c79191f",
+    "production": "baseline",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+    "assemblySha256": "F6ED35178F6224596C4D6E07268E5631E70F0A99A573FB8C64C2592ABC63F132",
+    "filter": "Category!=Stress&FullyQualifiedName~NativeAnyAllCleanupTests",
+    "pid": 46248,
+    "hasExited": true,
+    "exitCode": 1,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 1222,
+    "stdoutSha256": "2195687082CD45D566275B81C794756F2A9371226BB08C7991C2255C4DC1B999",
+    "stderrSha256": "1DC0C9F0BC81142B75194086CA69624D66BD5DE3378272E3BD3003BEE9E48986"
+  },
+  "trxSha256": "cf8dbcd917ed1a77eeb21d77a064303fc8b25768b26f678e6f1dd295ce09571d",
+  "correctedBaselinePassed": 16
+}

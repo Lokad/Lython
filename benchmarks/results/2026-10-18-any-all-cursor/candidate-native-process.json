@@ -1,0 +1,14 @@
+{
+  "source": "7c79191f-plus-any-all-cursor",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "C82D07E9168321F1FDDCD65B2BEF0C281063DBF864E5BC71D0F6CD5E9635C715",
+  "filter": "Category!=Stress&FullyQualifiedName~AnyAllCursorAllocationDiagnostic",
+  "pid": 63216,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1108,
+  "stdoutSha256": "1D11A21644BDA2BDAD81CB95C92DE8A4EA912F4497D7B187F3F6A4459274F993",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

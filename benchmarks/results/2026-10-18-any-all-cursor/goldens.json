@@ -1,0 +1,353 @@
+{
+  "reference": "C:/Python313/python.exe3.13.2, isolated UTF-8;6 baseline probes",
+  "cases": [
+    {
+      "name": "retained-iterator",
+      "source": "def values(a,b):\n yield a\n yield b\n yield 2\ng=values(0,1)\nprint(any(g),list(g))\ng=values(1,0)\nprint(all(g),list(g))",
+      "canonicalLfSourceSha256": "be5240a8f3a3f7368d3fa8d71b2b58d364f8c345e739f9d1198c976c7b38d970",
+      "probePhysicalSourceSha256": "c5b384004e4441248c5fe80f4ac5079b75411e61913855a7c314e103d0e58245",
+      "expected": "True [2]\nFalse [2]\n",
+      "baseline": [
+        {
+          "mode": "sync",
+          "process": {
+            "pid": 40804,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 476,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "def values(a,b):\r\n yield a\r\n yield b\r\n yield 2\r\ng=values(0,1)\r\nprint(any(g),list(g))\r\ng=values(1,0)\r\nprint(all(g),list(g))",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json"
+            ]
+          },
+          "output": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "True [2]\nFalse [2]\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 4030,
+              "PeakProjectionMemoryBytes": 70,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "True [2]\nFalse [2]\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": false
+            }
+          }
+        },
+        {
+          "mode": "async",
+          "process": {
+            "pid": 44700,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 339,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "def values(a,b):\r\n yield a\r\n yield b\r\n yield 2\r\ng=values(0,1)\r\nprint(any(g),list(g))\r\ng=values(1,0)\r\nprint(all(g),list(g))",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json",
+              "--async"
+            ]
+          },
+          "output": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "True [2]\nFalse [2]\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 4030,
+              "PeakProjectionMemoryBytes": 70,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "True [2]\nFalse [2]\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "list-mutation",
+      "source": "class Value:\n def __bool__(self):\n  values.clear()\n  return False\nvalues=[Value(),0,1]\nprint(any(values),values)\nclass More:\n def __bool__(self):\n  values.append(0)\n  return True\nvalues=[More()]\nprint(all(values),len(values))",
+      "canonicalLfSourceSha256": "c230e1b1c9c10a9d62ed493f9433281ff47a3a1a7693569c1d037d2d907af141",
+      "probePhysicalSourceSha256": "943ac404814d0beff06e6b7725d448d2872ea9682ca6f3763ff2d58ae312c2e2",
+      "expected": "False []\nFalse 2\n",
+      "baseline": [
+        {
+          "mode": "sync",
+          "process": {
+            "pid": 71800,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 359,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "class Value:\r\n def __bool__(self):\r\n  values.clear()\r\n  return False\r\nvalues=[Value(),0,1]\r\nprint(any(values),values)\r\nclass More:\r\n def __bool__(self):\r\n  values.append(0)\r\n  return True\r\nvalues=[More()]\r\nprint(all(values),len(values))",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json"
+            ]
+          },
+          "output": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "False []\nFalse 2\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 3756,
+              "PeakProjectionMemoryBytes": 66,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "False []\nFalse 2\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": false
+            }
+          }
+        },
+        {
+          "mode": "async",
+          "process": {
+            "pid": 38428,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 376,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "class Value:\r\n def __bool__(self):\r\n  values.clear()\r\n  return False\r\nvalues=[Value(),0,1]\r\nprint(any(values),values)\r\nclass More:\r\n def __bool__(self):\r\n  values.append(0)\r\n  return True\r\nvalues=[More()]\r\nprint(all(values),len(values))",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json",
+              "--async"
+            ]
+          },
+          "output": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "False []\nFalse 2\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 3756,
+              "PeakProjectionMemoryBytes": 66,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "False []\nFalse 2\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "dict-mutation",
+      "source": "class Value:\n def __bool__(self):\n  values['b']=1\n  return True\nvalues={'a':Value()}\ntry:print(all(values.values()))\nexcept RuntimeError:print('changed')",
+      "canonicalLfSourceSha256": "fee0e8d896b28b3f5e395376da9eba5b41ca1a0ebaf46542da164c4a104a4bbe",
+      "probePhysicalSourceSha256": "a2b2de3b4aa01e7cadb9fd3fb640c8c943ba42e1fd86ac16164f7732ff7d9e4f",
+      "expected": "changed\n",
+      "baseline": [
+        {
+          "mode": "sync",
+          "process": {
+            "pid": 54712,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 359,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "class Value:\r\n def __bool__(self):\r\n  values['b']=1\r\n  return True\r\nvalues={'a':Value()}\r\ntry:print(all(values.values()))\r\nexcept RuntimeError:print('changed')",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json"
+            ]
+          },
+          "output": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "changed\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 2341,
+              "PeakProjectionMemoryBytes": 48,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "changed\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": false
+            }
+          }
+        },
+        {
+          "mode": "async",
+          "process": {
+            "pid": 70684,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 394,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "class Value:\r\n def __bool__(self):\r\n  values['b']=1\r\n  return True\r\nvalues={'a':Value()}\r\ntry:print(all(values.values()))\r\nexcept RuntimeError:print('changed')",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json",
+              "--async"
+            ]
+          },
+          "output": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "changed\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 2341,
+              "PeakProjectionMemoryBytes": 48,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "changed\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

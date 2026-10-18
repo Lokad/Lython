@@ -1,0 +1,208 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="260fc316-0af5-4c61-9264-52e88ecc28cf" name="JoannesVermorel@LOKAD-0399 2026-10-18 16:42:09" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T16:42:09.6468925+02:00" queuing="2026-10-18T16:42:09.6468929+02:00" start="2026-10-18T16:42:08.7814743+02:00" finish="2026-10-18T16:42:09.6775931+02:00" />
+  <TestSettings name="default" id="a90f7751-d7a8-4310-b176-83334938e472">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-10-18_16_42_09" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="934d821a-9548-403d-8f47-c4f8901b8db7" testId="462bc555-9f61-3b8a-26bc-23c88af88d54" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;tuple&quot;, count: 65, early: True)" computerName="LOKAD-0399" duration="00:00:00.0003351" startTime="2026-10-18T16:42:09.6292841+02:00" endTime="2026-10-18T16:42:09.6295756+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="934d821a-9548-403d-8f47-c4f8901b8db7">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":true,"shape":"tuple","count":65,"early":true,"callsPerSample":64,"samples":[15360,15360,15360,15360,15360,15360,15360,15360]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="40d1039b-9745-471a-a3b2-0aa767c8450e" testId="b1b5263c-0973-de87-8928-78357d2d3a4c" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;bytes&quot;, count: 65, early: False)" computerName="LOKAD-0399" duration="00:00:00.0398133" startTime="2026-10-18T16:42:09.5407670+02:00" endTime="2026-10-18T16:42:09.5847974+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="40d1039b-9745-471a-a3b2-0aa767c8450e">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":true,"shape":"bytes","count":65,"early":false,"callsPerSample":64,"samples":[1536,1536,1536,1536,1536,1536,1536,1536]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d1b09654-199e-47e7-b5ab-ad5e7cdd0efa" testId="320c6f8b-1f8f-bb12-6d55-6ef4249c6e77" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;tuple&quot;, count: 65, early: False)" computerName="LOKAD-0399" duration="00:00:00.0047167" startTime="2026-10-18T16:42:09.6282326+02:00" endTime="2026-10-18T16:42:09.6282637+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d1b09654-199e-47e7-b5ab-ad5e7cdd0efa">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":true,"shape":"tuple","count":65,"early":false,"callsPerSample":64,"samples":[15360,15360,15360,15360,15360,15360,15360,15360]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2e4c9c18-e06a-4d01-8e4d-5819626183a8" testId="ae15d54e-ab35-7e74-ef74-f8b8647b1429" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;list&quot;, count: 65, early: False)" computerName="LOKAD-0399" duration="00:00:00.0051726" startTime="2026-10-18T16:42:09.6276623+02:00" endTime="2026-10-18T16:42:09.6277962+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2e4c9c18-e06a-4d01-8e4d-5819626183a8">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":true,"shape":"list","count":65,"early":false,"callsPerSample":64,"samples":[15872,15872,15872,15872,15872,15872,15872,15872]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="82203e88-2cf8-4d89-96f8-b3b4ea133fef" testId="a77f0f44-a407-a613-fd0d-8ab0d0a33592" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;bytes&quot;, count: 65, early: False)" computerName="LOKAD-0399" duration="00:00:00.0002603" startTime="2026-10-18T16:42:09.6281792+02:00" endTime="2026-10-18T16:42:09.6282042+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="82203e88-2cf8-4d89-96f8-b3b4ea133fef">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":false,"shape":"bytes","count":65,"early":false,"callsPerSample":64,"samples":[1536,1536,1536,1536,1536,1536,1536,1536]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d3872664-850e-4d6f-b4c4-4c02e2a532f0" testId="415a23aa-8d2b-e512-d54e-a7580ce91a93" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: False, all: False, shape: &quot;list&quot;, count: 65, early: False)" computerName="LOKAD-0399" duration="00:00:00.0025423" startTime="2026-10-18T16:42:09.6283640+02:00" endTime="2026-10-18T16:42:09.6292271+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d3872664-850e-4d6f-b4c4-4c02e2a532f0">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":false,"all":false,"shape":"list","count":65,"early":false,"callsPerSample":64,"samples":[11264,11264,11264,11264,11264,11264,11264,11264]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="110f7673-8204-48d1-ac87-fcd8ce047967" testId="895c902e-1b36-2d41-c280-92cb507f2489" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: False, all: True, shape: &quot;list&quot;, count: 65, early: False)" computerName="LOKAD-0399" duration="00:00:00.0028799" startTime="2026-10-18T16:42:09.6012272+02:00" endTime="2026-10-18T16:42:09.6040580+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="110f7673-8204-48d1-ac87-fcd8ce047967">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":false,"all":true,"shape":"list","count":65,"early":false,"callsPerSample":64,"samples":[11264,11264,11264,11264,11264,11264,11264,11264]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="58eec140-31c4-4ffa-9c84-0f52761b656d" testId="2b3199ed-3b1f-1f28-3051-c792ccbec717" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;list&quot;, count: 65, early: False)" computerName="LOKAD-0399" duration="00:00:00.0050435" startTime="2026-10-18T16:42:09.6281206+02:00" endTime="2026-10-18T16:42:09.6281468+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="58eec140-31c4-4ffa-9c84-0f52761b656d">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":false,"shape":"list","count":65,"early":false,"callsPerSample":64,"samples":[15872,15872,15872,15872,15872,15872,15872,15872]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="ca67e672-ea68-4fcf-99c4-c208914568ca" testId="8a5a6844-5a09-cbb4-eb97-6a687cece941" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;list&quot;, count: 0, early: False)" computerName="LOKAD-0399" duration="00:00:00.0003364" startTime="2026-10-18T16:42:09.6054659+02:00" endTime="2026-10-18T16:42:09.6057644+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ca67e672-ea68-4fcf-99c4-c208914568ca">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":false,"shape":"list","count":0,"early":false,"callsPerSample":64,"samples":[15872,15872,15872,15872,15872,15872,15872,15872]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="abc76ede-f017-4720-b674-09da129a04d5" testId="3131adf5-2736-9a52-900a-228c373da092" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;tuple&quot;, count: 65, early: False)" computerName="LOKAD-0399" duration="00:00:00.0048372" startTime="2026-10-18T16:42:09.5963428+02:00" endTime="2026-10-18T16:42:09.6011630+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="abc76ede-f017-4720-b674-09da129a04d5">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":false,"shape":"tuple","count":65,"early":false,"callsPerSample":64,"samples":[15360,15360,15360,15360,15360,15360,15360,15360]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a51404f1-ace8-46b6-9b2c-3ef2092f0b52" testId="0431f23f-d573-13b5-c276-0ab9addd89dc" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;tuple&quot;, count: 0, early: False)" computerName="LOKAD-0399" duration="00:00:00.0003150" startTime="2026-10-18T16:42:09.6279734+02:00" endTime="2026-10-18T16:42:09.6280118+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a51404f1-ace8-46b6-9b2c-3ef2092f0b52">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":true,"shape":"tuple","count":0,"early":false,"callsPerSample":64,"samples":[13312,13312,13312,13312,13312,13312,13312,13312]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b99d141c-7a17-4901-ba0f-4be68396a4eb" testId="8eb73073-bce0-b313-10c6-f23938d6360e" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;list&quot;, count: 65, early: True)" computerName="LOKAD-0399" duration="00:00:00.0003499" startTime="2026-10-18T16:42:09.6282950+02:00" endTime="2026-10-18T16:42:09.6283270+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b99d141c-7a17-4901-ba0f-4be68396a4eb">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":true,"shape":"list","count":65,"early":true,"callsPerSample":64,"samples":[15872,15872,15872,15872,15872,15872,15872,15872]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="66926c07-e658-42f7-b55b-f8857debc5ac" testId="5e222ac7-1452-6ad4-7dd2-a6e0224389cb" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;range&quot;, count: 65, early: False)" computerName="LOKAD-0399" duration="00:00:00.0045407" startTime="2026-10-18T16:42:09.6058156+02:00" endTime="2026-10-18T16:42:09.6103215+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="66926c07-e658-42f7-b55b-f8857debc5ac">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":true,"shape":"range","count":65,"early":false,"callsPerSample":64,"samples":[147456,147456,147456,147456,147456,147456,147456,147456]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="08b038af-b3d7-48de-a198-a28e4190eb79" testId="d19e824c-d0e0-dfa9-624a-159d7cb6c594" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;range&quot;, count: 1, early: False)" computerName="LOKAD-0399" duration="00:00:00.0074216" startTime="2026-10-18T16:42:09.5958413+02:00" endTime="2026-10-18T16:42:09.5959214+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="08b038af-b3d7-48de-a198-a28e4190eb79">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":false,"shape":"range","count":1,"early":false,"callsPerSample":64,"samples":[16384,16384,16384,16384,16384,16384,16384,16384]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7c9f983b-dafd-470f-b0c6-f7a84339571f" testId="157cf310-8485-1386-7818-94dc1adeaab2" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;tuple&quot;, count: 0, early: False)" computerName="LOKAD-0399" duration="00:00:00.0003342" startTime="2026-10-18T16:42:09.6041093+02:00" endTime="2026-10-18T16:42:09.6044124+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7c9f983b-dafd-470f-b0c6-f7a84339571f">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":false,"shape":"tuple","count":0,"early":false,"callsPerSample":64,"samples":[13312,13312,13312,13312,13312,13312,13312,13312]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f5821a9f-b3a3-456a-9be6-041294f3c374" testId="e1236630-d5ac-70ba-8032-4ffa86d65eb7" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;tuple&quot;, count: 65, early: True)" computerName="LOKAD-0399" duration="00:00:00.0003350" startTime="2026-10-18T16:42:09.6280585+02:00" endTime="2026-10-18T16:42:09.6280861+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f5821a9f-b3a3-456a-9be6-041294f3c374">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":false,"shape":"tuple","count":65,"early":true,"callsPerSample":64,"samples":[15360,15360,15360,15360,15360,15360,15360,15360]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="add22491-5fa5-4cdf-9394-63bee41b55ec" testId="828010ba-5aa9-ffd5-06dc-cda8dcc2e152" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;list&quot;, count: 65, early: True)" computerName="LOKAD-0399" duration="00:00:00.0040001" startTime="2026-10-18T16:42:09.5962630+02:00" endTime="2026-10-18T16:42:09.5963015+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="add22491-5fa5-4cdf-9394-63bee41b55ec">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":false,"shape":"list","count":65,"early":true,"callsPerSample":64,"samples":[15872,15872,15872,15872,15872,15872,15872,15872]}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="cc0297c3-b077-4f40-8913-e5e58087b5c1" testId="1261628d-4f5f-8b3f-8020-d73497314444" testName="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;list&quot;, count: 0, early: False)" computerName="LOKAD-0399" duration="00:00:00.0009476" startTime="2026-10-18T16:42:09.6044558+02:00" endTime="2026-10-18T16:42:09.6054057+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cc0297c3-b077-4f40-8913-e5e58087b5c1">
+      <Output>
+        <StdOut>ANY_ALL_CURSOR_ALLOCATION:{"asynchronous":true,"all":true,"shape":"list","count":0,"early":false,"callsPerSample":64,"samples":[15872,15872,15872,15872,15872,15872,15872,15872]}</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: False, all: True, shape: &quot;list&quot;, count: 65, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="895c902e-1b36-2d41-c280-92cb507f2489">
+      <Execution id="110f7673-8204-48d1-ac87-fcd8ce047967" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;tuple&quot;, count: 0, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="157cf310-8485-1386-7818-94dc1adeaab2">
+      <Execution id="7c9f983b-dafd-470f-b0c6-f7a84339571f" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;range&quot;, count: 65, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="5e222ac7-1452-6ad4-7dd2-a6e0224389cb">
+      <Execution id="66926c07-e658-42f7-b55b-f8857debc5ac" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;bytes&quot;, count: 65, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="a77f0f44-a407-a613-fd0d-8ab0d0a33592">
+      <Execution id="82203e88-2cf8-4d89-96f8-b3b4ea133fef" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;bytes&quot;, count: 65, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="b1b5263c-0973-de87-8928-78357d2d3a4c">
+      <Execution id="40d1039b-9745-471a-a3b2-0aa767c8450e" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;tuple&quot;, count: 65, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="320c6f8b-1f8f-bb12-6d55-6ef4249c6e77">
+      <Execution id="d1b09654-199e-47e7-b5ab-ad5e7cdd0efa" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;list&quot;, count: 0, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="8a5a6844-5a09-cbb4-eb97-6a687cece941">
+      <Execution id="ca67e672-ea68-4fcf-99c4-c208914568ca" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;list&quot;, count: 65, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="ae15d54e-ab35-7e74-ef74-f8b8647b1429">
+      <Execution id="2e4c9c18-e06a-4d01-8e4d-5819626183a8" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;list&quot;, count: 65, early: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="828010ba-5aa9-ffd5-06dc-cda8dcc2e152">
+      <Execution id="add22491-5fa5-4cdf-9394-63bee41b55ec" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;tuple&quot;, count: 65, early: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="462bc555-9f61-3b8a-26bc-23c88af88d54">
+      <Execution id="934d821a-9548-403d-8f47-c4f8901b8db7" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;list&quot;, count: 65, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="2b3199ed-3b1f-1f28-3051-c792ccbec717">
+      <Execution id="58eec140-31c4-4ffa-9c84-0f52761b656d" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;tuple&quot;, count: 0, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="0431f23f-d573-13b5-c276-0ab9addd89dc">
+      <Execution id="a51404f1-ace8-46b6-9b2c-3ef2092f0b52" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;tuple&quot;, count: 65, early: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="e1236630-d5ac-70ba-8032-4ffa86d65eb7">
+      <Execution id="f5821a9f-b3a3-456a-9be6-041294f3c374" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;list&quot;, count: 65, early: True)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="8eb73073-bce0-b313-10c6-f23938d6360e">
+      <Execution id="b99d141c-7a17-4901-ba0f-4be68396a4eb" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;tuple&quot;, count: 65, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="3131adf5-2736-9a52-900a-228c373da092">
+      <Execution id="abc76ede-f017-4720-b674-09da129a04d5" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: False, shape: &quot;range&quot;, count: 1, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="d19e824c-d0e0-dfa9-624a-159d7cb6c594">
+      <Execution id="08b038af-b3d7-48de-a198-a28e4190eb79" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: False, all: False, shape: &quot;list&quot;, count: 65, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="415a23aa-8d2b-e512-d54e-a7580ce91a93">
+      <Execution id="d3872664-850e-4d6f-b4c4-4c02e2a532f0" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic.Allocation(asynchronous: True, all: True, shape: &quot;list&quot;, count: 0, early: False)" storage="d:\code\lython\tests\lokad.lython.tests\bin\release\net10.0\lokad.lython.whitebox.tests.dll" id="1261628d-4f5f-8b3f-8020-d73497314444">
+      <Execution id="cc0297c3-b077-4f40-8913-e5e58087b5c1" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.AnyAllCursorAllocationDiagnostic" name="Allocation" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="462bc555-9f61-3b8a-26bc-23c88af88d54" executionId="934d821a-9548-403d-8f47-c4f8901b8db7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b1b5263c-0973-de87-8928-78357d2d3a4c" executionId="40d1039b-9745-471a-a3b2-0aa767c8450e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="320c6f8b-1f8f-bb12-6d55-6ef4249c6e77" executionId="d1b09654-199e-47e7-b5ab-ad5e7cdd0efa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ae15d54e-ab35-7e74-ef74-f8b8647b1429" executionId="2e4c9c18-e06a-4d01-8e4d-5819626183a8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a77f0f44-a407-a613-fd0d-8ab0d0a33592" executionId="82203e88-2cf8-4d89-96f8-b3b4ea133fef" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="415a23aa-8d2b-e512-d54e-a7580ce91a93" executionId="d3872664-850e-4d6f-b4c4-4c02e2a532f0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="895c902e-1b36-2d41-c280-92cb507f2489" executionId="110f7673-8204-48d1-ac87-fcd8ce047967" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2b3199ed-3b1f-1f28-3051-c792ccbec717" executionId="58eec140-31c4-4ffa-9c84-0f52761b656d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8a5a6844-5a09-cbb4-eb97-6a687cece941" executionId="ca67e672-ea68-4fcf-99c4-c208914568ca" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3131adf5-2736-9a52-900a-228c373da092" executionId="abc76ede-f017-4720-b674-09da129a04d5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0431f23f-d573-13b5-c276-0ab9addd89dc" executionId="a51404f1-ace8-46b6-9b2c-3ef2092f0b52" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8eb73073-bce0-b313-10c6-f23938d6360e" executionId="b99d141c-7a17-4901-ba0f-4be68396a4eb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5e222ac7-1452-6ad4-7dd2-a6e0224389cb" executionId="66926c07-e658-42f7-b55b-f8857debc5ac" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d19e824c-d0e0-dfa9-624a-159d7cb6c594" executionId="08b038af-b3d7-48de-a198-a28e4190eb79" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="157cf310-8485-1386-7818-94dc1adeaab2" executionId="7c9f983b-dafd-470f-b0c6-f7a84339571f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e1236630-d5ac-70ba-8032-4ffa86d65eb7" executionId="f5821a9f-b3a3-456a-9be6-041294f3c374" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="828010ba-5aa9-ffd5-06dc-cda8dcc2e152" executionId="add22491-5fa5-4cdf-9394-63bee41b55ec" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1261628d-4f5f-8b3f-8020-d73497314444" executionId="cc0297c3-b077-4f40-8913-e5e58087b5c1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="18" executed="18" passed="18" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.17]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.47]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.49]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.59]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

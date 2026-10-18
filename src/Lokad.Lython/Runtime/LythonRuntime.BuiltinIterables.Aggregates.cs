@@ -42,15 +42,16 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "any() takes exactly one argument (" + arguments.Length + " given)", span);
         }
 
-        await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+        var cursor = await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false);
+        await using (cursor.ConfigureAwait(false))
         {
-            if (await IsTruthyAsync(item, context, span).ConfigureAwait(false))
+            while (true)
             {
-                return true;
+                var item = await cursor.TryMoveNextAsync().ConfigureAwait(false);
+                if (!item.HasValue) return false;
+                if (await IsTruthyAsync(item.Value, context, span).ConfigureAwait(false)) return true;
             }
         }
-
-        return false;
     }
 
     private static object All(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -85,15 +86,16 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "all() takes exactly one argument (" + arguments.Length + " given)", span);
         }
 
-        await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+        var cursor = await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false);
+        await using (cursor.ConfigureAwait(false))
         {
-            if (!await IsTruthyAsync(item, context, span).ConfigureAwait(false))
+            while (true)
             {
-                return false;
+                var item = await cursor.TryMoveNextAsync().ConfigureAwait(false);
+                if (!item.HasValue) return true;
+                if (!await IsTruthyAsync(item.Value, context, span).ConfigureAwait(false)) return false;
             }
         }
-
-        return true;
     }
 
     private static bool ReduceBytesTruth(PyBytes bytes, bool all, LythonSourceSpan span, ExecutionContext context)

@@ -1,0 +1,223 @@
+{
+  "accepted": true,
+  "comparison": [
+    {
+      "route": [
+        true,
+        false,
+        "list",
+        0,
+        false
+      ],
+      "control": false,
+      "before": 248.0,
+      "after": 152.0
+    },
+    {
+      "route": [
+        true,
+        true,
+        "bytes",
+        65,
+        false
+      ],
+      "control": true,
+      "before": 24.0,
+      "after": 24.0
+    },
+    {
+      "route": [
+        true,
+        true,
+        "tuple",
+        0,
+        false
+      ],
+      "control": false,
+      "before": 208.0,
+      "after": 112.0
+    },
+    {
+      "route": [
+        true,
+        true,
+        "range",
+        65,
+        false
+      ],
+      "control": true,
+      "before": 2304.0,
+      "after": 2304.0
+    },
+    {
+      "route": [
+        true,
+        true,
+        "tuple",
+        65,
+        false
+      ],
+      "control": false,
+      "before": 240.0,
+      "after": 144.0
+    },
+    {
+      "route": [
+        false,
+        true,
+        "list",
+        65,
+        false
+      ],
+      "control": true,
+      "before": 176.0,
+      "after": 176.0
+    },
+    {
+      "route": [
+        true,
+        false,
+        "range",
+        1,
+        false
+      ],
+      "control": true,
+      "before": 256.0,
+      "after": 256.0
+    },
+    {
+      "route": [
+        false,
+        false,
+        "list",
+        65,
+        false
+      ],
+      "control": true,
+      "before": 176.0,
+      "after": 176.0
+    },
+    {
+      "route": [
+        true,
+        false,
+        "list",
+        65,
+        false
+      ],
+      "control": false,
+      "before": 248.0,
+      "after": 152.0
+    },
+    {
+      "route": [
+        true,
+        false,
+        "list",
+        65,
+        true
+      ],
+      "control": false,
+      "before": 248.0,
+      "after": 152.0
+    },
+    {
+      "route": [
+        true,
+        false,
+        "tuple",
+        65,
+        true
+      ],
+      "control": false,
+      "before": 240.0,
+      "after": 144.0
+    },
+    {
+      "route": [
+        true,
+        false,
+        "tuple",
+        65,
+        false
+      ],
+      "control": false,
+      "before": 240.0,
+      "after": 144.0
+    },
+    {
+      "route": [
+        true,
+        true,
+        "list",
+        65,
+        true
+      ],
+      "control": false,
+      "before": 248.0,
+      "after": 152.0
+    },
+    {
+      "route": [
+        true,
+        true,
+        "list",
+        0,
+        false
+      ],
+      "control": false,
+      "before": 248.0,
+      "after": 152.0
+    },
+    {
+      "route": [
+        true,
+        false,
+        "tuple",
+        0,
+        false
+      ],
+      "control": false,
+      "before": 208.0,
+      "after": 112.0
+    },
+    {
+      "route": [
+        true,
+        false,
+        "bytes",
+        65,
+        false
+      ],
+      "control": true,
+      "before": 24.0,
+      "after": 24.0
+    },
+    {
+      "route": [
+        true,
+        true,
+        "list",
+        65,
+        false
+      ],
+      "control": false,
+      "before": 248.0,
+      "after": 152.0
+    },
+    {
+      "route": [
+        true,
+        true,
+        "tuple",
+        65,
+        true
+      ],
+      "control": false,
+      "before": 240.0,
+      "after": 144.0
+    }
+  ],
+  "exactWorkRecordsIdentical": 68,
+  "elapsedClaim": false
+}

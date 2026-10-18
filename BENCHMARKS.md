@@ -286,6 +286,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [async any/all cursor change](benchmarks/results/2026-10-18-any-all-cursor/README.md)
+at `7c79191f` plus its frozen one-file runtime patch removes two enumeration
+wrappers per general call. One native comparison saves 96 bytes for empty/full/
+early-exit list and tuple inputs; sync, bytes and range controls are unchanged.
+This is allocation evidence only, with no elapsed or CPython speedup claim.
+
 The [general default-map builders](benchmarks/results/2026-10-18-default-map/README.md)
 at `10d108eb` plus a four-line runtime patch pre-size existing dictionaries.
 One native comparison saves 552 bytes with eight defaults and 912 bytes with 32,

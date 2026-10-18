@@ -1,0 +1,14 @@
+{
+  "source": "7c79191f",
+  "production": "baseline",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "BEA3A328076755E0C440327213785DB77FE209DC7DE3AFDED327F356E891E9DE",
+  "filter": "Category!=Stress&FullyQualifiedName~AnyAllCursorAllocationDiagnostic",
+  "pid": 12988,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1150,
+  "stdoutSha256": "C8697CEE22708CA574FF7F835F80E2B8D7B2EC33DF59D55AD5482CA4C803B234",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}
