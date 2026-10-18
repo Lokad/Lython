@@ -1,0 +1,45 @@
+{
+  "iterations": 128,
+  "rows": [
+    {
+      "name": "positional",
+      "asynchronous": false,
+      "allocatedBytes": 297984
+    },
+    {
+      "name": "keyword",
+      "asynchronous": false,
+      "allocatedBytes": 297984
+    },
+    {
+      "name": "explicit-cls",
+      "asynchronous": false,
+      "allocatedBytes": 297984
+    },
+    {
+      "name": "explicit-ensure",
+      "asynchronous": false,
+      "allocatedBytes": 294912
+    },
+    {
+      "name": "positional",
+      "asynchronous": true,
+      "allocatedBytes": 297984
+    },
+    {
+      "name": "keyword",
+      "asynchronous": true,
+      "allocatedBytes": 297984
+    },
+    {
+      "name": "explicit-cls",
+      "asynchronous": true,
+      "allocatedBytes": 297984
+    },
+    {
+      "name": "explicit-ensure",
+      "asynchronous": true,
+      "allocatedBytes": 294912
+    }
+  ]
+}

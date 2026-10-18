@@ -7,6 +7,13 @@ public sealed class JsonModuleCallBindingTests
     // Independent CPython 3.13 call results, including supported custom classes.
     public static TheoryData<string, string, string> Programs => new()
     {
+        { "dumps_scalars_unicode", "import json\nprint(json.dumps([None,True,False,7,123456789012345678901234567890,'\u00e9\ud83d\ude00']))", "[null, true, false, 7, 123456789012345678901234567890, \"\\u00e9\\ud83d\\ude00\"]\n" },
+        { "dumps_alias_starred", "import json\nencode=json.dumps\nargs=[{'x':[1,2]}]\nprint(encode(*args))\nprint(encode(**{'obj':{'x':3}}))", "{\"x\": [1, 2]}\n{\"x\": 3}\n" },
+        { "dumps_argument_order", "import json\neffects=[]\ndef value():\n effects.append('argument')\n return [1,2]\nprint(json.dumps(value()))\nprint(effects)", "[1, 2]\n['argument']\n" },
+        { "dumps_cycle_error", "import json\nvalue=[]\nvalue.append(value)\ntry:json.dumps(value)\nexcept ValueError:print('cycle')\nprint(json.dumps([1]))", "cycle\n[1]\n" },
+        { "dumps_unsupported_error", "import json\ntry:json.dumps({1,2})\nexcept TypeError:print('unsupported')\nprint(json.dumps([2]))", "unsupported\n[2]\n" },
+        { "dumps_nonfinite", "import json\nprint(json.dumps([float('nan'),float('inf'),-float('inf')]))", "[NaN, Infinity, -Infinity]\n" },
+        { "dumps_explicit_mutable_encoder", "import json\nprint(json.dumps({'\u00e9':7},cls=json.JSONEncoder,ensure_ascii=False))\nencoder=json.JSONEncoder()\nencoder.ensure_ascii=False\nprint(encoder.encode({'\u00e9':8}))\nprint(json.dumps({'\u00e9':9}))", "{\"\u00e9\": 7}\n{\"\u00e9\": 8}\n{\"\\u00e9\": 9}\n" },
         { "loads_positional_alias", "import json\nload = json.loads\nvalues = [\"{\\\"é\\\":7}\"]\nprint(load(*values))\nprint(load(**{\"s\":\"-0.0\"}))", "{'é': 7}\n-0.0\n" },
         { "loads_default_effect_order", "import json\neffects=[]\ndef argument():\n effects.append(\"argument\")\n return \"[7,null,true]\"\nprint(json.loads(argument()))\nprint(effects)", "[7, None, True]\n['argument']\n" },
         { "loads_positional_type_error", "import json\nload = json.loads\ntry:load(7)\nexcept TypeError:print(\"type\")\nprint(load(\"7\"))", "type\n7\n" },

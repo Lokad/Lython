@@ -145,7 +145,7 @@ internal sealed partial class LythonRuntime
         // The base default() is not a fallback call to encode(): even an
         // otherwise encodable value fails here unless a default= hook (or an
         // N39 override) supplies the behavior.
-        public object Default(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        public static object Default(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 1)
             {
@@ -310,7 +310,7 @@ internal sealed partial class LythonRuntime
                 case "default":
                     value = encoder.GuestOwner is null && encoder.DefaultHook is not null
                         ? encoder.DefaultHook
-                        : BoundCallable.Create((arguments, span, context) => encoder.Default(arguments, span, context), LythonKnownCallableSignatures.JsonEncoderDefault);
+                        : BoundCallable.Create(JsonEncoderObject.Default, LythonKnownCallableSignatures.JsonEncoderDefault);
                     return true;
                 case "skipkeys":
                     value = encoder.Options.SkipKeys;

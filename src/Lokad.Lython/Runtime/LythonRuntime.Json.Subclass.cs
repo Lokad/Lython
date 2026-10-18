@@ -155,7 +155,7 @@ internal sealed partial class LythonRuntime
 
                 if (memberName == "default")
                 {
-                    value = BoundCallable.Create((arguments, callSpan, callContext) => encoder.Default(arguments, callSpan, callContext), LythonKnownCallableSignatures.JsonEncoderDefault);
+                    value = BoundCallable.Create(JsonEncoderObject.Default, LythonKnownCallableSignatures.JsonEncoderDefault);
                     return true;
                 }
 

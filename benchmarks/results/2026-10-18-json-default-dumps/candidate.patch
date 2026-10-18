@@ -1,0 +1,119 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs
+index 15a3155..25a52b3 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs
+@@ -145,7 +145,7 @@ internal sealed partial class LythonRuntime
+         // The base default() is not a fallback call to encode(): even an
+         // otherwise encodable value fails here unless a default= hook (or an
+         // N39 override) supplies the behavior.
+-        public object Default(object[] arguments, LythonSourceSpan span, ExecutionContext context)
++        public static object Default(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+         {
+             if (arguments.Length != 1)
+             {
+@@ -310,7 +310,7 @@ internal sealed partial class LythonRuntime
+                 case "default":
+                     value = encoder.GuestOwner is null && encoder.DefaultHook is not null
+                         ? encoder.DefaultHook
+-                        : BoundCallable.Create((arguments, span, context) => encoder.Default(arguments, span, context), LythonKnownCallableSignatures.JsonEncoderDefault);
++                        : BoundCallable.Create(JsonEncoderObject.Default, LythonKnownCallableSignatures.JsonEncoderDefault);
+                     return true;
+                 case "skipkeys":
+                     value = encoder.Options.SkipKeys;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
+index 663dc99..2d3cd8f 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
+@@ -38,7 +38,13 @@ internal sealed partial class LythonRuntime
+         string ItemSeparator,
+         string KeySeparator,
+         ICallable? DefaultCallable,
+-        bool SortKeys);
++        bool SortKeys)
++    {
++        // Immutable builtin metadata; no guest values, receiver or execution owner.
++        internal static readonly JsonDumpOptions Default = new(false, true, true, true,
++            null, ", ", ": ", BoundCallable.Create(JsonEncoderObject.Default,
++                LythonKnownCallableSignatures.JsonEncoderDefault), false);
++    }
+ 
+     internal readonly record struct JsonSeparators(string ItemSeparator, string KeySeparator);
+ 
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Subclass.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Subclass.cs
+index d502670..4a0299a 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Subclass.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Subclass.cs
+@@ -155,7 +155,7 @@ internal sealed partial class LythonRuntime
+ 
+                 if (memberName == "default")
+                 {
+-                    value = BoundCallable.Create((arguments, callSpan, callContext) => encoder.Default(arguments, callSpan, callContext), LythonKnownCallableSignatures.JsonEncoderDefault);
++                    value = BoundCallable.Create(JsonEncoderObject.Default, LythonKnownCallableSignatures.JsonEncoderDefault);
+                     return true;
+                 }
+ 
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs b/src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs
+index b101c2a..fff6493 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs
+@@ -66,10 +66,14 @@ internal sealed partial class LythonRuntime
+             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+             {
+                 context.CheckExecution(span);
+-                if (IsDefaultLoads(arguments))
++                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonLoads))
+                 {
+                     return Instance.LoadsDefault(arguments[0].Value, span, context, asynchronous: false).GetAwaiter().GetResult();
+                 }
++                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonDumps))
++                {
++                    return Instance.DumpsDefault(arguments[0].Value, span, context, asynchronous: false).GetAwaiter().GetResult();
++                }
+                 var extras = CollectExtraArguments(arguments);
+                 var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
+                 var result = _implementation(bound, extras, span, context);
+@@ -79,10 +83,14 @@ internal sealed partial class LythonRuntime
+             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+             {
+                 context.CheckExecution(span);
+-                if (IsDefaultLoads(arguments))
++                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonLoads))
+                 {
+                     return await Instance.LoadsDefault(arguments[0].Value, span, context, asynchronous: true).ConfigureAwait(false);
+                 }
++                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonDumps))
++                {
++                    return await Instance.DumpsDefault(arguments[0].Value, span, context, asynchronous: true).ConfigureAwait(false);
++                }
+                 var extras = CollectExtraArguments(arguments);
+                 var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
+                 var result = _asyncImplementation is null
+@@ -93,8 +101,8 @@ internal sealed partial class LythonRuntime
+ 
+             // This complete call shape has no keyword/default slots to bind.
+             // Other signatures and every explicit option retain general binding.
+-            private bool IsDefaultLoads(CallArgumentValue[] arguments)
+-                => ReferenceEquals(_signature, LythonKnownCallableSignatures.JsonLoads) &&
++            private bool IsDefaultCall(CallArgumentValue[] arguments, LythonCallableSignature signature)
++                => ReferenceEquals(_signature, signature) &&
+                     arguments.Length == 1 && arguments[0].IsPositional;
+ 
+             // All four signatures allow extra keywords. The ordinary binder
+@@ -299,6 +307,17 @@ internal sealed partial class LythonRuntime
+             return EncodeWithClass(bound.Values[0], ResolveEncoderClass(GetOptional(bound.Values, 5), span), bound, extras, JsonDumpCallForm.Dumps, span, context);
+         }
+ 
++        private async ValueTask<object> DumpsDefault(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
++        {
++            // Keep the module body, builtin constructor, bound encode and encoder
++            // body checkpoints while omitting their unobservable temporary storage.
++            context.CheckExecution(span);
++            context.CheckExecution(span);
++            context.CheckExecution(span);
++            context.CheckExecution(span);
++            return await SerializeJsonTextCoreAsync(value, JsonDumpOptions.Default, context, span, asynchronous).ConfigureAwait(false);
++        }
++
+         private async ValueTask<object> DumpsAsync(
+             BoundCallArguments bound,
+             IReadOnlyList<KeyValuePair<string, object>> extras,

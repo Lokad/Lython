@@ -1,0 +1,13 @@
+{
+  "baseRevision": "22648c5a364877801ff9c11ba6bdc6fb75d631c7",
+  "files": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs": "c9681eb7fd641ea9ee2207c44926fc5a14a6651d9b78f5cbac2f89a74f1c897f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs": "894a3a1dd50aa331c1312ed90467dcc04a472ccf9834869dd10e19f1be8d840f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs": "068c9d20a49c540be48049e51d5a9969cef5f67754e9b37c64d0813e8d172c4b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Subclass.cs": "35ecb6ae3af1bf27bfb7f2dfdff4808fceed72ff208a22dab90ee21b927980b9"
+  },
+  "proposedRemoval": "Unobservable module default-call binding/constructor/member packaging; reuse existing serializer/default callable body/checkpoints.",
+  "workload": "Existing BridgeScriptBenchmarks.JsonRoundTripScript with relative fixture paths; current explicit-options catalog is not an affected performance control.",
+  "previousGoalTurn": "progress",
+  "protectedRegexUnchanged": true
+}

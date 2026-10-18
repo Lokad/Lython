@@ -2,6 +2,7 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| JSON file round-trip [CD], warm `RunAsync` | One file / 42 UTF-8 input bytes | 1.571 ms | 0.16484 ms | — | Four frozen runtime files on 22648c5a; nominal 9.533×, unqualified; 7.24%/1.07% spreads |
 | JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
 | Complete CSV summary [BP], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 7.503 ms | 3.849 ms | — | Short diagnostic at27a61681; nominal8.3% below prior Lython,7.5%/6.4% spreads; inconclusive |
 | Complete CSV summary with annotated helper [BU], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 8.581 ms | 3.718 ms | — | Dedicated-VM diagnostic at 463b7a7a; nominal 2.308×, unqualified; 4.36%/0.85% spreads |
@@ -84,6 +85,12 @@ empty ownership hooks. The 1.71% lower median is within sample spread; no elapse
 benefit or embedding-latency improvement is established. The unchanged JSON-lines
 job exercises ranged text reads; dedicated regressions cover long accumulation.
 
+CD reuses the existing bridge JSON file job, with relative fixture paths and
+four frozen runtime files on 22648c5a. It exercises the ordinary default dumps
+shape; other JSON rows often explicitly supply options. The separate scalar-call
+allocation diagnostic saves 1,840 bytes per eligible call. Whole-job time is
+3.80% higher, within 7–9% Lython spread; no gain or regression is established.
+
 BU executes frozen Release package binaries built with SDK
 10.0.300-preview.0.26177.108 on the VM's .NET 10.0.12 runtime. Its identical
 adapter was built at a35ee62c; only the packaged Lython DLL differs between
@@ -103,6 +110,7 @@ to infer a change from the quiet-VM measurements.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| CD | 2026-10-18 UTC | Four frozen runtime files on 22648c5a; existing bridge JSON file job; warm public RunAsync | [Default-call allocation, checkpoints, CPython comparison and cleanup](benchmarks/results/2026-10-18-json-default-dumps/README.md) |
 | CC | 2026-10-18 UTC | One frozen text-reader file on 56526237; complete helper job; warm public RunAsync | [Admission, character limits, CPython comparison and cleanup](benchmarks/results/2026-10-18-text-read/README.md) |
 | CB | 2026-10-17 UTC | One frozen key-comparer file on aa9fc0ea; complete helper job; warm public RunAsync | [Key identity correction, string dispatch, CPython controls and final-source comparison](benchmarks/results/2026-10-17-string-key-identity/README.md) |
 | CA | 2026-10-17 UTC | One frozen JSON module file on 6c9a51df; complete helper job; warm public RunAsync | [Ordinary call binding, preceding CPU attribution, native allocations and CPython comparison](benchmarks/results/2026-10-17-json-default-call/README.md) |
@@ -222,6 +230,13 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 | Generator-expression numeric reduction [AX], warm `Run` | 16,384 float terms / 73 UTF-8 source bytes | 3.912 ms | 0.5586 ms | — | Short diagnostic at 44199dd3; direct synchronous advancement; 5.0% lower Lython median, unqualified |
 
 ## Improvements against earlier Lython revisions
+
+Default JSON encoding [CD](benchmarks/results/2026-10-18-json-default-dumps/README.md)
+omits unobservable module default-call binding, encoder construction and member
+packaging. Separate native scalar counts save 1,840 bytes per eligible call
+through either API; general calls save 64 bytes from the stateless base default.
+The complete file job records 1.514 → 1.571 ms, spreads 8.54%/7.24%: nominal
+3.80% higher, within spread. Only the allocation reduction is established.
 
 Governed text reads [CC](benchmarks/results/2026-10-18-text-read/README.md)
 remove empty ownership hooks, duplicate UTF-16 window/cursor tracking and CLR

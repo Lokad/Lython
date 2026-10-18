@@ -48,3 +48,5 @@ benchmarks/results/2026-10-17-string-key-identity/candidate.patch -text -whitesp
 benchmarks/results/2026-10-18-text-read/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-text-read/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-text-read/initial-ci-failure.log -text -whitespace
+benchmarks/results/2026-10-18-json-default-dumps/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-json-default-dumps/candidate.patch -text -whitespace

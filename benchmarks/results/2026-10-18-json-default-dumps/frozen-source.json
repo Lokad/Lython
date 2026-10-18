@@ -1,0 +1,26 @@
+{
+  "baseRevision": "22648c5a364877801ff9c11ba6bdc6fb75d631c7",
+  "kind": "four frozen runtime files; existing BridgeScript roundtrip with relative fixture paths",
+  "files": [
+    {
+      "sourceFile": "src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs",
+      "payloadFile": "candidate-LythonRuntime.JsonModule.cs",
+      "canonicalSha256": "d48e1f56db5c70e575875e57a9864bae4b4196f03a55016ca63278f0dde3292f"
+    },
+    {
+      "sourceFile": "src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs",
+      "payloadFile": "candidate-LythonRuntime.Json.Options.cs",
+      "canonicalSha256": "2570cf413a2967862de642bac491b7e2b59ff33a9d5f94cd5763ad60200f018d"
+    },
+    {
+      "sourceFile": "src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs",
+      "payloadFile": "candidate-LythonRuntime.Json.Encoder.cs",
+      "canonicalSha256": "2f647ea8137525b12df13c7f9f719f221a46cf1b263a7922b40eda462c9928f7"
+    },
+    {
+      "sourceFile": "src/Lokad.Lython/Runtime/LythonRuntime.Json.Subclass.cs",
+      "payloadFile": "candidate-LythonRuntime.Json.Subclass.cs",
+      "canonicalSha256": "87b4e1d6a3883f0b62e1cd0edc30db0db0725858c72b32b76f3fc8a435c4c0fb"
+    }
+  ]
+}

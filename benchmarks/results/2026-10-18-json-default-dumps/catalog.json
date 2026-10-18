@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "cases": [
+    {
+      "id": "scripts.bridge-json-roundtrip.small",
+      "family": "scripts",
+      "category": "whole-script",
+      "scale": "small",
+      "size": 1,
+      "source": "import json\ndata = json.loads(open(\"input.json\").read())\ndata[\"items\"] = [data[\"items\"][0], data[\"items\"][2]]\n__lython_file = open(\"output.json\", \"w\")\n__lython_file.write(json.dumps(data))\n__lython_file.close()\n",
+      "fixtureJson": "{\"size\":1,\"text\":null,\"inputFiles\":{\"input.json\":\"eyJvayI6dHJ1ZSwiaXRlbXMiOlsxLDIsM10sIm5hbWUiOiJhbHBoYSJ9\"},\"outputFiles\":{\"output.json\":\"eyJvayI6IHRydWUsICJpdGVtcyI6IFsxLCAzXSwgIm5hbWUiOiAiYWxwaGEifQ==\"}}",
+      "expectedOutput": "",
+      "sourceSha256": "190a3bca37c54b1264674081461d3cb91f5600fe5bd8967a23dd39bb0b833340",
+      "fixtureSha256": "ac19d369ec86ec286a9948881f7db0250229e593159297290afa886cbdb8a952",
+      "expectedOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedFilesSha256": "bf844fa832508a4ca3a68eb187587b392198ead7ae5c0adbd08773f3f6d74292"
+    }
+  ]
+}

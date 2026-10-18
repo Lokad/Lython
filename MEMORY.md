@@ -27,6 +27,14 @@ Runs use that borrowed budget unless `LythonRunOptions.MemoryBudget` supplies
 another. One-shot `LythonEngine.Run`/`RunAsync` disposes its temporary compilation
 after the invocation and its cleanup finish.
 
+Ordinary single-positional `json.dumps` uses immutable builtin-default metadata
+instead of per-call binding arrays, forwarded options and a temporary encoder.
+The shared default callback holds no guest value, receiver or execution owner.
+Explicit encoders retain their independent mutable state. Serialization scratch,
+result ownership, admission and terminal refusal keep their existing contracts.
+Removing temporary control allocations may reduce required headroom; identical
+tiny-budget thresholds are not promised. No reclamation or new cache is involved.
+
 Each invocation owns its working storage. Projection allocates under a result
 owner established before execution; this owner is a sibling of the invocation
 owner and survives execution cleanup. Disposing `LythonExecutionResult` clears

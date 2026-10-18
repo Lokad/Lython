@@ -1,0 +1,63 @@
+{
+  "iterations": 128,
+  "rows": [
+    {
+      "name": "positional",
+      "asynchronous": false,
+      "allocatedBytes": 62464,
+      "baselineBytes": 297984,
+      "savedBytesPerCall": 1840.0
+    },
+    {
+      "name": "keyword",
+      "asynchronous": false,
+      "allocatedBytes": 289792,
+      "baselineBytes": 297984,
+      "savedBytesPerCall": 64.0
+    },
+    {
+      "name": "explicit-cls",
+      "asynchronous": false,
+      "allocatedBytes": 289792,
+      "baselineBytes": 297984,
+      "savedBytesPerCall": 64.0
+    },
+    {
+      "name": "explicit-ensure",
+      "asynchronous": false,
+      "allocatedBytes": 286720,
+      "baselineBytes": 294912,
+      "savedBytesPerCall": 64.0
+    },
+    {
+      "name": "positional",
+      "asynchronous": true,
+      "allocatedBytes": 62464,
+      "baselineBytes": 297984,
+      "savedBytesPerCall": 1840.0
+    },
+    {
+      "name": "keyword",
+      "asynchronous": true,
+      "allocatedBytes": 289792,
+      "baselineBytes": 297984,
+      "savedBytesPerCall": 64.0
+    },
+    {
+      "name": "explicit-cls",
+      "asynchronous": true,
+      "allocatedBytes": 289792,
+      "baselineBytes": 297984,
+      "savedBytesPerCall": 64.0
+    },
+    {
+      "name": "explicit-ensure",
+      "asynchronous": true,
+      "allocatedBytes": 286720,
+      "baselineBytes": 294912,
+      "savedBytesPerCall": 64.0
+    }
+  ],
+  "elapsedClaim": false,
+  "explanation": "Default calls omit packaging. General controls also save64bytes/call from stateless base-default delegate capture removal."
+}

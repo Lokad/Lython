@@ -7,6 +7,18 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 default JSON encoding](results/2026-10-18-json-default-dumps/README.md)
+omits ordinary default-call binding/constructor/member packaging and reuses the
+existing serializer with stateless builtin metadata. Native scalar counts save
+1,840 bytes per default call and 64 bytes per general control through both APIs.
+Eight frozen fuel/error/effect cases and 645 focused checks pass. One7.631s bridge
+file-job capture records1.514→1.571ms vs CPython0.16484ms;3.80%higher lies within
+spread,with no qualified gain/regression.41responses/10,839invocations match full
+goldens;input/frozen-file hashes and cleanup are verified. Temporary diagnostic
+removed;no repeat capture/profile/full lane. The first launch preflight used a
+catalog hash before Windows newline conversion;corrected to frozen file bytes
+before any measured run started. That failure remains in private receipts.
+
 The [2026-10-18 governed text reads](results/2026-10-18-text-read/README.md)
 admit accumulated working storage before growth and correct cross-window
 readline character limits. Empty ownership hooks, duplicate UTF-16 storage/cursor

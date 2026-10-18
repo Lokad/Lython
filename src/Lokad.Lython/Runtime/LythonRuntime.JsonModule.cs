@@ -66,9 +66,13 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
-                if (IsDefaultLoads(arguments))
+                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonLoads))
                 {
                     return Instance.LoadsDefault(arguments[0].Value, span, context, asynchronous: false).GetAwaiter().GetResult();
+                }
+                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonDumps))
+                {
+                    return Instance.DumpsDefault(arguments[0].Value, span, context, asynchronous: false).GetAwaiter().GetResult();
                 }
                 var extras = CollectExtraArguments(arguments);
                 var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
@@ -79,9 +83,13 @@ internal sealed partial class LythonRuntime
             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
-                if (IsDefaultLoads(arguments))
+                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonLoads))
                 {
                     return await Instance.LoadsDefault(arguments[0].Value, span, context, asynchronous: true).ConfigureAwait(false);
+                }
+                if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonDumps))
+                {
+                    return await Instance.DumpsDefault(arguments[0].Value, span, context, asynchronous: true).ConfigureAwait(false);
                 }
                 var extras = CollectExtraArguments(arguments);
                 var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
@@ -93,8 +101,8 @@ internal sealed partial class LythonRuntime
 
             // This complete call shape has no keyword/default slots to bind.
             // Other signatures and every explicit option retain general binding.
-            private bool IsDefaultLoads(CallArgumentValue[] arguments)
-                => ReferenceEquals(_signature, LythonKnownCallableSignatures.JsonLoads) &&
+            private bool IsDefaultCall(CallArgumentValue[] arguments, LythonCallableSignature signature)
+                => ReferenceEquals(_signature, signature) &&
                     arguments.Length == 1 && arguments[0].IsPositional;
 
             // All four signatures allow extra keywords. The ordinary binder
@@ -297,6 +305,17 @@ internal sealed partial class LythonRuntime
             }
 
             return EncodeWithClass(bound.Values[0], ResolveEncoderClass(GetOptional(bound.Values, 5), span), bound, extras, JsonDumpCallForm.Dumps, span, context);
+        }
+
+        private async ValueTask<object> DumpsDefault(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            // Keep the module body, builtin constructor, bound encode and encoder
+            // body checkpoints while omitting their unobservable temporary storage.
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            return await SerializeJsonTextCoreAsync(value, JsonDumpOptions.Default, context, span, asynchronous).ConfigureAwait(false);
         }
 
         private async ValueTask<object> DumpsAsync(

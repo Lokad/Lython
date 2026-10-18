@@ -1,0 +1,19 @@
+{
+  "unit": "lython-json-dumps-capture-22648c5a-20261018",
+  "command": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-json-dumps-capture-22648c5a-20261018",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=30",
+    "--property=TimeoutStopSec=0",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/json-default-dumps-22648c5a/capture/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/json-default-dumps-22648c5a/capture/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/json-default-dumps-22648c5a/capture/run.py"
+  ],
+  "stdout": "",
+  "stderr": "Running as unit: lython-json-dumps-capture-22648c5a-20261018.service; invocation ID: 1c9f8b12366c43e8970f833499305f8f\n"
+}

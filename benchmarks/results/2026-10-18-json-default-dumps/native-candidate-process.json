@@ -1,0 +1,14 @@
+{
+  "source": "default-dumps",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "63E28837F8D518B8835BF118F4EA62853B81E1EB902EF9EB8467B81EF13151E7",
+  "filter": "FullyQualifiedName~JsonDefaultDumpsDiagnostic",
+  "pid": 71732,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1312,
+  "stdoutSha256": "BA1B46A756E0533FEB2182CD9B6708E10ACBE56A0200F9733B920C0FFC77D1B3",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}
