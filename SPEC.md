@@ -3398,10 +3398,13 @@ The published `MaxExecutionSteps` option remains an enforced opt-in allowance fo
 When executable compilation succeeds, synchronous and asynchronous module runs
 and eligible ordinary function bodies use the same compiled code, argument slots
 and captured cells. Defaults, decorators and body callbacks can suspend without
-replaying their effects. Annotated/type-parameter definitions and supported
-compiler fallbacks retain their existing lowered routes; generator semantics
-remain separate. Namespace mirroring follows code-object fallback requirements
-instead of being enabled solely by selecting `RunAsync`. Async runs use the existing
+replaying their effects. Eligible annotated and generic ordinary definitions keep
+executable bodies while preserving metadata and type-parameter scopes. Definitions
+requiring existing class, generator or contextual fallbacks keep those routes.
+Moving a formerly lowered body to executable code can change its step count and
+where a fixed `MaxExecutionSteps` allowance is exhausted; fuel, cancellation and
+managed stack admission remain enforced. Namespace mirroring follows fallback and
+retained lexical-scope requirements in both execution APIs. Async runs use the existing
 async opcode driver and still await supported guest and host effects. Async
 instruction-fuel counts can differ from earlier versions that always traversed
 lowered module/function nodes. Counts remain enforced and reported only when explicitly requested.

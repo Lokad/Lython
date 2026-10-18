@@ -1,0 +1,14 @@
+{
+  "originalSourceScreen": "source-screen.json",
+  "beforeRuntimeEdits": true,
+  "expectedProductionFiles": [
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs"
+  ],
+  "additionalRequirement": "Exclude declared type-parameter names from enclosing closure candidates for that generic body; defaults still evaluate in the original context.",
+  "goldens": "goldens-expanded.json",
+  "matchingPythonPrograms": 8,
+  "negativeProbeBothReject": true,
+  "noNewScopeCellLookupProtocol": true
+}

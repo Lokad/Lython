@@ -1,0 +1,926 @@
+{
+  "reference": "Python 3.13.2",
+  "head": "99eb28bf457d835dc31ec1b6de02c72f4f2d3054",
+  "cases": [
+    {
+      "name": "params-and-defaults",
+      "source": "T=17\ndef f[T](x=T):return x,T\nr=f()\nprint(r[0],r[1] is f.__type_params__[0],f.__annotations__)",
+      "sourceSha256": "22278be7ee1d8fb40ba540d30851aa464660e78783585f7a28f66b22ea713a4b",
+      "expected": "17 True {}\n",
+      "baseline": [
+        {
+          "mode": "sync",
+          "process": {
+            "pid": 79320,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 525,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "T=17\ndef f[T](x=T):return x,T\nr=f()\nprint(r[0],r[1] is f.__type_params__[0],f.__annotations__)",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "17 True {}\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 3934,
+              "PeakProjectionMemoryBytes": 54,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "17 True {}\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": false
+            }
+          }
+        },
+        {
+          "mode": "async",
+          "process": {
+            "pid": 75324,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 369,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "T=17\ndef f[T](x=T):return x,T\nr=f()\nprint(r[0],r[1] is f.__type_params__[0],f.__annotations__)",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json",
+              "--async"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "17 True {}\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 3934,
+              "PeakProjectionMemoryBytes": 54,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "17 True {}\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "escaped-closure",
+      "source": "def make():\n seed=1\n def f[T](x:T)->T:return seed,x,T\n seed=2\n return f\nf=make()\nr=f(3)\nprint(r[:2],r[2] is f.__type_params__[0],f.__annotations__['x'] is f.__type_params__[0])",
+      "sourceSha256": "06f0b6abdc158ecf94e02584fb1a4b295348daed64536f3f011bf98629ceef7a",
+      "expected": "(2, 3) True True\n",
+      "baseline": [
+        {
+          "mode": "sync",
+          "process": {
+            "pid": 75624,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 349,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "def make():\n seed=1\n def f[T](x:T)->T:return seed,x,T\n seed=2\n return f\nf=make()\nr=f(3)\nprint(r[:2],r[2] is f.__type_params__[0],f.__annotations__['x'] is f.__type_params__[0])",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "(2, 3) True True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 5573,
+              "PeakProjectionMemoryBytes": 66,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "(2, 3) True True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": false
+            }
+          }
+        },
+        {
+          "mode": "async",
+          "process": {
+            "pid": 36556,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 362,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "def make():\n seed=1\n def f[T](x:T)->T:return seed,x,T\n seed=2\n return f\nf=make()\nr=f(3)\nprint(r[:2],r[2] is f.__type_params__[0],f.__annotations__['x'] is f.__type_params__[0])",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json",
+              "--async"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "(2, 3) True True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 5573,
+              "PeakProjectionMemoryBytes": 66,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "(2, 3) True True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "nested-helper",
+      "source": "def f[T](x):\n def g():return T,x\n x=7\n return g\ng=f(2)\nr=g()\nprint(r[1],r[0].__name__)",
+      "sourceSha256": "e31d357e8e26849e16977ef6a91e328c3f23f8374ff9d0ec86ba3f45ef133155",
+      "expected": "7 T\n",
+      "baseline": [
+        {
+          "mode": "sync",
+          "process": {
+            "pid": 59744,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 340,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "def f[T](x):\n def g():return T,x\n x=7\n return g\ng=f(2)\nr=g()\nprint(r[1],r[0].__name__)",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "7 T\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 4700,
+              "PeakProjectionMemoryBytes": 40,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "7 T\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": false
+            }
+          }
+        },
+        {
+          "mode": "async",
+          "process": {
+            "pid": 62948,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 341,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "def f[T](x):\n def g():return T,x\n x=7\n return g\ng=f(2)\nr=g()\nprint(r[1],r[0].__name__)",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json",
+              "--async"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "7 T\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 4700,
+              "PeakProjectionMemoryBytes": 40,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "7 T\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "nonlocal",
+      "source": "def make():\n n=1\n def f[T]():\n  nonlocal n\n  n+=1\n  return n,T\n def current():return n\n return f,current\nf,current=make()\na=f()\nb=f()\nprint(a[0],b[0],current(),a[1] is b[1])",
+      "sourceSha256": "f8ece9ca66acab6331923aff0ceed8a4257168afc759e52f36c83910b94c6e3a",
+      "expected": "2 3 3 True\n",
+      "baseline": [
+        {
+          "mode": "sync",
+          "process": {
+            "pid": 54412,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 381,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "def make():\n n=1\n def f[T]():\n  nonlocal n\n  n+=1\n  return n,T\n def current():return n\n return f,current\nf,current=make()\na=f()\nb=f()\nprint(a[0],b[0],current(),a[1] is b[1])",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "2 3 3 True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 5072,
+              "PeakProjectionMemoryBytes": 54,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "2 3 3 True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": false
+            }
+          }
+        },
+        {
+          "mode": "async",
+          "process": {
+            "pid": 69856,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 382,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "def make():\n n=1\n def f[T]():\n  nonlocal n\n  n+=1\n  return n,T\n def current():return n\n return f,current\nf,current=make()\na=f()\nb=f()\nprint(a[0],b[0],current(),a[1] is b[1])",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json",
+              "--async"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "2 3 3 True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 5072,
+              "PeakProjectionMemoryBytes": 54,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "2 3 3 True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "global",
+      "source": "T=11\ndef f[U]():\n global T\n T+=1\n return T,U\nr=f()\nprint(T,r[0],r[1] is f.__type_params__[0])",
+      "sourceSha256": "e5978493939df9c92a114ce51dc0b337d782c01e9ef52b48ba49a5b05327fe54",
+      "expected": "12 12 True\n",
+      "baseline": [
+        {
+          "mode": "sync",
+          "process": {
+            "pid": 52692,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 352,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "T=11\ndef f[U]():\n global T\n T+=1\n return T,U\nr=f()\nprint(T,r[0],r[1] is f.__type_params__[0])",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "12 12 True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 3566,
+              "PeakProjectionMemoryBytes": 54,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "12 12 True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": false
+            }
+          }
+        },
+        {
+          "mode": "async",
+          "process": {
+            "pid": 62136,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 358,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "T=11\ndef f[U]():\n global T\n T+=1\n return T,U\nr=f()\nprint(T,r[0],r[1] is f.__type_params__[0])",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json",
+              "--async"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "12 12 True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 3566,
+              "PeakProjectionMemoryBytes": 54,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "12 12 True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "lazy-bound",
+      "source": "events=[]\ndef value():events.append('bound');return int\ndef f[T:value()](x:T)->T:return x\nprint(events,f(3),events)\np=f.__type_params__[0]\nprint(p.__bound__ is int,p.__bound__ is int,events)",
+      "sourceSha256": "5058e5792a8b509501fd56c88abe364b3bc727b57f6782c6dab3e4d187f2b682",
+      "expected": "[] 3 []\nTrue True ['bound']\n",
+      "baseline": [
+        {
+          "mode": "sync",
+          "process": {
+            "pid": 74748,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 374,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "events=[]\ndef value():events.append('bound');return int\ndef f[T:value()](x:T)->T:return x\nprint(events,f(3),events)\np=f.__type_params__[0]\nprint(p.__bound__ is int,p.__bound__ is int,events)",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "[] 3 []\nTrue True ['bound']\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 5123,
+              "PeakProjectionMemoryBytes": 88,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "[] 3 []\nTrue True ['bound']\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": false
+            }
+          }
+        },
+        {
+          "mode": "async",
+          "process": {
+            "pid": 34508,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 411,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "events=[]\ndef value():events.append('bound');return int\ndef f[T:value()](x:T)->T:return x\nprint(events,f(3),events)\np=f.__type_params__[0]\nprint(p.__bound__ is int,p.__bound__ is int,events)",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json",
+              "--async"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "[] 3 []\nTrue True ['bound']\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 5123,
+              "PeakProjectionMemoryBytes": 88,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "[] 3 []\nTrue True ['bound']\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "shadowed-enclosing-parameter",
+      "source": "def make():\n T=17\n def f[T](x:T=T)->T:return x,T\n return f\nf=make()\nv=f()\nprint(v[0],v[1] is f.__type_params__[0],f.__annotations__['x'] is v[1],f.__annotations__['return'] is v[1])",
+      "sourceSha256": "7070e98a13b05a2873d7c66fbada7ce74ab8b95830a8709c78909de8e031bf73",
+      "expected": "17 True True True\n",
+      "baseline": [
+        {
+          "mode": "sync",
+          "process": {
+            "pid": 75548,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 358,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "def make():\n T=17\n def f[T](x:T=T)->T:return x,T\n return f\nf=make()\nv=f()\nprint(v[0],v[1] is f.__type_params__[0],f.__annotations__['x'] is v[1],f.__annotations__['return'] is v[1])",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "17 True True True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 5165,
+              "PeakProjectionMemoryBytes": 68,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "17 True True True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": false
+            }
+          }
+        },
+        {
+          "mode": "async",
+          "process": {
+            "pid": 47548,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 371,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "def make():\n T=17\n def f[T](x:T=T)->T:return x,T\n return f\nf=make()\nv=f()\nprint(v[0],v[1] is f.__type_params__[0],f.__annotations__['x'] is v[1],f.__annotations__['return'] is v[1])",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json",
+              "--async"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "17 True True True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 5165,
+              "PeakProjectionMemoryBytes": 68,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "17 True True True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "nested-generic-shadow",
+      "source": "def make():\n T=17\n def outer[U]():\n  def inner[T:U]():return T,U\n  return inner\n return outer\nouter=make()\ninner=outer()\na,b=inner()\nprint(a is inner.__type_params__[0],b is outer.__type_params__[0],inner.__type_params__[0].__bound__ is b)",
+      "sourceSha256": "216e12788f356c1703e595a3e9a0ff22e00388b1c26e7cc6dbab76ebde4aa8ec",
+      "expected": "True True True\n",
+      "baseline": [
+        {
+          "mode": "sync",
+          "process": {
+            "pid": 42524,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 381,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "def make():\n T=17\n def outer[U]():\n  def inner[T:U]():return T,U\n  return inner\n return outer\nouter=make()\ninner=outer()\na,b=inner()\nprint(a is inner.__type_params__[0],b is outer.__type_params__[0],inner.__type_params__[0].__bound__ is b)",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "True True True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 7024,
+              "PeakProjectionMemoryBytes": 62,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "True True True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": false
+            }
+          }
+        },
+        {
+          "mode": "async",
+          "process": {
+            "pid": 10092,
+            "exitCode": 0,
+            "hasExited": true,
+            "timedOut": false,
+            "elapsedMillisecondsIncludingCleanup": 380,
+            "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+            "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+            "arguments": [
+              "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+              "-c",
+              "def make():\n T=17\n def outer[U]():\n  def inner[T:U]():return T,U\n  return inner\n return outer\nouter=make()\ninner=outer()\na,b=inner()\nprint(a is inner.__type_params__[0],b is outer.__type_params__[0],inner.__type_params__[0].__bound__ is b)",
+              "--compare-python",
+              "--python",
+              "C:/Python313/python.exe",
+              "--json",
+              "--async"
+            ]
+          },
+          "report": {
+            "Index": 0,
+            "Lython": {
+              "Success": true,
+              "StandardOutput": "True True True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": 7024,
+              "PeakProjectionMemoryBytes": 62,
+              "DeniedReservationBytes": 0,
+              "Failure": null
+            },
+            "CPython": {
+              "Success": true,
+              "StandardOutput": "True True True\n",
+              "StandardError": "",
+              "ExitCode": null,
+              "Diagnostics": [],
+              "PeakExecutionMemoryBytes": null,
+              "PeakProjectionMemoryBytes": null,
+              "DeniedReservationBytes": null,
+              "Failure": null
+            },
+            "Matches": true,
+            "Note": null,
+            "Compared": true,
+            "Options": {
+              "MaxMemoryBytes": null,
+              "Async": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

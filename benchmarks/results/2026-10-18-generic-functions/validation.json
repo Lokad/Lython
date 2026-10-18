@@ -1,0 +1,119 @@
+{
+  "baseline": "99eb28bf457d835dc31ec1b6de02c72f4f2d3054",
+  "focusedDistinctPassed": 423,
+  "groups": {
+    "final-white": {
+      "passed": 62,
+      "process": {
+        "source": "99eb28bf-plus-generic-functions",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "E7A774F83CD181DE09D61AA2B710CA7C1C1104332A5CA0F6FB7E3B9222316157",
+        "filter": "Category!=Stress&(FullyQualifiedName~ExecutableGenericFunctionTests|FullyQualifiedName~AsyncExecutableFunctionTests|FullyQualifiedName~FunctionClassCellBoundaryTests|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~FunctionDefaultConstructionTests|FullyQualifiedName~GeneralBoundMethodDefaultLifetimeTests|FullyQualifiedName~KwargsKeyAccountingTests)",
+        "pid": 51116,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1334,
+        "stdoutSha256": "C1311CDC4D55BD7451ACAF7C9C21A5BAF1EE105BF37AE9C5EB9002F54646D094",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "aa748ed4b4556049fd61090554478452f44ab3dad63401513bdeaa9a45753fb5"
+    },
+    "final-public": {
+      "passed": 209,
+      "process": {
+        "source": "99eb28bf-plus-generic-functions",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "76046E52B45F9BC4AED1BE51EFF5CBB76E74013AC5D4E2448C6300DC84FB1E3B",
+        "filter": "Category!=Stress&(FullyQualifiedName~ExecutableGenericFunctionCompatibilityTests|FullyQualifiedName~ModernTypingScenarioTests|FullyQualifiedName~AnnotationCompatibilityTests|FullyQualifiedName~CompiledModuleAnnotationTests|FullyQualifiedName~PostponedAnnotationTests|FullyQualifiedName~AsyncFunctionHostingTests|FullyQualifiedName~DeferredDefinitionBindingTests|FullyQualifiedName~FunctionDefaultMetadataTests|FullyQualifiedName~GeneratorDefinitionCompositionTests)",
+        "pid": 69616,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 7273,
+        "stdoutSha256": "88F4830197BCA640091EF90F67E267263D8A6CC8830A01DDF52C03C44302AC53",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "a6672a32d154b031571fa1b5035da7b5bf26cacf5efe15b7a0bd4ac614173fd0"
+    },
+    "final-owners": {
+      "passed": 90,
+      "process": {
+        "source": "99eb28bf-plus-generic-functions",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "76046E52B45F9BC4AED1BE51EFF5CBB76E74013AC5D4E2448C6300DC84FB1E3B",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 78116,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2892,
+        "stdoutSha256": "6CC01E9B5366B181F01285A493A76A1757999DE9E375A8E146543CA2F1A4416B",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "493b8944872ec0c65e635aceec3484274d1f6c5fd0a6d9e7d6cb2edb5492ff47"
+    },
+    "final-goldens": {
+      "passed": 62,
+      "process": {
+        "source": "99eb28bf-plus-generic-functions",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "76046E52B45F9BC4AED1BE51EFF5CBB76E74013AC5D4E2448C6300DC84FB1E3B",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 36208,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8233,
+        "stdoutSha256": "53F0AFD833A4975288C7BF8213EBF4238E7B87811215FD362F7CC3F08AD74CB1",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "7a03fdbefb7ab2ccffcca141ae2fcdc16f44a156f182f1e4d553e027e96cd117"
+    }
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": {
+      "before": "c573a0a4aed9397a207d517d0abe821ee5f125c714b1442446af796ae392832e",
+      "after": "e6db1ee0bf6746d380393ae42fb8bbee88ed8a1d3dc004e8fb17498a5edfad76"
+    },
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": {
+      "before": "e54690795edb4d6d465521a2f74969e8f6c7dd990f806195b82ecf44ee8ad8ac",
+      "after": "2910e5d8f46f146906cecf49fd6b0a8affd369b3900151155cff2275fc0e897b"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": {
+      "before": "bb9d049209518cf1279f075d0ddf8aa7c5a499e40dfa9c2c81a9162c1269a2c3",
+      "after": "5843b7596159d86eb45604195ee9e5d0dde53381e2780e71c1d8e6460651a4f1"
+    }
+  },
+  "supportingSourcesUnchanged": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.ModernTyping.cs": "20e1d6839563e5cabafeb0857cb96513d5a95ead8eb6e0d3f8fcb9b8c2cf9eab",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "dee4f7291d8dfd964beacfeeaf9c7212319477cf1d1a7860f8a8cc0f36c5aad3"
+  },
+  "baselinePublicCasesPassed": 19,
+  "sourceRouteCases": 4,
+  "sourceRouteModesPerCase": 2,
+  "newCandidateResourceLimitCases": 4,
+  "publicCases": 23,
+  "independentCPythonPrograms": 8,
+  "completeJobs": 58,
+  "temporaryDiagnosticRemoved": true,
+  "sourceAndLifetimeGateBeforeTiming": true,
+  "compiledMetadataFundedByExistingSourceEstimate": true,
+  "ordinaryControlAllocationAndStepsIdentical": true,
+  "genericSteps": {
+    "before": 2204,
+    "after": 2460
+  },
+  "contracts": "Same TypeScope/cells/metadata/default/decorator order and owners. Generic executable instruction counts can differ;fixed-budget failure points can move, as documented in SPEC. Existing class/generator/contextual fallback consumers remain.",
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "regexPlanningOnly": true,
+  "newTests": [
+    "tests/Lokad.Lython.PublicApi.Tests/ExecutableGenericFunctionCompatibilityTests.cs",
+    "tests/Lokad.Lython.Tests/ExecutableGenericFunctionTests.cs"
+  ],
+  "comparisonStatus": "One unqualified local diagnostic; no startup, compile-only, representative-job or CPython timing claim."
+}

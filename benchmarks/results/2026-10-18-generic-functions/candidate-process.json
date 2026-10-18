@@ -1,0 +1,14 @@
+{
+  "source": "99eb28bf-plus-generic-functions",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "E0E843F144642EC9947B740227983E72C5677667701B20374EF0ADE78EE6749E",
+  "filter": "Category!=Stress&FullyQualifiedName~GenericFunctionComparisonDiagnostic",
+  "pid": 73800,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1632,
+  "stdoutSha256": "C8E4CE9C1353AEDF9073A81D7F10A2B452575FB8F75532C8EBC5C2D2E53F70F5",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

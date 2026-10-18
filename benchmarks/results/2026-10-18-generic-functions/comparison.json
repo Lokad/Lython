@@ -1,0 +1,152 @@
+{
+  "accepted": true,
+  "comparison": [
+    {
+      "route": [
+        "native-warm",
+        false,
+        false
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 0.22500625,
+        "iqrPercent": 2.1221632732424105
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 0.2260625,
+        "iqrPercent": 0.18661874481614077
+      },
+      "afterOverBefore": 1.004694314046832,
+      "beforeBytes": 35944.0,
+      "afterBytes": 35944.0,
+      "beforeSteps": 2460.0,
+      "afterSteps": 2460.0
+    },
+    {
+      "route": [
+        "native-warm",
+        false,
+        true
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 0.26535624999999996,
+        "iqrPercent": 1.3248698683373643
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 0.27031875,
+        "iqrPercent": 2.1074657233358933
+      },
+      "afterOverBefore": 1.018701274230398,
+      "beforeBytes": 35984.0,
+      "afterBytes": 35984.0,
+      "beforeSteps": 2460.0,
+      "afterSteps": 2460.0
+    },
+    {
+      "route": [
+        "native-warm",
+        true,
+        false
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 0.28295,
+        "iqrPercent": 3.1885050362254863
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 0.2343375,
+        "iqrPercent": 1.9843174907985224
+      },
+      "afterOverBefore": 0.8281940272132886,
+      "beforeBytes": 92008.0,
+      "afterBytes": 37088.0,
+      "beforeSteps": 2204.0,
+      "afterSteps": 2460.0
+    },
+    {
+      "route": [
+        "fresh-compile-result",
+        false,
+        false
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 0.5527124999999999,
+        "iqrPercent": 2.456634326164145
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 0.5415749999999999,
+        "iqrPercent": 5.045469233254868
+      },
+      "afterOverBefore": 0.9798493791980459
+    },
+    {
+      "route": [
+        "fresh-compile-result",
+        true,
+        false
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 0.6636187499999999,
+        "iqrPercent": 2.2005292948699915
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 0.61168125,
+        "iqrPercent": 5.8430146420214735
+      },
+      "afterOverBefore": 0.9217359364846156
+    },
+    {
+      "route": [
+        "native-warm",
+        true,
+        true
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 0.40970625,
+        "iqrPercent": 2.1219471267523855
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 0.27873749999999997,
+        "iqrPercent": 2.8981120229606683
+      },
+      "afterOverBefore": 0.6803349961100178,
+      "beforeBytes": 92008.0,
+      "afterBytes": 37128.0,
+      "beforeSteps": 2204.0,
+      "afterSteps": 2460.0
+    },
+    {
+      "route": [
+        "fresh-compile-result",
+        false,
+        true
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 0.60804375,
+        "iqrPercent": 5.334731259058252
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 0.61459375,
+        "iqrPercent": 5.354146539889158
+      },
+      "afterOverBefore": 1.0107722511743604
+    },
+    {
+      "route": [
+        "fresh-compile-result",
+        true,
+        true
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 0.75674375,
+        "iqrPercent": 3.165288778400881
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 0.6517,
+        "iqrPercent": 5.077585545496401
+      },
+      "afterOverBefore": 0.8611898016997166
+    }
+  ],
+  "elapsedStatus": "Unqualified one-pair local diagnostic, no timing gate or retiming.",
+  "controlsAllocationAndStepsIdentical": true,
+  "resultsAndCleanupPassed": true
+}

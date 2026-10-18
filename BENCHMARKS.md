@@ -286,6 +286,14 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [executable generic-function change](benchmarks/results/2026-10-18-generic-functions/README.md)
+at `99eb28bf` plus its three-file runtime/frontend patch preserves existing type
+scopes and captures. A 128-call native job allocates 92,008→37,088/37,128 bytes in
+sync/async execution; ordinary control arrays match. One local public fresh
+compile-to-result observation changes 0.664→0.612ms sync and 0.757→0.652ms async,
+unqualified, with ordinary controls and spreads retained. This is no CPython,
+startup or representative-job gain claim; execution-step counts also change.
+
 The [async any/all cursor change](benchmarks/results/2026-10-18-any-all-cursor/README.md)
 at `7c79191f` plus its frozen one-file runtime patch removes two enumeration
 wrappers per general call. One native comparison saves 96 bytes for empty/full/

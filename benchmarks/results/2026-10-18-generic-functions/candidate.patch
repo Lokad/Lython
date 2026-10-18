@@ -1,0 +1,322 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+index 50c10ecc..31017468 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+@@ -388,7 +388,7 @@ internal sealed partial class ExecutableScript
+                 throw new GeneratorLoweringException("Suspension in nested definition decorators, defaults or annotations is not supported.", functionDefinition.Span);
+             var codeObject = functionDefinition.GeneratorCode ?? CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
+                 functionDefinition.Parameters, functionDefinition.Body,
+-                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax));
++                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax), functionDefinition.TypeParameters);
+ 
+             Dictionary<string, LoweredExpression>? defaultValues = null;
+             for (var index = 0; index < functionDefinition.Parameters.Count; index++)
+@@ -407,14 +407,19 @@ internal sealed partial class ExecutableScript
+ 
+         private ExecutableCodeObject? CompileFunctionCode(string name,
+             IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body,
+-            ScopeDirectiveFacts scopeFacts)
++            ScopeDirectiveFacts scopeFacts, IReadOnlyList<LoweredTypeParameter>? typeParameters = null)
+         {
+             try
+             {
+                 // Forward transitive free names as before. Comprehension names
+                 // are inner bindings, even at module scope or when the caller
+                 // declares a same-named global; add them after that exclusion.
+-                return new Builder(parameters, ChildClosureCandidates(), scopeFacts)
++                var candidates = ChildClosureCandidates();
++                // Type parameters shadow enclosing locals in the body. Defaults
++                // still evaluate in the defining context before TypeScope exists.
++                if (candidates is not null && typeParameters is not null)
++                    candidates = candidates.Except(typeParameters.Select(static parameter => parameter.Syntax.Name), StringComparer.Ordinal);
++                return new Builder(parameters, candidates, scopeFacts)
+                     .CompileCodeObject(name, body);
+             }
+             catch (ExecutableLoweringFallbackException)
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
+index b4ffc4e4..69d4e6ca 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
+@@ -45,9 +45,6 @@ internal sealed partial class ExecutableScript
+                 case LoweredClassDefinitionStatement classDefinition when _generator &&
+                     StatementSyntaxTraversal.EnumerateDirectExpressions(classDefinition.Syntax).Any(GeneratorSyntaxFacts.ContainsYield):
+                     return CompileSuspendingClass(classDefinition, currentBlock);
+-                case LoweredFunctionDefinitionStatement functionDefinition when functionDefinition.TypeParameters is not null:
+-                    AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(functionDefinition), functionDefinition.Span));
+-                    return currentBlock;
+                 case LoweredFunctionDefinitionStatement functionDefinition:
+                     AddInstruction(currentBlock, ExecutableInstruction.DefineFunction(InternFunction(functionDefinition), functionDefinition.Span));
+                     return currentBlock;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index faa8af2b..2181a1c0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -346,8 +346,8 @@ internal sealed partial class LythonRuntime
+     {
+         var hasAnnotations = functionBinding.Function.ReturnAnnotation is not null ||
+             functionBinding.Function.Parameters.Any(p => p.Annotation is not null);
+-        if (functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context) ||
+-            hasAnnotations && (functionBinding.CodeObject is null || functionBinding.Function.GeneratorCode is not null))
++        var needsTypeMetadata = hasAnnotations || functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context);
++        if (needsTypeMetadata && (functionBinding.CodeObject is null || functionBinding.Function.GeneratorCode is not null))
+         {
+             if (asynchronous) await ExecuteLoweredFunctionDefinitionAsync(functionBinding.Function, context).ConfigureAwait(false);
+             else ExecuteLoweredFunctionDefinition(functionBinding.Function, context);
+@@ -370,38 +370,39 @@ internal sealed partial class LythonRuntime
+                 ? await BuildDefaultArgumentMapAsync(functionBinding.Function.Parameters,
+                     expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false)
+                 : MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context);
++            var typeScope = CreateTypeScope(functionBinding.Function.TypeParameters, context, functionBinding.Function.Span);
++            var closure = typeScope.Closure.FunctionClosureContext;
+             var function = functionBinding.Function.GeneratorCode is not null
+-                ? (object)new PyGeneratorFunction(functionBinding.Function, context.FunctionClosureContext,
++                ? (object)new PyGeneratorFunction(functionBinding.Function, closure,
+                     defaults, closureCells)
+                 : functionBinding.CodeObject is null
+                 ? new PyFunction(
+                     functionBinding.Function.Syntax.DeclaredName,
+                     functionBinding.Function.Parameters,
+                     functionBinding.Function.Body,
+-                    context.FunctionClosureContext,
++                    closure,
+                     defaults,
+                     ScopeDirectiveFactsCollector.ForFunction(functionBinding.Function.Syntax))
+                 : new PyExecutableFunction(
+                     functionBinding.Function.Syntax.DeclaredName,
+                     functionBinding.Function.Parameters,
+                     functionBinding.CodeObject,
+-                    context.FunctionClosureContext,
++                    closure,
+                     closureCells,
+                     defaults,
+                     functionBinding.CodeObject.ScopeFacts);
+             ChargeFunctionValue(context, functionBinding.Function.Span);
+             ChargeClosureRetention(
+-                context.FunctionClosureContext,
++                closure,
+                 context.MemoryGovernor,
+                 functionBinding.Function.Span);
+             if (function is PyFunctionBase defined)
+             {
+                 PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Function.Body, context, functionBinding.Function.Span);
+-                if (hasAnnotations)
++                if (needsTypeMetadata)
+                 {
+                     // Metadata does not require interpreting an otherwise compiled body.
+                     // Keep its existing scope, evaluation order and ownership before publication.
+-                    var typeScope = CreateTypeScope(null, context, functionBinding.Function.Span);
+                     await AttachTypeMetadataAsync(defined, functionBinding.Function, typeScope, context, asynchronous).ConfigureAwait(false);
+                 }
+             }
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/ExecutableGenericFunctionCompatibilityTests.cs b/tests/Lokad.Lython.PublicApi.Tests/ExecutableGenericFunctionCompatibilityTests.cs
+new file mode 100644
+index 00000000..34dde20b
+--- /dev/null
++++ b/tests/Lokad.Lython.PublicApi.Tests/ExecutableGenericFunctionCompatibilityTests.cs
+@@ -0,0 +1,141 @@
++using Lokad.Lython.Tests.Harness;
++
++namespace Lokad.Lython.PublicApi.Tests;
++
++public sealed class ExecutableGenericFunctionCompatibilityTests
++{
++    public static IEnumerable<object[]> Cases()
++    {
++        yield return [false, "params-and-defaults", "T=17\ndef f[T](x=T):return x,T\nr=f()\nprint(r[0],r[1] is f.__type_params__[0],f.__annotations__)", "17 True {}\n"];
++        yield return [true, "params-and-defaults", "T=17\ndef f[T](x=T):return x,T\nr=f()\nprint(r[0],r[1] is f.__type_params__[0],f.__annotations__)", "17 True {}\n"];
++        yield return [false, "escaped-closure", "def make():\n seed=1\n def f[T](x:T)->T:return seed,x,T\n seed=2\n return f\nf=make()\nr=f(3)\nprint(r[:2],r[2] is f.__type_params__[0],f.__annotations__['x'] is f.__type_params__[0])", "(2, 3) True True\n"];
++        yield return [true, "escaped-closure", "def make():\n seed=1\n def f[T](x:T)->T:return seed,x,T\n seed=2\n return f\nf=make()\nr=f(3)\nprint(r[:2],r[2] is f.__type_params__[0],f.__annotations__['x'] is f.__type_params__[0])", "(2, 3) True True\n"];
++        yield return [false, "nested-helper", "def f[T](x):\n def g():return T,x\n x=7\n return g\ng=f(2)\nr=g()\nprint(r[1],r[0].__name__)", "7 T\n"];
++        yield return [true, "nested-helper", "def f[T](x):\n def g():return T,x\n x=7\n return g\ng=f(2)\nr=g()\nprint(r[1],r[0].__name__)", "7 T\n"];
++        yield return [false, "nonlocal", "def make():\n n=1\n def f[T]():\n  nonlocal n\n  n+=1\n  return n,T\n def current():return n\n return f,current\nf,current=make()\na=f()\nb=f()\nprint(a[0],b[0],current(),a[1] is b[1])", "2 3 3 True\n"];
++        yield return [true, "nonlocal", "def make():\n n=1\n def f[T]():\n  nonlocal n\n  n+=1\n  return n,T\n def current():return n\n return f,current\nf,current=make()\na=f()\nb=f()\nprint(a[0],b[0],current(),a[1] is b[1])", "2 3 3 True\n"];
++        yield return [false, "global", "T=11\ndef f[U]():\n global T\n T+=1\n return T,U\nr=f()\nprint(T,r[0],r[1] is f.__type_params__[0])", "12 12 True\n"];
++        yield return [true, "global", "T=11\ndef f[U]():\n global T\n T+=1\n return T,U\nr=f()\nprint(T,r[0],r[1] is f.__type_params__[0])", "12 12 True\n"];
++        yield return [false, "lazy-bound", "events=[]\ndef value():events.append('bound');return int\ndef f[T:value()](x:T)->T:return x\nprint(events,f(3),events)\np=f.__type_params__[0]\nprint(p.__bound__ is int,p.__bound__ is int,events)", "[] 3 []\nTrue True ['bound']\n"];
++        yield return [true, "lazy-bound", "events=[]\ndef value():events.append('bound');return int\ndef f[T:value()](x:T)->T:return x\nprint(events,f(3),events)\np=f.__type_params__[0]\nprint(p.__bound__ is int,p.__bound__ is int,events)", "[] 3 []\nTrue True ['bound']\n"];
++        yield return [false, "shadowed-enclosing-parameter", "def make():\n T=17\n def f[T](x:T=T)->T:return x,T\n return f\nf=make()\nv=f()\nprint(v[0],v[1] is f.__type_params__[0],f.__annotations__['x'] is v[1],f.__annotations__['return'] is v[1])", "17 True True True\n"];
++        yield return [true, "shadowed-enclosing-parameter", "def make():\n T=17\n def f[T](x:T=T)->T:return x,T\n return f\nf=make()\nv=f()\nprint(v[0],v[1] is f.__type_params__[0],f.__annotations__['x'] is v[1],f.__annotations__['return'] is v[1])", "17 True True True\n"];
++        yield return [false, "nested-generic-shadow", "def make():\n T=17\n def outer[U]():\n  def inner[T:U]():return T,U\n  return inner\n return outer\nouter=make()\ninner=outer()\na,b=inner()\nprint(a is inner.__type_params__[0],b is outer.__type_params__[0],inner.__type_params__[0].__bound__ is b)", "True True True\n"];
++        yield return [true, "nested-generic-shadow", "def make():\n T=17\n def outer[U]():\n  def inner[T:U]():return T,U\n  return inner\n return outer\nouter=make()\ninner=outer()\na,b=inner()\nprint(a is inner.__type_params__[0],b is outer.__type_params__[0],inner.__type_params__[0].__bound__ is b)", "True True True\n"];
++    }
++
++    [Theory]
++    [MemberData(nameof(Cases))]
++    public async Task GenericScopesAndCapturedCellsMatchPython(bool asynchronous, string name, string source, string expected)
++    {
++        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
++        using var script = new LythonEngine().Compile(source, budget);
++        Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
++        var baseline = budget.ReservedBytes;
++        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
++        {
++            Assert.True(result.Success, result.Failure?.Message);
++            Assert.Equal(expected, result.StandardOutput);
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++    }
++
++    [Fact]
++    public void TypeParameterCannotBeReboundThroughAnEnclosingNonlocal()
++    {
++        using var script = new LythonEngine().Compile("def make():\n T=17\n def f[T]():\n  nonlocal T\n  return T\n return f\nprint(make()())");
++        Assert.False(script.IsValid);
++        Assert.Contains(script.Diagnostics, d => d.Code == "LA1100" && d.Message.Contains("nonlocal", StringComparison.Ordinal));
++    }
++
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task GenericBodyKeepsItsCapturedPayloadFundedAcrossHostIo(bool cancel)
++    {
++        const string source = """
++def make():
++ payload='held'*1024
++ def read[T](value):
++  with open('hold.txt','a') as target:target.write('done')
++  return value,payload,T
++ return read
++read=make()
++value,payload,parameter=read('argument')
++print(value,parameter is read.__type_params__[0])
++return payload
++""";
++        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
++        using var script = new LythonEngine().Compile(source, budget);
++        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
++        var baseline = budget.ReservedBytes;
++        var host = new DelayedLythonHost();
++        host.SeedFile("/hold.txt", "before");
++        var entered = cancel ? host.PauseWriteUntilCancellation("/hold.txt") : null;
++        using var cancellation = new CancellationTokenSource();
++        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
++        LythonExecutionResult? result = null;
++        try
++        {
++            if (entered is not null)
++            {
++                var first = await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5));
++                Assert.Same(entered, first);
++                Assert.False(pending.IsCompleted);
++                Assert.True(budget.ReservedBytes > baseline);
++                cancellation.Cancel();
++            }
++            result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
++            Assert.Equal(!cancel, result.Success);
++            Assert.Equal(cancel ? "" : "argument True\n", result.StandardOutput);
++            Assert.Equal(cancel ? "before" : "beforedone", host.ReadText("/hold.txt"));
++            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
++            else
++            {
++                Assert.Equal(string.Concat(Enumerable.Repeat("held", 1024)), result.ReturnValue);
++                Assert.True(host.CompletedAsynchronously > 0);
++                Assert.True(budget.ReservedBytes > baseline);
++            }
++        }
++        finally
++        {
++            cancellation.Cancel();
++            result ??= await pending.WaitAsync(TimeSpan.FromSeconds(5));
++            result.Dispose();
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        script.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    [Theory]
++    [InlineData(false, false)]
++    [InlineData(false, true)]
++    [InlineData(true, false)]
++    [InlineData(true, true)]
++    public async Task GenericBodiesPreserveRecursionAndExecutionLimits(bool asynchronous, bool recursion)
++    {
++        var source = recursion
++            ? "def f[T](n):return f(n+1)\nf(0)\nprint('unreachable')"
++            : "def f[T]():\n while True:pass\nf()\nprint('unreachable')";
++        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
++        using var script = new LythonEngine().Compile(source, budget);
++        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
++        var baseline = budget.ReservedBytes;
++        var options = new LythonRunOptions { MaxRecursionDepth = 8, MaxExecutionSteps = recursion ? 10000 : 100 };
++        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
++        {
++            Assert.False(result.Success);
++            Assert.Equal("", result.StandardOutput);
++            if (recursion) Assert.Equal("RecursionError", result.Failure?.ExceptionType);
++            else
++            {
++                Assert.Equal(LythonFailureReason.ExecutionStepLimit, result.FailureAttribution?.Reason);
++                Assert.Equal(100L, result.FailureAttribution?.Limit);
++            }
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        script.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++}
+diff --git a/tests/Lokad.Lython.Tests/ExecutableGenericFunctionTests.cs b/tests/Lokad.Lython.Tests/ExecutableGenericFunctionTests.cs
+new file mode 100644
+index 00000000..68ae0a1e
+--- /dev/null
++++ b/tests/Lokad.Lython.Tests/ExecutableGenericFunctionTests.cs
+@@ -0,0 +1,59 @@
++using System.Numerics;
++using Lokad.Lython.Frontend;
++using Lokad.Lython.Runtime;
++using Lokad.Lython.Tests.Harness;
++using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
++
++namespace Lokad.Lython.Tests;
++
++public sealed class ExecutableGenericFunctionTests
++{
++    public static TheoryData<string, string> Programs => new()
++    {
++        { "ordinary", "def f[T](x:T)->T:return x\nreturn f" },
++        { "escaped", "def make():\n seed=1\n def f[T](x):return seed+x\n seed=2\n return f\nreturn make()" },
++        { "shadow", "def make():\n T=17\n def f[T]():return T\n return f\nreturn make()" },
++        { "nested", "def f[T](x):\n def helper():return T,x\n x=7\n return helper\nreturn f(2)" },
++    };
++
++    [Theory]
++    [MemberData(nameof(Programs))]
++    public async Task GenericBodiesAndNestedHelpersRemainExecutable(string name, string source)
++    {
++        var syntax = LythonFrontend.Compile(source);
++        Assert.NotNull(syntax.Script);
++        Assert.DoesNotContain(syntax.Diagnostics, diagnostic => diagnostic.Severity == LythonDiagnosticSeverity.Error);
++        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax.Script!)).EntryPoint;
++        foreach (var asynchronous in new[] { false, true })
++        {
++            var budget = new LythonMemoryBudget(4 * 1024 * 1024);
++            using var owner = budget.CreateScope();
++            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
++            var returned = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
++                : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
++            var function = Assert.IsType<PyExecutableFunction>(returned);
++            CallArgumentValue[] arguments = name is "ordinary" or "escaped" ? [CallArgumentValue.Positional(new BigInteger(3))] : [];
++            var result = asynchronous ? await function.InvokeAsync(arguments, new(0, 1, 1, 1), context)
++                : function.Invoke(arguments, new(0, 1, 1, 1), context);
++            if (name == "ordinary") Assert.Equal(new BigInteger(3), result);
++            else if (name == "escaped") Assert.Equal(new BigInteger(5), result);
++            else if (name == "shadow")
++            {
++                Assert.True(function.TryGetMember("__type_params__", out var parameters));
++                Assert.Same(Assert.Single(Assert.IsType<PyTuple>(parameters)), result);
++            }
++            else
++            {
++                var values = Assert.IsType<PyTuple>(result);
++                Assert.Equal("T", Assert.IsType<PyTypeParameter>(values[0]).Name);
++                Assert.Equal(new BigInteger(7), values[1]);
++            }
++            Assert.Null(context.CurrentExecutableFrame);
++            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
++            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
++            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
++            owner.Dispose();
++            Assert.Equal(0, budget.ReservedBytes);
++        }
++    }
++}

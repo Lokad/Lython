@@ -1,0 +1,45 @@
+{
+  "report": {
+    "Index": 0,
+    "Lython": {
+      "Success": false,
+      "StandardOutput": "",
+      "StandardError": "",
+      "ExitCode": 1,
+      "Diagnostics": [
+        {
+          "Code": "LA1100",
+          "Message": "Type parameters cannot be rebound with nonlocal."
+        }
+      ],
+      "PeakExecutionMemoryBytes": 0,
+      "PeakProjectionMemoryBytes": 0,
+      "DeniedReservationBytes": 0,
+      "Failure": null
+    },
+    "CPython": {
+      "Success": false,
+      "StandardOutput": "",
+      "StandardError": "",
+      "ExitCode": null,
+      "Diagnostics": [],
+      "PeakExecutionMemoryBytes": null,
+      "PeakProjectionMemoryBytes": null,
+      "DeniedReservationBytes": null,
+      "Failure": {
+        "ExceptionType": "SyntaxError",
+        "Message": "nonlocal binding not allowed for type parameter 'T' (<string>, line 4)",
+        "Span": null,
+        "Frames": null
+      }
+    },
+    "Matches": false,
+    "Note": "subset-rejection: Lython statically rejected this snippet; CPython ran it.",
+    "Compared": true,
+    "Options": {
+      "MaxMemoryBytes": null,
+      "Async": false
+    }
+  },
+  "interpretation": "Both reject nonlocal type-parameter rebinding. Lython reportsLA1100, CPython SyntaxError. The tool reports different diagnostic forms as a mismatch; this is not accepted syntax or a runtime regression."
+}

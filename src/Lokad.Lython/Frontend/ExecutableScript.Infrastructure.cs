@@ -388,7 +388,7 @@ internal sealed partial class ExecutableScript
                 throw new GeneratorLoweringException("Suspension in nested definition decorators, defaults or annotations is not supported.", functionDefinition.Span);
             var codeObject = functionDefinition.GeneratorCode ?? CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
                 functionDefinition.Parameters, functionDefinition.Body,
-                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax));
+                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax), functionDefinition.TypeParameters);
 
             Dictionary<string, LoweredExpression>? defaultValues = null;
             for (var index = 0; index < functionDefinition.Parameters.Count; index++)
@@ -407,14 +407,19 @@ internal sealed partial class ExecutableScript
 
         private ExecutableCodeObject? CompileFunctionCode(string name,
             IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body,
-            ScopeDirectiveFacts scopeFacts)
+            ScopeDirectiveFacts scopeFacts, IReadOnlyList<LoweredTypeParameter>? typeParameters = null)
         {
             try
             {
                 // Forward transitive free names as before. Comprehension names
                 // are inner bindings, even at module scope or when the caller
                 // declares a same-named global; add them after that exclusion.
-                return new Builder(parameters, ChildClosureCandidates(), scopeFacts)
+                var candidates = ChildClosureCandidates();
+                // Type parameters shadow enclosing locals in the body. Defaults
+                // still evaluate in the defining context before TypeScope exists.
+                if (candidates is not null && typeParameters is not null)
+                    candidates = candidates.Except(typeParameters.Select(static parameter => parameter.Syntax.Name), StringComparer.Ordinal);
+                return new Builder(parameters, candidates, scopeFacts)
                     .CompileCodeObject(name, body);
             }
             catch (ExecutableLoweringFallbackException)

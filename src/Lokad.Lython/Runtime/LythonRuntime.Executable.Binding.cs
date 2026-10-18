@@ -346,8 +346,8 @@ internal sealed partial class LythonRuntime
     {
         var hasAnnotations = functionBinding.Function.ReturnAnnotation is not null ||
             functionBinding.Function.Parameters.Any(p => p.Annotation is not null);
-        if (functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context) ||
-            hasAnnotations && (functionBinding.CodeObject is null || functionBinding.Function.GeneratorCode is not null))
+        var needsTypeMetadata = hasAnnotations || functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context);
+        if (needsTypeMetadata && (functionBinding.CodeObject is null || functionBinding.Function.GeneratorCode is not null))
         {
             if (asynchronous) await ExecuteLoweredFunctionDefinitionAsync(functionBinding.Function, context).ConfigureAwait(false);
             else ExecuteLoweredFunctionDefinition(functionBinding.Function, context);
@@ -370,38 +370,39 @@ internal sealed partial class LythonRuntime
                 ? await BuildDefaultArgumentMapAsync(functionBinding.Function.Parameters,
                     expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false)
                 : MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context);
+            var typeScope = CreateTypeScope(functionBinding.Function.TypeParameters, context, functionBinding.Function.Span);
+            var closure = typeScope.Closure.FunctionClosureContext;
             var function = functionBinding.Function.GeneratorCode is not null
-                ? (object)new PyGeneratorFunction(functionBinding.Function, context.FunctionClosureContext,
+                ? (object)new PyGeneratorFunction(functionBinding.Function, closure,
                     defaults, closureCells)
                 : functionBinding.CodeObject is null
                 ? new PyFunction(
                     functionBinding.Function.Syntax.DeclaredName,
                     functionBinding.Function.Parameters,
                     functionBinding.Function.Body,
-                    context.FunctionClosureContext,
+                    closure,
                     defaults,
                     ScopeDirectiveFactsCollector.ForFunction(functionBinding.Function.Syntax))
                 : new PyExecutableFunction(
                     functionBinding.Function.Syntax.DeclaredName,
                     functionBinding.Function.Parameters,
                     functionBinding.CodeObject,
-                    context.FunctionClosureContext,
+                    closure,
                     closureCells,
                     defaults,
                     functionBinding.CodeObject.ScopeFacts);
             ChargeFunctionValue(context, functionBinding.Function.Span);
             ChargeClosureRetention(
-                context.FunctionClosureContext,
+                closure,
                 context.MemoryGovernor,
                 functionBinding.Function.Span);
             if (function is PyFunctionBase defined)
             {
                 PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Function.Body, context, functionBinding.Function.Span);
-                if (hasAnnotations)
+                if (needsTypeMetadata)
                 {
                     // Metadata does not require interpreting an otherwise compiled body.
                     // Keep its existing scope, evaluation order and ownership before publication.
-                    var typeScope = CreateTypeScope(null, context, functionBinding.Function.Span);
                     await AttachTypeMetadataAsync(defined, functionBinding.Function, typeScope, context, asynchronous).ConfigureAwait(false);
                 }
             }

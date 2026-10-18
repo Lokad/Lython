@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 executable generic functions](results/2026-10-18-generic-functions/README.md)
+remove unconditional definition/body fallbacks while retaining existing TypeScope,
+captured cells and metadata order. Shadowing is pinned before edits. Source/lifetime
+checks precede one short native/public-fresh pair: about 55 KB less per 128-call job,
+stable ordinary allocation controls and unqualified elapsed observations. All 423
+focused checks and 58 complete jobs pass. Generic steps change 2,204→2,460, explicitly
+documented; recursion/work/cancellation/admission remain bounded. Existing class/
+generator/contextual routes remain. No new closure/owner machinery or retiming.
+
 The [2026-10-18 async any/all cursor change](results/2026-10-18-any-all-cursor/README.md)
 consumes the existing cursor without two outer wrappers or per-pull forwarding.
 One pair saves 96 bytes per affected native call; all 68 exact behavior/fuel/error/

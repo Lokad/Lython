@@ -45,9 +45,6 @@ internal sealed partial class ExecutableScript
                 case LoweredClassDefinitionStatement classDefinition when _generator &&
                     StatementSyntaxTraversal.EnumerateDirectExpressions(classDefinition.Syntax).Any(GeneratorSyntaxFacts.ContainsYield):
                     return CompileSuspendingClass(classDefinition, currentBlock);
-                case LoweredFunctionDefinitionStatement functionDefinition when functionDefinition.TypeParameters is not null:
-                    AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(functionDefinition), functionDefinition.Span));
-                    return currentBlock;
                 case LoweredFunctionDefinitionStatement functionDefinition:
                     AddInstruction(currentBlock, ExecutableInstruction.DefineFunction(InternFunction(functionDefinition), functionDefinition.Span));
                     return currentBlock;

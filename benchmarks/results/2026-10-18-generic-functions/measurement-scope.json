@@ -1,0 +1,17 @@
+{
+  "afterSourceAndLifetimeGate": true,
+  "sourceGateWhiteCases": 39,
+  "sourceGatePublicTypingCases": 143,
+  "newPublicLifetimeCases": 19,
+  "ownerCases": 90,
+  "candidateSourceSha256": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "e6db1ee0bf6746d380393ae42fb8bbee88ed8a1d3dc004e8fb17498a5edfad76",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "2910e5d8f46f146906cecf49fd6b0a8affd369b3900151155cff2275fc0e897b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "5843b7596159d86eb45604195ee9e5d0dde53381e2780e71c1d8e6460651a4f1"
+  },
+  "workload": "def add[T](value:int=0)->int:return value+1;128 actual calls in a summing loop. Non-generic identical body is control. Result8256.",
+  "capture": "One before/after pair;2warmups/8samples/8invocations per route.4 native warm routes (generic/control x sync/async),4 public fresh compile/run routes. Native setup/context creation outside measured region; all native ValueTasks completed. Fresh public compile/result includes compilation admission, run/scheduling/projection and disposal in a warmed process; no startup/host I/O.",
+  "gate": "Generic native allocation arrays strictly improve; ordinary native allocation controls identical. All results and cleanup/frame/owner assertions pass. Native execution steps may change by strategy and are reported. Elapsed sample medians/IQR are descriptive, unqualified; report latency regressions/uncertainty, no repeated capture or timing gate adjustment.",
+  "stopping": "Do not tune after capture. Reassess on semantic/owner/source-route or native allocation gate failure. No long lane/VM/framework/external CPython timing claim.",
+  "diagnosticSha256": "d161e0a3664b373c3659d1ef95271260785e9bfa74646d75bf18bcca9f3a0891"
+}

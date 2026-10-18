@@ -1,0 +1,16 @@
+{
+  "head": "99eb28bf457d835dc31ec1b6de02c72f4f2d3054",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "c573a0a4aed9397a207d517d0abe821ee5f125c714b1442446af796ae392832e",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "e54690795edb4d6d465521a2f74969e8f6c7dd990f806195b82ecf44ee8ad8ac",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "bb9d049209518cf1279f075d0ddf8aa7c5a499e40dfa9c2c81a9162c1269a2c3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ModernTyping.cs": "20e1d6839563e5cabafeb0857cb96513d5a95ead8eb6e0d3f8fcb9b8c2cf9eab",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "dee4f7291d8dfd964beacfeeaf9c7212319477cf1d1a7860f8a8cc0f36c5aad3"
+  },
+  "hypothesis": "Compile ordinary generic function definitions through existing DefineFunction/InternFunction; retain CreateTypeScope after defaults, attach metadata and bind compiled functions to its existing closure. Capture enclosing executable cells from original context first. Existing LoadName resolves type-parameter namespaces; no new cell type or lookup framework.",
+  "removal": "Delete unconditional generic statement-fallback emission and unconditional generic/type-scope lowered-definition route only where an existing ordinary CodeObject suffices. Retain generator/contextual fallback consumers.",
+  "acceptance": "Pin6 CPython cases under both APIs before edits. Source-level: generic ordinary function body and nested ordinary helper stay executable, metadata/lazy annotations and enclosing live cells stay correct. Existing modern typing/delayed-host/fuel/stack/owner/refusal tests and58 complete jobs. Only after source/correctness gate, one short native comparison with unchanged non-generic controls; no retiming or predicted speedup.",
+  "stopping": "Only normal generic functions with executable bodies, using existing TypeScope and cell capture. No class-layout/generator/alias redesign, new lookup/cell protocol or frontend representation inventory. Stop/reassess if these existing mechanisms cannot preserve live captures. This is a hypothesis; deleting branches alone is invalid.",
+  "runtimeEdits": false,
+  "measurements": false
+}

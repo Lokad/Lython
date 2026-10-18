@@ -31,6 +31,16 @@ CLR reference lifetimes, not allowance reclamation: the same conservative
 compilation estimate remains charged until the compiled script is disposed.
 No runtime forced GC, weak tracking or per-object refund is involved.
 
+Eligible generic functions keep executable bodies while retaining their existing
+annotation and closure scopes. Enclosing live captures still use the existing
+cells; type-parameter names resolve in their annotation namespace. Scope, default
+and metadata admission remain, with conservative namespace retention. Executable
+metadata uses the same source-sized compilation estimate and compiled owner.
+Calls admit their compiled local-slot capacity at entry, like other executable
+functions. They can reject earlier than a formerly lowered body that grew its
+name dictionary incrementally.
+Class and contextual generator fallbacks retain their existing lifetimes.
+
 Runs use that borrowed budget unless `LythonRunOptions.MemoryBudget` supplies
 another. One-shot `LythonEngine.Run`/`RunAsync` disposes its temporary compilation
 after the invocation and its cleanup finish.

@@ -125,3 +125,5 @@ benchmarks/results/2026-10-18-default-map/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-default-map/candidate.patch -text -whitespace
 benchmarks/results/2026-10-18-any-all-cursor/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-18-any-all-cursor/candidate.patch -text -whitespace
+benchmarks/results/2026-10-18-generic-functions/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-18-generic-functions/candidate.patch -text -whitespace
