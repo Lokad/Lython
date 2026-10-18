@@ -7,8 +7,6 @@ internal sealed partial class LythonRuntime
     internal static partial class StringMembers
     {
         private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> StripWhitespaceOperation = StripWhitespace;
-        private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> SplitWhitespaceOperation =
-            static (receiver, span, context) => PyStringOps.SplitWhitespace(receiver, context.MemoryGovernor, span);
         private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> LowerOperation = Lower;
         private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> UpperOperation = Upper;
 
@@ -16,7 +14,6 @@ internal sealed partial class LythonRuntime
             => name switch
             {
                 "strip" => StripWhitespaceOperation,
-                "split" => SplitWhitespaceOperation,
                 "lower" => LowerOperation,
                 "upper" => UpperOperation,
                 "islower" => static (receiver, _, _) => PyStringOps.IsLower(receiver),

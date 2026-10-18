@@ -1,0 +1,297 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+index 1485557c..67b86704 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+@@ -322,7 +322,8 @@ internal sealed partial class ExecutableScript
+                     "write" => call.Arguments.Count == 1,
+                     "writerow" => call.Arguments.Count == 1,
+                     "replace" => call.Arguments.Count is 2 or 3,
+-                    "strip" or "split" or "lower" or "upper" or
++                    "split" => call.Arguments.Count is 0 or 1,
++                    "strip" or "lower" or "upper" or
+                     "islower" or "isupper" or "istitle" or "isalpha" or "isdigit" or "isalnum" or
+                     "isascii" or "isdecimal" or "isidentifier" or "isnumeric" or "isprintable" or "isspace"
+                         => call.Arguments.Count == 0,
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+index 9bef9f60..bb7ba849 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+@@ -268,6 +268,19 @@ internal sealed partial class LythonRuntime
+         finally { context.LeaveInterpreterFrame(); }
+     }
+ 
++    private static object InvokeStringSplit(PyString receiver, object? separator, LythonSourceSpan span, ExecutionContext context)
++    {
++        context.EnterInterpreterFrame(span);
++        try
++        {
++            context.CheckExecution(span);
++            context.CheckExecution(span);
++            return StringMembers.Split(receiver, separator, null, span, context);
++        }
++        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
++        finally { context.LeaveInterpreterFrame(); }
++    }
++
+     private static object InvokeStringReplace(PyString receiver, object oldValue, object newValue, object? countValue, LythonSourceSpan span, ExecutionContext context)
+     {
+         context.EnterInterpreterFrame(span);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 672db0db..267b12f9 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -16,6 +16,7 @@ internal sealed partial class LythonRuntime
+     private static readonly object DirectStringStartsWith = new();
+     private static readonly object DirectStringEndsWith = new();
+     private static readonly object DirectStringReplace = new();
++    private static readonly object DirectStringSplit = new();
+ 
+     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
+     {
+@@ -576,6 +577,12 @@ internal sealed partial class LythonRuntime
+             {
+                 result = InvokeSingleInput(stringReceiver, stringOperation, callSite.CallSpan, context);
+             }
++            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringSplit))
++            {
++                result = InvokeStringSplit((PyString)stack[start],
++                    callSite.ArgumentCount == 1 ? stack[start + callSite.ArgumentOffset] : null,
++                    callSite.CallSpan, context);
++            }
+             else if (callSite.HasReceiver && (ReferenceEquals(target, DirectStringStartsWith) || ReferenceEquals(target, DirectStringEndsWith)))
+             {
+                 result = InvokeStringAffixFromOperands((PyString)stack[start],
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index d764e871..f1d6da4c 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -89,6 +89,12 @@ internal sealed partial class LythonRuntime
+                         {
+                             result = InvokeSingleInput(stringReceiver, stringOperation, call.CallSpan, _context);
+                         }
++                        else if (call.HasReceiver && ReferenceEquals(callable, DirectStringSplit))
++                        {
++                            result = InvokeStringSplit((Text.PyString)_stack[start],
++                                call.ArgumentCount == 1 ? _stack[start + call.ArgumentOffset] : null,
++                                call.CallSpan, _context);
++                        }
+                         else if (call.HasReceiver && (ReferenceEquals(callable, DirectStringStartsWith) || ReferenceEquals(callable, DirectStringEndsWith)))
+                         {
+                             var arguments = _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index a7934af4..276e866c 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -29,6 +29,7 @@ internal sealed partial class LythonRuntime
+                 Text.PyString when name == "startswith" => DirectStringStartsWith,
+                 Text.PyString when name == "endswith" => DirectStringEndsWith,
+                 Text.PyString when name == "replace" => DirectStringReplace,
++                Text.PyString when name == "split" => DirectStringSplit,
+                 Text.PyString => StringMembers.GetNoArgumentsOperation(name),
+                 _ => null
+             };
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs
+index f9559d92..44fd47c4 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs
+@@ -7,8 +7,6 @@ internal sealed partial class LythonRuntime
+     internal static partial class StringMembers
+     {
+         private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> StripWhitespaceOperation = StripWhitespace;
+-        private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> SplitWhitespaceOperation =
+-            static (receiver, span, context) => PyStringOps.SplitWhitespace(receiver, context.MemoryGovernor, span);
+         private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> LowerOperation = Lower;
+         private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> UpperOperation = Upper;
+ 
+@@ -16,7 +14,6 @@ internal sealed partial class LythonRuntime
+             => name switch
+             {
+                 "strip" => StripWhitespaceOperation,
+-                "split" => SplitWhitespaceOperation,
+                 "lower" => LowerOperation,
+                 "upper" => UpperOperation,
+                 "islower" => static (receiver, _, _) => PyStringOps.IsLower(receiver),
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs
+index 6e3dcd23..1adb2175 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs
+@@ -9,6 +9,32 @@ internal sealed partial class LythonRuntime
+         internal static PyString StripWhitespace(PyString text, LythonSourceSpan span, ExecutionContext context)
+             => OwnMethodResult(PyStringOps.Strip(text), text, context.MemoryGovernor, span);
+ 
++        internal static PyList Split(PyString text, object? separatorArgument, object? maxSplitArgument,
++            LythonSourceSpan span, ExecutionContext context)
++        {
++            // Null is internal omission; Python None selects whitespace splitting.
++            if (separatorArgument is null or PyNone)
++            {
++                var maxSplit = maxSplitArgument is null ? -1
++                    : ParseStringOptionalInt(maxSplitArgument, "maxsplit", "str.split([sep[, maxsplit]])", span, context);
++                return PyStringOps.SplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
++            }
++
++            if (!PyStringOps.TryAsString(separatorArgument, out var separator))
++                throw new LythonRuntimeException("TypeError", "must be str or None, not " + RuntimeErrors.OperandTypeName(separatorArgument), span);
++
++            var count = maxSplitArgument is null ? -1
++                : ParseStringOptionalInt(maxSplitArgument, "maxsplit", "str.split([sep[, maxsplit]])", span, context);
++            try
++            {
++                return PyStringOps.Split(text, separator, count, context.MemoryGovernor, span);
++            }
++            catch (InvalidOperationException ex)
++            {
++                throw new LythonRuntimeException("ValueError", ex.Message, span);
++            }
++        }
++
+         private sealed class StringSegmentationMemberProvider : IStringMemberProvider
+         {
+             // N17: hot fixed signatures hoisted per family.
+@@ -28,37 +54,13 @@ internal sealed partial class LythonRuntime
+                 {
+                     "split" => BoundCallable.Create((arguments, span, context) =>
+                     {
+-                        if (arguments.Length == 0)
+-                        {
+-                            return PyStringOps.SplitWhitespace(text, context.MemoryGovernor, span);
+-                        }
+-
+-                        int maxSplit;
+-                        if (arguments[0] is PyNone)
+-                        {
+-                            maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span, context) : -1;
+-                            return PyStringOps.SplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
+-                        }
+-
+                         if (arguments.Length > 2)
+                         {
+                             throw new LythonRuntimeException("TypeError", "str.split([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.", span);
+                         }
+ 
+-                        if (!PyStringOps.TryAsString(arguments[0], out var separator))
+-                        {
+-                            throw new LythonRuntimeException("TypeError", "must be str or None, not " + RuntimeErrors.OperandTypeName(arguments[0]), span);
+-                        }
+-
+-                        maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span, context) : -1;
+-                        try
+-                        {
+-                            return PyStringOps.Split(text, separator, maxSplit, context.MemoryGovernor, span);
+-                        }
+-                        catch (InvalidOperationException ex)
+-                        {
+-                            throw new LythonRuntimeException("ValueError", ex.Message, span);
+-                        }
++                        return Split(text, arguments.Length >= 1 ? arguments[0] : null,
++                            arguments.Length == 2 ? arguments[1] : null, span, context);
+                     }, StrSplitSignature),
+                     "rsplit" => BoundCallable.Create((arguments, span, context) =>
+                     {
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/DirectStringSplitExecutionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/DirectStringSplitExecutionTests.cs
+index 2e034300..b93646c9 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/DirectStringSplitExecutionTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/DirectStringSplitExecutionTests.cs
+@@ -14,6 +14,14 @@ public sealed class DirectStringSplitExecutionTests
+         { "custom-receiver", "class Text:\n def split(self):return ['custom']\nprint(Text().split())", "['custom']\n" },
+         { "expanded", "print(' a b '.split(*[],**{}))", "['a', 'b']\n" },
+         { "receiver-once", "events=[]\ndef text():\n events.append('receiver')\n return ' a b '\nprint(text().split(),events)", "['a', 'b'] ['receiver']\n" },
++        { "unicode-separator", "print('café😀tail😀'.split('😀'),'a<>b<><>c'.split('<>'))", "['café', 'tail', ''] ['a', 'b', '', 'c']\n" },
++        { "explicit-none", "print(' a\\tb café '.split(None),'word'.split(None),''.split(','))", "['a', 'b', 'café'] ['word'] ['']\n" },
++        { "separator-alias", "text='a,b'\na=text.split(',')\nb=text.split(',')\na.append('c')\nprint(a,b,text)", "['a', 'b', 'c'] ['a', 'b'] a,b\n" },
++        { "separator-effects", "events=[]\ndef text():\n events.append('receiver')\n return 'a,b'\ndef sep():\n events.append('separator')\n return ','\nprint(text().split(sep()),events)", "['a', 'b'] ['receiver', 'separator']\n" },
++        { "receiver-rebinding", "text='a,b'\ndef sep():\n global text\n text='changed'\n return ','\nprint(text.split(sep()),text)", "['a', 'b'] changed\n" },
++        { "dynamic-separator", "class Text:\n def split(self,sep):return ['custom',sep]\nprint(Text().split(','))", "['custom', ',']\n" },
++        { "exposed-and-expanded-separator", "method='a,b'.split\nprint(method(','),'a,b'.split(*[',']),'a,b'.split(**{'sep':','}))", "['a', 'b'] ['a', 'b'] ['a', 'b']\n" },
++        { "separator-errors", "def run(sep):\n try:\n  print('a,b'.split(sep))\n except (TypeError,ValueError) as error:\n  print(type(error).__name__,str(error))\nrun('')\nrun(1)", "ValueError empty separator\nTypeError must be str or None, not int\n" },
+     };
+ 
+     [Theory]
+diff --git a/tests/Lokad.Lython.Tests/DirectStringSplitTests.cs b/tests/Lokad.Lython.Tests/DirectStringSplitTests.cs
+index fc56bcb5..9797dc6e 100644
+--- a/tests/Lokad.Lython.Tests/DirectStringSplitTests.cs
++++ b/tests/Lokad.Lython.Tests/DirectStringSplitTests.cs
+@@ -11,16 +11,18 @@ namespace Lokad.Lython.Tests;
+ public sealed class DirectStringSplitTests
+ {
+     [Theory]
+-    [InlineData(false)]
+-    [InlineData(true)]
+-    public async Task DistinctReceiversProduceOwnedListsWithoutBoundMethodCaches(bool asynchronous)
++    [InlineData(false, false)]
++    [InlineData(true, false)]
++    [InlineData(false, true)]
++    [InlineData(true, true)]
++    public async Task DistinctReceiversProduceOwnedListsWithoutBoundMethodCaches(bool asynchronous, bool separator)
+     {
+         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+         using var owner = budget.CreateScope();
+         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+-        var code = Compile("for text in [left,right]:\n result=text.split()\n record()");
+-        context.Variables["left"] = PyString.FromString("alpha beta", context.MemoryGovernor, null);
+-        context.Variables["right"] = PyString.FromString(" café\u00a0😀 ", context.MemoryGovernor, null);
++        var code = Compile("for text in [left,right]:\n result=text.split(" + (separator ? "','" : "") + ")\n record()");
++        context.Variables["left"] = PyString.FromString(separator ? "alpha,beta" : "alpha beta", context.MemoryGovernor, null);
++        context.Variables["right"] = PyString.FromString(separator ? "café,😀" : " café\u00a0😀 ", context.MemoryGovernor, null);
+         var record = new Record();
+         context.Variables["record"] = record;
+         _ = await Execute(code, context, asynchronous);
+@@ -65,9 +67,11 @@ public sealed class DirectStringSplitTests
+     }
+ 
+     [Theory]
+-    [InlineData(false)]
+-    [InlineData(true)]
+-    public async Task ResultAdmissionRefusesWithoutChangingTheReceiver(bool asynchronous)
++    [InlineData(false, false)]
++    [InlineData(true, false)]
++    [InlineData(false, true)]
++    [InlineData(true, true)]
++    public async Task ResultAdmissionRefusesWithoutChangingTheReceiver(bool asynchronous, bool separator)
+     {
+         const long limit = 65536;
+         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+@@ -79,7 +83,7 @@ public sealed class DirectStringSplitTests
+         {
+             context.Variables["fill"] = pad;
+             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+-                await Execute(Compile("text=fill()\nreturn text.split()"), context, asynchronous));
++                await Execute(Compile("text=fill()\nreturn text.split(" + (separator ? "' '" : "") + ")"), context, asynchronous));
+             Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+             Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
+             Assert.Equal(2, failure.Span?.Line);
+@@ -95,10 +99,16 @@ public sealed class DirectStringSplitTests
+     }
+ 
+     [Theory]
+-    [InlineData("success")]
+-    [InlineData("cancel")]
+-    [InlineData("admission")]
+-    public async Task SuspendedReceiverIsNotReplayedAndKeepsItsOwnerUntilCompletion(string route)
++    [InlineData("success", false, false)]
++    [InlineData("cancel", false, false)]
++    [InlineData("admission", false, false)]
++    [InlineData("success", true, false)]
++    [InlineData("cancel", true, false)]
++    [InlineData("admission", true, false)]
++    [InlineData("success", true, true)]
++    [InlineData("cancel", true, true)]
++    [InlineData("admission", true, true)]
++    public async Task SuspendedReceiverIsNotReplayedAndKeepsItsOwnerUntilCompletion(string route, bool separator, bool argument)
+     {
+         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+         using var owner = budget.CreateScope();
+@@ -106,9 +116,11 @@ public sealed class DirectStringSplitTests
+         var context = new Context(new MockLythonHost(), new LythonRunOptions
+         { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+         var text = PyString.FromString("alpha beta", context.MemoryGovernor, null);
+-        var receiver = new Receiver(text);
++        var receiver = new Receiver(argument ? PyString.FromString(" ", context.MemoryGovernor, null) : text);
+         context.Variables["receive"] = receiver;
+-        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(Compile("return receive().split()"), context).AsTask();
++        context.Variables["text"] = text;
++        var source = argument ? "return text.split(receive())" : "return receive().split(" + (separator ? "' '" : "") + ")";
++        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(Compile(source), context).AsTask();
+         try
+         {
+             await receiver.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));

@@ -268,6 +268,19 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    private static object InvokeStringSplit(PyString receiver, object? separator, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            context.CheckExecution(span);
+            return StringMembers.Split(receiver, separator, null, span, context);
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private static object InvokeStringReplace(PyString receiver, object oldValue, object newValue, object? countValue, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);

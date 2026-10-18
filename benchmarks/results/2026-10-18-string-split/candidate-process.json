@@ -1,0 +1,14 @@
+{
+  "source": "split",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "7BE3422B3FE8DF093879B58B86E0CF6778B7DF3BB991C8D115EF4077D0E0D4CE",
+  "filter": "Category!=Stress&FullyQualifiedName~StringSplitDiagnostic",
+  "pid": 56288,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1364,
+  "stdoutSha256": "AE681A80A7BF17D6A648089726C8AF2A3ED37AB4BE034A8404A523E34A791714",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

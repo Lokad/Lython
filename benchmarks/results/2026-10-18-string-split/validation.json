@@ -1,0 +1,226 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "217b388064fa644253843208ad90176f1e7cc977",
+  "candidate": "Frozen seven-file native split/validation patch on baseline",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": {
+      "before": "08aa9cd77b0bc571a00db3712d1ba73099ddacb41fe961b373f343593a0d4b25",
+      "after": "8619e42f9741fcdd3c86e24b736e4a41cface0c9a84e1f4112c12b2d2b976186"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": {
+      "before": "e507676270989adb1b6528352954072c069b6f72813a1ebe5df05b80e15afc6f",
+      "after": "3e4e16df145ac0f8b8dd22e8fc6329c3dba74333694c25ca060c8af9c729e070"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": {
+      "before": "fe05d01e70ccd3d3037db17268744349eca9be6431b3a13d3b7de2842a2e28dd",
+      "after": "51010373ce54fcaf8fe11a4bdca42b8e31a20a6a51f9e1415133bfe4fc5f0a00"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": {
+      "before": "3ba1370691c3a8af4dc9194903644ca7b5c23bfed71f187893f54e421b1f9424",
+      "after": "a7c0d55124299ce2a1b4a87538de042984b91d0d740663d963ebc51f97143941"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": {
+      "before": "c496dbf844a3744b51912b6400ce856567329d8733d475d84ce7eff30a42f950",
+      "after": "e74c0c843834e990ea028b88d1f44faae567e6d31e9ac1d7d733420a3d0cb0b8"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs": {
+      "before": "ff92f131674aed24a7aa118be8b20f8d089c3a290b42d40e74aef5e64c337411",
+      "after": "4372a6c269ea3227965676c12c2f0876b347211e32e8737a2076a3a7f47f4180"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Segmentation.cs": {
+      "before": "b3321faec389690d8dbcb259b41efbd387f42c4fc324ec76d8ea34d0e047c298",
+      "after": "ad4fbdb63910cfd18b5da8bf4e7fad7e0c7febd0ef2953f0285e9da86b857e4f"
+    }
+  },
+  "sourceProof": "One split family only: existing UTF-8 split/storage bodies, maxsplit parsing, general binder and ownership APIs unchanged. Shared separator validation replaces the bound inline body; direct zero/one-argument operands replace the split-only delegate/general packaging.",
+  "finalFocusedPassed": 1020,
+  "groups": {
+    "final-white": {
+      "passed": 149,
+      "process": {
+        "source": "split",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "2B88AF1D22FAF1E840FA37C8B3B428EB67994FB0478EE704294ACD8222B35BB4",
+        "filter": "Category!=Stress&(FullyQualifiedName~DirectStringSplitTests|FullyQualifiedName~DirectStringStartsWithTests|FullyQualifiedName~DirectStringStripTests|FullyQualifiedName~DirectStringLowerTests|FullyQualifiedName~DirectStringUpperTests|FullyQualifiedName~StringReplaceBoundaryTests|FullyQualifiedName~NativeScalarDispatchBoundaryTests|FullyQualifiedName~StringProtocolBoundaryTests|FullyQualifiedName~LoweringArchitectureSubsystemTests|FullyQualifiedName~ManagedStackGuard|FullyQualifiedName~ExecutableStackAdmission)",
+        "pid": 9716,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1505,
+        "stdoutSha256": "40CAD9670543618893DB9B8B9A11CB629E71919EB764C590301243509F9198BD",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "d66966a7229b8ece20b6ae3811dd8dc6086b4b05e12dc3c06ee69d07f1368847"
+    },
+    "final-semantics": {
+      "passed": 720,
+      "process": {
+        "source": "split",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "2680C31EB194DC3FA4DD554E98FAF573C7650B07F3B795DF87908A9D77738D74",
+        "filter": "Category!=Stress&(FullyQualifiedName~DirectStringSplitExecutionTests|FullyQualifiedName~DirectStringLowerExecutionTests|FullyQualifiedName~DirectStringUpperExecutionTests|FullyQualifiedName~StringMethodCompatibilityTests|FullyQualifiedName~StringValidationScenarioTests|FullyQualifiedName~ExpandedStringArgumentTests|FullyQualifiedName~BuiltinValidationScenarioTests|FullyQualifiedName~SplitLifetimeScenarioTests)",
+        "pid": 59560,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3056,
+        "stdoutSha256": "1FB7046DBAA0B591D2A36FBA0A54A931E6F850AF51FB5209102C0F46D1EC84D2",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "a20525581a76f20efb282cf5fb7d1e823847ab2c65befdba08430c6b779442a2"
+    },
+    "final-owners": {
+      "passed": 89,
+      "process": {
+        "source": "split",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "2680C31EB194DC3FA4DD554E98FAF573C7650B07F3B795DF87908A9D77738D74",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 61332,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2573,
+        "stdoutSha256": "1F32B4F36A0D7ADB7CAD7AD6385C35E535A0CD8278F73C6B9D8B4229DEA122B0",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "6d752a8dd9225a901ab3ba888ecd6526b39d5da64d4908dc3e1f695b3253bbb0"
+    },
+    "final-goldens": {
+      "passed": 62,
+      "process": {
+        "source": "split",
+        "production": "final",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "2680C31EB194DC3FA4DD554E98FAF573C7650B07F3B795DF87908A9D77738D74",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 14112,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 9271,
+        "stdoutSha256": "7EB97B06589F71A4A047AD7110A25EAD1CCBF0C0BFE274D313D72D5C2C782C87",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "6988373e0dd6baebfbdcb63eeb489ca347c327edf9a75c72236b740a64519cbb"
+    }
+  },
+  "completeJobs": 58,
+  "exactWorkRecords": 88,
+  "comparison": {
+    "accepted": true,
+    "allocation": [
+      {
+        "asynchronous": false,
+        "route": "exposed",
+        "before": 121352.0,
+        "after": 121352.0,
+        "savedPerCall": 0.0,
+        "gatePassed": true
+      },
+      {
+        "asynchronous": false,
+        "route": "none",
+        "before": 125440.0,
+        "after": 91648.0,
+        "savedPerCall": 264.0,
+        "gatePassed": true
+      },
+      {
+        "asynchronous": false,
+        "route": "omitted",
+        "before": 91648.0,
+        "after": 91648.0,
+        "savedPerCall": 0.0,
+        "gatePassed": true
+      },
+      {
+        "asynchronous": false,
+        "route": "separator",
+        "before": 125440.0,
+        "after": 91648.0,
+        "savedPerCall": 264.0,
+        "gatePassed": true
+      },
+      {
+        "asynchronous": true,
+        "route": "exposed",
+        "before": 121328.0,
+        "after": 121328.0,
+        "savedPerCall": 0.0,
+        "gatePassed": true
+      },
+      {
+        "asynchronous": true,
+        "route": "none",
+        "before": 121320.0,
+        "after": 91624.0,
+        "savedPerCall": 232.0,
+        "gatePassed": true
+      },
+      {
+        "asynchronous": true,
+        "route": "omitted",
+        "before": 91624.0,
+        "after": 91624.0,
+        "savedPerCall": 0.0,
+        "gatePassed": true
+      },
+      {
+        "asynchronous": true,
+        "route": "separator",
+        "before": 121320.0,
+        "after": 91624.0,
+        "savedPerCall": 232.0,
+        "gatePassed": true
+      }
+    ],
+    "exactWorkRecords": 88,
+    "workAndSpansIdentical": true,
+    "repeatedCapture": false,
+    "elapsedClaim": false
+  },
+  "pythonGoldens": 16,
+  "runtimeCoreAndTestCopySha256": "72d503cb959307ce9fee0f67c906c4ca94653ca864fd1a80a6a16edf181f3ce7",
+  "temporaryDiagnosticRemoved": true,
+  "regexPlanningOnly": true,
+  "noElapsedOrCPythonTimingClaim": true,
+  "fullOriginalStress": "Not repeated per edit; cached two-platform original382-case checkpoint at015ee44a remains separate.",
+  "artifacts": {
+    "baseline-diagnostic.trx": {
+      "bytes": 34316,
+      "sha256": "4207ff0ec0d70526a8083e2bcb078fe8e4672eb84e058fd19e20f0b5cf49442d"
+    },
+    "baseline-process.json": {
+      "bytes": 636,
+      "sha256": "262795542fb494bd0cfcb0466a45c3d11f3aa97420c1521a843f54ab71458301"
+    },
+    "candidate-diagnostic.trx": {
+      "bytes": 34284,
+      "sha256": "50e31cd6a19d4a3427ab3dd9ac4852b35fe3c517f0c688c98c962af429b977ef"
+    },
+    "candidate-process.json": {
+      "bytes": 637,
+      "sha256": "6fdd0c707557fa5730e98705315c7e6be2cbc3cc0e4700e4e5b197ca4779a49e"
+    },
+    "candidate.patch": {
+      "bytes": 18888,
+      "sha256": "14079f70950e3e873fb4d88b76a60ea5107da42831b35a7b11dee8d71bb82865"
+    },
+    "comparison.json": {
+      "bytes": 1592,
+      "sha256": "3763f43c89ed33b66af0d1ed9a7839402d371aeea2b25960fa19f0557d17c102"
+    },
+    "diagnostic.cs": {
+      "bytes": 5374,
+      "sha256": "e0bfcec932dd413162c324252781022e384e6dd03961af9aaa7977dd409ec4db"
+    },
+    "python-goldens.json": {
+      "bytes": 4334,
+      "sha256": "7a6524fdf589df396c0efb84b88631e99c0969f00b1d0d686b5ae44775bb7d20"
+    }
+  }
+}

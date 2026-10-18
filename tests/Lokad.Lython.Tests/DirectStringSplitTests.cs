@@ -11,16 +11,18 @@ namespace Lokad.Lython.Tests;
 public sealed class DirectStringSplitTests
 {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DistinctReceiversProduceOwnedListsWithoutBoundMethodCaches(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task DistinctReceiversProduceOwnedListsWithoutBoundMethodCaches(bool asynchronous, bool separator)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
-        var code = Compile("for text in [left,right]:\n result=text.split()\n record()");
-        context.Variables["left"] = PyString.FromString("alpha beta", context.MemoryGovernor, null);
-        context.Variables["right"] = PyString.FromString(" café\u00a0😀 ", context.MemoryGovernor, null);
+        var code = Compile("for text in [left,right]:\n result=text.split(" + (separator ? "','" : "") + ")\n record()");
+        context.Variables["left"] = PyString.FromString(separator ? "alpha,beta" : "alpha beta", context.MemoryGovernor, null);
+        context.Variables["right"] = PyString.FromString(separator ? "café,😀" : " café\u00a0😀 ", context.MemoryGovernor, null);
         var record = new Record();
         context.Variables["record"] = record;
         _ = await Execute(code, context, asynchronous);
@@ -65,9 +67,11 @@ public sealed class DirectStringSplitTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ResultAdmissionRefusesWithoutChangingTheReceiver(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task ResultAdmissionRefusesWithoutChangingTheReceiver(bool asynchronous, bool separator)
     {
         const long limit = 65536;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
@@ -79,7 +83,7 @@ public sealed class DirectStringSplitTests
         {
             context.Variables["fill"] = pad;
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-                await Execute(Compile("text=fill()\nreturn text.split()"), context, asynchronous));
+                await Execute(Compile("text=fill()\nreturn text.split(" + (separator ? "' '" : "") + ")"), context, asynchronous));
             Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
             Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
             Assert.Equal(2, failure.Span?.Line);
@@ -95,10 +99,16 @@ public sealed class DirectStringSplitTests
     }
 
     [Theory]
-    [InlineData("success")]
-    [InlineData("cancel")]
-    [InlineData("admission")]
-    public async Task SuspendedReceiverIsNotReplayedAndKeepsItsOwnerUntilCompletion(string route)
+    [InlineData("success", false, false)]
+    [InlineData("cancel", false, false)]
+    [InlineData("admission", false, false)]
+    [InlineData("success", true, false)]
+    [InlineData("cancel", true, false)]
+    [InlineData("admission", true, false)]
+    [InlineData("success", true, true)]
+    [InlineData("cancel", true, true)]
+    [InlineData("admission", true, true)]
+    public async Task SuspendedReceiverIsNotReplayedAndKeepsItsOwnerUntilCompletion(string route, bool separator, bool argument)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
@@ -106,9 +116,11 @@ public sealed class DirectStringSplitTests
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
         var text = PyString.FromString("alpha beta", context.MemoryGovernor, null);
-        var receiver = new Receiver(text);
+        var receiver = new Receiver(argument ? PyString.FromString(" ", context.MemoryGovernor, null) : text);
         context.Variables["receive"] = receiver;
-        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(Compile("return receive().split()"), context).AsTask();
+        context.Variables["text"] = text;
+        var source = argument ? "return text.split(receive())" : "return receive().split(" + (separator ? "' '" : "") + ")";
+        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(Compile(source), context).AsTask();
         try
         {
             await receiver.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));

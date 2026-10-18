@@ -89,6 +89,12 @@ internal sealed partial class LythonRuntime
                         {
                             result = InvokeSingleInput(stringReceiver, stringOperation, call.CallSpan, _context);
                         }
+                        else if (call.HasReceiver && ReferenceEquals(callable, DirectStringSplit))
+                        {
+                            result = InvokeStringSplit((Text.PyString)_stack[start],
+                                call.ArgumentCount == 1 ? _stack[start + call.ArgumentOffset] : null,
+                                call.CallSpan, _context);
+                        }
                         else if (call.HasReceiver && (ReferenceEquals(callable, DirectStringStartsWith) || ReferenceEquals(callable, DirectStringEndsWith)))
                         {
                             var arguments = _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);

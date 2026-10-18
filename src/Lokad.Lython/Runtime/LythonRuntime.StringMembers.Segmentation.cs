@@ -9,6 +9,32 @@ internal sealed partial class LythonRuntime
         internal static PyString StripWhitespace(PyString text, LythonSourceSpan span, ExecutionContext context)
             => OwnMethodResult(PyStringOps.Strip(text), text, context.MemoryGovernor, span);
 
+        internal static PyList Split(PyString text, object? separatorArgument, object? maxSplitArgument,
+            LythonSourceSpan span, ExecutionContext context)
+        {
+            // Null is internal omission; Python None selects whitespace splitting.
+            if (separatorArgument is null or PyNone)
+            {
+                var maxSplit = maxSplitArgument is null ? -1
+                    : ParseStringOptionalInt(maxSplitArgument, "maxsplit", "str.split([sep[, maxsplit]])", span, context);
+                return PyStringOps.SplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
+            }
+
+            if (!PyStringOps.TryAsString(separatorArgument, out var separator))
+                throw new LythonRuntimeException("TypeError", "must be str or None, not " + RuntimeErrors.OperandTypeName(separatorArgument), span);
+
+            var count = maxSplitArgument is null ? -1
+                : ParseStringOptionalInt(maxSplitArgument, "maxsplit", "str.split([sep[, maxsplit]])", span, context);
+            try
+            {
+                return PyStringOps.Split(text, separator, count, context.MemoryGovernor, span);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new LythonRuntimeException("ValueError", ex.Message, span);
+            }
+        }
+
         private sealed class StringSegmentationMemberProvider : IStringMemberProvider
         {
             // N17: hot fixed signatures hoisted per family.
@@ -28,37 +54,13 @@ internal sealed partial class LythonRuntime
                 {
                     "split" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        if (arguments.Length == 0)
-                        {
-                            return PyStringOps.SplitWhitespace(text, context.MemoryGovernor, span);
-                        }
-
-                        int maxSplit;
-                        if (arguments[0] is PyNone)
-                        {
-                            maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span, context) : -1;
-                            return PyStringOps.SplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
-                        }
-
                         if (arguments.Length > 2)
                         {
                             throw new LythonRuntimeException("TypeError", "str.split([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.", span);
                         }
 
-                        if (!PyStringOps.TryAsString(arguments[0], out var separator))
-                        {
-                            throw new LythonRuntimeException("TypeError", "must be str or None, not " + RuntimeErrors.OperandTypeName(arguments[0]), span);
-                        }
-
-                        maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span, context) : -1;
-                        try
-                        {
-                            return PyStringOps.Split(text, separator, maxSplit, context.MemoryGovernor, span);
-                        }
-                        catch (InvalidOperationException ex)
-                        {
-                            throw new LythonRuntimeException("ValueError", ex.Message, span);
-                        }
+                        return Split(text, arguments.Length >= 1 ? arguments[0] : null,
+                            arguments.Length == 2 ? arguments[1] : null, span, context);
                     }, StrSplitSignature),
                     "rsplit" => BoundCallable.Create((arguments, span, context) =>
                     {

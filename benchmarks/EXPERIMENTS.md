@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 native separator split change](results/2026-10-18-string-split/README.md)
+removes ordinary split(sep) method/argument packaging and the split-only
+zero-argument delegate, sharing existing validation and UTF-8 storage code.
+Native calls save 264 bytes synchronously and 232 bytes through the async API;
+omitted/exposed controls are unchanged. All 88 exact work records, 1,020 final
+focused cases and 16 isolated CPython goldens pass. No elapsed, whole-job or
+CPython timing improvement is claimed; no repeat comparison or long lane.
+
 The [2026-10-18 complete text comparison](results/2026-10-18-text-milestone/README.md)
 closes one short capture at immutable `4acd532f`, using unchanged runtime73deb8dc
 and two identical Lython controls. Fresh compile/run takes7.354–7.451ms versus

@@ -1,0 +1,73 @@
+{
+  "accepted": true,
+  "allocation": [
+    {
+      "asynchronous": false,
+      "route": "exposed",
+      "before": 121352.0,
+      "after": 121352.0,
+      "savedPerCall": 0.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "none",
+      "before": 125440.0,
+      "after": 91648.0,
+      "savedPerCall": 264.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "omitted",
+      "before": 91648.0,
+      "after": 91648.0,
+      "savedPerCall": 0.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": false,
+      "route": "separator",
+      "before": 125440.0,
+      "after": 91648.0,
+      "savedPerCall": 264.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "exposed",
+      "before": 121328.0,
+      "after": 121328.0,
+      "savedPerCall": 0.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "none",
+      "before": 121320.0,
+      "after": 91624.0,
+      "savedPerCall": 232.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "omitted",
+      "before": 91624.0,
+      "after": 91624.0,
+      "savedPerCall": 0.0,
+      "gatePassed": true
+    },
+    {
+      "asynchronous": true,
+      "route": "separator",
+      "before": 121320.0,
+      "after": 91624.0,
+      "savedPerCall": 232.0,
+      "gatePassed": true
+    }
+  ],
+  "exactWorkRecords": 88,
+  "workAndSpansIdentical": true,
+  "repeatedCapture": false,
+  "elapsedClaim": false
+}
