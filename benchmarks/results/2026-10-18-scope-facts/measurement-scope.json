@@ -1,0 +1,16 @@
+{
+  "baseline": "241dd16717348162856c71de671e20cb569b6668",
+  "diagnosticSha256": "f8cd793eda94e8d71f306de88438786e5d455ffad91ba199fa1c7c75ae73280c",
+  "gate": "One before/after;2warmups/8samples/8invocations per route.64 class-method creations/calls versus existing ordinary executable control. Both lowered-class native allocation arrays must improve; native ordinary controls identical in allocation and steps. All results2080/frame/temp/root cleanup pass. Fresh compile/result and elapsed samples descriptive/unqualified; disclose upfront metadata retention/cost, no retiming. All native execution-step arrays, including class routes, must be identical.",
+  "boundary": "Native warm excludes context/compilation/scheduling/projection/startup; explicit1M-step allowance. Public fresh includes compilation,run,projection,disposal and assertions, default no-fuel ceiling; startup/I/O excluded.",
+  "sourceBytesPreserved": true,
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/LoweredStatement.cs": "35dd65384ca132055cd383a029f5312a28d9f90cf8e023047f6a6a35019b1ebc",
+    "src/Lokad.Lython/Frontend/LoweredScript.cs": "088c2f2ca0292b758922e2bef6f1955b2f7fc4e742fe167aa7358a6e43e2e5aa",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "2910e5d8f46f146906cecf49fd6b0a8affd369b3900151155cff2275fc0e897b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "5843b7596159d86eb45604195ee9e5d0dde53381e2780e71c1d8e6460651a4f1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "dee4f7291d8dfd964beacfeeaf9c7212319477cf1d1a7860f8a8cc0f36c5aad3"
+  },
+  "runtimeEdits": false,
+  "stopping": "Only function-definition facts metadata and named consumers. No frontend pass fusion, scope analyzer framework, class layout, lambda representation or ownership audit. Reassess before edit if mutable/preparation timing needs a different facts model."
+}

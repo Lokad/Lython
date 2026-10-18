@@ -1,0 +1,73 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+index 31017468..528f933f 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+@@ -388,7 +388,7 @@ internal sealed partial class ExecutableScript
+                 throw new GeneratorLoweringException("Suspension in nested definition decorators, defaults or annotations is not supported.", functionDefinition.Span);
+             var codeObject = functionDefinition.GeneratorCode ?? CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
+                 functionDefinition.Parameters, functionDefinition.Body,
+-                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax), functionDefinition.TypeParameters);
++                functionDefinition.ScopeFacts, functionDefinition.TypeParameters);
+ 
+             Dictionary<string, LoweredExpression>? defaultValues = null;
+             for (var index = 0; index < functionDefinition.Parameters.Count; index++)
+diff --git a/src/Lokad.Lython/Frontend/LoweredScript.cs b/src/Lokad.Lython/Frontend/LoweredScript.cs
+index 37b4c813..1ea202bd 100644
+--- a/src/Lokad.Lython/Frontend/LoweredScript.cs
++++ b/src/Lokad.Lython/Frontend/LoweredScript.cs
+@@ -56,7 +56,8 @@ internal sealed class LoweredScript
+                     parameter.Annotation is null ? null : LowerExpression(parameter.Annotation),
+                     parameter.DefaultValue is null ? null : LowerExpression(parameter.DefaultValue))).ToArray(),
+                 functionDefinition.ReturnAnnotation is null ? null : LowerExpression(functionDefinition.ReturnAnnotation),
+-                LowerStatements(functionDefinition.Body)),
++                LowerStatements(functionDefinition.Body),
++                ScopeDirectiveFactsCollector.ForFunction(functionDefinition)),
+             ClassDefinitionStatementSyntax classDefinition => new LoweredClassDefinitionStatement(
+                 classDefinition,
+                 classDefinition.Decorators.Select(LowerExpression).ToArray(),
+diff --git a/src/Lokad.Lython/Frontend/LoweredStatement.cs b/src/Lokad.Lython/Frontend/LoweredStatement.cs
+index 5a15abe6..a68b8019 100644
+--- a/src/Lokad.Lython/Frontend/LoweredStatement.cs
++++ b/src/Lokad.Lython/Frontend/LoweredStatement.cs
+@@ -47,12 +47,13 @@ internal sealed record LoweredFunctionDefinitionStatement(
+     IReadOnlyList<LoweredExpression> Decorators,
+     IReadOnlyList<LoweredFunctionParameter> Parameters,
+     LoweredExpression? ReturnAnnotation,
+-    IReadOnlyList<LoweredStatement> Body) : LoweredStatement(Syntax.Span)
++    IReadOnlyList<LoweredStatement> Body,
++    ScopeDirectiveFacts ScopeFacts) : LoweredStatement(Syntax.Span)
+ {
+     public override LoweredStatementKind Kind => LoweredStatementKind.FunctionDefinition;
+     public IReadOnlyList<LoweredTypeParameter>? TypeParameters { get; } = LoweredScript.LowerTypeParameters(Syntax.TypeParameters);
+     public ExecutableCodeObject? GeneratorCode { get; } = GeneratorSyntaxFacts.IsGenerator(Syntax.Body)
+-        ? ExecutableScript.CompileGenerator(Parameters, Body, ScopeDirectiveFactsCollector.ForFunction(Syntax)) : null;
++        ? ExecutableScript.CompileGenerator(Parameters, Body, ScopeFacts) : null;
+ }
+ 
+ internal sealed record LoweredClassDefinitionStatement(
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 2181a1c0..f7d53062 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -382,7 +382,7 @@ internal sealed partial class LythonRuntime
+                     functionBinding.Function.Body,
+                     closure,
+                     defaults,
+-                    ScopeDirectiveFactsCollector.ForFunction(functionBinding.Function.Syntax))
++                    functionBinding.Function.ScopeFacts)
+                 : new PyExecutableFunction(
+                     functionBinding.Function.Syntax.DeclaredName,
+                     functionBinding.Function.Parameters,
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
+index 5b3b3183..e4c5cb21 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
+@@ -462,7 +462,7 @@ internal sealed partial class LythonRuntime
+             functionDefinition.Body,
+             context.FunctionClosureContext,
+             defaults,
+-            ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax));
++            functionDefinition.ScopeFacts);
+         ChargeFunctionValue(context, functionDefinition.Span);
+         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, functionDefinition.Span);
+         PyFunctionBase.CaptureFunctionDocstring(function, functionDefinition.Body, context, functionDefinition.Span);

@@ -382,7 +382,7 @@ internal sealed partial class LythonRuntime
                     functionBinding.Function.Body,
                     closure,
                     defaults,
-                    ScopeDirectiveFactsCollector.ForFunction(functionBinding.Function.Syntax))
+                    functionBinding.Function.ScopeFacts)
                 : new PyExecutableFunction(
                     functionBinding.Function.Syntax.DeclaredName,
                     functionBinding.Function.Parameters,

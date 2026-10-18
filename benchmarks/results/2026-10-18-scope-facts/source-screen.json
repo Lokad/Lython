@@ -1,0 +1,17 @@
+{
+  "head": "241dd16717348162856c71de671e20cb569b6668",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/LoweredStatement.cs": "35dd65384ca132055cd383a029f5312a28d9f90cf8e023047f6a6a35019b1ebc",
+    "src/Lokad.Lython/Frontend/LoweredScript.cs": "088c2f2ca0292b758922e2bef6f1955b2f7fc4e742fe167aa7358a6e43e2e5aa",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "2910e5d8f46f146906cecf49fd6b0a8affd369b3900151155cff2275fc0e897b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "5843b7596159d86eb45604195ee9e5d0dde53381e2780e71c1d8e6460651a4f1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "dee4f7291d8dfd964beacfeeaf9c7212319477cf1d1a7860f8a8cc0f36c5aad3"
+  },
+  "change": "Carry existing immutable ScopeDirectiveFacts in each LoweredFunctionDefinitionStatement, constructed once at the single lowering site. Reuse in GeneratorCode construction, executable function-code construction and both runtime PyFunction fallback constructors.",
+  "expectedRemoval": "Remove repeated per-definition ScopeDirectiveFactsCollector.ForFunction traversals and their transient parameter arrays/hash sets. No new cache/registry/layout/lookup protocol; same existing facts type.",
+  "compatibility": "Facts must be derived after prepared lexical/class-cell binding is final. Share only syntactic facts, never defaults/cells/mutable type graphs/hosts/contexts. Facts become compiled metadata and remain charged to existing conservative compiled owner. One extra retained reference and potentially more upfront work for never-executed definitions are tradeoffs, to measure.",
+  "acceptance": "Before edit verify record transformations do not change binding names/class-cell requirements after lowering, and facts consumers never mutate sets. Reuse relevant class-cell/default/closure/generator/generic/suspending-definition regressions. Freeze one native class-method/lowered-definition construction pair with ordinary executable controls and a short fresh-compile/run control; require lower runtime allocation and unchanged behavior/owners, report compilation retention/cost.58 complete jobs; no retiming or broad qualification campaign.",
+  "stopping": "Only function-definition facts metadata and named consumers. No frontend pass fusion, scope analyzer framework, class layout, lambda representation or ownership audit. Reassess before edit if mutable/preparation timing needs a different facts model.",
+  "runtimeEdits": false,
+  "measurements": false
+}

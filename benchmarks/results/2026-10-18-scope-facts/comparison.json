@@ -1,0 +1,153 @@
+{
+  "accepted": true,
+  "comparison": [
+    {
+      "route": [
+        "native-warm",
+        true,
+        false
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 1.107275,
+        "iqrPercent": 4.243807997110008
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 1.07344375,
+        "iqrPercent": 11.574896216033693
+      },
+      "afterOverBefore": 0.9694463886568377,
+      "beforeBytes": 789400.0,
+      "afterBytes": 680856.0,
+      "beforeSteps": 1744.0,
+      "afterSteps": 1744.0
+    },
+    {
+      "route": [
+        "fresh-compile-result",
+        false,
+        true
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 0.45445625,
+        "iqrPercent": 10.193500474468115
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 0.511475,
+        "iqrPercent": 3.643873112077787
+      },
+      "afterOverBefore": 1.125465872677513
+    },
+    {
+      "route": [
+        "fresh-compile-result",
+        true,
+        false
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 1.4759,
+        "iqrPercent": 4.993351514330223
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 1.5072062499999999,
+        "iqrPercent": 12.045879586818334
+      },
+      "afterOverBefore": 1.0212116335795107
+    },
+    {
+      "route": [
+        "native-warm",
+        false,
+        true
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 0.153175,
+        "iqrPercent": 1.526032315978451
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 0.15355000000000002,
+        "iqrPercent": 3.3702377075871133
+      },
+      "afterOverBefore": 1.0024481801860619,
+      "beforeBytes": 19600.0,
+      "afterBytes": 19600.0,
+      "beforeSteps": 1243.0,
+      "afterSteps": 1243.0
+    },
+    {
+      "route": [
+        "native-warm",
+        false,
+        false
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 0.11615625,
+        "iqrPercent": 4.901802528921171
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 0.16100625000000002,
+        "iqrPercent": 47.3817010209231
+      },
+      "afterOverBefore": 1.3861178369652947,
+      "beforeBytes": 19560.0,
+      "afterBytes": 19560.0,
+      "beforeSteps": 1243.0,
+      "afterSteps": 1243.0
+    },
+    {
+      "route": [
+        "fresh-compile-result",
+        true,
+        true
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 1.652225,
+        "iqrPercent": 2.4554010500991112
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 1.58948125,
+        "iqrPercent": 6.90948697884925
+      },
+      "afterOverBefore": 0.9620246939732784
+    },
+    {
+      "route": [
+        "native-warm",
+        true,
+        true
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 1.30424375,
+        "iqrPercent": 6.738100144240686
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 1.20584375,
+        "iqrPercent": 11.966983699173312
+      },
+      "afterOverBefore": 0.9245539800363238,
+      "beforeBytes": 789400.0,
+      "afterBytes": 680856.0,
+      "beforeSteps": 1744.0,
+      "afterSteps": 1744.0
+    },
+    {
+      "route": [
+        "fresh-compile-result",
+        false,
+        false
+      ],
+      "beforeElapsed": {
+        "medianMilliseconds": 0.4359125,
+        "iqrPercent": 14.487569179594523
+      },
+      "afterElapsed": {
+        "medianMilliseconds": 0.5046125,
+        "iqrPercent": 23.897669003443227
+      },
+      "afterOverBefore": 1.15760043586729
+    }
+  ],
+  "elapsedStatus": "Inconclusive. Candidate ordinary native sync IQR47.38%; ordinary public fresh controls12.55%/15.76% slower. No elapsed improvement claim or retiming.",
+  "controlsAllocationAndStepsIdentical": true,
+  "resultsAndCleanupPassed": true,
+  "allNativeStepArraysIdentical": true
+}

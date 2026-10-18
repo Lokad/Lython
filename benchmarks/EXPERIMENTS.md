@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 reused function scope facts](results/2026-10-18-scope-facts/README.md)
+replace repeated runtime/compilation collection with the existing facts stored on
+the lowered definition. One frozen pair saves 108,544B per 64 class-method creations;
+ordinary controls and all native step arrays match. Elapsed is inconclusive,
+including 47% control IQR and 12–16% slower fresh controls; no recapture. All 423
+focused checks and 58 complete jobs pass. Upfront metadata retention is explicit;
+no new cache/analyzer/owner or architecture-only tests.
+
 The [2026-10-18 executable generic functions](results/2026-10-18-generic-functions/README.md)
 remove unconditional definition/body fallbacks while retaining existing TypeScope,
 captured cells and metadata order. Shadowing is pinned before edits. Source/lifetime

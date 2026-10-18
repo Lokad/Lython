@@ -1,0 +1,9 @@
+{
+  "preparation": "LythonFrontend.Compile invokes ImplicitSuperSyntaxFacts.Prepare before returning; LythonEngine only lowers afterward.",
+  "preparationSource": "src/Lokad.Lython/Frontend/LythonFrontend.cs:69",
+  "rewrite": "Executable.PreparedDefinitions record clone replaces decorators, default/annotation expressions and return annotation with captured operands; preserves Syntax, body and all binding names.",
+  "rewriteSource": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs:29",
+  "mutations": "ScopeDirectiveFacts exposes IReadOnlySet<string>. Bounded source search finds no mutations through GlobalNames/NonlocalNames/LocalNames; RequiresClassCell changes use new record values.",
+  "freshTradeoff": "One extra retained reference per lowered definition and earlier fact construction for never-executed definitions. Preserve conservative compiled/runtime estimates; measure native ordinary controls and fresh compilation separately.",
+  "runtimeEdits": false
+}

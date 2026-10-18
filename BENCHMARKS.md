@@ -286,6 +286,13 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [function-scope facts change](benchmarks/results/2026-10-18-scope-facts/README.md)
+at `241dd167` plus its frozen five-file patch reuses existing compiled metadata.
+A 64-class-method job allocates 789,400→680,856 bytes in both execution modes;
+ordinary allocation controls and all native step arrays match. Timing is
+inconclusive: noisy/slower controls remain visible, with no latency or CPython
+gain claim. Unused definitions retain their facts earlier.
+
 The [executable generic-function change](benchmarks/results/2026-10-18-generic-functions/README.md)
 at `99eb28bf` plus its three-file runtime/frontend patch preserves existing type
 scopes and captures. A 128-call native job allocates 92,008→37,088/37,128 bytes in

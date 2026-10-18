@@ -388,7 +388,7 @@ internal sealed partial class ExecutableScript
                 throw new GeneratorLoweringException("Suspension in nested definition decorators, defaults or annotations is not supported.", functionDefinition.Span);
             var codeObject = functionDefinition.GeneratorCode ?? CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
                 functionDefinition.Parameters, functionDefinition.Body,
-                ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax), functionDefinition.TypeParameters);
+                functionDefinition.ScopeFacts, functionDefinition.TypeParameters);
 
             Dictionary<string, LoweredExpression>? defaultValues = null;
             for (var index = 0; index < functionDefinition.Parameters.Count; index++)

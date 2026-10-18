@@ -47,12 +47,13 @@ internal sealed record LoweredFunctionDefinitionStatement(
     IReadOnlyList<LoweredExpression> Decorators,
     IReadOnlyList<LoweredFunctionParameter> Parameters,
     LoweredExpression? ReturnAnnotation,
-    IReadOnlyList<LoweredStatement> Body) : LoweredStatement(Syntax.Span)
+    IReadOnlyList<LoweredStatement> Body,
+    ScopeDirectiveFacts ScopeFacts) : LoweredStatement(Syntax.Span)
 {
     public override LoweredStatementKind Kind => LoweredStatementKind.FunctionDefinition;
     public IReadOnlyList<LoweredTypeParameter>? TypeParameters { get; } = LoweredScript.LowerTypeParameters(Syntax.TypeParameters);
     public ExecutableCodeObject? GeneratorCode { get; } = GeneratorSyntaxFacts.IsGenerator(Syntax.Body)
-        ? ExecutableScript.CompileGenerator(Parameters, Body, ScopeDirectiveFactsCollector.ForFunction(Syntax)) : null;
+        ? ExecutableScript.CompileGenerator(Parameters, Body, ScopeFacts) : null;
 }
 
 internal sealed record LoweredClassDefinitionStatement(

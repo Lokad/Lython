@@ -31,6 +31,13 @@ CLR reference lifetimes, not allowance reclamation: the same conservative
 compilation estimate remains charged until the compiled script is disposed.
 No runtime forced GC, weak tracking or per-object refund is involved.
 
+Function definitions share their read-only local/global/nonlocal-name facts and
+prepared class-cell requirement with their code and runtime functions. These are
+compiled metadata, containing no cells, defaults, hosts or execution contexts.
+Computing them during lowering removes repeated runtime traversals; unused
+definitions can retain more metadata up front. The existing coarse compilation
+estimate and compiled owner fund this storage; runtime estimates stay conservative.
+
 Eligible generic functions keep executable bodies while retaining their existing
 annotation and closure scopes. Enclosing live captures still use the existing
 cells; type-parameter names resolve in their annotation namespace. Scope, default

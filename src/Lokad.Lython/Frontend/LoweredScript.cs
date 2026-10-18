@@ -56,7 +56,8 @@ internal sealed class LoweredScript
                     parameter.Annotation is null ? null : LowerExpression(parameter.Annotation),
                     parameter.DefaultValue is null ? null : LowerExpression(parameter.DefaultValue))).ToArray(),
                 functionDefinition.ReturnAnnotation is null ? null : LowerExpression(functionDefinition.ReturnAnnotation),
-                LowerStatements(functionDefinition.Body)),
+                LowerStatements(functionDefinition.Body),
+                ScopeDirectiveFactsCollector.ForFunction(functionDefinition)),
             ClassDefinitionStatementSyntax classDefinition => new LoweredClassDefinitionStatement(
                 classDefinition,
                 classDefinition.Decorators.Select(LowerExpression).ToArray(),
