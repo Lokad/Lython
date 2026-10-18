@@ -1,0 +1,170 @@
+[
+  {
+    "upper": false,
+    "greekControl": false,
+    "runes": 4096,
+    "inputBytes": 4096,
+    "callsPerSample": 16,
+    "frequency": 10000000,
+    "samples": [
+      {
+        "ticks": 16532,
+        "allocated": 134784
+      },
+      {
+        "ticks": 16682,
+        "allocated": 134784
+      },
+      {
+        "ticks": 16439,
+        "allocated": 134784
+      },
+      {
+        "ticks": 17715,
+        "allocated": 134784
+      },
+      {
+        "ticks": 17952,
+        "allocated": 134784
+      },
+      {
+        "ticks": 17024,
+        "allocated": 134784
+      },
+      {
+        "ticks": 17223,
+        "allocated": 134784
+      },
+      {
+        "ticks": 16709,
+        "allocated": 134784
+      }
+    ]
+  },
+  {
+    "upper": true,
+    "greekControl": true,
+    "runes": 4096,
+    "inputBytes": 8192,
+    "callsPerSample": 16,
+    "frequency": 10000000,
+    "samples": [
+      {
+        "ticks": 26398,
+        "allocated": 265856
+      },
+      {
+        "ticks": 27048,
+        "allocated": 265856
+      },
+      {
+        "ticks": 26896,
+        "allocated": 265856
+      },
+      {
+        "ticks": 27012,
+        "allocated": 265856
+      },
+      {
+        "ticks": 27423,
+        "allocated": 265856
+      },
+      {
+        "ticks": 27860,
+        "allocated": 265856
+      },
+      {
+        "ticks": 27003,
+        "allocated": 265856
+      },
+      {
+        "ticks": 27884,
+        "allocated": 265856
+      }
+    ]
+  },
+  {
+    "upper": true,
+    "greekControl": false,
+    "runes": 4096,
+    "inputBytes": 4096,
+    "callsPerSample": 16,
+    "frequency": 10000000,
+    "samples": [
+      {
+        "ticks": 7172,
+        "allocated": 134784
+      },
+      {
+        "ticks": 10236,
+        "allocated": 134784
+      },
+      {
+        "ticks": 9018,
+        "allocated": 134784
+      },
+      {
+        "ticks": 6979,
+        "allocated": 134784
+      },
+      {
+        "ticks": 6897,
+        "allocated": 134784
+      },
+      {
+        "ticks": 6896,
+        "allocated": 134784
+      },
+      {
+        "ticks": 6831,
+        "allocated": 134784
+      },
+      {
+        "ticks": 6755,
+        "allocated": 134784
+      }
+    ]
+  },
+  {
+    "upper": false,
+    "greekControl": true,
+    "runes": 4096,
+    "inputBytes": 8192,
+    "callsPerSample": 16,
+    "frequency": 10000000,
+    "samples": [
+      {
+        "ticks": 60750,
+        "allocated": 265856
+      },
+      {
+        "ticks": 60678,
+        "allocated": 265856
+      },
+      {
+        "ticks": 66045,
+        "allocated": 265856
+      },
+      {
+        "ticks": 62360,
+        "allocated": 265856
+      },
+      {
+        "ticks": 61323,
+        "allocated": 265856
+      },
+      {
+        "ticks": 59944,
+        "allocated": 265856
+      },
+      {
+        "ticks": 62158,
+        "allocated": 265856
+      },
+      {
+        "ticks": 61155,
+        "allocated": 265856
+      }
+    ]
+  }
+]

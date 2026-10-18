@@ -1,0 +1,92 @@
+using System.Diagnostics;
+using System.Text.Json;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
+using Xunit.Abstractions;
+
+namespace Lokad.Lython.Tests;
+
+[Collection("AllocationSensitive")]
+public sealed class AsciiCasingDiagnostic(ITestOutputHelper output)
+{
+    private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void Measure(bool upper, bool greekControl)
+    {
+        var ascii = string.Concat(Enumerable.Repeat("AbCdEfGhIjKlMnOpQrStUvWxYz 0123456789._:'^`- \n", 100))[..4096];
+        var text = greekControl ? string.Concat(Enumerable.Repeat(upper ? "αβγδ" : "ΑΒΓΔ", 1024)) : ascii;
+        var expected = greekControl ? string.Concat(Enumerable.Repeat(upper ? "ΑΒΓΔ" : "αβγδ", 1024))
+            : upper ? text.ToUpperInvariant() : text.ToLowerInvariant();
+        var samples = new List<object>();
+        for (var sample = -16; sample < 8; sample++)
+        {
+            var budget = new LythonMemoryBudget(32 * 1024 * 1024);
+            using (var owner = budget.CreateScope())
+            {
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+                var input = PyString.FromString(text, context.MemoryGovernor, Span);
+                using var ambient = PyStructuralGuard.PushAmbient(context, Span);
+                PyString? last = null;
+                var length = 0;
+                var before = GC.GetAllocatedBytesForCurrentThread();
+                var start = Stopwatch.GetTimestamp();
+                for (var i = 0; i < 16; i++)
+                {
+                    last = upper ? PyStringOps.Upper(input) : PyStringOps.Lower(input);
+                    length += last.Utf8Bytes.Length;
+                }
+                var ticks = Stopwatch.GetTimestamp() - start;
+                var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+                Assert.Equal(input.Utf8Bytes.Length * 16, length);
+                Assert.Equal(expected, last!.AsString());
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                if (sample >= 0) samples.Add(new { ticks, allocated });
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        output.WriteLine("ASCII_CASE_DIAGNOSTIC:" + JsonSerializer.Serialize(new { upper, greekControl, runes = text.EnumerateRunes().Count(), inputBytes = System.Text.Encoding.UTF8.GetByteCount(text), callsPerSample = 16, frequency = Stopwatch.Frequency, samples }));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CaptureWork(bool upper, bool mixed)
+    {
+        var text = mixed ? new string('A', 62) + "A'Σ:A0Σ\0Σ" : new string('A', 129);
+        var rows = new List<object>();
+        for (var allowed = 0; allowed < 2; allowed++)
+        {
+            var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+            using (var owner = budget.CreateScope())
+            {
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionSteps = 10000 });
+                context.Limits.ExecutionStepCount = 10000 - allowed;
+                var input = PyString.FromString(text, context.MemoryGovernor, Span);
+                var committed = context.MemoryGovernor.CurrentCommittedBytes;
+                object? failure = null;
+                using (PyStructuralGuard.PushAmbient(context, Span))
+                {
+                    try { _ = upper ? PyStringOps.Upper(input) : PyStringOps.Lower(input); }
+                    catch (LythonRuntimeException e)
+                    {
+                        failure = new { e.ExceptionType, e.Message, e.Attribution, e.Span };
+                        Assert.Equal(LythonFailureReason.ExecutionStepLimit, e.Attribution?.Reason);
+                        Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
+                    }
+                }
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Equal(text, input.AsString());
+                rows.Add(new { allowed, failure, steps = context.Limits.ExecutionStepCount, tick = context.State.StructuralTraversal.WorkTick });
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        output.WriteLine("ASCII_CASE_WORK:" + JsonSerializer.Serialize(new { upper, mixed, rows }));
+    }
+}

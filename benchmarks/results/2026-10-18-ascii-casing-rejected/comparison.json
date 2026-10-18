@@ -1,0 +1,81 @@
+{
+  "accepted": false,
+  "fixedGate": "All eight ASCII candidate samples below all baseline samples; allocations identical; Greek-only medians <=110% baseline. No repetitions or post-hoc relaxation.",
+  "exactWorkRecords": 4,
+  "workRecordsIdentical": true,
+  "rows": [
+    {
+      "upper": true,
+      "greekControl": false,
+      "beforeMs": 1.2987,
+      "afterMs": 0.6938,
+      "beforeRangeMs": [
+        1.2785,
+        1.4539
+      ],
+      "afterRangeMs": [
+        0.6755,
+        1.0235999999999998
+      ],
+      "allocatedBefore": 134784.0,
+      "allocatedAfter": 134784.0,
+      "timingGate": true,
+      "allocationGate": true
+    },
+    {
+      "upper": false,
+      "greekControl": true,
+      "beforeMs": 1.91315,
+      "afterMs": 6.1239,
+      "beforeRangeMs": [
+        1.9043,
+        2.3517
+      ],
+      "afterRangeMs": [
+        5.994400000000001,
+        6.6045
+      ],
+      "allocatedBefore": 265856.0,
+      "allocatedAfter": 265856.0,
+      "timingGate": false,
+      "allocationGate": true
+    },
+    {
+      "upper": false,
+      "greekControl": false,
+      "beforeMs": 4.6046000000000005,
+      "afterMs": 1.6866499999999998,
+      "beforeRangeMs": [
+        4.4616,
+        4.7993999999999994
+      ],
+      "afterRangeMs": [
+        1.6439,
+        1.7952000000000001
+      ],
+      "allocatedBefore": 134784.0,
+      "allocatedAfter": 134784.0,
+      "timingGate": true,
+      "allocationGate": true
+    },
+    {
+      "upper": true,
+      "greekControl": true,
+      "beforeMs": 2.7659,
+      "afterMs": 2.703,
+      "beforeRangeMs": [
+        2.7428,
+        2.9491
+      ],
+      "afterRangeMs": [
+        2.6397999999999997,
+        2.7883999999999998
+      ],
+      "allocatedBefore": 265856.0,
+      "allocatedAfter": 265856.0,
+      "timingGate": true,
+      "allocationGate": true
+    }
+  ],
+  "timingStatus": "One local native diagnostic; not statistical qualification, whole-job/CPython or embedding-latency proof."
+}

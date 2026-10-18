@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-18 ASCII casing shortcut](results/2026-10-18-ascii-casing-rejected/README.md)
+was rejected: ASCII improved in one native capture, but the Greek-only lower
+control rose from 1.913 to 6.124 ms and failed the fixed gate. Allocations and four
+work/fuel/refund records were unchanged. All 195 prototype checks passed; source
+and test additions were restored and 185 original checks passed afterward.
+No repeated timing, relaxed gate, JIT attribution or whole-job/CPython claim.
+
 The [2026-10-18 complete CSV comparison](results/2026-10-18-csv-milestone/README.md)
 closes two short captures at immutable `34d4da35`: fresh compile/run 8.549 ms vs
 CPython 3.962 ms, warm RunAsync 9.321 ms vs 3.759 ms. Ratios 2.158×/2.480× remain

@@ -1,0 +1,202 @@
+{
+  "dateUtc": "2026-10-18",
+  "baseline": "73deb8dcabb473673276c47ca8890dbd94a7b97a",
+  "status": "Rejected; prototype source and added cases restored byte-exactly before documentation delivery.",
+  "source": {
+    "head": "73deb8dcabb473673276c47ca8890dbd94a7b97a",
+    "path": "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs",
+    "sha256": "537337755628c06043b29809f54a595c012beb175ba9d28fdd2b633aaf6fac65"
+  },
+  "comparison": {
+    "accepted": false,
+    "fixedGate": "All eight ASCII candidate samples below all baseline samples; allocations identical; Greek-only medians <=110% baseline. No repetitions or post-hoc relaxation.",
+    "exactWorkRecords": 4,
+    "workRecordsIdentical": true,
+    "rows": [
+      {
+        "upper": true,
+        "greekControl": false,
+        "beforeMs": 1.2987,
+        "afterMs": 0.6938,
+        "beforeRangeMs": [
+          1.2785,
+          1.4539
+        ],
+        "afterRangeMs": [
+          0.6755,
+          1.0235999999999998
+        ],
+        "allocatedBefore": 134784.0,
+        "allocatedAfter": 134784.0,
+        "timingGate": true,
+        "allocationGate": true
+      },
+      {
+        "upper": false,
+        "greekControl": true,
+        "beforeMs": 1.91315,
+        "afterMs": 6.1239,
+        "beforeRangeMs": [
+          1.9043,
+          2.3517
+        ],
+        "afterRangeMs": [
+          5.994400000000001,
+          6.6045
+        ],
+        "allocatedBefore": 265856.0,
+        "allocatedAfter": 265856.0,
+        "timingGate": false,
+        "allocationGate": true
+      },
+      {
+        "upper": false,
+        "greekControl": false,
+        "beforeMs": 4.6046000000000005,
+        "afterMs": 1.6866499999999998,
+        "beforeRangeMs": [
+          4.4616,
+          4.7993999999999994
+        ],
+        "afterRangeMs": [
+          1.6439,
+          1.7952000000000001
+        ],
+        "allocatedBefore": 134784.0,
+        "allocatedAfter": 134784.0,
+        "timingGate": true,
+        "allocationGate": true
+      },
+      {
+        "upper": true,
+        "greekControl": true,
+        "beforeMs": 2.7659,
+        "afterMs": 2.703,
+        "beforeRangeMs": [
+          2.7428,
+          2.9491
+        ],
+        "afterRangeMs": [
+          2.6397999999999997,
+          2.7883999999999998
+        ],
+        "allocatedBefore": 265856.0,
+        "allocatedAfter": 265856.0,
+        "timingGate": true,
+        "allocationGate": true
+      }
+    ],
+    "timingStatus": "One local native diagnostic; not statistical qualification, whole-job/CPython or embedding-latency proof."
+  },
+  "groups": {
+    "baseline-behavior": {
+      "passed": 195,
+      "process": {
+        "source": "ascii-casing",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "E14691C6E5C28418E330BDD092AB10B959EA487B56CF2A3C8E2A491F1D22449B",
+        "filter": "Category!=Stress&(FullyQualifiedName~Utf8CasingTests|FullyQualifiedName~GreekSigmaCasingTests|FullyQualifiedName~ContextualCasingTests|FullyQualifiedName~FullCaseExpansionTests|FullyQualifiedName~StringCasingDenialTests)",
+        "pid": 52996,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1281,
+        "stdoutSha256": "1596ADF7A7D6C91FEACC2858C4E2D2F64CBC6BA1F2C7EA7A8AF9AE18C3573039",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "179097b3ff47bc8c4b36832096817a13ea901072e5caed12e32371f1a3d7dea7"
+    },
+    "baseline-diagnostic": {
+      "passed": 8,
+      "process": {
+        "source": "ascii-casing",
+        "production": "baseline",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "E14691C6E5C28418E330BDD092AB10B959EA487B56CF2A3C8E2A491F1D22449B",
+        "filter": "Category!=Stress&FullyQualifiedName~AsciiCasingDiagnostic",
+        "pid": 51984,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1531,
+        "stdoutSha256": "1B56525C556339ED2CBA44F402FBC140BAEFD1AFC8A0F66F3B9506497BA6B2F4",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "6066c6e20c9cf3efdea1f73853e7d7e6e3db5d80dccb6f71e583b933c819b184"
+    },
+    "candidate-behavior": {
+      "passed": 195,
+      "process": {
+        "source": "ascii-casing",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "C7D933A52C86E5C0BA31E1603DE5E4E9CAD4CA798E2466D3C50749A413B4B514",
+        "filter": "Category!=Stress&(FullyQualifiedName~Utf8CasingTests|FullyQualifiedName~GreekSigmaCasingTests|FullyQualifiedName~ContextualCasingTests|FullyQualifiedName~FullCaseExpansionTests|FullyQualifiedName~StringCasingDenialTests)",
+        "pid": 76320,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1197,
+        "stdoutSha256": "4AA8D4EDDED357EF6CC57BE9FFB41FF4DD3E4C176443A5A0E4515BC407121256",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "a76959ce0ff795db002e05354acd10906586ad5bf3b17a02ca78a5892dc33572"
+    },
+    "candidate-diagnostic": {
+      "passed": 8,
+      "process": {
+        "source": "ascii-casing",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "C7D933A52C86E5C0BA31E1603DE5E4E9CAD4CA798E2466D3C50749A413B4B514",
+        "filter": "Category!=Stress&FullyQualifiedName~AsciiCasingDiagnostic",
+        "pid": 44888,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1393,
+        "stdoutSha256": "EDEC9C29301F28C0A81EDAB3AB78BC3E895C39EEDC8DBAFC31FD76D27E19A406",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "ced1d5a7bf166d64d593b82d3d02056cc4321aa590fb6afb310d7cb4340d7490"
+    },
+    "restored-behavior": {
+      "passed": 185,
+      "process": {
+        "source": "ascii-casing",
+        "production": "restored",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "7A7353F9C423348A312F0AD3E6ABF0651FF78606D9C20993A7B3F3CB8E9CADDA",
+        "filter": "Category!=Stress&(FullyQualifiedName~Utf8CasingTests|FullyQualifiedName~GreekSigmaCasingTests|FullyQualifiedName~ContextualCasingTests|FullyQualifiedName~FullCaseExpansionTests|FullyQualifiedName~StringCasingDenialTests)",
+        "pid": 21392,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1223,
+        "stdoutSha256": "AFFA8D427944F57D42C0E724C61C786B5B6004F4B16AF3A9069E6F0DE94E38ED",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "e99c732a0a08853c66ef6ce7da47b5c1f024647c606c4312d4b66c48d369edce"
+    }
+  },
+  "restoration": {
+    "head": "73deb8dcabb473673276c47ca8890dbd94a7b97a",
+    "productionRestoredByteExact": true,
+    "testPrototypeRestored": true,
+    "sourceSha256": "537337755628c06043b29809f54a595c012beb175ba9d28fdd2b633aaf6fac65",
+    "candidatePatchPreserved": true,
+    "gateRejected": true,
+    "repeatTiming": false
+  },
+  "productionAndTestSourcesUnchanged": true,
+  "temporaryDiagnosticRemoved": true,
+  "repeatedTiming": false,
+  "runtimeCiCachedGreen": 39106588147,
+  "runtimeQualificationScope": "Existing immutable baseline; no claim that the rejected prototype was platform/package qualified.",
+  "qualificationRemaining": "Documentation-only delivery CI.",
+  "regressionCause": "Not investigated; no JIT/layout attribution or whole-job claim.",
+  "noPublicOrAccountingChange": true,
+  "protectedHashesUnchanged": true,
+  "regexPlanningOnly": true
+}

@@ -1,0 +1,51 @@
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
+index 01950a57..996782ad 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
+@@ -84,6 +84,25 @@ internal static partial class PyStringOps
+             for (var offset = 0; offset < source.Length;)
+             {
+                 PyStructuralGuard.NoteWork();
++                var ascii = source[offset];
++                if (ascii < 0x80)
++                {
++                    var upper = ascii is >= (byte)'A' and <= (byte)'Z';
++                    var lower = ascii is >= (byte)'a' and <= (byte)'z';
++                    var mapped = ascii;
++                    if (mapping == CaseMapping.Lower && upper) mapped += 32;
++                    else if (mapping != CaseMapping.Lower && lower) mapped -= 32;
++                    builder.Append(mapped);
++                    if (mapping == CaseMapping.Lower)
++                    {
++                        // ASCII letters are cased and never ignorable. Other
++                        // bytes retain the existing punctuation context rules.
++                        if (upper || lower) precedingCased = true;
++                        else if (!SigmaPropertyContains(ascii, SigmaIgnorableRanges)) precedingCased = false;
++                    }
++                    offset++;
++                    continue;
++                }
+                 _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+                 AppendMappedRune(builder, rune, mapping, precedingCased, source[(offset + consumed)..]);
+                 if (mapping == CaseMapping.Lower && !SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
+diff --git a/tests/Lokad.Lython.Tests/GreekSigmaCasingTests.cs b/tests/Lokad.Lython.Tests/GreekSigmaCasingTests.cs
+index 04875a32..4f359b6e 100644
+--- a/tests/Lokad.Lython.Tests/GreekSigmaCasingTests.cs
++++ b/tests/Lokad.Lython.Tests/GreekSigmaCasingTests.cs
+@@ -18,6 +18,16 @@ public sealed class GreekSigmaCasingTests
+     [InlineData("AΣʰA", "aσʰa")]
+     [InlineData("AʰΣ", "aʰς")]
+     [InlineData("ʰΣ", "ʰσ")]
++    [InlineData("aΣ", "aς")]
++    [InlineData("A'Σ", "a'ς")]
++    [InlineData("A.Σ", "a.ς")]
++    [InlineData("A:Σ", "a:ς")]
++    [InlineData("A^Σ", "a^ς")]
++    [InlineData("A`Σ", "a`ς")]
++    [InlineData("A0Σ", "a0σ")]
++    [InlineData("Δ!Σ", "δ!σ")]
++    [InlineData("^Σ", "^σ")]
++    [InlineData("A\0Σ", "a\0σ")]
+     public void LowerUsesCasedContextAndSkipsIgnorableScalars(string source, string expected)
+         => Assert.Equal(expected, PyStringOps.Lower(PyString.FromString(source)).AsString());
+ 
