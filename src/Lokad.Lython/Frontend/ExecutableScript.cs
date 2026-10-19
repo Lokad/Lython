@@ -392,13 +392,6 @@ internal sealed record ExecutableExceptionRegion(
     bool ExceptionTypesAreTuple = false,
     int? CleanupId = null);
 
-internal sealed record ExecutableImportBinding(
-    string ModuleName,
-    string BindingName,
-    string BoundModuleName,
-    IReadOnlyList<ImportedMemberSyntax>? ImportedMembers,
-    LythonSourceSpan Span);
-
 internal sealed record ExecutableCallArgumentSpec(
     CallArgumentForm Form)
 {
@@ -457,7 +450,7 @@ internal sealed class ExecutableCodeObject
         IReadOnlyList<ExecutableBasicBlock> blocks,
         int entryBlockIndex,
         IReadOnlyList<ExecutableExceptionRegion> exceptionRegions,
-        IReadOnlyList<ExecutableImportBinding> imports,
+        IReadOnlyList<ImportStatementSyntax> imports,
         IReadOnlyList<ExecutableCallSite> callSites,
         int memberCacheCount,
         IReadOnlyList<ExecutableFunctionBinding> functions,
@@ -515,7 +508,7 @@ internal sealed class ExecutableCodeObject
 
     public IReadOnlyList<ExecutableExceptionRegion> ExceptionRegions { get; }
 
-    public IReadOnlyList<ExecutableImportBinding> Imports { get; }
+    public IReadOnlyList<ImportStatementSyntax> Imports { get; }
 
     public IReadOnlyList<ExecutableCallSite> CallSites { get; }
 

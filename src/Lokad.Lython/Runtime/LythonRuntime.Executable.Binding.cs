@@ -283,7 +283,7 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteExecutableImport(
         ExecutableCodeObject codeObject,
-        ExecutableImportBinding importBinding,
+        ImportStatementSyntax importBinding,
         object[] locals,
         ExecutableCell?[]? localCells,
         ExecutionContext context)
@@ -291,8 +291,7 @@ internal sealed partial class LythonRuntime
         if (importBinding.ModuleName == "__future__" && importBinding.ImportedMembers is not null &&
             ImportsOnlyFutureAnnotations(importBinding.ImportedMembers))
         {
-            ExecuteImport(new ImportStatementSyntax(importBinding.ModuleName, importBinding.BindingName,
-                importBinding.BoundModuleName, importBinding.ImportedMembers, importBinding.Span), context);
+            ExecuteImport(importBinding, context);
             return;
         }
         if (importBinding.ImportedMembers is null)

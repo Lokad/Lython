@@ -12,8 +12,7 @@ internal sealed partial class LythonRuntime
             {
                 case ExecutableOpCode.Import:
                     var import = _codeObject.Imports[instruction.ImportIndex];
-                    await ExecuteImportAsync(new ImportStatementSyntax(import.ModuleName, import.BindingName,
-                        import.BoundModuleName, import.ImportedMembers, import.Span), _context).ConfigureAwait(false);
+                    await ExecuteImportAsync(import, _context).ConfigureAwait(false);
                     // Import stores update their bound slots directly. Copying
                     // the whole namespace would erase unrelated unmirrored locals.
                     return;

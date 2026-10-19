@@ -1,0 +1,44 @@
+[
+  {
+    "lane": "compile",
+    "imported": false,
+    "beforeBytes": 61504.0,
+    "afterBytes": 61504.0,
+    "savedBytes": 0.0
+  },
+  {
+    "lane": "compile",
+    "imported": true,
+    "beforeBytes": 63800.0,
+    "afterBytes": 63744.0,
+    "savedBytes": 56.0
+  },
+  {
+    "lane": "Run",
+    "imported": false,
+    "beforeBytes": 21128.0,
+    "afterBytes": 21128.0,
+    "savedBytes": 0.0
+  },
+  {
+    "lane": "Run",
+    "imported": true,
+    "beforeBytes": 25360.0,
+    "afterBytes": 25360.0,
+    "savedBytes": 0.0
+  },
+  {
+    "lane": "RunAsync",
+    "imported": false,
+    "beforeBytes": 21376.0,
+    "afterBytes": 21376.0,
+    "savedBytes": 0.0
+  },
+  {
+    "lane": "RunAsync",
+    "imported": true,
+    "beforeBytes": 27400.0,
+    "afterBytes": 25608.0,
+    "savedBytes": 1792.0
+  }
+]

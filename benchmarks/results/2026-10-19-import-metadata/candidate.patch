@@ -1,0 +1,104 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
+index 169ed583..44b6078b 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
+@@ -40,7 +40,7 @@ internal sealed partial class ExecutableScript
+         private readonly Dictionary<string, int> _closureIndexes = new(StringComparer.Ordinal);
+         private readonly List<BasicBlockBuilder> _blocks = [];
+         private readonly List<ExecutableExceptionRegion> _regions = [];
+-        private readonly List<ExecutableImportBinding> _imports = [];
++        private readonly List<ImportStatementSyntax> _imports = [];
+         private readonly List<ExecutableCallSite> _callSites = [];
+         private int _memberCacheCount;
+         private readonly List<ExecutableFunctionBinding> _functions = [];
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+index 39502ed9..98b3e41a 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+@@ -360,12 +360,7 @@ internal sealed partial class ExecutableScript
+ 
+         private int InternImport(LoweredImportStatement importStatement)
+         {
+-            _imports.Add(new ExecutableImportBinding(
+-                importStatement.Syntax.ModuleName,
+-                importStatement.Syntax.BindingName,
+-                importStatement.Syntax.BoundModuleName,
+-                importStatement.Syntax.ImportedMembers,
+-                importStatement.Span));
++            _imports.Add(importStatement.Syntax);
+             return _imports.Count - 1;
+         }
+ 
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index f8e6298c..5b6d6af2 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -392,13 +392,6 @@ internal sealed record ExecutableExceptionRegion(
+     bool ExceptionTypesAreTuple = false,
+     int? CleanupId = null);
+ 
+-internal sealed record ExecutableImportBinding(
+-    string ModuleName,
+-    string BindingName,
+-    string BoundModuleName,
+-    IReadOnlyList<ImportedMemberSyntax>? ImportedMembers,
+-    LythonSourceSpan Span);
+-
+ internal sealed record ExecutableCallArgumentSpec(
+     CallArgumentForm Form)
+ {
+@@ -457,7 +450,7 @@ internal sealed class ExecutableCodeObject
+         IReadOnlyList<ExecutableBasicBlock> blocks,
+         int entryBlockIndex,
+         IReadOnlyList<ExecutableExceptionRegion> exceptionRegions,
+-        IReadOnlyList<ExecutableImportBinding> imports,
++        IReadOnlyList<ImportStatementSyntax> imports,
+         IReadOnlyList<ExecutableCallSite> callSites,
+         int memberCacheCount,
+         IReadOnlyList<ExecutableFunctionBinding> functions,
+@@ -515,7 +508,7 @@ internal sealed class ExecutableCodeObject
+ 
+     public IReadOnlyList<ExecutableExceptionRegion> ExceptionRegions { get; }
+ 
+-    public IReadOnlyList<ExecutableImportBinding> Imports { get; }
++    public IReadOnlyList<ImportStatementSyntax> Imports { get; }
+ 
+     public IReadOnlyList<ExecutableCallSite> CallSites { get; }
+ 
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index b42970fc..fd9c7e83 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -283,7 +283,7 @@ internal sealed partial class LythonRuntime
+ 
+     private static void ExecuteExecutableImport(
+         ExecutableCodeObject codeObject,
+-        ExecutableImportBinding importBinding,
++        ImportStatementSyntax importBinding,
+         object[] locals,
+         ExecutableCell?[]? localCells,
+         ExecutionContext context)
+@@ -291,8 +291,7 @@ internal sealed partial class LythonRuntime
+         if (importBinding.ModuleName == "__future__" && importBinding.ImportedMembers is not null &&
+             ImportsOnlyFutureAnnotations(importBinding.ImportedMembers))
+         {
+-            ExecuteImport(new ImportStatementSyntax(importBinding.ModuleName, importBinding.BindingName,
+-                importBinding.BoundModuleName, importBinding.ImportedMembers, importBinding.Span), context);
++            ExecuteImport(importBinding, context);
+             return;
+         }
+         if (importBinding.ImportedMembers is null)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 59d59a3d..7a7dbea3 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -12,8 +12,7 @@ internal sealed partial class LythonRuntime
+             {
+                 case ExecutableOpCode.Import:
+                     var import = _codeObject.Imports[instruction.ImportIndex];
+-                    await ExecuteImportAsync(new ImportStatementSyntax(import.ModuleName, import.BindingName,
+-                        import.BoundModuleName, import.ImportedMembers, import.Span), _context).ConfigureAwait(false);
++                    await ExecuteImportAsync(import, _context).ConfigureAwait(false);
+                     // Import stores update their bound slots directly. Copying
+                     // the whole namespace would erase unrelated unmirrored locals.
+                     return;

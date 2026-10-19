@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-19T11:28:51.3065038+00:00",
+  "baselineRevision": "75015c9afa6a57a864b7904e1da8cf8173c82936",
+  "candidate": "baseline plus candidate.patch",
+  "sdk": "10.0.300-preview.0.26177.108",
+  "runtime": "10.0.13",
+  "os": "Windows10.0.26200 X64",
+  "cpu": "i7-14700KF",
+  "processorCount": 28,
+  "metric": "GC.GetTotalAllocatedBytes(true), all managed threads; cumulative managed allocation, not live heap/RSS or an admission policy",
+  "warmupCalls": 8,
+  "samples": 7,
+  "callsPerSample": 8,
+  "boundary": "Compile lane: entry compilation and disposal. Run/RunAsync lanes: reused entry, fresh host/execution/result cleanup, 32 cached builtin imports or no-import loop control. Process startup excluded. Mock host completes synchronously; no pending I/O claimed.",
+  "status": "Short nonquiet allocation diagnostic; elapsed unqualified, no CPython timing or latency benefit established",
+  "cleanup": "Every operation ends its owners and asserts shared allowance returns to the prepared baseline"
+}

@@ -40,7 +40,7 @@ internal sealed partial class ExecutableScript
         private readonly Dictionary<string, int> _closureIndexes = new(StringComparer.Ordinal);
         private readonly List<BasicBlockBuilder> _blocks = [];
         private readonly List<ExecutableExceptionRegion> _regions = [];
-        private readonly List<ExecutableImportBinding> _imports = [];
+        private readonly List<ImportStatementSyntax> _imports = [];
         private readonly List<ExecutableCallSite> _callSites = [];
         private int _memberCacheCount;
         private readonly List<ExecutableFunctionBinding> _functions = [];

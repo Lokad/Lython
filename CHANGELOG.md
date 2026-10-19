@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse existing immutable import metadata in executable code, deleting a duplicate binding record and runtime syntax-node reconstruction. Synchronous slot binding, asynchronous resolution and Python import behavior remain unchanged.
+
 - Initialize the existing module member cache only when an ordinary cached member is requested. Script modules and name-only builtin use avoid unused tables; callable/name identity and concurrent publication remain. No public contract or memory-ownership change; no established latency gain.
 
 - Run host-mediated local module roots on the existing executable engine, preserving grants, cache identity, source paths, cancellation/refusal and awaited cleanup. Preserve the distinction between natural module completion and an executed top-level return. Imported ordinary functions and lambdas keep executable code; class/annotation/opcode lower evaluation remains.

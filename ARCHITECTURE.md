@@ -72,6 +72,10 @@ engine. The unused whole-module lowered representation is released after
 compilation.
 
 Local imports prepare and run the same executable code as public entry scripts.
+Executable import tables retain the original immutable import syntax metadata;
+they do not copy it into a second binding record or reconstruct nodes at runtime.
+Synchronous imports still bind slots directly; asynchronous imports await host
+resolution through the existing import implementation.
 Their module context mirrors stores into its namespace for exports and escaping
 functions, even when no opcode fallback requests mirroring. Loaded script modules
 use that same context for attributes and globals(); builtin definition factories

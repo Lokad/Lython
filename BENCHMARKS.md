@@ -292,6 +292,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [import metadata cleanup](benchmarks/results/2026-10-19-import-metadata/README.md)
+removes a duplicate compiler record and runtime node reconstruction. A short
+diagnostic records 56 B less allocation per compilation containing an import and
+1,792 B less per async job with 32 cached builtin imports. Synchronous execution
+and no-import allocation controls are unchanged; no latency gain is established.
+
 The [module-cache construction change](benchmarks/results/2026-10-19-module-cache/README.md)
 records 1,448 B less allocation per script module or builtin module used only for
 its name. First-member publication and warm-read allocation controls are unchanged.

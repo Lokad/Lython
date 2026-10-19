@@ -360,12 +360,7 @@ internal sealed partial class ExecutableScript
 
         private int InternImport(LoweredImportStatement importStatement)
         {
-            _imports.Add(new ExecutableImportBinding(
-                importStatement.Syntax.ModuleName,
-                importStatement.Syntax.BindingName,
-                importStatement.Syntax.BoundModuleName,
-                importStatement.Syntax.ImportedMembers,
-                importStatement.Span));
+            _imports.Add(importStatement.Syntax);
             return _imports.Count - 1;
         }
 
