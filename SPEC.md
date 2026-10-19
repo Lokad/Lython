@@ -1799,7 +1799,8 @@ conversion, including host I/O. Both iterable and multiple-positional forms keep
 their existing numeric kernels. Native iterator cleanup is awaited and funded
 before completion; a retained Python iterator keeps its reached position after
 an item/comparison error. Wrapped `cmp_to_key` callbacks also await correctly
-through rich comparison and sorting, retaining existing integer-result validation.
+through direct equality/inequality, membership, element equality, ordering and
+sorting, retaining existing integer-result validation and identity short circuits.
 
 `property(fget=None, fset=None, fdel=None, doc=None)` supports all four positional
 or keyword arguments. Its readonly `fget`, `fset` and `fdel` metadata retains the

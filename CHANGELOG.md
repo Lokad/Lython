@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse awaited `cmp_to_key` invocation in async equality, inequality, membership and element comparisons, removing four synchronous callback detours. Preserve ordinary results, validation, side effects, identity rules, cancellation/refusal and cleanup. No public API change or performance claim.
+
 - Await direct set-key equality and truth conversion in asynchronous ordering, including `min`/`max` over sets. Reuse stored insertion hashes for subset/superset scans, preserve mutation diagnostics and keep copied entries funded through pending callbacks, cancellation and failure. Builtin-only comparisons stay direct; conservative working overlap may reject earlier. General hashing and nested structural callback restrictions remain. No public API change or performance claim.
 
 - Correct `min`/`max` guest rich comparison and set ordering, preserving key/evaluation order, first-item ties and numeric kernels. Await iterator acquisition, comparison and truth conversion during async hosting. Share awaited `cmp_to_key` comparator invocation with sorting and rich comparison, preserving validation and cleanup. No public option, dependency or ownership change; no performance claim.

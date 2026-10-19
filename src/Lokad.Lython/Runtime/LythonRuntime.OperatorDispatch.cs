@@ -584,7 +584,7 @@ internal sealed partial class LythonRuntime
     {
         if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
         {
-            return leftKey.CompareTo(rightKey, span, context) == 0;
+            return await leftKey.CompareToAsync(rightKey, span, context).ConfigureAwait(false) == 0;
         }
 
         // Same precedence as the sync twin above; the raw __eq__ result flows
@@ -1122,7 +1122,7 @@ internal sealed partial class LythonRuntime
 
         if (item is PyCmpKey itemKey && candidate is PyCmpKey candidateKey)
         {
-            return itemKey.CompareTo(candidateKey, span, context) == 0;
+            return await itemKey.CompareToAsync(candidateKey, span, context).ConfigureAwait(false) == 0;
         }
 
         // Same reflected precedence as ==.
@@ -1224,7 +1224,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
         {
-            return leftKey.CompareTo(rightKey, span, context) == 0;
+            return await leftKey.CompareToAsync(rightKey, span, context).ConfigureAwait(false) == 0;
         }
 
         // Same reflected precedence as == (nested positions truth-test).
@@ -1323,7 +1323,7 @@ internal sealed partial class LythonRuntime
     {
         if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
         {
-            return leftKey.CompareTo(rightKey, span, context) != 0;
+            return await leftKey.CompareToAsync(rightKey, span, context).ConfigureAwait(false) != 0;
         }
 
         // Same precedence as the sync twin above; a successful __ne__ result

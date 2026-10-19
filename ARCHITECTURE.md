@@ -139,7 +139,8 @@ Min/max candidate selection shares the existing Python operator/truthiness paths
 after the numeric kernel. Async selection awaits iterator acquisition, rich slots
 and truth conversion, retaining the original reduction loops and first-tie order.
 Wrapped comparators expose one async invocation/sign-validation path shared by
-rich comparison and sorting; the synchronous path remains separate. The sorting
+equality, inequality, membership/element equality, ordering and sorting; the
+synchronous path remains separate. The sorting
 algorithm, argument binder and ownership mechanisms remain in place.
 
 `ExecutionContext` owns per-run services and Python-visible state: globals,
