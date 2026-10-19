@@ -1,6 +1,6 @@
 namespace Lokad.Lython.Frontend;
 
-internal sealed record ExecutableCreateFunction(LoweredFunctionDefinitionStatement Definition, IReadOnlyList<LoweredExpression> Inputs) : ExecutableOperation;
+internal sealed record ExecutableCreateFunction(ExecutableFunctionBinding Binding, IReadOnlyList<LoweredExpression> Inputs) : ExecutableOperation;
 internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression,
     ExecutableCodeObject CodeObject) : ExecutableOperation;
 internal sealed record ExecutableAnnotationsEnabled : ExecutableOperation;
@@ -13,6 +13,7 @@ internal sealed partial class ExecutableScript
     {
         private int CompileSuspendingFunction(LoweredFunctionDefinitionStatement definition, int block)
         {
+            var binding = _functions[InternFunction(definition)];
             var inputs = definition.Decorators.Concat(definition.Parameters.Where(p => p.DefaultValue is not null).Select(p => p.DefaultValue!)).ToArray();
             foreach (var input in inputs) block = CompileExpression(input, block);
             var annotations = definition.TypeParameters is not null ? [] :
@@ -20,7 +21,7 @@ internal sealed partial class ExecutableScript
                     .Concat(definition.ReturnAnnotation is null ? [] : new[] { definition.ReturnAnnotation }).ToArray();
             if (annotations.Length == 0)
             {
-                EmitOperation(new ExecutableCreateFunction(definition, inputs), definition.Span, block);
+                EmitOperation(new ExecutableCreateFunction(binding, inputs), definition.Span, block);
                 return block;
             }
             var skipped = CreateBlock();
@@ -28,9 +29,9 @@ internal sealed partial class ExecutableScript
             EmitOperation(new ExecutableAnnotationsEnabled(), definition.Span, block);
             AddInstruction(block, ExecutableInstruction.JumpIfFalse(skipped, definition.Span));
             foreach (var annotation in annotations) block = CompileExpression(annotation, block);
-            EmitOperation(new ExecutableCreateFunction(definition, inputs.Concat(annotations).ToArray()), definition.Span, block);
+            EmitOperation(new ExecutableCreateFunction(binding, inputs.Concat(annotations).ToArray()), definition.Span, block);
             AddInstruction(block, ExecutableInstruction.Jump(after, definition.Span));
-            EmitOperation(new ExecutableCreateFunction(definition, inputs), definition.Span, skipped);
+            EmitOperation(new ExecutableCreateFunction(binding, inputs), definition.Span, skipped);
             AddInstruction(skipped, ExecutableInstruction.Jump(after, definition.Span));
             return after;
         }

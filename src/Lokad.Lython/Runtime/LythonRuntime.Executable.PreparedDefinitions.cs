@@ -23,24 +23,28 @@ internal sealed partial class LythonRuntime
                         annotation.Name, value, _context, span, asynchronous).ConfigureAwait(false);
                     break;
                 case ExecutableCreateFunction function:
-                    using (var storage = _context.MemoryGovernor.ReserveTemporary(256L + 160L * function.Inputs.Count + 128L * function.Definition.Parameters.Count, span))
+                    using (var storage = _context.MemoryGovernor.ReserveTemporary(320L + 160L * function.Inputs.Count
+                        + 128L * function.Binding.Function.Parameters.Count + 64L * function.Binding.DefaultValues.Count, span))
                     {
                         var captured = CaptureDefinitionInputs(function.Inputs);
-                        var definition = function.Definition with
+                        var template = function.Binding.Function;
+                        var definition = template with
                         {
-                            Decorators = function.Definition.Decorators.Select(Capture).ToArray(),
-                            Parameters = function.Definition.Parameters.Select(p => p with
+                            Decorators = template.Decorators.Select(Capture).ToArray(),
+                            Parameters = template.Parameters.Select(p => p with
                             {
                                 DefaultValue = p.DefaultValue is null ? null : Capture(p.DefaultValue),
                                 Annotation = p.Annotation is null ? null : Capture(p.Annotation),
                             }).ToArray(),
-                            ReturnAnnotation = function.Definition.ReturnAnnotation is null ? null : Capture(function.Definition.ReturnAnnotation),
+                            ReturnAnnotation = template.ReturnAnnotation is null ? null : Capture(template.ReturnAnnotation),
                         };
+                        var defaults = function.Binding.DefaultValues.Count == 0 ? function.Binding.DefaultValues
+                            : function.Binding.DefaultValues.ToDictionary(pair => pair.Key, pair => Capture(pair.Value), StringComparer.Ordinal);
                         AdmitPreparedDefinitionStorage(64L + 160L * definition.Parameters.Count, span);
                         AdmitPreparedDefinitionStorage(128L + 64L * definition.Decorators.Count, span);
-                        if (asynchronous) await ExecuteLoweredFunctionDefinitionAsync(definition, _context).ConfigureAwait(false);
-                        else ExecuteLoweredFunctionDefinition(definition, _context);
-                        SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, _context);
+                        await ExecuteExecutableFunctionDefinitionAsync(_codeObject,
+                            function.Binding with { Function = definition, DefaultValues = defaults },
+                            _locals, _localCells, _context, asynchronous).ConfigureAwait(false);
                         LoweredExpression Capture(LoweredExpression input) => captured.TryGetValue(input, out var value) ? value : input;
                     }
                     break;

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse compiled bindings and the existing definition factory for functions prepared across a guest `yield`. Remove their lowered-body dispatch, duplicate lowered body and whole-namespace resynchronization; preserve captured defaults/decorators/annotations, cells, docstrings and managed frame admission. Preparation scratch includes its captured default map and remains funded through host I/O. Conservative admission can reject earlier; class bodies keep their existing path. No public API change or measured speedup claim.
+
 - Remove the obsolete result-observation stack-push helper and its 17 unused span arguments. Await values before pushing into the mutable operand stack, and rename the affected operand handlers to describe their real work. Preserve allocation admission, evaluation order, cancellation and cleanup. No public API change or measured speedup claim.
 
 - Fund native list concatenation through the active execution's shared allowance, including copies of prepaid internal views. Admit one final-capacity destination and copy references directly, removing the intermediate left backing, right snapshot and input-owner selection. Preserve aliases/cycles, source funding, in-loop cancellation and unpublished-storage rollback. Previously uncharged copies can now refuse at the concatenation expression; no public API change or measured speedup claim.

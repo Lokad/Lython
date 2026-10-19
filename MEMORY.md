@@ -571,6 +571,16 @@ Parameter-heavy definition batches can therefore refuse earlier than older
 revisions that omitted layout capacity. Use bounded execution batches. Final
 parameter arrays are filled directly; conservative capacity estimates and
 per-function default ownership remain unchanged.
+
+Function definitions prepared across a guest yield reuse their compiled binding
+and the ordinary definition factory. Their captured-expression/default-map scratch
+is admitted before construction and stays funded through awaited metadata and
+decorators. Published defaults and captured cells keep their existing execution
+or result owner after the enclosing generator closes. Added preparation headroom
+can reject earlier; no source charge is transferred or refunded. The compiled
+binding retains declaration/docstring metadata rather than a duplicate lowered
+body. Existing coarse compilation admission covers its executable code.
+
 The fixed `len`, `repr`, `ascii`, `format`, `abs`, `pow`, `round`, `divmod`, `bin`,
 `oct`, `hex`, `chr`, `ord` and `sorted` builtin definitions are shared trusted runtime
 metadata covered by host/control headroom. They retain no execution context,

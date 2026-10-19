@@ -21,6 +21,58 @@ internal static class StackGuardFixture
             "dataclass-hash-depth" => "from dataclasses import dataclass\n@dataclass(unsafe_hash=True)\nclass Node:\n value:object\nnode=Node(0)\nfor _ in range(1024):node=Node(node)\nfailures=0\nfor _ in range(3):\n try:hash(node)\n except (RecursionError,RuntimeError):failures+=1\n assert hash(Node(7))==hash(Node(7))\nreturn failures\n",
             "function" => "def loop():return loop()\nfailures=0\nfor _ in range(3):\n try:loop()\n except RuntimeError:failures+=1\n assert len([1])==1\nreturn failures\n",
             "function-finally" => "cleanup=0\ndef loop():\n global cleanup\n try:return loop()\n finally:cleanup+=1\nfailures=0\nfor _ in range(3):\n try:loop()\n except RuntimeError:failures+=1\n assert len([1])==1\nassert cleanup>0\nreturn failures\n",
+            "prepared-function-finally" => """
+                cleanup = 0
+                def make():
+                    def loop(unused=(yield None)):
+                        global cleanup
+                        try:
+                            return loop()
+                        finally:
+                            cleanup += 1
+                    yield loop
+                g = make()
+                next(g)
+                loop = g.send(None)
+                g.close()
+                failures = 0
+                for _ in range(3):
+                    try:
+                        loop()
+                    except (RuntimeError, RecursionError):
+                        failures += 1
+                    assert len([1]) == 1
+                assert cleanup > 0
+                return failures
+                """,
+            "prepared-copyhook-finally" => """
+                import copy
+                cleanup = 0
+                def make():
+                    def deep(self, memo, unused=(yield None)):
+                        global cleanup
+                        try:
+                            return copy.deepcopy(self, memo)
+                        finally:
+                            cleanup += 1
+                    yield deep
+                g = make()
+                next(g)
+                deep = g.send(None)
+                g.close()
+                class Loop:
+                    pass
+                Loop.__deepcopy__ = deep
+                failures = 0
+                for _ in range(3):
+                    try:
+                        copy.deepcopy(Loop())
+                    except (RuntimeError, RecursionError):
+                        failures += 1
+                    assert copy.deepcopy([1]) == [1]
+                assert cleanup > 0
+                return failures
+                """,
             "comparison" => lists + "failures = 0\nfor _ in range(3):\n try:\n  assert x == y\n except RecursionError:\n  failures += 1\n assert [[1, 2]] == [[1, 2]]\nreturn failures\n",
             "callback" => "class Loop:\n def __bool__(self): return bool(self)\nfailures = 0\nfor _ in range(3):\n try:\n  bool(Loop())\n except (RuntimeError, RecursionError):\n  failures += 1\n assert bool([1])\nreturn failures\n",
             "copyhook" => "import copy\nclass Loop:\n def __deepcopy__(self, memo): return copy.deepcopy(self, memo)\nfailures = 0\nfor _ in range(3):\n try:\n  copy.deepcopy(Loop())\n except (RuntimeError, RecursionError):\n  failures += 1\n assert copy.deepcopy([1]) == [1]\nreturn failures\n",

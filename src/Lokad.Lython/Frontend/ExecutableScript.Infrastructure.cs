@@ -379,8 +379,6 @@ internal sealed partial class ExecutableScript
 
         private int InternFunction(LoweredFunctionDefinitionStatement functionDefinition)
         {
-            if (_generator && StatementSyntaxTraversal.EnumerateDirectExpressions(functionDefinition.Syntax).Any(GeneratorSyntaxFacts.ContainsYield))
-                throw new GeneratorLoweringException("Suspension in nested definition decorators, defaults or annotations is not supported.", functionDefinition.Span);
             var codeObject = functionDefinition.GeneratorCode ?? CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
                 functionDefinition.Parameters, functionDefinition.Body,
                 functionDefinition.ScopeFacts, functionDefinition.TypeParameters);

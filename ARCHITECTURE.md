@@ -99,8 +99,11 @@ Executable bindings retain declaration metadata and leading docstring text rathe
 than another lowered body tree. Definition execution still admits and creates
 the guest docstring before publishing the function. Coarse compilation funding
 and the original syntax needed for diagnostics remain unchanged.
-Definitions prepared across a guest yield and definitions in lowered class
-bodies still use their existing preparation/evaluation paths.
+Definitions prepared across a guest yield retain their evaluated inputs, then
+reuse the same compiled binding and definition factory. Their ordinary bodies
+are executable; publication updates the bound slot directly. Captured metadata
+and default-map scratch stay admitted through awaited decorators and annotations.
+Definitions in lowered class bodies retain their existing evaluation path.
 
 Lowered statement and expression evaluation remains necessary for class bodies,
 annotations and individual opcode fallbacks. Executable fallback tables retain
