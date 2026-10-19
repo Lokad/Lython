@@ -8,6 +8,8 @@ public sealed class BuiltinIterationCancellationTests
     {
         { false, "sum(range(n))" },
         { true, "sum(range(n))" },
+        { false, "sum(itertools.repeat(0.1, n))" },
+        { true, "sum(itertools.repeat(0.1, n))" },
         { false, "min(range(n))" },
         { true, "min(range(n))" },
         { false, "max(range(n))" },

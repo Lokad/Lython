@@ -128,6 +128,13 @@ and an exact integer start. This shape cannot invoke guest protocols. Custom
 starts and other iterables retain async iteration/addition and awaited cleanup;
 allocation preflights and cancellation remain in the shared numeric/range helpers.
 
+The existing sum loops share one private scalar state for integer, compensated
+float and general-addition phases. Float compensation is finalized before a
+guest operation; generic addition then remains in control. Fixed signed-64-bit
+phase bounds keep behavior portable rather than copying native C-long widths;
+SPEC.md records the mixed wide-int/float rounding tradeoff. Iteration, arithmetic
+preflights, guest dispatch and async cleanup stay in their existing paths.
+
 `ExecutionContext` owns per-run services and Python-visible state: globals,
 locals, closure resolution, exception state, module cache, decimal context,
 host handles, and limits. Values entering from public options are normalized to

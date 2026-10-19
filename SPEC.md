@@ -1750,6 +1750,29 @@ user iterator and addition callbacks, including host I/O, and awaits native
 iterator cleanup before completing. A retained Python iterator remains usable
 after an item error, at the position reached by the failed sum.
 
+Float summation uses a compensated running total, following Python 3.13's
+numeric-phase behavior. Integer arithmetic remains arbitrary precision. The
+initial exact-integer phase continues while inputs and the running total fit
+signed 64-bit bounds; an addition ending that phase can enter float accumulation
+if its result is an exact float. During that phase, exact float inputs contribute
+to a Neumaier correction, while integers fitting signed 64 bits add normally.
+A wider integer or generic operand finalizes the correction before ordinary
+addition. That general phase is permanent, even if a guest operation later
+returns an integer or float. Other starts, including booleans, use general
+addition. Empty inputs still preserve the original valid start object.
+
+These bounds are fixed across Lython platforms. Some CPython builds use narrower
+native integer-conversion boundaries, so mixed wide-integer/float inputs can have
+different rounding. For example, `sum([1<<40, -(1<<40), 1e16, 1.0, -1e16])`
+returns `1.0` in Lython; a CPython build using 32-bit C-long conversion can return
+`0.0`. Exact integer-only sums are unaffected. Lython does not select numeric
+policies based on its operating system. Python itself documents build-dependent
+float-sum accuracy in [the Python 3.13 sum contract](https://docs.python.org/3.13/library/functions.html#sum).
+Signed zero, NaN, infinities and floating overflow retain Python behavior; a zero
+or nonfinite correction is not added at finalization. This is distinct from
+`math.fsum` or exact statistical summation. Numeric state stays within one
+execution; integer allocation preflights, cancellation and awaited cleanup remain.
+
 `property(fget=None, fset=None, fdel=None, doc=None)` supports all four positional
 or keyword arguments. Its readonly `fget`, `fset` and `fdel` metadata retains the
 original accessor objects, including `None`. Construction accepts non-callable

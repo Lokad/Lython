@@ -116,13 +116,16 @@ internal sealed partial class LythonRuntime
         if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
         var sequence = ToSequence(arguments[0], span, context);
         ValidateSumStart(total, span);
+        var sum = new SumState(total);
         foreach (var item in sequence)
         {
-            total = total is PyInstance || item is PyInstance
-                ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, total, item, context, span)
-                : EvaluateAdd(total, item, context, span);
+            if (sum.TryAddFloat(item)) continue;
+            var result = sum.Total is PyInstance || item is PyInstance
+                ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, sum.Total, item, context, span)
+                : EvaluateAdd(sum.Total, item, context, span);
+            sum.CompleteAddition(item, result);
         }
-        return total;
+        return sum.Result;
     }
 
     private static async ValueTask<object> SumAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -133,6 +136,7 @@ internal sealed partial class LythonRuntime
         if (arguments[0] is PyRange && PyNumberOps.IsInteger(total)) return Sum(arguments, span, context);
         if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
         var cursor = await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false);
+        var sum = new SumState(total);
         await using (cursor.ConfigureAwait(false))
         {
             ValidateSumStart(total, span);
@@ -140,12 +144,85 @@ internal sealed partial class LythonRuntime
             {
                 var item = await cursor.TryMoveNextAsync().ConfigureAwait(false);
                 if (!item.HasValue) break;
-                total = total is PyInstance || item.Value is PyInstance
-                    ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, total, item.Value, context, span).ConfigureAwait(false)
-                    : EvaluateAdd(total, item.Value, context, span);
+                if (sum.TryAddFloat(item.Value)) continue;
+                var result = sum.Total is PyInstance || item.Value is PyInstance
+                    ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, sum.Total, item.Value, context, span).ConfigureAwait(false)
+                    : EvaluateAdd(sum.Total, item.Value, context, span);
+                sum.CompleteAddition(item.Value, result);
             }
         }
-        return total;
+        return sum.Result;
+    }
+
+    // Numeric phases are shared by the existing sync/async loops. Fixed 64-bit
+    // eligibility keeps rounding independent of the embedding platform's C long.
+    private enum SumPhase { Integer, Float, General }
+
+    private struct SumState
+    {
+        private SumPhase _phase;
+        private double _correction;
+
+        internal SumState(object start)
+        {
+            Total = start;
+            _correction = 0;
+            _phase = start is double ? SumPhase.Float
+                : start is not bool && TryInt64(start, out _) ? SumPhase.Integer : SumPhase.General;
+        }
+
+        internal object Total { get; private set; }
+
+        // Skip a zero/nonfinite correction: retain signed zero, and do not turn
+        // an infinite or overflowed running sum into NaN during finalization.
+        internal readonly object Result => _phase == SumPhase.Float && _correction != 0 && double.IsFinite(_correction)
+            ? (double)Total + _correction : Total;
+
+        internal bool TryAddFloat(object item)
+        {
+            if (_phase != SumPhase.Float) return false;
+            var previous = (double)Total;
+            if (item is double value)
+            {
+                var next = previous + value;
+                _correction += Math.Abs(previous) >= Math.Abs(value)
+                    ? (previous - next) + value : (value - next) + previous;
+                Total = next;
+                return true;
+            }
+            if (TryInt64(item, out var integer))
+            {
+                // Python 3.13 adds small integers without compensating them.
+                Total = previous + integer;
+                return true;
+            }
+
+            // A generic operation must see the completed numeric prefix. Once
+            // it takes over, a later double result does not restart compensation.
+            Total = Result;
+            _correction = 0;
+            _phase = SumPhase.General;
+            return false;
+        }
+
+        internal void CompleteAddition(object item, object result)
+        {
+            if (_phase == SumPhase.Integer)
+                _phase = result is double ? SumPhase.Float
+                    : TryInt64(item, out _) && TryInt64(result, out _) ? SumPhase.Integer : SumPhase.General;
+            Total = result;
+        }
+
+        private static bool TryInt64(object value, out long result)
+        {
+            if (PyNumberOps.TryAsInteger(value, out var integer) && integer >= long.MinValue && integer <= long.MaxValue)
+            {
+                result = (long)integer;
+                return true;
+            }
+            result = 0;
+            return false;
+        }
     }
 
     private static bool TrySumExactBytes(object value, object start, LythonSourceSpan span, ExecutionContext context, out object result)
