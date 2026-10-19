@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-19 list capacity consolidation](results/2026-10-19-list-capacity/README.md)
+deletes per-value numeric admission/refund bookkeeping in favor of conservative
+retained capacity. Focused ownership/refusal/cancellation and complete-script
+checks pass. One 7.827-second nested-comprehension capture gives 0.995/0.920 ms,
+versus CPython 0.133 ms; baseline spread is large. No performance claim or retiming.
+
 The [2026-10-19 guarded list-display prototype](results/2026-10-19-list-display-rejected/README.md)
 is rejected and removed. Its protocol, ownership and complete-script checks pass,
 but one 7.833-second nested-comprehension capture shows no established benefit for

@@ -164,3 +164,5 @@ benchmarks/results/2026-10-19-json-value-entry/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-19-native-prepared-routing/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-19-list-display-rejected/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-19-list-display-rejected/candidate.patch -text -whitespace
+benchmarks/results/2026-10-19-list-capacity/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-19-list-capacity/candidate.patch -text -whitespace

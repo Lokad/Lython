@@ -1,0 +1,58 @@
+{
+  "white-regressions-2": {
+    "source": "118ce764-plus-capacity-migration",
+    "production": "118ce764-plus-capacity-migration",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+    "assemblySha256": "C870EE0E2E0982772F8198CCFE26C67AC3A16F4BB9687C6CCE1B7F4CD58EC365",
+    "filter": "(FullyQualifiedName~List|FullyQualifiedName~ContainerScalarStorageTests|FullyQualifiedName~PrimitiveStorageTests|FullyQualifiedName~RuntimeStorageSubsystemTests|FullyQualifiedName~OwnershipSnapshotContractTests|FullyQualifiedName~EagerComprehensionExecutableTests|FullyQualifiedName~TupleConstructionFailureTests)&Category!=Stress",
+    "pid": 39992,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 1785,
+    "stdoutSha256": "64C68408385456E8C011E8C4A079492182C92BFA0A69B56B6B12CD35FF86C635",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "public-ownership": {
+    "source": "118ce764-plus-capacity-migration",
+    "production": "118ce764-plus-capacity-migration",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+    "assemblySha256": "9EF1DD1FBC89AFA6E6219034175C82002118E1A848131F23C0646951589D5689",
+    "filter": "(FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~PrimitiveStorageLifetimeTests|FullyQualifiedName~RegexProviderContractTests|FullyQualifiedName~CollectionDisplay|FullyQualifiedName~ComprehensionLambdaLifetimeTests)&Category!=Stress",
+    "pid": 35092,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 2939,
+    "stdoutSha256": "55BE2203D905BC751C9193E8FE8D3DD6A9D8FB5ECF9715E729B53741787544AD",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "public-protocols": {
+    "source": "118ce764-plus-capacity-migration",
+    "production": "118ce764-plus-capacity-migration",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+    "assemblySha256": "9EF1DD1FBC89AFA6E6219034175C82002118E1A848131F23C0646951589D5689",
+    "filter": "(FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~CooperativeCancellationTests|FullyQualifiedName~CsvBatchAliasLifetimeTests|FullyQualifiedName~CsvRetainedRowLifetimeTests|FullyQualifiedName~CsvSourceStorageLifetimeTests|FullyQualifiedName~CollectionDisplayUnpackingTests|FullyQualifiedName~SliceLifetimeScenarioTests|FullyQualifiedName~FunctoolsCache)&Category!=Stress",
+    "pid": 71860,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 5910,
+    "stdoutSha256": "10201E7DE9DEDD6EB132510672045925EC43E19E1CD9B848F07969A6B4413D55",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "representative-jobs": {
+    "source": "118ce764-plus-capacity-migration",
+    "production": "118ce764-plus-capacity-migration",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+    "assemblySha256": "9EF1DD1FBC89AFA6E6219034175C82002118E1A848131F23C0646951589D5689",
+    "filter": "FullyQualifiedName~RepresentativeScriptTests&Category!=Stress",
+    "pid": 44704,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 23662,
+    "stdoutSha256": "8CF466E55A161E53873C485D08688E45E21B9C18498678870873CCFA80ABFE6B",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  }
+}

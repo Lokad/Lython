@@ -1,0 +1,21 @@
+{
+  "baselineRevision": "118ce7645d40d15171e8da4ef2ca240f834a05e1",
+  "candidateRevision": "423967d2cb1f0b00703c246170b6a8b629f6ee4a",
+  "performanceQualified": false,
+  "timingCaptureCount": 1,
+  "case": "comprehensions.helper-list.large",
+  "lane": "compile-run",
+  "sharedCatalog": "../2026-10-19-native-prepared-routing/catalog.json.gz",
+  "catalogSha256": "19ad27ec4b3decae105924d704090f1ed94e84c5e422e68c9fd5f5e50bd9dd38",
+  "focusedWhiteChecks": 185,
+  "publicOwnershipChecks": 61,
+  "publicProtocolChecks": 59,
+  "representativeScriptChecks": 123,
+  "files": {
+    "baseline.json": "bb2e0d6f6e308bc1de002b506043cf1d99c46345785478ffbb48a21e63cc3771",
+    "candidate.patch": "f57a5246c8c488b2f202c2b156f9d433a2f7c77cd6ed55ece3e7c3030398ac22",
+    "checks.json": "34bef96fb0df6daf270d1dd1957f06af2906efbda0fdb41249ddd36940052bd5",
+    "micro.json": "719a08799d3e1f0c666ed449a99163176c942781ed3033111075bec26f71abb7",
+    "process.receipt.json": "04ff300b3d441ff34d6c77ec6b863953c710316df9af878eb07ce526db24ee89"
+  }
+}
