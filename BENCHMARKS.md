@@ -754,6 +754,13 @@ the change is inconclusive. Removing argument repackaging has no demonstrated
 speedup. This is separate from the Linux snapshots and includes fresh compilation,
 file staging/checks and cleanup; startup is excluded.
 
+The [native-list concatenation check](benchmarks/results/2026-10-20-list-concat/README.md)
+records one warm synchronous kernel at `db86f36f`/`30998066`: two 16,384-item
+lists, concatenation and endpoint checks take 0.773/0.776 ms on shared Windows,
+versus CPython 3.13.2 at 0.044 ms. Lython spreads are 10.81%/16.80%; the change is
+inconclusive. The admission/ownership correction has no demonstrated speedup.
+Construction and cleanup are included; compilation and startup are excluded.
+
 - [Measurement methods, commands and qualification rules](benchmarks/COMPARISON.md)
 - [Experimental history, profiles and rejected optimizations](benchmarks/EXPERIMENTS.md)
 - [Historical Lython-only BenchmarkDotNet scan baselines](benchmarks/Baselines.md)

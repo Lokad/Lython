@@ -179,9 +179,9 @@ Lython's governed runtime values before script code observes them.
 Ownership across the execution layers:
 
 - Run-shared services live in one `ExecutionServices` per run, shared by every
-  context: `ExecutionState` (host, limits, governor, budget guards, random
-  state, decimal context, option snapshots, module registries, standard-stream
-  builders and handles, member caches), value-observation guards, and the active
+  context: `ExecutionState` (host, limits, governor, random state, decimal context,
+  option snapshots, module registries, standard-stream builders and handles,
+  member caches), cancellation/admission and managed-stack guards, and the active
   exception state, which is saved and restored around nested handling.
 - Lexical scope is the linked `ExecutionFrame.Parent` chain, each frame owning
   its `Variables` dictionary; the root frame holds module variables.
@@ -278,8 +278,8 @@ acquisition: offsets and lengths are byte-based, negative arguments fail
 explicitly, and offsets at or past the end yield empty payloads. The default
 implementations compose whole-file reads and are therefore correct but
 unbounded; hosts with native ranged I/O should override them. Engine file
-opens stream fixed windows through these ranges, with cumulative host-read
-   caps and per-pull cancellation, so a native override
+opens stream fixed windows through these ranges, with shared storage admission
+and per-pull cancellation, so a native override
 is what makes large-file scans bounded end to end; without it every window
 re-reads the whole file host-side.
 
@@ -302,6 +302,10 @@ backing stays charged, then relinquishes old backing; unpublished construction
 failure returns only its private storage. Attaching ungoverned internal backing
 conservatively admits its capacity and preserves any existing producer funding.
 Large numeric payloads and escaping values retain their independent owners.
+Native concatenation admits one final-capacity backing through the active
+execution owner, including when inputs are prepaid views without governors.
+Indexed copies preserve source funding and aliases, check cancellation while
+working and discard only unpublished destination storage on failure.
 
 Path behavior is split between lexical providers and cohesive host-backed
 providers. Lexical operations never call the host. Status, mutation, unsupported

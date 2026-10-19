@@ -1,0 +1,3 @@
+# Preserve measured catalog and receipt bytes on every checkout.
+*.json -text whitespace=cr-at-eol
+*.txt -text whitespace=cr-at-eol

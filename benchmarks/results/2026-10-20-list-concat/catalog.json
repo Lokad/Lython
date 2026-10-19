@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "lists.native-concat.large",
+      "family": "lists",
+      "category": "core",
+      "scale": "large",
+      "size": 16384,
+      "source": "N = 16384\nleft = [1] * N\nright = [2] * N\njoined = left + right\nprint(len(joined), joined[0], joined[-1])\n",
+      "fixtureJson": "{\"size\":16384,\"text\":null}",
+      "expectedOutput": "32768 1 2\n",
+      "sourceSha256": "14fe9d19816fb9953f0889d50d8658f2327051a83d762b7710e8adb3e06356c7",
+      "fixtureSha256": "c1c16fa8a40dac165afc8c9915fab90012d9af6a9836b6a2e03812eb3f441155",
+      "expectedOutputSha256": "9d4e7daf6ea5316fcb19d4e673b8fafa87fdc68f002aa43f82ca0970c8f3a3fa"
+    }
+  ]
+}

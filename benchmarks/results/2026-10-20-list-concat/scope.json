@@ -1,0 +1,10 @@
+{
+  "before": "db86f36fa6b36b2ebcf4aa6e1a006852c67bedd1",
+  "beforeRuntime": "954394b3cf1c027f872ccf2cd91392f6f43b3a50",
+  "runtimeSourceEqualToPreChangeHead": "9ef38d28c3d5ea38427c87b78eac5d12d6f65ac4",
+  "candidate": "30998066c6cea99cd50c8054ce3d58d4dffc4e26",
+  "machine": "LOKAD-0399",
+  "captureCount": 1,
+  "performanceQualified": false,
+  "note": "Native list concatenation only; before and candidate include unchanged input repetition, execution setup and cleanup. No allocation or latency gain claimed."
+}

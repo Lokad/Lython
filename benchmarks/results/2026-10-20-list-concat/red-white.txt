@@ -1,0 +1,74 @@
+VSTest version 18.3.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.48]   Discovered:  Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.50]   Starting:    Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.55]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.55]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+[xUnit.net 00:00:00.55]       Stack Trace:
+[xUnit.net 00:00:00.55]         D:\code\Lython\tests\Lokad.Lython.Tests\NativeListConcatenationTests.cs(54,0): at Lokad.Lython.Tests.NativeListConcatenationTests.RefusedPrepaidViewCopyPreservesSourceFundingAndAdmissionOrigin()
+[xUnit.net 00:00:00.55]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.55]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.56]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:00.56]       Expected: 704
+[xUnit.net 00:00:00.56]       Actual:   1456
+[xUnit.net 00:00:00.56]       Stack Trace:
+[xUnit.net 00:00:00.56]         D:\code\Lython\tests\Lokad.Lython.Tests\NativeListConcatenationTests.cs(81,0): at Lokad.Lython.Tests.NativeListConcatenationTests.DestinationStorageOutlivesRelinquishedSourceBacking()
+[xUnit.net 00:00:00.56]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.56]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.56]       Assert.Same() Failure: Values are not the same instance
+[xUnit.net 00:00:00.56]       Expected: MemoryGovernor { CurrentAccountedBytes = 1408, CurrentCommittedBytes = 1408, CurrentReservedBytes = 0, LastDeniedReservationBytes = 0, PeakAccountedBytes = 1888 }
+[xUnit.net 00:00:00.56]       Actual:   null
+[xUnit.net 00:00:00.56]       Stack Trace:
+[xUnit.net 00:00:00.56]         D:\code\Lython\tests\Lokad.Lython.Tests\NativeListConcatenationTests.cs(26,0): at Lokad.Lython.Tests.NativeListConcatenationTests.PrepaidViewConcatenationFundsNewStorageWithoutChangingSourceCharges()
+[xUnit.net 00:00:00.56]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.56]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.56]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.56]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+[xUnit.net 00:00:00.56]       Stack Trace:
+[xUnit.net 00:00:00.56]         D:\code\Lython\tests\Lokad.Lython.Tests\NativeListConcatenationTests.cs(105,0): at Lokad.Lython.Tests.NativeListConcatenationTests.CancellationAfterAdmissionRefundsOnlyUnpublishedDestination()
+[xUnit.net 00:00:00.56]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.56]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.56]   Finished:    Lokad.Lython.WhiteBox.Tests
+  Failed Lokad.Lython.Tests.NativeListConcatenationTests.RefusedPrepaidViewCopyPreservesSourceFundingAndAdmissionOrigin [26 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.NativeListConcatenationTests.RefusedPrepaidViewCopyPreservesSourceFundingAndAdmissionOrigin() in D:\code\Lython\tests\Lokad.Lython.Tests\NativeListConcatenationTests.cs:line 54
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Lokad.Lython.Tests.NativeListConcatenationTests.DestinationStorageOutlivesRelinquishedSourceBacking [3 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 704
+Actual:   1456
+  Stack Trace:
+     at Lokad.Lython.Tests.NativeListConcatenationTests.DestinationStorageOutlivesRelinquishedSourceBacking() in D:\code\Lython\tests\Lokad.Lython.Tests\NativeListConcatenationTests.cs:line 81
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Lokad.Lython.Tests.NativeListConcatenationTests.PrepaidViewConcatenationFundsNewStorageWithoutChangingSourceCharges [2 ms]
+  Error Message:
+   Assert.Same() Failure: Values are not the same instance
+Expected: MemoryGovernor { CurrentAccountedBytes = 1408, CurrentCommittedBytes = 1408, CurrentReservedBytes = 0, LastDeniedReservationBytes = 0, PeakAccountedBytes = 1888 }
+Actual:   null
+  Stack Trace:
+     at Lokad.Lython.Tests.NativeListConcatenationTests.PrepaidViewConcatenationFundsNewStorageWithoutChangingSourceCharges() in D:\code\Lython\tests\Lokad.Lython.Tests\NativeListConcatenationTests.cs:line 26
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Lokad.Lython.Tests.NativeListConcatenationTests.CancellationAfterAdmissionRefundsOnlyUnpublishedDestination [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.NativeListConcatenationTests.CancellationAfterAdmissionRefundsOnlyUnpublishedDestination() in D:\code\Lython\tests\Lokad.Lython.Tests\NativeListConcatenationTests.cs:line 105
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+Results File: D:\code\Lython\.git\agent-notes\list-concat-9ef38d28\red-white\tests.trx
+
+Total tests: 4
+     Failed: 4
+ Total time: 0.9147 Seconds

@@ -1,0 +1,45 @@
+VSTest version 18.3.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.29]   Discovering: Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.58]   Discovered:  Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.60]   Starting:    Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.91]       Assert.False() Failure
+[xUnit.net 00:00:01.91]       Expected: False
+[xUnit.net 00:00:01.91]       Actual:   True
+[xUnit.net 00:00:01.91]       Stack Trace:
+[xUnit.net 00:00:01.91]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeListConcatenationTests.cs(76,0): at Lokad.Lython.PublicApi.Tests.NativeListConcatenationTests.RetainedPrepaidCopiesRefuseAndLaterCommandsReuseTheSharedAllowance(Boolean asynchronous)
+[xUnit.net 00:00:01.91]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.91]       Assert.False() Failure
+[xUnit.net 00:00:01.91]       Expected: False
+[xUnit.net 00:00:01.91]       Actual:   True
+[xUnit.net 00:00:01.91]       Stack Trace:
+[xUnit.net 00:00:01.91]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeListConcatenationTests.cs(76,0): at Lokad.Lython.PublicApi.Tests.NativeListConcatenationTests.RetainedPrepaidCopiesRefuseAndLaterCommandsReuseTheSharedAllowance(Boolean asynchronous)
+[xUnit.net 00:00:01.91]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.96]   Finished:    Lokad.Lython.PublicApi.Tests
+  Failed Lokad.Lython.PublicApi.Tests.NativeListConcatenationTests.RetainedPrepaidCopiesRefuseAndLaterCommandsReuseTheSharedAllowance(asynchronous: True) [282 ms]
+  Error Message:
+   Assert.False() Failure
+Expected: False
+Actual:   True
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeListConcatenationTests.RetainedPrepaidCopiesRefuseAndLaterCommandsReuseTheSharedAllowance(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeListConcatenationTests.cs:line 76
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeListConcatenationTests.RetainedPrepaidCopiesRefuseAndLaterCommandsReuseTheSharedAllowance(asynchronous: False) [8 ms]
+  Error Message:
+   Assert.False() Failure
+Expected: False
+Actual:   True
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeListConcatenationTests.RetainedPrepaidCopiesRefuseAndLaterCommandsReuseTheSharedAllowance(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeListConcatenationTests.cs:line 76
+--- End of stack trace from previous location ---
+  Passed Lokad.Lython.PublicApi.Tests.NativeListConcatenationTests.ConcatenationPreservesCyclesAliasesAndIndependentResults(asynchronous: True) [37 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeListConcatenationTests.ConcatenationPreservesCyclesAliasesAndIndependentResults(asynchronous: False) [2 ms]
+Results File: D:\code\Lython\.git\agent-notes\list-concat-9ef38d28\red-public\tests.trx
+
+Total tests: 4
+     Passed: 2
+     Failed: 2
+ Total time: 2.2707 Seconds

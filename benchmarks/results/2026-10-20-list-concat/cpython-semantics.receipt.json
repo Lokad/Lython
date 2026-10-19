@@ -1,0 +1,16 @@
+{
+  "pid": 32596,
+  "exitCode": 0,
+  "hasExited": true,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 31,
+  "executable": "C:\\Python313\\python.exe",
+  "executableSha256": "7D96A4ED35D6E596CD9DD8933FEAFC66349CC21F75BE3B15C89FD336E50140C1",
+  "arguments": [
+    "-I",
+    "-S",
+    "-X",
+    "utf8",
+    "benchmarks/results/2026-10-20-list-concat/concat-control.py"
+  ]
+}
