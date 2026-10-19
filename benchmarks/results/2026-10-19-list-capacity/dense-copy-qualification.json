@@ -1,0 +1,23 @@
+{
+  "runtimeRevision": "954394b3cf1c027f872ccf2cd91392f6f43b3a50",
+  "precedingRun": 39332245688,
+  "precedingHead": "db86f36fa6b36b2ebcf4aa6e1a006852c67bedd1",
+  "precedingFailure": "Only DenseSliceCopyRespectsMemoryBudget: 1024-cell source and copy now fit after repetition snapshot removal",
+  "correction": "Restore original 2000-cell source at unchanged 262144-byte limit; dispose success control, prove construction by stdout, assert cleanup returns both runs to zero",
+  "productionChanges": false,
+  "focusedPassingChecks": 4,
+  "receipt": {
+    "source": "db86f36f-plus-isolated-dense-witness",
+    "production": "954394b3",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+    "assemblySha256": "601E326E62D7A649C057F233C5CECF291D6150EEF62B926A0684C6246BF1155C",
+    "filter": "FullyQualifiedName~ReviewHardening4RegressionTests.DenseSliceCopyRespectsMemoryBudget|FullyQualifiedName~NativeListRepetitionTests|FullyQualifiedName~GrowthStorageScenarioStressTests.ListRepeatCompletes",
+    "pid": 60752,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 2337,
+    "stdoutSha256": "51538CFB6E7B47D5A6204D3939B81915C98244F52515B9C653FF38BBF188A2CA",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  }
+}

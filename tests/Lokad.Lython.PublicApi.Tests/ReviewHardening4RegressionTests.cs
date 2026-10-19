@@ -70,33 +70,27 @@ return [len(every), len(sparse), len(letters), every[1999], sparse[0], letters[0
     public void DenseSliceCopyRespectsMemoryBudget()
     {
         // Exact-sized source capacity fits; source plus a dense copy must not.
-        // Repeated references still require full independent backing funding.
-        var options = new LythonRunOptions
+        // Relinquish the success control before measuring the copy failure.
+        var budget = new LythonMemoryBudget(262144);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        const string source = "values = [0] * 2000\n";
+        using (var baseline = new LythonEngine(Utf8RegexProvider.Instance).Run(
+            source + "return len(values)\n", new MockLythonHost(), options))
         {
-            MemoryBudget = new LythonMemoryBudget(262144)
-        };
-        var baseline = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            """
-values = [0] * 1024
-return len(values)
-""",
-            new MockLythonHost(),
-            options);
-        Assert.True(baseline.Success, baseline.Failure?.Message);
+            Assert.True(baseline.Success, baseline.Failure?.Message);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
 
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            """
-values = [0] * 1024
-every = values[::1]
-return len(every)
-""",
-            new MockLythonHost(),
-            options);
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Contains("shared memory budget exceeded", result.Failure?.Message, StringComparison.Ordinal);
+        using (var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
+            source + "print(len(values))\nevery = values[::1]\nreturn len(every)\n",
+            new MockLythonHost(), options))
+        {
+            Assert.False(result.Success);
+            Assert.Equal("2000\n", result.StandardOutput);
+            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }
 

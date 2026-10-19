@@ -77,3 +77,11 @@ Both explicit Release package consumers pass at `954394b3`.
 [Patch](repetition.patch) and [qualification receipts](repetition-qualification.json)
 preserve the evidence. Final full requalification is pending. No new timing capture
 or performance claim follows; the earlier diagnostic remains historical.
+
+CI39332245688 finds one ordinary-test witness invalidated by the removed
+snapshots: a 1,024-cell source and dense copy now fit. The final test-only
+adjustment restores the original 2,000-cell source at the unchanged256KiB limit,
+disposes the success control before the refusal run, proves construction by its
+printed length, and checks both owners return the root to zero. It passes with
+the two cyclic/alias controls and original repetition Stress (four checks).
+[Receipt and scope](dense-copy-qualification.json). Runtime sources remain954394b3.
