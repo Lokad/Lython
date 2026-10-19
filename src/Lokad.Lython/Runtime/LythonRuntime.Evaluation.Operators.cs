@@ -60,13 +60,34 @@ internal sealed partial class LythonRuntime
 
         if (left is PyList leftList && right is PyList rightList)
         {
-            var governor = leftList.OwnerMemoryGovernor ?? rightList.OwnerMemoryGovernor;
-            var allocationSpan = leftList.AllocationSpan ?? rightList.AllocationSpan;
-            var result = governor is null
-                ? new PyList(leftList)
-                : new PyList(leftList, governor, allocationSpan);
-            result.AddRange(rightList);
-            return result;
+            var totalLength = (long)leftList.Count + rightList.Count;
+            if (totalLength > int.MaxValue)
+                throw new LythonRuntimeException("RuntimeError", "List concatenation is too large.", span);
+
+            context.CheckExecution(span);
+            var result = new PyList((int)totalLength, context.MemoryGovernor, span);
+            try
+            {
+                // The private destination cannot alias either source. Copy the
+                // native references without creating snapshots or invoking hooks.
+                for (var i = 0; i < leftList.Count; i++)
+                {
+                    context.CheckExecution(span);
+                    result.Add(leftList[i]);
+                }
+                for (var i = 0; i < rightList.Count; i++)
+                {
+                    context.CheckExecution(span);
+                    result.Add(rightList[i]);
+                }
+                context.CheckExecution(span);
+                return result;
+            }
+            catch
+            {
+                result.DiscardUnpublishedStorage();
+                throw;
+            }
         }
 
         if (PyTupleLike.TryGetItems(left, out var leftItems) && PyTupleLike.TryGetItems(right, out var rightItems))

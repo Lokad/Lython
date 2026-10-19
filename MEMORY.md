@@ -275,6 +275,17 @@ discards only unpublished destination storage through the existing rollback
 helper. Upfront final-capacity admission can refuse earlier. No tracing, new
 ownership layer or performance guarantee follows.
 
+Native list concatenation similarly admits one checked final-capacity destination
+through the active execution owner, including when its sources are prepaid internal
+views without individual governors. Source backing and payload funding stay with
+their existing owners; the new backing no longer inherits an input governor.
+Indexed reference copies preserve aliases and cycles without a right-hand snapshot
+or an intermediate left-hand backing. Cancellation checks run during copying, and
+failure refunds only unpublished destination storage. Admission is attributed to
+the concatenation expression. Previously uncharged view concatenations can now
+refuse; removing scratch and growth overlap can reduce other admission peaks.
+As elsewhere, payload owners must outlive all aliases using their storage.
+
 Array-backed list growth reserves full replacement capacity against the borrowed
 host allowance before allocation. The old backing
 remains charged until the copy finishes. Failed admission leaves its contents

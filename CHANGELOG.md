@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fund native list concatenation through the active execution's shared allowance, including copies of prepaid internal views. Admit one final-capacity destination and copy references directly, removing the intermediate left backing, right snapshot and input-owner selection. Preserve aliases/cycles, source funding, in-loop cancellation and unpublished-storage rollback. Previously uncharged copies can now refuse at the concatenation expression; no public API change or measured speedup claim.
+
 - Remove unused context/span parameters and five argument pairs from executable value transfer after deleting result observation. Keep actual operand replacement, native allocation preflights, cancellation and frame cleanup. Preserve argument-buffer cleanup checks independently; isolate post-completion pool observations so parallel executions cannot rerent the inspected arrays. No public API change or measured speedup claim.
 
 - Migrate lifetime regressions to the supplied shared root, including retained aliases and sequential cleanup. Remove tests/helpers enforcing deleted value-observation hooks, exact local-cap diagnostics and obsolete coupon/refund expectations. Preserve cancellation, side effects, frame cleanup, allocation refusal and alias semantics. Keep longer protocol populations/scans as separate Stress cases. Raw publication copies remain conservatively execution-owned until cleanup; bounded host batches provide reusable allowance. No production admission relaxation or measured speedup claim.
