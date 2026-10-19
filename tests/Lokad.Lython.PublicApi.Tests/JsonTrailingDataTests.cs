@@ -37,7 +37,7 @@ public sealed class JsonTrailingDataTests
                 print(error.msg)
                 print(str(error))
                 print(error.args)
-                print(error.pos, error.lineno, error.colno, error.doc == source)
+                print(error.pos, error.lineno, error.colno, error.doc is source if entry != 'load' else error.doc == source)
             print(json.JSONDecoder().raw_decode(source, start)[1])
             """;
         var message = $"Extra data: line {line} column {column} (char {position})";

@@ -21,7 +21,7 @@ public sealed class JsonPrefixValidationTests
                 try:
                     json.loads(source, object_hook=hook, parse_int=integer)
                 except json.JSONDecodeError as e:
-                    print(e.pos, events, e.doc == source)
+                    print(e.pos, events, e.doc is source)
             """);
         Assert.True(script.IsValid);
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })

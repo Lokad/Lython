@@ -179,6 +179,11 @@ Public host/global inputs normalize CLR strings at the boundary, and public
 projection converts governed values back for consumers. Runtime switches must
 not accept raw CLR strings as a second, partially compatible Python value kind.
 
+The JSON reader passes its original governed `PyString` through token and error
+helpers, deriving byte views from that immutable document. It carries no separate
+document/view record. Lenient token rewrites preserve original error coordinates
+and document identity; suspended callbacks retain the existing execution owners.
+
 Protocol-aware unary, binary, comparison, and augmented-assignment dispatch is
 centralized so expression helpers, lowered, executable, and `operator`-module paths do
 not drift. Python sorting uses a stable merge operation with one key evaluation

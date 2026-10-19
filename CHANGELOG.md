@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Remove the redundant JSON input carrier and its document/view plumbing. Parsing and error helpers retain the original governed string and derive its UTF-8 view directly, preserving prefix/error coordinates, callbacks and ownership. No public API change or measured speedup.
+
 - Remove 19 redundant execution checks and obsolete checkpoint-count comments from native call and JSON forwarding helpers. Keep effective token/admission checks, managed frame entry, allocation preflights and cleanup. No replacement counter or public contract change; no performance claim.
 
 - Guard generated dataclass hashing with existing managed cycle/depth admission and field-loop cancellation checks. Carry its execution context and source span so configured recursion limits apply. Cyclic hashes now raise catchable `RecursionError` instead of overflowing the CLR stack; repair/recovery and successful hashes remain supported. Add isolated post-I/O regression coverage. No native probing or new protection policy.

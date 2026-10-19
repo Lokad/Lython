@@ -50,13 +50,13 @@ internal sealed partial class LythonRuntime
 
     private sealed partial class JsonModule : PyModule
     {
-        private static LythonRuntimeException CreateJsonDecodeError(JsonParseInput input, JsonException exception, LythonSourceSpan span, ExecutionContext context)
+        private static LythonRuntimeException CreateJsonDecodeError(PyString input, JsonException exception, LythonSourceSpan span, ExecutionContext context)
         {
             var reportedBytePosition = ComputeJsonErrorBytePosition(
-                input.Source.Span,
+                input.Utf8Bytes.Span,
                 exception.LineNumber.GetValueOrDefault(),
                 exception.BytePositionInLine.GetValueOrDefault());
-            var bytePosition = NormalizeJsonErrorBytePosition(input.Source.Span, reportedBytePosition, exception.Message);
+            var bytePosition = NormalizeJsonErrorBytePosition(input.Utf8Bytes.Span, reportedBytePosition, exception.Message);
             return NewJsonDecodeFailure(input, exception.Message, bytePosition, exception, span, context);
         }
 
@@ -66,9 +66,8 @@ internal sealed partial class LythonRuntime
         // (truncation, trailing data, strict violations, index bounds). Positions
         // always refer to the original document; token-local backend errors
         // are translated before reaching this shared payload builder.
-        private static LythonRuntimeException NewJsonDecodeFailure(JsonParseInput input, string message, int bytePosition, Exception? innerException, LythonSourceSpan span, ExecutionContext context)
+        private static LythonRuntimeException NewJsonDecodeFailure(PyString document, string message, int bytePosition, Exception? innerException, LythonSourceSpan span, ExecutionContext context)
         {
-            var document = input.Document;
             var position = document.ByteIndexToRuneIndex(bytePosition);
             var location = ComputeJsonErrorLocation(document, bytePosition);
             var payload = new PyDict(context.MemoryGovernor, span);
@@ -86,13 +85,13 @@ internal sealed partial class LythonRuntime
         // Builds the catchable JSONDecodeError for an explicit Python string
         // index (used when the index lies past the end, where no parse byte
         // position maps to it). Lines and columns count like the byte path.
-        private static LythonRuntimeException NewJsonDecodeFailureAtRune(JsonParseInput input, string message, long runePosition, LythonSourceSpan span, ExecutionContext context)
+        private static LythonRuntimeException NewJsonDecodeFailureAtRune(PyString input, string message, long runePosition, LythonSourceSpan span, ExecutionContext context)
         {
-            var location = ComputeJsonRuneLocation(input.Document, runePosition);
+            var location = ComputeJsonRuneLocation(input, runePosition);
             var payload = new PyDict(context.MemoryGovernor, span);
             var errorMessage = CreateString(message, context, span);
             payload.SetItem(PyString.FromString("msg"), errorMessage);
-            payload.SetItem(PyString.FromString("doc"), input.Document);
+            payload.SetItem(PyString.FromString("doc"), input);
             payload.SetItem(PyString.FromString("pos"), new BigInteger(runePosition));
             payload.SetItem(PyString.FromString("lineno"), new BigInteger(location.Line));
             payload.SetItem(PyString.FromString("colno"), new BigInteger(location.Column));
@@ -103,7 +102,7 @@ internal sealed partial class LythonRuntime
 
         // Reports a prefix index past the end with CPython coordinates: every
         // newline in the document precedes it.
-        private static LythonRuntimeException CreateJsonExpectingErrorAtRune(JsonParseInput input, long runePosition, LythonSourceSpan span, ExecutionContext context)
+        private static LythonRuntimeException CreateJsonExpectingErrorAtRune(PyString input, long runePosition, LythonSourceSpan span, ExecutionContext context)
             => NewJsonDecodeFailureAtRune(input, "Expecting value", runePosition, span, context);
 
         private static JsonSourceLocation ComputeJsonRuneLocation(PyString document, long runePosition)
