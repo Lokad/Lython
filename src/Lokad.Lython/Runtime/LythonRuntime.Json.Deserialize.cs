@@ -138,30 +138,45 @@ internal sealed partial class LythonRuntime
             return ReadJsonNumberOrConstantAsync(input, options, context, span, position, asynchronous);
         }
 
-        private async ValueTask<(object Value, int End)> ReadJsonNumberOrConstantAsync(PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int position, bool asynchronous)
+        private ValueTask<(object Value, int End)> ReadJsonNumberOrConstantAsync(PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int position, bool asynchronous)
         {
             var bytes = input.Utf8Bytes;
             if (TryMatchJsonConstant(bytes.Span, position, out var constant, out var constantEnd))
             {
-                return (await ConvertJsonConstantAsync(constant, options, context, span, asynchronous).ConfigureAwait(false), constantEnd);
+                var converted = ConvertJsonConstantAsync(constant, options, context, span, asynchronous);
+                return converted.IsCompletedSuccessfully
+                    ? new((converted.Result, constantEnd))
+                    : CompleteJsonScalarAsync(converted, constantEnd, null);
             }
 
             context.EnterInterpreterFrame(span);
+            var pending = false;
             try
             {
                 // Numbers match Python's prefix grammar; a trailing suffix
                 // belongs to whole-document validation, not this token.
                 if (TryMatchJsonNumber(bytes.Span, position, context, span, out var numberEnd))
                 {
-                    return (await ConvertJsonNumberTextAsync(bytes, position, numberEnd, options, context, span, asynchronous).ConfigureAwait(false), numberEnd);
+                    var converted = ConvertJsonNumberTextAsync(bytes, position, numberEnd, options, context, span, asynchronous);
+                    if (converted.IsCompletedSuccessfully) return new((converted.Result, numberEnd));
+                    // Transfer this existing numeric frame to the pending callback.
+                    pending = true;
+                    return CompleteJsonScalarAsync(converted, numberEnd, context);
                 }
 
                 throw CreateJsonExpectingError(input, position, JsonIncompleteExpectation.Value, span, context);
             }
             finally
             {
-                context.LeaveInterpreterFrame();
+                if (!pending) context.LeaveInterpreterFrame();
             }
+        }
+
+        private static async ValueTask<(object Value, int End)> CompleteJsonScalarAsync(
+            ValueTask<object> converted, int end, ExecutionContext? numericFrame)
+        {
+            try { return (await converted.ConfigureAwait(false), end); }
+            finally { numericFrame?.LeaveInterpreterFrame(); }
         }
 
         private static (PyString Value, int End) ReadJsonString(PyString input, bool strict, int position, ExecutionContext context, LythonSourceSpan span)
@@ -595,20 +610,20 @@ internal sealed partial class LythonRuntime
         // Converts an already-matched constant literal: the parse_constant hook
         // receives the literal text, otherwise the IEEE double. Shared by
         // whole-text and nested positions.
-        private static async ValueTask<object> ConvertJsonConstantAsync(string literal, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        private static ValueTask<object> ConvertJsonConstantAsync(string literal, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             if (options.ParseConstant is not null)
             {
                 var constantText = CreateString(literal, context, span);
-                return await InvokeJsonCallbackCoreAsync(options.ParseConstant, constantText, context, span, asynchronous).ConfigureAwait(false);
+                return InvokeJsonCallbackCoreAsync(options.ParseConstant, constantText, context, span, asynchronous);
             }
 
-            return literal switch
+            return new(literal switch
             {
                 "NaN" => PythonNaN,
                 "Infinity" => double.PositiveInfinity,
                 _ => double.NegativeInfinity,
-            };
+            });
         }
 
         // Reports container nesting past the previous backend limit with its

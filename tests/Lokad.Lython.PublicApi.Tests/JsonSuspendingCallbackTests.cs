@@ -81,11 +81,16 @@ public sealed class JsonSuspendingCallbackTests
 
     [Theory]
     [InlineData("json.loads('7', parse_int=read)")]
+    [InlineData("json.loads('1.5', parse_float=read)")]
+    [InlineData("json.loads('NaN', parse_constant=read)")]
     [InlineData("''.join(json.JSONEncoder(default=read).iterencode([{1}]))")]
     [InlineData("json.loads('{\"x\":[true,false,null]}', object_hook=read)")]
     public async Task SuspendedCallbacksCancelAndCompiledScriptsRemainReusable(string expression)
     {
-        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(Definitions + "\nreturn str(" + expression + ")");
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(Definitions + "\nreturn str(" + expression + ")", budget);
+        Assert.True(compiled.IsValid);
+        var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/value", "v");
         var started = host.PauseReadUntilCancellation("/value");
@@ -94,17 +99,74 @@ public sealed class JsonSuspendingCallbackTests
         try
         {
             await started.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(run.IsCompleted);
+            Assert.True(budget.ReservedBytes > baseline);
         }
         finally
         {
             cancellation.Cancel();
         }
-        var canceled = await run.WaitAsync(TimeSpan.FromSeconds(10));
-        Assert.False(canceled.Success);
-        Assert.Contains("execution canceled", canceled.Failure?.Message, StringComparison.Ordinal);
+        using (var canceled = await run.WaitAsync(TimeSpan.FromSeconds(10)))
+        {
+            Assert.False(canceled.Success);
+            Assert.Equal(LythonFailureReason.Cancelled, canceled.FailureAttribution?.Reason);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
         var fresh = new DelayedLythonHost();
         fresh.SeedFile("/value", "v");
-        Assert.True((await compiled.RunAsync(fresh)).Success);
+        using (var reused = await compiled.RunAsync(fresh)) Assert.True(reused.Success, reused.Failure?.Message);
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData("7", "parse_int", false)]
+    [InlineData("7", "parse_int", true)]
+    [InlineData("1.5", "parse_float", false)]
+    [InlineData("1.5", "parse_float", true)]
+    [InlineData("NaN", "parse_constant", false)]
+    [InlineData("NaN", "parse_constant", true)]
+    public async Task ScalarHookFailuresAfterSuspensionAwaitCleanupAndReturnAllowance(string literal, string hook, bool refuse)
+    {
+        var source = Definitions + $$"""
+
+            def convert(value):
+                with open('/cleanup', 'w') as target:
+                    target.write('done')
+                    target.flush()
+                    read(value)
+                    if mode == 'memory':
+                        return 'x' * 4194304
+                    if mode == 'error':
+                        raise ValueError('scalar hook failed')
+                    return value
+            try:
+                json.loads('{{literal}}', {{hook}}=convert)
+            except MemoryError:
+                print('suppressed')
+            print('after')
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost(); host.SeedFile("/value", "v");
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["mode"] = refuse ? "memory" : "error" } };
+        using (var result = await compiled.RunAsync(host, options))
+        {
+            Assert.False(result.Success);
+            Assert.Equal(refuse ? "MemoryError" : "ValueError", result.Failure?.ExceptionType);
+            Assert.Empty(result.StandardOutput);
+            Assert.Equal("done", host.ReadText("/cleanup"));
+            Assert.True(host.CompletedAsynchronously > 0);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["mode"] = "ok" } };
+        using (var reused = await compiled.RunAsync(host, options))
+        {
+            Assert.True(reused.Success, reused.Failure?.Message);
+            Assert.Equal("after\n", reused.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
     }
 
     [Fact]
