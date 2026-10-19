@@ -1,0 +1,38 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "source": "def f():\n 'caf\u00e9\ud83d\ude00'\n return 7\nassert f()==7\nprint(f.__doc__)\nf.__doc__='changed'\nprint(f.__doc__)\ndel f.__doc__\nprint(f.__doc__)",
+      "output": "caf\u00e9\ud83d\ude00\nchanged\nNone\n"
+    },
+    {
+      "source": "def f(value:int=7)->int:\n 'caf\u00e9\ud83d\ude00'\n return value\nassert f()==7\nprint(f.__doc__)\nf.__doc__='changed'\nprint(f.__doc__)\ndel f.__doc__\nprint(f.__doc__)",
+      "output": "caf\u00e9\ud83d\ude00\nchanged\nNone\n"
+    },
+    {
+      "source": "def f[T](value:T=7)->T:\n 'caf\u00e9\ud83d\ude00'\n return value\nassert f()==7\nprint(f.__doc__)\nf.__doc__='changed'\nprint(f.__doc__)\ndel f.__doc__\nprint(f.__doc__)",
+      "output": "caf\u00e9\ud83d\ude00\nchanged\nNone\n"
+    },
+    {
+      "source": "def f():\n 'caf\u00e9\ud83d\ude00'\n yield 7\nassert next(f())==7\nprint(f.__doc__)\nf.__doc__='changed'\nprint(f.__doc__)\ndel f.__doc__\nprint(f.__doc__)",
+      "output": "caf\u00e9\ud83d\ude00\nchanged\nNone\n"
+    },
+    {
+      "source": "def f[T]():\n 'caf\u00e9\ud83d\ude00'\n yield T\nassert next(f()) is f.__type_params__[0]\nprint(f.__doc__)\nf.__doc__='changed'\nprint(f.__doc__)\ndel f.__doc__\nprint(f.__doc__)",
+      "output": "caf\u00e9\ud83d\ude00\nchanged\nNone\n"
+    },
+    {
+      "source": "class Values:\n def method(self):\n  'caf\u00e9\ud83d\ude00'\n  return 7\nf=Values.method\nassert Values().method()==7\nprint(f.__doc__)\nf.__doc__='changed'\nprint(f.__doc__)\ndel f.__doc__\nprint(f.__doc__)",
+      "output": "caf\u00e9\ud83d\ude00\nchanged\nNone\n"
+    },
+    {
+      "source": "def make():\n value=1\n def f():\n  'caf\u00e9\ud83d\ude00'\n  return value\n value=7\n return f\nf=make()\nassert f()==7\nprint(f.__doc__)\nf.__doc__='changed'\nprint(f.__doc__)\ndel f.__doc__\nprint(f.__doc__)",
+      "output": "caf\u00e9\ud83d\ude00\nchanged\nNone\n"
+    },
+    {
+      "source": "def make():\n def f(value=(yield 7)):\n  'caf\u00e9\ud83d\ude00'\n  return value\n yield f\ng=make()\nassert next(g)==7\nf=g.send(9)\nassert f()==9\nprint(f.__doc__)\nf.__doc__='changed'\nprint(f.__doc__)\ndel f.__doc__\nprint(f.__doc__)",
+      "output": "caf\u00e9\ud83d\ude00\nchanged\nNone\n"
+    }
+  ],
+  "status": "Equivalent"
+}

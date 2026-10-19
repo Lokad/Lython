@@ -1,0 +1,27 @@
+{
+  "baselineRevision": "eb3f674c8bea6620bc812cec2d3b0d0081237395",
+  "candidateRevision": "e42d2d8f23fb6a2942fc6baa7743625ab8d4b207",
+  "case": "scripts.text-summary-helpers.large",
+  "lane": "compile-run",
+  "date": "2026-10-19T20:12:55.761391+00:00",
+  "machine": "LOKAD-0399",
+  "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+  "sharedCatalog": "../2026-10-19-json-scalar-completion/catalog.json",
+  "catalogSha256": "17af069933bb1694072d468d35cb90732671794bba4e8c04bfc49cec73d37681",
+  "performanceQualified": false,
+  "timingCaptureCount": 1,
+  "focusedWhiteChecks": 87,
+  "focusedPublicChecks": 345,
+  "cpythonSemanticControls": 8,
+  "limitations": [
+    "Extremely large Lython spreads; no speedup or regression inference.",
+    "No physical retained-heap or allocation measurement.",
+    "Coarse compilation allowance unchanged."
+  ],
+  "files": {
+    "baseline.json": "128501361cc09b441832a451a0462e4b924da36d7863d9a655b8ee3f2a908908",
+    "micro.json": "6580e766b12b1faa15cdffc712569c21e579cf1324ee64e4543df60dfff665c6",
+    "process.receipt.json": "fc7a318b7289e1e68fe9f9f08ba0e7962bbae5223b918060ae9842f7b931e1f9",
+    "cpython.json": "a08d193b623776b0b06649914c7c878c3801aae2813de974c14e1ae75600d492"
+  }
+}

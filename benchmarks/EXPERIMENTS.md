@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-19 compiled function body cleanup](results/2026-10-19-compiled-function-bodies/README.md)
+removes redundant lowered-body retention and runtime docstring-tree inspection.
+87 white-box and 345 public checks pass; eight docstring controls match CPython.
+The sole complete text-job capture at `eb3f674c`/`e42d2d8f` is inconclusive, with
+221%/151% spreads. No speedup, regression, heap/allocation claim or retiming follows.
+
 The [2026-10-19 generator definition route removal](results/2026-10-19-generator-definition-route/README.md)
 deletes the metadata-driven lowered-definition detour and namespace copy. All70
 white/435public focused checks and8CPython semantic controls pass. One7.596s
