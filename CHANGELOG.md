@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reject keyword arguments to native `dict.setdefault` and `defaultdict.setdefault`, as Python does. Reuse the existing positional-only binder, preserving argument evaluation before rejection and avoiding key hashing or mutation on invalid calls. Direct, exposed, expanded and unbound dictionary calls are covered; ordinary Python methods retain their declared keyword support. No public C# API change.
+
 - Reuse compiled bindings and the existing definition factory for functions prepared across a guest `yield`. Remove their lowered-body dispatch, duplicate lowered body and whole-namespace resynchronization; preserve captured defaults/decorators/annotations, cells, docstrings and managed frame admission. Preparation scratch includes its captured default map and remains funded through host I/O. Conservative admission can reject earlier; class bodies keep their existing path. No public API change or measured speedup claim.
 
 - Remove the obsolete result-observation stack-push helper and its 17 unused span arguments. Await values before pushing into the mutable operand stack, and rename the affected operand handlers to describe their real work. Preserve allocation admission, evaluation order, cancellation and cleanup. No public API change or measured speedup claim.

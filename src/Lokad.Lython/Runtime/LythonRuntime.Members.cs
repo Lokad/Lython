@@ -1929,7 +1929,9 @@ internal sealed partial class LythonRuntime
             "dict.get", ["key", "default"], requiredCount: 1, maximumPositionalArgumentCount: 2,
             variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 2);
         private static readonly LythonCallableSignature DictPopSignature = LythonCallableSignature.Create("dict.pop", ["key", "default"], 1);
-        private static readonly LythonCallableSignature DictSetDefaultSignature = LythonCallableSignature.Create("dict.setdefault", ["key", "default"], 1);
+        private static readonly LythonCallableSignature DictSetDefaultSignature = LythonCallableSignature.Create(
+            "dict.setdefault", ["key", "default"], requiredCount: 1, maximumPositionalArgumentCount: 2,
+            variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 2);
         private static readonly LythonCallableSignature DictContainsSignature = LythonCallableSignature.Create("dict.__contains__", ["item"]);
         private static readonly LythonCallableSignature DictGetItemSignature = LythonCallableSignature.Create(
             "dict.__getitem__", ["index"], requiredCount: 1, maximumPositionalArgumentCount: 1,
@@ -3317,7 +3319,9 @@ internal sealed partial class LythonRuntime
         // N17: hot fixed signatures hoisted per family (see ListMembers).
         private static readonly LythonCallableSignature DefaultDictGetSignature = LythonCallableSignature.Create("defaultdict.get", ["key", "default"], 1);
         private static readonly LythonCallableSignature DefaultDictPopSignature = LythonCallableSignature.Create("defaultdict.pop", ["key", "default"], 1);
-        private static readonly LythonCallableSignature DefaultDictSetDefaultSignature = LythonCallableSignature.Create("defaultdict.setdefault", ["key", "default"], 1);
+        private static readonly LythonCallableSignature DefaultDictSetDefaultSignature = LythonCallableSignature.Create(
+            "defaultdict.setdefault", ["key", "default"], requiredCount: 1, maximumPositionalArgumentCount: 2,
+            variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 2);
         private static readonly LythonCallableSignature DefaultDictContainsSignature = LythonCallableSignature.Create("defaultdict.__contains__", ["item"]);
         private static readonly LythonCallableSignature DefaultDictOrSignature = LythonCallableSignature.Create("defaultdict.__or__", ["value"]);
         private static readonly LythonCallableSignature DefaultDictROrSignature = LythonCallableSignature.Create("defaultdict.__ror__", ["value"]);
