@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-19 generator definition route removal](results/2026-10-19-generator-definition-route/README.md)
+deletes the metadata-driven lowered-definition detour and namespace copy. All70
+white/435public focused checks and8CPython semantic controls pass. One7.596s
+annotated variant of the maintained generator job gives0.289/0.308ms at
+`b2c91ba6`/`eb3f674c`, versus CPython0.043ms; large spreads make change inconclusive.
+No speedup, allocation claim or retiming follows.
+
 The [2026-10-19 ordinary byte-sum call check](results/2026-10-19-bytes-sum-call/README.md)
 removes argument repackaging for one-positional `sum(bytes)` and shares immutable
 sum metadata. One complete file-job comparison at `13375e82`/`b2c91ba6` takes

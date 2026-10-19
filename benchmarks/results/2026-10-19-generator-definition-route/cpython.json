@@ -1,0 +1,46 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "source": "def values(x:int=3)->int:\n 'numbers'\n yield x\nprint(next(values()),values.__annotations__=={'x':int,'return':int},values.__doc__)",
+      "expectedOutput": "3 True numbers\n",
+      "actualOutput": "3 True numbers\n"
+    },
+    {
+      "source": "events=[]\ndef decorate():\n events.append('decorator')\n def apply(f):\n  events.append('apply')\n  assert f.__annotations__=={'x':int,'return':int}\n  return f\n return apply\ndef value(name):\n events.append(name)\n return 3 if name=='default' else int\n@decorate()\ndef values(x:value('annotation')=value('default'))->value('return'):\n yield x\nprint(next(values()),events)",
+      "expectedOutput": "3 ['decorator', 'default', 'annotation', 'return', 'apply']\n",
+      "actualOutput": "3 ['decorator', 'default', 'annotation', 'return', 'apply']\n"
+    },
+    {
+      "source": "from __future__ import annotations\ndef values(x:missing())->Result:\n yield x\nprint(next(values(7)),values.__annotations__=={'x':'missing()','return':'Result'})",
+      "expectedOutput": "7 True\n",
+      "actualOutput": "7 True\n"
+    },
+    {
+      "source": "def make():\n T=17\n def values[T](x:T=T)->T:\n  yield x,T\n T=20\n return values\nf=make()\nx,t=next(f())\nprint(x,t is f.__type_params__[0],f.__annotations__['x'] is t,f.__annotations__['return'] is t)",
+      "expectedOutput": "17 True True True\n",
+      "actualOutput": "17 True True True\n"
+    },
+    {
+      "source": "def outer[T](value):\n def values()->T:\n  yield value,T\n value=7\n return values\nf=outer(2)\nx,t=next(f())\nprint(x,t is f.__annotations__['return'],t.__name__)",
+      "expectedOutput": "7 True T\n",
+      "actualOutput": "7 True T\n"
+    },
+    {
+      "source": "def make():\n n=1\n def values[T]():\n  nonlocal n\n  n+=1\n  yield n,T\n return values\nf=make()\na=next(f())\nb=next(f())\nprint(a[0],b[0],a[1] is b[1])",
+      "expectedOutput": "2 3 True\n",
+      "actualOutput": "2 3 True\n"
+    },
+    {
+      "source": "def make():\n value=1\n def values(x:int=0):\n  yield value+x\n value=2\n return values\nf=make()\nprint(list(f()),list(f(3)))",
+      "expectedOutput": "[2] [5]\n",
+      "actualOutput": "[2] [5]\n"
+    },
+    {
+      "source": "events=[]\ndef bound():events.append('bound');return int\ndef values[T:bound()]()->T:\n yield T\nt=next(values())\nprint(events,t is values.__type_params__[0])\nprint(t.__bound__ is int,t.__bound__ is int,events)",
+      "expectedOutput": "[] True\nTrue True ['bound']\n",
+      "actualOutput": "[] True\nTrue True ['bound']\n"
+    }
+  ],
+  "status": "Equivalent"
+}

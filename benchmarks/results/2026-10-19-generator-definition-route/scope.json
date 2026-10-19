@@ -1,0 +1,27 @@
+{
+  "baselineSource": "b2c91ba697f792afff858064de75e6faf64a7df1",
+  "originalCase": "generators.drain.small",
+  "case": "generators.annotated-drain.small",
+  "sourceChange": "Add only ->int to the maintained generator-drain definition to exercise metadata. Body, fixture and independently derived golden unchanged.",
+  "originalSourceSha256": "4d4890ef0c2679c198e6bd19b16fe35b4c996a1904470f535d3831ee7acc9729",
+  "annotatedSourceSha256": "9b3116386ef56505d0a7c165a9c316090a4048742486a3c0d67e1853330556b2",
+  "lane": "compile-run",
+  "timingCaptureCount": 1,
+  "performanceQualified": false,
+  "candidateRevision": "eb3f674c8bea6620bc812cec2d3b0d0081237395",
+  "machine": "LOKAD-0399",
+  "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+  "testSource": "tests/Lokad.Lython.PublicApi.Tests/GeneratorDefinitionMetadataTests.cs",
+  "testSourceSha256": "03822c6512013eed7953137c9b8dad54d9ad7b4bb0330e77b7fcd8605f8373a9",
+  "files": {
+    "baseline.json": "8e3bda929dd95efd06e7ba5ce5b0674a3a88044f973030bbfb6e022d474aa5bd",
+    "original-case.json": "32c19909e21ca503ced195fe62c1eee3513ac4cec508107d690d365c0a77f478",
+    "catalog.json": "f02f545fd58617a8eab56f28c8f988730d6518aa7c9dbcc74fdf25800549ea90",
+    "micro.json": "dc09750c9509ba2b63f637216a0a560f14708bf5400967940802b256dd4ec4c3",
+    "process.receipt.json": "441c4c5f3251f97f6672d6f6b9f4a4ce43601581ef523e62aa01b50ab04fa5af",
+    "cpython.json": "55f1d72bd7d64ab37654ad142c8cc4ece1fccf86278579f365f84638a4f36ef9"
+  },
+  "focusedWhiteChecks": 70,
+  "focusedPublicChecks": 435,
+  "cpythonSemanticControls": 8
+}
