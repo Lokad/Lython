@@ -1,0 +1,94 @@
+{
+  "revision": "a22c11b884f523f91fab4fd4852c33f7f58d6460",
+  "case": "scripts.json-summary-helpers.large",
+  "lane": "compile-run",
+  "inputFiles": {
+    "input.jsonl": {
+      "bytes": 110592,
+      "sha256": "d26f64bb57fe996b5850c5dc352284967a997e59593434c953fa6407b5f8ba3f"
+    }
+  },
+  "scriptBytes": 607,
+  "scriptSha256": "beea66dfa7ab6333419678181ea8a6d5a5b030eb01ac35b993bb6d801e0c29a7",
+  "outputFiles": {
+    "report.json": {
+      "bytes": 25,
+      "sha256": "9efa1d3e163c11dce3412445a85150acfff0045eb26a16eaf1fa3f6a9ec568b7",
+      "expected": "{\"blue\":7168,\"red\":3072}\n"
+    }
+  },
+  "expectedStdout": "3072\n",
+  "stdoutSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+  "records": 4096,
+  "blankLines": 1024,
+  "acceptedRecords": 3072,
+  "sourceFiles": {
+    "benchmarks/scripts/json-summary-helpers.py": "beea66dfa7ab6333419678181ea8a6d5a5b030eb01ac35b993bb6d801e0c29a7",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "95ddb6353ef3488e39486d926e030849efd64e80dd632fa50c7c3c3fbf58f878",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonMicroCommand.cs": "c94517c052799b925bb203a2bf398f8c55ac80e01a7bd2b6652dffa196f4f497"
+  },
+  "materialGap": "The leading fresh JSON helper comparison predates quota, guard and JSON-input simplifications. Refresh one qualified immutable source; no individual-fix attribution.",
+  "boundary": "Fresh compile plus one synchronous run in an already-running host, complete file reset/read/parse/helper/filter/aggregate/write and ownership cleanup; exclude process startup/transport. CPython primary; identical Lython controls; no individual-fix gain inferred.",
+  "stopping": "Reuse existing micro command. One15-second selected-case capture on a correctly leased quiet VM with bounded owned process, exact independent goldens/identities and cleanup. No new framework, profiling, repeated capture, warm/startup campaign, ten-minute lane or finite-budget/host-latency claim.",
+  "status": "Catalog, fixture, immutable clean source, identical Release binaries and toolchains verified before the sole capture.",
+  "independentGoldenProofSha256": "b69e90291e0cfdccb935559e0d4710eb9115964ba472de580836dc321283bc30",
+  "independentGolden": {
+    "revision": "6584ddd7fb87ede96b8e017f2b3835c78b539a1f",
+    "case": "scripts.json-summary-helpers.large",
+    "python": "C:\\Python313\\python.exe",
+    "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "exitCode": 0,
+    "rawStdout": "3072\r\n",
+    "canonicalLFStdout": "3072\n",
+    "canonicalLFStdoutSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+    "output": {
+      "report.json": {
+        "bytes": 25,
+        "sha256": "9efa1d3e163c11dce3412445a85150acfff0045eb26a16eaf1fa3f6a9ec568b7",
+        "expected": "{\"blue\":7168,\"red\":3072}\n"
+      }
+    },
+    "inputAndSourceUnchanged": true,
+    "independentGoldenPassed": true,
+    "measurement": false,
+    "vmCaptureStarted": false,
+    "fixtureRemoved": true
+  },
+  "readinessIsNotLeaseOwnership": true,
+  "comparison": "Two identical immutable Lython controls; CPython primary. Snapshot only, no individual-fix attribution.",
+  "priorGoldenSource": "benchmarks/results/2026-10-18-json-checkpoint/scope.json",
+  "captureStarted": false,
+  "preflight": {
+    "load": [
+      0.41845703125,
+      0.0966796875,
+      0.03173828125
+    ],
+    "case": {
+      "id": "scripts.json-summary-helpers.large",
+      "family": "scripts",
+      "category": "whole-script",
+      "scale": "large",
+      "size": 1024,
+      "source": {
+        "characters": 607
+      },
+      "fixtureJson": {
+        "characters": 147582
+      },
+      "expectedOutput": "3072\n",
+      "sourceUtf8Bytes": 607,
+      "expectedOutputUtf8Bytes": 5,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "beea66dfa7ab6333419678181ea8a6d5a5b030eb01ac35b993bb6d801e0c29a7",
+      "fixtureSha256": "2d140a5ddc74c81adc85b7fb110a2db034e8cb5f20b1e714a82cfdd520ab7b58",
+      "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+      "expectedFilesSha256": "1e04aeb93d68f2347f3c0dcf4c4a42384dc07e660dde3130b6139d96396a8d6f"
+    },
+    "pythonVersion": "3.13.16 (main, Oct  8 2026, 14:31:33) [GCC 13.3.0]"
+  },
+  "canonicalLFStdoutSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+  "expectedFilesSha256": "1e04aeb93d68f2347f3c0dcf4c4a42384dc07e660dde3130b6139d96396a8d6f",
+  "sealedUtc": "2026-10-19T15:18:08.325172+00:00"
+}

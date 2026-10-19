@@ -5,7 +5,7 @@
 | Complete text summary with annotated helper [CG], fresh compile/run | 3,072 lines / 35,840 UTF-8 bytes | 7.354–7.451 ms | 1.527 ms | 4.818–4.881× diagnostic | Immutable `4acd532f`; identical controls; 16.27%/3.41% Lython spreads, 1.96% CPython; unqualified |
 | Complete CSV summary with annotated helper [CE], fresh compile/run | 4,096 records / 57,361 UTF-8 bytes | 8.549 ms | 3.962 ms | 2.158× diagnostic | Immutable `34d4da35`; one capture, unqualified; 6.72%/0.63% spreads |
 | JSON configuration read/edit/write [CH], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.584–2.769 ms | 1.399 ms | 1.847–1.980× diagnostic | Immutable `348998dc`; identical controls; 16.63%/9.79% Lython spreads, 8.93% CPython; unqualified |
-| Complete JSON-lines helper [CI], fresh compile/run | 4,096 records / 110,592 UTF-8 input bytes | 9.466–9.607 ms | 4.441 ms | 2.132–2.163× diagnostic | Immutable `6584ddd7`; identical controls; 13.11%/3.52% Lython spreads, 0.36% CPython; unqualified |
+| Complete JSON-lines helper [CK], fresh compile/run | 4,096 records / 110,592 UTF-8 input bytes | 9.261–9.541 ms | 4.461 ms | 2.076–2.139× diagnostic | Immutable `a22c11b8`; identical controls; 18.70%/6.52% Lython spreads, 2.48% CPython; unqualified |
 | Complete copy/checksum/manifest helper [CJ], fresh compile/run | Two files / 4,107 input bytes | 2.027–2.251 ms | 0.597 ms | 3.40–3.77× diagnostic | Immutable `3ea431fd`; inconclusive: 30.37%/31.64% Lython spreads and 11.02% control difference; CPython 0.83% |
 | File search with helper and early exit [P], fresh compile/run | 2,049 lines / 42,010 UTF-8 bytes; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
 
@@ -25,12 +25,24 @@ for changes against prior Lython versions.
 above 1 means Lython takes longer. Ratios marked diagnostic are unqualified point
 estimates. A dash means unavailable or not reported, never zero; historical
 unqualified observations retain their original notation. No workload ratio has
-completed milestone qualification here. AF, AU, BO, BR, BX, CG, CH, CI and CJ ranges contain the medians
+completed milestone qualification here. AF, AU, BO, BR, BX, CG, CH, CI, CJ and CK ranges contain the medians
 of two identical Lython controls, not confidence intervals. Other entries show
 one diagnostic median. The jobs show performance gaps in those runs; their
 magnitudes and changes remain uncertain as marked.
 
 ## Which code and machine were measured?
+
+CK measures immutable `a22c11b8` on 2026-10-19 UTC, after quota/guard/JSON-input
+cleanup, with the existing complete JSON helper job and CPython 3.13.16. Two
+distinct Lython workers load identical binaries. Each job compiles afresh and
+runs once synchronously in a running host, including full file work, reset/checks
+and cleanup; startup/transport are excluded. The sole 8.660-second capture gives
+9.261–9.541 ms versus 4.461 ms, a diagnostic 2.076–2.139× gap. Controls differ
+by 3.03%; Lython spreads are 18.70%/6.52% and CPython 2.48%. The ratio remains
+unqualified. Earlier CI stays below with its original revision and uncertainty;
+these captures establish no historical trend, individual-fix gain, compilation-
+only cost or embedding latency. [Source, complete goldens, raw samples and cleanup](benchmarks/results/2026-10-19-json-checkpoint/README.md)
+are retained. This runtime uses host cancellation rather than fuel/call quotas.
 
 CJ measures immutable `3ea431fd` on 2026-10-18 UTC with the existing complete
 file-manifest helper job, two identical Lython controls and CPython 3.13.16.
@@ -166,6 +178,7 @@ to infer a change from the quiet-VM measurements.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| CK | 2026-10-19 UTC | Immutable `a22c11b8`; complete JSON helper, fresh compile/run, identical controls; quota/guard/input cleanup qualified | [CPython comparison, complete goldens, samples and cleanup](benchmarks/results/2026-10-19-json-checkpoint/README.md) |
 | CJ | 2026-10-18 UTC | Immutable `3ea431fd`; complete manifest helper, fresh compile/run, identical controls; inconclusive spread/control difference | [CPython comparison, complete goldens, raw samples and cleanup](benchmarks/results/2026-10-18-manifest-checkpoint/README.md) |
 | CI | 2026-10-18 UTC | Immutable `6584ddd7`; complete JSON helper job, fresh compile/run, identical controls | [CPython comparison, full goldens, raw samples and cleanup](benchmarks/results/2026-10-18-json-checkpoint/README.md) |
 | CH | 2026-10-18 UTC | Immutable `348998dc`; complete configuration job, fresh compile/run, identical controls | [CPython comparison, independent complete goldens, raw samples and cleanup](benchmarks/results/2026-10-18-config-checkpoint/README.md) |

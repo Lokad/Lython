@@ -1,0 +1,22 @@
+{
+  "unit": "lython-json-checkpoint-compile-run-a22c11b8-20261019",
+  "arguments": [
+    "sudo",
+    "-n",
+    "systemd-run",
+    "--unit=lython-json-checkpoint-compile-run-a22c11b8-20261019",
+    "--uid=lokad",
+    "--property=RuntimeMaxSec=28",
+    "--property=TimeoutStopSec=1",
+    "--property=KillMode=control-group",
+    "--property=StandardOutput=append:/home/lokad/lython-bench-checks/json-checkpoint-a22c11b8/compile-run/service.log",
+    "--property=StandardError=append:/home/lokad/lython-bench-checks/json-checkpoint-a22c11b8/compile-run/service.log",
+    "/usr/bin/python3",
+    "/home/lokad/lython-bench-checks/json-checkpoint-a22c11b8/run-capture.py",
+    "compile-run"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Running as unit: lython-json-checkpoint-compile-run-a22c11b8-20261019.service; invocation ID: 4361108e73e5496fb4444e418ee9aed4\n",
+  "launchedUtc": "2026-10-19T15:18:09.682646+00:00"
+}

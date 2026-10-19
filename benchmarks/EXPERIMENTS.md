@@ -146,6 +146,16 @@ sort callback/cancellation/retained-result owner witness. Initial host-array fix
 and diagnostic-hash metadata mistakes were corrected before runtime edits with
 receipts retained. No new owner/cache, timing capture or CPython speedup claim.
 
+The [2026-10-19 complete JSON helper refresh](results/2026-10-19-json-checkpoint/README.md)
+uses qualified immutable a22c11b8 and identical Lython controls against CPython
+3.13.16. Fresh compile/run takes 9.261–9.541 ms versus 4.461 ms: a diagnostic
+2.076–2.139× ratio, unqualified with 18.70%/6.52% Lython spreads and 2.48% CPython.
+All 35 responses / 424 invocations match complete goldens. Exact source/binary/
+fixture identities, all worker/fixture cleanup and lease release are verified.
+One 8.660-second capture; no rerun, new framework, profile or ten-minute lane.
+Earlier CI/AU/CC stay revision-specific; no historical trend or individual-fix,
+finite-budget or embedding-latency claim.
+
 The [2026-10-18 complete JSON helper comparison](results/2026-10-18-json-checkpoint/README.md)
 uses immutable 6584ddd7 and identical Lython controls against CPython 3.13.16.
 Fresh compile/run takes 9.466–9.607 ms versus 4.441 ms; nominal 2.132–2.163×

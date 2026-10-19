@@ -1,0 +1,36 @@
+{
+  "startedUtc": "2026-10-19T15:17:39.489311+00:00",
+  "phase": "complete",
+  "workers": {
+    "candidate": {
+      "revision": "a22c11b884f523f91fab4fd4852c33f7f58d6460",
+      "root": "/home/lokad/lython-bench-checks/json-checkpoint-a22c11b8/source-candidate",
+      "worker": "/home/lokad/lython-bench-checks/json-checkpoint-a22c11b8/source-candidate/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+      "workerSha256": "bf17bbec31995a44d797a9c986dd643093ba7261b5309b98c665f720bc152ba2",
+      "librarySha256": "822f08ee87d74650bb6359e4f5e7e5bea044ae786cc66488b2971f77fdf7990d",
+      "sourceClean": true
+    },
+    "old": {
+      "revision": "a22c11b884f523f91fab4fd4852c33f7f58d6460",
+      "root": "/home/lokad/lython-bench-checks/json-checkpoint-a22c11b8/source-candidate",
+      "worker": "/home/lokad/lython-bench-checks/json-checkpoint-a22c11b8/source-candidate/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+      "workerSha256": "bf17bbec31995a44d797a9c986dd643093ba7261b5309b98c665f720bc152ba2",
+      "librarySha256": "822f08ee87d74650bb6359e4f5e7e5bea044ae786cc66488b2971f77fdf7990d",
+      "sourceClean": true
+    }
+  },
+  "dotnetVersion": "10.0.401",
+  "loadBefore": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "catalog": "/home/lokad/lython-bench-checks/json-checkpoint-a22c11b8/catalog.json",
+  "catalogSha256": "a2b51dfe71c890faeda7198687298f58b377f0c615bce2ecec065c20db16587f",
+  "completedUtc": "2026-10-19T15:17:52.378469+00:00",
+  "loadAfter": [
+    0.455078125,
+    0.0986328125,
+    0.0322265625
+  ]
+}
