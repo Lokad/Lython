@@ -32,7 +32,8 @@ internal sealed partial class LythonRuntime
         {
             if (instruction.OpCode == ExecutableOpCode.EnterContextManager)
             {
-                PushObserved(await PyContextManagers.EnterAsync(PopContextManager(ref _stack, instruction.Span), instruction.Span, _context).ConfigureAwait(false), instruction.Span);
+                var enteredContext = await PyContextManagers.EnterAsync(PopContextManager(ref _stack, instruction.Span), instruction.Span, _context).ConfigureAwait(false);
+                _stack.Push(enteredContext);
                 return false;
             }
             if (instruction.OpCode == ExecutableOpCode.ExitContextManager)
@@ -200,14 +201,14 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.Binary:
                 case ExecutableOpCode.Augmented:
                 case ExecutableOpCode.Unary:
-                    await ExecuteObservedValueOperationAsync(instruction).ConfigureAwait(false);
+                    await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
                     break;
                 default: throw new InvalidOperationException($"Unexpected asynchronous value-operation opcode: {instruction.OpCode}");
             }
             return false;
         }
 
-        private async ValueTask ExecuteObservedValueOperationAsync(ExecutableInstruction instruction)
+        private async ValueTask ExecuteOperandValueOperationAsync(ExecutableInstruction instruction)
         {
             var first = _stack.Count - ValueOperationInputCount(instruction);
             try
@@ -233,7 +234,7 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.Unary:
                         result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), _stack[first], _context, instruction.Span).ConfigureAwait(false);
                         break;
-                    default: throw new InvalidOperationException("Unexpected observed value operation.");
+                    default: throw new InvalidOperationException("Unexpected value operation.");
                 }
                 CompleteExecutableValueTransfer(ref _stack, first, result);
             }

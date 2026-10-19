@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
                             function = CreateLambdaFunction(lambda.Expression, parameters, defaults, _context, lambda.CodeObject);
                         }
                         finally { _stack.RemoveTail(count); }
-                        PushObserved(function, span);
+                        _stack.Push(function);
                     }
                     break;
                 case ExecutableStartClassHeader header:

@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
                         var value = asynchronous
                             ? await ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], span, _context).ConfigureAwait(false)
                             : ReadSubscriptValue(_stack[first], _stack[first + 1], span, _context);
-                        PushObserved(value, span);
+                        _stack.Push(value);
                     }
                     catch { _stack.RemoveTail(_stack.Count - first); throw; }
                     break;
@@ -79,7 +79,7 @@ internal sealed partial class LythonRuntime
                         else value = asynchronous
                             ? await ReadSliceValueAsync(receiver, start, stop, step, span, _context).ConfigureAwait(false)
                             : ReadSliceValue(receiver, start, stop, step, span, _context);
-                        PushObserved(value, span);
+                        _stack.Push(value);
                     }
                     catch { _stack.RemoveTail(_stack.Count - first); throw; }
                     break;

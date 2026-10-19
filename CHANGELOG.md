@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Remove the obsolete result-observation stack-push helper and its 17 unused span arguments. Await values before pushing into the mutable operand stack, and rename the affected operand handlers to describe their real work. Preserve allocation admission, evaluation order, cancellation and cleanup. No public API change or measured speedup claim.
+
 - Fund native list concatenation through the active execution's shared allowance, including copies of prepaid internal views. Admit one final-capacity destination and copy references directly, removing the intermediate left backing, right snapshot and input-owner selection. Preserve aliases/cycles, source funding, in-loop cancellation and unpublished-storage rollback. Previously uncharged copies can now refuse at the concatenation expression; no public API change or measured speedup claim.
 
 - Remove unused context/span parameters and five argument pairs from executable value transfer after deleting result observation. Keep actual operand replacement, native allocation preflights, cancellation and frame cleanup. Preserve argument-buffer cleanup checks independently; isolate post-completion pool observations so parallel executions cannot rerent the inspected arrays. No public API change or measured speedup claim.

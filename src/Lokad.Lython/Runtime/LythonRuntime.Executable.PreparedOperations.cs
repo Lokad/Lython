@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableFinishTuple:
                     var expanded = (PyList)Pop(ref _stack, span);
                     var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, _context.MemoryGovernor, span);
-                    PushObserved(tuple, span);
+                    _stack.Push(tuple);
                     break;
                 case ExecutableStartCall call:
                     var targetSlot = _stack.Count - 1;
@@ -61,7 +61,7 @@ internal sealed partial class LythonRuntime
                     catch { _stack.RemoveTail(_stack.Count - targetSlot); throw; }
                     break;
                 case ExecutableJoinFormattedParts join:
-                    // A single formatted part is already observed and funded.
+                    // A single formatted part is already funded.
                     if (join.Count == 1) break;
                     var builder = new GovernedByteBuilder(_context.MemoryGovernor, span);
                     try
@@ -70,7 +70,7 @@ internal sealed partial class LythonRuntime
                         for (var i = first; i < _stack.Count; i++) builder.Append((PyString)_stack[i]);
                         _stack.RemoveTail(join.Count);
                         var text = builder.ToPyStringAndRelease();
-                        PushObserved(text, span);
+                        _stack.Push(text);
                     }
                     finally { builder.Release(); }
                     break;
@@ -161,18 +161,21 @@ internal sealed partial class LythonRuntime
                     catch { _stack.RemoveTail(_stack.Count - accumulatorSlot); throw; }
                     break;
                 case ExecutableConvertFormattedValue conversion:
-                    PushObserved(await FormatSuspendedFieldAsync(Pop(ref _stack, span), conversion.Conversion,
-                        null, _context, span, asynchronous).ConfigureAwait(false), span);
+                    var convertedField = await FormatSuspendedFieldAsync(Pop(ref _stack, span), conversion.Conversion,
+                        null, _context, span, asynchronous).ConfigureAwait(false);
+                    _stack.Push(convertedField);
                     break;
                 case ExecutableFormatField field:
                     var specifier = field.DynamicSpecifier ? ((PyString)Pop(ref _stack, span)).AsString() : field.FormatSpecifier;
                     var fieldValue = Pop(ref _stack, span);
-                    PushObserved(await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous).ConfigureAwait(false), span);
+                    var formattedField = await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous).ConfigureAwait(false);
+                    _stack.Push(formattedField);
                     break;
                 case ExecutableCreateGeneratorExpression comprehension:
                     var outer = Pop(ref _stack, span);
-                    PushObserved(await PyGenerator.CreateExpressionAsync(comprehension.CodeObject, _context,
-                        outer, comprehension.OuterSpan, span, asynchronous).ConfigureAwait(false), span);
+                    var generatorExpression = await PyGenerator.CreateExpressionAsync(comprehension.CodeObject, _context,
+                        outer, comprehension.OuterSpan, span, asynchronous).ConfigureAwait(false);
+                    _stack.Push(generatorExpression);
                     break;
                 default: await ExecutePreparedDefinitionOperationAsync(operation, span, asynchronous).ConfigureAwait(false); break;
             }

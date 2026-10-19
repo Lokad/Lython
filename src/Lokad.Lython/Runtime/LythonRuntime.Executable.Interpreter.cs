@@ -229,11 +229,6 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private void PushObserved(object value, LythonSourceSpan span)
-        {
-            _stack.Push(value);
-        }
-
         // Pop's returned reference belongs to this completed transfer, rather
         // than the long-running dispatch loop. Keep the CLR temporary here so
         // deleting a slot can make its payload collectible before frame exit.
@@ -378,19 +373,19 @@ internal sealed partial class LythonRuntime
             switch (instruction.OpCode)
             {
                 case ExecutableOpCode.MakeList:
-                    PushObserved(CreateListFromStack(ref _stack, instruction.ItemCount, instruction.Span, _context), instruction.Span);
+                    _stack.Push(CreateListFromStack(ref _stack, instruction.ItemCount, instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.MakeTuple:
-                    PushObserved(CreateTupleFromStack(ref _stack, instruction.ItemCount, instruction.Span, _context), instruction.Span);
+                    _stack.Push(CreateTupleFromStack(ref _stack, instruction.ItemCount, instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.MakeSet:
-                    PushObserved(ExecuteExecutableMakeSet(ref _stack, instruction.ItemCount, instruction.Span, _context), instruction.Span);
+                    _stack.Push(ExecuteExecutableMakeSet(ref _stack, instruction.ItemCount, instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.MakeDict:
-                    PushObserved(ExecuteExecutableMakeDict(ref _stack, instruction.PairCount, instruction.Span, _context), instruction.Span);
+                    _stack.Push(ExecuteExecutableMakeDict(ref _stack, instruction.PairCount, instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.ResolveContextManager:
@@ -400,7 +395,7 @@ internal sealed partial class LythonRuntime
 
                 case ExecutableOpCode.EnterContextManager:
                     var enteringManager = PopContextManager(ref _stack, instruction.Span);
-                    PushObserved(enteringManager.Enter(), instruction.Span);
+                    _stack.Push(enteringManager.Enter());
                     break;
 
                 case ExecutableOpCode.ExitContextManager:
@@ -482,12 +477,12 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.Binary:
                 case ExecutableOpCode.Augmented:
                 case ExecutableOpCode.Unary:
-                    ExecuteObservedValueOperation(instruction);
+                    ExecuteOperandValueOperation(instruction);
                     break;
 
                 case ExecutableOpCode.MakeSlice:
                     var (start, stop, step) = PopExecutableSliceBounds(ref _stack, instruction.SliceParts, instruction.Span);
-                    PushObserved(CreateSliceValue(start, stop, step, instruction.Span, _context), instruction.Span);
+                    _stack.Push(CreateSliceValue(start, stop, step, instruction.Span, _context));
                     break;
 
             }
@@ -502,7 +497,7 @@ internal sealed partial class LythonRuntime
             _ => 2,
         };
 
-        private void ExecuteObservedValueOperation(in ExecutableInstruction instruction)
+        private void ExecuteOperandValueOperation(in ExecutableInstruction instruction)
         {
             var first = _stack.Count - ValueOperationInputCount(instruction);
             try
@@ -518,7 +513,7 @@ internal sealed partial class LythonRuntime
                     ExecutableOpCode.Augmented => EvaluateExecutableAugmented(instruction.AugmentedOperator,
                         _stack[first], _stack[first + 1], _context, instruction.Span),
                     ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, _stack[first], _context, instruction.Span),
-                    _ => throw new InvalidOperationException("Unexpected observed value operation."),
+                    _ => throw new InvalidOperationException("Unexpected value operation."),
                 };
                 CompleteExecutableValueTransfer(ref _stack, first, result);
             }
@@ -757,7 +752,10 @@ internal sealed partial class LythonRuntime
                                      ExecutableOpCode.Dup or
                                      ExecutableOpCode.PopTop:
                                     if (instruction.OpCode == ExecutableOpCode.EvaluateFallbackExpression)
-                                        PushObserved(await EvaluateLoweredExpressionAsync(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex], _context).ConfigureAwait(false), instruction.Span);
+                                    {
+                                        var fallbackResult = await EvaluateLoweredExpressionAsync(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex], _context).ConfigureAwait(false);
+                                        _stack.Push(fallbackResult);
+                                    }
                                     else if (instruction.OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)
                                     {
                                         if (TryLoadDirectCallReceiver(instruction)) break;
@@ -766,7 +764,7 @@ internal sealed partial class LythonRuntime
                                         var member = await TryResolveRuntimeMemberAsync(target, name, _context, instruction.Span).ConfigureAwait(false);
                                         if (!member.Found) throw PyMemberAccess.CreateMissingMemberError(target, name, instruction.Span, _context);
                                         if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver) _stack.Push(PyNone.Instance);
-                                        PushObserved(member.Value, instruction.Span);
+                                        _stack.Push(member.Value);
                                     }
                                     else ExecuteStackTransfer(instruction);
                                     break;
@@ -790,14 +788,14 @@ internal sealed partial class LythonRuntime
                                     if ((_stack[_stack.Count - 2] is BigInteger or double or bool &&
                                          _stack[_stack.Count - 1] is BigInteger or double or bool) ||
                                         (_stack[_stack.Count - 2] is PyString && _stack[_stack.Count - 1] is PyString))
-                                        ExecuteObservedValueOperation(instruction);
+                                        ExecuteOperandValueOperation(instruction);
                                     else
                                         jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                     break;
 
                                 case ExecutableOpCode.Unary:
                                     if (_stack[_stack.Count - 1] is BigInteger or double or bool)
-                                        ExecuteObservedValueOperation(instruction);
+                                        ExecuteOperandValueOperation(instruction);
                                     else
                                         jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                     break;
@@ -809,7 +807,7 @@ internal sealed partial class LythonRuntime
                                          _stack[_stack.Count - 2] is PyList or PyTuple or PyBytes or PyString or PyRange) ||
                                         (_stack[_stack.Count - 1] is PyString &&
                                          _stack[_stack.Count - 2] is PyDict { HasProtocolKeys: false }))
-                                        ExecuteObservedValueOperation(instruction);
+                                        ExecuteOperandValueOperation(instruction);
                                     else
                                         jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                     break;
