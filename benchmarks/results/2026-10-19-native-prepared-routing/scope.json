@@ -1,0 +1,23 @@
+{
+  "baselineRevision": "b481e3fd6db52855345474fcca8a21f5e633bb48",
+  "candidateRevision": "bdf777d641b23dc218359ec18a8456a24377b4ed",
+  "case": "strings.formatted-report.small",
+  "lane": "compile-run",
+  "date": "2026-10-19T20:42:07.5703402+00:00",
+  "performanceQualified": false,
+  "timingCaptureCount": 1,
+  "catalogSha256": "19ad27ec4b3decae105924d704090f1ed94e84c5e422e68c9fd5f5e50bd9dd38",
+  "catalogUncompressedBytes": 11901971,
+  "focusedWhiteChecks": 56,
+  "publicCollectionCallChecks": 194,
+  "publicFormattingTupleChecks": 135,
+  "representativeScriptChecks": 123,
+  "resumedReplacementDepthControls": 1,
+  "files": {
+    "baseline.json": "0be8bb0c6a86af3ec7c38c5a55802166b0cf3112b7d3e500f0ab6c2156a33067",
+    "catalog.json.gz": "7df2450bb6326cf1a4fe2e37646f82c60066b0eb8b68f72c1618b7eae8b3e032",
+    "micro.json": "e86958b100fa06f0fb01075bccf8e8b1aec8c8f6156fc1f45e60fcb6637028e4",
+    "process.receipt.json": "a708902f93ea339a4e7eb59dfd93d3cdeb9f42b13b4df2bb712c870d50f452c5",
+    "source-proof.json": "183d343270618f81fb6dd4bdfd8a1f8286465cb6e220769b72ca004ea0bf6abb"
+  }
+}

@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-19 native prepared-operation routing](results/2026-10-19-native-prepared-routing/README.md)
+removes async routing for six native operations without changing their bodies.
+Focused white-box, public protocol/ownership and complete-script checks pass.
+One formatted-report kernel capture at `b481e3fd`/`bdf777d6` gives 0.679/0.626 ms,
+versus CPython 0.191 ms. The lower median remains unqualified; no general speedup,
+allocation claim or retiming follows.
+
 The [2026-10-19 native JSON value entry cleanup](results/2026-10-19-json-value-entry/README.md)
 removes native/container async forwarding while preserving one awaited callback
 tail. 155 white-box, 518 public JSON and 123 representative-script checks pass,

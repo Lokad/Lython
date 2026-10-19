@@ -1,0 +1,14 @@
+{
+  "branches": [
+    "ExecutableStartComprehension",
+    "ExecutableFinishComprehension",
+    "ExecutableStartDisplay",
+    "ExecutableFinishTuple",
+    "ExecutableStartCall",
+    "ExecutableJoinFormattedParts"
+  ],
+  "operationBodiesUnchanged": true,
+  "nativeEntryHasNoAwait": true,
+  "nativeCasesAbsentFromAsyncHandler": true,
+  "allCaseBodiesUnchanged": true
+}
