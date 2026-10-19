@@ -8,13 +8,11 @@ namespace Lokad.Lython.Tests;
 public sealed class CooperativeExecutionGuardTests
 {
     [Fact]
-    public void OrdinaryExecutionHasNoImplicitFuelButRetainsResourceLimits()
+    public void OrdinaryExecutionRetainsResourceLimits()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
-        Assert.Null(context.Limits.MaxExecutionSteps);
         Assert.Equal(LythonRunOptions.DefaultMaxExecutionMemoryBytes, context.Limits.MaxExecutionMemoryBytes);
         Assert.Equal(LythonRunOptions.DefaultMaxRecursionDepth, context.Limits.MaxRecursionDepth);
-        Assert.Equal(LythonRunOptions.DefaultMaxHostCalls, context.Limits.MaxHostCalls);
         Assert.Equal(LythonRunOptions.DefaultMaxCollectionSize, context.Limits.MaxCollectionSize);
         Assert.Equal(LythonRunOptions.DefaultMaxStringLength, context.Limits.MaxStringLength);
         Assert.Equal(LythonRunOptions.DefaultMaxHostReadBytes, context.Limits.MaxHostReadBytes);
@@ -23,21 +21,7 @@ public sealed class CooperativeExecutionGuardTests
     }
 
     [Fact]
-    public void OrdinaryCheckpointsCanPassTheFormerDefaultAllowance()
-    {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
-        context.Limits.ExecutionStepCount = LythonRunOptions.DefaultMaxExecutionSteps;
-        context.CheckExecution(null);
-        // This synthetic boundary supplements the standalone large finite loop;
-        // routine unit tests need not execute fifty million checkpoints.
-        context.CheckExecution(null);
-        Assert.Equal(LythonRunOptions.DefaultMaxExecutionSteps, context.Limits.ExecutionStepCount);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void BoundaryCheckpointPreservesOwnershipWhileEnforcingFuelAndCancellation(bool explicitFuel)
+    public void CancellationPreservesOwnershipAndSourceSpan()
     {
         using var cancellation = new CancellationTokenSource();
         var budget = new LythonMemoryBudget(8192);
@@ -46,7 +30,6 @@ public sealed class CooperativeExecutionGuardTests
         {
             MemoryBudget = owner,
             MaxExecutionMemoryBytes = 8192,
-            MaxExecutionSteps = explicitFuel ? 255 : null,
             CancellationToken = cancellation.Token,
         });
         var dropped = CreateWorkingStorage(state);
@@ -55,14 +38,12 @@ public sealed class CooperativeExecutionGuardTests
 
         for (var i = 0; i < 255; i++) state.Guards.CheckExecution(null);
         Assert.Equal(before, state.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(explicitFuel ? 255 : 0, state.Limits.ExecutionStepCount);
         cancellation.Cancel();
         var span = new LythonSourceSpan(7, 2, 3, 4);
         var failure = Assert.Throws<LythonRuntimeException>(() => state.Guards.CheckExecution(span));
 
-        Assert.Equal(explicitFuel ? "maximum execution step count exceeded (255)" : "execution canceled", failure.Message);
+        Assert.Equal("execution canceled", failure.Message);
         Assert.Equal(span, failure.Span);
-        Assert.Equal(explicitFuel ? 256 : 0, state.Limits.ExecutionStepCount);
         Assert.Equal(before, state.MemoryGovernor.CurrentCommittedBytes);
         GC.KeepAlive(dropped);
         dropped = null!;
@@ -72,12 +53,11 @@ public sealed class CooperativeExecutionGuardTests
     }
 
     [Fact]
-    public void CancellationWithinFuelAllowanceCountsTheCheckpointAndPreservesSpan()
+    public void CancellationPreservesSourceSpan()
     {
         using var cancellation = new CancellationTokenSource();
         var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionSteps = 4,
             CancellationToken = cancellation.Token,
         });
         state.Guards.CheckExecution(null);
@@ -87,13 +67,10 @@ public sealed class CooperativeExecutionGuardTests
 
         Assert.Equal("execution canceled", failure.Message);
         Assert.Equal(span, failure.Span);
-        Assert.Equal(2, state.Limits.ExecutionStepCount);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void CheckpointsPreserveBatchOwnershipWithAndWithoutOptInFuel(bool explicitFuel)
+    [Fact]
+    public void CancellationChecksPreserveBatchOwnership()
     {
         var budget = new LythonMemoryBudget(8192);
         using var owner = budget.CreateScope();
@@ -101,7 +78,6 @@ public sealed class CooperativeExecutionGuardTests
         {
             MemoryBudget = owner,
             MaxExecutionMemoryBytes = 8192,
-            MaxExecutionSteps = explicitFuel ? 4096 : null,
         });
         var dropped = CreateWorkingStorage(context);
         var before = context.MemoryGovernor.CurrentCommittedBytes;

@@ -5,24 +5,19 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class ExecutionConsumptionTests
 {
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task RepeatedRunsReportExistingCountersWithoutEnablingFuel(bool asynchronous, bool fuel)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RepeatedRunsReportExistingOutputSizes(bool asynchronous)
     {
         var script = new LythonEngine().Compile("import sys\nprint('é')\nsys.stderr.write('😀')\nreturn 7");
         for (var i = 0; i < 3; i++)
         {
-            var options = new LythonRunOptions { MaxExecutionSteps = fuel ? 1000 : null };
+            var options = new LythonRunOptions { };
             var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
             Assert.True(result.Success, result.Failure?.Message);
             var usage = Assert.IsType<LythonExecutionConsumption>(result.Consumption);
-            Assert.Equal(3, usage.HostCalls);
             Assert.Equal(3, usage.StandardOutputBytes);
             Assert.Equal(4, usage.StandardErrorBytes);
-            if (fuel) Assert.InRange(usage.ExecutionSteps!.Value, 1, 1000);
-            else Assert.Null(usage.ExecutionSteps);
         }
     }
 
@@ -30,20 +25,18 @@ public sealed class ExecutionConsumptionTests
     [InlineData("return 7")]
     [InlineData("raise RuntimeError('later')")]
     [InlineData("raise SystemExit(0)")]
-    public async Task TerminalAdmissionDenialKeepsCounters(string ending)
+    public async Task TerminalAdmissionDenialKeepsOutputSizes(string ending)
     {
         var script = new LythonEngine().Compile("print('é')\ntry:\n    x = 'x' * 1000000\nexcept MemoryError:\n    pass\n" + ending);
         foreach (var asynchronous in new[] { false, true })
         {
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536, MaxExecutionSteps = 1000 };
+            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536};
             var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
             Assert.False(result.Success);
             Assert.NotEqual(0, result.ExitCode);
             Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
             Assert.True(result.DeniedReservationBytes > 0);
             Assert.Equal(3, result.Consumption?.StandardOutputBytes);
-            Assert.Equal(2, result.Consumption?.HostCalls);
-            Assert.True(result.Consumption?.ExecutionSteps > 0);
         }
     }
 
@@ -61,7 +54,7 @@ public sealed class ExecutionConsumptionTests
     }
 
     [Fact]
-    public async Task LimitTripsAndUnadmittedRunsAreDistinct()
+    public async Task UnadmittedRunsHaveNoConsumption()
     {
         var engine = new LythonEngine();
         foreach (var asynchronous in new[] { false, true })
@@ -69,12 +62,6 @@ public sealed class ExecutionConsumptionTests
             async Task<LythonExecutionResult> Run(string source, LythonRunOptions? options = null) => asynchronous
                 ? await engine.RunAsync(source, new MockLythonHost(), options ?? new())
                 : engine.Run(source, new MockLythonHost(), options ?? new());
-            var steps = await Run("return 7", new() { MaxExecutionSteps = 0 });
-            Assert.Equal(LythonFailureReason.ExecutionStepLimit, steps.FailureAttribution?.Reason);
-            Assert.Equal(1, steps.Consumption?.ExecutionSteps);
-            var host = await Run("open('/missing')", new() { MaxHostCalls = 0 });
-            Assert.Equal(LythonFailureReason.HostCallLimit, host.FailureAttribution?.Reason);
-            Assert.Equal(1, host.Consumption?.HostCalls);
             Assert.Null((await Run("x =")).Consumption);
             Assert.Null((await Run("return 7", new() { MaxExecutionMemoryBytes = 0, Args = ["argument"] })).Consumption);
         }
@@ -89,27 +76,24 @@ public sealed class ExecutionConsumptionTests
         host.SetTiming(timing);
         using var cancellation = new CancellationTokenSource();
         var call = new LythonEngine().RunAsync("print('é')\nimport time\ntime.sleep(1)", host,
-            new LythonRunOptions { CancellationToken = cancellation.Token, MaxExecutionSteps = 1000 });
+            new LythonRunOptions { CancellationToken = cancellation.Token});
         try { await timing.Started.Task.WaitAsync(TimeSpan.FromSeconds(5)); }
         finally { cancellation.Cancel(); }
         var result = await call.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
-        Assert.Equal(3, result.Consumption?.HostCalls);
         Assert.Equal(3, result.Consumption?.StandardOutputBytes);
-        Assert.True(result.Consumption?.ExecutionSteps > 0);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task FailedHostWriteStillReportsAcceptedCaptureAndAttempt(bool asynchronous)
+    public async Task FailedHostWriteStillReportsAcceptedCapture(bool asynchronous)
     {
         var host = new MockLythonHost { OnStandardOutputWrite = () => throw new InvalidOperationException("controlled failure") };
         var script = new LythonEngine().Compile("print('é')");
         var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
         Assert.Equal(LythonFailureReason.HostOperationFailed, result.FailureAttribution?.Reason);
         Assert.Equal(2, result.Consumption?.StandardOutputBytes);
-        Assert.Equal(1, result.Consumption?.HostCalls);
     }
 
     [Fact]
@@ -123,9 +107,7 @@ public sealed class ExecutionConsumptionTests
             {
                 Globals = new Dictionary<string, object?> { ["payload"] = payload },
                 AllowedBuiltinModules = new HashSet<string> { "json" },
-                DisableLocalModuleImports = true,
-                MaxExecutionSteps = 100000, MaxHostCalls = 100,
-                MaxCollectionSize = 10000, MaxStringLength = 65536,
+                DisableLocalModuleImports = true,                 MaxCollectionSize = 10000, MaxStringLength = 65536,
                 MaxHostReadBytes = 0, MaxStandardOutputBytes = 4096, MaxStandardErrorBytes = 4096,
                 MaxExecutionMemoryBytes = 8 * 1024 * 1024, MaxProjectionMemoryBytes = 1024 * 1024,
             };
@@ -133,7 +115,6 @@ public sealed class ExecutionConsumptionTests
             Assert.True(result.Success, result.Failure?.Message);
             Assert.Equal(expected, result.ReturnValue?.ToString());
             Assert.Equal(output, result.StandardOutput);
-            Assert.InRange(result.Consumption!.Value.ExecutionSteps!.Value, 1, 100000);
         }
     }
 

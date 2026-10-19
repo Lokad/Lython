@@ -307,8 +307,7 @@ internal static class PyStructuralGuard
         // Periodic cooperative checks for long structural scans: the outer expression
         // performs a single budget check on entry, which cannot stop a million-element
         // scan that never nests deeply. Throttle to every 64 elements to keep
-        // per-element overhead negligible while remaining responsive to cancellation,
-        // step budgets and host-call budgets.
+        // per-element overhead negligible while remaining responsive to cancellation.
         if ((++state.WorkTick & 63) != 0)
         {
             return;
@@ -326,7 +325,7 @@ internal static class PyStructuralGuard
         }
 
         // Ambient and explicit calls advance the same execution-owned interval;
-        // previous executions on this thread must not consume its work budget.
+        // previous executions on this thread must not shift its cancellation checks.
         var state = context.Services.State.StructuralTraversal;
         if ((++state.WorkTick & 63) != 0)
         {

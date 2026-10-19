@@ -197,7 +197,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", $"{Name}.cwd() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         return OwnPathResult(PyString.FromString(PathOps.Normalize(context.Host.Cwd)),PyString.Empty,context.MemoryGovernor,span);
                     }, $"{Name}.cwd", []),
                     "home" when _isSupported => BoundCallable.Create((arguments, span, _) =>

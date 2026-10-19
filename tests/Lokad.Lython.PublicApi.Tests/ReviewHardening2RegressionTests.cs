@@ -342,9 +342,10 @@ return writer.closed
     }
 
     [Fact]
-    public void BudgetFailureDuringFinalizationLeavesHandleOpen()
+    public void HostPublicationFailureDuringFinalizationLeavesHandleOpen()
     {
         var host = new MockLythonHost("/repo");
+        host.FailWriteBytes("/repo/out.gz", "controlled publication failure");
         var result = new LythonEngine().Run(
             """
 import gzip
@@ -358,9 +359,8 @@ writer.write(b"def")
 return [outcome, writer.closed]
 """,
             host,
-            new LythonRunOptions { MaxHostCalls = 0 });
-        // Publication is the first host call, so finalization fails before
-        // anything is written; the handle stays open with its staged writes.
+            new LythonRunOptions { });
+        // Failed host publication keeps the handle open with its staged writes.
         Assert.True(result.Success, Describe(result));
         Assert.Equal(new List<object?> { "limited", false }, Assert.IsType<List<object?>>(result.ReturnValue));
         Assert.False(host.Exists("/repo/out.gz"));

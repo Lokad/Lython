@@ -862,8 +862,6 @@ internal sealed partial class LythonRuntime
 
         public void ObserveValue(object value, LythonSourceSpan? span) => Services.ObserveValue(value, span);
 
-        public void RegisterHostCall(LythonSourceSpan? span) => Services.RegisterHostCall(span);
-
         public void EnterFunctionCall(LythonSourceSpan? span)
         {
             Services.EnterFunctionCall(span);

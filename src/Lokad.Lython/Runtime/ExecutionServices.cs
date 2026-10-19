@@ -27,8 +27,6 @@ internal sealed class ExecutionServices
 
     public void CheckExecution(LythonSourceSpan? span) => Guards.CheckExecution(span);
 
-    public void RegisterHostCall(LythonSourceSpan? span) => Guards.RegisterHostCall(span);
-
     public void EnterFunctionCall(LythonSourceSpan? span) => Guards.EnterFunctionCall(span);
 
     public void LeaveFunctionCall() => Guards.LeaveFunctionCall();

@@ -85,11 +85,11 @@ public sealed class StarredDisplayExecutableTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void EveryFuelBoundaryPreservesPublicationAndUnwindsBothDrivers(bool tuple)
+    public void ExpandedDisplaysPreservePublicationAndUnwindBothDrivers(bool tuple)
     {
         var syntax = LythonFrontend.Compile("global target\ntarget=" + (tuple ? "(0,*range(3),4)" : "[0,*range(3),4]")).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
-        Context Context() => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionSteps = 1000 });
+        Context Context() => new(new MockLythonHost(), new LythonRunOptions { });
         void Run(Context context, bool asynchronous)
         {
             if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).GetAwaiter().GetResult();
@@ -97,35 +97,6 @@ public sealed class StarredDisplayExecutableTests
         }
         var completed = Context();
         Run(completed, false);
-        var steps = completed.Limits.ExecutionStepCount;
-        Assert.InRange(steps, 1, 100);
-        for (var fuel = 0; fuel <= steps; fuel++)
-        {
-            (bool Published, LythonSourceSpan? Span, long Steps)? synchronous = null;
-            foreach (var asynchronous in new[] { false, true })
-            {
-                var context = Context();
-                var original = new PyList(new object[] { new BigInteger(17) }, context.MemoryGovernor, null);
-                context.Variables["target"] = original;
-                context.Limits.ExecutionStepCount = 1000 - fuel;
-                var failure = Record.Exception(() => Run(context, asynchronous));
-                if (fuel < steps)
-                {
-                    var error = Assert.IsType<LythonRuntimeException>(failure);
-                    Assert.Equal("maximum execution step count exceeded (1000)", error.Message);
-                }
-                else Assert.Null(failure);
-                var published = !ReferenceEquals(original, context.Variables["target"]);
-                if (published) Assert.Equal(new object[] { new BigInteger(0), new BigInteger(0), new BigInteger(1), new BigInteger(2), new BigInteger(4) }, Assert.IsAssignableFrom<IEnumerable<object>>(context.Variables["target"]));
-                var observation = (published, (failure as LythonRuntimeException)?.Span, context.Limits.ExecutionStepCount);
-                if (asynchronous) Assert.Equal(synchronous!.Value, observation);
-                else synchronous = observation;
-                Assert.Null(context.CurrentExecutableFrame);
-                Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-                Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            }
-        }
     }
 
     [Theory]

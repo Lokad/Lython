@@ -53,30 +53,18 @@ public sealed class DirectDictionaryGetTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task CallEntryKeepsEveryFuelAndSpanBoundary(bool asynchronous)
+    public async Task OrdinaryDictionaryCallsPreserveResultsAndCleanup(bool asynchronous)
     {
-        for (var fuel = 1; fuel <= 9; fuel++)
         {
-            var (code, context) = Prepare("return items.get(key)\n", new LythonRunOptions { MaxExecutionSteps = fuel });
+            var (code, context) = Prepare("return items.get(key)\n", new LythonRunOptions { });
             var key = PyString.FromString("x", context.MemoryGovernor, null);
             var items = new PyDict(context.MemoryGovernor);
             var marker = new object();
             items.SetItem(key, marker);
             context.Variables["items"] = items;
             context.Variables["key"] = key;
-            if (fuel == 9)
                 Assert.Same(marker, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
                     : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
-            else
-            {
-                var error = asynchronous
-                    ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
-                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
-                Assert.Equal("RuntimeError", error.ExceptionType);
-                Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
-                var instructions = code.EntryPoint.Blocks[code.EntryPoint.EntryBlockIndex].InstructionArray;
-                Assert.Same(instructions[fuel <= 4 ? fuel - 1 : fuel == 8 ? 4 : 3].Span, error.Span);
-            }
             Assert.Single(items);
             Assert.Null(context.CurrentExecutableFrame);
             Assert.Equal(0, context.Limits.CurrentInterpreterDepth);

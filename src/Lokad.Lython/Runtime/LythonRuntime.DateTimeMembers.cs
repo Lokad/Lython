@@ -277,7 +277,7 @@ internal sealed partial class LythonRuntime
                     var localOffset = TimeSpan.Zero;
                     if (receiver.TzInfo is null)
                     {
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         localOffset = context.Host.LocalNow.Offset;
                     }
 
@@ -306,7 +306,7 @@ internal sealed partial class LythonRuntime
                         _ => throw PyDateTimeOps.InvalidTimezone(ArgAt(arguments, 0), context, span)
                     };
 
-                    context.RegisterHostCall(span);
+                    context.CheckExecution(span);
                     return PyDateTimeOps.OwnDateTimeValue(PyDateTimeOps.Astimezone(dateTime, targetTimezone, context.Host.LocalNow.Offset, span), context, span);
                 }, DateTimeAstimezoneSignature),
                 "isoformat" => BoundCallable.CreateWithPresence((bound, span, context) =>

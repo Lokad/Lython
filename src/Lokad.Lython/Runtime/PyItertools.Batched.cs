@@ -6,7 +6,7 @@ namespace Lokad.Lython.Runtime;
 // N02: bounded batching without sized preallocation.
 // Storage grows with consumed input (never new object[_size] upfront), so an
 // empty or short source with a huge requested size never allocates it. Each
-// pull observes the batch count (collection limit + step budget) and ensures
+// pull observes the batch count (collection limit and cancellation) and ensures
 // the next growth before it can allocate, so denial precedes large allocation
 // in both modes. An exhaustion latch stops allocating or pulling after the
 // source ends. Strict shortfall preserves ValueError semantics.

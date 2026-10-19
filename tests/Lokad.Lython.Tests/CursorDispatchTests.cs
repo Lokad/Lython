@@ -1,13 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
-using System.Text.Json;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class CursorDispatchTests(ITestOutputHelper output)
+public sealed class CursorDispatchTests
 {
     private static readonly LythonSourceSpan Span = new(10, 4, 2, 3);
 
@@ -24,16 +22,13 @@ public sealed class CursorDispatchTests(ITestOutputHelper output)
     {
         foreach (var direction in new[] { 1, -1 })
         {
-            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionSteps = 100 });
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { });
             await using var cursor = PyIteration.Cursor.Create(new PyRange(10, 10 + direction * length, direction), Span, context);
-            var steps = new List<long>();
             var checksum = BigInteger.Zero;
             for (var i = 0; i <= length; i++)
             {
                 var next = await Pull(cursor, asynchronous);
-                steps.Add(context.Limits.ExecutionStepCount);
                 Assert.Equal(i < length, next.HasValue);
-                Assert.Equal(1 + i / 64, steps[^1]);
                 if (next.HasValue)
                 {
                     var value = Assert.IsType<BigInteger>(next.Value);
@@ -41,32 +36,27 @@ public sealed class CursorDispatchTests(ITestOutputHelper output)
                     checksum += value;
                 }
             }
-            output.WriteLine("CURSOR_DISPATCH_MATRIX:" + JsonSerializer.Serialize(new
-                { length, asynchronous, direction, steps, checksum = checksum.ToString() }));
         }
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task Pull65ChecksFuelAndCancellationBeforeAdvancing(bool asynchronous, bool fuelDenied)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancellationStopsActivePullsBeforeAdvancing(bool asynchronous)
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-            { CancellationToken = cancellation.Token, MaxExecutionSteps = fuelDenied ? 1 : 100 });
+            { CancellationToken = cancellation.Token});
         var source = new SyncIteratorAndAsyncIterable();
         await using var cursor = PyIteration.Cursor.Create(source, Span, context);
         for (var i = 0; i < 64; i++) Assert.True((await Pull(cursor, asynchronous)).HasValue);
         Assert.Equal(64, source.SyncMoves);
         cancellation.Cancel();
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => { await Pull(cursor, asynchronous); });
-        Assert.Equal(fuelDenied ? "maximum execution step count exceeded (1)" : "execution canceled", error.Message);
+        Assert.Equal("execution canceled", error.Message);
         Assert.Same(Span, error.Span);
         Assert.Equal(64, source.SyncMoves);
         Assert.Equal(0, source.AsyncEnumerations);
-        Assert.Equal(2, context.Limits.ExecutionStepCount);
     }
 
     [Fact]

@@ -85,18 +85,6 @@ return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 
     }
 
     [Fact]
-    public void DistHugeInputsDenyUnderTinyStepBudget()
-    {
-        var result = new LythonEngine().Run(
-            "import math\nreturn math.dist(range(200000), range(200000))\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = 100 });
-        Assert.False(result.Success);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum execution step count exceeded", result.Failure!.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void DistRespectsCancellation()
     {
         using var cts = new CancellationTokenSource();
@@ -116,17 +104,6 @@ return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 
             "import itertools, math\nreturn math.dist(itertools.count(), range(5))\n",
             new MockLythonHost());
         AssertError(result, "ValueError", "same number of dimensions");
-    }
-
-    [Fact]
-    public void DistInfinitePairDeniesOnSteps()
-    {
-        var result = new LythonEngine().Run(
-            "import itertools, math\nreturn math.dist(itertools.count(), itertools.count())\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = 1000 });
-        Assert.False(result.Success);
-        Assert.Contains("maximum execution step count exceeded", result.Failure!.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -227,28 +204,6 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
             new LythonRunOptions { MaxCollectionSize = 10 });
         Assert.False(result.Success);
         Assert.Contains("maximum collection size exceeded", result.Failure!.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void SumProdHugeDeniedBySteps()
-    {
-        var result = new LythonEngine().Run(
-            "import math\nreturn math.sumprod(range(200000), range(200000))\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = 100 });
-        Assert.False(result.Success);
-        Assert.Contains("maximum execution step count exceeded", result.Failure!.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void SumProdInfinitePairDeniesOnSteps()
-    {
-        var result = new LythonEngine().Run(
-            "import itertools, math\nreturn math.sumprod(itertools.count(), itertools.count())\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = 1000 });
-        Assert.False(result.Success);
-        Assert.Contains("maximum execution step count exceeded", result.Failure!.Message, StringComparison.Ordinal);
     }
 
     [Fact]

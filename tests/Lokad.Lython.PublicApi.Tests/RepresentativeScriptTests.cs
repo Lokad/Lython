@@ -236,7 +236,6 @@ public sealed class RepresentativeScriptTests
         Assert.Empty(result.StandardOutput);
         Assert.Empty(result.StandardError);
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
-        Assert.True(result.Consumption?.HostCalls > 0);
         Assert.Equal(Encoding.UTF8.GetBytes(previous), Encoding.UTF8.GetBytes(host.ReadText(reportPath)));
         // Each mediated replacement is atomic. Earlier successful files remain
         // committed; the complete job does not promise a filesystem transaction.

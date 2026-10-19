@@ -9,7 +9,7 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> ReadPathBytesAsync(string path, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var stat = asynchronous ? await context.HostStatAsync(path, span).ConfigureAwait(false) : context.HostStat(path, span);
             if (!stat.Exists) throw new LythonRuntimeException("FileNotFoundError", "No such file: " + path, span);
             if (stat.IsDir) throw new LythonRuntimeException("IsADirectoryError", "Is a directory: " + path, span);
@@ -57,7 +57,7 @@ internal sealed partial class LythonRuntime
                 var length = Math.Min(4096, bytes.Length - offset);
                 bytes.Bytes.Slice(offset, length).CopyTo(payload.AsSpan(offset, length));
             }
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             if (asynchronous) await context.WriteHostBytesAsync(path, payload, span).ConfigureAwait(false);
             else context.WriteHostBytes(path, payload, span);
             GC.KeepAlive(bytes);

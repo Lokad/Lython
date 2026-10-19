@@ -127,7 +127,7 @@ internal sealed partial class LythonRuntime
 
         var invocation = BuildSubprocessInvocation(new BoundSubprocessArguments(arguments), span, context, owner, policy);
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var result = context.RunSubprocess(invocation.Request, span);
 
         return CompleteSubprocessRun(result, invocation, span, context);
@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
 
         var invocation = BuildSubprocessInvocation(new BoundSubprocessArguments(arguments), span, context, owner, policy);
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var result = await context.RunSubprocessAsync(invocation.Request, span).ConfigureAwait(false);
 
         return CompleteSubprocessRun(result, invocation, span, context);

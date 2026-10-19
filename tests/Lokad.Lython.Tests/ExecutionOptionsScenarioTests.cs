@@ -161,99 +161,6 @@ loop()
     }
 
     [Fact]
-    public void HostCallLimit_IsEnforced()
-    {
-        var host = new MockLythonHost();
-        host.SeedFile("/a.txt", "A");
-        host.SeedFile("/b.txt", "B");
-
-        var result = new LythonEngine().Run(
-            """
-left = open("/a.txt").read()
-right = open("/b.txt").read()
-""",
-            host,
-            new LythonRunOptions
-            {
-                MaxHostCalls = 1
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("maximum host call count exceeded", result.Failure.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void ZeroHostCallLimit_DoesNotFallBackToDefaultOrUnlimited()
-    {
-        var host = new MockLythonHost();
-        host.SeedFile("/a.txt", "A");
-
-        var result = new LythonEngine().Run(
-            "value = open('/a.txt').read()",
-            host,
-            new LythonRunOptions
-            {
-                DisableDefaultLimits = true,
-                MaxHostCalls = 0
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("maximum host call count exceeded", result.Failure.Message, StringComparison.Ordinal);
-    }
-
-    [Theory]
-    [InlineData("print('x')")]
-    [InlineData("value = input()")]
-    [InlineData("import time\nvalue = time.timezone")]
-    [InlineData("import pkgutil\nvalue = list(pkgutil.iter_modules(['/']))")]
-    [InlineData("value = open('/out.txt', 'a')")]
-    public void ZeroHostCallLimit_RejectsEveryHostFacingSurface(string source)
-    {
-        var host = new MockLythonHost();
-        host.SeedStandardInput("input\n");
-
-        var result = new LythonEngine().Run(
-            source,
-            host,
-            new LythonRunOptions
-            {
-                DisableDefaultLimits = true,
-                MaxHostCalls = 0
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("maximum host call count exceeded", result.Failure.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void ZeroHostCallLimit_RejectsLocalImportProbing()
-    {
-        var host = new MockLythonHost();
-        host.SeedFile("/helper.py", "value = 1");
-
-        var result = new LythonEngine().Run(
-            "import helper",
-            host,
-            new LythonRunOptions
-            {
-                DisableDefaultLimits = true,
-                MaxHostCalls = 0,
-                AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "helper" }
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("maximum host call count exceeded", result.Failure.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void ZeroCollectionLimit_AllowsEmptyButRejectsNonEmptyCollections()
     {
         var emptyResult = new LythonEngine().Run(
@@ -288,9 +195,7 @@ right = open("/b.txt").read()
     }
 
     [Theory]
-    [InlineData("steps")]
     [InlineData("recursion")]
-    [InlineData("host-calls")]
     [InlineData("collection")]
     [InlineData("string")]
     [InlineData("host-read")]
@@ -302,9 +207,7 @@ right = open("/b.txt").read()
     {
         var options = limit switch
         {
-            "steps" => new LythonRunOptions { MaxExecutionSteps = -1 },
             "recursion" => new LythonRunOptions { MaxRecursionDepth = -1 },
-            "host-calls" => new LythonRunOptions { MaxHostCalls = -1 },
             "collection" => new LythonRunOptions { MaxCollectionSize = -1 },
             "string" => new LythonRunOptions { MaxStringLength = -1 },
             "host-read" => new LythonRunOptions { MaxHostReadBytes = -1 },
@@ -317,26 +220,6 @@ right = open("/b.txt").read()
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             new LythonEngine().Run("return 1", new MockLythonHost(), options));
-    }
-
-    [Fact]
-    public void ExecutionStepLimit_IsEnforced()
-    {
-        var result = new LythonEngine().Run(
-            """
-while True:
-    pass
-""",
-            new MockLythonHost(),
-            new LythonRunOptions
-            {
-                MaxExecutionSteps = 50
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("maximum execution step count exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1372,34 +1255,6 @@ text = str(data)
     }
 
     [Fact]
-    public void StepCounterDoesNotWrapAtIntMaxValue()
-    {
-        var context = new LythonRuntime.ExecutionContext(
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = int.MaxValue });
-        context.Limits.ExecutionStepCount = int.MaxValue - 1;
-        context.CheckExecution(null);
-        Assert.Equal((long)int.MaxValue, (long)context.Limits.ExecutionStepCount);
-        var failure = Assert.Throws<LythonRuntimeException>(() => context.CheckExecution(null));
-        Assert.Equal("RuntimeError", failure.ExceptionType);
-        Assert.Contains("maximum execution step count exceeded", failure.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void HostCallCounterDoesNotWrapAtIntMaxValue()
-    {
-        var context = new LythonRuntime.ExecutionContext(
-            new MockLythonHost(),
-            new LythonRunOptions { MaxHostCalls = int.MaxValue });
-        context.Limits.HostCallCount = int.MaxValue - 1;
-        context.RegisterHostCall(null);
-        Assert.Equal((long)int.MaxValue, (long)context.Limits.HostCallCount);
-        var failure = Assert.Throws<LythonRuntimeException>(() => context.RegisterHostCall(null));
-        Assert.Equal("RuntimeError", failure.ExceptionType);
-        Assert.Contains("maximum host call count exceeded", failure.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void RecursionCounterDoesNotWrapAtIntMaxValue()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
@@ -1445,9 +1300,7 @@ text = str(data)
             DisableLocalModuleImports = true,
             AllowedLocalModules = new HashSet<string> { "helper" },
             AllowedBuiltinModules = new HashSet<string> { "math" },
-            MaxExecutionSteps = 11,
             MaxRecursionDepth = 12,
-            MaxHostCalls = 13,
             MaxCollectionSize = 14,
             MaxStringLength = 15,
             MaxHostReadBytes = 16,
@@ -1493,22 +1346,11 @@ text = str(data)
     {
         using var optionsCancellation = new CancellationTokenSource();
         using var externalCancellation = new CancellationTokenSource();
-        var result = await new LythonEngine().RunAsync(
-            """
-while True:
-    pass
-""",
-            new MockLythonHost(),
-            new LythonRunOptions
-            {
-                CancellationToken = optionsCancellation.Token,
-                MaxExecutionSteps = 50,
-            },
+        var result = await new LythonEngine().RunAsync("return 'abc'", new MockLythonHost(),
+            new LythonRunOptions { CancellationToken = optionsCancellation.Token, MaxStringLength = 2 },
             externalCancellation.Token);
         Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("maximum execution step count exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Equal(LythonFailureReason.StringLengthLimit, result.FailureAttribution?.Reason);
     }
 
     private sealed class CallbackGlobalValue : IEnumerable<object>

@@ -347,13 +347,13 @@ internal sealed partial class LythonRuntime
 
     private static LythonPathStat HostStat(string path, ExecutionContext context, LythonSourceSpan span)
     {
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         return context.HostStat(path, span);
     }
 
     private static async ValueTask<LythonPathStat> HostStatAsync(string path, ExecutionContext context, LythonSourceSpan span)
     {
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         return await context.HostStatAsync(path, span).ConfigureAwait(false);
     }
 

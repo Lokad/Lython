@@ -19,17 +19,16 @@ public sealed class ExactBytesSumTests
     public static IEnumerable<object[]> Checkpoints()
     {
         foreach (var length in new[] { 0, 1, 63, 64, 65, 127, 128 })
-        foreach (var steps in new[] { 0, 1, 2, 3 })
-        foreach (var asynchronous in new[] { false, true }) yield return [length, steps, asynchronous];
+        foreach (var asynchronous in new[] { false, true }) yield return [length, asynchronous];
     }
 
     [Theory]
     [MemberData(nameof(Checkpoints))]
-    public void FastAndGenericIterationKeepFuelErrorsAndTerminalPull(int length, int steps, bool asynchronous)
+    public void FastAndGenericIterationReturnTheSameResults(int length, bool asynchronous)
     {
         var bytes = new PyBytes(Enumerable.Range(0, length).Select(i => (byte)i).ToArray());
-        var direct = Context(steps);
-        var generic = Context(steps);
+        var direct = Context();
+        var generic = Context();
         Assert.Equal(Observe(bytes.Iterate(), generic, asynchronous), Observe(bytes, direct, asynchronous));
     }
 
@@ -90,23 +89,23 @@ public sealed class ExactBytesSumTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    private static Context Context(int? steps = null) => new(new MockLythonHost(),
-        new LythonRunOptions { MaxExecutionSteps = steps, MaxExecutionMemoryBytes = 1024 * 1024 });
+    private static Context Context() => new(new MockLythonHost(),
+        new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 });
 
     private static object Invoke(object[] arguments, Context context, bool asynchronous)
         => asynchronous ? SumAsync(arguments, Span, context).GetAwaiter().GetResult() : Sum(arguments, Span, context);
 
-    private static (object? Result, LythonFailureReason? Reason, LythonSourceSpan? Span, long Steps) Observe(object source, Context context, bool asynchronous)
+    private static (object? Result, LythonFailureReason? Reason, LythonSourceSpan? Span) Observe(object source, Context context, bool asynchronous)
     {
         try
         {
             var result = Invoke([source, BigInteger.Zero], context, asynchronous);
-            return (result, null, null, context.State.Limits.ExecutionStepCount);
+            return (result, null, null);
         }
         catch (LythonRuntimeException error)
         {
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            return (null, error.Attribution?.Reason, error.Span, context.State.Limits.ExecutionStepCount);
+            return (null, error.Attribution?.Reason, error.Span);
         }
     }
 }

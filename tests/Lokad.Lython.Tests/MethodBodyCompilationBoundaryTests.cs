@@ -2,15 +2,13 @@ using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
+public sealed class MethodBodyCompilationBoundaryTests
 {
     private static readonly LythonSourceSpan CallSpan = new(4000, 4, 99, 3);
-    private const int MaximumSteps = 10000;
     private const string ClosureSource = """
         class Runner:
          def make(self):
@@ -38,48 +36,16 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
          def identity(self):return self
         runner=Runner()
         """;
-    // Recorded on production f006f62c before any method-body compiler change.
-    private static readonly LythonSourceSpan[] ClosureCheckpoints =
-    [
-        CallSpan, CallSpan, new(33,25,3,3), new(39,19,3,9), new(39,5,3,9),
-        new(39,19,3,9), new(39,19,3,9), new(45,7,3,15), new(45,7,3,15),
-        new(53,4,3,23), new(54,2,3,24), new(53,4,3,23), new(84,113,5,3),
-        new(62,19,4,4), new(62,8,4,4), new(62,19,4,4), new(62,19,4,4),
-        new(71,9,4,13), new(71,9,4,13), new(101,22,5,20), new(101,5,5,20),
-        new(101,22,5,20), new(101,22,5,20), new(107,9,5,26), new(107,9,5,26),
-        new(117,5,5,36), new(207,8,8,10), new(207,6,8,10), new(207,8,8,10),
-        new(207,8,8,10), new(207,8,8,10), new(207,8,8,10), new(129,39,6,4),
-        new(179,18,7,11), new(179,5,7,11), new(179,18,7,11), new(179,18,7,11),
-        new(185,6,7,17), new(185,6,7,17), new(192,4,7,24)
-    ];
-    private static readonly LythonSourceSpan[] GenericCheckpoints =
-    [
-        CallSpan, CallSpan, new(33,13,3,3), new(42,4,3,12), new(43,2,3,13),
-        new(42,4,3,12), new(49,254,4,3), new(111,192,7,4), new(69,15,5,5),
-        new(69,8,5,5), new(69,15,5,5), new(69,15,5,5), new(78,5,5,14),
-        new(78,5,5,14), new(89,18,6,5), new(89,8,6,5), new(89,18,6,5),
-        new(89,18,6,5), new(98,8,6,14), new(98,8,6,14), new(153,25,7,46),
-        new(153,5,7,46), new(153,25,7,46), new(153,25,7,46), new(159,9,7,52),
-        new(159,9,7,52), new(169,8,7,62), new(133,19,7,26), new(133,5,7,26),
-        new(133,19,7,26), new(133,19,7,26), new(139,10,7,32), new(139,10,7,32),
-        new(150,1,7,43), new(133,19,7,26), new(133,19,7,26), new(133,19,7,26),
-        new(181,17,7,74), new(181,5,7,74), new(181,17,7,74), new(181,17,7,74),
-        new(187,8,7,80), new(187,8,7,80), new(196,1,7,89), new(181,17,7,74),
-        new(181,17,7,74), new(181,17,7,74), new(313,5,11,10)
-    ];
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task EscapedMethodClosuresKeepFundingAndEveryFuelBoundary(bool asynchronous)
+    public async Task EscapedMethodClosuresKeepFundingAndAliases(bool asynchronous)
     {
         var fixture = await Define(ClosureSource, asynchronous);
         var before = fixture.Context.MemoryGovernor.CurrentAccountedBytes;
-        fixture.Context.Limits.ExecutionStepCount = 0;
         var leaf = Assert.IsAssignableFrom<PyFunctionBase>(await Invoke(fixture.Method, fixture.Context, asynchronous));
-        var steps = fixture.Context.Limits.ExecutionStepCount;
         var funded = fixture.Context.MemoryGovernor.CurrentAccountedBytes - before;
-        Assert.Equal(40, steps);
         Assert.True(funded > 0);
         Assert.Equal(new[] { "saved", "factory", "default", "factory-apply", "leaf" }, fixture.Tape.Events);
         AssertUnwound(fixture.Context);
@@ -89,28 +55,6 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         Assert.Same(fixture.Type, retained[2]);
         Assert.Equal(new BigInteger(17), Assert.Single(Assert.IsType<PyList>(retained[0])));
         Assert.Same(fixture.Context.MemoryGovernor, fixture.Tape.Saved!.OwnerMemoryGovernor);
-        var spans = new List<LythonSourceSpan?>();
-        var effects = new List<string>();
-        for (var remaining = 0; remaining < steps; remaining++)
-        {
-            fixture = await Define(ClosureSource, asynchronous);
-            fixture.Context.Limits.ExecutionStepCount = MaximumSteps - remaining;
-            var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-                await Invoke(fixture.Method, fixture.Context, asynchronous));
-            Assert.Equal($"maximum execution step count exceeded ({MaximumSteps})", error.Message);
-            Assert.Equal(MaximumSteps + 1, fixture.Context.Limits.ExecutionStepCount);
-            Assert.Equal(remaining < 2 ? null : "/method-body.py", error.SourcePath);
-            spans.Add(error.Span);
-            effects.Add(string.Join(',', fixture.Tape.Events));
-            AssertUnwound(fixture.Context);
-        }
-        output.WriteLine($"async={asynchronous}, steps={steps}, funded={funded}");
-        output.WriteLine("spans=" + string.Join(';', spans.Select(s => s is null ? "null" : $"{s.Start},{s.Length},{s.Line},{s.Column}")));
-        output.WriteLine("effects=" + string.Join(';', effects));
-        Assert.Equal(ClosureCheckpoints, spans);
-        Assert.Equal(Enumerable.Repeat("", 12).Concat(Enumerable.Repeat("saved", 7))
-            .Concat(Enumerable.Repeat("saved,factory", 7))
-            .Concat(Enumerable.Repeat("saved,factory,default,factory-apply", 14)), effects);
     }
 
     [Theory]
@@ -120,20 +64,17 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
     {
         var fixture = await Define(GenericSource, asynchronous);
         var before = fixture.Context.MemoryGovernor.CurrentAccountedBytes;
-        fixture.Context.Limits.ExecutionStepCount = 0;
         var inner = Assert.IsType<PyType>(await Invoke(fixture.Method, fixture.Context, asynchronous));
-        var steps = fixture.Context.Limits.ExecutionStepCount;
         var funded = fixture.Context.MemoryGovernor.CurrentAccountedBytes - before;
-        Assert.Equal(48, steps);
         Assert.True(funded > 0);
         Assert.Equal(new[] { "top", "bottom", "default", "argument", "result", "bottom-apply", "top-apply" }, fixture.Tape.Events);
         var expectedSnapshots = new[]
         {
             // Decorators own 96 bytes; the definition's one-default map
-            // owns another 128 until publication finishes. Steps/frames stay fixed.
-            "top:14,96,3,1", "bottom:20,96,3,1", "default:27,224,3,1",
-            "argument:34,224,3,1", "result:44,224,3,1",
-            "bottom-apply:47,224,2,1", "top-apply:47,224,2,1"
+            // owns another 128 until publication finishes. Frames remain active.
+            "top:96,3,1", "bottom:96,3,1", "default:224,3,1",
+            "argument:224,3,1", "result:224,3,1",
+            "bottom-apply:224,2,1", "top-apply:224,2,1"
         };
         Assert.True(expectedSnapshots.SequenceEqual(fixture.Tape.Snapshots), string.Join("\n", fixture.Tape.Snapshots));
         var receiver = Assert.IsType<PyInstance>(inner.Invoke([], CallSpan, fixture.Context));
@@ -157,31 +98,6 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         Assert.Same(inner, retained[2]);
         Assert.Equal(new BigInteger(17), Assert.Single(Assert.IsType<PyList>(retained[0])));
         AssertUnwound(fixture.Context);
-        output.WriteLine($"generic async={asynchronous}, steps={steps}, funded={funded}, phases={string.Join(';', fixture.Tape.Snapshots)}");
-        var spans = new List<LythonSourceSpan?>();
-        var effects = new List<string>();
-        for (var remaining = 0; remaining < steps; remaining++)
-        {
-            fixture = await Define(GenericSource, asynchronous);
-            fixture.Context.Limits.ExecutionStepCount = MaximumSteps - remaining;
-            var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-                await Invoke(fixture.Method, fixture.Context, asynchronous));
-            Assert.Equal($"maximum execution step count exceeded ({MaximumSteps})", error.Message);
-            Assert.Equal(MaximumSteps + 1, fixture.Context.Limits.ExecutionStepCount);
-            Assert.Equal(remaining < 2 ? null : "/method-body.py", error.SourcePath);
-            spans.Add(error.Span);
-            effects.Add(string.Join(',', fixture.Tape.Events));
-            AssertUnwound(fixture.Context);
-        }
-        output.WriteLine("generic spans=" + string.Join(';', spans.Select(s => s is null ? "null" : $"{s.Start},{s.Length},{s.Line},{s.Column}")));
-        output.WriteLine("generic effects=" + string.Join(';', effects));
-        Assert.Equal(GenericCheckpoints, spans);
-        Assert.Equal(Enumerable.Repeat("", 14).Concat(Enumerable.Repeat("top", 6))
-            .Concat(Enumerable.Repeat("top,bottom", 7))
-            .Concat(Enumerable.Repeat("top,bottom,default", 7))
-            .Concat(Enumerable.Repeat("top,bottom,default,argument", 10))
-            .Concat(Enumerable.Repeat("top,bottom,default,argument,result", 3))
-            .Concat(["top,bottom,default,argument,result,bottom-apply,top-apply"]), effects);
     }
 
     [Theory]
@@ -250,12 +166,9 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
     {
         const string source = "class Runner:\n def make(self):\n  saved=stamp('saved',[17])\n  def values(value=stamp('default',saved)):\n   yield value\n   yield __class__\n  return values()\n def identity(self):return self\nrunner=Runner()\n";
         var fixture = await Define(source, asynchronous);
-        fixture.Context.Limits.ExecutionStepCount = 0;
         var before = fixture.Context.MemoryGovernor.CurrentAccountedBytes;
         var generator = Assert.IsType<LythonRuntime.PyGenerator>(await Invoke(fixture.Method, fixture.Context, asynchronous));
-        var steps = fixture.Context.Limits.ExecutionStepCount;
         var funded = fixture.Context.MemoryGovernor.CurrentAccountedBytes - before;
-        Assert.Equal(26, steps);
         Assert.True(funded > 0);
         Assert.Same(fixture.Context.MemoryGovernor, generator.OwnerMemoryGovernor);
         Assert.Equal(new[] { "saved", "default" }, fixture.Tape.Events);
@@ -274,7 +187,6 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         Assert.False(final.HasValue);
         AssertUnwound(fixture.Context);
         Assert.Same(fixture.Active, fixture.Context.Services.CurrentException);
-        output.WriteLine($"generator async={asynchronous}, steps={steps}, funded={funded}");
     }
 
     [Theory]
@@ -312,7 +224,6 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
                 AssertUnwound(fixture.Context);
                 Assert.Same(fixture.Receiver, fixture.Context.Variables["runner"]);
                 Assert.Same(fixture.Active, fixture.Context.Services.CurrentException);
-                output.WriteLine($"budget async={asynchronous}, allowance={allowance}, error={error?.Message ?? "success"}, span={error?.Span}, phases={string.Join(',', fixture.Tape.Events)}");
             }
             finally { governor.Release(padding); }
             if (governor.AdmissionFailure is null)
@@ -331,7 +242,6 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
     {
         const string source = "class Runner:\n def make(self):\n  while stamp('condition',False):pass\n def identity(self):return self\nrunner=Runner()\n";
         var fixture = await Define(source, asynchronous);
-        fixture.Context.Limits.ExecutionStepCount = 0;
         fixture.Context.Limits.CurrentInterpreterDepth = LythonRuntime.ExecutionLimits.MaxInterpreterDepth;
         try
         {
@@ -343,7 +253,6 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
             Assert.Equal(LythonRuntime.ExecutionLimits.MaxInterpreterDepth, fixture.Context.Limits.CurrentInterpreterDepth);
             Assert.Equal(0, fixture.Context.Limits.CurrentRecursionDepth);
             Assert.Equal(0, fixture.Context.MemoryGovernor.CurrentReservedBytes);
-            Assert.Equal(3, fixture.Context.Limits.ExecutionStepCount);
         }
         finally { fixture.Context.Limits.CurrentInterpreterDepth = 0; }
         Assert.Same(fixture.Receiver, await Invoke(Bind(fixture.Receiver, "identity"), fixture.Context, asynchronous));
@@ -368,7 +277,7 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
             Assert.Null(frame.CurrentExecutableFrame);
             Events.Add(phase);
             Values[phase] = value;
-            Snapshots.Add($"{phase}:{frame.Limits.ExecutionStepCount},{frame.MemoryGovernor.CurrentReservedBytes},{frame.Limits.CurrentInterpreterDepth},{frame.Limits.CurrentRecursionDepth}");
+            Snapshots.Add($"{phase}:{frame.MemoryGovernor.CurrentReservedBytes},{frame.Limits.CurrentInterpreterDepth},{frame.Limits.CurrentRecursionDepth}");
             if (phase is "saved" or "default") Saved = Assert.IsType<PyList>(value);
             return value;
         }
@@ -413,7 +322,7 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionSteps = MaximumSteps, MaxExecutionMemoryBytes = 1024 * 1024,
+            MaxExecutionMemoryBytes = 1024 * 1024,
             SourcePath = "/method-body.py", CancellationToken = cancellation
         });
         var active = new PyException("ValueError", "outer", PyNone.Instance);

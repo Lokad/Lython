@@ -1,17 +1,14 @@
 using System.Numerics;
-using System.Text.Json;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class AnnotationOnlyLocalBoundaryTests(ITestOutputHelper output)
+public sealed class AnnotationOnlyLocalBoundaryTests
 {
-    private const int MaximumSteps = 10000;
 
     public static TheoryData<string, string, bool> Programs => new()
     {
@@ -30,7 +27,6 @@ public sealed class AnnotationOnlyLocalBoundaryTests(ITestOutputHelper output)
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
-            long steps;
             string[] fullEffects;
             string? completedError = null;
             using (var owner = budget.CreateScope())
@@ -58,33 +54,15 @@ public sealed class AnnotationOnlyLocalBoundaryTests(ITestOutputHelper output)
                     "protected" => ["finally"],
                     _ => Array.Empty<string>()
                 }, fullEffects);
-                steps = context.Limits.ExecutionStepCount;
                 CheckCleanup(context);
             }
             Assert.Equal(0, budget.ReservedBytes);
-            var checkpoints = new List<string>();
-            for (var remaining = 0; remaining < steps; remaining++)
-            {
-                using (var owner = budget.CreateScope())
-                {
-                    var (context, effects) = Prepare(owner);
-                    context.Limits.ExecutionStepCount = MaximumSteps - remaining;
-                    var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
-                    Assert.Equal(LythonFailureReason.ExecutionStepLimit, failure.Attribution?.Reason);
-                    Assert.Equal(MaximumSteps, failure.Attribution?.Limit);
-                    Assert.Equal(fullEffects.Take(effects.Count), effects);
-                    checkpoints.Add(Describe(failure) + ":checks=" + context.Limits.ExecutionStepCount + ":" + string.Join(';', effects));
-                    CheckCleanup(context);
-                }
-                Assert.Equal(0, budget.ReservedBytes);
-            }
-            output.WriteLine("ANNOTATION_ONLY_MATRIX:" + JsonSerializer.Serialize(new { label, asynchronous, steps, completedError, fullEffects, checkpoints }));
         }
     }
 
     private static (Context Context, List<string> Effects) Prepare(ILythonMemoryBudget owner)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionSteps = MaximumSteps });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
         var effects = new List<string>();
         context.Variables["note"] = new Note(effects);
         context.Variables["fail"] = new Fail(effects);
@@ -112,7 +90,6 @@ public sealed class AnnotationOnlyLocalBoundaryTests(ITestOutputHelper output)
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
-            Assert.InRange(context.Limits.ExecutionStepCount, 0, MaximumSteps);
             effects.Add(name);
             return value;
         }
@@ -122,7 +99,6 @@ public sealed class AnnotationOnlyLocalBoundaryTests(ITestOutputHelper output)
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
-            Assert.InRange(context.Limits.ExecutionStepCount, 0, MaximumSteps);
             effects.Add(Assert.IsType<PyString>(arguments[0].Value).AsString());
             return BigInteger.One;
         }
@@ -132,7 +108,6 @@ public sealed class AnnotationOnlyLocalBoundaryTests(ITestOutputHelper output)
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
-            Assert.InRange(context.Limits.ExecutionStepCount, 0, MaximumSteps);
             effects.Add("fail");
             throw new LythonRuntimeException("ValueError", "annotation fixture", span);
         }

@@ -92,7 +92,6 @@ public sealed class ElementTreeAccountingTests
     {
         foreach (var options in new[]
         {
-            new LythonRunOptions { MaxExecutionSteps = 10 },
             new LythonRunOptions { MaxCollectionSize = 3 },
         })
         {

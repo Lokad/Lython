@@ -16,9 +16,9 @@ Three invariants dominate the implementation:
 
 1. Compilation is effect-free. Host-dependent checks may inspect capability
    availability immediately before execution, but they do not invoke the host.
-2. Every runtime effect crosses an `ILythonHost`-derived boundary, is charged to
-   the execution budget, and translates host failures to stable Python-shaped
-   failures.
+2. Every runtime effect crosses an `ILythonHost`-derived boundary, observes
+   cancellation and applicable resource admission, and translates host failures
+   to stable Python-shaped failures.
 3. Static analysis rejects only provable errors. Unknown or data-dependent
    behavior remains a runtime concern.
 
@@ -166,7 +166,7 @@ explicitly, and offsets at or past the end yield empty payloads. The default
 implementations compose whole-file reads and are therefore correct but
 unbounded; hosts with native ranged I/O should override them. Engine file
 opens stream fixed windows through these ranges, with cumulative host-read
-caps and per-pull cancellation and host-call accounting, so a native override
+   caps and per-pull cancellation, so a native override
 is what makes large-file scans bounded end to end; without it every window
 re-reads the whole file host-side.
 

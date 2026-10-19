@@ -90,23 +90,6 @@ take(*range(100000))
     }
 
     [Fact]
-    public void SortedInputRespectsStepBudget()
-    {
-        var result = new LythonEngine().Run(
-            "sorted(range(100000))",
-            new MockLythonHost(),
-            new LythonRunOptions
-            {
-                MaxExecutionSteps = 100
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum execution step count exceeded", result.Failure?.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public async Task AsyncSortedInputRespectsCollectionLimit()
     {
         var result = await new LythonEngine().RunAsync(

@@ -334,7 +334,7 @@ internal sealed partial class LythonRuntime
     // Assignments do not track interpreter depth (MG25): depth is tracked
     // once per Python nesting level (calls, bodies, compound statements), and
     // assignment targets nest shallowly enough for the frontend bound plus the
-    // stack probe. Execution steps are still counted for every statement.
+    // stack probe. Cancellation checks remain on every statement.
     private static async ValueTask ExecuteLoweredAssignmentAsync(LoweredAssignmentStatement assignment, ExecutionContext context)
     {
         context.CheckExecution(assignment.Span);

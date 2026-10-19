@@ -186,10 +186,10 @@ internal sealed partial class LythonRuntime
                 TextErrorMode errors,
                 TextNewlineMode newline)
             {
-                context.RegisterHostCall(null);
+                context.CheckExecution(null);
                 var stat = await context.HostStatAsync(path, null).ConfigureAwait(false);
                 CheckOpenStat(context, encoding, stat);
-                context.RegisterHostCall(null);
+                context.CheckExecution(null);
                 return new ChunkedTextFileReadState(path, context, encoding, errors, newline, WindowForKnownSize(stat));
             }
 
@@ -200,10 +200,10 @@ internal sealed partial class LythonRuntime
                 TextErrorMode errors,
                 TextNewlineMode newline)
             {
-                context.RegisterHostCall(null);
+                context.CheckExecution(null);
                 var stat = context.HostStat(path, null);
                 CheckOpenStat(context, encoding, stat);
-                context.RegisterHostCall(null);
+                context.CheckExecution(null);
                 return new ChunkedTextFileReadState(path, context, encoding, errors, newline, WindowForKnownSize(stat));
             }
 
@@ -261,7 +261,7 @@ internal sealed partial class LythonRuntime
                 TextErrorMode errors,
                 TextNewlineMode newline)
             {
-                context.RegisterHostCall(null);
+                context.CheckExecution(null);
                 var stat = context.HostStat(path, null);
                 var appendBasePosition = stat is { Exists: true, IsFile: true }
                     ? stat.Size
@@ -276,7 +276,7 @@ internal sealed partial class LythonRuntime
                 TextErrorMode errors,
                 TextNewlineMode newline)
             {
-                context.RegisterHostCall(null);
+                context.CheckExecution(null);
                 var stat = await context.HostStatAsync(path, null).ConfigureAwait(false);
                 var appendBasePosition = stat is { Exists: true, IsFile: true }
                     ? stat.Size

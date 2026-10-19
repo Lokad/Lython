@@ -631,7 +631,7 @@ internal sealed partial class LythonRuntime
                 // The host transfer lands before the carry commits, so missing
                 // files (and other host failures) surface with no infrastructure
                 // charged, exactly like the prereserve fall-through before them.
-                _services.RegisterHostCall(null);
+                _services.CheckExecution(null);
                 var payload = UsesBinaryTextTransport(_encoding)
                     ? _services.ReadHostBytesRange(_path, _nextOffset, _windowBytes, null)
                     : _services.ReadTextUtf8Range(_path, _nextOffset, _windowBytes, null);
@@ -646,7 +646,7 @@ internal sealed partial class LythonRuntime
                     return false;
                 }
 
-                _services.RegisterHostCall(null);
+                _services.CheckExecution(null);
                 var payload = UsesBinaryTextTransport(_encoding)
                     ? await _services.ReadHostBytesRangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false)
                     : await _services.ReadTextUtf8RangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false);

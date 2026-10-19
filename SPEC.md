@@ -210,22 +210,15 @@ that replaces an otherwise successful return reports its own projection origin.
 `SystemExit(0)` retains the existing unsuccessful runtime result with exit code0,
 unless memory admission refusal requires a nonzero resource-limit outcome.
 
-`LythonExecutionResult.Consumption` takes one immutable snapshot of existing
-counters when an admitted runtime execution finishes, including runtime failure,
-cancelled host I/O, `SystemExit`, and projection failure. It reports registered
-host-call attempts (including a count-limit trip and cleanup/publication calls)
-and retained UTF-8 stdout/stderr bytes. Capture counts survive truncation or
-failure of public output projection and describe accepted runtime bytes, rather
-than bytes necessarily delivered by the host.
-
-`ExecutionSteps` is present only when `MaxExecutionSteps` was explicitly supplied;
-it includes a checkpoint that exhausted the allowance. Counts describe runtime
-checkpoints, vary by backend/source layout and are not Python bytecodes or an
-external performance metric. Unmeasured differs from measured zero. Pre-execution
-rejection, failed runtime admission and manually constructed public-factory
-results have no snapshot. This adds no always-on instruction counting, resource
-ledger or deadline watchdog; cooperative cancellation and separate execution/
-projection memory accounting keep their existing contracts.
+`LythonExecutionResult.Consumption` snapshots retained UTF-8 stdout/stderr
+bytes when an admitted runtime execution finishes, including runtime failure,
+cancelled host I/O, `SystemExit` and projection failure. These sizes survive
+truncation or failed public projection and describe accepted runtime bytes,
+rather than bytes necessarily delivered by the host. Pre-execution rejection,
+failed runtime admission and manually constructed public-factory results have
+no snapshot. There are no instruction or host-call totals. Cooperative
+cancellation and separate execution/projection memory accounting retain their
+independent contracts.
 Ordinary zero-argument exact-string `split()` calls reuse the governed whitespace
 kernel directly from executable storage under both Run and RunAsync. General,
 exposed, keyword, expanded and custom-receiver calls retain normal Python binding.
@@ -233,8 +226,7 @@ Receiver evaluation completes once before splitting; resulting lists and strings
 retain their owners, and rejected result admission leaves the receiver unchanged.
 Ordinary expanded list, tuple, set and dictionary displays use the same incremental executable display
 operations as yielding generators. Expressions and starred iteration interleave
-in source order. The existing per-item checkpoints remain active; explicit fuel
-consumption can therefore differ from the previous lowered-expression route.
+in source order. Existing per-item cancellation checks remain active.
 Tuple expansion funds its mutable working list while constructing the immutable
 result. Both coexist during conversion, so admission can reject earlier than the
 previous lowered route. These estimates remain conservatively owned by the finite
@@ -248,7 +240,7 @@ Ordinary f-strings share executable field, dynamic-specifier and final-join
 operations with yielding generators. Formatting protocols can suspend under
 `RunAsync` without replaying completed fields. Intermediate text and final output
 coexist during joining and remain conservatively funded. Allocation admission
-and explicit fuel can occur at different checkpoints than the lowered route;
+can occur at different points than the lowered route;
 exact historical thresholds are not part of the contract. A single executable
 formatted part can reuse its already funded string without a final buffer copy;
 retained aliases keep that string's owner. String identity reuse is an
@@ -257,8 +249,7 @@ Expanded calls share executable target/argument evaluation and the existing
 temporary accumulator with yielding generators. Arguments and expansion errors
 precede rejection of a non-callable target. A sole starred positional argument
 retains its deferred iteration order relative to keyword expressions/mappings.
-Existing operation checkpoints can change explicit fuel thresholds from the
-lowered route. Accumulator storage and its final array overlap are admitted
+Accumulator storage and its final array overlap are admitted
 before allocation and released after invocation or failed/cancelled expansion;
 retained argument aliases keep their surviving execution/result ownership.
 Lambdas share ordinary function binding, metadata and invocation, including the
@@ -279,9 +270,7 @@ as an empty dictionary. Defaults retain their live binding/reset behavior.
 Metadata deletion retains capacity and escaped-value funding; reinsertion can
 conservatively reserve another slot. Reused call sites resolve function callable
 attributes again, observing replacement/deletion while saved aliases stay valid.
-Added return/creation checkpoints can change
-explicit fuel thresholds; conservative metadata/capture admission can reject
-earlier. Compilation and runtime managed stack policies are unchanged.
+Conservative metadata/capture admission can reject earlier. Compilation and runtime managed stack policies are unchanged.
 In executable enclosing code, eager list/set/dictionary comprehensions use
 ordinary loop/filter/item instructions in the caller frame under the existing
 inlined binding scope. Iteration targets remain isolated; scope cleanup restores
@@ -292,7 +281,7 @@ created inside these scopes use executable bodies and capture the existing live
 iteration bindings without forcing caller namespace mirroring. Late binding and
 early defaults remain distinct; capture admission precedes cell/array allocation.
 Lazy generator bodies and required lowered/class suites remain separate.
-Prepared checkpoints may change explicit fuel/admission thresholds. Partial
+Conservative admission thresholds can change. Partial
 storage can stay charged to the finite execution/result owner after a caught
 failure; retained results and asynchronous users remain funded.
 Executable loop/comprehension abandonment disposes native enumeration temporaries,
@@ -720,8 +709,7 @@ bodies. Their annotation expressions do not run or populate metadata; name targe
 still declare locals, while attribute/item targets evaluate their base and index
 expressions without reading or writing the target. Module annotation behavior is
 unchanged.
-Compiled body/call fuel can differ from lowered execution and remains
-implementation-defined. The contained
+The contained
 `from __future__ import annotations` mode stores Python 3.13 canonical expression
 strings in function, module and class `__annotations__` without evaluating those
 expressions, including annotations in generic definitions. Private annotation
@@ -1152,7 +1140,7 @@ Chained assignments still store left to right and retain earlier mutations if a
 later target fails. Statement checkpoints and target diagnostics retain their own
 spans. Augmented and explicitly yielding target routes retain
 their established handling. Additional instruction checkpoints can change opt-in
-fuel thresholds; native allocation admission still precedes mutation.
+admission thresholds; native allocation admission still precedes mutation.
 
 Assignment behavior for supported target forms must follow Python semantics.
 
@@ -1958,7 +1946,7 @@ The pure `shlex` subset exposes `quote(s)`, `join(split_command)`, and `split(s,
 
 The wall-clock `time` subset exposes `time`, `time_ns`, `gmtime`, `localtime`, `ctime`, `mktime`, `asctime`, `strftime`, and `strptime`. Current values come only from the host's explicit `UtcNow` and `LocalNow`; timestamp arguments perform deterministic Unix-epoch conversions without consulting ambient process state. `time.struct_time` is a tuple-compatible nine-element sequence with named `tm_year` through `tm_isdst` fields and the non-sequence `tm_zone`/`tm_gmtoff` fields. Weekdays are Monday-based and year days are one-based. Formatting and parsing share the invariant-English datetime directive core, including deterministic `%c`, `%x`, and `%X` spellings. Lython models local time as the fixed offset of `Host.LocalNow`: `timezone` and `altzone` report seconds west of UTC, `daylight` is zero, and both `tzname` entries use a stable `UTC±HH:MM` name. No IANA or OS timezone database is consulted, and `tzset` fails explicitly.
 
-Monotonic time and sleeping are a distinct optional authority. `ILythonHost.Timing` may provide an `ILythonTiming` capability consisting of host-defined monotonic nanoseconds, a positive resolution in nanoseconds, and a cancellable delay. When present, `monotonic`, `monotonic_ns`, `perf_counter`, `perf_counter_ns`, `sleep`, and monotonic/performance `get_clock_info` queries use only that capability. Reads, metadata queries, and delays count as host calls, and `sleep` accepts only finite non-negative real durations. Async execution awaits the host delay and propagates run cancellation; synchronous execution fails with `RunAsync` guidance if the delay does not complete synchronously. When the capability is absent, these APIs fail explicitly and must not consult an ambient stopwatch or schedule an ambient delay. Wall-clock `get_clock_info("time")` remains available from the base host clock. Process and thread CPU clocks, platform clock-ID access, and clock mutation are explicit `NotImplementedError` surfaces.
+Monotonic time and sleeping are a distinct optional authority. `ILythonHost.Timing` may provide an `ILythonTiming` capability consisting of host-defined monotonic nanoseconds, a positive resolution in nanoseconds, and a cancellable delay. When present, `monotonic`, `monotonic_ns`, `perf_counter`, `perf_counter_ns`, `sleep`, and monotonic/performance `get_clock_info` queries use only that capability. Reads, metadata queries and delays remain host-mediated, and `sleep` accepts only finite non-negative real durations. Async execution awaits the host delay and propagates run cancellation; synchronous execution fails with `RunAsync` guidance if the delay does not complete synchronously. When the capability is absent, these APIs fail explicitly and must not consult an ambient stopwatch or schedule an ambient delay. Wall-clock `get_clock_info("time")` remains available from the base host clock. Process and thread CPU clocks, platform clock-ID access, and clock mutation are explicit `NotImplementedError` surfaces.
 
 `pathlib` follows Lython's `/`-separated contained path model. Construction and joining remove redundant separators and `.` components but preserve lexical `..` components. `absolute()` makes a path absolute without collapsing those parent segments; `resolve()` and operations that cross the host boundary canonicalize them. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` produce the same contained path values. `WindowsPath` and `PureWindowsPath` must fail explicitly because no Windows-specific path semantics are exposed through the language surface.
 
@@ -2383,7 +2371,7 @@ Chunks use the existing incremental encoder's boundaries; their concatenation
 is the encoded document. Custom encoders may choose their own chunks, which
 are passed unchanged to the writer. A callback or encoding failure stops further
 pulls/writes; already written prefixes remain. Text files retain their governed
-staging and close/final-publication policy. Standard streams retain host-call,
+staging and close/final-publication policy. Standard streams retain cancellation,
 input/output and memory limits, with the usual stdout/stderr capture.
 
 `loads` must support `object_hook`, `object_pairs_hook`, `parse_int`, `parse_float`, and `parse_constant` callbacks at every value position, plus `strict` (when false, literal control characters inside strings are allowed). Invalid JSON text must raise catchable `JSONDecodeError` with `msg`, `doc`, `pos`, `lineno`, and `colno` fields. Positions and prefix end offsets are Python string indices.
@@ -2632,7 +2620,7 @@ Checked failures must raise catchable `CalledProcessError` with `returncode`, `c
 
 `Popen` must remain a lazy buffered facade rather than a claim of live-process ownership. Construction parses the shared command, stream, cwd, environment, shell, text, encoding, and error options without issuing a host request. A `PIPE` stdin endpoint buffers governed text. `PIPE` stdout/stderr endpoints provide sequential text reads and iteration. The first `communicate`, `wait`, output-stream read, or context exit finalizes stdin and issues exactly one bounded `ILythonSubprocessRunner` request; later completion calls reuse its result. `returncode` and `poll()` remain `None` before that boundary. Both sync and async execution use the same request, while an asynchronously completing host requires `RunAsync`. Host timeouts represented by `TimeoutException` become catchable `TimeoutExpired` values carrying `cmd`, `timeout`, `output`/`stdout`, and `stderr` fields.
 
-A prior facade's `stdout=PIPE` endpoint may be supplied as the next facade's `stdin`. This is buffered composition, not an operating-system pipe: completing the downstream facade recursively completes each upstream facade exactly once, forwards its decoded captured stdout as governed UTF-8 input, and then performs the downstream host request. The same timeout and cancellation context applies at every stage. Every request counts against the host-call budget, and captured stdout/stderr across the chain counts against a cumulative output bound in addition to each request's output bound. A stdout endpoint may be claimed by only one downstream facade and cannot be claimed after it is closed or partially consumed; stderr endpoints are not valid pipeline inputs. Upstream and downstream completion failures remain cached and are rethrown without repeating host effects.
+A prior facade's `stdout=PIPE` endpoint may be supplied as the next facade's `stdin`. This is buffered composition, not an operating-system pipe: completing the downstream facade recursively completes each upstream facade exactly once, forwards its decoded captured stdout as governed UTF-8 input, and then performs the downstream host request. The same timeout and cancellation context applies at every stage. Captured stdout/stderr across the chain counts against a cumulative output bound in addition to each request's output bound. A stdout endpoint may be claimed by only one downstream facade and cannot be claimed after it is closed or partially consumed; stderr endpoints are not valid pipeline inputs. Upstream and downstream completion failures remain cached and are rethrown without repeating host effects.
 
 The contained facade does not expose a PID, live signals, background execution, unmanaged handles, file descriptors, or OS pipe ownership. `send_signal`, `terminate`, `kill`, descriptor/session/user/group/process mutation options, `getoutput`, and `getstatusoutput` fail explicitly. Ambient shell authority remains unavailable.
 
@@ -3346,16 +3334,15 @@ The runtime must allow the embedding host to constrain:
 
 - execution time
 - memory use
-- optional interpreter work / execution steps for embeddings requiring deterministic fuel
 - recursion depth
 - maximum string size
 - maximum collection size
-- maximum number of host calls
 - cancellation
 
-Host-call limits count logical operations registered by runtime features, not every composed capability call. In particular, the default binary-append fallback's internal stat/read/write composition consumes a single logical call, and its combined prefix-plus-payload allocation is host-side memory outside governor accounting; hosts that cannot bound such compositions should override append natively (see the `ILythonHost.AppendBytesAsync` remarks).
-
-The first version does not need to implement every possible quota intrinsically, but it must expose practical control points.
+The default binary-append fallback composes stat/read/write capabilities. Its
+combined prefix-plus-payload allocation is host-side memory outside governor
+accounting; hosts needing bounded efficient append should override it natively
+(see the `ILythonHost.AppendBytesAsync` remarks).
 
 ### 14.3 Cooperative Cancellation
 
@@ -3403,8 +3390,7 @@ publishing traversal state. This includes host continuations after genuine async
 suspension; the runtime does not sample native stack addresses or cache OS ranges.
 Recursive `repr` rendering admits each value descent through that same policy,
 including repeated container references. Cycle detection alone does not bound
-acyclic nesting. Each child consumes an execution checkpoint; historical
-container-rendering fuel thresholds can change. Refused entries unwind their
+acyclic nesting. Each child checks cancellation and refused memory admission. Refused entries unwind their
 managed frames, and subsequent funded executions remain usable.
 
 The CLR stack backstop reports `RuntimeError` with the interpreter-stack-depth
@@ -3418,32 +3404,36 @@ publishing an active container and reports an explicit projection failure when
 headroom is insufficient, while retaining its independent budget and depth/cycle
 limits. Refused entries leave their counters and traversal state unpublished.
 
-### 14.5 Execution Deadlines and Optional Fuel
+### 14.5 Execution Deadlines
 
-Ordinary execution has no implicit instruction allowance. The embedding application owns its execution deadline and must provide and cancel a token when finite execution time is required. Cancellation checkpoints must remain effective for pure computation, including non-allocating loops that avoid host calls. Memory bounds alone do not terminate such a loop.
+The embedding application owns its execution deadline and supplies and cancels
+the run's `CancellationToken`. Cancellation remains effective in CPU-only,
+non-allocating loops, long builtin traversals, iteration, both execution APIs
+and host boundaries. Lython has no instruction allowance, host-call-count quota,
+work-unit policy or internal deadline watchdog. Memory bounds alone do not
+terminate an infinite non-allocating loop.
 
-The published `MaxExecutionSteps` option remains an enforced opt-in allowance for embedders requiring deterministic fuel; null means no step ceiling, independently of `DisableDefaultLimits`. `DefaultMaxExecutionSteps` retains the historical 50,000,000 value for source compatibility and does not configure an ordinary run. The internal notion of a step is implementation-defined. Fuel accounting runs only when the embedder requests an allowance and must not replace cancellation or change explicit ownership lifetimes.
+When executable compilation succeeds, both execution APIs and eligible ordinary
+function bodies share compiled code, argument slots and captured cells. Defaults,
+decorators and body callbacks can suspend without replaying effects. Eligible
+annotated and generic definitions keep executable bodies with their metadata and
+type-parameter scopes; required class/generator/contextual fallbacks remain.
+Namespace mirroring follows actual fallback and retained-scope requirements.
+Managed stack admission, startup stacks and host mediation keep their policies.
 
-When executable compilation succeeds, synchronous and asynchronous module runs
-and eligible ordinary function bodies use the same compiled code, argument slots
-and captured cells. Defaults, decorators and body callbacks can suspend without
-replaying their effects. Eligible annotated and generic ordinary definitions keep
-executable bodies while preserving metadata and type-parameter scopes. Definitions
-requiring existing class, generator or contextual fallbacks keep those routes.
-Moving a formerly lowered body to executable code can change its step count and
-where a fixed `MaxExecutionSteps` allowance is exhausted; fuel, cancellation and
-managed stack admission remain enforced. Namespace mirroring follows fallback and
-retained lexical-scope requirements in both execution APIs. Async runs use the existing
-async opcode driver and still await supported guest and host effects. Async
-instruction-fuel counts can differ from earlier versions that always traversed
-lowered module/function nodes. Counts remain enforced and reported only when explicitly requested.
-Managed stack admission, the synchronous startup stack and host mediation retain
-their existing policies. Compiled local-slot stores consume the popped operand
-in a completed transfer helper, rather than in the long-running dispatch loop.
+Execution checks propagate refused memory admission before observing cancellation.
+Native cleanup and refunds remain available and awaited; neither cancellation
+nor refusal permits refunding storage still retained by a user. Recursion and
+interpreter-depth protection, memory preflights, collection/string/read/output
+bounds and bounded public projection remain independent protections.
 
-Shared execution checkpoints perform cancellation independently of optional fuel. Memory admission and explicit owner cleanup are independent of optional fuel. Recursion/interpreter-depth and CLR stack-headroom guards, memory preflights, collection/string/read/output bounds, CLR projection funding, and the separate host-call quota remain effective.
-
-Long builtin traversals must observe cancellation at meaningful intervals. Operations that cannot interrupt promptly retain operation-local size, depth, allocation or work safeguards; an outer token does not make an indivisible dependency call interruptible. Bounded CLR/native conversion and parsing calls finish before the next checkpoint; host implementations must honor the token during their own operations. The PythonRe implementation limitation in section 11.7 remains separate dependency work. Guest exception handling must not suppress host cancellation indefinitely, and canceled writers retain their cleanup/publication contract.
+Cancellation is cooperative, not a hard wall-clock guarantee. An indivisible
+CLR or dependency operation finishes before its next checkpoint. The current
+PythonRe backend cannot be interrupted during an in-progress call (section 11.7).
+Host capabilities receive the token and must honor it during their own I/O;
+Lython cannot force a noncooperative host to complete. Guest exception handling
+must not suppress cancellation indefinitely. Cancelled writers keep their
+deterministic cleanup/publication contract.
 
 ### 14.6 Memory Budgets
 
@@ -3594,7 +3584,7 @@ The reference-pair staging array reserves 24 bytes plus 16 per attribute before
 allocation; failure releases that temporary storage while escaped copied values
 keep their independent owners. Shallow instance copies need no staging array.
 Staged attribute publication uses ordinary execution checkpoints, preserving
-guest cancellation errors and charging explicit execution-step allowances.
+guest cancellation errors and refused memory admission.
 
 Properties retain a 128-byte shell plus a conservative 64-byte allowance for
 each numeric accessor or documentation field, including Boolean and CLR integer

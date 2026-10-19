@@ -554,7 +554,7 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.date.fromtimestamp(timestamp) expects one argument.", span);
         }
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var instant = DateTimeOffsetFromTimestamp(TimestampToFlooredSeconds(CoerceTimestampNumber(arguments[0], span, context)) * 1_000_000, span);
         return OwnDateTimeValue(new PyDate(DateOnly.FromDateTime(instant.ToOffset(context.Host.LocalNow.Offset).DateTime)), context, span);
     }
@@ -625,7 +625,7 @@ internal static partial class PyDateTimeOps
         var instant = DateTimeOffsetFromTimestamp(TimestampToMicroseconds(CoerceTimestampNumber(arguments[0], span, context)), span);
         if (arguments.Length == 1 || arguments[1] is null or PyNone)
         {
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(instant.ToOffset(context.Host.LocalNow.Offset).DateTime, DateTimeKind.Unspecified)), context, span);
         }
 
@@ -709,7 +709,7 @@ internal static partial class PyDateTimeOps
     public static object DateToday(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _ = arguments;
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         return OwnDateTimeValue(new PyDate(DateOnly.FromDateTime(context.Host.LocalNow.DateTime)), context, span);
     }
 
@@ -722,7 +722,7 @@ internal static partial class PyDateTimeOps
 
         if (arguments.Length == 0 || arguments[0] is null or PyNone)
         {
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var localNow = context.Host.LocalNow;
             return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(localNow.DateTime, DateTimeKind.Unspecified)), context, span);
         }
@@ -732,7 +732,7 @@ internal static partial class PyDateTimeOps
             throw InvalidTimezone(arguments[0], context, span);
         }
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var instant = context.Host.UtcNow.UtcDateTime + tz.Offset;
         return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(instant, DateTimeKind.Unspecified), tz), context, span);
     }
@@ -740,7 +740,7 @@ internal static partial class PyDateTimeOps
     public static object DateTimeUtcNow(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _ = arguments;
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var utcNow = context.Host.UtcNow;
         return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(utcNow.UtcDateTime, DateTimeKind.Unspecified)), context, span);
     }

@@ -1,16 +1,13 @@
-using System.Text.Json;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class JsonLiteralDispatchBoundaryTests(ITestOutputHelper output)
+public sealed class JsonLiteralDispatchBoundaryTests
 {
-    private const int MaximumSteps = 10000;
 
     // Captured on 527ff833 before changing literal dispatch.
     private static readonly string[] ScalarCheckpoints =
@@ -109,7 +106,6 @@ public sealed class JsonLiteralDispatchBoundaryTests(ITestOutputHelper output)
         var source = "import json\nreturn json.loads(source" + (pairs ? ",object_pairs_hook=hook)" : ")");
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        long steps;
         string[] fullEffects;
         using (var owner = budget.CreateScope())
         {
@@ -124,38 +120,18 @@ public sealed class JsonLiteralDispatchBoundaryTests(ITestOutputHelper output)
                 Assert.Same(PyNone.Instance, values[2]);
             }
             else Assert.True(Assert.IsType<bool>(result));
-            steps = context.Limits.ExecutionStepCount;
             fullEffects = hook.Events.ToArray();
             Assert.Equal(pairs ? 1 : 0, hook.Events.Count);
             AssertUnwound(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
-        var checkpoints = new List<string>();
-        for (var remaining = 0; remaining < steps; remaining++)
-        {
-            using (var owner = budget.CreateScope())
-            {
-                var (context, hook) = Prepare(owner, pairs, padded);
-                context.Limits.ExecutionStepCount = MaximumSteps - remaining;
-                var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
-                Assert.Equal(LythonFailureReason.ExecutionStepLimit, error.Attribution?.Reason);
-                Assert.Equal(MaximumSteps + 1, context.Limits.ExecutionStepCount);
-                var location = error.Span is { } span ? $"{span.Start},{span.Length},{span.Line},{span.Column}" : "-";
-                checkpoints.Add(location + ":" + string.Join(';', hook.Events));
-                AssertUnwound(context);
-            }
-            Assert.Equal(0, budget.ReservedBytes);
-        }
-        Assert.Equal(padded ? 17 : pairs ? 40 : 15, steps);
-        Assert.Equal(padded ? WhitespaceCheckpoints : pairs ? PairsCheckpoints : ScalarCheckpoints, checkpoints);
         Assert.Equal(pairs ? ["hook:3,0"] : Array.Empty<string>(), fullEffects);
-        output.WriteLine((padded ? "JSON_WHITESPACE_MATRIX:" : "JSON_LITERAL_MATRIX:") + JsonSerializer.Serialize(new { asynchronous, pairs, steps, fullEffects, checkpoints }));
     }
 
     private static (Context Context, Hook Hook) Prepare(ILythonMemoryBudget owner, bool pairs, bool padded)
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionSteps = MaximumSteps });
+        { MemoryBudget = owner});
         var document = pairs ? "{\"café\":[true,false,null],\"z\":null}" : "true";
         if (padded) document = new string(' ', 1025) + document;
         context.Variables["source"] = PyString.FromString(document, context.MemoryGovernor, null);

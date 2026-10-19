@@ -20,12 +20,6 @@ internal sealed class ExecutionGuards
     {
         State.MemoryGovernor.ThrowIfAdmissionFailed();
         var limits = Limits;
-        if (limits.MaxExecutionSteps is { } maxExecutionSteps &&
-            ++limits.ExecutionStepCount > maxExecutionSteps)
-        {
-            ThrowExecutionStepLimit(maxExecutionSteps, limits.ExecutionStepCount, span);
-        }
-
         if (limits.CancellationToken.IsCancellationRequested)
         {
             ThrowExecutionCanceled(span);
@@ -33,25 +27,8 @@ internal sealed class ExecutionGuards
     }
 
     [DoesNotReturn, MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowExecutionStepLimit(long maximum, long observed, LythonSourceSpan? span)
-        => throw RuntimeErrors.Attributed("RuntimeError", $"maximum execution step count exceeded ({maximum})", span,
-            LythonFailureReason.ExecutionStepLimit, maximum, observed);
-
-    [DoesNotReturn, MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowExecutionCanceled(LythonSourceSpan? span)
         => throw RuntimeErrors.Cancelled(span);
-
-    public void RegisterHostCall(LythonSourceSpan? span)
-    {
-        CheckExecution(span);
-
-        Limits.HostCallCount++;
-        if (Limits.MaxHostCalls is { } maxHostCalls && Limits.HostCallCount > maxHostCalls)
-        {
-            throw RuntimeErrors.Attributed("RuntimeError", $"maximum host call count exceeded ({maxHostCalls})", span,
-                LythonFailureReason.HostCallLimit, maxHostCalls, Limits.HostCallCount);
-        }
-    }
 
     public void EnterFunctionCall(LythonSourceSpan? span)
     {

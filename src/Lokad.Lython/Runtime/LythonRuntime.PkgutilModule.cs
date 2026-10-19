@@ -314,7 +314,7 @@ internal sealed partial class LythonRuntime
             IReadOnlyList<string> entries;
             try
             {
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 entries = context.HostListDir(directory, span);
             }
             catch (LythonRuntimeException) when (onerror is not null)
@@ -358,7 +358,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 var initPath = PathOps.Join(child, "__init__.py");
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 if (!context.HostExists(initPath, span))
                 {
                     continue;

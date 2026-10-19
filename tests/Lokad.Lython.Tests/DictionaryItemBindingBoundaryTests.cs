@@ -1,17 +1,14 @@
 using System.Numerics;
-using System.Text.Json;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class DictionaryItemBindingBoundaryTests(ITestOutputHelper output)
+public sealed class DictionaryItemBindingBoundaryTests
 {
-    private const int MaximumSteps = 10000;
 
     [Theory]
     [InlineData("__getitem__", false)]
@@ -20,7 +17,7 @@ public sealed class DictionaryItemBindingBoundaryTests(ITestOutputHelper output)
     [InlineData("__setitem__", true)]
     [InlineData("__delitem__", false)]
     [InlineData("__delitem__", true)]
-    public async Task PositionalAndArityFailuresPreserveEveryFuelBoundary(string method, bool extra)
+    public async Task PositionalAndArityFailuresPreserveResultsAndCleanup(string method, bool extra)
     {
         var args = method == "__setitem__" ? "pick(),value()" : "pick()";
         if (extra) args += ",value()";
@@ -29,7 +26,6 @@ public sealed class DictionaryItemBindingBoundaryTests(ITestOutputHelper output)
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
-            long steps;
             string? completedError = null;
             using (var owner = budget.CreateScope())
             {
@@ -54,33 +50,15 @@ public sealed class DictionaryItemBindingBoundaryTests(ITestOutputHelper output)
                 }
                 Assert.Equal(method == "__setitem__" ? (extra ? ["key", "value", "value"] : ["key", "value"])
                     : extra ? new[] { "key", "value" } : new[] { "key" }, effects);
-                steps = context.Limits.ExecutionStepCount;
                 CheckCleanup(context);
             }
             Assert.Equal(0, budget.ReservedBytes);
-            var checkpoints = new List<string>();
-            for (var remaining = 0; remaining < steps; remaining++)
-            {
-                using (var owner = budget.CreateScope())
-                {
-                    var (context, effects, table, key) = Prepare(owner);
-                    context.Limits.ExecutionStepCount = MaximumSteps - remaining;
-                    var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
-                    Assert.Equal(LythonFailureReason.ExecutionStepLimit, error.Attribution?.Reason);
-                    Assert.Equal(MaximumSteps + 1, context.Limits.ExecutionStepCount);
-                    var stored = table.TryGetValue(key, out var value) ? value.ToString() : "missing";
-                    checkpoints.Add(Describe(error) + ":published=" + context.Variables["published"] + ":stored=" + stored + ":" + string.Join(';', effects));
-                    CheckCleanup(context);
-                }
-                Assert.Equal(0, budget.ReservedBytes);
-            }
-            output.WriteLine("DICTIONARY_ITEM_BINDING_MATRIX:" + JsonSerializer.Serialize(new { method, extra, asynchronous, steps, completedError, checkpoints }));
         }
     }
 
     private static (Context Context, List<string> Effects, PyDict Table, PyString Key) Prepare(ILythonMemoryBudget owner)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionSteps = MaximumSteps });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
         var key = PyString.FromString("x", context.MemoryGovernor, null);
         var table = new PyDict(context.MemoryGovernor);
         table.SetItem(key, new BigInteger(7));

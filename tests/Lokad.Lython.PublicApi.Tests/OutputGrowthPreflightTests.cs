@@ -11,7 +11,6 @@ public sealed class OutputGrowthPreflightTests
     private static LythonRunOptions Tiny() => new()
     {
         MaxExecutionMemoryBytes = 65536,
-        MaxExecutionSteps = 100,
         MaxCollectionSize = 10,
     };
 

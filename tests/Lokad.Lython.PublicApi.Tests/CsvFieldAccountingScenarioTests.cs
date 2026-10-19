@@ -230,7 +230,6 @@ public sealed class CsvFieldAccountingScenarioTests
         Assert.False(preResult.Success);
         Assert.Equal("RuntimeError", preResult.Failure?.ExceptionType);
         Assert.Equal(LythonFailureReason.Cancelled, preResult.FailureAttribution?.Reason);
-        Assert.Equal(0, preResult.Consumption?.HostCalls);
         Assert.Empty(preResult.StandardOutput);
     }
 }

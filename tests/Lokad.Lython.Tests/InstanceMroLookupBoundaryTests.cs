@@ -32,7 +32,6 @@ public sealed class InstanceMroLookupBoundaryTests
         Assert.False(missing.Found);
         Assert.Same(PyNone.Instance, missing.Value);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.Limits.ExecutionStepCount);
         AssertUnwound(context);
     }
 
@@ -55,7 +54,6 @@ public sealed class InstanceMroLookupBoundaryTests
         Assert.Same(descriptorValue, await Read(instance, context, asynchronous));
         Assert.Equal(1, descriptor.Calls);
         Assert.Equal(charged - 64 + 16, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(1, context.Limits.ExecutionStepCount);
         AssertUnwound(context);
     }
 
@@ -81,7 +79,6 @@ public sealed class InstanceMroLookupBoundaryTests
         Assert.Same(replacement, await Read(instance, context, asynchronous));
         Assert.Equal(1, descriptor.Calls);
         Assert.Equal(before + 16, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(1, context.Limits.ExecutionStepCount);
         AssertUnwound(context);
     }
 
@@ -102,7 +99,6 @@ public sealed class InstanceMroLookupBoundaryTests
         Assert.Same(own, await Read(instance, context, asynchronous));
         Assert.Equal(1, descriptor.Calls);
         Assert.Equal(before + 16, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(1, context.Limits.ExecutionStepCount);
         AssertUnwound(context);
     }
 
@@ -121,7 +117,6 @@ public sealed class InstanceMroLookupBoundaryTests
         Assert.True(type.Found);
         Assert.Same(instance.Type, type.Value);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.Limits.ExecutionStepCount);
         AssertUnwound(context);
     }
 
@@ -142,23 +137,19 @@ public sealed class InstanceMroLookupBoundaryTests
         Assert.Same(Span, error.Span);
         Assert.Same(active, context.Services.CurrentException);
         Assert.Equal(before + 16, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(1, context.Limits.ExecutionStepCount);
         Assert.Equal(1, descriptor.Calls);
         AssertUnwound(context);
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task DescriptorChecksFuelBeforeCancellation(bool asynchronous, bool fuelDenied)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DescriptorChecksCancellation(bool asynchronous)
     {
         using var cancellation = new CancellationTokenSource();
         var context = Root(new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 8192, MaxExecutionSteps = fuelDenied ? 1 : 2,
-            CancellationToken = cancellation.Token
+            MaxExecutionMemoryBytes = 8192,             CancellationToken = cancellation.Token
         });
         var descriptor = new Getter(context, _ => new object());
         var instance = Instance(context, descriptor);
@@ -166,9 +157,8 @@ public sealed class InstanceMroLookupBoundaryTests
         cancellation.Cancel();
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Read(instance, context, asynchronous));
-        Assert.StartsWith(fuelDenied ? "maximum execution step count exceeded (1)" : "execution canceled", error.Message, StringComparison.Ordinal);
+        Assert.StartsWith("execution canceled", error.Message, StringComparison.Ordinal);
         Assert.Same(Span, error.Span);
-        Assert.Equal(2, context.Limits.ExecutionStepCount);
         Assert.Equal(0, descriptor.Calls);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         AssertUnwound(context);
@@ -179,7 +169,7 @@ public sealed class InstanceMroLookupBoundaryTests
     {
         var host = new DelayedLythonHost();
         host.SeedFile("/payload", "payload");
-        var context = new Context(host, new LythonRunOptions { MaxExecutionMemoryBytes = 8192, MaxExecutionSteps = 1000 });
+        var context = new Context(host, new LythonRunOptions { MaxExecutionMemoryBytes = 8192});
         var first = new object();
         var replacement = new object();
         var descriptor = new HostGetter(context, first);
@@ -199,7 +189,6 @@ public sealed class InstanceMroLookupBoundaryTests
         Assert.Same(replacement, await Read(instance, context, true));
         Assert.Equal(1, host.CompletedAsynchronously);
         Assert.Equal(before + 16, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(1, context.Limits.ExecutionStepCount);
         AssertUnwound(context);
     }
 
@@ -211,7 +200,7 @@ public sealed class InstanceMroLookupBoundaryTests
         var parked = host.PauseReadUntilCancellation("/payload");
         var context = new Context(host, new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 8192, MaxExecutionSteps = 1000, CancellationToken = cancellation.Token
+            MaxExecutionMemoryBytes = 8192, CancellationToken = cancellation.Token
         });
         var replacement = new object();
         var descriptor = new HostGetter(context, new object());
@@ -228,12 +217,11 @@ public sealed class InstanceMroLookupBoundaryTests
         Assert.Same(Span, error.Span);
         Assert.Same(replacement, await Read(instance, context, true));
         Assert.Equal(before + 16, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(1, context.Limits.ExecutionStepCount);
         AssertUnwound(context);
     }
 
     private static Context Root(LythonRunOptions? options = null)
-        => new(new MockLythonHost(), options ?? new LythonRunOptions { MaxExecutionMemoryBytes = 8192, MaxExecutionSteps = 1000 });
+        => new(new MockLythonHost(), options ?? new LythonRunOptions { MaxExecutionMemoryBytes = 8192});
     private static PyType Type(Context context, Dictionary<string, object> members)
         => new("C", [Assert.IsType<PyType>(context.State.BuiltinVariables["object"])], members);
     private static PyInstance Instance(Context context, object member)

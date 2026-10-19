@@ -359,7 +359,7 @@ internal sealed partial class LythonRuntime
             {
                 memberName = SanitizeMemberName(arcname.AsString());
                 method = RequireWriteMethod(_compression, span);
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 var now = context.Host.LocalNow;
                 var local = now.ToOffset(now.Offset);
                 (dosTime, dosDate) = ZipRecordWriter.EncodeDosDateTime(
@@ -689,7 +689,7 @@ internal sealed partial class LythonRuntime
                     context.CheckExecution(span);
                 }
 
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 var stat = context.HostStat(current.ToString(), span);
                 if (stat.Exists)
                 {
@@ -701,7 +701,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 context.HostMkDir(current.ToString(), span);
             }
         }
@@ -723,7 +723,7 @@ internal sealed partial class LythonRuntime
                     context.CheckExecution(span);
                 }
 
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 var stat = await context.HostStatAsync(current.ToString(), span).ConfigureAwait(false);
                 if (stat.Exists)
                 {
@@ -735,7 +735,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 await context.HostMkDirAsync(current.ToString(), span).ConfigureAwait(false);
             }
         }
@@ -754,7 +754,7 @@ internal sealed partial class LythonRuntime
             }
 
             EnsureDirectoryExists(PathOps.Parent(plan.TargetPath), context, span);
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             if (context.HostStat(plan.TargetPath, span).IsDir)
             {
                 throw new LythonRuntimeException("ValueError", $"cannot extract file '{plan.Target.Name}' onto directory '{plan.TargetPath}'.", span);
@@ -774,7 +774,7 @@ internal sealed partial class LythonRuntime
                 password,
                 context,
                 span);
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             context.WriteHostBytes(plan.TargetPath, bytes, span);
         }
 
@@ -792,7 +792,7 @@ internal sealed partial class LythonRuntime
             }
 
             await EnsureDirectoryExistsAsync(PathOps.Parent(plan.TargetPath), context, span).ConfigureAwait(false);
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             if ((await context.HostStatAsync(plan.TargetPath, span).ConfigureAwait(false)).IsDir)
             {
                 throw new LythonRuntimeException("ValueError", $"cannot extract file '{plan.Target.Name}' onto directory '{plan.TargetPath}'.", span);
@@ -812,7 +812,7 @@ internal sealed partial class LythonRuntime
                 password,
                 context,
                 span);
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             await context.WriteHostBytesAsync(plan.TargetPath, bytes, span).ConfigureAwait(false);
         }
 
@@ -1064,7 +1064,7 @@ internal sealed partial class LythonRuntime
             }
 
             var memberName = SanitizeMemberName(arcname.AsString());
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var now = context.Host.LocalNow;
             var local = now.ToOffset(now.Offset);
             StageEntry(
@@ -1102,7 +1102,7 @@ internal sealed partial class LythonRuntime
         private object WriteFile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var (source, memberName) = ParseWriteFileArgs(arguments, span, context);
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var stat = context.HostStat(source, span);
             var staged = StageWriteFileDirectoryTarget(source, memberName, stat, span, context);
             if (staged is not null)
@@ -1118,7 +1118,7 @@ internal sealed partial class LythonRuntime
         {
             // R34: same parsing and staging as WriteFile, awaiting host stat/read.
             var (source, memberName) = ParseWriteFileArgs(arguments, span, context);
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var stat = await context.HostStatAsync(source, span).ConfigureAwait(false);
             var staged = StageWriteFileDirectoryTarget(source, memberName, stat, span, context);
             if (staged is not null)
@@ -1154,7 +1154,7 @@ internal sealed partial class LythonRuntime
             {
                 data = payload.Memory.ToArray();
             }
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var clock = context.Host.LocalNow;
             var stamp = stat.ModifiedAtTimestamp ?? clock;
             var local = stamp.ToOffset(clock.Offset);
@@ -1476,7 +1476,7 @@ internal sealed partial class LythonRuntime
             _context.MemoryGovernor.Commit(payloadCharge);
             try
             {
-                _context.RegisterHostCall(span);
+                _context.CheckExecution(span);
                 _context.WriteHostBytes(_fileName.AsString(), archive.Bytes, span);
                 // Published staged data is dead: release its charges and drop the
                 // references together. A failed publish keeps both so a retry
@@ -1505,7 +1505,7 @@ internal sealed partial class LythonRuntime
             _context.MemoryGovernor.Commit(payloadCharge);
             try
             {
-                _context.RegisterHostCall(span);
+                _context.CheckExecution(span);
                 await _context.WriteHostBytesAsync(_fileName.AsString(), archive.Bytes, span).ConfigureAwait(false);
                 // Published staged data is dead: release its charges and drop the
                 // references together. A failed publish keeps both so a retry

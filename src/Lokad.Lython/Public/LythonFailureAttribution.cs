@@ -15,14 +15,10 @@ public enum LythonFailureReason
     ModulePolicyDenied,
     /// <summary>A cancellation checkpoint or host operation observed cancellation.</summary>
     Cancelled,
-    /// <summary>The configured interpreter-checkpoint allowance was exhausted.</summary>
-    ExecutionStepLimit,
     /// <summary>The configured Python call-depth limit was reached.</summary>
     RecursionDepthLimit,
     /// <summary>The managed stack admission check or fixed interpreter nesting bound rejected entry.</summary>
     InterpreterStackLimit,
-    /// <summary>The configured host-call allowance was exhausted.</summary>
-    HostCallLimit,
     /// <summary>The configured item count for a collection was exceeded.</summary>
     CollectionSizeLimit,
     /// <summary>The configured Python string length was exceeded.</summary>
@@ -59,7 +55,7 @@ public enum LythonFailureReason
 /// <param name="Observed">The quantity observed by the check, when known.</param>
 /// <param name="Requested">The requested operation quantity, when known.</param>
 /// <remarks>
-/// Quantities use the reason's units: checkpoints, calls, nesting depth,
+/// Quantities use the reason's units: nesting depth,
 /// collection items, Python string characters, or bytes. Requested execution
 /// memory is the reservation size; observed memory is accepted live accounting,
 /// not CLR heap size. Unavailable quantities, including values outside Int64,

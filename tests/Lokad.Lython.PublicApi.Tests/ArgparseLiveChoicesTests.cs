@@ -10,7 +10,6 @@ public sealed class ArgparseLiveChoicesTests
     private static LythonRunOptions Tiny() => new()
     {
         MaxExecutionMemoryBytes = 65536,
-        MaxExecutionSteps = 100,
         MaxCollectionSize = 10,
     };
 
@@ -33,7 +32,7 @@ public sealed class ArgparseLiveChoicesTests
     }
 
     [Fact]
-    public void HugeRangeChoicesDenyUnderTinyLimits()
+    public void HugeRangeChoiceMissReportsParseFailureWithinMemoryBounds()
     {
         // Use an actual token forcing a full scan miss to trigger the drain.
         const string miss = """
@@ -46,7 +45,9 @@ public sealed class ArgparseLiveChoicesTests
         Assert.True(script.IsValid);
         var result = script.Run(new MockLythonHost(), Tiny());
         Assert.False(result.Success);
-        Assert.True(result.Failure?.ExceptionType is "MemoryError" or "RuntimeError", result.Failure?.ExceptionType);
+        Assert.Equal("SystemExit", result.Failure?.ExceptionType);
+        Assert.Equal(2, result.ExitCode);
+        Assert.True(result.PeakExecutionMemoryBytes <= 65536);
     }
 
     [Fact]

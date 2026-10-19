@@ -115,17 +115,6 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     }
 
     [Fact]
-    public void FactorialDeniesUnderTinyStepBudget()
-    {
-        var result = new LythonEngine().Run(
-            "import math\nreturn math.factorial(20000)\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = 100 });
-        Assert.False(result.Success);
-        Assert.Contains("maximum execution step count exceeded", result.Failure!.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void FactorialRespectsCancellation()
     {
         using var cts = new CancellationTokenSource();
@@ -139,17 +128,6 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     }
 
     [Fact]
-    public void CombDeniesUnderTinyStepBudget()
-    {
-        var result = new LythonEngine().Run(
-            "import math\nreturn math.comb(20000, 10000)\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = 100 });
-        Assert.False(result.Success);
-        Assert.Contains("maximum execution step count exceeded", result.Failure!.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void PermSmallIterationLargeMagnitudeDeniesUnderTinyMemory()
     {
         // Two iterations, ~200k-bit result: the iteration cap alone is no bound.
@@ -158,17 +136,6 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
             new MockLythonHost(),
             new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
         AssertError(result, "MemoryError", "execution memory budget exceeded");
-    }
-
-    [Fact]
-    public void PermDeniesUnderTinyStepBudget()
-    {
-        var result = new LythonEngine().Run(
-            "import math\nreturn math.perm(20000, 10000)\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = 100 });
-        Assert.False(result.Success);
-        Assert.Contains("maximum execution step count exceeded", result.Failure!.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -199,28 +166,6 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
             new MockLythonHost(),
             new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
         AssertError(result, "MemoryError", "execution memory budget exceeded");
-    }
-
-    [Fact]
-    public void ProdLongScanDeniesUnderTinyStepBudget()
-    {
-        var result = new LythonEngine().Run(
-            "import math\nreturn math.prod(range(200000))\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = 100 });
-        Assert.False(result.Success);
-        Assert.Contains("maximum execution step count exceeded", result.Failure!.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void FsumLongScanDeniesUnderTinyStepBudget()
-    {
-        var result = new LythonEngine().Run(
-            "import math\nreturn math.fsum(float(i) for i in range(200000))\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = 100 });
-        Assert.False(result.Success);
-        Assert.Contains("maximum execution step count exceeded", result.Failure!.Message, StringComparison.Ordinal);
     }
 
     [Fact]

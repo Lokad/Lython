@@ -1,8 +1,6 @@
-using Xunit.Abstractions;
-
 namespace Lokad.Lython.Tests;
 
-public sealed class DirectStringUpperTests(ITestOutputHelper output) : DirectStringLowerTests(output)
+public sealed class DirectStringUpperTests : DirectStringLowerTests
 {
     protected override bool Uppercase => true;
 }

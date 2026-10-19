@@ -1,59 +1,36 @@
-using System.Text.Json;
 using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class IntegerConversionSlotTests(ITestOutputHelper output)
+public sealed class IntegerConversionSlotTests
 {
     [Theory]
     [InlineData("__int__", false)]
     [InlineData("__int__", true)]
     [InlineData("__index__", false)]
     [InlineData("__index__", true)]
-    public async Task OrdinaryConversionPreservesFuelAndSpans(string slot, bool asynchronous)
+    public async Task OrdinaryConversionPreservesResultsAndCleanup(string slot, bool asynchronous)
     {
         var preamble = Compile($"class Value:\n def {slot}(self): return 7\nvalue=Value()");
         var code = Compile("return int(value)");
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        long steps;
         using (var owner = budget.CreateScope())
         {
             var context = await Prepare(owner);
             Assert.Equal(new BigInteger(7), Assert.IsType<BigInteger>(await Execute(code, context, asynchronous)));
-            steps = context.Limits.ExecutionStepCount;
             Unwound(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
-        Assert.Equal(11, steps);
-        var checkpoints = new List<string>();
-        for (var remaining = 0; remaining < steps; remaining++)
-        {
-            using (var owner = budget.CreateScope())
-            {
-                var context = await Prepare(owner);
-                context.Limits.ExecutionStepCount = 1000 - remaining;
-                var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => { await Execute(code, context, asynchronous); });
-                Assert.Equal(LythonFailureReason.ExecutionStepLimit, error.Attribution?.Reason);
-                Assert.Equal(1001, context.Limits.ExecutionStepCount);
-                checkpoints.Add(error.Span is { } span ? $"{span.Start},{span.Length},{span.Line},{span.Column}" : "-");
-                Unwound(context);
-            }
-            Assert.Equal(0, budget.ReservedBytes);
-        }
         var body = slot == "__int__" ? "40,1,2,28" : "42,1,2,30";
-        Assert.Equal(new[] { "-", "7,3,1,8", "11,5,1,12", "7,10,1,8", "7,10,1,8", "7,10,1,8", "7,10,1,8", "7,10,1,8", "7,10,1,8", body, "0,17,1,1" }, checkpoints);
-        output.WriteLine("INTEGER_SLOT_MATRIX:" + JsonSerializer.Serialize(new { slot, asynchronous, steps, checkpoints }));
 
         async ValueTask<Context> Prepare(ILythonMemoryBudget owner)
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionSteps = 1000 });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
             await Execute(preamble, context, asynchronous);
-            context.Limits.ExecutionStepCount = 0;
             return context;
         }
     }

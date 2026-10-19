@@ -1,14 +1,12 @@
 using System.Reflection;
 using System.Numerics;
-using System.Text.Json;
-using Xunit.Abstractions;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class PositionalCallTransportTests(ITestOutputHelper output)
+public sealed class PositionalCallTransportTests
 {
     [Theory]
     [InlineData(1, false, false)]
@@ -322,7 +320,6 @@ public sealed class PositionalCallTransportTests(ITestOutputHelper output)
         var call = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(callSource).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         var marker = new object();
-        long steps;
         string[] fullEffects;
         using (var owner = budget.CreateScope())
         {
@@ -330,29 +327,11 @@ public sealed class PositionalCallTransportTests(ITestOutputHelper output)
             var result = await Execute(call, context);
             if (defaulted) Assert.Equal(new BigInteger(7), result);
             else Assert.Same(marker, result);
-            steps = context.Limits.ExecutionStepCount;
             fullEffects = tape.Events.ToArray();
             Assert.Single(fullEffects);
             Unwound(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
-        var checkpoints = new List<string>();
-        for (var remaining = 0; remaining < steps; remaining++)
-        {
-            using (var owner = budget.CreateScope())
-            {
-                var (context, tape) = await Prepare(owner);
-                context.Limits.ExecutionStepCount = 10000 - remaining;
-                var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Execute(call, context));
-                Assert.Equal(LythonFailureReason.ExecutionStepLimit, error.Attribution?.Reason);
-                Assert.Equal(10001, context.Limits.ExecutionStepCount);
-                var location = error.Span is { } span ? $"{span.Start},{span.Length},{span.Line},{span.Column}" : "-";
-                checkpoints.Add(location + ":" + string.Join(';', tape.Events));
-                Unwound(context);
-            }
-            Assert.Equal(0, budget.ReservedBytes);
-        }
-        Assert.Equal(defaulted ? 15 : 16, steps);
         Assert.Equal(["body:3,1,0"], fullEffects);
         string[] expected = defaulted
             ? ["-:", "7,6,1,8:", "7,8,1,8:", "7,8,1,8:", "7,8,1,8:", "7,8,1,8:", "7,8,1,8:",
@@ -361,20 +340,17 @@ public sealed class PositionalCallTransportTests(ITestOutputHelper output)
             : ["-:", "7,6,1,8:", "14,5,1,15:", "7,13,1,8:", "7,13,1,8:", "7,13,1,8:", "7,13,1,8:", "7,13,1,8:",
                 "40,17,3,3:", "40,5,3,3:", "40,17,3,3:", "40,17,3,3:", "46,4,3,9:", "51,5,3,14:",
                 "67,5,4,10:body:3,1,0", "0,20,1,1:body:3,1,0"];
-        Assert.Equal(expected, checkpoints);
-        output.WriteLine("LOWERED_TRANSPORT_MATRIX:" + JsonSerializer.Serialize(new { asynchronous, defaulted, steps, fullEffects, checkpoints }));
 
         async ValueTask<(LythonRuntime.ExecutionContext, MethodEffects)> Prepare(ILythonMemoryBudget owner)
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionSteps = 10000 });
+            { MemoryBudget = owner});
             var tape = new MethodEffects(defaulted ? new BigInteger(7) : marker);
             context.Variables["value"] = marker;
             context.Variables["stamp"] = tape;
             await Execute(definition, context);
             Assert.IsType<PyFunction>(Assert.IsType<PyBoundMethod>(context.Variables["method"]).Function);
             tape.Receiver = context.Variables["box"];
-            context.Limits.ExecutionStepCount = 0;
             return (context, tape);
         }
 

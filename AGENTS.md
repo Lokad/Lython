@@ -59,6 +59,11 @@ New runtime dependencies must be assessed against this constraint before promoti
 Performance changes must preserve allocation preflights, live-memory protection,
 cooperative cancellation, cycle detection and bounded public projection.
 
+Execution-time control uses the host-supplied CancellationToken. Do not restore
+instruction fuel, host-call quotas, their counters/telemetry or compatibility
+stubs, or move them to another abstraction. Preserve effective cancellation
+checks and awaited cleanup independently of concrete resource protections.
+
 Memory work follows cooperative admission and explicit ownership lifetimes.
 Do not introduce general guest-heap tracing, root inventories or dormant collector
 scaffolding. Replace weak reclamation and forced GC with working ownership scopes;

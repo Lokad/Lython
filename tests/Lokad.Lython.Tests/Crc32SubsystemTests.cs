@@ -8,7 +8,7 @@ namespace Lokad.Lython.Tests;
 /// The shared CRC-32 component (reuse-map extraction of the previously
 /// duplicated gzip and archive checksum paths) matches trusted CPython
 /// vectors, keeps budgeted and incremental accumulation identical across chunk
-/// boundaries, and enforces step budgets and cancellation.
+/// boundaries, and observes cancellation.
 /// </summary>
 public sealed class Crc32SubsystemTests
 {
@@ -48,18 +48,6 @@ public sealed class Crc32SubsystemTests
 
             Assert.Equal(FinalizeUpdate(data), ~incremental);
         }
-    }
-
-    [Fact]
-    public void ComputeEnforcesStepBudget()
-    {
-        var data = new byte[5000];
-        var context = new LythonRuntime.ExecutionContext(
-            new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = 1 });
-        var failure = Assert.Throws<LythonRuntimeException>(() => Crc32.Compute(data, context, span: null));
-        Assert.Equal("RuntimeError", failure.ExceptionType);
-        Assert.Contains("maximum execution step count exceeded", failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]

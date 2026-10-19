@@ -4,7 +4,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 // N10 part 1: protocol-table side/store snapshots preflight before copying,
-// long collision/non-collision scans honor the step budget, and ordinary-key
+// long collision/non-collision scans remain cancellable, and ordinary-key
 // paths stay uncharged. Funded behavior matches CPython in both modes.
 public sealed class ProtocolSnapshotBudgetTests
 {
@@ -40,8 +40,6 @@ public sealed class ProtocolSnapshotBudgetTests
     // phase, so each distinct-hash probe skips the whole 3000-entry scan. Probes tripled
     // so the scan workload keeps its exhaustion margin in both modes.
     private const int SetScanProbeCount = 18000;
-    private const int DictScanStepBudget = 600_000;
-    private const int SetScanStepBudget = 400_000;
 
     private const string CustomKeyType = """
         class K:
@@ -336,39 +334,23 @@ public sealed class ProtocolSnapshotBudgetTests
     }
 
     [Fact]
-    public void DictBuildFitsScanStepBudget()
+    public void DictBuildKeepsAllKeys()
     {
         var script = Compile(DictBuildSource);
-        var options = new LythonRunOptions { MaxExecutionSteps = DictScanStepBudget };
+        var options = new LythonRunOptions { };
         var result = script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(ScanKeyCount), result.ReturnValue);
     }
 
     [Fact]
-    public async Task DictBuildFitsScanStepBudgetAsync()
+    public async Task DictBuildKeepsAllKeysAsync()
     {
         var script = Compile(DictBuildSource);
-        var options = new LythonRunOptions { MaxExecutionSteps = DictScanStepBudget };
+        var options = new LythonRunOptions { };
         var result = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(ScanKeyCount), result.ReturnValue);
-    }
-
-    [Fact]
-    public void DictScansRespectStepBudget()
-    {
-        var script = Compile(DictScanSource);
-        var options = new LythonRunOptions { MaxExecutionSteps = DictScanStepBudget };
-        AssertError(script.Run(new MockLythonHost(), options), "RuntimeError", "maximum execution step count exceeded");
-    }
-
-    [Fact]
-    public async Task DictScansRespectStepBudgetAsync()
-    {
-        var script = Compile(DictScanSource);
-        var options = new LythonRunOptions { MaxExecutionSteps = DictScanStepBudget };
-        AssertError(await script.RunAsync(new MockLythonHost(), options), "RuntimeError", "maximum execution step count exceeded");
     }
 
     [Fact]
@@ -394,39 +376,23 @@ public sealed class ProtocolSnapshotBudgetTests
     }
 
     [Fact]
-    public void SetBuildFitsScanStepBudget()
+    public void SetBuildKeepsAllItems()
     {
         var script = Compile(SetBuildSource);
-        var options = new LythonRunOptions { MaxExecutionSteps = SetScanStepBudget };
+        var options = new LythonRunOptions { };
         var result = script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(ScanKeyCount), result.ReturnValue);
     }
 
     [Fact]
-    public async Task SetBuildFitsScanStepBudgetAsync()
+    public async Task SetBuildKeepsAllItemsAsync()
     {
         var script = Compile(SetBuildSource);
-        var options = new LythonRunOptions { MaxExecutionSteps = SetScanStepBudget };
+        var options = new LythonRunOptions { };
         var result = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(ScanKeyCount), result.ReturnValue);
-    }
-
-    [Fact]
-    public void SetScansRespectStepBudget()
-    {
-        var script = Compile(SetScanSource);
-        var options = new LythonRunOptions { MaxExecutionSteps = SetScanStepBudget };
-        AssertError(script.Run(new MockLythonHost(), options), "RuntimeError", "maximum execution step count exceeded");
-    }
-
-    [Fact]
-    public async Task SetScansRespectStepBudgetAsync()
-    {
-        var script = Compile(SetScanSource);
-        var options = new LythonRunOptions { MaxExecutionSteps = SetScanStepBudget };
-        AssertError(await script.RunAsync(new MockLythonHost(), options), "RuntimeError", "maximum execution step count exceeded");
     }
 
     [Fact]

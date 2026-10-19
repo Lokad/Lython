@@ -1,6 +1,4 @@
 using System.Reflection;
-using System.Text.Json;
-using Xunit.Abstractions;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -10,7 +8,7 @@ using ICallable = Lokad.Lython.Runtime.LythonRuntime.ICallable;
 
 namespace Lokad.Lython.Tests;
 
-public class DirectStringLowerTests(ITestOutputHelper output)
+public class DirectStringLowerTests
 {
     // Upper uses the same admission and suspension boundaries, without copying
     // the fixtures or changing the existing lower cases and guard records.
@@ -48,33 +46,15 @@ public class DirectStringLowerTests(ITestOutputHelper output)
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task FuelAndSourceSpansKeepTheOrdinaryCallBoundary(bool asynchronous)
+    public async Task OrdinaryCallsPreserveResultsAndCleanup(bool asynchronous)
     {
-        var checkpoints = new List<string>();
-        for (var fuel = 1; fuel <= 8; fuel++)
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionSteps = fuel });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { });
             context.Variables["text"] = PyString.FromString(Uppercase ? "word" : "WORD", context.MemoryGovernor, null);
             var code = Compile("return text." + Method + "()");
-            if (fuel == 8)
-            {
                 Assert.Equal(Uppercase ? "WORD" : "word", Assert.IsType<PyString>(await Execute(code, context, asynchronous)).AsString());
-                Assert.Equal(8, context.Limits.ExecutionStepCount);
-            }
-            else
-            {
-                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Execute(code, context, asynchronous));
-                Assert.Equal(LythonFailureReason.ExecutionStepLimit, failure.Attribution?.Reason);
-                Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
-                var span = failure.Span!;
-                checkpoints.Add($"{span.Start},{span.Length},{span.Line},{span.Column}");
-                var instructions = code.Blocks[code.EntryBlockIndex].InstructionArray;
-                Assert.Same(instructions[fuel <= 3 ? fuel - 1 : fuel == 7 ? 3 : 2].Span, failure.Span);
-            }
             AssertUnwound(context);
         }
-        Assert.Equal(new[] { "7,4,1,8", "7,10,1,8", "7,12,1,8", "7,12,1,8", "7,12,1,8", "7,12,1,8", "0,19,1,1" }, checkpoints);
-        output.WriteLine((Uppercase ? "DIRECT_UPPER_GUARDS:" : "DIRECT_LOWER_GUARDS:") + JsonSerializer.Serialize(new { asynchronous, checkpoints }));
     }
 
     [Theory]

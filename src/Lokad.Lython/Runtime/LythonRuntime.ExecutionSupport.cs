@@ -82,11 +82,7 @@ internal sealed partial class LythonRuntime
 
         public CancellationToken CancellationToken { get; init; }
 
-        public int? MaxExecutionSteps { get; init; }
-
         public int? MaxRecursionDepth { get; init; }
-
-        public int? MaxHostCalls { get; init; }
 
         public int? MaxCollectionSize { get; init; }
 
@@ -100,25 +96,17 @@ internal sealed partial class LythonRuntime
 
         public long? MaxExecutionMemoryBytes { get; init; }
 
-        // Counters stay 64-bit wide: reaching 2^63 increments is infeasible, so
-    // enforcement can never wrap around to negative and switch itself off.
-    // Bounds interpreter nesting (and, through it, every execution path that
-    // nests Python calls) at a fixed count. Depth is tracked once per Python
-    // nesting level (calls, bodies, compound statements), not per syntax
-    // node, so funded depths fit with margin on every path. Synchronous roots
-    // run on a dedicated large stack. Deep-copy shares this bound
-    // (MG20 pin: 512-deep copies succeed, 600-deep fail).
-    public const int MaxInterpreterDepth = 512;
-
-        // Counts only an explicitly requested allowance. Ordinary execution
-        // uses cancellation and the guard's independent housekeeping cadence.
-        public long ExecutionStepCount { get; set; }
+        // Bounds interpreter nesting (and, through it, every execution path that
+        // nests Python calls) at a fixed count. Depth is tracked once per Python
+        // nesting level (calls, bodies, compound statements), not per syntax
+        // node, so funded depths fit with margin on every path. Synchronous roots
+        // run on a dedicated large stack. Deep-copy shares this bound
+        // (MG20 pin: 512-deep copies succeed, 600-deep fail).
+        public const int MaxInterpreterDepth = 512;
 
         public long CurrentRecursionDepth { get; set; }
 
         public long CurrentInterpreterDepth { get; set; }
-
-        public long HostCallCount { get; set; }
 
         public static ExecutionLimits FromOptions(LythonRunOptions? options)
         {
@@ -126,9 +114,7 @@ internal sealed partial class LythonRuntime
             return new ExecutionLimits
             {
                 CancellationToken = options?.CancellationToken ?? CancellationToken.None,
-                MaxExecutionSteps = NonNegativeOrDefault(options?.MaxExecutionSteps?.Count, null, nameof(LythonRunOptions.MaxExecutionSteps)),
                 MaxRecursionDepth = NonNegativeOrDefault(options?.MaxRecursionDepth?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxRecursionDepth : null, nameof(LythonRunOptions.MaxRecursionDepth)),
-                MaxHostCalls = NonNegativeOrDefault(options?.MaxHostCalls?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxHostCalls : null, nameof(LythonRunOptions.MaxHostCalls)),
                 MaxCollectionSize = NonNegativeOrDefault(options?.MaxCollectionSize?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxCollectionSize : null, nameof(LythonRunOptions.MaxCollectionSize)),
                 MaxStringLength = NonNegativeOrDefault(options?.MaxStringLength?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxStringLength : null, nameof(LythonRunOptions.MaxStringLength)),
                 MaxHostReadBytes = NonNegativeOrDefault(ToInt32Bytes(options?.MaxHostReadBytes, nameof(LythonRunOptions.MaxHostReadBytes)), useDefaultLimits ? LythonRunOptions.DefaultMaxHostReadBytes : null, nameof(LythonRunOptions.MaxHostReadBytes)),

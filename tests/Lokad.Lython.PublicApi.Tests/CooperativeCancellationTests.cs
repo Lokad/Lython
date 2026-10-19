@@ -63,34 +63,4 @@ public sealed class CooperativeCancellationTests
             result.Dispose();
         }
     }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ExplicitFuelRemainsEnforcedWhenDefaultLimitsAreDisabled(bool asynchronous)
-    {
-        using var script = new LythonEngine().Compile("while True:\n    pass");
-        var options = new LythonRunOptions { MaxExecutionSteps = 50, DisableDefaultLimits = true };
-        var pending = asynchronous ? script.RunAsync(new MockLythonHost(), options)
-            : Task.Run(() => script.Run(new MockLythonHost(), options));
-        using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.False(result.Success);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum execution step count exceeded", result.Failure?.Message ?? "", StringComparison.Ordinal);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ExplicitFuelObservesPassOnlyForIterations(bool asynchronous)
-    {
-        using var script = new LythonEngine().Compile("for i in range(1000):\n    pass\nreturn 42");
-        var options = new LythonRunOptions { MaxExecutionSteps = 50 };
-        var pending = asynchronous ? script.RunAsync(new MockLythonHost(), options)
-            : Task.Run(() => script.Run(new MockLythonHost(), options));
-        using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.False(result.Success);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum execution step count exceeded", result.Failure?.Message ?? "", StringComparison.Ordinal);
-    }
 }

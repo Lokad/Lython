@@ -5,18 +5,8 @@ namespace Lokad.Lython;
 /// <summary>Configures one isolated Lython execution and its resource limits.</summary>
 public sealed class LythonRunOptions
 {
-    /// <summary>The historical instruction allowance, retained for source compatibility.</summary>
-    /// <remarks>
-    /// Ordinary execution has no implicit instruction allowance. This value
-    /// applies only when explicitly assigned to <see cref="MaxExecutionSteps"/>.
-    /// </remarks>
-    public const int DefaultMaxExecutionSteps = 50_000_000;
-
     /// <summary>The default Python call-depth limit.</summary>
     public const int DefaultMaxRecursionDepth = 1_000;
-
-    /// <summary>The default number of calls into host capabilities.</summary>
-    public const int DefaultMaxHostCalls = 100_000;
 
     /// <summary>The default maximum number of items in one runtime collection.</summary>
     public const int DefaultMaxCollectionSize = 10_000_000;
@@ -91,18 +81,8 @@ public sealed class LythonRunOptions
     /// </remarks>
     public IReadOnlySet<string>? AllowedBuiltinModules { get; init; }
 
-    /// <summary>Gets an optional instruction allowance for callers requiring deterministic fuel.</summary>
-    /// <remarks>
-    /// Null leaves interpreter work unbounded regardless of <see cref="DisableDefaultLimits"/>.
-    /// Cancellation and other configured resource limits still apply.
-    /// </remarks>
-    public LythonCountLimit? MaxExecutionSteps { get; init; }
-
     /// <summary>Gets the Python call-depth override.</summary>
     public LythonCountLimit? MaxRecursionDepth { get; init; }
-
-    /// <summary>Gets the host-call budget override.</summary>
-    public LythonCountLimit? MaxHostCalls { get; init; }
 
     /// <summary>Gets the per-collection item limit override.</summary>
     public LythonCountLimit? MaxCollectionSize { get; init; }
@@ -168,9 +148,7 @@ public sealed class LythonRunOptions
             DisableLocalModuleImports = DisableLocalModuleImports,
             AllowedLocalModules = AllowedLocalModules,
             AllowedBuiltinModules = AllowedBuiltinModules,
-            MaxExecutionSteps = MaxExecutionSteps,
             MaxRecursionDepth = MaxRecursionDepth,
-            MaxHostCalls = MaxHostCalls,
             MaxCollectionSize = MaxCollectionSize,
             MaxStringLength = MaxStringLength,
             MaxHostReadBytes = MaxHostReadBytes,

@@ -117,7 +117,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("RuntimeError", $"shutil.move() destination already exists: {resolved}", span);
         }
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         context.HostMove(source, resolved, span);
         return PyString.FromString(resolved, context.MemoryGovernor, span);
     }
@@ -136,7 +136,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("RuntimeError", $"shutil.move() destination already exists: {resolved}", span);
         }
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         await context.HostMoveAsync(source, resolved, span).ConfigureAwait(false);
         return PyString.FromString(resolved, context.MemoryGovernor, span);
     }
@@ -189,7 +189,7 @@ internal sealed partial class LythonRuntime
         EnsureDistinctFiles(source, resolved, owner, span);
         RemoveExistingFileDestination(resolved, owner, context, span);
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         context.HostCopy(source, resolved, span);
         return resolved;
     }
@@ -212,7 +212,7 @@ internal sealed partial class LythonRuntime
         EnsureDistinctFiles(source, resolved, owner, span);
         await RemoveExistingFileDestinationAsync(resolved, owner, context, span).ConfigureAwait(false);
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         await context.HostCopyAsync(source, resolved, span).ConfigureAwait(false);
         return resolved;
     }
@@ -290,7 +290,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("RuntimeError", $"{owner}() destination is a directory: {destination}", span);
         }
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         context.HostRemove(destination, span);
     }
 
@@ -307,7 +307,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("RuntimeError", $"{owner}() destination is a directory: {destination}", span);
         }
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         await context.HostRemoveAsync(destination, span).ConfigureAwait(false);
     }
 

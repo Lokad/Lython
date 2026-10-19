@@ -109,30 +109,21 @@ return payload
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task GenericBodiesPreserveRecursionAndExecutionLimits(bool asynchronous, bool recursion)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GenericBodiesPreserveRecursionLimits(bool asynchronous)
     {
-        var source = recursion
-            ? "def f[T](n):return f(n+1)\nf(0)\nprint('unreachable')"
-            : "def f[T]():\n while True:pass\nf()\nprint('unreachable')";
+        var source = "def f[T](n):return f(n+1)\nf(0)\nprint('unreachable')";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxRecursionDepth = 8, MaxExecutionSteps = recursion ? 10000 : 100 };
+        var options = new LythonRunOptions { MaxRecursionDepth = 8};
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
         {
             Assert.False(result.Success);
             Assert.Equal("", result.StandardOutput);
-            if (recursion) Assert.Equal("RecursionError", result.Failure?.ExceptionType);
-            else
-            {
-                Assert.Equal(LythonFailureReason.ExecutionStepLimit, result.FailureAttribution?.Reason);
-                Assert.Equal(100L, result.FailureAttribution?.Limit);
-            }
+            Assert.Equal("RecursionError", result.Failure?.ExceptionType);
         }
         Assert.Equal(baseline, budget.ReservedBytes);
         script.Dispose();

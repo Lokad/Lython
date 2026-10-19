@@ -482,7 +482,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 var request = BuildCompletionRequest(timeoutMilliseconds, span, completionPath);
-                _context.RegisterHostCall(span);
+                _context.CheckExecution(span);
                 var result = _context.RunSubprocess(request, span);
                 DecodeCompletion(result, span ?? PopenSyntheticSpan);
                 _result = result;
@@ -528,7 +528,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 var request = await BuildCompletionRequestAsync(timeoutMilliseconds, span, completionPath).ConfigureAwait(false);
-                _context.RegisterHostCall(span);
+                _context.CheckExecution(span);
                 var result = await _context.RunSubprocessAsync(request, span).ConfigureAwait(false);
                 DecodeCompletion(result, span ?? PopenSyntheticSpan);
                 _result = result;

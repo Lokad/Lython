@@ -2,7 +2,6 @@ using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
@@ -10,7 +9,7 @@ namespace Lokad.Lython.Tests;
 // Exercise functions produced by real class definitions, rather than manually
 // constructing a function with a module closure. These boundaries must survive
 // a future change to the representation of class-method bodies.
-public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
+public sealed class ClassMethodExecutionBoundaryTests
 {
     private static readonly LythonSourceSpan CallSpan = new(100, 6, 20, 3);
 
@@ -21,27 +20,12 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
     [InlineData(1, true)]
     [InlineData(2, false)]
     [InlineData(2, true)]
-    public async Task ClassFactoryMethodsKeepFuelBoundaries(int width, bool asynchronous)
+    public async Task ClassFactoryMethodsKeepResultsAndCleanup(int width, bool asynchronous)
     {
-        for (var remaining = 0; remaining <= 3; remaining++)
         {
             var (context, _, receiver, method, definition) = await Define(width, "        return self\n", asynchronous);
             var expression = Assert.IsType<LoweredReturnStatement>(Assert.Single(definition.Body)).Expression!;
-            context.Limits.ExecutionStepCount = 1000 - remaining;
-            if (remaining == 3)
-            {
                 Assert.Same(receiver, await Invoke(method, Arguments(width), context, asynchronous));
-                Assert.Equal(1000, context.Limits.ExecutionStepCount);
-            }
-            else
-            {
-                var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-                    await Invoke(method, Arguments(width), context, asynchronous));
-                Assert.Equal("maximum execution step count exceeded (1000)", error.Message);
-                Assert.Same(remaining < 2 ? CallSpan : expression.Span, error.Span);
-                Assert.Equal(remaining < 2 ? null : "/class-method.py", error.SourcePath);
-                Assert.Equal(1001, context.Limits.ExecutionStepCount);
-            }
             AssertUnwound(context);
         }
     }
@@ -53,21 +37,16 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
     [InlineData(1, true)]
     [InlineData(2, false)]
     [InlineData(2, true)]
-    public async Task ClassFactoryMethodsCheckFuelBeforeCancellation(int width, bool asynchronous)
+    public async Task ClassFactoryMethodsCheckCancellation(int width, bool asynchronous)
     {
-        foreach (var fuelDenied in new[] { false, true })
-        {
-            using var cancellation = new CancellationTokenSource();
-            var (context, _, _, method, _) = await Define(width, "        return self\n", asynchronous, cancellation.Token);
-            context.Limits.ExecutionStepCount = fuelDenied ? 1000 : 0;
-            cancellation.Cancel();
-            var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-                await Invoke(method, Arguments(width), context, asynchronous));
-            Assert.Equal(fuelDenied ? "maximum execution step count exceeded (1000)" : "execution canceled", error.Message);
-            Assert.Same(CallSpan, error.Span);
-            Assert.Equal(fuelDenied ? 1001 : 1, context.Limits.ExecutionStepCount);
-            AssertUnwound(context);
-        }
+        using var cancellation = new CancellationTokenSource();
+        var (context, _, receiver, method, _) = await Define(width, "        return self\n", asynchronous, cancellation.Token);
+        cancellation.Cancel();
+        var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(method, Arguments(width), context, asynchronous));
+        Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+        Assert.Same(CallSpan, failure.Span);
+        AssertUnwound(context);
+        GC.KeepAlive(receiver);
     }
 
     [Theory]
@@ -108,7 +87,7 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
     [InlineData(2)]
     public async Task ClassCellsArgumentsAndLogicalFundingAgreeAcrossModes(int width)
     {
-        var snapshots = new List<(long Accounted, long Reserved, long Steps, long Depth)>();
+        var snapshots = new List<(long Accounted, long Reserved, long Depth)>();
         foreach (var asynchronous in new[] { false, true })
         {
             var suffix = string.Concat(Enumerable.Range(0, width).Select(i => $", arg{i}"));
@@ -137,7 +116,6 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
             });
             context.Variables["tap"] = tap;
             var before = context.MemoryGovernor.CurrentAccountedBytes;
-            context.Limits.ExecutionStepCount = 0;
             Assert.Same(receiver, await Invoke(method, arguments, context, asynchronous));
             Assert.Equal(1, tap.Calls);
             Assert.Equal(asynchronous, tap.UsedAsyncEntry);
@@ -145,14 +123,13 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
             Assert.Same(type, tap.Arguments[1].Value);
             Assert.IsType<PyList>(tap.Arguments[2].Value);
             for (var i = 0; i < width; i++) Assert.Same(arguments[i].Value, tap.Arguments[3 + i].Value);
-            snapshots.Add((tap.Accounted - before, tap.Reserved, tap.Steps, tap.Depth));
-            output.WriteLine($"width={width}, async={asynchronous}, snapshot={snapshots[^1]}");
+            snapshots.Add((tap.Accounted - before, tap.Reserved, tap.Depth));
             Assert.Same(active, context.Services.CurrentException);
             AssertUnwound(context);
         }
         Assert.Equal(snapshots[0], snapshots[1]);
         Assert.True(snapshots[0].Accounted > 0);
-        Assert.Equal((0L, 13L + width, 1L), (snapshots[0].Reserved, snapshots[0].Steps, snapshots[0].Depth));
+        Assert.Equal((0L, 1L), (snapshots[0].Reserved, snapshots[0].Depth));
     }
 
     [Theory]
@@ -248,7 +225,7 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
     [InlineData(true)]
     public async Task DirectSuperPreloadsPreserveTheActualCallAndLogicalFunding(bool asynchronous)
     {
-        var observations = new List<(long Bytes, long Steps)>();
+        var observations = new List<long>();
         foreach (var suppressPreload in new[] { false, true })
         {
             // An explicit global declaration suppresses Python's lexical
@@ -271,16 +248,13 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
             });
             context.Variables["super"] = tap;
             var before = context.MemoryGovernor.CurrentAccountedBytes;
-            context.Limits.ExecutionStepCount = 0;
             Assert.Same(result, await Invoke(method, [], context, asynchronous));
             Assert.Equal(1, tap.Calls);
             Assert.Equal(asynchronous, tap.UsedAsyncEntry);
-            observations.Add((context.MemoryGovernor.CurrentAccountedBytes - before,
-                context.Limits.ExecutionStepCount));
+            observations.Add(context.MemoryGovernor.CurrentAccountedBytes - before);
             AssertUnwound(context);
         }
-        Assert.Equal(observations[1].Bytes, observations[0].Bytes);
-        Assert.Equal(observations[1].Steps + 1, observations[0].Steps);
+        Assert.Equal(observations[1], observations[0]);
     }
 
     [Theory]
@@ -543,7 +517,6 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
         public CallArgumentValue[]? Arguments { get; private set; }
         public long Accounted { get; private set; }
         public long Reserved { get; private set; }
-        public long Steps { get; private set; }
         public long Depth { get; private set; }
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
@@ -552,7 +525,6 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
             Arguments = arguments.ToArray();
             Accounted = context.MemoryGovernor.CurrentAccountedBytes;
             Reserved = context.MemoryGovernor.CurrentReservedBytes;
-            Steps = context.Limits.ExecutionStepCount;
             Depth = context.Limits.CurrentInterpreterDepth;
             return arguments[0].Value;
         }
@@ -591,7 +563,7 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionSteps = 1000, MaxExecutionMemoryBytes = 1024 * 1024,
+            MaxExecutionMemoryBytes = 1024 * 1024,
             SourcePath = "/class-method.py", CancellationToken = cancellation
         });
         if (asynchronous) await LythonRuntime.ExecuteStatementsAsync(lowered.Statements, context);
@@ -599,7 +571,6 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
         var type = Assert.IsType<PyType>(context.Variables["C"]);
         Assert.True(type.TryGetOwnMember("f", out var value));
         var function = Assert.IsAssignableFrom<PyFunctionBase>(value);
-        output.WriteLine($"class factory: async={asynchronous}, callable={function.GetType().Name}, width={width}");
         Assert.Same(type, function.OwnerType);
         var receiver = Assert.IsType<PyInstance>(context.Variables["receiver"]);
         var method = Assert.IsType<PyBoundMethod>(function.Bind(receiver));

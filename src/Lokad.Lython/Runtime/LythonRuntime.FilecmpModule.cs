@@ -39,9 +39,9 @@ internal sealed partial class LythonRuntime
         private static object CompareFiles(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var request = ParseCompareArguments(arguments, span, context);
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var firstStat = context.HostStat(request.First, span);
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var secondStat = context.HostStat(request.Second, span);
             var metadataResult = CompareMetadata(request, firstStat, secondStat, span);
             if (metadataResult != FileComparisonDisposition.CompareContents)
@@ -60,9 +60,9 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             var request = ParseCompareArguments(arguments, span, context);
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var firstStat = await context.HostStatAsync(request.First, span).ConfigureAwait(false);
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var secondStat = await context.HostStatAsync(request.Second, span).ConfigureAwait(false);
             var metadataResult = CompareMetadata(request, firstStat, secondStat, span);
             if (metadataResult != FileComparisonDisposition.CompareContents)

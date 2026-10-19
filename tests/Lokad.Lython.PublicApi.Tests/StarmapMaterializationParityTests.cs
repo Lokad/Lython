@@ -10,7 +10,6 @@ public sealed class StarmapMaterializationParityTests
     private static LythonRunOptions Tiny() => new()
     {
         MaxExecutionMemoryBytes = 1048576,
-        MaxExecutionSteps = 100000,
         MaxCollectionSize = 10,
     };
 

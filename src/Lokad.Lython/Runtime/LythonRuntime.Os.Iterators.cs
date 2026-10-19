@@ -279,7 +279,7 @@ internal sealed partial class LythonRuntime
                     var childPath = JoinChild(frame.DirectoryPath, childName);
                     try
                     {
-                        _context.RegisterHostCall(_span);
+                        _context.CheckExecution(_span);
                         var stat = _context.HostStat(childPath, _span);
                         if (!stat.Exists || !stat.IsDir)
                         {
@@ -340,7 +340,7 @@ internal sealed partial class LythonRuntime
                     var childPath = JoinChild(frame.DirectoryPath, childName);
                     try
                     {
-                        _context.RegisterHostCall(_span);
+                        _context.CheckExecution(_span);
                         var stat = await _context.HostStatAsync(childPath, _span).ConfigureAwait(false);
                         if (!stat.Exists || !stat.IsDir)
                         {
@@ -376,14 +376,14 @@ internal sealed partial class LythonRuntime
         {
             try
             {
-                _context.RegisterHostCall(_span);
+                _context.CheckExecution(_span);
                 var names = _context.HostListDir(frame.DirectoryPath, _span);
                 var directories = new List<string>();
                 var files = new List<string>();
                 foreach (var name in names)
                 {
                     var child = JoinChild(frame.DirectoryPath, name);
-                    _context.RegisterHostCall(_span);
+                    _context.CheckExecution(_span);
                     var stat = _context.HostStat(child, _span);
                     if (!stat.Exists)
                     {
@@ -421,14 +421,14 @@ internal sealed partial class LythonRuntime
         {
             try
             {
-                _context.RegisterHostCall(_span);
+                _context.CheckExecution(_span);
                 var names = await _context.HostListDirAsync(frame.DirectoryPath, _span).ConfigureAwait(false);
                 var directories = new List<string>();
                 var files = new List<string>();
                 foreach (var name in names)
                 {
                     var child = JoinChild(frame.DirectoryPath, name);
-                    _context.RegisterHostCall(_span);
+                    _context.CheckExecution(_span);
                     var stat = await _context.HostStatAsync(child, _span).ConfigureAwait(false);
                     if (!stat.Exists)
                     {

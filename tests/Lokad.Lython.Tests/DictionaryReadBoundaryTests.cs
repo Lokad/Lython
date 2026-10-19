@@ -1,17 +1,14 @@
 using System.Numerics;
-using System.Text.Json;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class DictionaryReadBoundaryTests(ITestOutputHelper output)
+public sealed class DictionaryReadBoundaryTests
 {
-    private const int MaximumSteps = 10000;
 
     [Theory]
     [InlineData("hit", 7, null)]
@@ -19,15 +16,13 @@ public sealed class DictionaryReadBoundaryTests(ITestOutputHelper output)
     [InlineData("rebind", 7, null)]
     [InlineData("missing", 11, "KeyError")]
     [InlineData("key_error", 11, "ValueError")]
-    public async Task EveryFuelBoundaryPreservesLookupEffectsAndUnwinds(string label, int expected, string? exception)
+    public async Task LookupEffectsAndErrorsUnwindAcrossModes(string label, int expected, string? exception)
     {
         const string source = "global published\npublished=table[pick()]\nreturn published";
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        long? synchronousSteps = null;
         foreach (var asynchronous in new[] { false, true })
         {
-            long steps;
             string? completedError = null;
             using (var owner = budget.CreateScope())
             {
@@ -47,35 +42,16 @@ public sealed class DictionaryReadBoundaryTests(ITestOutputHelper output)
                 }
                 Assert.Equal(new BigInteger(expected), context.Variables["published"]);
                 Assert.Equal(new[] { "key" }, effects);
-                steps = context.Limits.ExecutionStepCount;
-                if (synchronousSteps is null) synchronousSteps = steps;
-                else Assert.Equal(synchronousSteps.Value, steps);
+
                 CheckCleanup(context);
             }
             Assert.Equal(0, budget.ReservedBytes);
-            var checkpoints = new List<string>();
-            for (var remaining = 0; remaining < steps; remaining++)
-            {
-                using (var owner = budget.CreateScope())
-                {
-                    var (context, effects) = Prepare(owner, label);
-                    context.Limits.ExecutionStepCount = MaximumSteps - remaining;
-                    var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
-                    Assert.Equal(LythonFailureReason.ExecutionStepLimit, error.Attribution?.Reason);
-                    Assert.Equal(MaximumSteps + 1, context.Limits.ExecutionStepCount);
-                    Assert.True(effects.Count <= 1);
-                    checkpoints.Add(Describe(error) + ":published=" + context.Variables["published"] + ":" + string.Join(';', effects));
-                    CheckCleanup(context);
-                }
-                Assert.Equal(0, budget.ReservedBytes);
-            }
-            output.WriteLine("DICTIONARY_READ_MATRIX:" + JsonSerializer.Serialize(new { label, asynchronous, steps, completedError, checkpoints }));
         }
     }
 
     private static (Context Context, List<string> Effects) Prepare(ILythonMemoryBudget owner, string label)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionSteps = MaximumSteps });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
         var key = PyString.FromString("x", context.MemoryGovernor, null);
         var absent = PyString.FromString("absent", context.MemoryGovernor, null);
         var table = new PyDict(context.MemoryGovernor);

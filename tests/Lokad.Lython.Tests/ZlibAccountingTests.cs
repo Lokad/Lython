@@ -85,7 +85,7 @@ public sealed class ZlibAccountingTests
     }
 
     [Fact]
-    public void EmptyBlocksStillConsumeWorkAndRefundOnFailure()
+    public void EmptyBlocksProduceNoOutputAndRefundWorkingStorage()
     {
         var input = new byte[2 + 5 * 10000 + 2 + 4];
         input[0] = 120;
@@ -94,12 +94,10 @@ public sealed class ZlibAccountingTests
         input[50002] = 3;
         input[^1] = 1;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = 8 });
-        var error = Assert.Throws<LythonRuntimeException>(() =>
-            LythonRuntime.ZlibModule.DecompressBytes(input, context, Span));
-        Assert.Equal("RuntimeError", error.ExceptionType);
-        Assert.Contains("step", error.Message);
-        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+            new LythonRunOptions { });
+        var value = Assert.IsType<PyBytes>(LythonRuntime.ZlibModule.DecompressBytes(input, context, Span));
+        Assert.Equal(0, value.Length);
+        Assert.Equal(value.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

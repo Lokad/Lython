@@ -41,26 +41,14 @@ public sealed class DirectStringStripTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task GuardFuelAndSourceSpansMatchTheOrdinaryCallBoundary(bool asynchronous)
+    public async Task OrdinaryCallsPreserveResultsAndCleanup(bool asynchronous)
     {
-        for (var fuel = 1; fuel <= 8; fuel++)
         {
-            var (code, context) = Prepare("return text.strip()\n", new LythonRunOptions { MaxExecutionSteps = fuel });
+            var (code, context) = Prepare("return text.strip()\n", new LythonRunOptions { });
             var text = PyString.FromString("word", context.MemoryGovernor, null);
             context.Variables["text"] = text;
-            if (fuel == 8)
                 Assert.Same(text, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
                     : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
-            else
-            {
-                var error = asynchronous
-                    ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
-                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
-                Assert.Equal("RuntimeError", error.ExceptionType);
-                Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
-                var instructions = code.EntryPoint.Blocks[code.EntryPoint.EntryBlockIndex].InstructionArray;
-                Assert.Same(instructions[fuel <= 3 ? fuel - 1 : fuel == 7 ? 3 : 2].Span, error.Span);
-            }
             Assert.Null(context.CurrentExecutableFrame);
             Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

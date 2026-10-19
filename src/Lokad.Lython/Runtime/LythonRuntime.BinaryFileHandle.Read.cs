@@ -20,7 +20,7 @@ internal sealed partial class LythonRuntime
                     _services.MemoryGovernor.Commit(_windowBytes);
                 }
                 using var acquisition = _services.MemoryGovernor.ReserveTemporary(32L + _windowBytes, span);
-                _services.RegisterHostCall(span);
+                _services.CheckExecution(span);
                 var payload = asynchronous
                     ? await _services.ReadHostBytesRangeAsync(Path, _nextOffset, _windowBytes, span).ConfigureAwait(false)
                     : _services.ReadHostBytesRange(Path, _nextOffset, _windowBytes, span);

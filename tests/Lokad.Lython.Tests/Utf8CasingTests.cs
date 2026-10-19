@@ -39,27 +39,24 @@ public sealed class Utf8CasingTests
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public void AbortedCasingReleasesScratchAndPreservesInput(bool upper, bool cancel)
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AbortedCasingReleasesScratchAndPreservesInput(bool upper)
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
         {
             CancellationToken = cancellation.Token,
-            MaxExecutionSteps = cancel ? null : 1,
         });
         var governor = context.MemoryGovernor;
         var input = PyString.FromString(new string('A', 4096), governor, null);
         var before = governor.CurrentCommittedBytes;
-        if (cancel) cancellation.Cancel();
+cancellation.Cancel();
         var span = new LythonSourceSpan(0, 1, 1, 1);
         using (PyStructuralGuard.PushAmbient(context, span))
         {
             var failure = Assert.Throws<LythonRuntimeException>(() => upper ? PyStringOps.Upper(input) : PyStringOps.Lower(input));
-            Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.ExecutionStepLimit, failure.Attribution?.Reason);
+            Assert.Equal(LythonFailureReason.Cancelled , failure.Attribution?.Reason);
             Assert.Equal(span, failure.Span);
         }
         Assert.Equal(before, governor.CurrentCommittedBytes);

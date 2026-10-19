@@ -63,7 +63,6 @@ public sealed class SuperDescriptorFundingBoundaryTests
         }
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Same(active, context.Services.CurrentException);
-        Assert.Equal(1, context.Limits.ExecutionStepCount);
     }
 
     [Theory]
@@ -149,11 +148,9 @@ public sealed class SuperDescriptorFundingBoundaryTests
         }
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Same(active, context.Services.CurrentException);
-        Assert.Equal(1, context.Limits.ExecutionStepCount);
     }
 
     private static Context Root() => new(new MockLythonHost(), new LythonRunOptions
     {
-        MaxExecutionMemoryBytes = 8192, MaxExecutionSteps = 1000
-    });
+        MaxExecutionMemoryBytes = 8192    });
 }

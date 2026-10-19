@@ -37,7 +37,6 @@ public sealed class DefaultObjectAttributeBoundaryTests
         Assert.Equal(charged, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(64, instance.CommittedAttributeBytes);
         Assert.Same(active, context.Services.CurrentException);
-        Assert.Equal(0, context.Limits.ExecutionStepCount);
         Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
         Assert.Equal(0, context.Limits.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -66,7 +65,6 @@ public sealed class DefaultObjectAttributeBoundaryTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.False(instance.TryGetOwnAttribute("new", out _));
         Assert.Equal(0, instance.CommittedAttributeBytes);
-        Assert.Equal(0, context.Limits.ExecutionStepCount);
     }
 
     [Theory]
@@ -87,24 +85,20 @@ public sealed class DefaultObjectAttributeBoundaryTests
         Assert.Same(instance, descriptor.Receiver);
         Assert.Equal(before + 48, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, instance.CommittedAttributeBytes);
-        Assert.Equal(2, context.Limits.ExecutionStepCount);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
         Assert.Equal(0, context.Limits.CurrentRecursionDepth);
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task DescriptorChecksFuelBeforeCancellation(bool asynchronous, bool fuelDenied)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DescriptorChecksCancellation(bool asynchronous)
     {
         using var cancellation = new CancellationTokenSource();
         var context = Root(new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 8192, MaxExecutionSteps = fuelDenied ? 1 : 2,
-            CancellationToken = cancellation.Token
+            MaxExecutionMemoryBytes = 8192,             CancellationToken = cancellation.Token
         });
         var descriptor = new RecordingDescriptor(context);
         var instance = Instance(context, new Dictionary<string, object> { ["value"] = descriptor });
@@ -112,16 +106,15 @@ public sealed class DefaultObjectAttributeBoundaryTests
         cancellation.Cancel();
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Read(instance, "value", context, asynchronous));
-        Assert.StartsWith(fuelDenied ? "maximum execution step count exceeded (1)" : "execution canceled", error.Message, StringComparison.Ordinal);
+        Assert.StartsWith("execution canceled", error.Message, StringComparison.Ordinal);
         Assert.Same(Span, error.Span);
-        Assert.Equal(2, context.Limits.ExecutionStepCount);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Empty(descriptor.Calls);
     }
 
     private static Context Root(LythonRunOptions? options = null)
-        => new(new MockLythonHost(), options ?? new LythonRunOptions { MaxExecutionMemoryBytes = 8192, MaxExecutionSteps = 1000 });
+        => new(new MockLythonHost(), options ?? new LythonRunOptions { MaxExecutionMemoryBytes = 8192});
 
     private static PyInstance Instance(Context context, Dictionary<string, object>? members = null)
         => new(new PyType("C", [Assert.IsType<PyType>(context.State.BuiltinVariables["object"])], members ?? []), context.MemoryGovernor, Span);

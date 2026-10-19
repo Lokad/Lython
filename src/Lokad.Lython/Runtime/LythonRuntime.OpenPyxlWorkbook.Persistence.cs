@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
             var payload = OpenPyxlPackage.Save(this, context, span);
             try
             {
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 context.WriteHostBytes(path, payload.Bytes, span);
             }
             finally
@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
             var payload = OpenPyxlPackage.Save(this, context, span);
             try
             {
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 await context.WriteHostBytesAsync(path, payload.Bytes, span).ConfigureAwait(false);
             }
             finally

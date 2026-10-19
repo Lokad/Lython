@@ -125,18 +125,6 @@ public sealed class StructuralEqualityRecursionTests
     }
 
     [Fact]
-    public void LongScanRespectsStepBudget()
-    {
-        // 5000-element equality with a 100-step budget must fail via periodic
-        // structural work checks, not via the outer single budget check.
-        const string code = "a = [0] * 5000\nb = [0] * 5000\nprint(a == b)\n";
-        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionSteps = 100 });
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Contains("maximum execution step count exceeded", result.Failure!.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void LongScanRespectsCancellation()
     {
         using var cts = new CancellationTokenSource();

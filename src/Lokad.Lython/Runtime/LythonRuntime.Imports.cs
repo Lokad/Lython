@@ -233,7 +233,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             if (context.HostExists(candidate.Path, span))
             {
                 path = candidate.Path;
@@ -260,7 +260,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             if (await context.HostExistsAsync(candidate.Path, span).ConfigureAwait(false))
             {
                 return candidate;

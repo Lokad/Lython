@@ -1,18 +1,15 @@
 using System.Numerics;
-using System.Text.Json;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 using Handle = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.TextFileHandle;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class TextFileWriteCallBoundaryTests(ITestOutputHelper output)
+public sealed class TextFileWriteCallBoundaryTests
 {
-    private const int MaximumSteps = 10000;
     private static readonly ExecutableCodeObject Code = Compile("return file.write(argument())");
     // Captured on 2b68d4ea before changing call lowering or runtime dispatch.
     private static readonly string[] Checkpoints =
@@ -26,52 +23,20 @@ public sealed class TextFileWriteCallBoundaryTests(ITestOutputHelper output)
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task EveryFuelCheckpointPreservesArgumentAndStagedOutput(bool asynchronous)
+    public async Task WritesPreserveArgumentsAndStagedOutput(bool asynchronous)
     {
-        var checkpoints = new List<string>();
-        long steps;
         using (var budget = new LythonMemoryBudget(4 * 1024 * 1024).CreateScope())
         {
             var (context, handle, argument, host) = Prepare(budget);
             try
             {
                 Assert.Equal(new BigInteger(3), await Run(context, asynchronous));
-                steps = context.Limits.ExecutionStepCount;
                 Assert.Equal(1, argument.Calls);
                 AssertUnwound(context);
             }
             finally { handle.Exit(); }
             Assert.Equal("a\n😀", host.ReadText("/out"));
         }
-        for (var remaining = 0; remaining < steps; remaining++)
-        {
-            var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-            using (var owner = budget.CreateScope())
-            {
-                var (context, handle, argument, _) = Prepare(owner);
-                context.Limits.ExecutionStepCount = MaximumSteps - remaining;
-                try
-                {
-                    var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(context, asynchronous));
-                    Assert.Equal(LythonFailureReason.ExecutionStepLimit, error.Attribution?.Reason);
-                    Assert.Equal(MaximumSteps + 1, context.Limits.ExecutionStepCount);
-                    var span = error.Span is { } location ? $"{location.Start},{location.Length},{location.Line},{location.Column}" : "-";
-                    checkpoints.Add($"{span}:{argument.Calls}:{handle.Tell()}");
-                    AssertUnwound(context);
-                }
-                finally
-                {
-                    // The injected counter is reset only for native fixture cleanup.
-                    // No further guest work runs after a failed checkpoint.
-                    context.Limits.ExecutionStepCount = 0;
-                    handle.Exit();
-                }
-            }
-            Assert.Equal(0, budget.ReservedBytes);
-        }
-        Assert.Equal(12, steps);
-        Assert.Equal(Checkpoints, checkpoints);
-        output.WriteLine("TEXT_WRITE_GUARDS:" + JsonSerializer.Serialize(new { asynchronous, steps, checkpoints }));
     }
 
     [Theory]
@@ -177,7 +142,7 @@ public sealed class TextFileWriteCallBoundaryTests(ITestOutputHelper output)
     private static (Context, Handle, Argument, MockLythonHost) Prepare(ILythonMemoryBudget owner)
     {
         var host = new MockLythonHost();
-        var context = new Context(host, new LythonRunOptions { MemoryBudget = owner, MaxExecutionSteps = MaximumSteps });
+        var context = new Context(host, new LythonRunOptions { MemoryBudget = owner});
         var handle = Handle.ForWrite("/out", context);
         var argument = new Argument { Value = PyString.FromString("a\n😀", context.MemoryGovernor, null) };
         context.Variables["file"] = handle;

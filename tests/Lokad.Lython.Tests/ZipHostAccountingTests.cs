@@ -4,9 +4,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// R35: every ZIP host effect is registered before dispatch, discovery stats are
-/// reused instead of repeated, and exact host traces hold at zero, exhausted, and
-/// sufficient limits in both execution modes.
+/// ZIP effects stay host-mediated, discovery stats are reused instead of
+/// repeated, and publication order agrees across execution modes.
 /// </summary>
 public sealed class ZipHostAccountingTests
 {
@@ -42,28 +41,6 @@ public sealed class ZipHostAccountingTests
         }
 
         return ((DelayedLythonHost)host.Inner).ReadBytes(path);
-    }
-
-    private static void AssertHostCallExceeded(LythonExecutionResult result, TracingLythonHost host)
-    {
-        Assert.False(result.Success);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum host call count exceeded", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
-        Assert.Empty(host.Trace);
-    }
-
-    [Fact]
-    public async Task IsZipFileMissingCountsDiscoveryCall()
-    {
-        const string script = "import zipfile\nreturn zipfile.is_zipfile(\"/missing\")\n";
-        var options = new LythonRunOptions { DisableDefaultLimits = true, MaxHostCalls = 0 };
-        var syncHost = new TracingLythonHost(new MockLythonHost());
-        var sync = new LythonEngine().Run(script, syncHost, options);
-        AssertHostCallExceeded(sync, syncHost);
-
-        var asyncHost = new TracingLythonHost(new DelayedLythonHost("/"));
-        var asyncResult = await new LythonEngine().RunAsync(script, asyncHost, options);
-        AssertHostCallExceeded(asyncResult, asyncHost);
     }
 
     [Fact]
@@ -106,12 +83,6 @@ public sealed class ZipHostAccountingTests
     public async Task OpenMissingAndDirectoryLimits()
     {
         const string missing = "import zipfile\nwith zipfile.ZipFile(\"/missing\") as archive:\n    return 1\n";
-        var zero = new LythonRunOptions { DisableDefaultLimits = true, MaxHostCalls = 0 };
-        var syncHost = new TracingLythonHost(new MockLythonHost());
-        AssertHostCallExceeded(new LythonEngine().Run(missing, syncHost, zero), syncHost);
-        var asyncHost = new TracingLythonHost(new DelayedLythonHost("/"));
-        AssertHostCallExceeded(await new LythonEngine().RunAsync(missing, asyncHost, zero), asyncHost);
-
         var absentHost = new TracingLythonHost(new MockLythonHost());
         var absent = new LythonEngine().Run(missing, absentHost);
         Assert.False(absent.Success);
@@ -119,9 +90,8 @@ public sealed class ZipHostAccountingTests
         Assert.Equal(new List<string> { "stat:/missing" }, absentHost.Trace);
 
         const string directory = "import zipfile\nwith zipfile.ZipFile(\"/\") as archive:\n    return 1\n";
-        var one = new LythonRunOptions { DisableDefaultLimits = true, MaxHostCalls = 1 };
         var dirHost = new TracingLythonHost(new MockLythonHost());
-        var dirResult = new LythonEngine().Run(directory, dirHost, one);
+        var dirResult = new LythonEngine().Run(directory, dirHost);
         Assert.False(dirResult.Success);
         Assert.Equal("IsADirectoryError", dirResult.Failure?.ExceptionType);
         Assert.Equal(new List<string> { "stat:/" }, dirHost.Trace);
@@ -146,13 +116,7 @@ public sealed class ZipHostAccountingTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncHost.Trace);
 
-        var one = new LythonRunOptions { DisableDefaultLimits = true, MaxHostCalls = 1 };
-        var limitedHost = new TracingLythonHost(new MockLythonHost());
-        var limited = new LythonEngine().Run(script, limitedHost, one);
-        Assert.False(limited.Success);
-        Assert.Equal("RuntimeError", limited.Failure?.ExceptionType);
-        Assert.Contains("maximum host call count exceeded", limited.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
-        Assert.Equal(new List<string> { "clock" }, limitedHost.Trace);
+
     }
 
     [Fact]
@@ -175,13 +139,7 @@ public sealed class ZipHostAccountingTests
         Assert.Equal(expected, asyncHost.Trace);
         Assert.Equal(new byte[] { 100, 97, 116, 97 }, ReadSeeded(asyncHost, "/out/data.txt"));
 
-        var two = new LythonRunOptions { DisableDefaultLimits = true, MaxHostCalls = 2 };
-        var limitedHost = new TracingLythonHost(SeedArchive());
-        var limited = new LythonEngine().Run(script, limitedHost, two);
-        Assert.False(limited.Success);
-        Assert.Equal("RuntimeError", limited.Failure?.ExceptionType);
-        Assert.Contains("maximum host call count exceeded", limited.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
-        Assert.Equal(new List<string> { "stat:/t.zip", "read:/t.zip" }, limitedHost.Trace);
+
     }
 
     [Fact]
@@ -203,9 +161,7 @@ public sealed class ZipHostAccountingTests
         Assert.Equal(expected, asyncHost.Trace);
         Assert.Equal(22, ReadSeeded(asyncHost, "/new.zip").Length);
 
-        var zero = new LythonRunOptions { DisableDefaultLimits = true, MaxHostCalls = 0 };
-        var limitedHost = new TracingLythonHost(new MockLythonHost());
-        AssertHostCallExceeded(new LythonEngine().Run(script, limitedHost, zero), limitedHost);
+
     }
 
     [Fact]
@@ -230,21 +186,6 @@ public sealed class ZipHostAccountingTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncHost.Trace);
 
-        var three = new LythonRunOptions { DisableDefaultLimits = true, MaxHostCalls = 3 };
-        var limitedInner = new MockLythonHost();
-        limitedInner.SeedBytes("/data.txt", new byte[] { 104, 101, 108, 108, 111 });
-        var limitedHost = new TracingLythonHost(limitedInner);
-        var limited = new LythonEngine().Run(script, limitedHost, three);
-        Assert.False(limited.Success);
-        Assert.Equal("RuntimeError", limited.Failure?.ExceptionType);
-        Assert.Equal(new List<string> { "stat:/data.txt", "read:/data.txt", "clock" }, limitedHost.Trace);
 
-        var four = new LythonRunOptions { DisableDefaultLimits = true, MaxHostCalls = 4 };
-        var exactInner = new MockLythonHost();
-        exactInner.SeedBytes("/data.txt", new byte[] { 104, 101, 108, 108, 111 });
-        var exactHost = new TracingLythonHost(exactInner);
-        var exact = new LythonEngine().Run(script, exactHost, four);
-        Assert.True(exact.Success, exact.Failure?.Message);
-        Assert.Equal(expected, exactHost.Trace);
     }
 }

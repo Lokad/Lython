@@ -774,7 +774,7 @@ public sealed class ComparisonSamplingTests
                     processId = 100 + 2 * index,
                     runtimeVersion = "10.0.12", architecture = "X64", processorCount = 4, benchmarkDotNetLoaded = false,
                     serverGc = false, gcLatencyMode = "Interactive", clockHighResolution = true, runtimeOverrides = new { DOTNET_PROCESSOR_COUNT = (string?)null },
-                    publicLimits = "ordinary defaults; instruction fuel unset; no forced GC",
+                    publicLimits = "ordinary defaults; cooperative cancellation; no forced GC",
                     clockFrequency = 1_000_000_000L, maximumBatchIterations = 1_000_000, maximumBatchSeconds = 60, maximumFrameBytes = 4194304,
                     libraries = files.Take(3).Select(f => new { path = f.Path, sha256 = f.Sha256, moduleId = "11111111-1111-1111-1111-111111111111",
                         configuration = "Release", buildSdk = "10.0.401", version = f.Path == "/core" ? "10.0.12+core" : "1+" + source.Revision }) });

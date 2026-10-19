@@ -153,35 +153,6 @@ print(CONVERT(Value()))
     }
 
     [Theory]
-    [InlineData("str")]
-    [InlineData("repr")]
-    [InlineData("ascii")]
-    [InlineData("(lambda value:f'{value!r}')")]
-    [InlineData("(lambda value:f'{value!a}')")]
-    public async Task ReprBindingCannotMaskAttributedHostRefusal(string conversion)
-    {
-        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(IoSource("__repr__", conversion, true), budget);
-        Assert.True(script.IsValid);
-        var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxHostCalls = 0 };
-        foreach (var asynchronous in new[] { false, true })
-        {
-            using (var result = asynchronous
-                ? await script.RunAsync(new DelayedLythonHost(), options)
-                : script.Run(new MockLythonHost(), options))
-            {
-                Assert.False(result.Success);
-                Assert.Equal(LythonFailureReason.HostCallLimit, result.FailureAttribution?.Reason);
-                Assert.Equal(0, result.FailureAttribution?.Limit);
-                Assert.Equal(1, result.FailureAttribution?.Observed);
-                Assert.Empty(result.StandardOutput);
-            }
-            Assert.Equal(baseline, budget.ReservedBytes);
-        }
-    }
-
-    [Theory]
     [InlineData("str", false)]
     [InlineData("repr", false)]
     [InlineData("ascii", false)]

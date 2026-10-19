@@ -25,7 +25,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Path.stat() expects no arguments.", span);
                     }
 
-                    context.RegisterHostCall(span);
+                    context.CheckExecution(span);
                     return context.HostStat(path.Value.AsString(), span);
                 },
                 async (arguments, span, context) =>
@@ -35,7 +35,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Path.stat() expects no arguments.", span);
                     }
 
-                    context.RegisterHostCall(span);
+                    context.CheckExecution(span);
                     return await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false);
                 }),
                     "lstat" => BoundCallable.Create((arguments, span, context) =>
@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.lstat() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         return context.HostStat(path.Value.AsString(), span);
                     },
                     PathLstatSignature, async (arguments, span, context) =>
@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.lstat() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         return await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false);
                     }),
                     "exists" => BoundCallable.Create((arguments, span, context) =>
@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.exists() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         return context.HostExists(path.Value.AsString(), span);
                     },
                     async (arguments, span, context) =>
@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.exists() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         return await context.HostExistsAsync(path.Value.AsString(), span).ConfigureAwait(false);
                     }),
                     "is_file" => BoundCallable.Create((arguments, span, context) =>
@@ -85,7 +85,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.is_file() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         return context.HostStat(path.Value.AsString(), span).IsFile;
                     },
                     async (arguments, span, context) =>
@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.is_file() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         return (await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false)).IsFile;
                     }),
                     "is_dir" => BoundCallable.Create((arguments, span, context) =>
@@ -105,7 +105,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.is_dir() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         return context.HostStat(path.Value.AsString(), span).IsDir;
                     },
                     async (arguments, span, context) =>
@@ -115,7 +115,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.is_dir() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         return (await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false)).IsDir;
                     }),
                     "is_symlink" => BoundCallable.Create((arguments, span, _) =>
@@ -158,14 +158,14 @@ internal sealed partial class LythonRuntime
                         var missingOk = ParseOptionalBool(arguments, 0, false, "Path.unlink([missing_ok])", "missing_ok", span);
                         if (missingOk)
                         {
-                            context.RegisterHostCall(span);
+                            context.CheckExecution(span);
                             if (!context.HostStat(path.Value.AsString(), span).Exists)
                             {
                                 return PyNone.Instance;
                             }
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         context.HostRemove(path.Value.AsString(), span);
                         return PyNone.Instance;
                     },
@@ -179,14 +179,14 @@ internal sealed partial class LythonRuntime
                         var missingOk = ParseOptionalBool(arguments, 0, false, "Path.unlink([missing_ok])", "missing_ok", span);
                         if (missingOk)
                         {
-                            context.RegisterHostCall(span);
+                            context.CheckExecution(span);
                             if (!(await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false)).Exists)
                             {
                                 return PyNone.Instance;
                             }
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         await context.HostRemoveAsync(path.Value.AsString(), span).ConfigureAwait(false);
                         return PyNone.Instance;
                     }),
@@ -197,7 +197,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.rmdir() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         context.HostRemove(path.Value.AsString(), span);
                         return PyNone.Instance;
                     },
@@ -208,7 +208,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.rmdir() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         await context.HostRemoveAsync(path.Value.AsString(), span).ConfigureAwait(false);
                         return PyNone.Instance;
                     }),
@@ -220,7 +220,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var target = RequirePath(arguments[0], "Path.rename(target)", span, context);
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         context.HostMove(path.Value.AsString(), target.Value.AsString(), span);
                         return target;
                     },
@@ -232,7 +232,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var target = RequirePath(arguments[0], "Path.rename(target)", span, context);
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         await context.HostMoveAsync(path.Value.AsString(), target.Value.AsString(), span).ConfigureAwait(false);
                         return target;
                     }),
@@ -244,14 +244,14 @@ internal sealed partial class LythonRuntime
                         }
 
                         var target = RequirePath(arguments[0], "Path.replace(target)", span, context);
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         if (context.HostStat(target.Value.AsString(), span).Exists)
                         {
-                            context.RegisterHostCall(span);
+                            context.CheckExecution(span);
                             context.HostRemove(target.Value.AsString(), span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         context.HostMove(path.Value.AsString(), target.Value.AsString(), span);
                         return target;
                     },
@@ -263,14 +263,14 @@ internal sealed partial class LythonRuntime
                         }
 
                         var target = RequirePath(arguments[0], "Path.replace(target)", span, context);
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         if ((await context.HostStatAsync(target.Value.AsString(), span).ConfigureAwait(false)).Exists)
                         {
-                            context.RegisterHostCall(span);
+                            context.CheckExecution(span);
                             await context.HostRemoveAsync(target.Value.AsString(), span).ConfigureAwait(false);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         await context.HostMoveAsync(path.Value.AsString(), target.Value.AsString(), span).ConfigureAwait(false);
                         return target;
                     }),
@@ -360,7 +360,7 @@ internal sealed partial class LythonRuntime
                         var pattern = ParsePathGlobArguments(arguments, "Path.glob", span);
 
                         var results = new PyList([], context.MemoryGovernor, span);
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         foreach (var name in context.HostListDir(path.Value.AsString(), span))
                         {
                             context.CheckExecution(span);
@@ -378,7 +378,7 @@ internal sealed partial class LythonRuntime
                         var pattern = ParsePathGlobArguments(arguments, "Path.glob", span);
 
                         var results = new PyList([], context.MemoryGovernor, span);
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         var names = await context.HostListDirAsync(path.Value.AsString(), span).ConfigureAwait(false);
                         foreach (var name in names)
                         {
@@ -399,7 +399,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.iterdir() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         var entries = context.HostListDir(path.Value.AsString(), span)
                             .Select<string, object>(name => OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)),path.Value,context.MemoryGovernor,span));
                         return new PyList(entries, context.MemoryGovernor, span);
@@ -411,7 +411,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.iterdir() expects no arguments.", span);
                         }
 
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         var names = await context.HostListDirAsync(path.Value.AsString(), span).ConfigureAwait(false);
                         var entries = names.Select<string, object>(name => OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)),path.Value,context.MemoryGovernor,span));
                         return new PyList(entries, context.MemoryGovernor, span);
@@ -432,7 +432,7 @@ internal sealed partial class LythonRuntime
                         context.ObserveString(text, span);
                         using var reservation = ReserveUtf16Output(text, encodingMode, newline, context, span);
                         var payload = EncodePathText(text, encodingMode, errors, newline, context, span, reservation is not null);
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         WriteEncodedHostText(path.Value.AsString(), payload, encodingMode, context, span);
                         return new BigInteger(text.Length);
                     },
@@ -442,7 +442,7 @@ internal sealed partial class LythonRuntime
                         context.ObserveString(text, span);
                         using var reservation = ReserveUtf16Output(text, encodingMode, newline, context, span);
                         var payload = EncodePathText(text, encodingMode, errors, newline, context, span, reservation is not null);
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         await WriteEncodedHostTextAsync(path.Value.AsString(), payload, encodingMode, context, span).ConfigureAwait(false);
                         return new BigInteger(text.Length);
                     }),
@@ -477,9 +477,9 @@ internal sealed partial class LythonRuntime
                         var other = RequirePath(arguments[0], "Path.samefile(other_path)", span);
                         var left = PathOps.Normalize(path.Value.AsString(), context.Host.Cwd);
                         var right = PathOps.Normalize(other.Value.AsString(), context.Host.Cwd);
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         var leftStat = context.HostStat(left, span);
-                        context.RegisterHostCall(span);
+                        context.CheckExecution(span);
                         var rightStat = context.HostStat(right, span);
                         if (!leftStat.Exists || !rightStat.Exists)
                         {

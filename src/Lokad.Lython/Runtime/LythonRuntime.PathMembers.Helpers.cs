@@ -129,7 +129,7 @@ internal sealed partial class LythonRuntime
 
             if (existOk)
             {
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 var stat = context.HostStat(normalized, span);
                 if (stat.Exists && stat.IsDir)
                 {
@@ -142,7 +142,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             context.HostMkDir(normalized, span);
         }
 
@@ -166,7 +166,7 @@ internal sealed partial class LythonRuntime
 
             if (existOk)
             {
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 var stat = await context.HostStatAsync(normalized, span).ConfigureAwait(false);
                 if (stat.Exists && stat.IsDir)
                 {
@@ -179,13 +179,13 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             await context.HostMkDirAsync(normalized, span).ConfigureAwait(false);
         }
 
         private static void PathMkDirs(string normalized, bool existOk, LythonSourceSpan span, ExecutionContext context)
         {
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var stat = context.HostStat(normalized, span);
             if (stat.Exists)
             {
@@ -199,7 +199,7 @@ internal sealed partial class LythonRuntime
 
             foreach (var current in EnumerateMissingDirectories(normalized))
             {
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 var currentStat = context.HostStat(current, span);
                 if (currentStat.Exists)
                 {
@@ -211,14 +211,14 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 context.HostMkDir(current, span);
             }
         }
 
         private static async ValueTask PathMkDirsAsync(string normalized, bool existOk, LythonSourceSpan span, ExecutionContext context)
         {
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var stat = await context.HostStatAsync(normalized, span).ConfigureAwait(false);
             if (stat.Exists)
             {
@@ -232,7 +232,7 @@ internal sealed partial class LythonRuntime
 
             foreach (var current in EnumerateMissingDirectories(normalized))
             {
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 var currentStat = await context.HostStatAsync(current, span).ConfigureAwait(false);
                 if (currentStat.Exists)
                 {
@@ -244,7 +244,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 await context.HostMkDirAsync(current, span).ConfigureAwait(false);
             }
         }
@@ -259,7 +259,7 @@ internal sealed partial class LythonRuntime
             ValidateIgnoredPathMode(arguments, 0, "Path.touch([mode][, exist_ok])", span);
             var existOk = ParseOptionalBool(arguments, 1, true, "Path.touch([mode][, exist_ok])", "exist_ok", span);
             var normalized = PathOps.Normalize(path, context.Host.Cwd);
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var stat = context.HostStat(normalized, span);
             if (stat.Exists)
             {
@@ -271,7 +271,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("RuntimeError", $"Path.touch() target already exists: {normalized}", span);
             }
 
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             context.WriteTextUtf8(normalized, Array.Empty<byte>(), span);
         }
 
@@ -285,7 +285,7 @@ internal sealed partial class LythonRuntime
             ValidateIgnoredPathMode(arguments, 0, "Path.touch([mode][, exist_ok])", span);
             var existOk = ParseOptionalBool(arguments, 1, true, "Path.touch([mode][, exist_ok])", "exist_ok", span);
             var normalized = PathOps.Normalize(path, context.Host.Cwd);
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var stat = await context.HostStatAsync(normalized, span).ConfigureAwait(false);
             if (stat.Exists)
             {
@@ -297,7 +297,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("RuntimeError", $"Path.touch() target already exists: {normalized}", span);
             }
 
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             await context.WriteTextUtf8Async(normalized, Array.Empty<byte>(), span).ConfigureAwait(false);
         }
 
@@ -515,12 +515,12 @@ internal sealed partial class LythonRuntime
 
         private static IEnumerable<object> EnumerateRecursive(PyString root, PyString pattern, ExecutionContext context, LythonSourceSpan span)
         {
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             foreach (var name in context.HostListDir(root.AsString(), span))
             {
                 context.CheckExecution(span);
                 var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)),root,context.MemoryGovernor,span);
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 var stat = context.HostStat(child.Value.AsString(), span);
                 if (stat.IsDir)
                 {
@@ -541,13 +541,13 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask EnumerateRecursiveAsync(PyString root, PyString pattern, ExecutionContext context, LythonSourceSpan span, PyList results)
         {
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var names = await context.HostListDirAsync(root.AsString(), span).ConfigureAwait(false);
             foreach (var name in names)
             {
                 context.CheckExecution(span);
                 var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)),root,context.MemoryGovernor,span);
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 var stat = await context.HostStatAsync(child.Value.AsString(), span).ConfigureAwait(false);
                 if (stat.IsDir)
                 {

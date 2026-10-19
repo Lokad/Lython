@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
         public long ReadHostMonotonicNanoseconds(LythonSourceSpan? span)
         {
             var timing = RequireHostTiming(span);
-            RegisterHostCall(span);
+            CheckExecution(span);
             var value = HostOperation.Invoke(() => timing.MonotonicNanoseconds, "time.monotonic", span);
             if (value < 0)
             {
@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
         public long ReadHostMonotonicResolutionNanoseconds(LythonSourceSpan? span)
         {
             var timing = RequireHostTiming(span);
-            RegisterHostCall(span);
+            CheckExecution(span);
             var value = HostOperation.Invoke(() => timing.MonotonicResolutionNanoseconds, "time.get_clock_info", span);
             if (value <= 0)
             {
@@ -39,14 +39,14 @@ internal sealed partial class LythonRuntime
         public void DelayHost(TimeSpan duration, LythonSourceSpan? span)
         {
             var timing = RequireHostTiming(span);
-            RegisterHostCall(span);
+            CheckExecution(span);
             HostOperation.Await(timing, () => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span);
         }
 
         public ValueTask DelayHostAsync(TimeSpan duration, LythonSourceSpan? span)
         {
             var timing = RequireHostTiming(span);
-            RegisterHostCall(span);
+            CheckExecution(span);
             return HostOperation.AwaitAsync(() => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span);
         }
 

@@ -13,27 +13,13 @@ public sealed class BoundMethodInvocationBoundaryTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(2)]
-    public void ReceiverCallsKeepEveryFuelBoundary(int width)
+    public void ReceiverCallsPreserveResultsAndCleanup(int width)
     {
-        for (var fuel = 1; fuel <= 5; fuel++)
         {
-            var (function, context, code) = Function(width, new LythonRunOptions { MaxExecutionSteps = fuel });
+            var (function, context, code) = Function(width, new LythonRunOptions { });
             var receiver = new object();
             var method = new PyBoundMethod(receiver, function);
-            if (fuel == 5)
-            {
                 Assert.Same(receiver, method.Invoke(Arguments(width), Span, context));
-                Assert.Equal(5, context.Limits.ExecutionStepCount);
-            }
-            else
-            {
-                var error = Assert.Throws<LythonRuntimeException>(() => method.Invoke(Arguments(width), Span, context));
-                Assert.Equal("RuntimeError", error.ExceptionType);
-                Assert.Equal($"maximum execution step count exceeded ({fuel})", error.Message);
-                var expected = fuel <= 2 ? Span : code.Blocks[code.EntryBlockIndex].InstructionArray[fuel - 3].Span;
-                Assert.Same(expected, error.Span);
-                Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
-            }
             Assert.Equal(0, context.Limits.CurrentRecursionDepth);
             Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
             Assert.Null(context.CurrentExecutableFrame);
@@ -41,25 +27,20 @@ public sealed class BoundMethodInvocationBoundaryTests
     }
 
     [Theory]
-    [InlineData(0, false)]
-    [InlineData(0, true)]
-    [InlineData(1, false)]
-    [InlineData(1, true)]
-    [InlineData(2, false)]
-    [InlineData(2, true)]
-    public void ReceiverCallsKeepFuelBeforeCancellation(int width, bool fuelDenied)
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void ReceiverCallsKeepCancellation(int width)
     {
         using var cancellation = new CancellationTokenSource();
         var (function, context, _) = Function(width, new LythonRunOptions
         {
-            MaxExecutionSteps = fuelDenied ? 1 : 1000, CancellationToken = cancellation.Token
+            CancellationToken = cancellation.Token
         });
-        if (fuelDenied) context.Limits.ExecutionStepCount = 1;
         cancellation.Cancel();
         var error = Assert.Throws<LythonRuntimeException>(() => new PyBoundMethod(new object(), function).Invoke(Arguments(width), Span, context));
-        Assert.Equal(fuelDenied ? "maximum execution step count exceeded (1)" : "execution canceled", error.Message);
+        Assert.Equal("execution canceled", error.Message);
         Assert.Same(Span, error.Span);
-        Assert.Equal(fuelDenied ? 2 : 1, context.Limits.ExecutionStepCount);
         Assert.Equal(0, context.Limits.CurrentRecursionDepth);
     }
 
@@ -69,7 +50,7 @@ public sealed class BoundMethodInvocationBoundaryTests
     [InlineData(2)]
     public void ReceiverPreparationKeepsLogicalFundingAndActiveException(int width)
     {
-        var options = new LythonRunOptions { MaxExecutionSteps = 1000, MaxExecutionMemoryBytes = 8192 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 8192 };
         var (boundFunction, boundContext, _) = Function(width, options);
         var (directFunction, directContext, _) = Function(width, options);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
@@ -85,7 +66,6 @@ public sealed class BoundMethodInvocationBoundaryTests
         Assert.Equal(directContext.MemoryGovernor.CurrentAccountedBytes - beforeDirect, boundContext.MemoryGovernor.CurrentAccountedBytes - beforeBound);
         Assert.Equal(0, boundContext.MemoryGovernor.CurrentReservedBytes);
         Assert.Same(active, boundContext.Services.CurrentException);
-        Assert.Equal(5, boundContext.Limits.ExecutionStepCount);
     }
 
     [Theory]
@@ -94,7 +74,7 @@ public sealed class BoundMethodInvocationBoundaryTests
     [InlineData(2)]
     public void FrameAdmissionDenialKeepsSpanFundingAndRollback(int width)
     {
-        var (function, context, _) = Function(width, new LythonRunOptions { MaxExecutionSteps = 1000, MaxExecutionMemoryBytes = 8192, MaxRecursionDepth = 0 });
+        var (function, context, _) = Function(width, new LythonRunOptions { MaxExecutionMemoryBytes = 8192, MaxRecursionDepth = 0 });
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         context.Services.SetCurrentException(active);
         var governor = context.MemoryGovernor;
@@ -103,7 +83,6 @@ public sealed class BoundMethodInvocationBoundaryTests
         var arguments = Arguments(width);
         var direct = Assert.Throws<LythonRuntimeException>(() => function.Invoke(new[] { CallArgumentValue.Positional(receiver) }.Concat(arguments).ToArray(), Span, context));
         var denied = governor.LastDeniedReservationBytes;
-        context.Limits.ExecutionStepCount = 0;
         var bound = Assert.Throws<LythonRuntimeException>(() => new PyBoundMethod(receiver, function).Invoke(arguments, Span, context));
         Assert.Equal("RecursionError", bound.ExceptionType);
         Assert.Equal(direct.Message, bound.Message);
@@ -121,7 +100,7 @@ public sealed class BoundMethodInvocationBoundaryTests
     [InlineData(true)]
     public async Task GeneralWrappedCallablesKeepFreshRetainableArrays(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionSteps = 1000 });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { });
         var receiver = new object();
         var callable = new RetainingCallable();
         var method = new PyBoundMethod(receiver, callable);
@@ -140,7 +119,6 @@ public sealed class BoundMethodInvocationBoundaryTests
             Assert.Equal(saved, first);
         }
         Assert.All(callable.Calls, call => { Assert.Same(context, call.Context); Assert.Same(Span, call.Span); });
-        Assert.Equal(0, context.Limits.ExecutionStepCount);
     }
 
     private sealed class RetainingCallable : LythonRuntime.ICallable

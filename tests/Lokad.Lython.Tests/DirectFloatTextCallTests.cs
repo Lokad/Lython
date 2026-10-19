@@ -1,17 +1,14 @@
 using System.Numerics;
-using System.Text.Json;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class DirectFloatTextCallTests(ITestOutputHelper output)
+public sealed class DirectFloatTextCallTests
 {
-    private const int MaximumSteps = 10000;
 
     public static TheoryData<string, string, string?> Programs => new()
     {
@@ -31,13 +28,12 @@ public sealed class DirectFloatTextCallTests(ITestOutputHelper output)
 
     [Theory]
     [MemberData(nameof(Programs))]
-    public async Task NativeAndGeneralCallsPreserveEffectsFuelAndUnwind(string label, string source, string? expectedError)
+    public async Task NativeAndGeneralCallsPreserveEffectsAndUnwind(string label, string source, string? expectedError)
     {
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
-            long steps;
             string[] fullEffects;
             string? completedError = null;
             using (var owner = budget.CreateScope())
@@ -66,33 +62,15 @@ public sealed class DirectFloatTextCallTests(ITestOutputHelper output)
                     "arity" => ["value", "value"],
                     _ => Array.Empty<string>(),
                 }, fullEffects);
-                steps = context.Limits.ExecutionStepCount;
                 CheckCleanup(context);
             }
             Assert.Equal(0, budget.ReservedBytes);
-            var checkpoints = new List<string>();
-            for (var remaining = 0; remaining < steps; remaining++)
-            {
-                using (var owner = budget.CreateScope())
-                {
-                    var (context, effects) = Prepare(owner);
-                    context.Limits.ExecutionStepCount = MaximumSteps - remaining;
-                    var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
-                    Assert.Equal(LythonFailureReason.ExecutionStepLimit, failure.Attribution?.Reason);
-                    Assert.Equal(MaximumSteps, failure.Attribution?.Limit);
-                    Assert.Equal(fullEffects.Take(effects.Count), effects);
-                    checkpoints.Add(Describe(failure) + ":checks=" + context.Limits.ExecutionStepCount + ":" + string.Join(';', effects));
-                    CheckCleanup(context);
-                }
-                Assert.Equal(0, budget.ReservedBytes);
-            }
-            output.WriteLine("DIRECT_FLOAT_TEXT_MATRIX:" + JsonSerializer.Serialize(new { label, asynchronous, steps, completedError, fullEffects, checkpoints }));
         }
     }
 
     private static (Context Context, List<string> Effects) Prepare(ILythonMemoryBudget owner)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionSteps = MaximumSteps });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
         var effects = new List<string>();
         var text = PyString.FromString("17.5", context.MemoryGovernor, null);
         context.Variables["text"] = text;
@@ -125,7 +103,6 @@ public sealed class DirectFloatTextCallTests(ITestOutputHelper output)
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
-            Assert.InRange(context.Limits.ExecutionStepCount, 0, MaximumSteps);
             effects.Add(name);
             return value;
         }

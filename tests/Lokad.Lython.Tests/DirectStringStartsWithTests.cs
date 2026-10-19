@@ -78,27 +78,15 @@ public sealed class DirectStringStartsWithTests
     [InlineData(true, "startswith")]
     [InlineData(false, "endswith")]
     [InlineData(true, "endswith")]
-    public async Task GuardFuelAndSourceSpansMatchTheOrdinaryCallBoundary(bool asynchronous, string method)
+    public async Task OrdinaryCallsPreserveResultsAndCleanup(bool asynchronous, string method)
     {
-        for (var fuel = 1; fuel <= 9; fuel++)
         {
-            var (code, context) = Prepare("return text.startswith(prefix)\n", new LythonRunOptions { MaxExecutionSteps = fuel }, method);
+            var (code, context) = Prepare("return text.startswith(prefix)\n", new LythonRunOptions { }, method);
             var text = PyString.FromString("word", context.MemoryGovernor, null);
             context.Variables["text"] = text;
             context.Variables["prefix"] = PyString.FromString(method == "startswith" ? "w" : "d", context.MemoryGovernor, null);
-            if (fuel == 9)
                 Assert.Equal(true, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
                     : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
-            else
-            {
-                var error = asynchronous
-                    ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
-                    : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
-                Assert.Equal("RuntimeError", error.ExceptionType);
-                Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
-                var instructions = code.EntryPoint.Blocks[code.EntryPoint.EntryBlockIndex].InstructionArray;
-                Assert.Same(instructions[fuel <= 4 ? fuel - 1 : fuel == 8 ? 4 : 3].Span, error.Span);
-            }
             Assert.Null(context.CurrentExecutableFrame);
             Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

@@ -2,13 +2,15 @@
 
 ## Unreleased
 
+- Breaking API cleanup: remove `MaxExecutionSteps`, `MaxHostCalls`, their default constants, quota counters, `ExecutionStepLimit`/`HostCallLimit` attribution and `Consumption.ExecutionSteps`/`HostCalls`. Hosts control execution time with `CancellationToken`; existing cancellation checkpoints, managed stack/recursion admission, memory/output bounds, host authorization and awaited cleanup remain. `LythonExecutionConsumption` now contains only retained stdout/stderr bytes. No replacement quotas or unmeasured speedup claim.
+
 - Forward bound async calls directly to their existing implementation ValueTasks, removing a redundant state machine. Preserve execution checks, named/presence binding, Python failure translation, awaited cleanup, cancellation and retained ownership.
 
 - Decode JSON object keys synchronously through the existing typed string decoder, removing generic key awaits and impossible result-type failures. Preserve checkpoints, error coordinates, string admission and ownership through suspended values/hooks.
 
 - Pre-size the two fixed per-execution builtin dictionaries to avoid repeated backing-array growth during setup. Keep builtin entries, private callable/type/module state and conservative memory accounting unchanged.
 
-- Share the existing direct string-affix operand path with ordinary positional `str.endswith` calls, removing eligible bound-method and argument packaging. Preserve character bounds, tuple matching, error/fuel order, dynamic/exposed calls, suspended index hooks, cancellation and retained ownership.
+- Share the existing direct string-affix operand path with ordinary positional `str.endswith` calls, removing eligible bound-method and argument packaging. Preserve character bounds, tuple matching, error order, dynamic/exposed calls, suspended index hooks, cancellation and retained ownership.
 
 - Remove private sum/list operation shells, source/current reference bookkeeping and general binder return wrappers. Keep results in managed locals with deterministic awaited iteration; retain capacity preflights, unpublished-list rollback, integer admission and funding for retained aliases/results. Control headroom can decrease.
 
@@ -18,15 +20,15 @@
 
 - Reuse synchronous scalar conversion for native list/tuple rows in asynchronous `csv.writerow`, removing unnecessary async iteration wrappers. Keep output callbacks awaited and retain the generic async route for custom/generator rows, preserving checkpoints, supported cell types, storage preflights, ownership and cancellation.
 
-- Execute ordinary single-positional native CSV `writerow` calls from existing receiver/argument operands. Share the row-conversion bodies with general bound calls and remove eligible member wrappers and argument binding. Preserve Python results, error/fuel boundaries, row/history/result funding, asynchronous iteration/publication, cancellation and explicit rejection of unsupported cell types.
+- Execute ordinary single-positional native CSV `writerow` calls from existing receiver/argument operands. Share the row-conversion bodies with general bound calls and remove eligible member wrappers and argument binding. Preserve Python results, error boundaries, row/history/result funding, asynchronous iteration/publication, cancellation and explicit rejection of unsupported cell types.
 
 - Admit large JSON string decoding before creating UTF-16 text for values and keys across dumps, explicit encoding and iterencode. Consolidate three decode call sites, use bounded managed storage for short strings, and release private decoding storage after escaping or failure. Preserve Python text/escaping, callbacks, checkpoints, chunks and retained ownership; conservative live-overlap estimates can reject earlier.
 
 - Admit large JSON integer conversion before allocating decimal text in dumps, explicit encoding and iterencode, including numeric keys. Consolidate integer emission and key appending, remove the unused key-converter control route, and write signed-64 values directly into the existing builder. Preserve validation/sorting, callbacks, checkpoints, chunks, retained output and terminal refusal; numeric working/key-growth estimates can reject earlier.
 
-- Admit large ordinary integer-rendering working storage before CLR decimal conversion, keeping scratch funded through the final UTF-8 copy and returning it on failure. Consolidate three rendering paths and format signed-64 values directly into bounded UTF-8 storage. Preserve Python results, frame/fuel behavior, retained output and terminal refusal; conservative working estimates can reject earlier.
+- Admit large ordinary integer-rendering working storage before CLR decimal conversion, keeping scratch funded through the final UTF-8 copy and returning it on failure. Consolidate three rendering paths and format signed-64 values directly into bounded UTF-8 storage. Preserve Python results, frame behavior, retained output and terminal refusal; conservative working estimates can reject earlier.
 
-- Execute ordinary single-positional text-file `write` calls from existing operand storage, reusing the same governed writer body. Remove bound-method and argument packaging on that path while preserving exposed/general calls, Unicode counts, encoding/newlines, fuel, error order, retained input, admission, cancellation and host publication/cleanup.
+- Execute ordinary single-positional text-file `write` calls from existing operand storage, reusing the same governed writer body. Remove bound-method and argument packaging on that path while preserving exposed/general calls, Unicode counts, encoding/newlines, error order, retained input, admission, cancellation and host publication/cleanup.
 
 - Release the unused whole-module lowered representation after executable compilation. Use existing syntax/entry-point metadata for both execution APIs, keeping required function/fallback data, annotations, host-capability diagnostics, managed stack admission, cancellation and cleanup. Conservative compilation ownership remains unchanged.
 
@@ -84,7 +86,7 @@
 
 - Resolve implicit formatting through type slots and honor `__format__` in empty `str.format` / `format_map` fields. Share guest-format binding and validation, returning its string directly instead of decoding and re-encoding it. Root `format` and default `object.__format__` now await protocol I/O under `RunAsync`, preserving specifier order, cancellation, terminal admission refusal, managed stack protection and retained ownership.
 
-- Keep periodic structural-scan checkpoints local to each execution, including ambient synchronous paths. Reuse existing traversal state so earlier runs on a worker thread cannot shift another run's fuel boundary; retain the 64-element checks and original limits.
+- Keep periodic structural-scan checkpoints local to each execution, including ambient synchronous paths. Reuse existing traversal state so earlier runs on a worker thread cannot shift another run's cancellation cadence; retain the 64-element checks and original limits.
 
 - Resolve implicit `str`, `repr`, `ascii` and explicit f-string conversions through type slots, bypassing instance shadows and `__getattribute__`. Share descriptor binding, return validation and the default string-to-repr fallback. Root conversions under `RunAsync` now await protocol I/O; preserve cancellation, terminal admission refusal, managed stack limits and retained ownership. `ascii` reuses the governed UTF-8 escape path.
 
@@ -96,13 +98,13 @@
 
 - Report JSON object/array trailing commas at the comma, with CPython's error message and character coordinates. Reuse the forward delimiter position and remove redundant backwards scans; preserve incomplete-input errors, raw prefixes and hook ordering.
 
-- Keep ordinary annotated helper bodies executable under both execution APIs. Attach eager/postponed annotation metadata through the existing helpers before decorators and publication, removing annotation-only body deoptimization and parent mirroring. Preserve dynamic retention for escaping annotation lambdas and namespaces, closure cells, defaults, cancellation, managed stack admission and retained metadata funding; compiled call fuel remains implementation-defined.
+- Keep ordinary annotated helper bodies executable under both execution APIs. Attach eager/postponed annotation metadata through the existing helpers before decorators and publication, removing annotation-only body deoptimization and parent mirroring. Preserve dynamic retention for escaping annotation lambdas and namespaces, closure cells, defaults, cancellation, managed stack admission and retained metadata funding.
 
-- Execute exact integer/float/boolean arithmetic, comparison and unary instructions through the ordinary handlers under `RunAsync`. Skip redundant asynchronous operation helpers for these native operands while preserving fuel, errors, admission and result ownership; custom/reflected/truth protocols still suspend and cancel through their existing paths.
+- Execute exact integer/float/boolean arithmetic, comparison and unary instructions through the ordinary handlers under `RunAsync`. Skip redundant asynchronous operation helpers for these native operands while preserving errors, admission and result ownership; custom/reflected/truth protocols still suspend and cancel through their existing paths.
 
 - Preserve rich-comparison values in chained comparisons: return the first falsy intermediate result or the final raw result, without truth-testing the latter. Reuse ordinary executable comparison and short-circuit instructions, removing the specialized chain opcode and duplicate truth coercion. Keep result admission before later operands and support suspended comparison/truth hooks. Unary plus on booleans now returns an integer, including through `operator.pos`.
 
-- Call ordinary two-positional-argument `str.replace` directly from executable operand storage under both execution APIs. Share validation and result ownership with exposed methods, removing immediate wrappers and argument repackaging while preserving receiver capture, dynamic dispatch, fuel, admission and asynchronous argument work.
+- Call ordinary two-positional-argument `str.replace` directly from executable operand storage under both execution APIs. Share validation and result ownership with exposed methods, removing immediate wrappers and argument repackaging while preserving receiver capture, dynamic dispatch, admission and asynchronous argument work.
 
 - Validate expanded string-method arguments using their existing element facts, fixing false errors for stored sequences, keyword mappings and `None` aliases. Share string and integer validation, remove duplicate checks, and retain invalid-argument diagnostic codes and locations.
 
@@ -144,17 +146,17 @@
 
 - Construct slice objects for tuple subscription keys through the existing synchronous handler under asynchronous hosting, removing redundant async delegation and its unused synchronous fallback. Preserve raw bounds, deferred index protocols, admission and source-order effects.
 
-- Reuse synchronous cursor pulls under asynchronous hosting and forward existing user/async iterator tasks directly, removing their redundant async forwarding paths. Preserve protocol precedence, fuel/cancellation checkpoints, ownership and awaited iterator cleanup.
+- Reuse synchronous cursor pulls under asynchronous hosting and forward existing user/async iterator tasks directly, removing their redundant async forwarding paths. Preserve protocol precedence, cancellation checkpoints, ownership and awaited iterator cleanup.
 
 - Admit major integer Counter count additions before computation or replacement, reusing ordinary integer-addition admission for updates, totals and binary addition. Fund new magnitudes under the existing owner; preserve retained aliases, decimal/float behavior and terminal refusal. Conservative estimates can reject earlier under tight budgets.
 
-- Preflight major native integer additions before allocating their result, including ordinary addition, generic sums and mixed CLR integer inputs. Reuse existing magnitude admission and retained owners, preserving small-value handling, fuel, callbacks and terminal refusal; conservative major estimates can reject earlier under tight budgets.
+- Preflight major native integer additions before allocating their result, including ordinary addition, generic sums and mixed CLR integer inputs. Reuse existing magnitude admission and retained owners, preserving small-value handling, callbacks and terminal refusal; conservative major estimates can reject earlier under tight budgets.
 
-- Remove the redundant JSON prefix decoder, its result record and duplicate leading-whitespace/empty-input checks. Whole-document decoding uses the existing value reader directly, preserving whitespace fuel, trailing-data validation, hooks, errors and input ownership.
+- Remove the redundant JSON prefix decoder, its result record and duplicate leading-whitespace/empty-input checks. Whole-document decoding uses the existing value reader directly, preserving whitespace trailing-data validation, hooks, errors and input ownership.
 
 - Forward JSON object/array parsing directly from the token dispatcher, removing two generic async forwarding paths and their unused depth argument. Keep child parsers, the existing nesting limit, hooks, cancellation, admission and retained ownership.
 
-- Dispatch JSON true/false/null synchronously alongside strings through both execution APIs, removing their generic async-token route. Preserve scalar-frame admission, Python prefix/error rules, hooks, cancellation, retained ownership and exact fuel/spans.
+- Dispatch JSON true/false/null synchronously alongside strings through both execution APIs, removing their generic async-token route. Preserve scalar-frame admission, Python prefix/error rules, hooks, cancellation, retained ownership and source spans.
 
 - Report Python `Extra data` for trailing JSON input and include character coordinates in parser-produced JSON errors. Return the ordinary single formatted exception argument, removing the special three-argument reconstruction and trailing-character conversion. Preserve payload fields, callbacks, ownership and raw-decode suffixes.
 
@@ -286,21 +288,21 @@
 
 - Evaluate a dictionary entry's value before validating its key in syntax and lowered execution. Preserve value-side host effects, cancellation and exception precedence when the key is unhashable.
 
-- Compile ordinary starred tuples through the existing display/immutable-finish operations, removing their expression fallback and unnecessary local mirroring. Conservative scratch/result overlap can reject earlier; explicit fuel uses existing per-item checkpoints.
+- Compile ordinary starred tuples through the existing display/immutable-finish operations, removing their expression fallback and unnecessary local mirroring. Conservative scratch/result overlap can reject earlier; cancellation uses existing per-item checkpoints.
 
 - Reuse the existing immutable empty tuple for empty literals and completed tuple expansions across executable and lowered execution. Preserve identity with `tuple()` without a new cache or identity ledger.
 
-- Compile ordinary starred-list displays with the existing generator display operations, removing their expression fallback and unnecessary local mirroring. Preserve interleaved evaluation, async iteration, cancellation, admission and alias funding. Explicit fuel now uses those existing per-item checkpoints.
+- Compile ordinary starred-list displays with the existing generator display operations, removing their expression fallback and unnecessary local mirroring. Preserve interleaved evaluation, async iteration, cancellation, admission and alias funding. Existing per-item cancellation checks remain.
 
 - Await reflected augmented methods for builtin Boolean, integer, float, complex and decimal values, including host integer representations. Preserve cancellation and complex/matrix augmented error tokens when reflected methods decline.
 
 - Add a complete JSON configuration read/edit/write workload with independent files, replay and cancelled-publication checks. Both comparison workers allow exact input/output path overwrites while retaining path, collision and fixture bounds.
 
-- Share the synchronous binary/augmented operator handler for exact integer operands during `RunAsync`, avoiding generic async operation dispatch while retaining preflights, errors, fuel/cancellation and result ownership. Mixed/user operands keep their existing protocol routes.
+- Share the synchronous binary/augmented operator handler for exact integer operands during `RunAsync`, avoiding generic async operation dispatch while retaining preflights, errors, cancellation and result ownership. Mixed/user operands keep their existing protocol routes.
 
 - Await user-instance augmented numeric methods and exact-integer reflected fallbacks under `RunAsync`, preserving in-place/ordinary/reflected order, augmented error tokens and cancellation. Share the existing operator mappings instead of restricting asynchronous dispatch to addition.
 
-- Sum exact immutable bytes with a machine-integer subtotal and one preflighted exact-integer result, removing per-byte boxes/iteration adapters. Preserve empty/start aliases, integer promotion, terminal fuel checks, native ownership and dynamic async fallbacks.
+- Sum exact immutable bytes with a machine-integer subtotal and one preflighted exact-integer result, removing per-byte boxes/iteration adapters. Preserve empty/start aliases, integer promotion, terminal cancellation checks, native ownership and dynamic async fallbacks.
 
 - Forward validated JSON value reads directly to the existing parser ValueTask, removing a redundant async state machine while preserving callbacks, errors and owned-input cleanup.
 

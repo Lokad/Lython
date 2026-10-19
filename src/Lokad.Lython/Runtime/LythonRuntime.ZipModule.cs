@@ -66,7 +66,7 @@ internal sealed partial class LythonRuntime
             var bound = CallBinder.BindNamedArgumentsWithPresence(
                 arguments, span, LythonKnownCallableSignatures.ZipIsZipFile, PythonCallableKind.Builtin);
             var path = ResolveZipPath(bound.Values[0], context, span, "zipfile.is_zipfile()");
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var stat = context.HostStat(path, span);
             if (!stat.Exists || !stat.IsFile)
             {
@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
             var bound = CallBinder.BindNamedArgumentsWithPresence(
                 arguments, span, LythonKnownCallableSignatures.ZipIsZipFile, PythonCallableKind.Builtin);
             var path = ResolveZipPath(bound.Values[0], context, span, "zipfile.is_zipfile()");
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
             if (!stat.Exists || !stat.IsFile)
             {
@@ -397,7 +397,7 @@ internal sealed partial class LythonRuntime
                 context);
         }
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var stat = context.HostStat(request.Path, span);
         if (!stat.Exists)
         {
@@ -448,7 +448,7 @@ internal sealed partial class LythonRuntime
                 context);
         }
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var stat = await context.HostStatAsync(request.Path, span).ConfigureAwait(false);
         if (!stat.Exists)
         {
@@ -515,7 +515,7 @@ internal sealed partial class LythonRuntime
 
     private static object OpenZipFileAppend(ZipOpenRequest request, ExecutionContext context, LythonSourceSpan span)
     {
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var stat = context.HostStat(request.Path, span);
         if (!stat.Exists)
         {
@@ -566,7 +566,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> OpenZipFileAppendAsync(ZipOpenRequest request, ExecutionContext context, LythonSourceSpan span)
     {
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var stat = await context.HostStatAsync(request.Path, span).ConfigureAwait(false);
         if (!stat.Exists)
         {

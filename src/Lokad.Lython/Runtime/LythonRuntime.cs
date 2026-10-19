@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
         TextErrorMode errors,
         TextNewlineMode newline)
     {
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var stat = context.HostStat(path, span);
         if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
             stat.Size > new BigInteger(maxHostReadBytes))
@@ -69,7 +69,7 @@ internal sealed partial class LythonRuntime
         }
 
         EnsureExecutionMemoryForKnownLength(stat, 128L, context, span);
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var utf8 = context.ReadTextUtf8(path, span);
         if (context.Limits.MaxHostReadBytes is { } maxReadBytes && utf8.Length > maxReadBytes)
         {
@@ -98,7 +98,7 @@ internal sealed partial class LythonRuntime
         TextErrorMode errors,
         TextNewlineMode newline)
     {
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
         if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
             stat.Size > new BigInteger(maxHostReadBytes))
@@ -107,7 +107,7 @@ internal sealed partial class LythonRuntime
         }
 
         EnsureExecutionMemoryForKnownLength(stat, 128L, context, span);
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var utf8 = await context.ReadTextUtf8Async(path, span).ConfigureAwait(false);
         if (context.Limits.MaxHostReadBytes is { } maxReadBytes && utf8.Length > maxReadBytes)
         {
@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
 
     internal static GovernedHostBytes ReadGovernedHostBytes(string path, ExecutionContext context, LythonSourceSpan? span)
     {
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var stat = context.HostStat(path, span);
         return ReadGovernedHostBytesAfterStat(path, stat, context, span);
     }
@@ -149,7 +149,7 @@ internal sealed partial class LythonRuntime
         }
 
         EnsureExecutionMemoryForKnownLength(stat, 32L, context, span);
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var payload = context.ReadHostBytes(path, span);
         if (context.Limits.MaxHostReadBytes is { } maxReadBytes && payload.Length > maxReadBytes)
         {
@@ -161,7 +161,7 @@ internal sealed partial class LythonRuntime
 
     internal static async ValueTask<GovernedHostBytes> ReadGovernedHostBytesAsync(string path, ExecutionContext context, LythonSourceSpan? span)
     {
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
         return await ReadGovernedHostBytesAfterStatAsync(path, stat, context, span).ConfigureAwait(false);
     }
@@ -180,7 +180,7 @@ internal sealed partial class LythonRuntime
         }
 
         EnsureExecutionMemoryForKnownLength(stat, 32L, context, span);
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         var payload = await context.ReadHostBytesAsync(path, span).ConfigureAwait(false);
         if (context.Limits.MaxHostReadBytes is { } maxReadBytes && payload.Length > maxReadBytes)
         {
@@ -514,8 +514,6 @@ internal sealed partial class LythonRuntime
         {
             var state = context.State;
             result.Consumption = new(
-                state.Limits.MaxExecutionSteps.HasValue ? state.Limits.ExecutionStepCount : null,
-                state.Limits.HostCallCount,
                 state.StandardOutput.Length,
                 state.StandardError.Length);
         }

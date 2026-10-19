@@ -32,7 +32,6 @@ public sealed class FunctionClassCellBoundaryTests
             Assert.Equal(mirror, frame.Frame.ContainsVariable("value"));
             if (mirror) Assert.Same(receiver, frame.Variables["value"]);
             Assert.Equal(1, root.Limits.CurrentRecursionDepth);
-            Assert.Equal(1, root.Limits.ExecutionStepCount);
         }
         finally { frame.LeaveFunctionCall(); }
         Assert.Equal(0, root.Limits.CurrentRecursionDepth);
@@ -152,7 +151,7 @@ public sealed class FunctionClassCellBoundaryTests
             new BoundCallArguments(values, default), mirror, owner, Span);
 
     private static LoweredFunctionParameter Parameter(string name, FunctionParameterKind kind) => new(name, kind, null, null);
-    private static Context Root() => new(new MockLythonHost(), new LythonRunOptions { SourcePath = "/root.py", MaxExecutionSteps = 1000 });
+    private static Context Root() => new(new MockLythonHost(), new LythonRunOptions { SourcePath = "/root.py"});
     private static Context ClassClosure()
     {
         var definition = Assert.IsType<ClassDefinitionStatementSyntax>(Assert.Single(

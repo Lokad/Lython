@@ -5,46 +5,6 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class ReviewHardening5RegressionTests
 {
-    private const string RepeatedBomb = """
-import difflib
-matcher = difflib.SequenceMatcher(None, "x" * 500, "x" * 500, autojunk=False)
-return matcher.ratio()
-""";
-
-    [Fact]
-    public void RepeatedBombRespectsStepBudget()
-    {
-        var result = new LythonEngine().Run(
-            RepeatedBomb,
-            new MockLythonHost(),
-            new LythonRunOptions
-            {
-                MaxExecutionSteps = 50
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum execution step count exceeded", result.Failure?.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task RepeatedBombRespectsStepBudgetAsync()
-    {
-        var result = await new LythonEngine().RunAsync(
-            RepeatedBomb,
-            new MockLythonHost(),
-            new LythonRunOptions
-            {
-                MaxExecutionSteps = 50
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum execution step count exceeded", result.Failure?.Message, StringComparison.Ordinal);
-    }
-
     [Fact]
     public void MatchingHonorsMidRunCancellation()
     {
@@ -152,26 +112,6 @@ return [matcher.ratio(), matcher.quick_ratio(), matcher.find_longest_match().siz
             new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
-    }
-
-    [Fact]
-    public void DirectMatchQueriesRespectStepBudget()
-    {
-        foreach (var query in new[] { "matcher.find_longest_match()", "matcher.get_opcodes()", "matcher.get_matching_blocks()" })
-        {
-            var result = new LythonEngine().Run(
-                "import difflib\nmatcher = difflib.SequenceMatcher(None, \"x\" * 500, \"x\" * 500, autojunk=False)\nreturn " + query + "\n",
-                new MockLythonHost(),
-                new LythonRunOptions
-                {
-                    MaxExecutionSteps = 50
-                });
-
-            Assert.False(result.Success);
-            Assert.NotNull(result.Failure);
-            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-            Assert.Contains("maximum execution step count exceeded", result.Failure?.Message, StringComparison.Ordinal);
-        }
     }
 
     [Fact]

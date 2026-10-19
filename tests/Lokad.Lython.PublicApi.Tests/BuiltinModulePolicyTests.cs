@@ -210,7 +210,6 @@ return path.basename('/a/b.txt')
     {
         AllowedBuiltinModules = new HashSet<string>(grants, StringComparer.Ordinal),
         AllowedLocalModules = new HashSet<string> { "json", "json.child" },
-        MaxHostCalls = 0,
     };
 
     private sealed class HeldTiming : ILythonTiming, ILythonSynchronousHostCapability

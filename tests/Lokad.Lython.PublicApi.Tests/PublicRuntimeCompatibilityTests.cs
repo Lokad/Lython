@@ -89,7 +89,7 @@ return value
             new LythonEngine().Run(
                 "return 1",
                 new PublicTestHost(),
-                new LythonRunOptions { MaxExecutionSteps = -1 }));
+                new LythonRunOptions { MaxCollectionSize = -1 }));
 
         var diagnostic = new LythonDiagnostic("LA1234", "message", LythonDiagnosticSeverity.Error, null);
         var (code, message, severity, span) = diagnostic;
@@ -165,7 +165,7 @@ outer()
 
         var result = await script.RunAsync(
             new PublicTestHost(),
-            new LythonRunOptions { MaxExecutionSteps = 10 },
+            new LythonRunOptions { },
             cancellation.Token);
 
         Assert.False(result.Success);

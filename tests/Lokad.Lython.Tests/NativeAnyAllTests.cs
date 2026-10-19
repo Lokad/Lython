@@ -1,17 +1,14 @@
 using System.Numerics;
-using System.Text.Json;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class NativeAnyAllTests(ITestOutputHelper output)
+public sealed class NativeAnyAllTests
 {
-    private const int MaximumSteps = 10000;
 
     public static IEnumerable<object?[]> Programs()
     {
@@ -38,13 +35,12 @@ public sealed class NativeAnyAllTests(ITestOutputHelper output)
 
     [Theory]
     [MemberData(nameof(Programs))]
-    public async Task NativeAndGeneralInputsPreserveEffectsFuelAndUnwind(string label, string source, string input, int count, bool expected, string? expectedError)
+    public async Task NativeAndGeneralInputsPreserveEffectsAndUnwind(string label, string source, string input, int count, bool expected, string? expectedError)
     {
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
-            long steps;
             string[] fullEffects;
             string? completedError = null;
             using (var owner = budget.CreateScope())
@@ -72,33 +68,15 @@ public sealed class NativeAnyAllTests(ITestOutputHelper output)
                     "keyword" or "noncallable" => ["value"],
                     _ => Array.Empty<string>(),
                 }, fullEffects);
-                steps = context.Limits.ExecutionStepCount;
                 CheckCleanup(context);
             }
             Assert.Equal(0, budget.ReservedBytes);
-            var checkpoints = new List<string>();
-            for (var remaining = 0; remaining < steps; remaining++)
-            {
-                using (var owner = budget.CreateScope())
-                {
-                    var (context, effects) = Prepare(owner, input, count);
-                    context.Limits.ExecutionStepCount = MaximumSteps - remaining;
-                    var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
-                    Assert.Equal(LythonFailureReason.ExecutionStepLimit, failure.Attribution?.Reason);
-                    Assert.Equal(MaximumSteps, failure.Attribution?.Limit);
-                    Assert.Equal(fullEffects.Take(effects.Count), effects);
-                    checkpoints.Add(Describe(failure) + ":checks=" + context.Limits.ExecutionStepCount + ":" + string.Join(';', effects));
-                    CheckCleanup(context);
-                }
-                Assert.Equal(0, budget.ReservedBytes);
-            }
-            output.WriteLine("NATIVE_ANY_ALL_MATRIX:" + JsonSerializer.Serialize(new { label, asynchronous, steps, completedError, fullEffects, checkpoints }));
         }
     }
 
     private static (Context Context, List<string> Effects) Prepare(ILythonMemoryBudget owner, string input, int count)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionSteps = MaximumSteps });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
         var effects = new List<string>();
         object values;
         if (input.StartsWith("bytes", StringComparison.Ordinal))
@@ -118,8 +96,6 @@ public sealed class NativeAnyAllTests(ITestOutputHelper output)
         context.Variables["values"] = values;
         context.Variables["value"] = new Argument(effects, "value", values);
         context.Variables["note"] = new Note(effects);
-        // Input construction is outside the measured program's fuel boundary.
-        context.Limits.ExecutionStepCount = 0;
         return (context, effects);
     }
 
@@ -142,7 +118,6 @@ public sealed class NativeAnyAllTests(ITestOutputHelper output)
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
-            Assert.InRange(context.Limits.ExecutionStepCount, 0, MaximumSteps);
             effects.Add(name);
             return value;
         }

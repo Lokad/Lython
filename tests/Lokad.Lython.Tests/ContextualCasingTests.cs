@@ -94,29 +94,25 @@ public sealed class ContextualCasingTests
     }
 
     [Theory]
-    [InlineData(0, false)]
-    [InlineData(0, true)]
-    [InlineData(1, false)]
-    [InlineData(1, true)]
-    [InlineData(2, false)]
-    [InlineData(2, true)]
-    public void AbortedCasingUnwindsScratch(int operation, bool cancel)
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void AbortedCasingUnwindsScratch(int operation)
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
         {
             CancellationToken = cancellation.Token,
-            MaxExecutionSteps = cancel ? null : 1,
         });
         var governor = context.MemoryGovernor;
         var input = PyString.FromString(new string('A', 4096), governor, null);
         var baseline = governor.CurrentCommittedBytes;
-        if (cancel) cancellation.Cancel();
+cancellation.Cancel();
         var span = new LythonSourceSpan(0, 1, 1, 1);
         using (PyStructuralGuard.PushAmbient(context, span))
         {
             var failure = Assert.Throws<LythonRuntimeException>(() => Apply(operation, input));
-            Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.ExecutionStepLimit, failure.Attribution?.Reason);
+            Assert.Equal(LythonFailureReason.Cancelled , failure.Attribution?.Reason);
             Assert.Equal(span, failure.Span);
         }
         Assert.Equal(baseline, governor.CurrentCommittedBytes);

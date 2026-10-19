@@ -174,12 +174,8 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= ScandirBudgetBytes);
     }
 
-    // Walk yields track individually at production (tuples, lists, and name
-    // strings each carry a coupon), so fully consumed or abandoned walks
-    // reclaim while unpacked outputs retained past their tuple stay charged.
-    // Volume consumption needs a raised host-call budget: each walk makes
-    // several host calls, which the default host-call limit counts separately
-    // from memory.
+    // Bounded host-driven walk batches relinquish their execution owners;
+    // retained public results keep their independent funding.
     [Fact]
     public async Task ExhaustedWalkReclaims()
     {

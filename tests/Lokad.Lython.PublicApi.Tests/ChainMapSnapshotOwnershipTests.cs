@@ -109,15 +109,6 @@ public sealed class ChainMapSnapshotOwnershipTests
     }
 
     [Fact]
-    public void IterationDeniesUnderTinyStepBudget()
-    {
-        var code = "import collections\nd = " + ThousandKeys + "\nc = collections.ChainMap(d)\nreturn len(list(c))\n";
-        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionSteps = 100 });
-        Assert.False(result.Success);
-        Assert.Contains("maximum execution step count exceeded", result.Failure!.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void IterationRespectsCancellation()
     {
         using var cts = new CancellationTokenSource();

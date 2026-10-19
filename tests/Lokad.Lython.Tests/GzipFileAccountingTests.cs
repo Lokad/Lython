@@ -140,7 +140,7 @@ public sealed class GzipFileAccountingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task EmptyDeflateBlocksConsumeWorkBeforeProducingAnyOutput(bool asynchronous)
+    public async Task EmptyDeflateBlocksProduceNoOutputAndReleaseWorkingStorage(bool asynchronous)
     {
         // A valid member containing 10,000 empty stored blocks. Output-size
         // checks alone cannot govern this input; the compressed cursor must.
@@ -150,16 +150,13 @@ public sealed class GzipFileAccountingTests
         { member[offset + 3] = 255; member[offset + 4] = 255; }
         member[50010] = 3;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionSteps = 50 });
+            new LythonRunOptions { });
         var raw = Raw(context, member);
         var reader = await Construct(context, raw, "rb", asynchronous);
-        var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-            await Call(reader, "read", context, asynchronous));
-        Assert.Equal("RuntimeError", error.ExceptionType);
-        Assert.Contains("step", error.Message);
-        Assert.True(context.Limits.ExecutionStepCount > 50);
+        var value = Assert.IsType<PyBytes>(await Call(reader, "read", context, asynchronous));
+        Assert.Equal(0, value.Length);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        // Runtime cleanup bypasses the already exhausted guest call budget.
+        // Runtime cleanup releases the decoder while preserving the returned payload.
         Assert.Equal(false, Assert.IsAssignableFrom<IExecutionFileWriter>(reader).Exit(context));
         Assert.Equal(512, Snapshot(reader));
         GC.KeepAlive(raw); GC.KeepAlive(reader);

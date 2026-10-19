@@ -498,7 +498,7 @@ internal sealed partial class LythonRuntime
             return Array.Empty<string>();
         }
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         return context.HostListDir(path, span);
     }
 
@@ -510,7 +510,7 @@ internal sealed partial class LythonRuntime
             return Array.Empty<string>();
         }
 
-        context.RegisterHostCall(span);
+        context.CheckExecution(span);
         return await context.HostListDirAsync(path, span).ConfigureAwait(false);
     }
 

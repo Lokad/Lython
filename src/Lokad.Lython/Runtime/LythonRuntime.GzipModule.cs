@@ -297,7 +297,7 @@ internal sealed partial class LythonRuntime
 
         if (options.Operation == GzipOperation.Append)
         {
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var stat = context.HostStat(options.Path, span);
             if (stat is { Exists: true, IsFile: true })
             {
@@ -332,7 +332,7 @@ internal sealed partial class LythonRuntime
 
         if (options.Operation == GzipOperation.Append)
         {
-            context.RegisterHostCall(span);
+            context.CheckExecution(span);
             var stat = await context.HostStatAsync(options.Path, span).ConfigureAwait(false);
             if (stat is { Exists: true, IsFile: true })
             {

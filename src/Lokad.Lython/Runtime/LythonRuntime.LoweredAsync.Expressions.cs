@@ -10,7 +10,7 @@ internal sealed partial class LythonRuntime
     // depth is tracked once per Python nesting level (calls, bodies,
     // compound statements), so deep-but-shallow expression trees cannot
     // exhaust the counter budget while genuine nesting still trips it.
-    // Execution steps are still counted for every node (MG25).
+    // Cancellation checks remain on every node.
     internal static async ValueTask<object> EvaluateLoweredExpressionAsync(LoweredExpression expression, ExecutionContext context)
     {
         context.CheckExecution(expression.Span);

@@ -15,67 +15,42 @@ public sealed class LoweredFunctionInvocationBoundaryTests
     [InlineData(1, true)]
     [InlineData(2, false)]
     [InlineData(2, true)]
-    public async Task IdentityBodyKeepsFuelBoundariesAndSource(int width, bool asynchronous)
+    public async Task IdentityBodyKeepsArgumentsAndCleanup(int width, bool asynchronous)
     {
-        for (var fuel = 1; fuel <= 3; fuel++)
         {
             var (function, context, expression) = Function(width, new LythonRunOptions
             {
-                MaxExecutionSteps = fuel, SourcePath = "/lowered-function.py"
+            SourcePath = "/lowered-function.py"
             });
             var receiver = new object();
-            if (fuel == 3)
-            {
                 var value = asynchronous
                     ? await function.InvokeAsync(Arguments(width, receiver), CallSpan, context)
                     : function.Invoke(Arguments(width, receiver), CallSpan, context);
                 Assert.Same(receiver, value);
-                Assert.Equal(3, context.Limits.ExecutionStepCount);
-            }
-            else
-            {
-                var error = asynchronous
-                    ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await function.InvokeAsync(Arguments(width, receiver), CallSpan, context))
-                    : Assert.Throws<LythonRuntimeException>(() => function.Invoke(Arguments(width, receiver), CallSpan, context));
-                Assert.Equal($"maximum execution step count exceeded ({fuel})", error.Message);
-                Assert.Same(fuel == 1 ? CallSpan : expression.Span, error.Span);
-                // Entry failures precede body annotation; the public engine
-                // supplies source information at its outer boundary.
-                Assert.Equal(fuel == 1 ? null : "/lowered-function.py", error.SourcePath);
-                Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
-            }
             AssertUnwound(context);
         }
     }
 
     [Theory]
-    [InlineData(0, false, false)]
-    [InlineData(0, false, true)]
-    [InlineData(0, true, false)]
-    [InlineData(0, true, true)]
-    [InlineData(1, false, false)]
-    [InlineData(1, false, true)]
-    [InlineData(1, true, false)]
-    [InlineData(1, true, true)]
-    [InlineData(2, false, false)]
-    [InlineData(2, false, true)]
-    [InlineData(2, true, false)]
-    [InlineData(2, true, true)]
-    public async Task InvocationChecksFuelBeforeCancellation(int width, bool asynchronous, bool fuelDenied)
+    [InlineData(0,false)]
+    [InlineData(0,true)]
+    [InlineData(1,false)]
+    [InlineData(1,true)]
+    [InlineData(2,false)]
+    [InlineData(2,true)]
+    public async Task InvocationChecksCancellation(int width,bool asynchronous)
     {
         using var cancellation = new CancellationTokenSource();
         var (function, context, _) = Function(width, new LythonRunOptions
         {
-            MaxExecutionSteps = fuelDenied ? 1 : 1000, CancellationToken = cancellation.Token
+            CancellationToken = cancellation.Token
         });
-        context.Limits.ExecutionStepCount = 1;
         cancellation.Cancel();
         var error = asynchronous
             ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await function.InvokeAsync(Arguments(width, new object()), CallSpan, context))
             : Assert.Throws<LythonRuntimeException>(() => function.Invoke(Arguments(width, new object()), CallSpan, context));
-        Assert.Equal(fuelDenied ? "maximum execution step count exceeded (1)" : "execution canceled", error.Message);
+        Assert.Equal("execution canceled", error.Message);
         Assert.Same(CallSpan, error.Span);
-        Assert.Equal(2, context.Limits.ExecutionStepCount);
         AssertUnwound(context);
     }
 
@@ -90,7 +65,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
     {
         var (function, context, _) = Function(width, new LythonRunOptions
         {
-            MaxExecutionSteps = 1000, MaxExecutionMemoryBytes = 8192, MaxRecursionDepth = 0
+            MaxExecutionMemoryBytes = 8192, MaxRecursionDepth = 0
         });
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         context.Services.SetCurrentException(active);
@@ -111,7 +86,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
     [InlineData(2)]
     public async Task BodyUsesActualFrameServicesAndMirroredArguments(int width)
     {
-        var snapshots = new List<(long Accounted, long Reserved, long Steps)>();
+        var snapshots = new List<(long Accounted, long Reserved)>();
         foreach (var asynchronous in new[] { false, true })
         {
             var names = Enumerable.Range(0, width).Select(i => $"arg{i}").ToArray();
@@ -119,7 +94,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
             var definition = Definition($"def f({parameters}):\n return tap({parameters})\n");
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
             {
-                MaxExecutionSteps = 1000, MaxExecutionMemoryBytes = 8192, SourcePath = "/actual-frame.py"
+            MaxExecutionMemoryBytes = 8192, SourcePath = "/actual-frame.py"
             });
             var receiver = new object();
             var active = new PyException("ValueError", "outer", PyNone.Instance);
@@ -142,7 +117,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
     private sealed class RecordingTap(LythonRuntime.ExecutionContext closure, PyException active, object receiver, int width) : LythonRuntime.ICallable
     {
         public int Calls { get; private set; }
-        public (long Accounted, long Reserved, long Steps) Snapshot { get; private set; }
+        public (long Accounted, long Reserved) Snapshot { get; private set; }
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Calls++;
@@ -157,7 +132,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
             Assert.Equal(width + 1, arguments.Length);
             Assert.Same(receiver, arguments[0].Value);
             for (var i = 0; i < width; i++) Assert.Equal(i + 7, context.Variables[$"arg{i}"]);
-            Snapshot = (context.MemoryGovernor.CurrentAccountedBytes, context.MemoryGovernor.CurrentReservedBytes, context.Limits.ExecutionStepCount);
+            Snapshot = (context.MemoryGovernor.CurrentAccountedBytes, context.MemoryGovernor.CurrentReservedBytes);
             return receiver;
         }
     }

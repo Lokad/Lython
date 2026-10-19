@@ -307,7 +307,7 @@ internal sealed partial class LythonRuntime
             var payload = CreateCompressedWritePayload(span);
             try
             {
-                _services.RegisterHostCall(span);
+                _services.CheckExecution(span);
                 _services.WriteHostBytes(_options.Path, payload.Bytes, span);
                 _dirty = false;
             }
@@ -328,7 +328,7 @@ internal sealed partial class LythonRuntime
             var payload = CreateCompressedWritePayload(span);
             try
             {
-                _services.RegisterHostCall(span);
+                _services.CheckExecution(span);
                 await _services.WriteHostBytesAsync(_options.Path, payload.Bytes, span).ConfigureAwait(false);
                 _dirty = false;
             }

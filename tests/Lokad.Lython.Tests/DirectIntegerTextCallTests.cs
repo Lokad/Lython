@@ -1,15 +1,13 @@
 using System.Numerics;
-using System.Text.Json;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class DirectIntegerTextCallTests(ITestOutputHelper output)
+public sealed class DirectIntegerTextCallTests
 {
     [Theory]
     [InlineData(false, false, false)]
@@ -20,50 +18,21 @@ public sealed class DirectIntegerTextCallTests(ITestOutputHelper output)
     [InlineData(true, false, true)]
     [InlineData(true, true, false)]
     [InlineData(true, true, true)]
-    public async Task OrdinaryAndGeneralNativeInputsPreserveFuelAndSpans(bool bytes, bool general, bool asynchronous)
+    public async Task OrdinaryAndGeneralNativeInputsPreserveResultsAndCleanup(bool bytes, bool general, bool asynchronous)
     {
         var code = Compile(general ? "return int(*(value,))" : "return int(value)");
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        long steps;
         using (var owner = budget.CreateScope())
         {
             var context = Prepare(owner);
             Assert.Equal(new BigInteger(7), Assert.IsType<BigInteger>(await Run(code, context, asynchronous)));
-            steps = context.Limits.ExecutionStepCount;
             Check(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
-        Assert.InRange(steps, 8, 32);
-        var checkpoints = new List<string>();
-        for (var remaining = 0; remaining < steps; remaining++)
-        {
-            using (var owner = budget.CreateScope())
-            {
-                var context = Prepare(owner);
-                context.Limits.ExecutionStepCount = 1000 - remaining;
-                var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => { await Run(code, context, asynchronous); });
-                Assert.Equal(LythonFailureReason.ExecutionStepLimit, error.Attribution?.Reason);
-                Assert.Equal(1001, context.Limits.ExecutionStepCount);
-                checkpoints.Add(error.Span is { } s ? $"{s.Start},{s.Length},{s.Line},{s.Column}" : "-");
-                Check(context);
-            }
-            Assert.Equal(0, budget.ReservedBytes);
-        }
-        if (general)
-        {
-            Assert.Equal(13, steps);
-            Assert.Equal(new[] { "-", "7,3,1,8", "7,14,1,8", "13,5,1,14", "12,8,1,13", "12,8,1,13", "7,14,1,8", "12,8,1,13", "12,8,1,13", "7,14,1,8", "7,14,1,8", "7,14,1,8", "0,21,1,1" }, checkpoints);
-        }
-        else
-        {
-            Assert.Equal(8, steps);
-            Assert.Equal(new[] { "-", "7,3,1,8", "11,5,1,12", "7,10,1,8", "7,10,1,8", "7,10,1,8", "7,10,1,8", "0,17,1,1" }, checkpoints);
-        }
-        output.WriteLine("DIRECT_INTEGER_TEXT_MATRIX:" + JsonSerializer.Serialize(new { bytes, general, asynchronous, steps, checkpoints }));
 
         Context Prepare(ILythonMemoryBudget owner)
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionSteps = 1000 });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
             context.Variables["value"] = bytes ? new PyBytes([55], context.MemoryGovernor, null)
                 : PyString.FromString("7", context.MemoryGovernor, null);
             return context;

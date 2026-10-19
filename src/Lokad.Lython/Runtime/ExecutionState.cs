@@ -258,7 +258,7 @@ internal sealed class ExecutionState
     // End-of-run publication for outstanding writers, newest first: behaves
     // exactly like an implicit close() on each handle, so a publication failure
     // surfaces as a failure rather than silent success. Flushes consume
-    // host-call and memory budgets like explicit closes.
+    // cancellation and memory admission like explicit closes.
     internal void CloseOpenFileWriters(LythonRuntime.ExecutionContext context)
     {
         while (_openFileWriters.Count > 0)

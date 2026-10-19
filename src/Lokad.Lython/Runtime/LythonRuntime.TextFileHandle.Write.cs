@@ -194,7 +194,7 @@ internal sealed partial class LythonRuntime
                     return;
                 }
 
-                _services.RegisterHostCall(span);
+                _services.CheckExecution(span);
                 switch (pending.Value.Operation)
                 {
                     case PendingTextFlushOperation.WriteText:
@@ -222,7 +222,7 @@ internal sealed partial class LythonRuntime
                     return;
                 }
 
-                _services.RegisterHostCall(span);
+                _services.CheckExecution(span);
                 switch (pending.Value.Operation)
                 {
                     case PendingTextFlushOperation.WriteText:

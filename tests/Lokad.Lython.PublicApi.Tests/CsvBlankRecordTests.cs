@@ -43,11 +43,9 @@ public sealed class CsvBlankRecordTests
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(true, true)]
-    public async Task EndlessBlankSourceHonorsExecutionLimitOrCancellation(bool asynchronous, bool cancel)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EndlessBlankSourceHonorsCancellation(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
         using var script = new LythonEngine().Compile("""
@@ -65,15 +63,15 @@ public sealed class CsvBlankRecordTests
         using var cancellation = new CancellationTokenSource();
         var callbacks = 0;
         var host = new MockLythonHost();
-        if (cancel) host.OnStandardOutputWrite = () => { if (++callbacks == 3) cancellation.Cancel(); };
-        var options = new LythonRunOptions { MaxExecutionSteps = 256, CancellationToken = cancellation.Token };
+        host.OnStandardOutputWrite = () => { if (++callbacks == 3) cancellation.Cancel(); };
+        var options = new LythonRunOptions { CancellationToken = cancellation.Token };
         using var result = asynchronous
             ? await script.RunAsync(host, options)
             : script.Run(host, options);
         Assert.False(result.Success);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains(cancel ? "execution canceled" : "maximum execution step count exceeded", result.Failure?.Message ?? "", StringComparison.Ordinal);
-        if (cancel) Assert.True(callbacks >= 3);
+        Assert.Contains("execution canceled", result.Failure?.Message ?? "", StringComparison.Ordinal);
+        Assert.True(callbacks >= 3);
         result.Dispose();
         Assert.Equal(baseline, budget.ReservedBytes);
         script.Dispose();

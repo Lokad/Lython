@@ -1,18 +1,15 @@
 using System.Globalization;
 using System.Numerics;
-using System.Text.Json;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class NativeScalarDispatchBoundaryTests(ITestOutputHelper output)
+public sealed class NativeScalarDispatchBoundaryTests
 {
-    private const int MaximumSteps = 10000;
 
     [Theory]
     [InlineData(false)]
@@ -114,15 +111,13 @@ public sealed class NativeScalarDispatchBoundaryTests(ITestOutputHelper output)
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public async Task EveryFuelBoundaryKeepsValuesErrorsPublicationAndCleanup(
+    public async Task ValuesErrorsPublicationAndCleanupMatchAcrossModes(
         string label, string source, object left, object right, object? expected, string? exception)
     {
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        long? synchronousSteps = null;
         foreach (var asynchronous in new[] { false, true })
         {
-            long steps;
             string? completedError = null;
             using (var owner = budget.CreateScope())
             {
@@ -131,7 +126,7 @@ public sealed class NativeScalarDispatchBoundaryTests(ITestOutputHelper output)
                 var failure = await Record.ExceptionAsync(async () => result = await Run(code, context, asynchronous));
                 if (exception is null)
                 {
-                    Assert.Null(failure);
+                    Assert.True(failure is null, label + ": " + failure);
                     Assert.Equal(expected, result);
                     Assert.Equal(expected!.GetType(), result!.GetType());
                 }
@@ -142,35 +137,16 @@ public sealed class NativeScalarDispatchBoundaryTests(ITestOutputHelper output)
                     completedError = Describe(error);
                     Assert.Same(left, context.Variables["left"]);
                 }
-                steps = context.Limits.ExecutionStepCount;
-                if (synchronousSteps is null) synchronousSteps = steps;
-                else Assert.Equal(synchronousSteps.Value, steps);
+
                 CheckCleanup(context);
             }
             Assert.Equal(0, budget.ReservedBytes);
-            var checkpoints = new List<string>();
-            for (var remaining = 0; remaining < steps; remaining++)
-            {
-                using (var owner = budget.CreateScope())
-                {
-                    var context = Prepare(owner, left, right);
-                    context.Limits.ExecutionStepCount = MaximumSteps - remaining;
-                    var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
-                    Assert.Equal(LythonFailureReason.ExecutionStepLimit, failure.Attribution?.Reason);
-                    Assert.Equal(MaximumSteps + 1, context.Limits.ExecutionStepCount);
-                    checkpoints.Add(Describe(failure) + ":left=" + context.Variables["left"].GetType().Name + ":" +
-                        Convert.ToString(context.Variables["left"], CultureInfo.InvariantCulture));
-                    CheckCleanup(context);
-                }
-                Assert.Equal(0, budget.ReservedBytes);
-            }
-            output.WriteLine("NATIVE_SCALAR_MATRIX:" + JsonSerializer.Serialize(new { label, asynchronous, steps, completedError, checkpoints }));
         }
     }
 
     private static Context Prepare(ILythonMemoryBudget owner, object left, object right)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionSteps = MaximumSteps });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
         context.Variables["left"] = left;
         context.Variables["right"] = right;
         return context;

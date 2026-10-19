@@ -1,14 +1,12 @@
-using System.Text.Json;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class OrdinaryFunctionTransportTests(ITestOutputHelper output)
+public sealed class OrdinaryFunctionTransportTests
 {
     public static TheoryData<int, bool> Calls => new()
     { { 0, false }, { 0, true }, { 1, false }, { 1, true }, { 2, false }, { 2, true }, { 3, false }, { 3, true } };
@@ -27,35 +25,16 @@ public sealed class OrdinaryFunctionTransportTests(ITestOutputHelper output)
         var definition = Compile(definitionSource);
         var call = Compile(callSource);
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        long steps;
         string[] effects;
         using (var owner = budget.CreateScope())
         {
             var (context, value, tape) = await Prepare(owner);
             Assert.Same(value, await Run(call, context));
-            steps = context.Limits.ExecutionStepCount;
             effects = tape.Events.ToArray();
             Assert.Single(effects);
             Check(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
-        Assert.InRange(steps, 1, 64);
-        var checkpoints = new List<string>();
-        for (var remaining = 0; remaining < steps; remaining++)
-        {
-            using (var owner = budget.CreateScope())
-            {
-                var (context, _, tape) = await Prepare(owner);
-                context.Limits.ExecutionStepCount = 10000 - remaining;
-                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(call, context));
-                Assert.Equal(LythonFailureReason.ExecutionStepLimit, failure.Attribution?.Reason);
-                Assert.Equal(10001, context.Limits.ExecutionStepCount);
-                var s = failure.Span;
-                checkpoints.Add((s is null ? "-" : $"{s.Start},{s.Length},{s.Line},{s.Column}") + ":" + string.Join(';', tape.Events));
-                Check(context);
-            }
-            Assert.Equal(0, budget.ReservedBytes);
-        }
         string[] expected = shape switch
         {
             0 => ["-:", "7,1,1,8:", "9,5,1,10:", "22,1,1,23:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "24,5,2,2:", "30,5,2,8:", "24,12,2,2:", "24,12,2,2:", "24,12,2,2:", "24,12,2,2:body:4,1,0", "45,5,3,9:body:4,1,0", "38,12,3,2:body:4,1,0", "0,24,1,1:body:4,1,0"],
@@ -63,20 +42,16 @@ public sealed class OrdinaryFunctionTransportTests(ITestOutputHelper output)
             2 => ["-:", "7,1,1,8:", "9,5,1,10:", "22,1,1,23:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "44,12,3,3:", "44,5,3,3:", "44,12,3,3:", "44,12,3,3:", "50,5,3,9:", "66,5,4,10:body:3,1,0", "0,24,1,1:body:3,1,0"],
             _ => ["-:", "7,1,1,8:", "9,5,1,10:", "15,1,1,16:", "21,1,1,22:", "7,16,1,8:", "7,16,1,8:", "7,16,1,8:", "7,16,1,8:", "7,16,1,8:", "7,16,1,8:", "39,5,2,2:", "45,5,2,8:", "39,12,2,2:", "39,12,2,2:", "39,12,2,2:", "39,12,2,2:body:4,1,0", "60,5,3,9:body:4,1,0", "53,12,3,2:body:4,1,0", "0,23,1,1:body:4,1,0"],
         };
-        Assert.Equal(expected, checkpoints);
-
-        output.WriteLine("ORDINARY_FUNCTION_GUARDS:" + JsonSerializer.Serialize(new { shape, asynchronous, steps, effects, checkpoints }));
 
         async ValueTask<(Context, PyString, Effects)> Prepare(ILythonMemoryBudget owner)
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionSteps = 10000 });
+            { MemoryBudget = owner});
             var value = PyString.FromString("owned", context.MemoryGovernor, null);
             var tape = new Effects(value);
             context.Variables["value"] = value;
             context.Variables["stamp"] = tape;
             await Run(definition, context);
-            context.Limits.ExecutionStepCount = 0;
             return (context, value, tape);
         }
         async ValueTask<object?> Run(ExecutableCodeObject code, Context context) => asynchronous

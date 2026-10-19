@@ -42,26 +42,14 @@ public sealed class DirectStringSplitTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task FuelAndSourceSpansKeepTheOrdinaryCallBoundary(bool asynchronous)
+    public async Task OrdinaryCallsPreserveResultsAndCleanup(bool asynchronous)
     {
-        for (var fuel = 1; fuel <= 8; fuel++)
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionSteps = fuel });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { });
             context.Variables["text"] = PyString.FromString("word", context.MemoryGovernor, null);
             var code = Compile("return text.split()");
-            if (fuel == 8)
-            {
                 var result = Assert.IsType<PyList>(await Execute(code, context, asynchronous));
                 Assert.Equal("word", Assert.IsType<PyString>(Assert.Single(result)).AsString());
-            }
-            else
-            {
-                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Execute(code, context, asynchronous));
-                Assert.Equal(LythonFailureReason.ExecutionStepLimit, failure.Attribution?.Reason);
-                Assert.Equal(fuel + 1, context.Limits.ExecutionStepCount);
-                var instructions = code.Blocks[code.EntryBlockIndex].InstructionArray;
-                Assert.Same(instructions[fuel <= 3 ? fuel - 1 : fuel == 7 ? 3 : 2].Span, failure.Span);
-            }
             AssertUnwound(context);
         }
     }

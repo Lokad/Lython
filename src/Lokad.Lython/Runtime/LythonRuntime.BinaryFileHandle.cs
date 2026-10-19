@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
             internal static async ValueTask<BinaryFileHandle> OpenAsync(string path, TextFileOperation operation,
                 ExecutionContext context, LythonSourceSpan span, bool asynchronous)
             {
-                context.RegisterHostCall(span);
+                context.CheckExecution(span);
                 var stat = asynchronous
                     ? await context.HostStatAsync(path, span).ConfigureAwait(false)
                     : context.HostStat(path, span);
@@ -134,7 +134,7 @@ internal sealed partial class LythonRuntime
                     _writeBuffer.WrittenSpan.Slice(offset, count).CopyTo(payload.AsSpan(offset, count));
                     offset += count;
                 }
-                _services.RegisterHostCall(span);
+                _services.CheckExecution(span);
                 if (_operation == TextFileOperation.Append || _published)
                 {
                     if (asynchronous) await _services.AppendHostBytesAsync(Path, payload, span).ConfigureAwait(false);

@@ -1,7 +1,5 @@
 using System.Globalization;
 using System.Numerics;
-using System.Text.Json;
-using Xunit.Abstractions;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -9,7 +7,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
+public sealed class JsonNumberTokenStorageTests
 {
     [Theory]
     [InlineData(false)]
@@ -150,7 +148,6 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
         var source = "import json\nreturn json.loads(source" + (callback ? "," + (floating ? "parse_float" : "parse_int") + "=capture)" : ")");
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        long steps;
         string[] effects;
         using (var owner = budget.CreateScope())
         {
@@ -163,67 +160,12 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
             }
             else if (floating) Assert.Equal(long.MinValue, BitConverter.DoubleToInt64Bits(Assert.IsType<double>(result)));
             else Assert.Equal(BigInteger.Parse(text, CultureInfo.InvariantCulture), Assert.IsType<BigInteger>(result));
-            steps = context.Limits.ExecutionStepCount;
             effects = capture.Events.ToArray();
             Assert.Equal(callback ? 1 : 0, capture.Calls);
             AssertUnwound(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
-        var checkpoints = new List<string>();
-        for (var remaining = 0; remaining < steps; remaining++)
-        {
-            using (var owner = budget.CreateScope())
-            {
-                var (context, capture) = Boundary(owner, text);
-                context.Limits.ExecutionStepCount = 10000 - remaining;
-                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
-                Assert.Equal(LythonFailureReason.ExecutionStepLimit, failure.Attribution?.Reason);
-                Assert.Equal(10001, context.Limits.ExecutionStepCount);
-                var location = failure.Span is { } span ? $"{span.Start},{span.Length},{span.Line},{span.Column}" : "-";
-                checkpoints.Add(location + ":" + string.Join(';', capture.Events));
-                AssertUnwound(context);
-            }
-            Assert.Equal(0, budget.ReservedBytes);
-        }
-        // Fuel, spans and argument effects were frozen on537f8903. Temporary
-        // reservation counts are internal accounting policy, not guest effects.
-        var expected = (floating, callback) switch
-        {
-            (false, false) => (16, Array.Empty<string>(), new[]
-            {
-                "-:", "0,11,1,1:", "-:", "19,4,2,8:",
-                "19,10,2,8:", "30,6,2,19:", "19,18,2,8:", "19,18,2,8:",
-                "19,18,2,8:", "19,18,2,8:", "19,18,2,8:", "19,18,2,8:",
-                "19,18,2,8:", "19,18,2,8:", "19,18,2,8:", "12,25,2,1:",
-            }),
-            (false, true) => (18, new[] { "4,0:-0" }, new[]
-            {
-                "-:", "0,11,1,1:", "-:", "19,4,2,8:",
-                "19,10,2,8:", "30,6,2,19:", "47,7,2,36:", "19,36,2,8:",
-                "19,36,2,8:", "19,36,2,8:", "19,36,2,8:", "19,36,2,8:",
-                "19,36,2,8:", "19,36,2,8:", "19,36,2,8:", "19,36,2,8:",
-                "19,36,2,8:", "12,43,2,1:4,0:-0",
-            }),
-            (true, false) => (15, Array.Empty<string>(), new[]
-            {
-                "-:", "0,11,1,1:", "-:", "19,4,2,8:",
-                "19,10,2,8:", "30,6,2,19:", "19,18,2,8:", "19,18,2,8:",
-                "19,18,2,8:", "19,18,2,8:", "19,18,2,8:", "19,18,2,8:",
-                "19,18,2,8:", "19,18,2,8:", "12,25,2,1:",
-            }),
-            (true, true) => (19, new[] { "4,0:1.2300e+04" }, new[]
-            {
-                "-:", "0,11,1,1:", "-:", "19,4,2,8:",
-                "19,10,2,8:", "30,6,2,19:", "49,7,2,38:", "19,38,2,8:",
-                "19,38,2,8:", "19,38,2,8:", "19,38,2,8:", "19,38,2,8:",
-                "19,38,2,8:", "19,38,2,8:", "19,38,2,8:", "19,38,2,8:",
-                "19,38,2,8:", "19,38,2,8:", "12,45,2,1:4,0:1.2300e+04",
-            }),
-        };
-        Assert.Equal(expected.Item1, steps);
-        Assert.Equal(expected.Item2, effects);
-        Assert.Equal(expected.Item3, checkpoints);
-        output.WriteLine("JSON_NUMBER_MATRIX:" + JsonSerializer.Serialize(new { asynchronous, floating, callback, steps, effects, checkpoints }));
+        Assert.Equal(callback ? new[] { "4,0:" + text } : Array.Empty<string>(), effects);
     }
 
     [Theory]
@@ -278,7 +220,7 @@ public sealed class JsonNumberTokenStorageTests(ITestOutputHelper output)
     private static (LythonRuntime.ExecutionContext Context, Capture Capture) Boundary(ILythonMemoryBudget owner, string text)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionSteps = 10000 });
+        { MemoryBudget = owner});
         context.Variables["source"] = PyString.FromString(text, context.MemoryGovernor, null);
         var capture = new Capture();
         context.Variables["capture"] = capture;

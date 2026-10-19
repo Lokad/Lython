@@ -4,12 +4,11 @@ using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
-using Xunit.Abstractions;
 using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper output)
+public sealed class ExecutableAugmentedIntegerBoundaryTests
 {
     private const string Source = "global left\nleft += right\n";
 
@@ -25,39 +24,21 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
     [InlineData("&")]
     [InlineData("<<")]
     [InlineData(">>")]
-    public void OtherIntegerOperatorsPreserveEveryFuelBoundary(string token)
+    public void OtherIntegerOperatorsPreserveResultsAndCleanup(string token)
     {
         var source = $"global left\nleft {token}= right\n";
-        var completed = Create("13", "4");
-        Run(completed, false, source);
-        Assert.Equal(6, completed.Limits.ExecutionStepCount);
-        for (var fuel = 0; fuel <= 6; fuel++)
+        var expected = Create("13", "4");
+        Run(expected, false, source);
+        (object Value, long Bytes)? synchronous = null;
+        foreach (var asynchronous in new[] { false, true })
         {
-            (object Value, long Bytes, LythonSourceSpan? Span)? synchronous = null;
-            foreach (var asynchronous in new[] { false, true })
-            {
-                var context = Create("13", "4");
-                var original = context.Variables["left"];
-                context.Limits.ExecutionStepCount = 1000 - fuel;
-                var failure = Record.Exception(() => Run(context, asynchronous, source));
-                if (fuel < 6)
-                {
-                    var error = Assert.IsType<LythonRuntimeException>(failure);
-                    Assert.Equal("maximum execution step count exceeded (1000)", error.Message);
-                    Assert.Equal(1001, context.Limits.ExecutionStepCount);
-                    if (fuel < 5) Assert.Same(original, context.Variables["left"]);
-                }
-                else
-                {
-                    Assert.Null(failure);
-                    Assert.Equal(completed.Variables["left"], context.Variables["left"]);
-                }
-                var observation = (context.Variables["left"], context.MemoryGovernor.CurrentAccountedBytes,
-                    (failure as LythonRuntimeException)?.Span);
-                if (asynchronous) Assert.Equal(synchronous!.Value, observation);
-                else synchronous = observation;
-                AssertUnwound(context);
-            }
+            var context = Create("13", "4");
+            Run(context, asynchronous, source);
+            Assert.Equal(expected.Variables["left"], context.Variables["left"]);
+            var observation = (context.Variables["left"], context.MemoryGovernor.CurrentAccountedBytes);
+            if (asynchronous) Assert.Equal(synchronous!.Value, observation);
+            else synchronous = observation;
+            AssertUnwound(context);
         }
     }
 
@@ -85,42 +66,9 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
             var integer = Assert.IsType<BigInteger>(result);
             var expectedFee = RuntimeMemoryEstimates.GetMagnitudeBitLength(integer) > 64
                 ? RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer) : 0;
-            Assert.Equal(6, context.Limits.ExecutionStepCount);
             Assert.Equal(expectedFee, context.MemoryGovernor.CurrentAccountedBytes - before);
-            output.WriteLine($"left={left}; steps={context.Limits.ExecutionStepCount}; fee={context.MemoryGovernor.CurrentAccountedBytes - before}");
             AssertUnwound(context);
             GC.KeepAlive(result);
-        }
-    }
-
-    [Fact]
-    public void EveryOpcodeFuelCutoffKeepsTheOriginalSpanAndPublicationPoint()
-    {
-        foreach (var asynchronous in new[] { false, true })
-        {
-            var completed = Create("4", "7");
-            Run(completed, asynchronous);
-            Assert.Equal(6, completed.Limits.ExecutionStepCount);
-            LythonSourceSpan?[] expectedSpans =
-            [null, new(12, 13, 2, 1), new(20, 5, 2, 9), new(12, 13, 2, 1), new(12, 13, 2, 1), new(0, 0, 0, 0)];
-            var spans = new List<LythonSourceSpan?>();
-            for (var fuel = 0; fuel < completed.Limits.ExecutionStepCount; fuel++)
-            {
-                var context = Create("4", "7");
-                var old = context.Variables["left"];
-                context.Limits.ExecutionStepCount = 1000 - fuel;
-                var error = Assert.Throws<LythonRuntimeException>(() => Run(context, asynchronous));
-                Assert.Equal("maximum execution step count exceeded (1000)", error.Message);
-                Assert.Null(error.SourcePath); // SourcePath is attached at the public result boundary.
-                Assert.Equal(1001, context.Limits.ExecutionStepCount);
-                if (fuel < 5) Assert.Same(old, context.Variables["left"]);
-                else Assert.Equal(new BigInteger(11), context.Variables["left"]);
-                output.WriteLine($"fuel={fuel}; left={context.Variables["left"]}; span={error.Span}");
-                spans.Add(error.Span);
-                AssertUnwound(context);
-            }
-            output.WriteLine($"steps={completed.Limits.ExecutionStepCount}; spans={string.Join(';', spans)}");
-            Assert.Equal(expectedSpans, spans);
         }
     }
 
@@ -145,8 +93,6 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
             Assert.True(governor.LastDeniedReservationBytes > available);
             Assert.Equal(governor.LastDeniedReservationBytes, error.Attribution?.Requested);
             Assert.Equal(new LythonSourceSpan(18, 13, 3, 1), error.Span);
-            Assert.Equal(padding.Steps + 4, context.Limits.ExecutionStepCount);
-            output.WriteLine($"available={available}; denied={governor.LastDeniedReservationBytes}; span={error.Span}; steps={context.Limits.ExecutionStepCount}");
             AssertUnwound(context);
         }
     }
@@ -171,26 +117,21 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
             Assert.Same(original, context.Variables["left"]);
             Assert.Equal(before + padding.Bytes, governor.CurrentCommittedBytes);
             Assert.True(governor.LastDeniedReservationBytes > 0);
-            Assert.Equal(padding.Steps + 4, context.Limits.ExecutionStepCount);
             AssertUnwound(context);
         }
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void FuelFailureStillPrecedesCancellation(bool fuelDenied)
+    [Fact]
+    public void CancellationPreventsMutation()
     {
         foreach (var asynchronous in new[] { false, true })
         {
             using var cancellation = new CancellationTokenSource();
             var context = Create("4", "7", cancellation.Token);
-            context.Limits.ExecutionStepCount = fuelDenied ? 1000 : 0;
             cancellation.Cancel();
             var error = Assert.Throws<LythonRuntimeException>(() => Run(context, asynchronous));
-            Assert.Equal(fuelDenied ? "maximum execution step count exceeded (1000)" : "execution canceled", error.Message);
+            Assert.Equal("execution canceled", error.Message);
             Assert.Null(error.Span);
-            Assert.Equal(fuelDenied ? 1001 : 1, context.Limits.ExecutionStepCount);
             AssertUnwound(context);
         }
     }
@@ -198,14 +139,12 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
     private sealed class BudgetPad(long available, PyString result) : LythonRuntime.ICallable
     {
         internal long Bytes;
-        internal long Steps;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             var governor = context.MemoryGovernor;
             Bytes = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes - available;
             governor.Reserve(Bytes, span);
             governor.Commit(Bytes);
-            Steps = context.Limits.ExecutionStepCount;
             return result;
         }
     }
@@ -214,7 +153,7 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests(ITestOutputHelper ou
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionSteps = 1000, MaxExecutionMemoryBytes = 1024 * 1024,
+            MaxExecutionMemoryBytes = 1024 * 1024,
             SourcePath = "/integer-augmentation.py", CancellationToken = cancellation
         });
         context.Variables["left"] = BigInteger.Parse(left, CultureInfo.InvariantCulture);

@@ -338,7 +338,7 @@ join failure. Earlier denial than the incremental lowered builder is possible;
 pending protocol callbacks and escaping text retain the same ownership protection.
 With exactly one formatted part, the executable join reuses that already
 observed and funded string instead of allocating another buffer and copy. Its
-instruction/fuel checkpoint remains. The original string and its owner survive
+cancellation check remains. The original string and its owner survive
 when returned or retained; the incremental lowered builder keeps its existing
 copying policy. This can permit a single-part expression under an allowance
 that previously rejected the redundant join.
@@ -439,19 +439,19 @@ Member augmented stores use the same two operands after the in-place operation;
 the receiver also remains live through getter/RHS suspension. Their executable
 path introduces no prepared-read dictionary, temporary owner or 1,024-byte working
 fee. Setter failure preserves any earlier in-place mutation, as Python requires.
-Instruction fuel and narrow admission thresholds can differ from lowered execution.
+Narrow admission thresholds can differ from lowered execution.
 Ordinary slice stores follow the same policy with five existing operand slots:
 RHS, receiver, start, stop and step. Native list replacement keeps its existing
 temporary-capacity and destination-overlap preflights; user/mapping slice keys
 keep their shell admission. No per-store owner or read dictionary is added.
-Additional header instructions can change narrow memory/fuel failure thresholds.
+Additional header instructions can change narrow memory-admission thresholds.
 Executable deletion similarly retains receiver, raw key and optional slice bounds
 in the existing operand frame until the awaited deletion ends, then clears them
 in finally. Name deletion uses existing frame-aware storage directly. It removes
 the read-array/dictionary capture and its fixed working reservation; no new
 storage, scope or ownership fee replaces them. Native deletion/key-construction
 preflights remain, and deleting a binding does not refund retained aliases.
-Instruction fuel, target spans and narrow admission thresholds can differ from
+Target spans and narrow admission thresholds can differ from
 the lowered path; no arbitrary-reference-withdrawal reclamation is promised.
 Native list-slice replacement uses the existing owned iteration lease through
 destination mutation, including suspended iterator callbacks. It no longer keeps

@@ -120,8 +120,6 @@ foreach (var payload in new[] { "[1,2,3]", "[4,5]" })
         AllowedBuiltinModules = new HashSet<string> { "json" },
         DisableLocalModuleImports = true,
         CancellationToken = deadline.Token,
-        MaxExecutionSteps = 100_000,
-        MaxHostCalls = 100,
         MaxCollectionSize = 10_000,
         MaxStringLength = 65_536,
         MaxHostReadBytes = 0,
@@ -136,10 +134,8 @@ foreach (var payload in new[] { "[1,2,3]", "[4,5]" })
 }
 ```
 
-`Consumption` reports registered host-call attempts and retained UTF-8 output
-bytes. Instruction work is measured only with explicit fuel; it counts runtime
-checkpoints and varies by execution backend. Omitting fuel keeps this field null.
-It is a containment measure, not a CPython performance metric. Cancellation is
+`Consumption` reports retained UTF-8 stdout/stderr bytes, including accepted
+capture bytes when output projection or a host write fails. Cancellation is
 cooperative, so the token does not promise a hard wall-clock deadline. Memory
 peaks report conservative accounting, independently from CLR heap size or RSS.
 
@@ -301,7 +297,7 @@ for the exact inventory.
 
 `re` is Unicode text-only and backed by `Utf8Regex.PythonRe`. It exposes common module helpers, compiled patterns, `finditer`, `Pattern` and `Match` attributes, named and optional group helpers, callable and template replacements, catchable `re.error`/`PatternError`, and the usual integer flags. `re.LOCALE` and `re.DEBUG` fail explicitly; bytes patterns and subjects remain outside the public bytes boundary.
 
-The current PythonRe 0.2.0 backend discovers all `finditer` matches before guest iteration. Its scratch allocation and work are not fully covered by Lython's memory and step budgets, and host cancellation cannot interrupt an in-progress backend call. Mixed named/unnamed capture numbering and nested `lastindex`/`lastgroup` also await backend corrections. These implementation gaps remain release work; see the measured scan costs in [benchmarks/Baselines.md](benchmarks/Baselines.md).
+The current PythonRe 0.2.0 backend discovers all `finditer` matches before guest iteration. Its scratch allocation and work are not fully covered by Lython's memory admission, and host cancellation cannot interrupt an in-progress backend call. Mixed named/unnamed capture numbering and nested `lastindex`/`lastgroup` also await backend corrections. These implementation gaps remain release work; see the measured scan costs in [benchmarks/Baselines.md](benchmarks/Baselines.md).
 
 `fnmatch` is deterministic and platform-independent. `fnmatch.fnmatch`, `fnmatch.fnmatchcase`, and `filter` use POSIX-like case-sensitive matching with `*`, `?`, bracket classes, negated classes, and ranges; `translate` returns an anchored regex string compatible with Lython `re`.
 
@@ -374,13 +370,16 @@ outcome-specific data.
 The important runtime guarantees are:
 
 - cooperative interruption through `CancellationToken`, with frequent checks across interpreter execution
-- an opt-in execution-step allowance for embedders requiring deterministic fuel
 - a recursion limit plus an internal interpreter-stack guard so Python recursion cannot turn into CLR stack overflow
-- conservative in-process size controls for strings, collections, host calls, and execution-memory growth
+- conservative in-process size controls for strings, collections, host reads, captured output, and execution-memory growth
 
 Unless `DisableDefaultLimits` is set, Lython applies practical defaults, including a 1 GiB execution-memory budget and a separate 1 GiB projection budget. Those guarantees are meant to make Lython safe to embed inside a host process, while keeping the programming model close to ordinary small Python.
 
-Ordinary execution has no implicit step cutoff. Embedders requiring a finite execution deadline must supply a cancellable token and arrange cancellation; memory bounds alone do not stop a non-allocating infinite loop. `MaxExecutionSteps` remains an enforced opt-in allowance for compatibility with existing embedders. `DefaultMaxExecutionSteps` retains its historical numeric value for source compatibility and is applied only when explicitly assigned to that option. Cancellation is cooperative: an in-progress operation must reach a checkpoint, and the regex backend limitation described above still applies.
+Execution-time control uses the host-supplied `CancellationToken`. The host
+must arrange cancellation when a finite deadline is required; memory bounds alone
+do not stop a non-allocating infinite loop. Lython imposes no instruction or
+host-call-count quota and does not measure those totals. Cancellation must reach
+a checkpoint; the regex backend limitation described above still applies.
 
 Cancellation checks surround bounded CLR/native conversion and parsing calls; those calls finish before the next checkpoint. Host implementations remain responsible for honoring their token during their own operations.
 
@@ -416,7 +415,7 @@ When those are provided:
 - `print()` writes to `sys.stdout`
 - `print(..., file=sys.stderr)` works naturally
 
-[`ILythonTiming`](src/Lokad.Lython/Host/ILythonTiming.cs) is the optional timing authority. Its monotonic epoch is intentionally opaque, its resolution is reported in nanoseconds, and its delay receives the run cancellation token. Every clock read, resolution query, and delay counts against the host-call budget. Synchronous execution accepts a delay only when the host completes it synchronously; an asynchronous timing provider is consumed through `RunAsync(...)`.
+[`ILythonTiming`](src/Lokad.Lython/Host/ILythonTiming.cs) is the optional timing authority. Its monotonic epoch is intentionally opaque, its resolution is reported in nanoseconds, and its delay receives the run cancellation token. Clock reads, resolution queries and delays retain cancellation checks and host authorization. Synchronous execution accepts a delay only when the host completes it synchronously; an asynchronous timing provider is consumed through `RunAsync(...)`.
 
 Process execution is also optional and host-mediated. [`ILythonSubprocessRunner`](src/Lokad.Lython/Host/ILythonSubprocessRunner.cs) receives a [`LythonSubprocessRequest`](src/Lokad.Lython/Host/LythonSubprocessRequest.cs) with:
 
@@ -446,7 +445,7 @@ The subprocess contract remains host-mediated:
 - no live PID, signals, unmanaged handles, or background process model behind `Popen`
 - no `getoutput` or `getstatusoutput`
 
-`Popen` construction is pure and does not claim that a process is already running. The facade buffers pipe input and sends exactly one ordinary host request when `communicate()`, `wait()`, a captured-output read, or context exit requires completion. Passing a prior facade's `stdout` pipe as the next facade's `stdin` forms a contained pipeline: downstream completion recursively completes upstream requests once, in order, and forwards bounded captured text in memory. A pipe can have only one downstream consumer; claimed, already-read, stderr, and prematurely closed endpoints fail explicitly. Per-request and cumulative pipeline output stay bounded by the run's output/string limit, host-call budgets still count every stage, and timeouts or cancellation apply throughout the chain. Async host runners are awaited only through `RunAsync(...)`. A host `TimeoutException` becomes a catchable, Python-shaped `TimeoutExpired`. This keeps Lython pipe-friendly without giving scripts ambient process authority. The embedding host decides whether subprocesses are available at all, and under what policy.
+`Popen` construction is pure and does not claim that a process is already running. The facade buffers pipe input and sends exactly one ordinary host request when `communicate()`, `wait()`, a captured-output read, or context exit requires completion. Passing a prior facade's `stdout` pipe as the next facade's `stdin` forms a contained pipeline: downstream completion recursively completes upstream requests once, in order, and forwards bounded captured text in memory. A pipe can have only one downstream consumer; claimed, already-read, stderr, and prematurely closed endpoints fail explicitly. Per-request and cumulative pipeline output stay bounded by the run's output/string limit, timeouts or cancellation apply throughout the chain. Async host runners are awaited only through `RunAsync(...)`. A host `TimeoutException` becomes a catchable, Python-shaped `TimeoutExpired`. This keeps Lython pipe-friendly without giving scripts ambient process authority. The embedding host decides whether subprocesses are available at all, and under what policy.
 
 `import openpyxl` provides a vanilla-Python-shaped subset for common `.xlsx`
 workbook automation. Workbook load/save uses host-mediated binary file
@@ -459,7 +458,7 @@ Lython is designed to fail inside the runtime rather than by escaping into unman
 - file and path effects are host-mediated through `ILythonHost`; scripts do not get ambient machine authority
 - an error-only static analyzer rejects many provable incompatibilities and structural mistakes before execution starts, instead of failing halfway through the script
 - cancellation is cooperative and checked frequently enough to stop runaway pure-Python work
-- execution steps, recursion depth, interpreter depth, host calls, string lengths, and collection sizes can all be bounded explicitly
+- recursion depth, interpreter depth, host reads, output bytes, string lengths, and collection sizes remain bounded
 - the main script-owned allocators and large `BigInteger` growth paths are governed by an execution-memory budget, so large runtime materializations fail as ordinary `RuntimeError` results
 - host-facing projection is governed separately through an optional projection budget, and projection overflow surfaces distinctly as `ProjectionError`
 

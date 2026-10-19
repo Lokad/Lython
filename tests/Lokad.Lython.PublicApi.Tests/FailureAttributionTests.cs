@@ -8,10 +8,8 @@ public sealed class FailureAttributionTests
     {
         var cases = new[]
         {
-            ("while True:\n    pass", LythonFailureReason.ExecutionStepLimit, 32L),
             ("def f():\n    return f()\nf()", LythonFailureReason.RecursionDepthLimit, 3L),
             ("def f():\n    return f()\nf()", LythonFailureReason.InterpreterStackLimit, 512L),
-            ("while True:\n    f = open('/empty')\n    f.close()", LythonFailureReason.HostCallLimit, 5L),
             ("return [1, 2, 3]", LythonFailureReason.CollectionSizeLimit, 2L),
             ("return 'abc'", LythonFailureReason.StringLengthLimit, 2L),
             ("with open('/input') as f:\n    return f.read()", LythonFailureReason.HostReadLimit, 2L),
@@ -44,8 +42,6 @@ public sealed class FailureAttributionTests
         // Managed stack admission may trip before the fixed depth bound.
         if (reason != LythonFailureReason.InterpreterStackLimit || attribution.Limit is not null)
             Assert.Equal(limit, attribution.Limit);
-        if (reason is LythonFailureReason.ExecutionStepLimit or LythonFailureReason.HostCallLimit)
-            Assert.Equal(limit + 1, attribution.Observed);
         if (reason is LythonFailureReason.CollectionSizeLimit or LythonFailureReason.StringLengthLimit or LythonFailureReason.HostReadLimit)
             Assert.Equal(3, attribution.Observed);
         if (reason is LythonFailureReason.ExecutionMemoryLimit or LythonFailureReason.ProjectionMemoryLimit)
@@ -168,10 +164,8 @@ public sealed class FailureAttributionTests
 
     private static LythonRunOptions Options(LythonFailureReason reason, long limit) => reason switch
     {
-        LythonFailureReason.ExecutionStepLimit => new() { MaxExecutionSteps = (int)limit },
         LythonFailureReason.RecursionDepthLimit => new() { MaxRecursionDepth = (int)limit },
         LythonFailureReason.InterpreterStackLimit => new() { MaxRecursionDepth = 1024 },
-        LythonFailureReason.HostCallLimit => new() { MaxHostCalls = (int)limit },
         LythonFailureReason.CollectionSizeLimit => new() { MaxCollectionSize = (int)limit },
         LythonFailureReason.StringLengthLimit => new() { MaxStringLength = (int)limit },
         LythonFailureReason.HostReadLimit => new() { MaxHostReadBytes = limit },
