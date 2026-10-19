@@ -167,3 +167,4 @@ benchmarks/results/2026-10-19-list-display-rejected/candidate.patch -text -white
 benchmarks/results/2026-10-19-list-capacity/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-19-list-capacity/candidate.patch -text -whitespace
 benchmarks/results/2026-10-19-list-capacity/extension.patch -text -whitespace
+benchmarks/results/2026-10-19-list-capacity/repetition.patch -text -whitespace

@@ -60,3 +60,20 @@ their supplied root. Eight selected large-scale controls pass locally; the six
 float-conversion cases pass unchanged in focused runs, with no deadline changes.
 Both explicit Release package consumers pass at `bb38b2f0`. Final cross-platform
 ordinary/Stress/package qualification is pending; no full green is claimed here.
+
+Follow-up CI 39329648008 passes both platforms' Release build, ordinary suite and
+package consumers, then finds one Stress failure: list repetition's old success
+allowance is exceeded. Inspection identifies unnecessary storage in the native
+helper: a new source snapshot for every repetition. `954394b3` uses the existing
+admitted-capacity constructor and direct reference copying, with in-loop
+cancellation and private-destination rollback. The failing Stress case now passes
+at its **unchanged scale, batch size and allowance**. No fixture budget increase
+is used for this correction.
+
+37 focused public controls pass, including cyclic alias semantics, zero/negative
+repetition, retained-result funding and sequential budget cleanup under both APIs.
+The [independent CPython control](repetition-control.py) gives the same values.
+Both explicit Release package consumers pass at `954394b3`.
+[Patch](repetition.patch) and [qualification receipts](repetition-qualification.json)
+preserve the evidence. Final full requalification is pending. No new timing capture
+or performance claim follows; the earlier diagnostic remains historical.
