@@ -10,7 +10,6 @@ public sealed class ArgparseLiveChoicesTests
     private static LythonRunOptions Tiny() => new()
     {
         MemoryBudget = new LythonMemoryBudget(65536),
-        MaxCollectionSize = 10,
     };
 
     [Fact]

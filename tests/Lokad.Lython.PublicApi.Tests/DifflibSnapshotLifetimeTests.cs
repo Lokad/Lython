@@ -112,7 +112,7 @@ public sealed class DifflibSnapshotLifetimeTests
             return len(v)
             """;
         var script = new LythonEngine().Compile(code);
-        AssertDenied(script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536), MaxCollectionSize = 10 }));
+        AssertDenied(script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536)}));
     }
 
     [Fact]

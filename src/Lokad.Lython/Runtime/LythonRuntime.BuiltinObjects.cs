@@ -96,7 +96,7 @@ internal sealed partial class LythonRuntime
             foreach (var item in ToSequence(arguments[0], span, context))
             {
                 result.Add(item);
-                context.ObserveCollectionCount(result.Count, span);
+                context.CheckExecution(span);
             }
             return result;
         }
@@ -121,7 +121,7 @@ internal sealed partial class LythonRuntime
             await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
             {
                 result.Add(item);
-                context.ObserveCollectionCount(result.Count, span);
+                context.CheckExecution(span);
                 if ((result.Count & 63) == 0) context.CheckExecution(span);
             }
             return result;
@@ -142,7 +142,7 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PyTuple(ToSequence(arguments[0], span, context), context.MemoryGovernor, span);
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 
@@ -160,7 +160,7 @@ internal sealed partial class LythonRuntime
 
         var items = await PyIteration.MaterializeAsync(arguments[0], span, context).ConfigureAwait(false);
         var result = new PyTuple(items, context.MemoryGovernor, span);
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 
@@ -179,7 +179,7 @@ internal sealed partial class LythonRuntime
         if (arguments[0] is PyDict sourceDict)
         {
             var copied = new PyDict(sourceDict, context.MemoryGovernor, span);
-            context.ObserveCollectionCount(copied.Count, span);
+            context.CheckExecution(span);
             return copied;
         }
 
@@ -207,7 +207,7 @@ internal sealed partial class LythonRuntime
             result.SetItem(ValidateDictionaryKey(key, span), value);
         }
 
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 
@@ -426,7 +426,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 
@@ -455,7 +455,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 
@@ -636,7 +636,7 @@ internal sealed partial class LythonRuntime
         }
 
         ApplyUpdateKeywords(target, arguments, context, span);
-        context.ObserveCollectionCount(target.Count, span);
+        context.CheckExecution(span);
         return PyNone.Instance;
     }
 
@@ -659,7 +659,7 @@ internal sealed partial class LythonRuntime
         }
 
         ApplyUpdateKeywords(target, arguments, context, span);
-        context.ObserveCollectionCount(target.Count, span);
+        context.CheckExecution(span);
         return PyNone.Instance;
     }
 
@@ -923,7 +923,7 @@ internal sealed partial class LythonRuntime
     {
         var globalContext = GetGlobalContext(context);
         var scope = globalContext.GlobalNamespace ?? CreateGlobalNamespace(globalContext, span);
-        context.ObserveCollectionCount(scope.Count, span);
+        context.CheckExecution(span);
         return scope;
     }
 
@@ -979,7 +979,7 @@ internal sealed partial class LythonRuntime
                     else scope.Remove(key);
                 }
 
-        context.ObserveCollectionCount(scope.Count, span);
+        context.CheckExecution(span);
         return scope;
     }
 
@@ -1002,7 +1002,7 @@ internal sealed partial class LythonRuntime
                 foreach (var pair in instance.EnumerateOwnAttributes())
                 {
                     result.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
-                    context.ObserveCollectionCount(result.Count, span);
+                    context.CheckExecution(span);
                 }
 
                 return result;
@@ -1011,7 +1011,7 @@ internal sealed partial class LythonRuntime
                 foreach (var pair in type.EnumerateOwnMembers())
                 {
                     result.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
-                    context.ObserveCollectionCount(result.Count, span);
+                    context.CheckExecution(span);
                 }
 
                 return result;
@@ -1023,7 +1023,7 @@ internal sealed partial class LythonRuntime
                     if (TryResolveRuntimeMember(module, name, context, span, out var value))
                     {
                         result.SetItem(PyString.FromString(name, context.MemoryGovernor, span), value);
-                        context.ObserveCollectionCount(result.Count, span);
+                        context.CheckExecution(span);
                     }
                 }
 

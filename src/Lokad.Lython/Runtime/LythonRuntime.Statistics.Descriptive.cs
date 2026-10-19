@@ -422,7 +422,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 _count++;
-                context.ObserveCollectionCount(_count, span);
+                context.CheckExecution(span);
                 if ((_count & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -1251,7 +1251,7 @@ internal sealed partial class LythonRuntime
             // times, before validating the method.
             if (originals.Count == 1)
             {
-                context.ObserveCollectionCount(n - 1, span);
+                { _ = n - 1; context.CheckExecution(span); }
                 var single = new List<object>(Math.Max(n - 1, 0));
                 for (var i = 1; i < n; i++)
                 {
@@ -1285,7 +1285,7 @@ internal sealed partial class LythonRuntime
             // N04: preflight output count/capacity; reserve scratch before it can allocate,
             // keep it alive through governed construction; check work during the fill.
             var outputCount = n - 1;
-            context.ObserveCollectionCount(outputCount, span);
+            context.CheckExecution(span);
             using var cutScratch = context.MemoryGovernor.ReserveTemporary(checked(8L * outputCount), span);
             var cutPoints = new List<object>(outputCount);
             var count = values.Count;
@@ -1322,7 +1322,7 @@ internal sealed partial class LythonRuntime
             // times, before validating the method.
             if (originals.Count == 1)
             {
-                context.ObserveCollectionCount(n - 1, span);
+                { _ = n - 1; context.CheckExecution(span); }
                 var single = new List<object>(Math.Max(n - 1, 0));
                 for (var i = 1; i < n; i++)
                 {
@@ -1354,7 +1354,7 @@ internal sealed partial class LythonRuntime
             }
 
             var outputCount = n - 1;
-            context.ObserveCollectionCount(outputCount, span);
+            context.CheckExecution(span);
             using var cutScratch = context.MemoryGovernor.ReserveTemporary(checked(8L * outputCount), span);
             var cutPoints = new List<object>(outputCount);
             var count = values.Count;
@@ -1778,7 +1778,7 @@ internal sealed partial class LythonRuntime
                     chargedCapacity = values.Capacity;
                 }
 
-                context.ObserveCollectionCount(values.Count, span);
+                context.CheckExecution(span);
                 if ((values.Count & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -1832,7 +1832,7 @@ internal sealed partial class LythonRuntime
                     chargedCapacity = values.Capacity;
                 }
 
-                context.ObserveCollectionCount(values.Count, span);
+                context.CheckExecution(span);
                 if ((values.Count & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -1916,7 +1916,7 @@ internal sealed partial class LythonRuntime
                     chargedCapacity = values.Capacity;
                 }
 
-                context.ObserveCollectionCount(values.Count, span);
+                context.CheckExecution(span);
                 if ((values.Count & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -1961,7 +1961,7 @@ internal sealed partial class LythonRuntime
                     chargedCapacity = values.Capacity;
                 }
 
-                context.ObserveCollectionCount(values.Count, span);
+                context.CheckExecution(span);
                 if ((values.Count & 63) == 0)
                 {
                     context.CheckExecution(span);

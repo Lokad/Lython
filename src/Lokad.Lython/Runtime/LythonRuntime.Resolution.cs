@@ -449,7 +449,7 @@ internal sealed partial class LythonRuntime
             context,
             scope => result.Add(RuntimeValue(EvaluateExpression(comprehension.ItemExpression, scope))), outer);
 
-        context.ObserveCollectionCount(result.Count, comprehension.Span);
+        context.CheckExecution(comprehension.Span);
         return result;
     }
 
@@ -471,7 +471,7 @@ internal sealed partial class LythonRuntime
                 result.Add(item);
             }, outer);
 
-        context.ObserveCollectionCount(result.Count, comprehension.Span);
+        context.CheckExecution(comprehension.Span);
         return result;
     }
 
@@ -491,7 +491,7 @@ internal sealed partial class LythonRuntime
                 result.SetItem(key, RuntimeValue(EvaluateExpression(comprehension.ValueExpression, scope)));
             }, outer);
 
-        context.ObserveCollectionCount(result.Count, comprehension.Span);
+        context.CheckExecution(comprehension.Span);
         return result;
     }
 

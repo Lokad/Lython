@@ -38,15 +38,4 @@ public sealed class UrlPercentAccountingTests
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
     }
-
-    [Fact]
-    public void QuotedLengthIsDeniedBeforeOutputAllocation()
-    {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxStringLength = 2 });
-        var before = context.MemoryGovernor.CurrentCommittedBytes;
-        Assert.Contains("maximum string length", Assert.Throws<LythonRuntimeException>(() =>
-            LythonRuntime.UrllibParseModule.QuoteBytes(new byte[] { 0xff }, default, false, context, Span)).Message);
-        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-    }
 }

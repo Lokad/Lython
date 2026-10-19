@@ -481,10 +481,9 @@ internal sealed partial class Parser
         const string prefix = "value = (";
         var tokens = FormattedStringTokenization.Read(prefix + expressionText + "\n)\n");
         if (tokens.HasInvalidTokens) return false;
-        var frontend = new Parser(tokens)
+        var frontend = new Parser(tokens, _memoryGovernor)
         {
             _privateNames = _privateNames,
-            _privateNameExpansion = _privateNameExpansion,
             _nestingDepth = _nestingDepth + 1,
             _spanSourceTokens = _spanSourceTokens ?? _tokens,
             _spanOffset = expressionStart - prefix.Length
@@ -493,8 +492,6 @@ internal sealed partial class Parser
         {
             if (frontend.Diagnostics.Any(diagnostic => diagnostic.Message == UnsupportedNamedUnicodeEscapeMessage))
                 message = UnsupportedNamedUnicodeEscapeMessage;
-            else if (frontend.Diagnostics.Any(diagnostic => diagnostic.Code == "LA0004"))
-                message = PrivateNameExpansionLimitMessage;
             else if (frontend.Diagnostics.Any(diagnostic => diagnostic.Code == "LA0003"))
                 message = SyntaxNestingLimitMessage;
             return false;

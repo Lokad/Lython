@@ -392,7 +392,7 @@ internal sealed partial class LythonRuntime
 
         ChargeImportedModule(context, null);
         context.State.ImportedModules[moduleName] = module;
-        context.ObserveCollectionCount(context.State.ImportedModules.Count, null);
+        context.CheckExecution(null);
         return true;
     }
 
@@ -405,7 +405,7 @@ internal sealed partial class LythonRuntime
     {
         var estimate = RuntimeMemoryEstimates.EstimateCompilationBytes(source.Length);
         using var code = context.MemoryGovernor.ReserveTemporary(estimate, span);
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source, context.MemoryGovernor);
         if (frontend.Script is null || frontend.Diagnostics.Count != 0)
         {
             var diagnostic = frontend.Diagnostics.FirstOrDefault();
@@ -436,7 +436,7 @@ internal sealed partial class LythonRuntime
         var loaded = new ScriptPyModule(moduleName, moduleContext, span);
         ChargeImportedModule(context, span);
         context.State.ImportedModules[moduleName] = loaded;
-        context.ObserveCollectionCount(context.State.ImportedModules.Count, span);
+        context.CheckExecution(span);
         return loaded;
     }
 

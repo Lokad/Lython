@@ -119,8 +119,7 @@ public sealed class ListConstructionHandoffTests
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MemoryBudget = owner,             MaxCollectionSize = shape == "limit" ? 1 : 100,
-        });
+            MemoryBudget = owner,                     });
         var events = new List<string>();
         var count = shape.Contains("empty", StringComparison.Ordinal) ? 0 : shape.Contains("wide", StringComparison.Ordinal) ? 65 : 2;
         context.Variables["source"] = shape.StartsWith("known", StringComparison.Ordinal)

@@ -567,7 +567,7 @@ internal sealed partial class LythonRuntime
                         context.CheckExecution(span);
                     }
 
-                    context.ObserveCollectionCount(count, span);
+                    context.CheckExecution(span);
                 }
 
                 return plans;
@@ -581,7 +581,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 plans.Add(PlanExtraction(ResolveInfoTarget(_infos[i], span), destination, span));
-                context.ObserveCollectionCount(plans.Count, span);
+                context.CheckExecution(span);
             }
 
             return plans;
@@ -1336,7 +1336,7 @@ internal sealed partial class LythonRuntime
             // so a failed staging leaves the archive contents untouched.
             ZipRecordWriter.RequireRecordFieldWidths(nameBytes, comment, extra, span);
             context.CheckExecution(span);
-            context.ObserveCollectionCount(_staged.Count + 1, span);
+            { _ = _staged.Count + 1; context.CheckExecution(span); }
             _didModify = true;
             var charge = checked(StagedEntryBaseBytes + data.Length + nameBytes.Length + comment.Length + extra.Length);
             context.MemoryGovernor.Reserve(charge, span);

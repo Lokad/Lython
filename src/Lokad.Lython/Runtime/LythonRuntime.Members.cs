@@ -122,7 +122,7 @@ internal sealed partial class LythonRuntime
         {
             list.AttachMemoryGovernor(context.MemoryGovernor, span);
             list.Add(value);
-            context.ObserveCollectionCount(list.Count, span);
+            context.CheckExecution(span);
             return PyNone.Instance;
         }
 
@@ -140,7 +140,7 @@ internal sealed partial class LythonRuntime
 
                     list.AttachMemoryGovernor(context.MemoryGovernor, span);
                     list.AddRange(ToSequence(arguments[0], span, context), context, span);
-                    context.ObserveCollectionCount(list.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }, ListExtendSignature, async (arguments, span, context) =>
                 {
@@ -151,7 +151,7 @@ internal sealed partial class LythonRuntime
 
                     list.AttachMemoryGovernor(context.MemoryGovernor, span);
                     await list.AddRangeAsync(arguments[0], context, span).ConfigureAwait(false);
-                    context.ObserveCollectionCount(list.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }),
                 "index" => BoundCallable.Create((arguments, span, context) =>
@@ -201,7 +201,7 @@ internal sealed partial class LythonRuntime
                     var index = ExpectListInsertIndex(arguments[0], context, span);
                     list.AttachMemoryGovernor(context.MemoryGovernor, span);
                     list.Insert(index, arguments[1]);
-                    context.ObserveCollectionCount(list.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }, ListInsertSignature),
                 "remove" => BoundCallable.Create((arguments, span, context) =>
@@ -2182,7 +2182,7 @@ internal sealed partial class LythonRuntime
 
                     dict.AttachMemoryGovernor(context.MemoryGovernor, span);
                     UpdateDictionaryFromSource(dict, arguments[0], context, span);
-                    context.ObserveCollectionCount(dict.Count, span);
+                    context.CheckExecution(span);
                     return dict;
                 }, DictIOrSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, context) =>
@@ -3522,7 +3522,7 @@ internal sealed partial class LythonRuntime
 
                     dict.AttachMemoryGovernor(context.MemoryGovernor, span);
                     UpdateDictionaryFromSource(dict.InnerDict, arguments[0], context, span);
-                    context.ObserveCollectionCount(dict.Count, span);
+                    context.CheckExecution(span);
                     return dict;
                 }, DefaultDictIOrSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, context) =>

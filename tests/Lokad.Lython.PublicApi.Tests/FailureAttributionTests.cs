@@ -10,11 +10,6 @@ public sealed class FailureAttributionTests
         {
             ("def f():\n    return f()\nf()", LythonFailureReason.RecursionDepthLimit, 3L),
             ("def f():\n    return f()\nf()", LythonFailureReason.InterpreterStackLimit, 512L),
-            ("return [1, 2, 3]", LythonFailureReason.CollectionSizeLimit, 2L),
-            ("return 'abc'", LythonFailureReason.StringLengthLimit, 2L),
-            ("with open('/input') as f:\n    return f.read()", LythonFailureReason.HostReadLimit, 2L),
-            ("print('abc')", LythonFailureReason.StandardOutputLimit, 2L),
-            ("import sys\nsys.stderr.write('abc')", LythonFailureReason.StandardErrorLimit, 2L),
             ("return 1", LythonFailureReason.SharedMemoryAllowance, 0L),
         };
         foreach (var (source, reason, limit) in cases)
@@ -41,8 +36,6 @@ public sealed class FailureAttributionTests
         // Managed stack admission may trip before the fixed depth bound.
         if (reason is not LythonFailureReason.InterpreterStackLimit and not LythonFailureReason.SharedMemoryAllowance || attribution.Limit is not null)
             Assert.Equal(limit, attribution.Limit);
-        if (reason is LythonFailureReason.CollectionSizeLimit or LythonFailureReason.StringLengthLimit or LythonFailureReason.HostReadLimit)
-            Assert.Equal(3, attribution.Observed);
         if (reason is LythonFailureReason.SharedMemoryAllowance)
         {
             Assert.Equal(0, attribution.Observed);
@@ -165,11 +158,6 @@ public sealed class FailureAttributionTests
     {
         LythonFailureReason.RecursionDepthLimit => new() { MaxRecursionDepth = (int)limit },
         LythonFailureReason.InterpreterStackLimit => new() { MaxRecursionDepth = 1024 },
-        LythonFailureReason.CollectionSizeLimit => new() { MaxCollectionSize = (int)limit },
-        LythonFailureReason.StringLengthLimit => new() { MaxStringLength = (int)limit },
-        LythonFailureReason.HostReadLimit => new() { MaxHostReadBytes = limit },
-        LythonFailureReason.StandardOutputLimit => new() { MaxStandardOutputBytes = limit },
-        LythonFailureReason.StandardErrorLimit => new() { MaxStandardErrorBytes = limit },
         LythonFailureReason.SharedMemoryAllowance => new() { MemoryBudget = new LythonMemoryBudget(limit) },
         _ => throw new ArgumentOutOfRangeException(nameof(reason)),
     };

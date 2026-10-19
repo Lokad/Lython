@@ -367,7 +367,7 @@ internal sealed partial class LythonRuntime
                             if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern))
                             {
                                 results.Add(OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)),path.Value,context.MemoryGovernor,span));
-                                context.ObserveCollectionCount(results.Count, span);
+                                context.CheckExecution(span);
                             }
                         }
 
@@ -386,7 +386,7 @@ internal sealed partial class LythonRuntime
                             if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern))
                             {
                                 results.Add(OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)),path.Value,context.MemoryGovernor,span));
-                                context.ObserveCollectionCount(results.Count, span);
+                                context.CheckExecution(span);
                             }
                         }
 
@@ -429,7 +429,7 @@ internal sealed partial class LythonRuntime
                     "write_text" => BoundCallable.Create((arguments, span, context) =>
                     {
                         var (text, encodingMode, errors, newline) = ParsePathWriteTextArguments(arguments, span);
-                        context.ObserveString(text, span);
+                        context.CheckExecution(span);
                         using var reservation = ReserveUtf16Output(text, encodingMode, newline, context, span);
                         var payload = EncodePathText(text, encodingMode, errors, newline, context, span, reservation is not null);
                         context.CheckExecution(span);
@@ -439,7 +439,7 @@ internal sealed partial class LythonRuntime
                     PathWriteTextSignature, async (arguments, span, context) =>
                     {
                         var (text, encodingMode, errors, newline) = ParsePathWriteTextArguments(arguments, span);
-                        context.ObserveString(text, span);
+                        context.CheckExecution(span);
                         using var reservation = ReserveUtf16Output(text, encodingMode, newline, context, span);
                         var payload = EncodePathText(text, encodingMode, errors, newline, context, span, reservation is not null);
                         context.CheckExecution(span);
@@ -454,7 +454,7 @@ internal sealed partial class LythonRuntime
                         foreach (var item in EnumerateRecursive(path.Value, pattern, context, span))
                         {
                             results.Add(item);
-                            context.ObserveCollectionCount(results.Count, span);
+                            context.CheckExecution(span);
                         }
 
                         return results;

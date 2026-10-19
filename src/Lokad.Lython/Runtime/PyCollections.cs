@@ -83,7 +83,7 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
         };
 
         _items.SetItem(key, created);
-        context.ObserveCollectionCount(Count, span);
+        context.CheckExecution(span);
         return created;
     }
 

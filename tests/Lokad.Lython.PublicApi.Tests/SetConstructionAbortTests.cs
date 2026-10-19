@@ -115,31 +115,6 @@ public sealed class SetConstructionAbortTests
     }
 
     [Fact]
-    public async Task RepeatedCollectionDenialsKeepPrivateConstructionBounded()
-    {
-        var (script, budget) = Compile("""
-            caught = 0
-            for i in range(5000):
-                try:
-                    set(range(5))
-                except RuntimeError:
-                    caught += 1
-            return caught
-            """);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(OneMib), MaxCollectionSize = 3 };
-        using var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(16), sync.ReturnValue);
-        using var asynchronous = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asynchronous.Success, asynchronous.Failure?.Message);
-        Assert.Equal(new BigInteger(16), asynchronous.ReturnValue);
-        sync.Dispose();
-        asynchronous.Dispose();
-        script.Dispose();
-        Assert.Equal(0, budget.ReservedBytes);
-    }
-
-    [Fact]
     public async Task FailedLiveUpdateKeepsItsPartialMutationAndCharge()
     {
         var (script, budget) = Compile("""

@@ -1,21 +1,15 @@
 using System.Globalization;
 using System.Text;
 using Lokad.Lython.Runtime.Numbers;
+using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Frontend;
-
-internal sealed class AnnotationTextLimitException(LythonSourceSpan span) : Exception
-{
-    public LythonSourceSpan Span { get; } = span;
-}
 
 // Python 3.13 postponed annotations use the canonical expression spelling from
 // Python/ast_unparse.c, which differs from both source text and ast.unparse().
 // Source spans recover lexical names before class-private binding mangling.
 internal static class PostponedAnnotationText
 {
-    internal const int MaximumCharacters = 8_000_000;
-
     public static IEnumerable<LythonDiagnostic> Validate(ScriptSyntax script)
     {
         var beginning = true;
@@ -75,11 +69,10 @@ internal static class PostponedAnnotationText
         }
     }
 
-    public static void Attach(ScriptSyntax script, string source)
+    public static void Attach(ScriptSyntax script, string source, MemoryGovernor? governor = null)
     {
         if (!script.Statements.OfType<ImportStatementSyntax>().Any(import => import.ModuleName == "__future__" &&
             import.ImportedMembers?.Any(member => member.Name == "annotations") == true)) return;
-        var remaining = MaximumCharacters;
         var statements = new Stack<StatementSyntax>(script.Statements.Reverse());
         while (statements.TryPop(out var statement))
         {
@@ -97,14 +90,13 @@ internal static class PostponedAnnotationText
         void Store(ExpressionSyntax expression)
         {
             if (expression.PostponedAnnotationText is not null) return;
-            expression.PostponedAnnotationText = new Writer(source, remaining).Format(expression);
-            remaining -= expression.PostponedAnnotationText.Length;
+            expression.PostponedAnnotationText = new Writer(source, governor).Format(expression);
         }
     }
 
     // Use an explicit work stack: long flat operator chains must not consume
     // the CLR stack while their canonical annotation spelling is constructed.
-    private sealed class Writer(string source, int maximum)
+    private sealed class Writer(string source, MemoryGovernor? governor)
     {
         private readonly record struct Fragment(ExpressionSyntax? Expression, string? Text, int Minimum = 1);
         private readonly StringBuilder _text = new();
@@ -116,17 +108,34 @@ internal static class PostponedAnnotationText
         public string Format(ExpressionSyntax expression, int minimum = 1)
         {
             _span = expression.Span;
+            using var storage = governor?.ReserveTemporary(0, _span);
+            var funded = 0;
             _pending.Push(E(expression, minimum));
             while (_pending.TryPop(out var fragment))
             {
                 if (fragment.Text is not null)
                 {
-                    if (fragment.Text.Length > maximum - _text.Length) throw new AnnotationTextLimitException(_span);
+                    AdmitCapacity(storage, ref funded, checked((long)_text.Length + fragment.Text.Length));
                     _text.Append(fragment.Text);
                 }
                 else Emit(fragment.Expression!, fragment.Minimum);
             }
-            return _text.ToString();
+            var result = _text.ToString();
+            storage?.Commit(result.Length == 0 ? 0 : 32L + 2L * result.Length);
+            return result;
+        }
+
+        // Fund a complete replacement, final UTF-16 string and construction overlap.
+        // Grow at capacity boundaries; this is working storage, not a character policy.
+        private void AdmitCapacity(MemoryGovernor.TemporaryMemoryReservation? storage, ref int funded, long required)
+        {
+            if (required > int.MaxValue)
+                throw RuntimeErrors.Attributed("MemoryError", "annotation text exceeds the string representation", _span,
+                    LythonFailureReason.ByteBufferCapacityLimit);
+            if (required <= funded) return;
+            var next = (int)Math.Min(int.MaxValue, Math.Max(required, Math.Max(16L, 2L * funded)));
+            storage?.Grow((funded == 0 ? 128L : 0L) + 8L * (next - funded), _span);
+            funded = next;
         }
 
         private void Queue(IEnumerable<Fragment> parts)
@@ -422,22 +431,30 @@ internal static class PostponedAnnotationText
 
         private string FormattedBody(IReadOnlyList<FormattedStringPartSyntax> parts)
         {
+            using var storage = governor?.ReserveTemporary(0, _span);
+            var funded = 0;
             var builder = new StringBuilder();
             foreach (var part in parts)
             {
-                if (part is FormattedStringTextPartSyntax text) builder.Append(text.Text.Replace("{", "{{", StringComparison.Ordinal).Replace("}", "}}", StringComparison.Ordinal));
+                if (part is FormattedStringTextPartSyntax text)
+                {
+                    AdmitCapacity(storage, ref funded, checked(builder.Length + 4L * text.Text.Length));
+                    builder.Append(text.Text.Replace("{", "{{", StringComparison.Ordinal).Replace("}", "}}", StringComparison.Ordinal));
+                }
                 else if (part is FormattedStringExpressionPartSyntax field)
                 {
-                    var expression = new Writer(source, maximum).Format(field.Expression, 2);
+                    var expression = new Writer(source, governor).Format(field.Expression, 2);
+                    var specifier = field.FormatSpecifierParts is not null ? FormattedBody(field.FormatSpecifierParts) : field.FormatSpecifier;
+                    AdmitCapacity(storage, ref funded, checked(8L + builder.Length + expression.Length + (specifier?.Length ?? 0)));
                     builder.Append(expression.StartsWith('{') ? "{ " : "{").Append(expression);
                     if (field.Conversion is { } conversion) builder.Append('!').Append(conversion);
-                    if (field.FormatSpecifierParts is not null) builder.Append(':').Append(FormattedBody(field.FormatSpecifierParts));
-                    else if (field.FormatSpecifier is not null) builder.Append(':').Append(field.FormatSpecifier);
+                    if (specifier is not null) builder.Append(':').Append(specifier);
                     builder.Append('}');
                 }
-                if (builder.Length > maximum) throw new AnnotationTextLimitException(_span);
             }
-            return builder.ToString();
+            var result = builder.ToString();
+            storage?.Commit(result.Length == 0 ? 0 : 32L + 2L * result.Length);
+            return result;
         }
 
         private static string Float(string source)
@@ -448,8 +465,9 @@ internal static class PostponedAnnotationText
             var text = PyNumberOps.RenderFloat(value).Replace("inf", "1e309", StringComparison.Ordinal);
             return (text.EndsWith(".0", StringComparison.Ordinal) ? text[..^2] : text) + "j";
         }
-        private static string Bytes(byte[] bytes)
+        private string Bytes(byte[] bytes)
         {
+            using var storage = governor?.ReserveTemporary(128L + 8L * (4L * bytes.Length + 3), _span);
             var text = new StringBuilder();
             var quote = bytes.Contains((byte)'\'') && !bytes.Contains((byte)'"') ? '"' : '\'';
             text.Append('b').Append(quote);
@@ -459,10 +477,13 @@ internal static class PostponedAnnotationText
                     (byte)'\\' => "\\\\", 9 => "\\t", 10 => "\\n", 13 => "\\r",
                     >= 32 and <= 126 => ((char)value).ToString(), _ => "\\x" + value.ToString("x2", CultureInfo.InvariantCulture)
                 });
-            return text.Append(quote).ToString();
+            var result = text.Append(quote).ToString();
+            storage?.Commit(result.Length == 0 ? 0 : 32L + 2L * result.Length);
+            return result;
         }
-        private static string Quote(string value)
+        private string Quote(string value)
         {
+            using var storage = governor?.ReserveTemporary(128L + 8L * (10L * value.Length + 2), _span);
             var quote = value.Contains('\'') && !value.Contains('"') ? '"' : '\'';
             var builder = new StringBuilder().Append(quote);
             foreach (var rune in value.EnumerateRunes())
@@ -475,7 +496,9 @@ internal static class PostponedAnnotationText
                         .Append(rune.Value.ToString(rune.Value <= 255 ? "x2" : rune.Value <= 65535 ? "x4" : "x8", CultureInfo.InvariantCulture));
                 else builder.Append(rune.ToString());
             }
-            return builder.Append(quote).ToString();
+            var result = builder.Append(quote).ToString();
+            storage?.Commit(result.Length == 0 ? 0 : 32L + 2L * result.Length);
+            return result;
         }
     }
 }

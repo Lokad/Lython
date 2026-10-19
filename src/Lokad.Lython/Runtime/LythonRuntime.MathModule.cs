@@ -224,7 +224,7 @@ internal sealed partial class LythonRuntime
                     charged = differences.Capacity;
                 }
 
-                context.ObserveCollectionCount(differences.Count, span);
+                context.CheckExecution(span);
                 if ((differences.Count & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -287,7 +287,7 @@ internal sealed partial class LythonRuntime
                     charged = differences.Capacity;
                 }
 
-                context.ObserveCollectionCount(differences.Count, span);
+                context.CheckExecution(span);
                 if ((differences.Count & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -625,7 +625,7 @@ internal sealed partial class LythonRuntime
 
                 total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
                 pairs++;
-                context.ObserveCollectionCount(pairs, span);
+                context.CheckExecution(span);
                 if ((pairs & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -681,7 +681,7 @@ internal sealed partial class LythonRuntime
 
                 total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
                 pairs++;
-                context.ObserveCollectionCount(pairs, span);
+                context.CheckExecution(span);
                 if ((pairs & 63) == 0)
                 {
                     context.CheckExecution(span);

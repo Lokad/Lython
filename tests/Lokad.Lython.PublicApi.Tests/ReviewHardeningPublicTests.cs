@@ -150,22 +150,6 @@ return calls
             Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
 
-    [Fact]
-    public void ByteLimitsRejectNegativeValuesPublic()
-
-    {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new LythonEngine().Run(
-                "return 42",
-                new MinimalHost(),
-                new LythonRunOptions { MaxHostReadBytes = -4294967296 }));
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new LythonEngine().Run(
-                "return 42",
-                new MinimalHost(),
-                new LythonRunOptions { MaxStandardErrorBytes = long.MinValue }));
-    }
-
     private sealed class MinimalHost : ILythonHost, ILythonSynchronousHostCapability
     {
         public string Cwd => "/";

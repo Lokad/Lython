@@ -282,7 +282,7 @@ internal sealed partial class LythonRuntime
         {
             if (layout.Items == 0) return PyTuple.Empty;
             if (layout.Items > int.MaxValue) throw RuntimeErrors.Memory("struct unpacked tuple is too large", span);
-            context.ObserveCollectionCount((int)layout.Items, span);
+            { _ = (int)layout.Items; context.CheckExecution(span); }
             using var funding = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes((int)layout.Items), span);
             var items = new object[(int)layout.Items];
             var fields = new FieldCursor(layout.Format, layout.Start);

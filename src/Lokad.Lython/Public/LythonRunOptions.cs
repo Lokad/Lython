@@ -2,26 +2,11 @@ using System.Threading;
 
 namespace Lokad.Lython;
 
-/// <summary>Configures one isolated Lython execution and its resource limits.</summary>
+/// <summary>Configures isolated execution, borrowed memory ownership and cancellation.</summary>
 public sealed class LythonRunOptions
 {
     /// <summary>The default Python call-depth limit.</summary>
     public const int DefaultMaxRecursionDepth = 1_000;
-
-    /// <summary>The default maximum number of items in one runtime collection.</summary>
-    public const int DefaultMaxCollectionSize = 10_000_000;
-
-    /// <summary>The default maximum Python string length.</summary>
-    public const int DefaultMaxStringLength = 256 * 1024 * 1024;
-
-    /// <summary>The default maximum size of one host read.</summary>
-    public const int DefaultMaxHostReadBytes = 256 * 1024 * 1024;
-
-    /// <summary>The default captured standard-output limit.</summary>
-    public const int DefaultMaxStandardOutputBytes = 16 * 1024 * 1024;
-
-    /// <summary>The default captured standard-error limit.</summary>
-    public const int DefaultMaxStandardErrorBytes = 16 * 1024 * 1024;
 
     /// <summary>
     /// Gets initial global values exposed to the script. Values are copied into
@@ -55,9 +40,6 @@ public sealed class LythonRunOptions
     /// <remarks>Supply a cancellable token when the run must have a finite deadline.</remarks>
     public CancellationToken CancellationToken { get; init; }
 
-    /// <summary>Gets whether unspecified resource limits are unbounded.</summary>
-    public bool DisableDefaultLimits { get; init; }
-
     /// <summary>Gets whether all local-module imports are disabled.</summary>
     public bool DisableLocalModuleImports { get; init; }
 
@@ -78,24 +60,9 @@ public sealed class LythonRunOptions
     /// <summary>Gets the Python call-depth override.</summary>
     public LythonCountLimit? MaxRecursionDepth { get; init; }
 
-    /// <summary>Gets the per-collection item limit override.</summary>
-    public LythonCountLimit? MaxCollectionSize { get; init; }
-
-    /// <summary>Gets the Python string-length limit override.</summary>
-    public LythonCountLimit? MaxStringLength { get; init; }
-
-    /// <summary>Gets the per-operation host-read byte limit override.</summary>
-    public LythonByteLimit? MaxHostReadBytes { get; init; }
-
-    /// <summary>Gets the captured standard-output byte limit override.</summary>
-    public LythonByteLimit? MaxStandardOutputBytes { get; init; }
-
-    /// <summary>Gets the captured standard-error byte limit override.</summary>
-    public LythonByteLimit? MaxStandardErrorBytes { get; init; }
-
     /// <summary>Gets a borrowed memory budget shared with other executions and host-mediated child work.</summary>
     /// <remarks>
-    /// Null uses Lython's standalone default. The supplied budget and its ancestors
+    /// Null uses an unbounded standalone root. The supplied budget and its ancestors
     /// must outlive all work and any results owned beneath them. Lython disposes only
     /// scopes it creates; it never disposes the supplied budget or copies its balance.
     /// Estimates cover major storage; allow headroom for minor and runtime memory.
@@ -133,16 +100,10 @@ public sealed class LythonRunOptions
             Environment = Environment,
             SourcePath = SourcePath,
             CancellationToken = cancellationToken,
-            DisableDefaultLimits = DisableDefaultLimits,
             DisableLocalModuleImports = DisableLocalModuleImports,
             AllowedLocalModules = AllowedLocalModules,
             AllowedBuiltinModules = AllowedBuiltinModules,
             MaxRecursionDepth = MaxRecursionDepth,
-            MaxCollectionSize = MaxCollectionSize,
-            MaxStringLength = MaxStringLength,
-            MaxHostReadBytes = MaxHostReadBytes,
-            MaxStandardOutputBytes = MaxStandardOutputBytes,
-            MaxStandardErrorBytes = MaxStandardErrorBytes,
             MemoryBudget = MemoryBudget,
             ResultMemoryBudget = ResultMemoryBudget,
             ExecutionMemoryOwner = execution,

@@ -5,7 +5,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 // MG03: string literals are shared compile-time constants, free by design
 // like interned constants (distinct literal payload stays bounded by
-// MaxSourceLength). Retaining one literal a thousand times keeps one copy.
+// compilation allowance). Retaining one literal a thousand times keeps one copy.
 public sealed class LiteralSharingScenarioTests
 {
     private static string Big() => new string('A', 500);

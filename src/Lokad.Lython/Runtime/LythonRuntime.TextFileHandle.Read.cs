@@ -40,7 +40,6 @@ internal sealed partial class LythonRuntime
             private int _windowConsumed;
             private long _position;
             private long _nextOffset;
-            private long _cumulativeBytes;
             private bool _eof;
             private bool _bomChecked;
             private bool _released;
@@ -133,7 +132,7 @@ internal sealed partial class LythonRuntime
                             {
                                 var line = _window.SliceByByteRange(_windowConsumed, end);
                                 Advance(end);
-                                _services.ObserveString(line, null);
+                                _services.CheckExecution(null);
                                 return line;
                             }
 
@@ -181,7 +180,7 @@ internal sealed partial class LythonRuntime
                             {
                                 var line = _window.SliceByByteRange(_windowConsumed, end);
                                 Advance(end);
-                                _services.ObserveString(line, null);
+                                _services.CheckExecution(null);
                                 return line;
                             }
 
@@ -240,7 +239,7 @@ internal sealed partial class LythonRuntime
                             {
                                 var piece = _window.SliceByByteRange(_windowConsumed, take);
                                 Advance(take);
-                                _services.ObserveString(piece, null);
+                                _services.CheckExecution(null);
                                 return piece;
                             }
 
@@ -285,7 +284,7 @@ internal sealed partial class LythonRuntime
                             {
                                 var piece = _window.SliceByByteRange(_windowConsumed, take);
                                 Advance(take);
-                                _services.ObserveString(piece, null);
+                                _services.CheckExecution(null);
                                 return piece;
                             }
 
@@ -353,7 +352,7 @@ internal sealed partial class LythonRuntime
             {
                 if (builder is null || builder.Length == 0) return PyString.Empty;
                 var text = builder.ToPyStringAndRelease();
-                _services.ObserveString(text, null);
+                _services.CheckExecution(null);
                 return text;
             }
 
@@ -688,11 +687,6 @@ internal sealed partial class LythonRuntime
                     return false;
                 }
 
-                _cumulativeBytes = RuntimeMemoryEstimates.SaturatingAdd(_cumulativeBytes, take);
-                if (_services.Limits.MaxHostReadBytes is { } maxReadBytes && _cumulativeBytes > maxReadBytes)
-                {
-                    throw RuntimeErrors.HostRead($"host {TextReadKind()} read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, _cumulativeBytes, null);
-                }
 
                 payload.Span.Slice(0, take).CopyTo(_raw!.AsSpan(_rawLength));
                 _rawLength += take;

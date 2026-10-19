@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Breaking API cleanup: remove independent string, collection, host-read and captured-output options/defaults, `DisableDefaultLimits`, `LythonByteLimit`, source/private-name character constants, subprocess `OutputLimit` and its limit/exception types, and policy-specific failure reasons. Delete value-observation dispatch, cumulative read/pipeline counters and policy-only tests. Capacity, replacement peaks, expanded names, annotation text and pipe merging borrow existing owners. Managed nesting, checked representation bounds, bounded I/O chunks and cancellation remain. No hidden standalone allowance or performance claim.
+
 - Breaking API cleanup: remove `MaxExecutionMemoryBytes`, its default and `ExecutionMemoryLimit` attribution. Execution storage now borrows the supplied shared allowance, or an unbounded standalone root. Delete the transient object-graph estimator and unfunded pure preflight checks; retain funded reservations across I/O, copies and replacement construction. Returned raw buffers remain conservatively owned until execution cleanup. No performance claim.
 
 - Remove the independent public-projection memory cap, its default and `ProjectionMemoryLimit` attribution. Projection admits storage through the supplied result owner; `MaxProjectionMemoryBytes` is removed. Diagnostic messages no longer truncate to fit a private allowance. Preserve original failure attribution on diagnostic refusal and admit frame arrays before allocation. Other resource-cap and regex migration work remains in progress.

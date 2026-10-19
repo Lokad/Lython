@@ -10,10 +10,6 @@ public sealed class BytesIOResourceTests
         var script = Compile("import io\ns=io.BytesIO(b'abc')\nassert s.read()==b'abc'\nassert s.getvalue()==b'abc'");
         var options = new LythonRunOptions
         {
-            MaxCollectionSize = 1,
-            MaxStringLength = 1,
-            MaxHostReadBytes = 1,
-            MaxStandardOutputBytes = 1,
             MemoryBudget = new LythonMemoryBudget(65536),
         };
         await AssertBothModes(script, options, "");

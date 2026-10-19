@@ -22,8 +22,6 @@ internal sealed partial class LythonRuntime
                     context,
                     AsynchronousLoweredStatementExecution.Instance)
                 .ConfigureAwait(false);
-
-            context.ObserveValue(value, expression.Span);
             return value;
         }
         catch (LythonRuntimeException ex)
@@ -96,7 +94,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        context.ObserveCollectionCount(expanded.Count, tuple.Span);
+        context.CheckExecution(tuple.Span);
         return expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
     }
 
@@ -112,7 +110,7 @@ internal sealed partial class LythonRuntime
                 foreach (var pair in EnumerateMappingItems(mapping, context, unpacking.Item.Span))
                 {
                     result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Item.Span), RuntimeValue(pair.Value));
-                    context.ObserveCollectionCount(result.Count, dict.Span);
+                    context.CheckExecution(dict.Span);
                 }
 
                 continue;
@@ -122,7 +120,7 @@ internal sealed partial class LythonRuntime
             var key = RuntimeValue(await EvaluateLoweredExpressionAsync(keyValue.Key, context).ConfigureAwait(false));
             var value = RuntimeValue(await EvaluateLoweredExpressionAsync(keyValue.Value, context).ConfigureAwait(false));
             using (PyStructuralGuard.PushAmbient(context, dict.Span)) result.SetItem(ValidateDictionaryKey(key, keyValue.Key.Span), value);
-            context.ObserveCollectionCount(result.Count, dict.Span);
+            context.CheckExecution(dict.Span);
         }
         return result;
     }
@@ -178,7 +176,7 @@ internal sealed partial class LythonRuntime
                 async itemScope => result.Add(RuntimeValue(await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, itemScope).ConfigureAwait(false))), outer)
             .ConfigureAwait(false);
 
-        context.ObserveCollectionCount(result.Count, comprehension.Span);
+        context.CheckExecution(comprehension.Span);
         return result;
     }
 
@@ -203,7 +201,7 @@ internal sealed partial class LythonRuntime
                     }, outer)
                 .ConfigureAwait(false);
 
-            context.ObserveCollectionCount(result.Count, comprehension.Span);
+            context.CheckExecution(comprehension.Span);
         }
         catch
         {
@@ -233,7 +231,7 @@ internal sealed partial class LythonRuntime
                 }, outer)
             .ConfigureAwait(false);
 
-        context.ObserveCollectionCount(result.Count, comprehension.Span);
+        context.CheckExecution(comprehension.Span);
         return result;
     }
 
@@ -334,7 +332,6 @@ internal sealed partial class LythonRuntime
         {
             var right = await EvaluateLoweredExpressionAsync(chained.Operands[i + 1], context).ConfigureAwait(false);
             var result = await EvaluateBinaryOperatorAsync(chained.ChainedComparison.Operators[i], left, right, context, chained.Span).ConfigureAwait(false);
-            context.ObserveValue(result, chained.Span);
             if (i == chained.ChainedComparison.Operators.Count - 1 || !await IsTruthyAsync(result, context, chained.Span).ConfigureAwait(false))
             {
                 return result;

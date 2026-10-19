@@ -4,15 +4,8 @@ namespace Lokad.Lython.Frontend;
 
 internal static class LythonFrontend
 {
-    public static FrontendResult Compile(string source)
+    public static FrontendResult Compile(string source, Runtime.MemoryGovernor? governor = null)
     {
-        if (source.Length > LythonEngine.MaxSourceLength)
-        {
-            return CompilationLimitExceeded(
-                "LA0002",
-                $"Source length exceeds the maximum of {LythonEngine.MaxSourceLength} characters.");
-        }
-
         if (ExceedsSyntaxNestingLimit(source))
         {
             return CompilationLimitExceeded(
@@ -42,7 +35,7 @@ internal static class LythonFrontend
                 [CreateLexicalDiagnostic(source, tokens, invalid.Start, invalid.Length)]);
         }
 
-        var parsed = new Parser(tokens).Parse();
+        var parsed = new Parser(tokens, governor).Parse();
         if (parsed.Script is null)
         {
             return parsed;
@@ -54,13 +47,7 @@ internal static class LythonFrontend
             return new FrontendResult(null, parsed.Diagnostics.Concat(syntaxDiagnostics).ToArray());
         }
 
-        try { PostponedAnnotationText.Attach(parsed.Script, source); }
-        catch (AnnotationTextLimitException exception)
-        {
-            return new FrontendResult(null, [new LythonDiagnostic("LA0005",
-                $"Postponed annotation text exceeds the compilation character limit ({PostponedAnnotationText.MaximumCharacters}).",
-                LythonDiagnosticSeverity.Error, exception.Span)]);
-        }
+        PostponedAnnotationText.Attach(parsed.Script, source, governor);
 
         var diagnostics = parsed.Diagnostics
             .Concat(AnnotationDiagnostics.Analyze(parsed.Script))

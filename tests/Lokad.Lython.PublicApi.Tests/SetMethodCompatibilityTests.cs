@@ -220,20 +220,6 @@ return "|".join(vals)
     }
 
     [Fact]
-    public void SetMethodGrowth_ObservesCollectionLimit()
-    {
-        var result = new LythonEngine().Run(
-            "return {1}.union(range(10))\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxCollectionSize = 3 });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size", result.Failure?.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
     public void PopFromEmptySet_RaisesKeyError()
     {
         var result = new LythonEngine().Run("return set().pop()\n", new MockLythonHost());

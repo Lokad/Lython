@@ -70,7 +70,7 @@ internal sealed partial class LythonRuntime
                 .Select(match =>
                 {
                     var text = CreateString(match.Value.ValueText, context, span);
-                    context.ObserveString(text, span);
+                    context.CheckExecution(span);
                     return (object)text;
                 });
             return new PyList(values, context.MemoryGovernor, span);

@@ -251,7 +251,7 @@ internal sealed partial class LythonRuntime
     private static void AddGlobResult(PyList results, string path, ExecutionContext context, LythonSourceSpan span)
     {
         results.Add(PyString.FromString(path, context.MemoryGovernor, span));
-        context.ObserveCollectionCount(results.Count, span);
+        context.CheckExecution(span);
     }
 
     private static string FormatGlobResult(string absoluteMatch, GlobRequest request)

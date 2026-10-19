@@ -4,9 +4,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG22: the imported-module registry observes the shared collection count,
-/// so the aggregate number of registered modules honors MaxCollectionSize
-/// instead of growing without bound.
+/// The imported-module registry retains its backing storage under the shared
+/// execution owner. Disposing the execution returns the allowance.
 /// </summary>
 public sealed class ImportCountAccountingScenarioTests
 {
@@ -26,25 +25,6 @@ public sealed class ImportCountAccountingScenarioTests
 
         source += "return m0.value\n";
         return host;
-    }
-
-    [Fact]
-    public async Task ManyImportsRespectCollectionCount()
-    {
-        var host = SeededHost(out var allowed, out var source);
-        var script = new LythonEngine().Compile(source);
-        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxCollectionSize = 10, AllowedLocalModules = allowed };
-        var sync = script.Run(host, options);
-        Assert.False(sync.Success);
-        Assert.Equal("RuntimeError", sync.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", sync.Failure?.Message, StringComparison.Ordinal);
-
-        var host2 = SeededHost(out var allowed2, out _);
-        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxCollectionSize = 10, AllowedLocalModules = allowed2 });
-        Assert.False(asyncResult.Success);
-        Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", asyncResult.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -87,23 +87,6 @@ public sealed class BinaryFileWindowAndLifecycleTests
         }
     }
 
-    [Fact]
-    public async Task StaleStatCannotBypassCumulativeReadLimit()
-    {
-        var script = new LythonEngine().Compile("with open('/source.bin','rb') as f:\n    print(f.read())");
-        Assert.True(script.IsValid);
-        foreach (var asynchronous in new[] { false, true })
-        {
-            var host = new WindowHost { MaximumChunk = 3, ReportedSize = 1 };
-            host.Inner.SeedBytes("/source.bin", new byte[10]);
-            var options = new LythonRunOptions { MaxHostReadBytes = 5 };
-            var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-            Assert.False(result.Success);
-            Assert.Contains("host binary read exceeded maximum bytes", result.Failure?.Message);
-            Assert.Equal("", result.StandardOutput);
-        }
-    }
-
     [Theory]
     [InlineData("open('/output.bin','wb').write(b'abc')", true)]
     [InlineData("open('/output.bin','ab').write(b'abc')", true)]

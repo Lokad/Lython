@@ -120,7 +120,6 @@ internal sealed partial class LythonRuntime
         {
             var right = EvaluateExpression(chainedComparison.Operands[i + 1], context);
             var result = EvaluateBinaryOperator(chainedComparison.Operators[i], left, right, context, chainedComparison.Span);
-            context.ObserveValue(result, chainedComparison.Span);
             if (i == chainedComparison.Operators.Count - 1 || !IsTruthy(result, context, chainedComparison.Span))
             {
                 return result;
@@ -218,17 +217,17 @@ internal sealed partial class LythonRuntime
             case PyDict dict:
                 dict.AttachMemoryGovernor(context.MemoryGovernor, span);
                 dict.SetItem(ValidateDictionaryKey(index, span), value);
-                context.ObserveCollectionCount(dict.Count, span);
+                context.CheckExecution(span);
                 return;
             case PyDefaultDict defaultDict:
                 defaultDict.AttachMemoryGovernor(context.MemoryGovernor, span);
                 defaultDict.SetItem(ValidateDictionaryKey(index, span), value);
-                context.ObserveCollectionCount(defaultDict.Count, span);
+                context.CheckExecution(span);
                 return;
             case PyCounter counter:
                 counter.AttachMemoryGovernor(context.MemoryGovernor, span);
                 counter.SetItem(ValidateDictionaryKey(index, span), value);
-                context.ObserveCollectionCount(counter.Count, span);
+                context.CheckExecution(span);
                 return;
             case PyInstance instance:
                 InvokeItemMutation(
@@ -420,7 +419,7 @@ internal sealed partial class LythonRuntime
                 : PyIteration.MaterializeLeased(value, span, context);
             var bounds = PyIndexing.NormalizeSliceBounds(list.Count, start, end, step, span);
             list.SetSlice(bounds, replacement.Items, span);
-            context.ObserveCollectionCount(list.Count, span);
+            context.CheckExecution(span);
             return;
         }
 
@@ -581,7 +580,7 @@ internal sealed partial class LythonRuntime
             TryRepeatCount(right, context, span, out var repeatCount))
         {
             multipliedList.RepeatInPlace(ToListRepeatCount(repeatCount, span), span);
-            context.ObserveCollectionCount(multipliedList.Count, span);
+            context.CheckExecution(span);
             return multipliedList;
         }
 
@@ -590,7 +589,7 @@ internal sealed partial class LythonRuntime
             TryRepeatCount(right, context, span, out var dequeRepeatCount))
         {
             multipliedDeque.RepeatInPlace(ToDequeRepeatCount(dequeRepeatCount, span), span);
-            context.ObserveCollectionCount(multipliedDeque.Count, span);
+            context.CheckExecution(span);
             return multipliedDeque;
         }
 

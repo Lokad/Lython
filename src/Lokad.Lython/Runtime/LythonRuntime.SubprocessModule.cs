@@ -247,10 +247,7 @@ internal sealed partial class LythonRuntime
                 ContentMode: textMode ? LythonSubprocessContentMode.Text : LythonSubprocessContentMode.Binary,
                 TextEncoding: encoding,
                 TextErrorMode: errors,
-                Timeout: timeout is { } timeoutValue ? TimeSpan.FromMilliseconds(timeoutValue) : null,
-                OutputLimit: context.Limits.MaxStringLength is { } maximumOutputBytes
-                    ? new LythonSubprocessOutputLimit(maximumOutputBytes)
-                    : null) { MemoryBudget = context.MemoryGovernor.Budget },
+                Timeout: timeout is { } timeoutValue ? TimeSpan.FromMilliseconds(timeoutValue) : null) { MemoryBudget = context.MemoryGovernor.Budget, MemoryGovernor = context.MemoryGovernor },
             check,
             policy.Completion);
     }
@@ -268,7 +265,7 @@ internal sealed partial class LythonRuntime
             ? DecodeSubprocessOutput(result.StandardErrorUtf8, invocation.Request.TextEncoding, invocation.Request.TextErrorMode, context, span)
             : PyNone.Instance;
         var args = new PyList(invocation.Request.Args.Select<string, object>(text => PyString.FromString(text, context.MemoryGovernor, span)), context.MemoryGovernor, span);
-        context.ObserveCollectionCount(args.Count, span);
+        context.CheckExecution(span);
 
         var completed = new PyCompletedProcess(args, new BigInteger(result.ReturnCode), stdout, stderr);
         if (invocation.Check && result.ReturnCode != 0)
@@ -316,7 +313,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        context.ObserveString(text, span);
+        context.CheckExecution(span);
         return text;
     }
 

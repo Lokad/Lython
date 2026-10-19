@@ -5,53 +5,34 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class SubprocessCompletionSubsystemTests
 {
     [Fact]
-    public async Task SeparatePipesShareTheCombinedOutputLimit()
+    public async Task CapturedMergeRemainsFundedUntilItsOwnerEnds()
     {
-        var request = Request(
-            standardOutput: LythonSubprocessStreamMode.Pipe,
-            standardError: LythonSubprocessStreamMode.Pipe,
-            maxOutputBytes: 5);
-
-        var exception = await Assert.ThrowsAsync<LythonSubprocessOutputLimitException>(async () =>
-            await LythonSubprocessCompletion.CompleteBufferedAsync(
-                request,
-                returnCode: 0,
-                Bytes("abc"),
-                Bytes("def"),
-                static (_, _) => ValueTask.CompletedTask,
-                static (_, _) => ValueTask.CompletedTask,
-                CancellationToken.None));
-
-        Assert.Contains("combined captured output", exception.Message, StringComparison.Ordinal);
+        var budget = new LythonMemoryBudget(256);
+        using var owner = budget.CreateScope();
+        var request = Request(LythonSubprocessStreamMode.Pipe, LythonSubprocessStreamMode.StandardOutput)
+            with { MemoryBudget = owner };
+        var result = await LythonSubprocessCompletion.CompleteBufferedAsync(request, 0,
+            Bytes("out"), Bytes("err"), UnexpectedWriteAsync, UnexpectedWriteAsync, default);
+        Assert.Equal("outerr", Text(result.StandardOutputUtf8));
+        Assert.True(budget.ReservedBytes >= result.StandardOutputUtf8.Length);
+        result = null!;
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
-    public void OutputLimitRejectsNegativeByteCounts()
+    public async Task RefusedMergeDoesNotPublishOrRetainWorkingStorage()
     {
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new LythonSubprocessOutputLimit(-1));
-
-        Assert.Equal("bytes", exception.ParamName);
-    }
-
-    [Fact]
-    public async Task CompleteBufferedAsync_RejectsCapturedOutputBeyondTheBound()
-    {
-        var exception = await Assert.ThrowsAsync<LythonSubprocessOutputLimitException>(() => LythonSubprocessCompletion
-            .CompleteBufferedAsync(
-                Request(
-                    standardOutput: LythonSubprocessStreamMode.Pipe,
-                    standardError: LythonSubprocessStreamMode.Pipe,
-                    maxOutputBytes: 3),
-                7,
-                Bytes("abcdef"),
-                Bytes("stderr"),
-                UnexpectedWriteAsync,
-                UnexpectedWriteAsync,
-                CancellationToken.None).AsTask());
-
-        Assert.Equal("standard output", exception.StreamName);
-        Assert.Equal(6, exception.ActualBytes);
-        Assert.Equal(3, exception.MaximumBytes);
+        var budget = new LythonMemoryBudget(32);
+        using var owner = budget.CreateScope();
+        var request = Request(LythonSubprocessStreamMode.Pipe, LythonSubprocessStreamMode.StandardOutput)
+            with { MemoryBudget = owner };
+        var failure = await Record.ExceptionAsync(async () =>
+            await LythonSubprocessCompletion.CompleteBufferedAsync(request, 0,
+                Bytes("out"), Bytes("err"), UnexpectedWriteAsync, UnexpectedWriteAsync, default));
+        Assert.NotNull(failure);
+        Assert.Contains("shared memory budget", failure.Message);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
@@ -125,12 +106,6 @@ public sealed class SubprocessCompletionSubsystemTests
     private static LythonSubprocessRequest Request(
         LythonSubprocessStreamMode standardOutput,
         LythonSubprocessStreamMode standardError) =>
-        Request(standardOutput, standardError, null);
-
-    private static LythonSubprocessRequest Request(
-        LythonSubprocessStreamMode standardOutput,
-        LythonSubprocessStreamMode standardError,
-        long? maxOutputBytes) =>
         new(
             Args: ["tool"],
             Cwd: null,
@@ -143,10 +118,7 @@ public sealed class SubprocessCompletionSubsystemTests
             ContentMode: LythonSubprocessContentMode.Text,
             TextEncoding: LythonSubprocessTextEncoding.Utf8,
             TextErrorMode: LythonSubprocessTextErrorMode.Strict,
-            Timeout: null,
-            OutputLimit: maxOutputBytes is { } maximumBytes
-                ? new LythonSubprocessOutputLimit(maximumBytes)
-                : null);
+            Timeout: null);
 
     private static ReadOnlyMemory<byte> Bytes(string text) => Encoding.UTF8.GetBytes(text);
 

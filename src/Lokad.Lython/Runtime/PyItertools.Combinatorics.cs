@@ -348,7 +348,7 @@ internal sealed class PyCycleIterator : PyIteratorBase
                 _memoryGovernor.Reserve(CachedItemBytes, _span);
                 _memoryGovernor.Commit(CachedItemBytes);
                 _saved.Add(value);
-                _context.ObserveCollectionCount(_saved.Count, _span);
+                _context.CheckExecution(_span);
                 return true;
             }
 
@@ -378,7 +378,7 @@ internal sealed class PyCycleIterator : PyIteratorBase
                 _memoryGovernor.Reserve(CachedItemBytes, _span);
                 _memoryGovernor.Commit(CachedItemBytes);
                 _saved.Add(value);
-                _context.ObserveCollectionCount(_saved.Count, _span);
+                _context.CheckExecution(_span);
                 return PyIterationResult.Yield(value);
             }
 

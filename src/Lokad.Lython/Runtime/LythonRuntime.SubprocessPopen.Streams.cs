@@ -21,10 +21,7 @@ internal sealed partial class LythonRuntime
             _buffer = new GovernedByteBuilder(
                 context.MemoryGovernor,
                 allocationSpan: null,
-                capacity: 0,
-                maxLengthBytes: context.Limits.MaxStringLength,
-                maxLengthOwner: "Popen stdin",
-                lengthLimitReason: LythonFailureReason.SubprocessInputLimit);
+                capacity: 0);
         }
 
         public bool IsClosed { get; private set; }
@@ -208,7 +205,7 @@ internal sealed partial class LythonRuntime
             _claimedByPipeline = true;
         }
 
-        public PipelinePayload TakePipelinePayload(
+        public ReadOnlyMemory<byte> TakePipelinePayload(
             int? timeoutMilliseconds,
             LythonSourceSpan? span,
             HashSet<PyPopen> completionPath)
@@ -216,7 +213,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 var payload = _owner.CompleteForPipeline(timeoutMilliseconds, span, completionPath);
-                MarkPipelineConsumed(payload.Input.Length);
+                MarkPipelineConsumed(payload.Length);
                 return payload;
             }
             catch
@@ -226,7 +223,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public async ValueTask<PipelinePayload> TakePipelinePayloadAsync(
+        public async ValueTask<ReadOnlyMemory<byte>> TakePipelinePayloadAsync(
             int? timeoutMilliseconds,
             LythonSourceSpan? span,
             HashSet<PyPopen> completionPath)
@@ -236,7 +233,7 @@ internal sealed partial class LythonRuntime
                 var payload = await _owner
                     .CompleteForPipelineAsync(timeoutMilliseconds, span, completionPath)
                     .ConfigureAwait(false);
-                MarkPipelineConsumed(payload.Input.Length);
+                MarkPipelineConsumed(payload.Length);
                 return payload;
             }
             catch
@@ -499,7 +496,6 @@ internal sealed partial class LythonRuntime
             => content.GetByteIndexAfterRunes(startByte, runeCount);
     }
 
-    private readonly record struct PipelinePayload(ReadOnlyMemory<byte> Input, long CumulativeOutputBytes);
 
     private static void RequirePopenNoArguments(object[] arguments, string owner, LythonSourceSpan span)
     {

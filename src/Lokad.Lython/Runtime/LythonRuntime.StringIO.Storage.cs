@@ -163,8 +163,6 @@ internal sealed partial class LythonRuntime
 
         private PyString RenderRange(int start, int end, LythonSourceSpan span)
         {
-            if (_services.Limits.MaxStringLength is { } maximum && end - start > maximum)
-                throw RuntimeErrors.StringLength(maximum, end - start, span);
             var builder = new GovernedByteBuilder(_services.MemoryGovernor, span);
             try
             {

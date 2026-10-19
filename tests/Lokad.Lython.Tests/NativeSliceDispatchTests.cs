@@ -60,16 +60,16 @@ public sealed class NativeSliceDispatchTests
     public async Task OversizedReplacementFailsBeforeDestinationMutation(bool asynchronous)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxCollectionSize = 2 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) });
         var target = new PyList([BigInteger.Zero], context.MemoryGovernor, new(0, 0, 0, 0));
         context.Variables["target"] = target;
-        var syntax = LythonFrontend.Compile("def source():\n yield 1\n yield 2\n yield 3\ntarget[:]=source()").Script!;
+        var syntax = LythonFrontend.Compile("def source():\n yield from range(100000)\ntarget[:]=source()").Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         LythonRuntimeException error;
         if (asynchronous)
             error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context));
         else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
-        Assert.Equal("maximum collection size exceeded (2)", error.Message);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
         Assert.Equal(BigInteger.Zero, Assert.Single(target.Iterate()));
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

@@ -420,7 +420,7 @@ internal sealed partial class LythonRuntime
                 columns.Add(ColumnTuple(minRow, maxRow, column, valuesOnly, context, span));
             }
 
-            context?.ObserveCollectionCount(columns.Count, span);
+            context?.CheckExecution(span);
             return context is null ? new PyTuple(columns) : new PyTuple(columns, context.MemoryGovernor, span);
         }
 
@@ -433,7 +433,7 @@ internal sealed partial class LythonRuntime
                 rows.Add(RowTuple(row, minColumn, maxColumn, valuesOnly, context, span));
             }
 
-            context?.ObserveCollectionCount(rows.Count, span);
+            context?.CheckExecution(span);
             return context is null ? new PyTuple(rows) : new PyTuple(rows, context.MemoryGovernor, span);
         }
 

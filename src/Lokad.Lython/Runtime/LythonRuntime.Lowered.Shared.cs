@@ -138,7 +138,6 @@ internal sealed partial class LythonRuntime
                 return ValidateLoweredString(SharedStringLiteral(text), context, text.Span);
             case LoweredBytesLiteralExpression bytes:
                 var bytesValue = SharedBytesLiteral(bytes);
-                context.ObserveValue(bytesValue, bytes.Span);
                 return bytesValue;
             case LoweredIntegerLiteralExpression integer:
                 return SharedIntegerMagnitude(integer);
@@ -238,7 +237,7 @@ internal sealed partial class LythonRuntime
         public PyString Complete()
         {
             var value = _builder.ToPyStringAndRelease();
-            _context.ObserveString(value, _span);
+            _context.CheckExecution(_span);
             return value;
         }
     }
@@ -683,14 +682,14 @@ internal sealed partial class LythonRuntime
 
     private static PyString ValidateLoweredString(PyString text, ExecutionContext context, LythonSourceSpan span)
     {
-        context.ObserveString(text, span);
+        context.CheckExecution(span);
         return text;
     }
 
     private static T ValidateLoweredCollection<T>(T collection, ExecutionContext context, LythonSourceSpan span)
         where T : IReadOnlyCollection<object>
     {
-        context.ObserveCollectionCount(collection.Count, span);
+        context.CheckExecution(span);
         return collection;
     }
 

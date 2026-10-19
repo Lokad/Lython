@@ -500,8 +500,13 @@ resize through disposed owners throw `ObjectDisposedException`.
 Major backing capacity, copies and replacement overlap are conservatively
 charged. Execution and projection have no independent policy caps: they reserve through
 the supplied execution/result owners. Without a supplied allowance, the standalone
-root is unbounded; no hidden memory allowance is substituted. Remaining string,
-collection, read and captured-output ceilings are pending removal in this milestone.
+root is unbounded; no hidden memory allowance is substituted. Strings, collections, host reads and captured output have no independent policy ceilings.
+Source preparation, expanded private names and canonical annotation text borrow
+the compilation owner, including in imported modules. Expansion and builder
+capacity reserve before construction; retained text remains charged until that
+owner ends. Subprocess pipe merging admits its new buffer before copying and
+checks cancellation between bounded copy chunks. Hosts must fund acquired and
+retained command buffers through the borrowed request budget.
 Raw materialization and codec outputs remain conservatively charged to the execution
 owner until batch cleanup, including possible overlap with final container estimates.
 This can reject earlier; arbitrary guest reference withdrawal does not refund storage.

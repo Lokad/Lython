@@ -311,7 +311,7 @@ internal sealed partial class LythonRuntime
         {
             var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
             result.SetItem(keyword, RuntimeValue(pair.Value));
-            context.ObserveCollectionCount(result.Count, span);
+            context.CheckExecution(span);
         }
 
         return result;
@@ -389,7 +389,7 @@ internal sealed partial class LythonRuntime
         {
             var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
             result.SetItem(keyword, RuntimeValue(pair.Value));
-            context.ObserveCollectionCount(result.Count, span);
+            context.CheckExecution(span);
         }
 
         return result;
@@ -586,7 +586,7 @@ internal sealed partial class LythonRuntime
         var result = hasIterable
             ? new PyDeque(ToSequence(iterable, span, context), maxLength, context.MemoryGovernor, span)
             : new PyDeque(maxLength, context.MemoryGovernor, span);
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 
@@ -653,7 +653,7 @@ internal sealed partial class LythonRuntime
         var result = hasIterable
             ? new PyDeque(await PyIteration.MaterializeAsync(iterable, span, context).ConfigureAwait(false), maxLength, context.MemoryGovernor, span)
             : new PyDeque(maxLength, context.MemoryGovernor, span);
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 
@@ -667,7 +667,7 @@ internal sealed partial class LythonRuntime
         var result = arguments.Length == 0
             ? new PyDeque(null, context.MemoryGovernor, span)
             : new PyDeque(ToSequence(arguments[0], span, context), null, context.MemoryGovernor, span);
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 
@@ -839,7 +839,7 @@ internal sealed partial class LythonRuntime
         foreach (var pair in keywordItems)
         {
             dict.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), RuntimeValue(pair.Value));
-            context.ObserveCollectionCount(dict.Count, span);
+            context.CheckExecution(span);
         }
 
         return dict;
@@ -874,7 +874,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in pyDict)
             {
                 dict.SetItem(pair.Key, pair.Value);
-                context.ObserveCollectionCount(dict.Count, span);
+                context.CheckExecution(span);
             }
 
             return;
@@ -885,7 +885,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in defaultDict)
             {
                 dict.SetItem(pair.Key, pair.Value);
-                context.ObserveCollectionCount(dict.Count, span);
+                context.CheckExecution(span);
             }
 
             return;
@@ -899,7 +899,7 @@ internal sealed partial class LythonRuntime
             }
 
             dict.SetItem(ValidateDictionaryKey(tuple[0], span), RuntimeValue(tuple[1]));
-            context.ObserveCollectionCount(dict.Count, span);
+            context.CheckExecution(span);
         }
     }
 
@@ -912,7 +912,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in pyDict)
             {
                 dict.SetItem(pair.Key, pair.Value);
-                context.ObserveCollectionCount(dict.Count, span);
+                context.CheckExecution(span);
             }
 
             return;
@@ -923,7 +923,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in defaultDict)
             {
                 dict.SetItem(pair.Key, pair.Value);
-                context.ObserveCollectionCount(dict.Count, span);
+                context.CheckExecution(span);
             }
 
             return;
@@ -937,7 +937,7 @@ internal sealed partial class LythonRuntime
             }
 
             dict.SetItem(ValidateDictionaryKey(tuple[0], span), RuntimeValue(tuple[1]));
-            context.ObserveCollectionCount(dict.Count, span);
+            context.CheckExecution(span);
         }
     }
 
@@ -948,7 +948,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in pyDict)
             {
                 dict.SetItem(pair.Key, pair.Value);
-                context.ObserveCollectionCount(dict.Count, span);
+                context.CheckExecution(span);
             }
 
             return;
@@ -959,7 +959,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in defaultDict)
             {
                 dict.SetItem(pair.Key, pair.Value);
-                context.ObserveCollectionCount(dict.Count, span);
+                context.CheckExecution(span);
             }
 
             return;
@@ -973,7 +973,7 @@ internal sealed partial class LythonRuntime
             }
 
             dict.SetItem(ValidateDictionaryKey(tuple[0], span), RuntimeValue(tuple[1]));
-            context.ObserveCollectionCount(dict.Count, span);
+            context.CheckExecution(span);
         }
     }
 
@@ -988,7 +988,7 @@ internal sealed partial class LythonRuntime
         foreach (var item in ToSequence(source, span, context))
         {
             counter.Increment(RuntimeValue(item),subtract ? -BigInteger.One : BigInteger.One,span);
-            context.ObserveCollectionCount(counter.Count, span);
+            context.CheckExecution(span);
         }
     }
 
@@ -1005,7 +1005,7 @@ internal sealed partial class LythonRuntime
         {
             using var ambient = PyStructuralGuard.PushAmbient(context, span);
             counter.Increment(RuntimeValue(item),subtract ? -BigInteger.One : BigInteger.One,span);
-            context.ObserveCollectionCount(counter.Count, span);
+            context.CheckExecution(span);
         }
     }
 
@@ -1019,7 +1019,7 @@ internal sealed partial class LythonRuntime
             {
                 var delta = ExpectCounterCount(pair.Value, span);
                 counter.Increment(pair.Key,subtract ? NegateCounterCount(delta,span,counter.OwnerMemoryGovernor) : delta,span);
-                context.ObserveCollectionCount(counter.Count, span);
+                context.CheckExecution(span);
             }
 
             return true;
@@ -1031,7 +1031,7 @@ internal sealed partial class LythonRuntime
             {
                 var delta = ExpectCounterCount(pair.Value, span);
                 counter.Increment(pair.Key,subtract ? NegateCounterCount(delta,span,counter.OwnerMemoryGovernor) : delta,span);
-                context.ObserveCollectionCount(counter.Count, span);
+                context.CheckExecution(span);
             }
 
             return true;
@@ -1043,7 +1043,7 @@ internal sealed partial class LythonRuntime
             {
                 var delta = ExpectCounterCount(pair.Value, span);
                 counter.Increment(pair.Key,subtract ? NegateCounterCount(delta,span,counter.OwnerMemoryGovernor) : delta,span);
-                context.ObserveCollectionCount(counter.Count, span);
+                context.CheckExecution(span);
             }
 
             return true;
@@ -1055,7 +1055,7 @@ internal sealed partial class LythonRuntime
             {
                 var delta = ExpectCounterCount(chainMap.GetSubscript(key, span), span);
                 counter.Increment(key,subtract ? NegateCounterCount(delta,span,counter.OwnerMemoryGovernor) : delta,span);
-                context.ObserveCollectionCount(counter.Count, span);
+                context.CheckExecution(span);
             }
 
             return true;
@@ -1076,7 +1076,7 @@ internal sealed partial class LythonRuntime
             var delta = ExpectCounterCount(pair.Value, span);
             var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
             counter.Increment(keyword,subtract ? NegateCounterCount(delta,span,counter.OwnerMemoryGovernor) : delta,span);
-            context.ObserveCollectionCount(counter.Count, span);
+            context.CheckExecution(span);
         }
     }
 

@@ -587,7 +587,7 @@ internal sealed partial class LythonRuntime
             }
 
             cells.Add(ConvertCsvCell(value, scratch, span, ref convertedBytes));
-            context.ObserveCollectionCount(cells.Count, span);
+            context.CheckExecution(span);
         }
 
         internal static CsvCell ConvertCsvCell(object cell, MemoryGovernor.TemporaryMemoryReservation conversion, LythonSourceSpan span, ref long convertedBytes)

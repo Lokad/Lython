@@ -12,7 +12,6 @@ public sealed class BatchedTuplePreflightTests
     private static LythonRunOptions Tiny() => new()
     {
         MemoryBudget = new LythonMemoryBudget(65536),
-        MaxCollectionSize = 10,
     };
 
     private static void AssertError(LythonExecutionResult result, string type, string fragment)
@@ -102,19 +101,19 @@ public sealed class BatchedTuplePreflightTests
             });
 
     [Fact]
-    public void BatchedHugeSource_DeniesUnderTinyCollectionLimit()
+    public void BatchedHugeSource_DeniesUnderSharedAllowance()
     {
         const string code = "import itertools\nreturn next(itertools.batched(range(200000), 200000))\n";
         var script = new LythonEngine().Compile(code);
-        AssertError(script.Run(new MockLythonHost(), Tiny()), "RuntimeError", "maximum collection size exceeded");
+        AssertError(script.Run(new MockLythonHost(), Tiny()), "MemoryError", "shared memory budget");
     }
 
     [Fact]
-    public async Task BatchedHugeSource_DeniesUnderTinyCollectionLimitAsync()
+    public async Task BatchedHugeSource_DeniesUnderSharedAllowanceAsync()
     {
         const string code = "import itertools\nreturn next(itertools.batched(range(200000), 200000))\n";
         var script = new LythonEngine().Compile(code);
-        AssertError(await script.RunAsync(new MockLythonHost(), Tiny()), "RuntimeError", "maximum collection size exceeded");
+        AssertError(await script.RunAsync(new MockLythonHost(), Tiny()), "MemoryError", "shared memory budget");
     }
 
     [Fact]

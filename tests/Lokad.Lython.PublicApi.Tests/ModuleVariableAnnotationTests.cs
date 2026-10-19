@@ -74,22 +74,17 @@ public sealed class ModuleVariableAnnotationTests
         Assert.True(host.CompletedAsynchronously > 0);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task AnnotationMetadataObeysCollectionAndMemoryLimits(bool collection)
+    [Fact]
+    public async Task AnnotationMetadataObeysSharedAdmission()
     {
         var source = string.Join('\n', Enumerable.Range(0, 1000).Select(i => $"value{i}:int"));
         var compiled = new LythonEngine().Compile(source);
         Assert.True(compiled.IsValid);
-        var options = collection
-            ? new LythonRunOptions { MaxCollectionSize = 8 }
-            : new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(32768) };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(32768) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);
-            Assert.Equal(collection ? "RuntimeError" : "MemoryError", result.Failure?.ExceptionType);
-            if (collection) Assert.Contains("collection size", result.Failure?.Message);
+            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
         }
     }
 

@@ -967,7 +967,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                 if (seen.Add(key))
                 {
                     keys.Add(key);
-                    context?.ObserveCollectionCount(keys.Count, span);
+                    context?.CheckExecution(span);
                     if (context is not null && (keys.Count & 63) == 0)
                     {
                         context.CheckExecution(span);
@@ -1007,7 +1007,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                     if (seen.Add(key))
                     {
                         keys.Add(key);
-                        context.ObserveCollectionCount(keys.Count, span);
+                        context.CheckExecution(span);
                         if ((keys.Count & 63) == 0)
                         {
                             context.CheckExecution(span);

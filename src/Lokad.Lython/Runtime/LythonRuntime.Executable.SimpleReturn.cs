@@ -54,7 +54,6 @@ internal sealed partial class LythonRuntime
                     try
                     {
                         result = EvaluateBinaryOperator(BinaryOperatorSyntax.Add, result, second, context, instructions[2].Span);
-                        context.ObserveValue(result, instructions[2].Span);
                     }
                     catch (LythonRuntimeException error)
                     {
@@ -97,7 +96,6 @@ internal sealed partial class LythonRuntime
         try
         {
             var constant = RuntimeValue(value);
-            context.ObserveValue(constant, instruction.Span);
             return constant;
         }
         catch (LythonRuntimeException error)

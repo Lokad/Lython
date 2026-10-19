@@ -105,27 +105,4 @@ return len(candidate)
         result.Dispose();
         script.Dispose();
     }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task StringLimitPrecedesMemoryAdmissionAndEmptyResultsStayFree(bool asynchronous)
-    {
-        var script = new LythonEngine().Compile("""
-held = 'é' * 16000
-assert '' * 20000000 == ''
-assert 'x' * 0 == ''
-try:
-    candidate = 'y' * 21000
-except RuntimeError as error:
-    return str(error)
-""");
-        Assert.True(script.IsValid);
-        var host = new MockLythonHost();
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(48000), MaxStringLength = 20000 };
-        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-        Assert.True(result.Success, result.Failure?.Message);
-        Assert.Contains("string length", Assert.IsType<string>(result.ReturnValue), StringComparison.OrdinalIgnoreCase);
-        Assert.InRange(result.PeakExecutionMemoryBytes, 32000, 48000);
-    }
 }

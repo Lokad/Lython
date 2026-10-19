@@ -89,7 +89,7 @@ return value
             new LythonEngine().Run(
                 "return 1",
                 new PublicTestHost(),
-                new LythonRunOptions { MaxCollectionSize = -1 }));
+                new LythonRunOptions { MaxRecursionDepth = -1 }));
 
         var diagnostic = new LythonDiagnostic("LA1234", "message", LythonDiagnosticSeverity.Error, null);
         var (code, message, severity, span) = diagnostic;

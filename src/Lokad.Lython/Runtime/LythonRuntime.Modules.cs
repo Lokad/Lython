@@ -368,7 +368,7 @@ internal sealed partial class LythonRuntime
                 GuardProdGrowth(total, item, span, context);
                 total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, span);
                 pairs++;
-                context.ObserveCollectionCount(pairs, span);
+                context.CheckExecution(span);
                 if ((pairs & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -394,7 +394,7 @@ internal sealed partial class LythonRuntime
                 GuardProdGrowth(total, item, span, context);
                 total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, span);
                 pairs++;
-                context.ObserveCollectionCount(pairs, span);
+                context.CheckExecution(span);
                 if ((pairs & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -437,7 +437,7 @@ internal sealed partial class LythonRuntime
             foreach (var item in ToSequence(arguments[0], span, context))
             {
                 seen++;
-                context.ObserveCollectionCount(seen, span);
+                context.CheckExecution(span);
                 if ((seen & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -547,7 +547,7 @@ internal sealed partial class LythonRuntime
             await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
             {
                 seen++;
-                context.ObserveCollectionCount(seen, span);
+                context.CheckExecution(span);
                 if ((seen & 63) == 0)
                 {
                     context.CheckExecution(span);

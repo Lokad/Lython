@@ -10,7 +10,6 @@ public sealed class StarmapMaterializationParityTests
     private static LythonRunOptions Tiny() => new()
     {
         MemoryBudget = new LythonMemoryBudget(1048576),
-        MaxCollectionSize = 10,
     };
 
     [Fact]

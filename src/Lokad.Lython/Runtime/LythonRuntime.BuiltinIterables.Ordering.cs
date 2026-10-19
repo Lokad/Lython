@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
             context);
 
         var result = new PyList(items, context.MemoryGovernor, span);
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 
@@ -72,7 +72,7 @@ internal sealed partial class LythonRuntime
         using var items = await SortItemsAsync(values, keyArgument, reverse, span, context).ConfigureAwait(false);
 
         var result = new PyList(items, context.MemoryGovernor, span);
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 
@@ -357,7 +357,7 @@ internal sealed partial class LythonRuntime
                             ? item
                             : CallableInvocation.InvokeUnary(keyCallable, item, span, context)),
                     span);
-                context.ObserveCollectionCount(entries.Count, span);
+                context.CheckExecution(span);
                 if ((entries.Count & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -405,7 +405,7 @@ internal sealed partial class LythonRuntime
                             ? item
                             : await CallableInvocation.InvokeUnaryAsync(keyCallable, item, span, context).ConfigureAwait(false)),
                     span);
-                context.ObserveCollectionCount(entries.Count, span);
+                context.CheckExecution(span);
                 if ((entries.Count & 63) == 0)
                 {
                     context.CheckExecution(span);

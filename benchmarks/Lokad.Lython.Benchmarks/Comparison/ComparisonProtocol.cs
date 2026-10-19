@@ -111,8 +111,8 @@ internal sealed class ComparisonManifest
             var workload = new ComparisonWorkload(Text("id"), Text("family"), Text("category"), Text("scale"),
                 row.GetProperty("size").GetInt32(), Text("source"), Text("fixtureJson"), Text("expectedOutput"));
             if (workload.Id.Length is < 1 or > 128 || workload.Size < 0
-                || workload.Source.Length is < 1 or > LythonEngine.MaxSourceLength
-                || ComparisonProtocol.Utf8.GetByteCount(workload.ExpectedOutput) > LythonRunOptions.DefaultMaxStandardOutputBytes)
+                || workload.Source.Length is < 1 or > ComparisonProtocol.MaximumFrameBytes
+                || ComparisonProtocol.Utf8.GetByteCount(workload.ExpectedOutput) > ComparisonProtocol.MaximumFrameBytes)
                 throw new InvalidDataException("Catalog case exceeds declared bounds: " + workload.Id);
             using var fixture = JsonDocument.Parse(workload.FixtureJson);
             ComparisonProtocol.ValidateUniqueProperties(fixture.RootElement);

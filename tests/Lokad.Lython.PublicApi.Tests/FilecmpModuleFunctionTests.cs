@@ -88,26 +88,6 @@ return filecmp.cmp("a.bin", "b.bin", shallow=False)
     }
 
     [Fact]
-    public void ExactComparisonHonorsTheHostReadLimit()
-    {
-        var host = new MockLythonHost("/repo");
-        host.SeedBytes("/repo/a.bin", Enumerable.Repeat((byte)0x61, 32).ToArray());
-        host.SeedBytes("/repo/b.bin", Enumerable.Repeat((byte)0x61, 32).ToArray());
-
-        var result = new LythonEngine().Run(
-            """
-import filecmp
-filecmp.cmp("a.bin", "b.bin", shallow=False)
-""",
-            host,
-            new LythonRunOptions { MaxHostReadBytes = 8 });
-
-        Assert.False(result.Success);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("host binary read exceeded maximum bytes (8)", result.Failure?.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void ExactComparisonAccountsForBothSimultaneousHostBuffers()
     {
         var host = new MockLythonHost("/repo");

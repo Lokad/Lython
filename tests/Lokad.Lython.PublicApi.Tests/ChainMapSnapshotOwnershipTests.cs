@@ -100,15 +100,6 @@ public sealed class ChainMapSnapshotOwnershipTests
     }
 
     [Fact]
-    public void IterationDeniesUnderTinyCollectionLimit()
-    {
-        var code = "import collections\nd = " + ThousandKeys + "\nc = collections.ChainMap(d)\nreturn len(list(c))\n";
-        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxCollectionSize = 10 });
-        Assert.False(result.Success);
-        Assert.Contains("maximum collection size exceeded", result.Failure!.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void IterationRespectsCancellation()
     {
         using var cts = new CancellationTokenSource();

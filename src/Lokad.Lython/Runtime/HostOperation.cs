@@ -148,8 +148,6 @@ internal static class HostOperation
         => exception switch
         {
             OperationCanceledException => throw RuntimeErrors.Cancelled(span),
-            LythonSubprocessOutputLimitException outputLimit => throw RuntimeErrors.Attributed("RuntimeError", outputLimit.Message, span,
-                LythonFailureReason.SubprocessOutputLimit, outputLimit.MaximumBytes, outputLimit.ActualBytes),
             LythonHostCapabilityUnavailableException unavailable => throw RuntimeErrors.Capability($"host {unavailable.Capability} is not available in this host.", span),
             _ => throw RuntimeErrors.Host(name, exception, span),
         };

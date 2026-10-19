@@ -625,8 +625,8 @@ literal hashes and quotes. Whitespace/comments may follow a conversion character
 Debug fields omit actual comment contents while retaining surrounding whitespace,
 newlines and hashes inside strings, following the corrected Python 3.13 behavior.
 Embedded expressions retain their locations in the original source. Nested
-formatted expressions share the parser nesting budget; source-size limits and
-the named Unicode-escape exclusion still apply.
+formatted expressions share managed parser nesting admission and the compilation
+owner; the named Unicode-escape exclusion still applies.
 
 ### 8.4 Generator functions
 
@@ -935,7 +935,7 @@ slice tuples; slices preserve raw bounds and do not resolve the `slice` builtin.
 Reads, stores, augmented stores and deletion share these keys. Receivers and key
 operands evaluate once in Python order, including generator suspension and delayed
 item protocols. Materialized slices and tuple storage remain memory governed;
-starred expansion obeys the collection-size limit. Assignment expressions in
+starred expansion admits its retained capacity through the shared owner. Assignment expressions in
 slice bounds require parentheses.
 
 Match subjects accept unparenthesized tuple expression lists, singleton trailing
@@ -3405,12 +3405,9 @@ execution must behave identically.
 
 The runtime must allow the embedding host to constrain:
 
-- execution time
-- memory use
-- recursion depth
-- maximum string size
-- maximum collection size
-- cancellation
+- execution time through the supplied cancellation token
+- major retained and working storage through a borrowed shared memory allowance
+- Python call depth, alongside fixed managed interpreter nesting admission
 
 The default binary-append fallback composes stat/read/write capabilities. Its
 combined prefix-plus-payload allocation is host-side memory outside governor
@@ -3751,11 +3748,13 @@ can escape through guest callbacks even if import execution later fails, so its
 estimate stays conservatively charged until batch end. Re-importing a successfully
 registered module reuses it without another compilation admission.
 
-Source units remain limited to1,000,000 characters, delimiter nesting512, unary
-nesting256, distinct expanded private names8,000,000 characters and canonical
-postponed annotation text8,000,000 characters. These limits retain their explicit
-frontend diagnostics. Inputs stay host-mediated and local imports allowlisted;
-no arbitrary guest evaluation or ambient module loading is introduced.
+Source units have no independent character allowance. Coarse source preparation,
+expanded private names and canonical postponed annotation text admit storage
+through the compilation owner before construction, including replacement overlap.
+Refusal returns an invalid script with shared-allowance attribution. Delimiter,
+unary and parser nesting bounds remain for managed stack safety. Inputs stay
+host-mediated and local imports allowlisted; no arbitrary guest evaluation or
+ambient module loading is introduced.
 Module registries, exports, runtime values and closure state retain their existing
 admission controls. There is no per-node/literal code inventory or closure graph
 walk. Conservative batch retention and coarse compilation estimates can reject

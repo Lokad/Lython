@@ -181,27 +181,6 @@ return wb.sheetnames
     }
 
     [Fact]
-    public void ManyTinyEntriesRespectCollectionLimit()
-    {
-        var host = new MockLythonHost();
-        host.SeedWorkbook("/many.xlsx", BuildXlsx(SheetPrefix, archive =>
-        {
-            for (var i = 0; i < 2000; i++)
-            {
-                WriteEntry(archive, "xl/pad" + i.ToString() + ".bin", "x");
-            }
-        }));
-        var result = new LythonEngine().Run(
-            LoadScript("/many.xlsx"),
-            host,
-            new LythonRunOptions { MaxCollectionSize = 100 });
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", result.Failure?.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void ManyTinyEntriesLoadCleanly()
     {
         var host = new MockLythonHost();

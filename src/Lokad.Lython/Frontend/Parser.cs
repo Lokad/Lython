@@ -16,7 +16,7 @@ internal sealed partial class Parser
     private LexerResult<Token>? _spanSourceTokens;
     private int _spanOffset;
     private PrivateNameContext? _privateNames;
-    private PrivateNameExpansionBudget _privateNameExpansion = new();
+    private readonly Runtime.MemoryGovernor? _memoryGovernor;
 
     /// <summary>Maximum simultaneous parser nesting levels. Sized from isolated
     /// crash probes (descent-heavy shapes overflow near 190 levels on 1MB stacks;
@@ -24,9 +24,10 @@ internal sealed partial class Parser
     internal const int MaxNestingDepth = 64;
     private static readonly string SyntaxNestingLimitMessage = $"Syntax nesting exceeds the maximum of {MaxNestingDepth} levels.";
 
-    public Parser(LexerResult<Token> tokens)
+    public Parser(LexerResult<Token> tokens, Runtime.MemoryGovernor? memoryGovernor = null)
     {
         _tokens = tokens;
+        _memoryGovernor = memoryGovernor;
         _implicitLineJoinTrivia = ComputeImplicitLineJoinTrivia(tokens);
     }
 

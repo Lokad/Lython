@@ -127,7 +127,6 @@ internal sealed partial class LythonRuntime
                         if (quotedKey is not PyString k || quotedValue is not PyString v)
                             throw RuntimeErrors.Type("quote_via must return strings", span);
                         var addition = (long)k.Length + v.Length + 1 + (count == 0 ? 0 : 1);
-                        CheckTextLength(scalars + addition, context, span);
                         if (count != 0) builder.Append((byte)'&');
                         builder.Append(k);
                         builder.Append((byte)'=');
@@ -156,7 +155,7 @@ internal sealed partial class LythonRuntime
             else
             {
                 var text = await FormatSuspendedFieldAsync(value, 's', null, context, span, asynchronous).ConfigureAwait(false);
-                context.ObserveString(text, span);
+                context.CheckExecution(span);
                 parameters = [CallArgumentValue.Positional(text), CallArgumentValue.Positional(args[2]),
                     CallArgumentValue.Positional(args[3]), CallArgumentValue.Positional(args[4])];
             }
@@ -228,8 +227,8 @@ internal sealed partial class LythonRuntime
                         {
                             var name = await DecodeFieldAsync(equals < 0 ? field : field[..equals]).ConfigureAwait(false);
                             var value = await DecodeFieldAsync(rawValue).ConfigureAwait(false);
-                            context.ObserveCollectionCount(pairs.Count + 1, span);
-                            context.ObserveCollectionCount(2, span);
+                            { _ = pairs.Count + 1; context.CheckExecution(span); }
+                            context.CheckExecution(span);
                             var pair = PyTuple.FromOwnedArray([name, value], context.MemoryGovernor, span);
                             pairs.Add(pair);
                         }
@@ -258,12 +257,12 @@ internal sealed partial class LythonRuntime
                     if (result.TryGetValue(pair[0], out var existing))
                     {
                         var values = (PyList)existing;
-                        context.ObserveCollectionCount(values.Count + 1, span);
+                        { _ = values.Count + 1; context.CheckExecution(span); }
                         values.Add(pair[1]);
                     }
                     else
                     {
-                        context.ObserveCollectionCount(result.Count + 1, span);
+                        { _ = result.Count + 1; context.CheckExecution(span); }
                         var values = QueryList(context, span);
                         values.Add(pair[1]);
                         result.SetItem(pair[0], values);

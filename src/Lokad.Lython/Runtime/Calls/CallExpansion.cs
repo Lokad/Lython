@@ -322,7 +322,7 @@ internal static class CallExpansion
             keys.Capacity = nextCapacity;
         }
         keys.Add(key);
-        context.ObserveCollectionCount(keys.Count, span);
+        context.CheckExecution(span);
         if (keys.Count % 64 == 0) context.CheckExecution(span);
     }
 
@@ -506,7 +506,7 @@ internal static class CallExpansion
 
             _values[_count++] = value;
             _span = span;
-            context.ObserveCollectionCount(_count, span);
+            context.CheckExecution(span);
             if (++_addedSinceBudgetCheck >= BudgetCheckInterval)
             {
                 _addedSinceBudgetCheck = 0;

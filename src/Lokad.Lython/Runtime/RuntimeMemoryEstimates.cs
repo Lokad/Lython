@@ -10,7 +10,7 @@ internal static class RuntimeMemoryEstimates
     // Coarse source/AST/lowered representation and bounded diagnostic-cache
     // capacity. This replaces per-node/literal retention inventories.
     internal static long EstimateCompilationBytes(int sourceLength)
-        => 32768L + 96L * Math.Min(sourceLength, LythonEngine.MaxSourceLength);
+        => 32768L + 96L * sourceLength;
 
     // A retained numeric slot pays a conservative box allowance without an
     // identity map. Large magnitudes retain their existing payload owner;

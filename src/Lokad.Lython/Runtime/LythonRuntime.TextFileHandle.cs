@@ -212,13 +212,6 @@ internal sealed partial class LythonRuntime
                 TextEncodingMode encoding,
                 LythonPathStat stat)
             {
-                if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
-                    stat.Size > new BigInteger(maxHostReadBytes))
-                {
-                    throw UsesBinaryTextTransport(encoding)
-                        ? RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxHostReadBytes})", maxHostReadBytes, stat.Size, null)
-                        : RuntimeErrors.HostRead($"host text read exceeded maximum bytes ({maxHostReadBytes})", maxHostReadBytes, stat.Size, null);
-                }
 
                 // No execution-budget prereserve against the stat size: windows
                 // stream, so a file larger than the budget stays processable as

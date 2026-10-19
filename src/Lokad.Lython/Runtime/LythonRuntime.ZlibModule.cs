@@ -149,7 +149,7 @@ internal sealed partial class LythonRuntime
             using var scratch = context.MemoryGovernor.ReserveTemporary(CompressionScratchBytes, span);
             var maximumLength = (long)input.Length + (input.Length >> 12) + (input.Length >> 14) + (input.Length >> 25) + 13;
             if (maximumLength > int.MaxValue) throw RuntimeErrors.Memory("zlib compressed output is too large", span);
-            var output = new GovernedByteBuilder(context.MemoryGovernor, span, 0, (int)maximumLength, "zlib compressed output");
+            var output = new GovernedByteBuilder(context.MemoryGovernor, span);
             try
             {
                 using var target = new GzipBufferWriteStream(output);

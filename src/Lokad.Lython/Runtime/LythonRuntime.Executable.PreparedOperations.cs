@@ -28,7 +28,6 @@ internal sealed partial class LythonRuntime
                             ExecutableDisplayKind.Dictionary => new PyDict(_context.MemoryGovernor, span),
                             _ => new PyList([], _context.MemoryGovernor, span),
                         };
-                        _context.ObserveValue(result, span);
                         _stack.Push(scope);
                         onStack = true;
                         _stack.Push(result);
@@ -49,7 +48,6 @@ internal sealed partial class LythonRuntime
                         ExecutableDisplayKind.Dictionary => new PyDict(_context.MemoryGovernor, span),
                         _ => new PyList([], _context.MemoryGovernor, span),
                     };
-                    _context.ObserveValue(collection, span);
                     _stack.Push(collection);
                     break;
                 case ExecutableAppendDisplay append:
@@ -71,9 +69,8 @@ internal sealed partial class LythonRuntime
                         {
                             using var ambient = PyStructuralGuard.PushAmbient(_context, span);
                             set.Add(ValidateSetItem(item, span));
-                            _context.ObserveCollectionCount(set.Count, span);
+                            _context.CheckExecution(span);
                         }
-                        _context.ObserveValue(destination, span);
                     }
                 case ExecutableStoreDictionaryItem item:
                     var itemValue = Pop(ref _stack, span);
@@ -112,8 +109,7 @@ internal sealed partial class LythonRuntime
                         using var ambient = PyStructuralGuard.PushAmbient(_context, span);
                         var dictionary = (PyDict)_stack[_stack.Count - 1 - item.IteratorDepth];
                         dictionary.SetItem(ValidateDictionaryKey(key, span), itemValue);
-                        _context.ObserveCollectionCount(dictionary.Count, span);
-                        _context.ObserveValue(dictionary, span);
+                        _context.CheckExecution(span);
                     }
                 case ExecutableFinishTuple:
                     var expanded = (PyList)Pop(ref _stack, span);

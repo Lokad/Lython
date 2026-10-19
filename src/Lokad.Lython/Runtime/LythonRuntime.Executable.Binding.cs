@@ -540,7 +540,6 @@ internal sealed partial class LythonRuntime
         // No extra slot, hidden retained extent or per-opcode cleanup is needed.
         stack.RemoveTail(stack.Count - start - 1);
         stack[start] = result;
-        context.ObserveValue(stack[start], span);
     }
 
     private static void ExecuteExecutableCall(

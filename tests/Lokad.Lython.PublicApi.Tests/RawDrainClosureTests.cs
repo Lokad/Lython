@@ -10,7 +10,6 @@ public sealed class RawDrainClosureTests
     private static LythonRunOptions Tiny() => new()
     {
         MemoryBudget = new LythonMemoryBudget(65536),
-        MaxCollectionSize = 10,
     };
 
     private static void AssertDenied(LythonExecutionResult result)

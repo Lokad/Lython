@@ -107,9 +107,7 @@ public sealed class ExecutionConsumptionTests
             {
                 Globals = new Dictionary<string, object?> { ["payload"] = payload },
                 AllowedBuiltinModules = new HashSet<string> { "json" },
-                DisableLocalModuleImports = true,                 MaxCollectionSize = 10000, MaxStringLength = 65536,
-                MaxHostReadBytes = 0, MaxStandardOutputBytes = 4096, MaxStandardErrorBytes = 4096,
-                MemoryBudget = new LythonMemoryBudget(8 * 1024 * 1024), ResultMemoryBudget = new LythonMemoryBudget(1024 * 1024),
+                DisableLocalModuleImports = true,                                 MemoryBudget = new LythonMemoryBudget(8 * 1024 * 1024), ResultMemoryBudget = new LythonMemoryBudget(1024 * 1024),
             };
             var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
             Assert.True(result.Success, result.Failure?.Message);

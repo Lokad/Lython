@@ -357,7 +357,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 result.Add(CreateTuple(enumerators.Length, i => RuntimeValue(enumerators[i].Current), context, span));
-                context.ObserveCollectionCount(result.Count, span);
+                context.CheckExecution(span);
             }
         }
         finally

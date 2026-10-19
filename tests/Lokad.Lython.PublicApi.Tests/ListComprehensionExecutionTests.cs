@@ -37,10 +37,8 @@ public sealed class ListComprehensionExecutionTests
         }
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task YieldingBodyAndDeniedAppendKeepPublishedWritesAndFunding(bool deny)
+    [Fact]
+    public async Task YieldingBodyKeepsPublishedWritesAndFunding()
     {
         const string source = "def emit(x):\n    with open('out.txt','a') as target:\n        target.write(str(x))\n    return x\nx=99\nvalues=[emit(x) for x in range(3)]\nprint(values,x)";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
@@ -48,11 +46,10 @@ public sealed class ListComprehensionExecutionTests
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/out.txt", "");
-        using (var result = await script.RunAsync(host, new LythonRunOptions { MaxCollectionSize = deny ? 2 : 100 }))
+        using (var result = await script.RunAsync(host, new LythonRunOptions { }))
         {
-            Assert.Equal(!deny, result.Success);
-            if (deny) Assert.Equal(LythonFailureReason.CollectionSizeLimit, result.FailureAttribution?.Reason);
-            else Assert.Equal("[0, 1, 2] 99\n", result.StandardOutput);
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("[0, 1, 2] 99\n", result.StandardOutput);
             Assert.Equal("012", host.ReadText("/out.txt"));
             Assert.True(host.CompletedAsynchronously > 0);
         }

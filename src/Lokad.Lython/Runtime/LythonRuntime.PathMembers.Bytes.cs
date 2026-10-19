@@ -13,8 +13,6 @@ internal sealed partial class LythonRuntime
             var stat = asynchronous ? await context.HostStatAsync(path, span).ConfigureAwait(false) : context.HostStat(path, span);
             if (!stat.Exists) throw new LythonRuntimeException("FileNotFoundError", "No such file: " + path, span);
             if (stat.IsDir) throw new LythonRuntimeException("IsADirectoryError", "Is a directory: " + path, span);
-            if (context.Limits.MaxHostReadBytes is { } maxRead && stat.Size > maxRead)
-                throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxRead})", maxRead, stat.Size, span);
             // Acquisition and copying retain their own existing reservations.
             using var acquired = asynchronous
                 ? await ReadGovernedHostBytesAfterStatAsync(path, stat, context, span).ConfigureAwait(false)

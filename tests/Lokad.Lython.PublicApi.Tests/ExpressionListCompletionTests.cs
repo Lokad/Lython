@@ -108,25 +108,6 @@ public sealed class ExpressionListCompletionTests
         Assert.Empty(result.StandardOutput);
     }
 
-    [Theory]
-    [InlineData("xs += *range(10),")]
-    [InlineData("*range(10),")]
-    public async Task ExpressionListUnpackingRespectsCollectionLimits(string statement)
-    {
-        var compiled = new LythonEngine().Compile("xs = []\n" + statement + "\n");
-        Assert.True(compiled.IsValid);
-        foreach (var result in new[]
-        {
-            compiled.Run(new MockLythonHost(), new LythonRunOptions { MaxCollectionSize = 3 }),
-            await compiled.RunAsync(new MockLythonHost(), new LythonRunOptions { MaxCollectionSize = 3 }),
-        })
-        {
-            Assert.False(result.Success);
-            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-            Assert.Contains("maximum collection size exceeded", result.Failure?.Message, StringComparison.Ordinal);
-        }
-    }
-
     [Fact]
     public async Task AugmentedDescriptorAndExpressionListAwaitDelayedHosts()
     {

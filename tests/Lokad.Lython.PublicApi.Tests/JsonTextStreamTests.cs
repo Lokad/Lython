@@ -255,27 +255,6 @@ public sealed class JsonTextStreamTests : LifetimeScenario
         }
     }
 
-    [Fact]
-    public async Task StandardInputAndOutputCapsRemainAuthoritative()
-    {
-        var read = Compile("import json\nimport sys\njson.load(sys.stdin)");
-        foreach (var asynchronous in new[] { false, true })
-        {
-            var host = new MockLythonHost();
-            host.SeedStandardInput("[12345]");
-            var options = new LythonRunOptions { MaxHostReadBytes = 3 };
-            var result = asynchronous ? await read.RunAsync(host, options) : read.Run(host, options);
-            Assert.False(result.Success);
-            Assert.Contains("maximum bytes", result.Failure?.Message);
-            var output = Compile("import json\nimport sys\njson.dump('long text', sys.stdout)");
-            options = new LythonRunOptions { MaxStandardOutputBytes = 3 };
-            result = asynchronous ? await output.RunAsync(new MockLythonHost(), options) : output.Run(new MockLythonHost(), options);
-            Assert.False(result.Success);
-            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-            Assert.Empty(result.StandardOutput);
-        }
-    }
-
     private static LythonCompiledScript Compile(string source)
     {
         var script = new LythonEngine().Compile(source);

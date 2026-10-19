@@ -389,7 +389,7 @@ public sealed class GeneratorExpressionCompositionTests : LifetimeScenario
         Assert.True(compiled.IsValid);
         foreach (var (options, error) in new[]
         {
-            (new LythonRunOptions { MaxCollectionSize = 64 }, "RuntimeError"),
+
             (new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) }, "MemoryError"),
         })
         {

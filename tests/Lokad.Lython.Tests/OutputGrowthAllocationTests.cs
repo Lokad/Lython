@@ -12,7 +12,6 @@ public sealed class OutputGrowthAllocationTests
     private static LythonRunOptions Tiny() => new()
     {
         MemoryBudget = new LythonMemoryBudget(65536),
-        MaxCollectionSize = 10,
     };
 
     private static long MeasureAllocated(System.Func<LythonExecutionResult> run)

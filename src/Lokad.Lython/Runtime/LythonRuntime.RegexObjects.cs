@@ -509,7 +509,7 @@ internal sealed partial class LythonRuntime
                     {
                         context.CheckExecution(span);
                         scalars[i] = CreateUtf8String(result.ScalarValues[i], context, span);
-                        context.ObserveString((PyString)scalars[i], span);
+                        { _ = (PyString)scalars[i]; context.CheckExecution(span); }
                     }
                     return new PyList(scalars, context.MemoryGovernor, span);
 
@@ -523,7 +523,7 @@ internal sealed partial class LythonRuntime
                         for (var i = 0; i < tuple.Length; i++)
                         {
                             items[i] = CreateUtf8String(tuple[i], context, span);
-                            context.ObserveString((PyString)items[i], span);
+                            { _ = (PyString)items[i]; context.CheckExecution(span); }
                         }
 
                         tuples[tupleIndex] = new PyTuple(items, context.MemoryGovernor, span);

@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
 
         stack.RemoveTail(valueCount);
 
-        context.ObserveCollectionCount(dict.Count, span);
+        context.CheckExecution(span);
         return dict;
     }
 
@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
 
             stack.RemoveTail(count);
 
-            context.ObserveCollectionCount(set.Count, span);
+            context.CheckExecution(span);
         }
         catch
         {

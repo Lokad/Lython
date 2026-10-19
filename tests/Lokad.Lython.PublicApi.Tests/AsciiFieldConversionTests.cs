@@ -45,21 +45,6 @@ public sealed class AsciiFieldConversionTests
         Assert.True(host.CompletedAsynchronously >= 2);
     }
 
-    [Fact]
-    public async Task AsciiExpansionIsLimitedBeforeFormatTruncation()
-    {
-        var compiled = new LythonEngine().Compile("print(f'{chr(233)*32!a:.1}')");
-        Assert.True(compiled.IsValid);
-        var options = new LythonRunOptions { MaxStringLength = 64 };
-        foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
-        {
-            Assert.False(result.Success);
-            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-            Assert.Contains("maximum string length", result.Failure?.Message);
-            Assert.Empty(result.StandardOutput);
-        }
-    }
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

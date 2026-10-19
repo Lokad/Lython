@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
             context.HostListDir(path, span).Select<string, object>(item => PyString.FromString(item, context.MemoryGovernor, span)),
             context.MemoryGovernor,
             span);
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         var pool = context.State.MemoryGovernor;
         foreach (var item in result)
         {
@@ -34,7 +34,7 @@ internal sealed partial class LythonRuntime
             names.Select<string, object>(item => PyString.FromString(item, context.MemoryGovernor, span)),
             context.MemoryGovernor,
             span);
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         var pool = context.State.MemoryGovernor;
         foreach (var item in result)
         {
@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
             ? Array.Empty<object>()
             : path.Split(':').Select<string, object>(item => PyString.FromString(item, context.MemoryGovernor, span));
         var result = new PyList(items, context.MemoryGovernor, span);
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
 
         static string? GetEnvironmentMappingValue(object mapping, string key, LythonSourceSpan span)
@@ -252,7 +252,7 @@ internal sealed partial class LythonRuntime
             entries[i] = entry;
         }
 
-        context.ObserveCollectionCount(entries.Length, span);
+        context.CheckExecution(span);
         // Own the iterator shell; entries carry their own coupons above.
         context.MemoryGovernor.Reserve(160L, span);
         context.MemoryGovernor.Commit(160L);
@@ -276,7 +276,7 @@ internal sealed partial class LythonRuntime
             entries[i] = entry;
         }
 
-        context.ObserveCollectionCount(entries.Length, span);
+        context.CheckExecution(span);
         // Own the iterator shell; entries carry their own coupons above.
         context.MemoryGovernor.Reserve(160L, span);
         context.MemoryGovernor.Commit(160L);

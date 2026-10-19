@@ -58,8 +58,6 @@ internal sealed partial class LythonRuntime
                 LambdaExpressionSyntax lambda => CreateLambda(lambda, context),
                 _ => throw new InvalidOperationException($"Unknown expression type: {expression.GetType().Name}")
             };
-
-            context.ObserveValue(value, expression.Span);
             return value;
         }
         catch (LythonRuntimeException ex)
@@ -121,7 +119,7 @@ internal sealed partial class LythonRuntime
                 AppendTupleDisplayItem(expanded, value, tuple.Items[i].IsUnpacking, tuple.Items[i].Span, tuple.Span, context);
             }
 
-            context.ObserveCollectionCount(expanded.Count, tuple.Span);
+            context.CheckExecution(tuple.Span);
             var expandedTuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
             return expandedTuple;
         }
@@ -154,7 +152,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context)
     {
         expanded.Add(RuntimeValue(value));
-        context.ObserveCollectionCount(expanded.Count, displaySpan);
+        context.CheckExecution(displaySpan);
     }
 
     private static void AppendTupleDisplayItem(
@@ -190,7 +188,7 @@ internal sealed partial class LythonRuntime
     private static void EnsureTupleExpansionCapacity(int count, ExecutionContext context, LythonSourceSpan span)
     {
         using var preflight8891 = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(count), span);
-        context.ObserveCollectionCount(count, span);
+        context.CheckExecution(span);
     }
 
     private static object EvaluateBinary(BinaryExpressionSyntax binary, ExecutionContext context)

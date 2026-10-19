@@ -119,8 +119,6 @@ internal sealed partial class LythonRuntime
             var services = context.Services;
             var builder = new GovernedByteBuilder(services.MemoryGovernor, span);
             object? invalidItem = null;
-            long outputScalars = 0;
-            var prefixScalars = -1;
             try
             {
                 for (var start = 0; start < text.Utf8Bytes.Length;)
@@ -140,10 +138,6 @@ internal sealed partial class LythonRuntime
                     }
                     else if (invalidItem is null)
                     {
-                        if (selected && prefixScalars < 0)
-                            prefixScalars = CountScalars(((PyString)prefix).Utf8Bytes.Span, span, services);
-                        outputScalars += line.Scalars + (selected ? prefixScalars : 0L);
-                        CheckOutputLength(outputScalars, span, services);
                         if (selected) builder.Append(((PyString)prefix).Utf8Bytes.Span);
                         builder.Append(text.Utf8Bytes.Span[start..line.EndByte]);
                     }
@@ -166,8 +160,6 @@ internal sealed partial class LythonRuntime
             var services = context.Services;
             var builder = new GovernedByteBuilder(services.MemoryGovernor, span);
             var invalidItem = false;
-            long outputScalars = 0;
-            var prefixScalars = -1;
             try
             {
                 if (asynchronous)
@@ -195,10 +187,6 @@ internal sealed partial class LythonRuntime
                     invalidItem = true;
                 else if (!invalidItem)
                 {
-                    if (selected && prefixScalars < 0)
-                        prefixScalars = CountScalars(((PyString)prefix).Utf8Bytes.Span, span, services);
-                    outputScalars += CountScalars(lineText.Utf8Bytes.Span, span, services) + (selected ? prefixScalars : 0L);
-                    CheckOutputLength(outputScalars, span, services);
                     if (selected) builder.Append(((PyString)prefix).Utf8Bytes.Span);
                     builder.Append(lineText.Utf8Bytes.Span);
                 }
@@ -238,12 +226,11 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        private readonly record struct LineFacts(int EndByte, int Scalars, bool HasNonWhitespace);
+        private readonly record struct LineFacts(int EndByte, bool HasNonWhitespace);
 
         private static LineFacts ScanLine(ReadOnlySpan<byte> source, int start, LythonSourceSpan span, ExecutionServices services)
         {
             var cursor = start;
-            var scalars = 0;
             var nonWhitespace = false;
             long nextCheck = start;
             while (cursor < source.Length)
@@ -251,35 +238,13 @@ internal sealed partial class LythonRuntime
                 if (cursor >= nextCheck) { services.CheckExecution(span); nextCheck = (long)cursor + 1024; }
                 if (PyStringOps.TryGetLineBreakByteLength(source, cursor, out var endingBytes))
                 {
-                    scalars += source[cursor] == (byte)'\r' && endingBytes == 2 ? 2 : 1;
-                    return new LineFacts(cursor + endingBytes, scalars, nonWhitespace);
+                    return new LineFacts(cursor + endingBytes, nonWhitespace);
                 }
                 Rune.DecodeFromUtf8(source[cursor..], out var rune, out var width);
                 nonWhitespace |= !PyStringOps.IsPythonWhitespace(rune);
-                scalars++;
                 cursor += width;
             }
-            return new LineFacts(cursor, scalars, nonWhitespace);
-        }
-
-        private static int CountScalars(ReadOnlySpan<byte> source, LythonSourceSpan span, ExecutionServices services)
-        {
-            var count = 0;
-            long nextCheck = 0;
-            for (var cursor = 0; cursor < source.Length;)
-            {
-                if (cursor >= nextCheck) { services.CheckExecution(span); nextCheck = (long)cursor + 1024; }
-                Rune.DecodeFromUtf8(source[cursor..], out _, out var width);
-                count++;
-                cursor += width;
-            }
-            return count;
-        }
-
-        private static void CheckOutputLength(long scalars, LythonSourceSpan span, ExecutionServices services)
-        {
-            if (services.Limits.MaxStringLength is { } maximum && scalars > maximum)
-                throw RuntimeErrors.StringLength(maximum, scalars, span);
+            return new LineFacts(cursor, nonWhitespace);
         }
 
         private static PyString Finish(GovernedByteBuilder builder, LythonSourceSpan span, ExecutionServices services)

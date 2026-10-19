@@ -144,7 +144,7 @@ gzip.open("/repo/data.gz", "rb").read()
     }
 
     [Fact]
-    public void MissingBinaryCapabilityAndReadLimitsFailExplicitly()
+    public void MissingBinaryCapabilityFailsExplicitly()
     {
         var textOnly = new TextOnlyHost();
         textOnly.SeedFile("/repo/data.gz", "not binary");
@@ -162,22 +162,10 @@ with gzip.open("/repo/out.gz", "wb") as writer:
 """,
             textOnly);
 
-        var bounded = new MockLythonHost("/repo");
-        bounded.SeedBytes("/repo/data.gz", PythonHelloGzip);
-        var limited = new LythonEngine().Run(
-            """
-import gzip
-gzip.open("/repo/data.gz", "rb")
-""",
-            bounded,
-            new LythonRunOptions { MaxHostReadBytes = 8 });
-
         Assert.Equal("RuntimeError", unavailable.Failure?.ExceptionType);
         Assert.Contains("host binary file I/O is not available", unavailable.Failure?.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Equal("RuntimeError", unavailableWrite.Failure?.ExceptionType);
         Assert.Contains("host binary file I/O is not available", unavailableWrite.Failure?.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Equal("RuntimeError", limited.Failure?.ExceptionType);
-        Assert.Contains("host binary read exceeded maximum bytes (8)", limited.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]

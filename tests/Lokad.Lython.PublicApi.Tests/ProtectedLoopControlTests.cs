@@ -13,7 +13,8 @@ public sealed class ProtectedLoopControlTests
             with open('out.txt', 'w') as target:
                 for i in range(2):
                     target.write('before')
-                    target.write('x' * 65536)
+                    target.flush()
+                    target.write('x' * (16777216 + i))
                     break
             """;
         var budget = new LythonMemoryBudget(1048576);
@@ -21,11 +22,11 @@ public sealed class ProtectedLoopControlTests
         var baseline = budget.ReservedBytes;
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         var mock = asynchronous ? null : new MockLythonHost();
-        var options = new LythonRunOptions { MaxStringLength = 1024 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) };
         using (var result = asynchronous ? await script.RunAsync(delayed!, options) : script.Run(mock!, options))
         {
             Assert.False(result.Success);
-            Assert.Equal(LythonFailureReason.StringLengthLimit, result.FailureAttribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.Equal("before", delayed?.ReadText("/out.txt") ?? mock!.ReadText("/out.txt"));
             if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
         }
@@ -39,6 +40,7 @@ public sealed class ProtectedLoopControlTests
             for i in range(2):
                 with open('out.txt', 'w') as target:
                     target.write('before')
+                    target.flush()
                     break
             """;
         var budget = new LythonMemoryBudget(1048576);

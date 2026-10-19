@@ -459,9 +459,7 @@ internal sealed partial class LythonRuntime
         var output = new GovernedByteBuilder(
             context.MemoryGovernor,
             span,
-            capacity: 0,
-            maxLengthBytes: (int)maximumLength,
-            maxLengthOwner: "gzip compressed output");
+            capacity: 0);
         try
         {
             using var outputStream = new GzipBufferWriteStream(output);

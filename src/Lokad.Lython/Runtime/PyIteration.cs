@@ -145,7 +145,7 @@ internal static partial class PyIteration
                 fundedCapacity = result.Capacity;
             }
 
-            context.ObserveCollectionCount(result.Count, span);
+            context.CheckExecution(span);
             if ((result.Count & 63) == 0)
             {
                 context.CheckExecution(span);
@@ -196,7 +196,7 @@ internal static partial class PyIteration
                 fundedCapacity = result.Capacity;
             }
 
-            context.ObserveCollectionCount(result.Count, span);
+            context.CheckExecution(span);
             if ((result.Count & 63) == 0)
             {
                 context.CheckExecution(span);
@@ -254,7 +254,7 @@ internal static partial class PyIteration
                     fundedCapacity = result.Capacity;
                 }
 
-                context.ObserveCollectionCount(result.Count, span);
+                context.CheckExecution(span);
                 if ((result.Count & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -297,7 +297,7 @@ internal static partial class PyIteration
                     fundedCapacity = result.Capacity;
                 }
 
-                context.ObserveCollectionCount(result.Count, span);
+                context.CheckExecution(span);
                 if ((result.Count & 63) == 0)
                 {
                     context.CheckExecution(span);

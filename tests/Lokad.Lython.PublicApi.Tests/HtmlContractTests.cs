@@ -37,7 +37,7 @@ public sealed class HtmlContractTests
     {
         var script = new LythonEngine().Compile("import html\nprint(html.unescape('&amp;&NotEqualTilde;&Tab;é😀'))");
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
-        var options = new LythonRunOptions { MaxCollectionSize = 1 };
+        var options = new LythonRunOptions { };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
             Assert.True(result.Success, result.Failure?.Message);

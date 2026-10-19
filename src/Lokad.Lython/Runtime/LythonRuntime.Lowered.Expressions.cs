@@ -78,7 +78,7 @@ internal sealed partial class LythonRuntime
             AppendTupleDisplayItem(expanded, value, tuple.Items[i].IsUnpacking, tuple.Items[i].Span, tuple.Span, context);
         }
 
-        context.ObserveCollectionCount(expanded.Count, tuple.Span);
+        context.CheckExecution(tuple.Span);
         return expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
     }
 
@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
                 foreach (var pair in EnumerateMappingItems(mapping, context, unpacking.Item.Span))
                 {
                     result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Item.Span), RuntimeValue(pair.Value));
-                    context.ObserveCollectionCount(result.Count, dict.Span);
+                    context.CheckExecution(dict.Span);
                 }
 
                 continue;
@@ -104,7 +104,7 @@ internal sealed partial class LythonRuntime
             var key = RuntimeValue(EvaluateLoweredExpression(keyValue.Key, context));
             var value = RuntimeValue(EvaluateLoweredExpression(keyValue.Value, context));
             result.SetItem(ValidateDictionaryKey(key, keyValue.Key.Span), value);
-            context.ObserveCollectionCount(result.Count, dict.Span);
+            context.CheckExecution(dict.Span);
         }
         return result;
     }
@@ -150,7 +150,7 @@ internal sealed partial class LythonRuntime
             context,
             itemScope => result.Add(RuntimeValue(EvaluateLoweredExpression(comprehension.ItemExpression, itemScope))), outer);
 
-        context.ObserveCollectionCount(result.Count, comprehension.Span);
+        context.CheckExecution(comprehension.Span);
         return result;
     }
 
@@ -174,7 +174,7 @@ internal sealed partial class LythonRuntime
                     result.Add(item);
                 }, outer);
 
-            context.ObserveCollectionCount(result.Count, comprehension.Span);
+            context.CheckExecution(comprehension.Span);
         }
         catch
         {
@@ -200,7 +200,7 @@ internal sealed partial class LythonRuntime
                 result.SetItem(key, RuntimeValue(EvaluateLoweredExpression(comprehension.ValueExpression, itemScope)));
             }, outer);
 
-        context.ObserveCollectionCount(result.Count, comprehension.Span);
+        context.CheckExecution(comprehension.Span);
         return result;
     }
 
@@ -317,7 +317,6 @@ internal sealed partial class LythonRuntime
         {
             var right = EvaluateLoweredExpression(chained.Operands[i + 1], context);
             var result = EvaluateBinaryOperator(chained.ChainedComparison.Operators[i], left, right, context, chained.Span);
-            context.ObserveValue(result, chained.Span);
             if (i == chained.ChainedComparison.Operators.Count - 1 || !IsTruthy(result, context, chained.Span))
             {
                 return result;

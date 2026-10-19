@@ -5,47 +5,6 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class ReviewHardening4RegressionTests
 {
-    [Fact]
-    public void CallUnpackingRespectsCollectionLimit()
-    {
-        var result = new LythonEngine().Run(
-            """
-def take(*args):
-    return len(args)
-take(*range(1000))
-""",
-            new MockLythonHost(),
-            new LythonRunOptions
-            {
-                MaxCollectionSize = 100
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", result.Failure?.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task CallUnpackingRespectsCollectionLimitAsync()
-    {
-        var result = await new LythonEngine().RunAsync(
-            """
-def take(*args):
-    return len(args)
-take(*range(1000))
-""",
-            new MockLythonHost(),
-            new LythonRunOptions
-            {
-                MaxCollectionSize = 100
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", result.Failure?.Message, StringComparison.Ordinal);
-    }
 
     [Fact]
     public void CallUnpackingRespectsMemoryBudget()
@@ -87,56 +46,6 @@ take(*range(100000))
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
         Assert.Contains("shared memory budget exceeded", result.Failure?.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task AsyncSortedInputRespectsCollectionLimit()
-    {
-        var result = await new LythonEngine().RunAsync(
-            "sorted(range(5000))",
-            new MockLythonHost(),
-            new LythonRunOptions
-            {
-                MaxCollectionSize = 100
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", result.Failure?.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void GzipReadLinesRespectsCollectionLimit()
-    {
-        var host = new MockLythonHost("/repo");
-        var seed = new LythonEngine().Run(
-            """
-import gzip
-with gzip.open("/repo/lines.gz", "wb") as writer:
-    for i in range(500):
-        writer.write(b"x\n")
-""",
-            host);
-        Assert.True(seed.Success, seed.Failure?.Message);
-
-        var result = new LythonEngine().Run(
-            """
-import gzip
-with gzip.open("/repo/lines.gz", "rb") as reader:
-    reader.readlines()
-return "done"
-""",
-            host,
-            new LythonRunOptions
-            {
-                MaxCollectionSize = 100
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]

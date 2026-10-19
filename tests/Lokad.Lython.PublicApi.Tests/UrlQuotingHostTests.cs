@@ -53,21 +53,6 @@ public sealed class UrlQuotingHostTests
         Assert.Equal("", result.StandardOutput);
     }
 
-    [Theory]
-    [InlineData("quote_from_bytes(b'\\xff'*20)", false)]
-    [InlineData("unquote(b'\\xff'*20)", true)]
-    public async Task LimitsCountOutputScalars(string expression, bool success)
-    {
-        var script = Compile("from urllib.parse import quote_from_bytes,unquote\nprint(" + expression + ")");
-        var options = new LythonRunOptions { MaxStringLength = 20, MaxCollectionSize = 20 };
-        foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
-        {
-            Assert.True(result.Success == success, result.Failure?.Message);
-            Assert.Equal(success ? new string('�', 20) + "\n" : "", result.StandardOutput);
-            if (!success) Assert.Contains("maximum string length", result.Failure?.Message);
-        }
-    }
-
     private static LythonCompiledScript Compile(string source)
     {
         var result = new LythonEngine().Compile(source);

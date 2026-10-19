@@ -712,11 +712,6 @@ internal sealed partial class LythonRuntime
 
     private static PyString ConcatStrings(PyString left, PyString right, ExecutionContext context, LythonSourceSpan span)
     {
-        var resultLength = RuntimeMemoryEstimates.SaturatingAdd(left.Length, right.Length);
-        if (context.Limits.MaxStringLength is { } maxStringLength && resultLength > maxStringLength)
-        {
-            throw RuntimeErrors.StringLength(maxStringLength, resultLength, span);
-        }
 
         var result = left.Concat(right, context.MemoryGovernor, span);
         return result;
@@ -782,11 +777,6 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("RuntimeError", "String repetition is too large.", span);
         }
 
-        var resultLength = RuntimeMemoryEstimates.SaturatingMultiply(text.Length, (long)count);
-        if (context.Limits.MaxStringLength is { } maxStringLength && resultLength > maxStringLength)
-        {
-            throw RuntimeErrors.StringLength(maxStringLength, resultLength, span);
-        }
 
         var repeated = text.Repeat((int)count, context.MemoryGovernor, span);
         GC.KeepAlive(context);
@@ -842,7 +832,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < repeatCount; i++)
         {
             result.AddRange(list);
-            context.ObserveCollectionCount(result.Count, span);
+            context.CheckExecution(span);
         }
         return result;
     }
@@ -868,7 +858,7 @@ internal sealed partial class LythonRuntime
         }
 
         // N02: deny before the sized allocation; bound the output count.
-        context.ObserveCollectionCount((int)totalLength, span);
+        { _ = (int)totalLength; context.CheckExecution(span); }
         using var preflight34788 = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes((int)totalLength), span);
         var items = new object[(int)totalLength];
         var filled = 0;
@@ -883,7 +873,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            context.ObserveCollectionCount((i + 1) * tuple.Count, span);
+            { _ = (i + 1) * tuple.Count; context.CheckExecution(span); }
         }
 
         // Fresh array transfers without copying (escape proof: allocated here,
@@ -911,7 +901,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < repeatCount; i++)
         {
             result.Extend(source.Iterate());
-            context.ObserveCollectionCount(result.Count, span);
+            context.CheckExecution(span);
         }
 
         return result;
@@ -959,7 +949,7 @@ internal sealed partial class LythonRuntime
                 foreach (var pair in EnumerateMappingItems(mapping, context, unpacking.Span))
                 {
                     result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Span), RuntimeValue(pair.Value));
-                    context.ObserveCollectionCount(result.Count, dict.Span);
+                    context.CheckExecution(dict.Span);
                 }
 
                 continue;
@@ -969,7 +959,7 @@ internal sealed partial class LythonRuntime
             var key = RuntimeValue(EvaluateExpression(keyValue.Key, context));
             var value = RuntimeValue(EvaluateExpression(keyValue.Value, context));
             result.SetItem(ValidateDictionaryKey(key, keyValue.Key.Span), value);
-            context.ObserveCollectionCount(result.Count, dict.Span);
+            context.CheckExecution(dict.Span);
         }
         return result;
     }
@@ -1022,7 +1012,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context)
     {
         result.Add(ValidateSetItem(value, itemSpan));
-        context.ObserveCollectionCount(result.Count, setSpan);
+        context.CheckExecution(setSpan);
     }
 
     // Typed mapping-absence signal (N16): non-mappings report false without throwing,

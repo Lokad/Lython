@@ -93,7 +93,6 @@ internal sealed partial class LythonRuntime
             var source = text.Utf8Bytes.Span;
             var builder = new GovernedByteBuilder(services.MemoryGovernor, span);
             var changed = false;
-            long scalars = 0;
             long nextCheck = 0;
             try
             {
@@ -106,8 +105,6 @@ internal sealed partial class LythonRuntime
                     }
                     Rune.DecodeFromUtf8(source[cursor..], out var rune, out var width);
                     var replacement = Replacement(rune.Value, mask);
-                    scalars += replacement?.Utf8Bytes.Length ?? 1;
-                    CheckHtmlOutputLength(scalars, span, services);
                     if (replacement is not null)
                     {
                         if (!changed) { builder.Append(source[..cursor]); changed = true; }
@@ -130,12 +127,6 @@ internal sealed partial class LythonRuntime
             '\'' when (mask & EscapeMask.Apostrophe) != 0 => ApostropheEntity,
             _ => null,
         };
-
-        private static void CheckHtmlOutputLength(long scalars, LythonSourceSpan span, ExecutionServices services)
-        {
-            if (services.Limits.MaxStringLength is { } maximum && scalars > maximum)
-                throw RuntimeErrors.StringLength(maximum, scalars, span);
-        }
 
         private static PyString FinishHtmlText(GovernedByteBuilder builder, LythonSourceSpan span, ExecutionServices services)
         {

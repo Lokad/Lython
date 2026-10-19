@@ -18,21 +18,6 @@ namespace Lokad.Lython.Tests;
 /// </summary>
 public sealed class ZipStagedAccountingTests
 {
-    [Fact]
-    public async Task ManyEmptyMembersEnforceCollectionLimit()
-    {
-        const string script = "import zipfile\nz = zipfile.ZipFile(\"/t.zip\", \"w\")\nfor i in range(200):\n    z.writestr(\"f\" + str(i), b\"\")\nz.close()\nreturn 1\n";
-        var options = new LythonRunOptions { MaxCollectionSize = 10 };
-        var sync = new LythonEngine().Run(script, new MockLythonHost(), options);
-        Assert.False(sync.Success);
-        Assert.Equal("RuntimeError", sync.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
-
-        var asyncResult = await new LythonEngine().RunAsync(script, new MockLythonHost(), options);
-        Assert.False(asyncResult.Success);
-        Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
-    }
 
     [Fact]
     public async Task ClosedArchivesReleaseStagedCharges()
@@ -84,31 +69,6 @@ public sealed class ZipStagedAccountingTests
         var asyncResult = await new LythonEngine().RunAsync(script, asyncHost, options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-    }
-
-    [Fact]
-    public async Task ExtractAllInfosBranchEnforcesCollectionLimit()
-    {
-        var seed = new MockLythonHost();
-        var built = new LythonEngine().Run("import zipfile\nwith zipfile.ZipFile(\"/t.zip\", \"w\") as archive:\n    for i in range(20):\n        archive.writestr(\"f\" + str(i), b\"\")\nreturn 1\n", seed);
-        Assert.True(built.Success, built.Failure?.Message);
-        var archive = seed.ReadBytes("/t.zip");
-
-        const string script = "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    archive.extractall(\"/out\")\nreturn 1\n";
-        var options = new LythonRunOptions { MaxCollectionSize = 10 };
-        var syncHost = new MockLythonHost();
-        syncHost.SeedBytes("/t.zip", archive);
-        var sync = new LythonEngine().Run(script, syncHost, options);
-        Assert.False(sync.Success);
-        Assert.Equal("RuntimeError", sync.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
-
-        var asyncHost = new MockLythonHost();
-        asyncHost.SeedBytes("/t.zip", archive);
-        var asyncResult = await new LythonEngine().RunAsync(script, asyncHost, options);
-        Assert.False(asyncResult.Success);
-        Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
     }
 
     [Fact]

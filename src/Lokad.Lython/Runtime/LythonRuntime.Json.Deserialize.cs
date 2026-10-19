@@ -342,7 +342,7 @@ internal sealed partial class LythonRuntime
                     var (pairValue, pairEnd) = await ReadJsonValueAsync(input, options, context, span, depth, pairColon + 1, asynchronous).ConfigureAwait(false);
                     var pair = PyTuple.FromOwnedArray([pairKey, pairValue], context.MemoryGovernor, span);
                     pairs.Add(pair);
-                    context.ObserveCollectionCount(pairs.Count, span);
+                    context.CheckExecution(span);
                     pairValueEnd = pairEnd;
                 }
             }
@@ -394,7 +394,7 @@ internal sealed partial class LythonRuntime
                 var memberColon = EnsureJsonColon(bytes.Span, memberKeyEnd, input, span, context);
                 var (memberValue, memberEnd) = await ReadJsonValueAsync(input, options, context, span, depth, memberColon + 1, asynchronous).ConfigureAwait(false);
                 result.SetItem(memberKey, memberValue);
-                context.ObserveCollectionCount(result.Count, span);
+                context.CheckExecution(span);
                 valueEnd = memberEnd;
             }
         }
@@ -438,7 +438,7 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 var (element, elementEnd) = await ReadJsonValueAsync(input, options, context, span, depth, elementStart, asynchronous).ConfigureAwait(false);
                 result.Add(element);
-                context.ObserveCollectionCount(result.Count, span);
+                context.CheckExecution(span);
                 valueEnd = elementEnd;
             }
         }

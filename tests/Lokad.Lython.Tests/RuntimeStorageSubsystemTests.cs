@@ -556,46 +556,4 @@ public sealed class RuntimeStorageSubsystemTests
         Assert.Equal([.. Enumerable.Repeat((byte)'a', 1_000), 0xe9, 0x21], host.ReadBytes("/output.txt"));
         Assert.True(host.CompletedAsynchronously > 0);
     }
-
-    [Fact]
-    public void ExecutionServices_GovernedValuesDoNotDoubleChargeMemoryGovernor()
-    {
-        var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
-        {
-            MemoryBudget = new LythonMemoryBudget(4096)
-        });
-        var services = new ExecutionServices(state);
-
-        var text = PyString.FromString("governed", state.MemoryGovernor, null);
-        var list = new PyList([new BigInteger(1), new BigInteger(2)], state.MemoryGovernor, null);
-        var accounted = state.MemoryGovernor.CurrentAccountedBytes;
-
-        services.ObserveString(text, null);
-        services.ObserveValue(list, null);
-        services.ObserveCollectionCount(64, null);
-
-        Assert.Equal(accounted, state.MemoryGovernor.CurrentAccountedBytes);
-    }
-
-    [Fact]
-    public void ExecutionServices_UngovernedValuesAreCheckedWithoutBeingRetained()
-    {
-        var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
-        {
-            MemoryBudget = new LythonMemoryBudget(4096)
-        });
-        var services = new ExecutionServices(state);
-
-        for (var i = 0; i < 100; i++)
-        {
-            services.ObserveString(PyString.FromString("plain"), null);
-            services.ObserveValue(new BigInteger(1), null);
-        }
-
-        Assert.Equal(0, state.MemoryGovernor.CurrentAccountedBytes);
-
-        var exception = Assert.Throws<LythonRuntimeException>(
-            () => services.ObserveValue(new PyList(Enumerable.Repeat<object>(new BigInteger(1), 256)), null));
-        Assert.Equal("MemoryError", exception.ExceptionType);
-    }
 }

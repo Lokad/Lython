@@ -108,7 +108,7 @@ internal sealed partial class LythonRuntime
             invocation.Request.Args.Select<string, object>(text => PyString.FromString(text, context.MemoryGovernor, span)),
             context.MemoryGovernor,
             span);
-        context.ObserveCollectionCount(args.Count, span);
+        context.CheckExecution(span);
         var handle = new PyPopen(invocation.Request, args, pipelineInput, context, span);
         // Wrapper-state slice (MG21): the retained handle plus its pipe-stream
         // wrappers stay live with the script but own no governor charges yet.
@@ -231,7 +231,6 @@ internal sealed partial class LythonRuntime
         private PyString? _decodedStderr;
         private Exception? _completionFailure;
         private bool _completionStarted;
-        private long _cumulativePipelineOutputBytes;
         private bool _hasCommunicated;
         private object _communicatedStdout = PyNone.Instance;
         private object _communicatedStderr = PyNone.Instance;
@@ -256,7 +255,7 @@ internal sealed partial class LythonRuntime
             _stderr = request.StandardError == LythonSubprocessStreamMode.Pipe
                 ? new PopenOutputStream(this, isStandardError: true, context)
                 : null;
-            context.ObserveCollectionCount(args.Count, span);
+            context.CheckExecution(span);
             pipelineInput?.AttachAsPipelineInput(context, span);
             OwnedStreamCount = (_stdin is null ? 0 : 1) + (_stdout is null ? 0 : 1) + (_stderr is null ? 0 : 1);
         }
@@ -357,24 +356,24 @@ internal sealed partial class LythonRuntime
             return standardError ? _decodedStderr ?? PyString.Empty : _decodedStdout ?? PyString.Empty;
         }
 
-        public PipelinePayload CompleteForPipeline(
+        public ReadOnlyMemory<byte> CompleteForPipeline(
             int? timeoutMilliseconds,
             LythonSourceSpan? span,
             HashSet<PyPopen> completionPath)
         {
             _ = Complete(timeoutMilliseconds, span, completionPath);
             var output = _decodedStdout ?? PyString.Empty;
-            return new PipelinePayload(output.Utf8Bytes, _cumulativePipelineOutputBytes);
+            return output.Utf8Bytes;
         }
 
-        public async ValueTask<PipelinePayload> CompleteForPipelineAsync(
+        public async ValueTask<ReadOnlyMemory<byte>> CompleteForPipelineAsync(
             int? timeoutMilliseconds,
             LythonSourceSpan? span,
             HashSet<PyPopen> completionPath)
         {
             _ = await CompleteAsync(timeoutMilliseconds, span, completionPath).ConfigureAwait(false);
             var output = _decodedStdout ?? PyString.Empty;
-            return new PipelinePayload(output.Utf8Bytes, _cumulativePipelineOutputBytes);
+            return output.Utf8Bytes;
         }
 
         private object Communicate(object[] arguments, LythonSourceSpan span)
@@ -564,8 +563,7 @@ internal sealed partial class LythonRuntime
             else
             {
                 var pipeline = _pipelineInput.TakePipelinePayload(timeoutMilliseconds, span, completionPath);
-                input = pipeline.Input;
-                _cumulativePipelineOutputBytes = pipeline.CumulativeOutputBytes;
+                input = pipeline;
             }
 
             return _request with
@@ -592,8 +590,7 @@ internal sealed partial class LythonRuntime
                 var pipeline = await _pipelineInput
                     .TakePipelinePayloadAsync(timeoutMilliseconds, span, completionPath)
                     .ConfigureAwait(false);
-                input = pipeline.Input;
-                _cumulativePipelineOutputBytes = pipeline.CumulativeOutputBytes;
+                input = pipeline;
             }
 
             return _request with
@@ -630,12 +627,6 @@ internal sealed partial class LythonRuntime
                 _context.MemoryGovernor.Commit(rawBytes);
             }
 
-            _cumulativePipelineOutputBytes = checked(_cumulativePipelineOutputBytes + ownCapturedBytes);
-            if (_context.Limits.MaxStringLength is { } maximum && _cumulativePipelineOutputBytes > maximum)
-            {
-                throw RuntimeErrors.Attributed("RuntimeError", $"maximum cumulative Popen pipeline output exceeded ({maximum})", span,
-                    LythonFailureReason.SubprocessPipelineLimit, maximum, _cumulativePipelineOutputBytes);
-            }
         }
 
         private LythonRuntimeException CreateTimeoutExpired(int? timeoutMilliseconds, LythonSourceSpan span)

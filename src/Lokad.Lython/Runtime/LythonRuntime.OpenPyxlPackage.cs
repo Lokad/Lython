@@ -471,7 +471,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 var count = directory.Entries.Count;
-                context.ObserveCollectionCount(count, span);
+                context.CheckExecution(span);
                 long expandedTotal = 0;
                 for (var index = 0; index < count; index++)
                 {

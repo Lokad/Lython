@@ -129,18 +129,18 @@ public sealed partial class PostponedAnnotationTests : LifetimeScenario
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task MetadataLimitsApplyBeforeDecoratorPublication(bool collection)
+    public async Task MetadataAdmissionPrecedesDecoratorPublication(bool collection)
     {
-        var declaration = collection ? "def f(" + string.Join(',', Enumerable.Range(0, 12).Select(i => $"x{i}:T")) + "):pass"
-            : "def f(x:VeryLongAnnotationName):pass";
+        var declaration = collection ? "def f(" + string.Join(',', Enumerable.Range(0, 1000).Select(i => $"x{i}:T")) + "):pass"
+            : "def f(x:" + new string('T', 131072) + "):pass";
         var source = "from __future__ import annotations\ndef deco(f):print('decorator');return f\n@deco\n" + declaration;
         var compiled = new LythonEngine().Compile(source);
         Assert.True(compiled.IsValid);
-        var options = collection ? new LythonRunOptions { MaxCollectionSize = 8 } : new LythonRunOptions { MaxStringLength = 16 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);
-            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
             Assert.Empty(result.StandardOutput);
         }
     }
@@ -160,12 +160,13 @@ public sealed partial class PostponedAnnotationTests : LifetimeScenario
     }
 
     [Fact]
-    public void NestedFormattedAnnotationsHaveBoundedCanonicalText()
+    public void NestedFormattedAnnotationsBorrowCompilationAllowance()
     {
         var expression = "Missing";
         for (var i = 0; i < 28; i++) expression = "f\"{" + expression + "}\"";
-        var compiled = new LythonEngine().Compile("from __future__ import annotations\nx:" + expression);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var compiled = new LythonEngine().Compile("from __future__ import annotations\nx:" + expression, budget);
         Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, diagnostic => diagnostic.Code == "LA0005");
+        Assert.Contains(compiled.Diagnostics, diagnostic => diagnostic.Code == "LA0008");
     }
 }

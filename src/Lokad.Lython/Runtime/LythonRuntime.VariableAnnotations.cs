@@ -35,7 +35,7 @@ internal sealed partial class LythonRuntime
     {
         var text = expression.PostponedAnnotationText ?? throw RuntimeErrors.Runtime("Postponed annotation metadata is unavailable.", expression.Span);
         var result = PyString.FromString(text, context.MemoryGovernor, expression.Span);
-        context.ObserveString(result, expression.Span);
+        context.CheckExecution(expression.Span);
         return result;
     }
 
@@ -43,9 +43,9 @@ internal sealed partial class LythonRuntime
         ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
         var key = PyString.FromString(name, context.MemoryGovernor, span);
-        context.ObserveString(key, span);
+        context.CheckExecution(span);
         if (annotations is PyDict dictionary && !dictionary.ContainsKey(key))
-            context.ObserveCollectionCount(dictionary.Count + 1, span);
+            { _ = dictionary.Count + 1; context.CheckExecution(span); }
         if (asynchronous)
             await SetHeaderSubscriptAsync(annotations, key, annotation, span, context).ConfigureAwait(false);
         else SetSubscriptValue(annotations, key, annotation, span, context);

@@ -58,26 +58,17 @@ internal sealed partial class LythonRuntime
     {
         context.CheckExecution(span);
         var stat = context.HostStat(path, span);
-        if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
-            stat.Size > new BigInteger(maxHostReadBytes))
-        {
-            throw RuntimeErrors.HostRead($"host text read exceeded maximum bytes ({maxHostReadBytes})", maxHostReadBytes, stat.Size, span);
-        }
 
         using var acquisition = ReserveExecutionMemoryForKnownLength(stat, 128L, context, span);
         context.CheckExecution(span);
         var utf8 = context.ReadTextUtf8(path, span);
-        if (context.Limits.MaxHostReadBytes is { } maxReadBytes && utf8.Length > maxReadBytes)
-        {
-            throw RuntimeErrors.HostRead($"host text read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, utf8.Length, span);
-        }
 
         var text = DecodeUtf8Text(utf8, context, span, errors, newline);
         if (text.OwnerMemoryGovernor is null && text.Utf8Bytes.Length > 0)
         {
             text = CreateString(text.AsString(), context, span);
         }
-        context.ObserveString(text, span);
+        context.CheckExecution(span);
         return text;
     }
 
@@ -96,19 +87,10 @@ internal sealed partial class LythonRuntime
     {
         context.CheckExecution(span);
         var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
-        if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
-            stat.Size > new BigInteger(maxHostReadBytes))
-        {
-            throw RuntimeErrors.HostRead($"host text read exceeded maximum bytes ({maxHostReadBytes})", maxHostReadBytes, stat.Size, span);
-        }
 
         using var acquisition = ReserveExecutionMemoryForKnownLength(stat, 128L, context, span);
         context.CheckExecution(span);
         var utf8 = await context.ReadTextUtf8Async(path, span).ConfigureAwait(false);
-        if (context.Limits.MaxHostReadBytes is { } maxReadBytes && utf8.Length > maxReadBytes)
-        {
-            throw RuntimeErrors.HostRead($"host text read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, utf8.Length, span);
-        }
 
         var text = DecodeUtf8Text(utf8, context, span, errors, newline);
         if (text.OwnerMemoryGovernor is null && text.Utf8Bytes.Length > 0)
@@ -116,7 +98,7 @@ internal sealed partial class LythonRuntime
             text = CreateString(text.AsString(), context, span);
         }
 
-        context.ObserveString(text, span);
+        context.CheckExecution(span);
         return text;
     }
 
@@ -133,24 +115,10 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan? span)
     {
-        // The caller already registered and observed this stat (for example to
-        // distinguish missing files from directories); reuse it for the size
-        // precheck instead of stating again, then register and perform only
-        // the read. The post-read actual-length check still guards against
-        // growth between the two host observations.
-        if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
-            stat.Size > new BigInteger(maxHostReadBytes))
-        {
-            throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxHostReadBytes})", maxHostReadBytes, stat.Size, span);
-        }
 
         using var acquisition = ReserveExecutionMemoryForKnownLength(stat, 32L, context, span);
         context.CheckExecution(span);
         var payload = context.ReadHostBytes(path, span);
-        if (context.Limits.MaxHostReadBytes is { } maxReadBytes && payload.Length > maxReadBytes)
-        {
-            throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, payload.Length, span);
-        }
 
         return new GovernedHostBytes(payload, context.MemoryGovernor, span);
     }
@@ -168,20 +136,10 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan? span)
     {
-        // Same reuse contract as the synchronous twin above.
-        if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
-            stat.Size > new BigInteger(maxHostReadBytes))
-        {
-            throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxHostReadBytes})", maxHostReadBytes, stat.Size, span);
-        }
 
         using var acquisition = ReserveExecutionMemoryForKnownLength(stat, 32L, context, span);
         context.CheckExecution(span);
         var payload = await context.ReadHostBytesAsync(path, span).ConfigureAwait(false);
-        if (context.Limits.MaxHostReadBytes is { } maxReadBytes && payload.Length > maxReadBytes)
-        {
-            throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, payload.Length, span);
-        }
 
         return new GovernedHostBytes(payload, context.MemoryGovernor, span);
     }

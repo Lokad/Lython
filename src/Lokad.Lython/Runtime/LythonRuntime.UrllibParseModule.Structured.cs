@@ -178,7 +178,6 @@ internal sealed partial class LythonRuntime
         {
             if (bytes.IsEmpty) return PyString.Empty;
             var result = PyString.FromUtf8(bytes, context.MemoryGovernor, span);
-            CheckTextLength(result.Length, context, span);
             return result;
         }
         private static PyBytes AsciiBytes(PyString text, ExecutionContext context, LythonSourceSpan span)
@@ -304,7 +303,6 @@ internal sealed partial class LythonRuntime
             using var ambient = PyStructuralGuard.PushAmbient(context, span);
             var lower = PyStringOps.Lower(prefix);
             lower = (PyString)OwnMethodResult(lower,prefix,context.MemoryGovernor,span);
-            CheckTextLength(lower.Length, context, span);
             if (percent < 0) return lower;
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             try
@@ -329,7 +327,7 @@ internal sealed partial class LythonRuntime
             await foreach (var item in QuerySequenceAsync(input, span, context, asynchronous).ConfigureAwait(false))
             {
                 if (list.Count == int.MaxValue) throw RuntimeErrors.Runtime("URL component sequence exceeds the supported size", span);
-                context.ObserveCollectionCount(list.Count + 1, span); list.Add(item);
+                { _ = list.Count + 1; context.CheckExecution(span); } list.Add(item);
             }
             return list;
         }
@@ -366,7 +364,6 @@ internal sealed partial class LythonRuntime
             if (withParams) scalarCount++;
             if (query.Length != 0) scalarCount++;
             if (fragment.Length != 0) scalarCount++;
-            CheckTextLength(scalarCount, context, span);
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             try
             {

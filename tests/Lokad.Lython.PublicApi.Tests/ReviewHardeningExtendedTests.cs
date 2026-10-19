@@ -109,18 +109,5 @@ return len(calls)
         Assert.True(result.Success, Describe(result));
         Assert.Equal(new BigInteger(4), result.ReturnValue);
     }
-
-    [Fact]
-    public void ByteLimitsCoverBoundaries()
-    {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new LythonEngine().Run("return 1", new MockLythonHost(), new LythonRunOptions { MaxHostReadBytes = long.MinValue }));
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new LythonEngine().Run("return 1", new MockLythonHost(), new LythonRunOptions { MaxHostReadBytes = (long)int.MaxValue + 1 }));
-        var atMax = new LythonEngine().Run("return 1", new MockLythonHost(), new LythonRunOptions { MaxHostReadBytes = int.MaxValue });
-        Assert.True(atMax.Success, Describe(atMax));
-        var zero = new LythonEngine().Run("return 1", new MockLythonHost(), new LythonRunOptions { MaxHostReadBytes = 0 });
-        Assert.True(zero.Success, Describe(zero));
-    }
 }
 

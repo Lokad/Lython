@@ -83,8 +83,7 @@ public sealed class PublicApiInvariantTests
             ContentMode: LythonSubprocessContentMode.Text,
             TextEncoding: LythonSubprocessTextEncoding.Utf8,
             TextErrorMode: LythonSubprocessTextErrorMode.Strict,
-            Timeout: TimeSpan.FromSeconds(2),
-            OutputLimit: new LythonSubprocessOutputLimit(16));
+            Timeout: TimeSpan.FromSeconds(2));
 
         var result = await LythonSubprocessCompletion.CompleteBufferedAsync(
             request,
@@ -96,10 +95,8 @@ public sealed class PublicApiInvariantTests
             CancellationToken.None);
 
         Assert.Equal(TimeSpan.FromSeconds(2), request.Timeout);
-        Assert.Equal(16, request.OutputLimit?.Bytes);
         Assert.Equal(3, result.ReturnCode);
         Assert.Equal("out"u8.ToArray(), result.StandardOutputUtf8.ToArray());
         Assert.Equal("err"u8.ToArray(), result.StandardErrorUtf8.ToArray());
-        Assert.Throws<ArgumentOutOfRangeException>(() => new LythonSubprocessOutputLimit(-1));
     }
 }

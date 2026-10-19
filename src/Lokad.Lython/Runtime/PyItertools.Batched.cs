@@ -49,7 +49,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
             if (!_source.TryMoveNext(out var current)) break;
 
             buffer[count++] = LythonRuntime.RuntimeValue(current);
-            _context.ObserveCollectionCount(count, _span);
+            _context.CheckExecution(_span);
             if ((count & 63) == 0)
             {
                 _context.CheckExecution(_span);
@@ -97,7 +97,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
             }
 
             buffer[count++] = LythonRuntime.RuntimeValue(current);
-            _context.ObserveCollectionCount(count, _span);
+            _context.CheckExecution(_span);
             if ((count & 63) == 0)
             {
                 _context.CheckExecution(_span);

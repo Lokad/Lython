@@ -46,26 +46,6 @@ return i
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
         Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
     }
-    [Fact]
-    public void UniqueSequenceGrowthRespectsCollectionLimit()
-    {
-        var result = new LythonEngine().Run(
-            """
-import difflib
-matcher = difflib.SequenceMatcher(None, list(range(3000)), list(range(3000)))
-return matcher.ratio()
-""",
-            new MockLythonHost(),
-            new LythonRunOptions
-            {
-                MaxCollectionSize = 100
-            });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", result.Failure?.Message, StringComparison.Ordinal);
-    }
 
     [Fact]
     public void UniqueSequenceGrowthRespectsMemoryBudget()

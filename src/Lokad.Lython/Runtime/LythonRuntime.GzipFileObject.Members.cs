@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
                         {
                             var line = await ReadAsync(-1, true, span, asynchronous).ConfigureAwait(false);
                             if (line.Length == 0) break;
-                            result.Add(line); _services.ObserveCollectionCount(result.Count, span);
+                            result.Add(line); _services.CheckExecution(span);
                             consumed += line.Length;
                             if (hint > 0 && consumed > hint) break;
                         }

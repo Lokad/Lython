@@ -73,18 +73,6 @@ return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 
     }
 
     [Fact]
-    public void DistHugeInputsDenyUnderTinyCollectionLimit()
-    {
-        var result = new LythonEngine().Run(
-            "import math\nreturn math.dist(range(200000), range(200000))\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxCollectionSize = 10 });
-        Assert.False(result.Success);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", result.Failure!.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void DistRespectsCancellation()
     {
         using var cts = new CancellationTokenSource();
@@ -196,17 +184,6 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
     }
 
     [Fact]
-    public void SumProdHugeDeniedByCollectionLimit()
-    {
-        var result = new LythonEngine().Run(
-            "import math\nreturn math.sumprod(range(200000), range(200000))\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxCollectionSize = 10 });
-        Assert.False(result.Success);
-        Assert.Contains("maximum collection size exceeded", result.Failure!.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public async Task SumProdDelayedAsyncInputsSuspendThroughHost()
     {
         var script = new LythonEngine().Compile(
@@ -253,17 +230,6 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
         AssertError(result, "TypeError", "at most 11-sequence (200000-sequence given)");
         Assert.True(result.PeakExecutionMemoryBytes < 8192, $"peak was {result.PeakExecutionMemoryBytes}");
-    }
-
-    [Fact]
-    public void StructTimeInfiniteDeniedByCollectionLimit()
-    {
-        var result = new LythonEngine().Run(
-            "import itertools, time\nreturn time.struct_time(itertools.count())\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxCollectionSize = 20 });
-        Assert.False(result.Success);
-        Assert.Contains("maximum collection size exceeded", result.Failure!.Message, StringComparison.Ordinal);
     }
 
     [Fact]

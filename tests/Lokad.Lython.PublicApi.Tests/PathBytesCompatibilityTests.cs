@@ -47,26 +47,6 @@ public sealed class PathBytesCompatibilityTests
         Assert.Equal(new byte[] { 1, 2, 3 }, host.ReadBytes("/blob"));
     }
 
-    [Theory]
-    [InlineData(5, true)]
-    [InlineData(4, false)]
-    [InlineData(0, false)]
-    public async Task BinaryReadHonorsHostByteLimit(int cap, bool success)
-    {
-        foreach (var asynchronous in new[] { false, true })
-        {
-            var host = new MockLythonHost();
-            host.SeedBytes("/blob", [0, 1, 2, 3, 255]);
-            var options = new LythonRunOptions { MaxHostReadBytes = cap };
-            var script = new LythonEngine().Compile("from pathlib import Path\nprint(len(Path('/blob').read_bytes()))");
-            Assert.True(script.IsValid);
-            var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-            Assert.Equal(success, result.Success);
-            if (success) Assert.Equal("5\n", result.StandardOutput);
-            else Assert.Contains("host binary read exceeded maximum bytes", result.Failure?.Message);
-        }
-    }
-
     [Fact]
     public async Task HostWriteFailurePreservesExistingBytes()
     {

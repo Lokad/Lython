@@ -208,18 +208,4 @@ public sealed class StructuredUrlAccountingTests
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
     }
-
-    [Fact]
-    public void ReassemblyLengthDenialPrecedesBuilderAllocation()
-    {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxStringLength = 8 });
-        var values = new PyTuple([PyString.FromString("http"), PyString.FromString("x"), PyString.FromString("/a"), PyString.Empty, PyString.Empty]);
-        Assert.True(LythonRuntime.UrllibParseModule.Instance.TryGetMember("urlunsplit", out var member));
-        var error = Assert.Throws<LythonRuntimeException>(() => ((LythonRuntime.ICallable)member).Invoke([CallArgumentValue.Positional(values)], Span, context));
-        Assert.Contains("maximum string length", error.Message);
-        Sweep(context);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(new LythonSourceSpan(0, 0, 0, 0), error.Span);
-        GC.KeepAlive(values);
-    }
 }

@@ -136,14 +136,6 @@ internal static class RuntimeErrors
     internal static LythonRuntimeException Capability(string message, LythonSourceSpan? span)
         => Attributed("RuntimeError", message, span, LythonFailureReason.HostCapabilityUnavailable);
 
-    internal static LythonRuntimeException StringLength(long limit, long observed, LythonSourceSpan? span)
-        => Attributed("RuntimeError", $"maximum string length exceeded ({limit})", span,
-            LythonFailureReason.StringLengthLimit, limit, observed);
-
-    internal static LythonRuntimeException HostRead(string message, long limit, BigInteger observed, LythonSourceSpan? span)
-        => Attributed("RuntimeError", message, span, LythonFailureReason.HostReadLimit, limit,
-            observed >= long.MinValue && observed <= long.MaxValue ? (long)observed : null);
-
     public static LythonRuntimeException Recursion(string message, LythonSourceSpan? span)
         => new("RecursionError", message, span);
 

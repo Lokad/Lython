@@ -447,7 +447,7 @@ internal sealed partial class LythonRuntime
                 text = StripUtf8Bom(ReadGovernedHostText(path, context, span, errors, newline), encodingMode);
             }
 
-            context.ObserveString(text, span);
+            context.CheckExecution(span);
             return text;
         }
 
@@ -472,7 +472,7 @@ internal sealed partial class LythonRuntime
                     encodingMode);
             }
 
-            context.ObserveString(text, span);
+            context.CheckExecution(span);
             return text;
         }
 
@@ -558,7 +558,7 @@ internal sealed partial class LythonRuntime
                 if (stat.IsFile && MatchRglobPattern(name, pattern))
                 {
                     results.Add(child);
-                    context.ObserveCollectionCount(results.Count, span);
+                    context.CheckExecution(span);
                 }
             }
         }

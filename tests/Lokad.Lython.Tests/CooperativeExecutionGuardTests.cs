@@ -13,11 +13,6 @@ public sealed class CooperativeExecutionGuardTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
         Assert.Null(Assert.IsType<LythonMemoryBudget>(context.MemoryGovernor.Budget).LimitBytes);
         Assert.Equal(LythonRunOptions.DefaultMaxRecursionDepth, context.Limits.MaxRecursionDepth);
-        Assert.Equal(LythonRunOptions.DefaultMaxCollectionSize, context.Limits.MaxCollectionSize);
-        Assert.Equal(LythonRunOptions.DefaultMaxStringLength, context.Limits.MaxStringLength);
-        Assert.Equal(LythonRunOptions.DefaultMaxHostReadBytes, context.Limits.MaxHostReadBytes);
-        Assert.Equal(LythonRunOptions.DefaultMaxStandardOutputBytes, context.Limits.MaxStandardOutputBytes);
-        Assert.Equal(LythonRunOptions.DefaultMaxStandardErrorBytes, context.Limits.MaxStandardErrorBytes);
     }
 
     [Fact]

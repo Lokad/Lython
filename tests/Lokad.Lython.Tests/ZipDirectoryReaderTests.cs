@@ -208,18 +208,6 @@ public sealed class ZipDirectoryReaderTests
     }
 
     [Fact]
-    public void EntryCountRespectsCollectionLimit()
-    {
-        var records = Enumerable.Range(0, 200)
-            .Select(i => (Encoding.ASCII.GetBytes("f" + i), (ushort)0, new byte[] { (byte)'x' }))
-            .ToArray();
-        var failure = Assert.Throws<LythonRuntimeException>(
-            () => Read(BuildRawArchive(records), new LythonRunOptions { MaxCollectionSize = 100 }));
-        Assert.Equal("RuntimeError", failure.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", failure.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void RetainedMetadataRespectsMemoryBudget()
     {
         var failure = Assert.Throws<LythonRuntimeException>(

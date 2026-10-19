@@ -147,7 +147,7 @@ public sealed class MatchSubjectExpressionListTests
         Assert.True(compiled.IsValid);
         foreach (var (options, exceptionType) in new[]
         {
-            (new LythonRunOptions { MaxCollectionSize = 3 }, "RuntimeError"),
+
             (new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) }, "MemoryError"),
         })
         {

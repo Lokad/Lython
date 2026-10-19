@@ -15,7 +15,7 @@ public sealed class FailureAttributionGuardTests
         governor.Reserve(long.MaxValue, Span);
         governor.Commit(long.MaxValue);
         var error = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(1, Span));
-        Assert.Equal(new LythonFailureAttribution(LythonFailureReason.SharedMemoryAllowance, null, long.MaxValue, 1), error.Attribution);
+        Assert.Equal(new LythonFailureAttribution(LythonFailureReason.ByteBufferCapacityLimit, null, long.MaxValue, 1), error.Attribution);
         Assert.Equal(long.MaxValue, governor.CurrentAccountedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
@@ -40,12 +40,5 @@ public sealed class FailureAttributionGuardTests
         Assert.Equal(new LythonFailureAttribution(interpreter ? LythonFailureReason.InterpreterStackLimit : LythonFailureReason.RecursionDepthLimit,
             limit, limit, limit + 1), error.Attribution);
         Assert.Equal(0, context.State.StructuralTraversal.Depth);
-    }
-
-    [Fact]
-    public void UnrepresentableHostSizeIsOmittedRatherThanWrappedOrSaturated()
-    {
-        var error = RuntimeErrors.HostRead("controlled denial", 10, BigInteger.One << 90, Span);
-        Assert.Equal(new LythonFailureAttribution(LythonFailureReason.HostReadLimit, 10), error.Attribution);
     }
 }

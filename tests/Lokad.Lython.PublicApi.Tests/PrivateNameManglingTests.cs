@@ -445,20 +445,25 @@ public sealed class PrivateNameManglingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void PrivateNameExpansionIsBoundedAcrossEmbeddedFields(bool formatted)
+    public void PrivateNameExpansionBorrowsCompilationOwnerAcrossEmbeddedFields(bool formatted)
     {
-        var className = new string('C', 8000);
-        var statements = Enumerable.Range(0, 1100).Select(i => formatted
+        var className = new string('C', 4096);
+        var statements = Enumerable.Range(0, 256).Select(i => formatted
             ? $" self.__value{i}=f'{{self.__read{i}}}'\n"
             : $" __value{i}=0\n");
         var source = "class " + className + ":\n" + string.Concat(statements);
-        Assert.True(source.Length < LythonEngine.MaxSourceLength);
-        var compiled = new LythonEngine().Compile(source);
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var compiled = new LythonEngine().Compile(source, budget);
         Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA0004");
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA0008");
         var result = compiled.Run(new MockLythonHost());
         Assert.False(result.Success);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+        Assert.True(result.FailureAttribution?.Requested > 0);
         Assert.Empty(result.StandardOutput);
+        Assert.True(budget.ReservedBytes > 2 * 1024 * 1024);
+        compiled.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

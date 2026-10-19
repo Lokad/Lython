@@ -39,7 +39,6 @@ internal sealed partial class LythonRuntime
                     if (source[cursor] == (byte)'&' && TryReadReference(source, cursor, span, services, out var reference))
                     {
                         scalars += reference.Scalars;
-                        CheckHtmlOutputLength(scalars, span, services);
                         if (!changed) { builder.Append(source[..cursor]); changed = true; }
                         if (reference.Text is not null) builder.Append(reference.Text);
                         else if (reference.Scalar >= 0)
@@ -54,7 +53,6 @@ internal sealed partial class LythonRuntime
                     {
                         Rune.DecodeFromUtf8(source[cursor..], out _, out var width);
                         scalars++;
-                        CheckHtmlOutputLength(scalars, span, services);
                         if (changed) builder.Append(source.Slice(cursor, width));
                         cursor += width;
                     }

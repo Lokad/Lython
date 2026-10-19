@@ -93,22 +93,6 @@ public sealed class AsciiCodecHostTests
     }
 
     [Fact]
-    public async Task ReadLimitsRejectBeforeDecodingHostBytes()
-    {
-        var script = Compile("from pathlib import Path\nPath('/input').read_text(encoding='ascii')");
-        var options = new LythonRunOptions { MaxHostReadBytes = 1 };
-        var syncHost = new MockLythonHost();
-        syncHost.SeedBytes("/input", [0xff, 0xff]);
-        var host = new DelayedLythonHost();
-        host.SeedBytes("/input", [0xff, 0xff]);
-        foreach (var result in new[] { script.Run(syncHost, options), await script.RunAsync(host, options) })
-        {
-            Assert.False(result.Success);
-            Assert.Contains("maximum bytes (1)", result.Failure?.Message);
-        }
-    }
-
-    [Fact]
     public void StaticTextContractsAcceptAsciiAliases()
         => Compile("from pathlib import Path\nimport argparse,gzip\nopen('/input',encoding='ascii')\nPath('/input').read_text(encoding='US-ASCII')\nPath('/output').write_text('x',encoding='646')\nPath('/input').open(encoding='cp367')\nargparse.FileType('r',encoding='ascii')\ngzip.open('/input','rt',encoding='ascii')");
 
@@ -129,24 +113,6 @@ public sealed class AsciiCodecHostTests
         Assert.False(result.Success);
         Assert.Contains("canceled", result.Failure?.Message);
         Assert.Equal("before\n", result.StandardOutput);
-    }
-
-    [Theory]
-    [InlineData("replace", true)]
-    [InlineData("backslashreplace", false)]
-    public async Task DecodeLimitsCountOutputScalars(string errors, bool success)
-    {
-        // Both argument strings fit this cap. Replacement emits twenty scalars
-        // in sixty UTF-8 bytes; backslash replacement emits eighty scalars.
-        var script = Compile("print((b'\\xff'*20).decode('ascii','" + errors + "'))");
-        var options = new LythonRunOptions { MaxStringLength = 20, MaxCollectionSize = 20 };
-        var expected = success ? new string('�', 20) + "\n" : "";
-        foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
-        {
-            Assert.True(result.Success == success, result.Failure?.Message);
-            Assert.Equal(expected, result.StandardOutput);
-            if (!success) Assert.Contains("maximum string length", result.Failure?.Message);
-        }
     }
 
     private static LythonCompiledScript Compile(string source)

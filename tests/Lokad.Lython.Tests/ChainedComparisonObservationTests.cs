@@ -9,26 +9,6 @@ namespace Lokad.Lython.Tests;
 
 public sealed class ChainedComparisonObservationTests
 {
-    [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(true, true)]
-    public async Task NativeResultHonorsStringLimitBeforeTheNextOperand(bool asynchronous, bool chained)
-    {
-        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var owner = budget.CreateScope();
-        var context = CreateContext(owner);
-        var comparison = new Comparison(budget, PyString.FromString(new string('x', 32)));
-        var tail = Prepare(context, comparison);
-        var failure = await Assert.ThrowsAsync<LythonRuntimeException>(() => Run(context, asynchronous, chained));
-        Assert.Equal(LythonFailureReason.StringLengthLimit, failure.Attribution?.Reason);
-        Assert.Equal(0, tail.Calls);
-        Assert.Equal(1, comparison.Calls);
-        CheckCleanup(context);
-        owner.Dispose();
-        Assert.Equal(0, budget.ReservedBytes);
-    }
 
     [Theory]
     [InlineData(false)]
@@ -37,7 +17,7 @@ public sealed class ChainedComparisonObservationTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = CreateContext(owner, maximumString: 1000);
+        var context = CreateContext(owner);
         var comparison = new Comparison(budget, PyString.FromString(new string('x', 32)), exhaust: true);
         var tail = Prepare(context, comparison);
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(() => Run(context, asynchronous, true));
@@ -50,16 +30,14 @@ public sealed class ChainedComparisonObservationTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task SuspendedComparisonKeepsFundingUntilResultValidation(bool cancel)
+    [Fact]
+    public async Task SuspendedComparisonKeepsFundingUntilCancelledUserFinishes()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = CreateContext(owner, cancellation: cancellation.Token);
-        var text = PyString.FromString(new string('x', cancel ? 4 : 32), context.MemoryGovernor, null);
+        var text = PyString.FromString(new string('x', 4), context.MemoryGovernor, null);
         var comparison = new Comparison(budget, text, suspend: true);
         var tail = Prepare(context, comparison);
         var pending = Run(context, true, true);
@@ -70,7 +48,7 @@ public sealed class ChainedComparisonObservationTests
             Assert.False(pending.IsCompleted);
             Assert.True(budget.ReservedBytes > 0);
             Assert.False(comparison.Finished);
-            if (cancel) cancellation.Cancel();
+            cancellation.Cancel();
         }
         finally
         {
@@ -79,20 +57,20 @@ public sealed class ChainedComparisonObservationTests
             catch (LythonRuntimeException) { }
         }
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
-        Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.StringLengthLimit,
+        Assert.Equal(LythonFailureReason.Cancelled,
             failure.Attribution?.Reason);
         Assert.True(comparison.Finished);
         Assert.Equal(1, comparison.Calls);
         Assert.Equal(0, tail.Calls);
-        Assert.Equal(cancel ? 4 : 32, text.Length);
+        Assert.Equal(4, text.Length);
         CheckCleanup(context);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private static Context CreateContext(ILythonMemoryBudget owner, int maximumString = 8, CancellationToken cancellation = default)
+    private static Context CreateContext(ILythonMemoryBudget owner, CancellationToken cancellation = default)
         => new(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxStringLength = maximumString, CancellationToken = cancellation });
+        { MemoryBudget = owner, CancellationToken = cancellation });
 
     private static Tail Prepare(Context context, Comparison comparison)
     {

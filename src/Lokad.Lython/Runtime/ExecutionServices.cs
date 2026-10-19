@@ -8,14 +8,12 @@ internal sealed class ExecutionServices
     {
         State = state;
         Guards = state.Guards;
-        ValueObservation = new ExecutionValueObservation(state);
     }
 
     public ExecutionState State { get; }
 
     public ExecutionGuards Guards { get; }
 
-    public ExecutionValueObservation ValueObservation { get; }
 
     public PyException? CurrentException { get; private set; }
 
@@ -41,20 +39,6 @@ internal sealed class ExecutionServices
         CurrentException = exception;
         return previous;
     }
-
-    public void ObserveString(PyString text, LythonSourceSpan? span)
-    {
-        Guards.CheckExecution(span);
-        ValueObservation.ObserveString(text, span);
-    }
-
-    public void ObserveCollectionCount(int count, LythonSourceSpan? span)
-    {
-        Guards.CheckExecution(span);
-        ValueObservation.ObserveCollectionCount(count, span);
-    }
-
-    public void ObserveValue(object value, LythonSourceSpan? span) => ValueObservation.ObserveValue(value, span);
 
     // Runtime file owners need host authority and limits, not the lexical frame
     // that opened them. Keep the existing host boundary and path policy here.

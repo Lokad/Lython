@@ -90,21 +90,6 @@ return [copy.dispatch_table.get("review_marker", "absent"), len(hashlib.algorith
     }
 
     [Fact]
-    public void ByteLimitsRejectNegativeValuesBeforeNarrowing()
-    {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new LythonEngine().Run(
-                "return 42",
-                new MockLythonHost(),
-                new LythonRunOptions { MaxHostReadBytes = -4294967296 }));
-        var ok = new LythonEngine().Run(
-            "return 42",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxHostReadBytes = 0 });
-        Assert.True(ok.Success, Describe(ok));
-    }
-
-    [Fact]
     public void ContextManagerExitIsInvokedExactlyOnceOnNormalExitFailure()
     {
         var result = new LythonEngine().Run(

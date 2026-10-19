@@ -155,12 +155,13 @@ public sealed class YieldFormSyntaxTests
             list(generate())
             """);
         Assert.True(compiled.IsValid);
-        var options = new LythonRunOptions { MaxCollectionSize = 64 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);
-            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-            Assert.Equal("cleanup\n", result.StandardOutput);
+            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            // Refusal is terminal: guest finally code cannot resume allocation or output.
+            Assert.Empty(result.StandardOutput);
         }
     }
 

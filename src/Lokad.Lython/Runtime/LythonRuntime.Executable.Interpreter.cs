@@ -231,7 +231,6 @@ internal sealed partial class LythonRuntime
 
         private void PushObserved(object value, LythonSourceSpan span)
         {
-            _context.ObserveValue(value, span);
             _stack.Push(value);
         }
 
@@ -271,7 +270,6 @@ internal sealed partial class LythonRuntime
             {
                 case ExecutableOpCode.LoadConst:
                     var constant = RuntimeValue(_codeObject.Constants[instruction.ConstantIndex]);
-                    _context.ObserveValue(constant, instruction.Span);
                     _stack.Push(constant);
                     break;
 
@@ -293,7 +291,6 @@ internal sealed partial class LythonRuntime
 
                 case ExecutableOpCode.EvaluateFallbackExpression:
                     var fallback = EvaluateLoweredExpression(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex], _context);
-                    _context.ObserveValue(fallback, instruction.Span);
                     _stack.Push(fallback);
                     break;
 
@@ -325,8 +322,6 @@ internal sealed partial class LythonRuntime
                             ? new ExecutableMemberCache(target, memberValue)
                             : null;
                     }
-
-                    _context.ObserveValue(memberValue, instruction.Span);
                     if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver) _stack.Push(PyNone.Instance);
                     _stack.Push(memberValue);
                     break;

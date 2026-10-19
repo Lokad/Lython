@@ -87,19 +87,19 @@ internal sealed partial class LythonRuntime
                 if (IsSingleByteEncoding(_encoding))
                 {
                     var normalizedLength = GetSingleByteNormalizedLength();
-                    EnsureBufferedLength(normalizedLength);
+                    var normalizedBufferedLength = checked(_bufferedRuneLength + normalizedLength);
                     AppendSingleByteNormalized();
-                    _bufferedRuneLength += normalizedLength;
+                    _bufferedRuneLength = normalizedBufferedLength;
                     _bufferedLineFeedCount += appendedLineFeedCount;
                     return new BigInteger(inputLength);
                 }
 
-                EnsureBufferedLength(text.Length);
+                var bufferedLength = checked(_bufferedRuneLength + text.Length);
                 _buffer.Append(text);
                 if (IsUtf16Encoding(_encoding))
                     _bufferedUtf16ByteLength += 2L * Encoding.UTF8.GetCharCount(text.Utf8Bytes.Span);
                 _hasWrittenText = true;
-                _bufferedRuneLength += text.Length;
+                _bufferedRuneLength = bufferedLength;
                 _bufferedLineFeedCount += appendedLineFeedCount;
                 return new BigInteger(inputLength);
 
@@ -129,15 +129,6 @@ internal sealed partial class LythonRuntime
                     }
 
                     return length;
-                }
-
-                void EnsureBufferedLength(long additionalLength)
-                {
-                    var bufferedLength = checked(_bufferedRuneLength + additionalLength);
-                    if (_services.Limits.MaxStringLength is { } maximumLength && bufferedLength > maximumLength)
-                    {
-                        throw RuntimeErrors.StringLength(maximumLength, bufferedLength, null);
-                    }
                 }
 
                 void AppendSingleByteNormalized()

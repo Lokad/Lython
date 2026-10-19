@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
                 options.Errors,
                 options.Newline,
                 stream: true);
-            context.ObserveString(text, span);
+            context.CheckExecution(span);
             return new GzipFileHandle(options, context, new TextReadContent(text), [], dirty: false);
         }
 
@@ -211,7 +211,7 @@ internal sealed partial class LythonRuntime
 
                 lines.Add(line);
                 total += line is PyString text ? text.Utf8Bytes.Length : ((PyBytes)line).Length;
-                _services.ObserveCollectionCount(lines.Count, span);
+                _services.CheckExecution(span);
                 if ((lines.Count & 63) == 0)
                 {
                     _services.CheckExecution(span);

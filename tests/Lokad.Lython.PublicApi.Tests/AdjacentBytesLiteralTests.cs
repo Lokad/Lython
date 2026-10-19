@@ -112,15 +112,6 @@ public sealed class AdjacentBytesLiteralTests
         await AssertOutput(source, "20000\n");
     }
 
-    [Fact]
-    public void SourceLimitRejectsOversizedLiteralSequencesBeforeParsing()
-    {
-        var source = "value = " + string.Concat(Enumerable.Repeat("b'x' ", LythonEngine.MaxSourceLength / 5 + 1)) + "\n";
-        var compiled = new LythonEngine().Compile(source);
-        Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, diagnostic => diagnostic.Code == "LA0002");
-    }
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

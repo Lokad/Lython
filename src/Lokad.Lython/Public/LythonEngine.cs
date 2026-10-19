@@ -9,12 +9,6 @@ namespace Lokad.Lython;
 /// <summary>Compiles and executes Python source using Lython's host-mediated runtime.</summary>
 public sealed class LythonEngine
 {
-    /// <summary>The maximum source length accepted by the contained frontend.</summary>
-    public const int MaxSourceLength = 1_000_000;
-
-    /// <summary>Maximum total characters in distinct expanded private names during one compilation.</summary>
-    public const int MaxPrivateNameExpansionLength = 8_000_000;
-
     /// <summary>The maximum delimiter nesting accepted by the contained frontend.</summary>
     public const int MaxSyntaxNesting = 512;
 
@@ -40,22 +34,30 @@ public sealed class LythonEngine
         try
         {
             if (!owner.TryReserve(estimate, out _))
-            {
-                IReadOnlyList<LythonDiagnostic> denied = [new("LA0008",
-                    "Shared memory budget refused compilation storage.", LythonDiagnosticSeverity.Error, null)];
-                LythonExecutionResult Failure() => LythonExecutionResult.CompilationFailed(1, "", "", denied,
-                    new(LythonFailureReason.SharedMemoryAllowance));
-                return new LythonCompiledScript(source, denied, false, (_, _) => Failure(),
-                    (_, _) => Task.FromResult(Failure())).OwnMemoryScope(owner, memoryBudget);
-            }
-            return CompileCore(source).OwnMemoryScope(owner, memoryBudget);
+                return Denied(new(LythonFailureReason.SharedMemoryAllowance, Requested: estimate));
+            return CompileCore(source, new MemoryGovernor(owner)).OwnMemoryScope(owner, memoryBudget);
+        }
+        catch (LythonRuntimeException error) when (error.Attribution?.Reason == LythonFailureReason.SharedMemoryAllowance)
+        {
+            return Denied(error.Attribution, error.Span);
         }
         catch { owner.Dispose(); throw; }
+
+        LythonCompiledScript Denied(LythonFailureAttribution? attribution = null, LythonSourceSpan? span = null)
+        {
+            IReadOnlyList<LythonDiagnostic> denied = [new("LA0008",
+                "Shared memory budget refused compilation storage.", LythonDiagnosticSeverity.Error, span)];
+            LythonExecutionResult Failure() => LythonExecutionResult.CompilationFailed(1, "", "", denied,
+                attribution ?? new(LythonFailureReason.SharedMemoryAllowance));
+            return new LythonCompiledScript(source, denied, false, (_, _) => Failure(),
+                (_, _) => Task.FromResult(Failure())).OwnMemoryScope(owner, memoryBudget);
+        }
+
     }
 
-    private static LythonCompiledScript CompileCore(string source)
+    private static LythonCompiledScript CompileCore(string source, MemoryGovernor governor)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source, governor);
         var diagnostics = frontend.Diagnostics;
         var isValid = diagnostics.All(static d => d.Severity != LythonDiagnosticSeverity.Error);
         var script = frontend.Script;

@@ -217,7 +217,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var result = new PyList(_items.Keys.Select<string, object>(EnvString), context.MemoryGovernor, span);
-                    context.ObserveCollectionCount(result.Count, span);
+                    context.CheckExecution(span);
                     return result;
                 }, EnvironKeysSignature),
                 "values" => BoundCallable.Create((arguments, span, context) =>
@@ -228,7 +228,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var result = new PyList(_items.Values.Select<string, object>(EnvString), context.MemoryGovernor, span);
-                    context.ObserveCollectionCount(result.Count, span);
+                    context.CheckExecution(span);
                     return result;
                 }, EnvironValuesSignature),
                 "items" => BoundCallable.Create((arguments, span, context) =>
@@ -245,7 +245,7 @@ internal sealed partial class LythonRuntime
                             span)),
                         context.MemoryGovernor,
                         span);
-                    context.ObserveCollectionCount(result.Count, span);
+                    context.CheckExecution(span);
                     return result;
                 }, EnvironItemsSignature),
                 "copy" => BoundCallable.Create((arguments, span, context) =>
@@ -256,7 +256,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var result = ToPyDict(context, span);
-                    context.ObserveCollectionCount(result.Count, span);
+                    context.CheckExecution(span);
                     return result;
                 }, EnvironCopySignature),
                 "clear" => BoundCallable.Create((arguments, span, _) =>

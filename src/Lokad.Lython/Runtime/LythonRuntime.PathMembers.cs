@@ -185,7 +185,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 notes.Add(note);
-                context.ObserveCollectionCount(notes.Count, span);
+                context.CheckExecution(span);
                 return PyNone.Instance;
             }
 
@@ -194,7 +194,7 @@ internal sealed partial class LythonRuntime
             var freshNotes = new PyList([], context.MemoryGovernor, span);
             freshNotes.Add(note);
             exception.CustomDict.SetItem(PyString.FromString("__notes__", context.MemoryGovernor, span), freshNotes);
-            context.ObserveCollectionCount(freshNotes.Count, span);
+            context.CheckExecution(span);
             return PyNone.Instance;
         }
 

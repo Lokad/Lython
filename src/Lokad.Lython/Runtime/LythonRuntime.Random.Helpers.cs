@@ -195,7 +195,7 @@ internal sealed partial class LythonRuntime
                     chargedCapacity = counts.Capacity;
                 }
 
-                context.ObserveCollectionCount(counts.Count, span);
+                context.CheckExecution(span);
                 if ((counts.Count & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -230,7 +230,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("OverflowError", "random.sample(..., counts=...) population is too large.", span);
             }
 
-            context.ObserveCollectionCount((int)total, span);
+            { _ = (int)total; context.CheckExecution(span); }
             // Raw CLR ints sit outside the numeric tower; normalize like the chokes.
             rawCount = rawCount is int smallCount ? new BigInteger(smallCount) : rawCount;
             // Like CPython, k validates against the expanded total through
@@ -321,7 +321,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 result.Add(RuntimeValue(item));
-                context.ObserveCollectionCount(result.Count, span);
+                context.CheckExecution(span);
                 if ((result.Count & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -407,14 +407,14 @@ internal sealed partial class LythonRuntime
         {
             if (value is IPyIndexableValue indexable)
             {
-                context.ObserveCollectionCount(indexable.Length, span);
+                context.CheckExecution(span);
                 return (indexable.Length, indexable.GetIndex);
             }
 
             if (value is PyRange range && range.Length <= int.MaxValue)
             {
                 var length = (int)range.Length;
-                context.ObserveCollectionCount(length, span);
+                context.CheckExecution(span);
                 // Raw CLR ints are outside the numeric tower; the subscript
                 // funnel only accepts normalized magnitudes.
                 return (length, index => range.GetSubscript(new BigInteger(index), span));

@@ -120,11 +120,6 @@ foreach (var payload in new[] { "[1,2,3]", "[4,5]" })
         AllowedBuiltinModules = new HashSet<string> { "json" },
         DisableLocalModuleImports = true,
         CancellationToken = deadline.Token,
-        MaxCollectionSize = 10_000,
-        MaxStringLength = 65_536,
-        MaxHostReadBytes = 0,
-        MaxStandardOutputBytes = 4_096,
-        MaxStandardErrorBytes = 4_096,
         MemoryBudget = new LythonMemoryBudget(8 * 1024 * 1024),
     });
     Console.WriteLine(result.Success
@@ -302,7 +297,7 @@ The current PythonRe 0.2.0 backend discovers all `finditer` matches before guest
 
 `json` covers text-only `load`/`dump` for Lython file handles, mediated standard streams and guest `read()`/`write(chunk)` protocols; `loads`/`dumps`, catchable `JSONDecodeError` fields, parse/object hooks, formatting controls, key sorting/conversion, `skipkeys`, `default`, `allow_nan`, and circular-reference checks. `JSONDecoder` is a reusable class with `decode`/`raw_decode` prefix decoding (accepted through `cls=` too); `JSONEncoder` is a reusable class with `encode`/`default`/incremental-`iterencode` (accepted through `cls=` too). `dump` writes incrementally through `iterencode`, preserving published prefixes on later failures. Subclasses with overrides and `cls=` dispatch through the selected class (standard plus custom constructor keywords) work; non-JSON `cls=` classes remain explicitly unsupported. `RunAsync` awaits stream callbacks and host effects.
 
-`itertools` covers common lazy data-wrangling helpers: `chain`, `islice`, `product`, `zip_longest`, `count`, `repeat`, `cycle`, combinatorics, `accumulate`, selectors/predicates, `starmap`, `pairwise`, `groupby`, `tee`, and `batched`. Unbounded iterators remain lazy; functions that must cache inputs or buffers are still subject to Lython's execution limits.
+`itertools` covers common lazy data-wrangling helpers: `chain`, `islice`, `product`, `zip_longest`, `count`, `repeat`, `cycle`, combinatorics, `accumulate`, selectors/predicates, `starmap`, `pairwise`, `groupby`, `tee`, and `batched`. Unbounded iterators remain lazy; cached inputs and buffers remain funded by their execution owner.
 
 `os` follows the same contained path and environment model. Path helpers use Lython's normalized POSIX-like `/` semantics; `os.environ`, `getenv`, `putenv`, `unsetenv`, `get_exec_path`, and `expandvars` read only the optional `LythonRunOptions.Environment` map and never the ambient process environment. Permission, symlink, raw file descriptor, process identity, signal, `chdir`, and shell helpers fail explicitly.
 
@@ -359,7 +354,7 @@ The main entry point is [`LythonEngine`](src/Lokad.Lython/Public/LythonEngine.cs
 - unsuccessful results carry a process-compatible non-zero `ExitCode`; explicit
   `SystemExit` values retain their Python exit-code semantics
 - projected return values stay CLR-friendly, including `byte[]` for Python bytes values
-- execution limits are configured through `LythonRunOptions`
+- borrowed memory owners, cancellation, capabilities and recursion depth are configured through `LythonRunOptions`
 
 `Success`, `ReturnValue`, `ExitCode`, and `Failure` remain convenient compatibility
 projections. Values that do not belong to the current outcome are necessarily null;
@@ -370,9 +365,9 @@ The important runtime guarantees are:
 
 - cooperative interruption through `CancellationToken`, with frequent checks across interpreter execution
 - a recursion limit plus an internal interpreter-stack guard so Python recursion cannot turn into CLR stack overflow
-- conservative in-process size controls for strings, collections, host reads, captured output, and execution-memory growth
+- conservative shared admission for substantial storage, retained capacity and construction overlap
 
-Execution and projected results admit storage through the supplied host allowance. Execution and projection have no separate caps or default allowance. Without a supplied host budget the standalone root is unbounded. Remaining string, collection, read and captured-output ceilings are being removed as part of this milestone; managed stack protection and cancellation remain.
+Execution and projected results admit storage through the supplied host allowance. Execution and projection have no separate caps or default allowance. Without a supplied host budget the standalone root is unbounded. Strings, collections, host reads and captured output have no independent size policies. Source preparation, expanded private names and canonical annotation text also borrow the compilation owner. Managed stack protection, checked representation bounds and bounded I/O chunks remain.
 
 Execution-time control uses the host-supplied `CancellationToken`. The host
 must arrange cancellation when a finite deadline is required; memory bounds alone
@@ -444,7 +439,7 @@ The subprocess contract remains host-mediated:
 - no live PID, signals, unmanaged handles, or background process model behind `Popen`
 - no `getoutput` or `getstatusoutput`
 
-`Popen` construction is pure and does not claim that a process is already running. The facade buffers pipe input and sends exactly one ordinary host request when `communicate()`, `wait()`, a captured-output read, or context exit requires completion. Passing a prior facade's `stdout` pipe as the next facade's `stdin` forms a contained pipeline: downstream completion recursively completes upstream requests once, in order, and forwards bounded captured text in memory. A pipe can have only one downstream consumer; claimed, already-read, stderr, and prematurely closed endpoints fail explicitly. Per-request and cumulative pipeline output stay bounded by the run's output/string limit, timeouts or cancellation apply throughout the chain. Async host runners are awaited only through `RunAsync(...)`. A host `TimeoutException` becomes a catchable, Python-shaped `TimeoutExpired`. This keeps Lython pipe-friendly without giving scripts ambient process authority. The embedding host decides whether subprocesses are available at all, and under what policy.
+`Popen` construction is pure and does not claim that a process is already running. The facade buffers pipe input and sends exactly one ordinary host request when `communicate()`, `wait()`, a captured-output read, or context exit requires completion. Passing a prior facade's `stdout` pipe as the next facade's `stdin` forms a contained pipeline: downstream completion recursively completes upstream requests once, in order, and forwards bounded captured text in memory. A pipe can have only one downstream consumer; claimed, already-read, stderr, and prematurely closed endpoints fail explicitly. Retained pipe buffers and combination copies borrow the shared allowance; timeouts or cancellation apply throughout the chain. Async host runners are awaited only through `RunAsync(...)`. A host `TimeoutException` becomes a catchable, Python-shaped `TimeoutExpired`. This keeps Lython pipe-friendly without giving scripts ambient process authority. The embedding host decides whether subprocesses are available at all, and under what policy.
 
 `import openpyxl` provides a vanilla-Python-shaped subset for common `.xlsx`
 workbook automation. Workbook load/save uses host-mediated binary file
@@ -457,8 +452,8 @@ Lython is designed to fail inside the runtime rather than by escaping into unman
 - file and path effects are host-mediated through `ILythonHost`; scripts do not get ambient machine authority
 - an error-only static analyzer rejects many provable incompatibilities and structural mistakes before execution starts, instead of failing halfway through the script
 - cancellation is cooperative and checked frequently enough to stop runaway pure-Python work
-- recursion depth, interpreter depth, host reads, output bytes, string lengths, and collection sizes remain bounded
-- the main script-owned allocators and large `BigInteger` growth paths are governed by an execution-memory budget, so large runtime materializations fail as ordinary `RuntimeError` results
+- managed call/interpreter nesting stays bounded; major storage borrows the host allowance
+- the main script-owned allocators and large `BigInteger` growth paths are governed by an execution-memory budget, so refused runtime admissions fail the command with shared-allowance attribution
 - host-facing projection reserves through its supplied result owner; refused admission surfaces as `ProjectionError` with shared-allowance attribution
 
 The model is intentionally conservative, not omniscient. Lython does not try to mirror the CLR heap perfectly, but it does aim to keep the main script-owned growth paths inside explicit runtime control.

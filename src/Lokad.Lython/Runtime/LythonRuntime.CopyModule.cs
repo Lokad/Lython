@@ -419,7 +419,7 @@ internal sealed partial class LythonRuntime
         foreach (var item in list)
         {
             clone.Add(depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo, graphDepth + 1) : item);
-            context.ObserveCollectionCount(clone.Count, span);
+            context.CheckExecution(span);
         }
 
         return clone;
@@ -434,7 +434,7 @@ internal sealed partial class LythonRuntime
             var key = depth == CopyDepth.Deep ? CopyValue(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1) : pair.Key;
             var value = depth == CopyDepth.Deep ? CopyValue(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1) : pair.Value;
             clone.SetItem(ValidateDictionaryKey(key, span), value);
-            context.ObserveCollectionCount(clone.Count, span);
+            context.CheckExecution(span);
         }
 
         return clone;
@@ -449,7 +449,7 @@ internal sealed partial class LythonRuntime
             clone.Add(ValidateSetItem(
                 depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo, graphDepth + 1) : item,
                 span));
-            context.ObserveCollectionCount(clone.Count, span);
+            context.CheckExecution(span);
         }
 
         return clone;
@@ -464,7 +464,7 @@ internal sealed partial class LythonRuntime
             var key = depth == CopyDepth.Deep ? CopyValue(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1) : pair.Key;
             var value = depth == CopyDepth.Deep ? CopyValue(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1) : pair.Value;
             clone.SetItem(ValidateDictionaryKey(key, span), value);
-            context.ObserveCollectionCount(clone.Count, span);
+            context.CheckExecution(span);
         }
 
         return clone;
@@ -479,7 +479,7 @@ internal sealed partial class LythonRuntime
             var key = depth == CopyDepth.Deep ? CopyValue(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1) : pair.Key;
             var value = depth == CopyDepth.Deep ? CopyValue(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1) : pair.Value;
             clone.SetItem(ValidateDictionaryKey(key, span), value);
-            context.ObserveCollectionCount(clone.Count, span);
+            context.CheckExecution(span);
         }
 
         return clone;
@@ -493,7 +493,7 @@ internal sealed partial class LythonRuntime
         {
             clone.Append(depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo, graphDepth + 1) : item);
         }
-        context.ObserveCollectionCount(clone.Count, span);
+        context.CheckExecution(span);
         return clone;
     }
 

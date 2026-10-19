@@ -117,17 +117,11 @@ internal sealed class ExecutionState
         StandardOutput = new Text.GovernedByteBuilder(
             MemoryGovernor,
             allocationSpan: null,
-            capacity: 0,
-            maxLengthBytes: Limits.MaxStandardOutputBytes,
-            maxLengthOwner: "standard output",
-            lengthLimitReason: LythonFailureReason.StandardOutputLimit);
+            capacity: 0);
         StandardError = new Text.GovernedByteBuilder(
             MemoryGovernor,
             allocationSpan: null,
-            capacity: 0,
-            maxLengthBytes: Limits.MaxStandardErrorBytes,
-            maxLengthOwner: "standard error",
-            lengthLimitReason: LythonFailureReason.StandardErrorLimit);
+            capacity: 0);
         Stdin = new HostTextInputHandle(host.StandardInput, this);
         Stdout = new HostTextOutputHandle(host.StandardOutput, StandardOutput, "<stdout>", this);
         Stderr = new HostTextOutputHandle(host.StandardError, StandardError, "<stderr>", this);

@@ -134,26 +134,6 @@ Path("/repo/out.txt").write_text("€", encoding="latin-1")
     }
 
     [Fact]
-    public void Latin1HostReadsHonorTheConfiguredByteLimit()
-    {
-        var host = new MockLythonHost("/repo");
-        host.SeedBytes("/repo/input.txt", Enumerable.Repeat((byte)0x61, 32).ToArray());
-
-        var result = new LythonEngine().Run(
-            """
-from pathlib import Path
-Path("/repo/input.txt").read_text(encoding="latin-1")
-""",
-            host,
-            new LythonRunOptions { MaxHostReadBytes = 8 });
-
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("host binary read exceeded maximum bytes (8)", result.Failure?.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void Latin1HostAccessFailsExplicitlyWhenOptionalBinaryCapabilityIsMissing()
     {
         var host = new TextOnlyHost();

@@ -89,7 +89,7 @@ internal sealed partial class LythonRuntime
                 _values.Add(value);
                 shell.Commit(shellBytes);
                 _wrapperBytes += shellBytes;
-                if (value is PyString text) _context.ObserveString(text, _span);
+                if (value is PyString text) _context.CheckExecution(_span);
                 return value;
             }
             internal PyString Text(string text)
@@ -160,7 +160,7 @@ internal sealed partial class LythonRuntime
             {
                 throw ParseError("not well-formed (invalid encoded character)", span, error);
             }
-            context.ObserveString(source, span);
+            context.CheckExecution(span);
             using var characters = new StringReader(source.AsString());
             var settings = new XmlReaderSettings
             {
@@ -178,7 +178,6 @@ internal sealed partial class LythonRuntime
             using var stackScratch = context.MemoryGovernor.ReserveTemporary(64, span);
             var stack = new List<ParseFrame>();
             Element? root = null;
-            var elements = 0;
             try
             {
                 while (reader.Read())
@@ -187,17 +186,16 @@ internal sealed partial class LythonRuntime
                     switch (reader.NodeType)
                     {
                         case XmlNodeType.Element:
-                            context.ObserveCollectionCount(++elements, span);
+                            context.CheckExecution(span);
                             var attributes = graph.Create(() => new PyDict(context.MemoryGovernor, span));
                             var tag = graph.Text(ClarkName(reader.NamespaceURI, reader.LocalName));
                             if (reader.MoveToFirstAttribute())
                             {
-                                var attributeCount = 0;
                                 do
                                 {
                                     context.CheckExecution(span);
                                     if (reader.NamespaceURI == "http://www.w3.org/2000/xmlns/") continue;
-                                    context.ObserveCollectionCount(++attributeCount, span);
+                                    context.CheckExecution(span);
                                     attributes.SetItem(graph.Text(ClarkName(reader.NamespaceURI, reader.LocalName)),
                                         graph.Text(reader.Value));
                                 }
@@ -428,7 +426,7 @@ internal sealed partial class LythonRuntime
                         {
                             context.CheckExecution(span);
                             if (step != "*" && !child.Tag.AsString().Equals(step, StringComparison.Ordinal)) continue;
-                            context.ObserveCollectionCount(next.Count + 1, span);
+                            { _ = next.Count + 1; context.CheckExecution(span); }
                             if (next.Count == next.Capacity)
                                 scratch.Grow(8L * (next.Capacity == 0 ? 4 : next.Capacity), span);
                             next.Add(child);

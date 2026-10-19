@@ -566,19 +566,6 @@ open("/repo/input.txt", "r" "+")
     }
 
     [Fact]
-    public void Compile_RejectsSourceBeyondTheContainedFrontendLimit()
-    {
-        var source = "value = 1\n#" + new string('x', LythonEngine.MaxSourceLength);
-
-        var compiled = new LythonEngine().Compile(source);
-
-        Assert.False(compiled.IsValid);
-        var diagnostic = Assert.Single(compiled.Diagnostics);
-        Assert.Equal("LA0002", diagnostic.Code);
-        Assert.Contains(LythonEngine.MaxSourceLength.ToString(), diagnostic.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void Compile_RejectsExcessiveNestingBeforeParsing()
     {
         var nesting = LythonEngine.MaxSyntaxNesting + 1;

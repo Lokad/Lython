@@ -19,24 +19,8 @@ public enum LythonFailureReason
     RecursionDepthLimit,
     /// <summary>The managed stack admission check or fixed interpreter nesting bound rejected entry.</summary>
     InterpreterStackLimit,
-    /// <summary>The configured item count for a collection was exceeded.</summary>
-    CollectionSizeLimit,
-    /// <summary>The configured Python string length was exceeded.</summary>
-    StringLengthLimit,
-    /// <summary>The configured host-read byte count was exceeded.</summary>
-    HostReadLimit,
-    /// <summary>The configured captured standard-output byte count was exceeded.</summary>
-    StandardOutputLimit,
-    /// <summary>The configured captured standard-error byte count was exceeded.</summary>
-    StandardErrorLimit,
     /// <summary>An internal byte-buffer capacity bound was exceeded.</summary>
     ByteBufferCapacityLimit,
-    /// <summary>The byte-oriented Popen input buffer exceeded its configured string allowance.</summary>
-    SubprocessInputLimit,
-    /// <summary>A host-mediated subprocess exceeded its request's captured-output byte allowance.</summary>
-    SubprocessOutputLimit,
-    /// <summary>Cumulative Popen pipeline output exceeded its configured byte-oriented string allowance.</summary>
-    SubprocessPipelineLimit,
     /// <summary>A value was cyclic or unsupported for public projection.</summary>
     ProjectionRejected,
     /// <summary>Public projection reached its fixed nesting bound or failed managed stack admission.</summary>
@@ -51,8 +35,7 @@ public enum LythonFailureReason
 /// <param name="Observed">The quantity observed by the check, when known.</param>
 /// <param name="Requested">The requested operation quantity, when known.</param>
 /// <remarks>
-/// Quantities use the reason's units: nesting depth,
-/// collection items, Python string characters, or bytes. Requested execution
+/// Quantities use the reason's units: nesting depth or bytes. Requested execution
 /// memory is the reservation size; observed memory is accepted live accounting,
 /// not CLR heap size. Unavailable quantities, including values outside Int64,
 /// remain null. This describes the

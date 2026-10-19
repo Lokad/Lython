@@ -77,20 +77,20 @@ public sealed class HostStaleStatScenarioTests
     {
         var script = new LythonEngine().Compile("return len(open(\"/data.txt\").read())\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxHostReadBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var host = new StaleStatHost();
         host.SeedFile("/data.txt", new string('y', 1000000));
         var sync = script.Run(host, options);
         Assert.False(sync.Success);
-        Assert.Equal("RuntimeError", sync.Failure?.ExceptionType);
-        Assert.Contains("host text read exceeded maximum bytes", sync.Failure?.Message, StringComparison.Ordinal);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.Contains("shared memory budget", sync.Failure?.Message, StringComparison.Ordinal);
 
         var host2 = new StaleStatHost();
         host2.SeedFile("/data.txt", new string('y', 1000000));
         var asyncResult = await script.RunAsync(host2, options);
         Assert.False(asyncResult.Success);
-        Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
-        Assert.Contains("host text read exceeded maximum bytes", asyncResult.Failure?.Message, StringComparison.Ordinal);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.Contains("shared memory budget", asyncResult.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -99,22 +99,22 @@ public sealed class HostStaleStatScenarioTests
         var script = new LythonEngine().Compile("import filecmp\nreturn filecmp.cmp(\"/a.bin\", \"/b.bin\", shallow=False)\n");
         Assert.True(script.IsValid);
         var payload = new byte[1000000];
-        var options = new LythonRunOptions { MaxHostReadBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var host = new StaleStatHost();
         host.SeedBytes("/a.bin", payload);
         host.SeedBytes("/b.bin", payload);
         var sync = script.Run(host, options);
         Assert.False(sync.Success);
-        Assert.Equal("RuntimeError", sync.Failure?.ExceptionType);
-        Assert.Contains("host binary read exceeded maximum bytes", sync.Failure?.Message, StringComparison.Ordinal);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.Contains("shared memory budget", sync.Failure?.Message, StringComparison.Ordinal);
 
         var host2 = new StaleStatHost();
         host2.SeedBytes("/a.bin", payload);
         host2.SeedBytes("/b.bin", payload);
         var asyncResult = await script.RunAsync(host2, options);
         Assert.False(asyncResult.Success);
-        Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
-        Assert.Contains("host binary read exceeded maximum bytes", asyncResult.Failure?.Message, StringComparison.Ordinal);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.Contains("shared memory budget", asyncResult.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public sealed class HostStaleStatScenarioTests
         var script = new LythonEngine().Compile("return len(open(\"/data.txt\").read())\n");
         Assert.True(script.IsValid);
         var expected = new BigInteger(1000);
-        var options = new LythonRunOptions { MaxHostReadBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var host = new MockLythonHost();
         host.SeedFile("/data.txt", new string('y', 1000));
         var sync = script.Run(host, options);

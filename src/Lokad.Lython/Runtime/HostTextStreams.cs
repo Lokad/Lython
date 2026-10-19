@@ -26,7 +26,6 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
 
         _state.Guards.CheckExecution(span);
         var utf8 = HostOperation.Await(_input, () => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span);
-        CheckInputLimit(utf8.Length, span);
         return LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span, _state.Guards);
     }
 
@@ -39,7 +38,6 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
 
         _state.Guards.CheckExecution(span);
         var utf8 = await HostOperation.AwaitAsync(() => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span).ConfigureAwait(false);
-        CheckInputLimit(utf8.Length, span);
         return LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span, _state.Guards);
     }
 
@@ -56,8 +54,6 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
         {
             throw new LythonRuntimeException("RuntimeError", "standard input reached end-of-stream.", span);
         }
-
-        CheckInputLimit(utf8.Value.Length, span);
         return LythonRuntime.DecodeUtf8Text(utf8.Value, _state.MemoryGovernor, span, _state.Guards);
     }
 
@@ -74,22 +70,12 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
         {
             throw new LythonRuntimeException("RuntimeError", "standard input reached end-of-stream.", span);
         }
-
-        CheckInputLimit(utf8.Value.Length, span);
         return LythonRuntime.DecodeUtf8Text(utf8.Value, _state.MemoryGovernor, span, _state.Guards);
     }
 
     public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<stdin>");
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-
-    private void CheckInputLimit(int length, LythonSourceSpan? span)
-    {
-        if (_state.Limits.MaxHostReadBytes is { } maxReadBytes && length > maxReadBytes)
-        {
-            throw RuntimeErrors.HostRead($"standard input read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, length, span);
-        }
-    }
 
 }
 

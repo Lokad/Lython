@@ -91,19 +91,6 @@ return [str(listed), str(tupled), str(setted), str(mapped), str(returned), str(e
             diagnostic.Message.Contains(messageFragment, StringComparison.Ordinal));
     }
 
-    [Fact]
-    public void Run_ExpandedDisplaysRespectCollectionLimits()
-    {
-        var result = new LythonEngine().Run(
-            "return [*range(10)]\n",
-            new MockLythonHost(),
-            new LythonRunOptions { MaxCollectionSize = 3 });
-
-        Assert.False(result.Success);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", result.Failure?.Message, StringComparison.Ordinal);
-    }
-
     private static string DescribeFailure(LythonExecutionResult result)
         => result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(diagnostic => diagnostic.Message));
 }

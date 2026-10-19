@@ -1762,7 +1762,7 @@ internal sealed partial class LythonRuntime
             result.SetItem(ValidateDictionaryKey(key, span), value);
         }
 
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 
@@ -1788,7 +1788,7 @@ internal sealed partial class LythonRuntime
             result.SetItem(ValidateDictionaryKey(key, span), value);
         }
 
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 
@@ -1915,7 +1915,7 @@ internal sealed partial class LythonRuntime
                 result.SetItem(MaketransKey(pair.Key, span), pair.Value);
             }
 
-            context.ObserveCollectionCount(result.Count, span);
+            context.CheckExecution(span);
             return result;
         }
 
@@ -1954,7 +1954,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        context.ObserveCollectionCount(result.Count, span);
+        context.CheckExecution(span);
         return result;
     }
 

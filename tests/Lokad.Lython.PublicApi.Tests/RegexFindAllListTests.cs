@@ -99,22 +99,6 @@ public sealed class RegexFindAllListTests
         await AssertBothModes(source, "cycle 0\n");
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task MaterializedResultsStillRespectCollectionLimits(bool compiled)
-    {
-        var script = Compile("import re\nprint('ready')\nreturn " + FindAll(compiled, "'a'", "'aaaa'"));
-        var options = new LythonRunOptions { MaxCollectionSize = 3 };
-        foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
-        {
-            Assert.False(result.Success);
-            Assert.Equal("ready\n", result.StandardOutput);
-            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-            Assert.Contains("maximum collection size", result.Failure?.Message);
-        }
-    }
-
     [Fact]
     public async Task LazyDotStarDiscardedListsReclaimOwnedStringsAndStorage()
     {

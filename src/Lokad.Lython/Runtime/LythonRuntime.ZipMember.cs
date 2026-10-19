@@ -222,7 +222,7 @@ internal sealed partial class LythonRuntime
 
                 lines.Add(line);
                 total += line.Length;
-                _context.ObserveCollectionCount(lines.Count, span);
+                _context.CheckExecution(span);
                 if ((lines.Count & 63) == 0)
                 {
                     _context.CheckExecution(span);

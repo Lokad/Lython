@@ -275,14 +275,6 @@ internal sealed partial class Parser
     private string RawIdentifierText(int tokenIndex)
         => _tokens.GetString(tokenIndex).Normalize(NormalizationForm.FormKC);
 
-    private const string PrivateNameExpansionLimitMessage = "Private-name expansion exceeds the compilation character limit.";
-
-    private sealed class PrivateNameExpansionBudget
-    {
-        public int Remaining { get; set; } = LythonEngine.MaxPrivateNameExpansionLength;
-        public bool Exhausted { get; set; }
-    }
-
     // Mangling belongs to the lexical class, including nested functions. Cache
     // the expanded names so a long class name is shared across repeated uses.
     private sealed class PrivateNameContext(string className, HashSet<string>? selectiveNames = null)
@@ -301,15 +293,13 @@ internal sealed partial class Parser
         if (!context.Names.TryGetValue(name, out var mangled))
         {
             var length = (long)context.Prefix.Length + name.Length;
-            if (_privateNameExpansion.Exhausted || length > _privateNameExpansion.Remaining)
-            {
-                _privateNameExpansion.Exhausted = true;
-                if (!_diagnostics.Any(d => d.Code == "LA0004"))
-                    AddDiagnostic("LA0004", PrivateNameExpansionLimitMessage, _position);
-                return name;
-            }
-            _privateNameExpansion.Remaining -= (int)length;
+            if (length > int.MaxValue)
+                throw Runtime.RuntimeErrors.Attributed("MemoryError", "private name exceeds the string representation", null,
+                    LythonFailureReason.ByteBufferCapacityLimit);
+            var bytes = checked(128L + 4L * length);
+            using var storage = _memoryGovernor?.ReserveTemporary(bytes, null);
             context.Names[name] = mangled = context.Prefix + name;
+            storage?.Commit(bytes);
         }
         return mangled;
     }

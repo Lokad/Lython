@@ -39,24 +39,6 @@ public enum LythonSubprocessTextErrorMode
     BackslashReplace,
 }
 
-/// <summary>Represents the maximum combined buffered subprocess output in bytes.</summary>
-public readonly record struct LythonSubprocessOutputLimit
-{
-    /// <summary>Creates a validated output limit.</summary>
-    public LythonSubprocessOutputLimit(long bytes)
-    {
-        if (bytes < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(bytes), bytes, "Subprocess output limits cannot be negative.");
-        }
-
-        Bytes = bytes;
-    }
-
-    /// <summary>Gets the limit in bytes.</summary>
-    public long Bytes { get; }
-}
-
 /// <summary>Describes a subprocess operation delegated to <see cref="ILythonSubprocessRunner"/>.</summary>
 /// <remarks>
 /// Runtime-created requests use contained host paths only. When guest code omits
@@ -75,8 +57,7 @@ public sealed record LythonSubprocessRequest(
     LythonSubprocessContentMode ContentMode,
     LythonSubprocessTextEncoding TextEncoding,
     LythonSubprocessTextErrorMode TextErrorMode,
-    TimeSpan? Timeout,
-    LythonSubprocessOutputLimit? OutputLimit)
+    TimeSpan? Timeout)
 {
     /// <summary>
     /// Gets the borrowed active memory budget for cooperating host commands.
@@ -84,4 +65,6 @@ public sealed record LythonSubprocessRequest(
     /// and cleanup before disposing them or completing the request.
     /// </summary>
     public ILythonMemoryBudget? MemoryBudget { get; init; }
+
+    internal Runtime.MemoryGovernor? MemoryGovernor { get; init; }
 }

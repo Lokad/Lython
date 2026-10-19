@@ -183,7 +183,7 @@ internal sealed partial class LythonRuntime
             {
                 var pick = ChooseWeightedIndex(state, populationLength, weights, cumulative, span);
                 result.Add(directChoices is { } direct ? RuntimeValue(direct.GetAt(pick)) : population![pick]);
-                context.ObserveCollectionCount(result.Count, span);
+                context.CheckExecution(span);
             }
 
             return result;

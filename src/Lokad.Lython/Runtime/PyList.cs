@@ -229,7 +229,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         if (values is IReadOnlyCollection<object> || values is PyList || values is IPyListStorage)
         {
             AddRange(values);
-            context.ObserveCollectionCount(Count, span);
+            context.CheckExecution(span);
             return;
         }
 
@@ -239,7 +239,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             foreach (var value in values)
             {
                 Add(value);
-                context.ObserveCollectionCount(Count, span);
+                context.CheckExecution(span);
                 if ((++added & 63) == 0)
                 {
                     context.CheckExecution(span);
@@ -268,7 +268,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             await foreach (var value in LythonRuntime.ToSequenceAsync(source, span, context).ConfigureAwait(false))
             {
                 Add(value);
-                context.ObserveCollectionCount(Count, span);
+                context.CheckExecution(span);
                 if ((++added & 63) == 0)
                 {
                     context.CheckExecution(span);

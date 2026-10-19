@@ -362,7 +362,7 @@ internal sealed class PyTeeSharedState
             _queuedItemCount++;
             ResnapshotQueueCoupon();
             ChargeBackingGrowth(i);
-            _context.ObserveCollectionCount(_queues[i].Count, _span);
+            _context.CheckExecution(_span);
         }
 
         return true;
@@ -407,7 +407,7 @@ internal sealed class PyTeeSharedState
             _queuedItemCount++;
             ResnapshotQueueCoupon();
             ChargeBackingGrowth(i);
-            _context.ObserveCollectionCount(_queues[i].Count, _span);
+            _context.CheckExecution(_span);
         }
 
         return PyIterationResult.Yield(value);

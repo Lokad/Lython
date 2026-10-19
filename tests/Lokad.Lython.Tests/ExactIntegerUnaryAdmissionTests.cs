@@ -23,7 +23,7 @@ public sealed class ExactIntegerUnaryAdmissionTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         var seed = (token == "abs" ? -BigInteger.One : BigInteger.One) << 262144;
-        context.ObserveValue(seed, default);
+        _ = LythonRuntime.OwnFreshInteger(seed, context.MemoryGovernor, null);
         var original = new PyList([true], context.MemoryGovernor, null);
         context.Variables["seed"] = seed;
         context.Variables["target"] = original;

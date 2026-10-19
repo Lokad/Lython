@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
             while (buffered < 12 && cursor.TryMoveNext(out var item))
             {
                 head[buffered++] = item!;
-                context.ObserveCollectionCount(buffered, span);
+                context.CheckExecution(span);
             }
 
             if (buffered < 9)
@@ -85,7 +85,7 @@ internal sealed partial class LythonRuntime
                 while (cursor.TryMoveNext(out _))
                 {
                     total++;
-                    context.ObserveCollectionCount(total, span);
+                    context.CheckExecution(span);
                     if ((total & 63) == 0)
                     {
                         context.CheckExecution(span);
@@ -127,7 +127,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 head[buffered++] = next.Value;
-                context.ObserveCollectionCount(buffered, span);
+                context.CheckExecution(span);
             }
 
             if (buffered < 9)
@@ -141,7 +141,7 @@ internal sealed partial class LythonRuntime
                 while ((await cursor.TryMoveNextAsync().ConfigureAwait(false)).HasValue)
                 {
                     total++;
-                    context.ObserveCollectionCount(total, span);
+                    context.CheckExecution(span);
                     if ((total & 63) == 0)
                     {
                         context.CheckExecution(span);

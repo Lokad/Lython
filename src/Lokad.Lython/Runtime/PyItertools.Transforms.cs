@@ -360,7 +360,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
 
             collected.Add(CallArgumentValue.Positional(LythonRuntime.RuntimeValue(item)));
             // N09: shared-drain count/work checks for mode parity (async MaterializeAsync observes).
-            _context.ObserveCollectionCount(collected.Count, _span);
+            _context.CheckExecution(_span);
             if ((collected.Count & 63) == 0)
             {
                 _context.CheckExecution(_span);

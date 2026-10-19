@@ -15,8 +15,8 @@ public sealed class ComparisonWorkloadTests
         var workload = Catalog.Single(c => c.Id == id);
         var script = new LythonEngine().Compile(workload.Source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
-        Assert.InRange(workload.Source.Length, 1, LythonEngine.MaxSourceLength);
-        Assert.InRange(workload.ExpectedOutputUtf8Bytes, 0, LythonRunOptions.DefaultMaxStandardOutputBytes);
+        Assert.InRange(workload.Source.Length, 1, ComparisonProtocol.MaximumFrameBytes);
+        Assert.InRange(workload.ExpectedOutputUtf8Bytes, 0, ComparisonProtocol.MaximumFrameBytes);
 
         // Reuse compiled code and fresh public invocations. Repetition detects
         // accidentally retained mutable state, exhausted generators and classes

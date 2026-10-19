@@ -367,7 +367,7 @@ internal static class ZipDirectoryReader
         var comment = bytes.Slice(cursor + fixedLength + nameLength + extraLength, commentLength).ToArray();
         offset = recordEnd;
 
-        context.ObserveCollectionCount(ordinal + 1, span);
+        { _ = ordinal + 1; context.CheckExecution(span); }
 
         var compressedSize = (ulong)compressedSize32;
         var uncompressedSize = (ulong)uncompressedSize32;

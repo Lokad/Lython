@@ -88,24 +88,6 @@ public sealed class ElementTreeAccountingTests
     }
 
     [Fact]
-    public void WorkAndNodeCountLimitsRollbackPartiallyBuiltTrees()
-    {
-        foreach (var options in new[]
-        {
-            new LythonRunOptions { MaxCollectionSize = 3 },
-        })
-        {
-            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options);
-            var error = Assert.Throws<LythonRuntimeException>(() =>
-                Parse("<r><a key='one'>text</a><b/><c/><d/></r>", context));
-            Assert.Equal("RuntimeError", error.ExceptionType);
-            Assert.Contains("maximum", error.Message);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-                Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
-        }
-    }
-
-    [Fact]
     public void AChildAliasDoesNotRetainItsParent()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());

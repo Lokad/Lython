@@ -16,7 +16,6 @@ internal sealed partial class LythonRuntime
                 if ((i & 1023) == 0) context.CheckExecution(span);
                 length += safe.Contains(source[i]) ? 1 : 3;
             }
-            CheckTextLength(length, context, span);
             if (length == 0) return PyString.Empty;
             if (length > int.MaxValue) throw RuntimeErrors.Runtime("quoted URL exceeds the supported buffer size", span);
             using var preflight852 = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes((int)length), span);
@@ -83,7 +82,7 @@ internal sealed partial class LythonRuntime
             TextErrorMode errors, ExecutionContext context, LythonSourceSpan span)
         {
             var result = DecodeText(source, encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
-            context.ObserveString(result, span);
+            context.CheckExecution(span);
             return result;
         }
 
@@ -92,7 +91,6 @@ internal sealed partial class LythonRuntime
         {
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             var bytes = source.Utf8Bytes.Span;
-            long runes = 0;
             try
             {
                 for (var i = 0; i < bytes.Length;)
@@ -106,9 +104,7 @@ internal sealed partial class LythonRuntime
                             if ((i & 1023) == 0) context.CheckExecution(span);
                             _ = Rune.DecodeFromUtf8(bytes[i..], out _, out var consumed);
                             i += consumed;
-                            runes++;
                         }
-                        CheckTextLength(runes, context, span);
                         builder.Append(bytes[start..i]);
                     }
                     else
@@ -122,8 +118,6 @@ internal sealed partial class LythonRuntime
                         try
                         {
                             var decoded = DecodeOwned(unquoted.Memory, encoding, errors, context, span);
-                            runes += decoded.Length;
-                            CheckTextLength(runes, context, span);
                             builder.Append(decoded);
                             GC.KeepAlive(decoded);
                         }
@@ -134,12 +128,6 @@ internal sealed partial class LythonRuntime
                 return result;
             }
             finally { builder.Release(); GC.KeepAlive(source); }
-        }
-
-        private static void CheckTextLength(long length, ExecutionContext context, LythonSourceSpan span)
-        {
-            if (context.Limits.MaxStringLength is { } maximum && length > maximum)
-                throw RuntimeErrors.StringLength(maximum, length, span);
         }
     }
 }

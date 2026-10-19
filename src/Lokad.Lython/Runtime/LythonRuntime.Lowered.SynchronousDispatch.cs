@@ -99,7 +99,6 @@ internal sealed partial class LythonRuntime
                 return ValidateLoweredString(SharedStringLiteral(text), context, text.Span);
             case LoweredBytesLiteralExpression bytes:
                 var bytesValue = SharedBytesLiteral(bytes);
-                context.ObserveValue(bytesValue, bytes.Span);
                 return bytesValue;
             case LoweredIntegerLiteralExpression integer:
                 return SharedIntegerMagnitude(integer);

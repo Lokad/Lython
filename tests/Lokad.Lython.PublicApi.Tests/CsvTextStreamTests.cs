@@ -352,19 +352,6 @@ public sealed class CsvTextStreamTests : LifetimeScenario
     }
 
     [Fact]
-    public async Task StandardOutputCapsStillRejectAnOversizedRowBeforePublication()
-    {
-        var script = Compile("import csv\nimport sys\ncsv.writer(sys.stdout).writerow(['long'])");
-        var options = new LythonRunOptions { MaxStandardOutputBytes = 3 };
-        foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
-        {
-            Assert.False(result.Success);
-            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-            Assert.Empty(result.StandardOutput);
-        }
-    }
-
-    [Fact]
     public async Task FailedCallbackBatchesPreserveWriterBehavior()
     {
         await AssertBatchCompletes("""

@@ -311,7 +311,7 @@ internal static class PyMemberAccess
             {
                 var items = LythonRuntime.ToSequence(value, span, context);
                 var tuple = new PyTuple(items, context.MemoryGovernor, span);
-                context.ObserveCollectionCount(tuple.Count, span);
+                context.CheckExecution(span);
                 exception.ArgsOverride = tuple;
                 return true;
             }

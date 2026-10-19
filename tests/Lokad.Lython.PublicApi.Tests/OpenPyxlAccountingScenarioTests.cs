@@ -33,20 +33,20 @@ public sealed class OpenPyxlAccountingScenarioTests
             return openpyxl.load_workbook("/t.xlsx")
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxCollectionSize = 100 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var syncHost = new MockLythonHost();
         syncHost.SeedBytes("/t.xlsx", archive);
         var sync = script.Run(syncHost, options);
         Assert.False(sync.Success);
-        Assert.Equal("RuntimeError", sync.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.Contains("shared memory budget", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
 
         var asyncHost = new MockLythonHost();
         asyncHost.SeedBytes("/t.xlsx", archive);
         var asyncResult = await script.RunAsync(asyncHost, options);
         Assert.False(asyncResult.Success);
-        Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
-        Assert.Contains("maximum collection size exceeded", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.Contains("shared memory budget", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -327,14 +327,14 @@ public sealed class OpenPyxlAccountingScenarioTests
         syncHost.SeedBytes("/t.xlsx", seed.ReadBytes("/t.xlsx"));
         var sync = script.Run(syncHost, options);
         Assert.False(sync.Success);
-        Assert.Equal("RuntimeError", sync.Failure?.ExceptionType);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
         Assert.Contains("execution canceled", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
 
         var asyncHost = new MockLythonHost();
         asyncHost.SeedBytes("/t.xlsx", seed.ReadBytes("/t.xlsx"));
         var asyncResult = await script.RunAsync(asyncHost, options);
         Assert.False(asyncResult.Success);
-        Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.Contains("execution canceled", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
     }
 

@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
         }
 
         var value = builder.ToPyStringAndRelease();
-        context.ObserveString(value, span);
+        context.CheckExecution(span);
         return value;
     }
 
@@ -131,8 +131,6 @@ internal sealed partial class LythonRuntime
                 Rune.DecodeFromUtf8(input[offset..], out var rune, out var consumed);
                 offset += consumed;
                 var width = rune.Value <= 0x7f ? 1 : rune.Value <= 0xff ? 4 : rune.Value <= 0xffff ? 6 : 10;
-                if (context.Services.Limits.MaxStringLength is { } limit && builder.Length > limit - width)
-                    throw RuntimeErrors.StringLength(limit, builder.Length + (long)width, span);
                 if (rune.Value <= 0x7f)
                 {
                     builder.Append((byte)rune.Value);

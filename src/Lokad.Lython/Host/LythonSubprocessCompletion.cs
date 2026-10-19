@@ -12,6 +12,8 @@ public static class LythonSubprocessCompletion
     /// <remarks>
     /// When stderr is redirected to stdout but the host only has separate buffers,
     /// stderr is appended after stdout because stream interleaving has already been lost.
+    /// The combined copy borrows request.MemoryBudget and remains charged until that
+    /// owner ends. The host must fund its acquired buffers and finish all users first.
     /// </remarks>
     public static async ValueTask<LythonSubprocessResult> CompleteBufferedAsync(
         LythonSubprocessRequest request,
@@ -22,15 +24,13 @@ public static class LythonSubprocessCompletion
         LythonSubprocessOutputWriter inheritStandardErrorAsync,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (request.StandardError == LythonSubprocessStreamMode.StandardOutput)
         {
             switch (request.StandardOutput)
             {
                 case LythonSubprocessStreamMode.Pipe:
-                    EnsureWithinOutputLimit(
-                        "combined standard output",
-                        checked((long)standardOutputUtf8.Length + standardErrorUtf8.Length),
-                        request.OutputLimit);
+
                     return new LythonSubprocessResult(
                         returnCode,
                         Combine(standardOutputUtf8, standardErrorUtf8),
@@ -68,27 +68,20 @@ public static class LythonSubprocessCompletion
 
         var capturedStdout = await RouteBufferedOutputAsync(
                 request.StandardOutput,
-                "standard output",
                 standardOutputUtf8,
-                request.OutputLimit,
                 inheritStandardOutputAsync,
                 cancellationToken)
             .ConfigureAwait(false);
         var capturedStderr = await RouteBufferedOutputAsync(
                 request.StandardError,
-                "standard error",
                 standardErrorUtf8,
-                request.OutputLimit,
                 inheritStandardErrorAsync,
                 cancellationToken)
             .ConfigureAwait(false);
-        EnsureWithinOutputLimit(
-            "combined captured output",
-            checked((long)capturedStdout.Length + capturedStderr.Length),
-            request.OutputLimit);
+
         return new LythonSubprocessResult(returnCode, capturedStdout, capturedStderr);
 
-        static ReadOnlyMemory<byte> Combine(ReadOnlyMemory<byte> first, ReadOnlyMemory<byte> second)
+        ReadOnlyMemory<byte> Combine(ReadOnlyMemory<byte> first, ReadOnlyMemory<byte> second)
         {
             if (first.Length == 0)
                 return second;
@@ -96,25 +89,39 @@ public static class LythonSubprocessCompletion
             if (second.Length == 0)
                 return first;
 
-            var combined = new byte[first.Length + second.Length];
-            first.CopyTo(combined);
-            second.CopyTo(combined.AsMemory(first.Length));
+            var length = checked(first.Length + second.Length);
+            var governor = request.MemoryGovernor ?? new Runtime.MemoryGovernor(request.MemoryBudget);
+            using var storage = governor.ReserveTemporary(32L + length, null);
+            var combined = new byte[length];
+            Copy(first, combined);
+            Copy(second, combined.AsMemory(first.Length));
+            storage.Commit(32L + length);
             return combined;
+        }
+
+        void Copy(ReadOnlyMemory<byte> source, Memory<byte> target)
+        {
+            const int chunk = 64 * 1024;
+            for (var offset = 0; offset < source.Length;)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var count = Math.Min(chunk, source.Length - offset);
+                source.Slice(offset, count).CopyTo(target.Slice(offset, count));
+                offset += count;
+            }
         }
     }
 
     private static async ValueTask<ReadOnlyMemory<byte>> RouteBufferedOutputAsync(
         LythonSubprocessStreamMode mode,
-        string streamName,
         ReadOnlyMemory<byte> utf8,
-        LythonSubprocessOutputLimit? outputLimit,
         LythonSubprocessOutputWriter inheritOutputAsync,
         CancellationToken cancellationToken)
     {
         switch (mode)
         {
             case LythonSubprocessStreamMode.Pipe:
-                EnsureWithinOutputLimit(streamName, utf8.Length, outputLimit);
+
                 return utf8;
 
             case LythonSubprocessStreamMode.Inherit:
@@ -130,17 +137,6 @@ public static class LythonSubprocessCompletion
 
             default:
                 throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
-        }
-    }
-
-    private static void EnsureWithinOutputLimit(
-        string streamName,
-        long actualBytes,
-        LythonSubprocessOutputLimit? outputLimit)
-    {
-        if (outputLimit is { } limit && actualBytes > limit.Bytes)
-        {
-            throw new LythonSubprocessOutputLimitException(streamName, actualBytes, limit.Bytes);
         }
     }
 

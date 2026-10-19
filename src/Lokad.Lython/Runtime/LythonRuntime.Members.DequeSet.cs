@@ -86,7 +86,7 @@ internal sealed partial class LythonRuntime
 
                     deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                     deque.Append(arguments[0]);
-                    context.ObserveCollectionCount(deque.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }),
                 "appendleft" => BoundCallable.Create((arguments, span, context) =>
@@ -98,7 +98,7 @@ internal sealed partial class LythonRuntime
 
                     deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                     deque.AppendLeft(arguments[0]);
-                    context.ObserveCollectionCount(deque.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }),
                 "pop" => BoundCallable.CreateNoArguments(deque, "deque.pop", static (receiver, span, _) =>
@@ -132,7 +132,7 @@ internal sealed partial class LythonRuntime
 
                     deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                     deque.Extend(ToSequence(arguments[0], span, context));
-                    context.ObserveCollectionCount(deque.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }, async (arguments, span, context) =>
                 {
@@ -143,7 +143,7 @@ internal sealed partial class LythonRuntime
 
                     deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                     deque.Extend(await PyIteration.MaterializeAsync(arguments[0], span, context).ConfigureAwait(false));
-                    context.ObserveCollectionCount(deque.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }),
                 "extendleft" => BoundCallable.Create((arguments, span, context) =>
@@ -155,7 +155,7 @@ internal sealed partial class LythonRuntime
 
                     deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                     deque.ExtendLeft(ToSequence(arguments[0], span, context));
-                    context.ObserveCollectionCount(deque.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }, async (arguments, span, context) =>
                 {
@@ -166,7 +166,7 @@ internal sealed partial class LythonRuntime
 
                     deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                     deque.ExtendLeft(await PyIteration.MaterializeAsync(arguments[0], span, context).ConfigureAwait(false));
-                    context.ObserveCollectionCount(deque.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }),
                 "clear" => BoundCallable.CreateNoArguments(deque, "deque.clear", static (receiver, _, _) =>
@@ -222,7 +222,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("IndexError", ex.Message, span);
                     }
 
-                    context.ObserveCollectionCount(deque.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }, DequeInsertSignature),
                 "remove" => BoundCallable.Create((arguments, span, context) =>
@@ -431,7 +431,7 @@ internal sealed partial class LythonRuntime
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     set.Add(ValidateSetItem(arguments[0], span));
-                    context.ObserveCollectionCount(set.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }, SetAddSignature),
                 "discard" => BoundCallable.Create((arguments, span, context) =>
@@ -535,7 +535,7 @@ internal sealed partial class LythonRuntime
                     try
                     {
                         result.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
-                        context.ObserveCollectionCount(result.Count, span);
+                        context.CheckExecution(span);
                     }
                     catch
                     {
@@ -637,14 +637,14 @@ internal sealed partial class LythonRuntime
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     set.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
-                    context.ObserveCollectionCount(set.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }, SetSymmetricDifferenceUpdateSignature, async (arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     set.SymmetricExceptWith(await MaterializeSetAsync(arguments[0], span, context).ConfigureAwait(false));
-                    context.ObserveCollectionCount(set.Count, span);
+                    context.CheckExecution(span);
                     return PyNone.Instance;
                 }),
                 "__iter__" => BoundCallable.CreateNoArguments(set, "set.__iter__", static (receiver, span, context) =>
@@ -969,7 +969,7 @@ internal sealed partial class LythonRuntime
                 foreach (var item in ToSequence(value, span, context))
                 {
                     result.Add(ValidateSetItem(item, span));
-                    context.ObserveCollectionCount(result.Count, span);
+                    context.CheckExecution(span);
                 }
             }
             catch
@@ -991,7 +991,7 @@ internal sealed partial class LythonRuntime
                 {
                     using var ambient = PyStructuralGuard.PushAmbient(context, span);
                     result.Add(ValidateSetItem(item, span));
-                    context.ObserveCollectionCount(result.Count, span);
+                    context.CheckExecution(span);
                 }
             }
             catch
@@ -1022,7 +1022,7 @@ internal sealed partial class LythonRuntime
                     if (target.Contains(candidate))
                     {
                         retained.Add(candidate);
-                        context.ObserveCollectionCount(retained.Count, span);
+                        context.CheckExecution(span);
                         if (target.Count > 0 && retained.Count == target.Count)
                         {
                             break;
@@ -1055,7 +1055,7 @@ internal sealed partial class LythonRuntime
                     if (target.Contains(candidate))
                     {
                         retained.Add(candidate);
-                        context.ObserveCollectionCount(retained.Count, span);
+                        context.CheckExecution(span);
                         if (target.Count > 0 && retained.Count == target.Count)
                         {
                             break;
@@ -1087,7 +1087,7 @@ internal sealed partial class LythonRuntime
                     if (set.Contains(candidate))
                     {
                         found.Add(candidate);
-                        context.ObserveCollectionCount(found.Count, span);
+                        context.CheckExecution(span);
                         if (set.Count > 0 && found.Count == set.Count)
                         {
                             return true;
@@ -1110,7 +1110,7 @@ internal sealed partial class LythonRuntime
                 foreach (var item in ToSequence(iterable, span, context))
                 {
                     target.Add(ValidateSetItem(item, span));
-                    context.ObserveCollectionCount(target.Count, span);
+                    context.CheckExecution(span);
                 }
             }
         }
@@ -1122,7 +1122,7 @@ internal sealed partial class LythonRuntime
                 await foreach (var item in ToSequenceAsync(iterable, span, context).ConfigureAwait(false))
                 {
                     target.Add(ValidateSetItem(item, span));
-                    context.ObserveCollectionCount(target.Count, span);
+                    context.CheckExecution(span);
                 }
             }
         }

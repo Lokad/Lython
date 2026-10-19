@@ -465,7 +465,6 @@ internal sealed partial class LythonRuntime
             }
 
             var result = AwaitHost(runner, () => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span);
-            ValidateSubprocessOutput(request, result, span);
             return result;
         }
 
@@ -478,43 +477,7 @@ internal sealed partial class LythonRuntime
             }
 
             var result = await AwaitHostAsync(() => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span).ConfigureAwait(false);
-            ValidateSubprocessOutput(request, result, span);
             return result;
-        }
-
-        private static void ValidateSubprocessOutput(
-            LythonSubprocessRequest request,
-            LythonSubprocessResult result,
-            LythonSourceSpan? span)
-        {
-            if (request.OutputLimit is not { } outputLimit)
-            {
-                return;
-            }
-
-            if (request.StandardOutput == LythonSubprocessStreamMode.Pipe && result.StandardOutputUtf8.Length > outputLimit.Bytes)
-            {
-                throw RuntimeErrors.Attributed("RuntimeError",
-                    $"subprocess standard output exceeded maximum captured output bytes ({outputLimit.Bytes}); received {result.StandardOutputUtf8.Length} bytes.",
-                    span, LythonFailureReason.SubprocessOutputLimit, outputLimit.Bytes, result.StandardOutputUtf8.Length);
-            }
-
-            if (request.StandardError == LythonSubprocessStreamMode.Pipe && result.StandardErrorUtf8.Length > outputLimit.Bytes)
-            {
-                throw RuntimeErrors.Attributed("RuntimeError",
-                    $"subprocess standard error exceeded maximum captured output bytes ({outputLimit.Bytes}); received {result.StandardErrorUtf8.Length} bytes.",
-                    span, LythonFailureReason.SubprocessOutputLimit, outputLimit.Bytes, result.StandardErrorUtf8.Length);
-            }
-
-            var combinedCapturedBytes =
-                (request.StandardOutput == LythonSubprocessStreamMode.Pipe ? (long)result.StandardOutputUtf8.Length : 0L) +
-                (request.StandardError == LythonSubprocessStreamMode.Pipe ? result.StandardErrorUtf8.Length : 0L);
-            if (combinedCapturedBytes > outputLimit.Bytes)
-            {
-                throw RuntimeErrors.Attributed("RuntimeError",
-                    $"subprocess combined captured output exceeded maximum bytes ({outputLimit.Bytes}); received {combinedCapturedBytes} bytes.",
-                    span, LythonFailureReason.SubprocessOutputLimit, outputLimit.Bytes, combinedCapturedBytes);
-            }
         }
 
         private T AwaitHost<T>(object capability, Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)
@@ -600,9 +563,6 @@ internal sealed partial class LythonRuntime
                 case bool boolean:
                     return boolean;
                 case BigInteger:
-                    // Host magnitudes copy into Lython-owned scalars: observe limits
-                    // as before, then own heap payloads above the inline range.
-                    context.ObserveValue(value, null);
                     return OwnFreshInteger(value!, context.MemoryGovernor, null);
                 case sbyte integer:
                     return integer;
@@ -690,7 +650,7 @@ internal sealed partial class LythonRuntime
                 MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
-                context.ObserveCollectionCount(list.Count, null);
+                context.CheckExecution(null);
                 // The items array duplicates the retained copy below while it
                 // is built; hold it transiently (MG22).
                 using var scratch = context.MemoryGovernor.ReserveTemporary(16L * list.Count, null);
@@ -711,7 +671,7 @@ internal sealed partial class LythonRuntime
                 MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
-                context.ObserveCollectionCount(tuple.Count, null);
+                context.CheckExecution(null);
                 // Same transient items-array peak as NormalizePyList (MG22).
                 using var scratch = context.MemoryGovernor.ReserveTemporary(16L * tuple.Count, null);
                 var items = new object[tuple.Count];
@@ -731,7 +691,7 @@ internal sealed partial class LythonRuntime
                 MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
-                context.ObserveCollectionCount(list.Count, null);
+                context.CheckExecution(null);
                 // Same transient items-array peak as NormalizePyList (MG22).
                 using var scratch = context.MemoryGovernor.ReserveTemporary(16L * list.Count, null);
                 var items = new object[list.Count];
@@ -751,7 +711,7 @@ internal sealed partial class LythonRuntime
                 MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
-                context.ObserveCollectionCount(tuple.Length, null);
+                context.CheckExecution(null);
                 // Same transient items-array peak as NormalizePyList (MG22).
                 using var scratch = context.MemoryGovernor.ReserveTemporary(16L * tuple.Length, null);
                 var items = new object[tuple.Length];
@@ -771,7 +731,7 @@ internal sealed partial class LythonRuntime
                 MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
-                context.ObserveCollectionCount(set.Count, null);
+                context.CheckExecution(null);
                 var normalized = new PySet(context.MemoryGovernor, null);
                 foreach (var item in set)
                 {
@@ -789,7 +749,7 @@ internal sealed partial class LythonRuntime
                 MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
-                context.ObserveCollectionCount(set.Count, null);
+                context.CheckExecution(null);
                 var normalized = new PySet(context.MemoryGovernor, null);
                 foreach (var item in set)
                 {
@@ -807,7 +767,7 @@ internal sealed partial class LythonRuntime
                 MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
-                context.ObserveCollectionCount(dict.Count, null);
+                context.CheckExecution(null);
                 var normalized = new PyDict(context.MemoryGovernor, null);
                 foreach (var pair in dict)
                 {
@@ -825,7 +785,7 @@ internal sealed partial class LythonRuntime
                 MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
-                context.ObserveCollectionCount(dict.Count, null);
+                context.CheckExecution(null);
                 var normalized = new PyDict(context.MemoryGovernor, null);
                 foreach (var pair in dict)
                 {
@@ -845,7 +805,7 @@ internal sealed partial class LythonRuntime
                 MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
-                context.ObserveCollectionCount(dict.Count, null);
+                context.CheckExecution(null);
                 var normalized = new PyDict(context.MemoryGovernor, null);
                 foreach (var pair in dict)
                 {
@@ -860,8 +820,6 @@ internal sealed partial class LythonRuntime
 
         public void CheckExecution(LythonSourceSpan? span) => Services.CheckExecution(span);
 
-        public void ObserveValue(object value, LythonSourceSpan? span) => Services.ObserveValue(value, span);
-
         public void EnterFunctionCall(LythonSourceSpan? span)
         {
             Services.EnterFunctionCall(span);
@@ -875,10 +833,6 @@ internal sealed partial class LythonRuntime
         public void EnterInterpreterFrame(LythonSourceSpan? span) => Services.EnterInterpreterFrame(span);
 
         public void LeaveInterpreterFrame() => Services.LeaveInterpreterFrame();
-
-        public void ObserveString(PyString text, LythonSourceSpan? span) => Services.ObserveString(text, span);
-
-        public void ObserveCollectionCount(int count, LythonSourceSpan? span) => Services.ObserveCollectionCount(count, span);
     }
 
 }

@@ -48,10 +48,10 @@ public sealed class NativeWarningAccountingTests
     public async Task CapturedOutputDenialRefundsFormattingAndThePrivateUtf8Value()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxStandardErrorBytes = 5 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(512) });
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             await LythonRuntime.EmitDefaultWarningAsync("FutureWarning", "notice", context, Span, true));
-        Assert.Equal("RuntimeError", error.ExceptionType);
+        Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Equal(0, context.State.StandardError.Length);
         Assert.Equal(384, context.MemoryGovernor.CurrentCommittedBytes); // Only the warning registry survives.
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

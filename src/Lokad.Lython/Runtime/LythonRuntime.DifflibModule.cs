@@ -382,7 +382,7 @@ internal sealed partial class LythonRuntime
                         fundedCapacity = items.Capacity;
                     }
 
-                    context.ObserveCollectionCount(items.Count, span);
+                    context.CheckExecution(span);
                     if ((items.Count & 63) == 0)
                     {
                         context.CheckExecution(span);
@@ -440,7 +440,7 @@ internal sealed partial class LythonRuntime
                         fundedCapacity = items.Capacity;
                     }
 
-                    context.ObserveCollectionCount(items.Count, span);
+                    context.CheckExecution(span);
                     if ((items.Count & 63) == 0)
                     {
                         context.CheckExecution(span);
@@ -481,7 +481,7 @@ internal sealed partial class LythonRuntime
                         chargedCapacity = items.Capacity;
                     }
 
-                    context.ObserveCollectionCount(items.Count, span);
+                    context.CheckExecution(span);
                     if ((items.Count & 63) == 0)
                     {
                         context.CheckExecution(span);
