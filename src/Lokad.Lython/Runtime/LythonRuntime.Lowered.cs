@@ -268,7 +268,25 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(statement.Span);
         try
         {
-            ExecuteMatch(statement.Syntax, EvaluateLoweredExpression(statement.Subject, context), context);
+            var subject = EvaluateLoweredExpression(statement.Subject, context);
+            foreach (var matchCase in statement.Cases)
+            {
+                var bindings = new Dictionary<string, object>(StringComparer.Ordinal);
+                if (!TryMatchRootPattern(matchCase.Syntax.Pattern, subject, context, bindings))
+                    continue;
+
+                foreach (var pair in bindings)
+                    StoreName(pair.Key, pair.Value, context, matchCase.Syntax.Span);
+
+                if (matchCase.Guard is { } guard &&
+                    !IsTruthy(EvaluateLoweredExpression(guard, context), context, guard.Span))
+                    continue;
+
+                var flow = ExecuteStatements(matchCase.Body, context);
+                if (flow.Return is not null) throw flow.Return;
+                if (flow.Control is not null) throw flow.Control;
+                return;
+            }
         }
         finally
         {
@@ -294,7 +312,14 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(statement.Span);
         try
         {
-            ExecuteTryStatement(statement, context);
+            static ValueTask<LoweredBlockFlow> ExecuteSynchronously(
+                IReadOnlyList<LoweredStatement> statements, ExecutionContext executionContext)
+                => new(ExecuteStatements(statements, executionContext));
+
+            var flow = ExecuteTryStatementCoreAsync(statement, context, ExecuteSynchronously,
+                expression => new ValueTask<object>(EvaluateLoweredExpression(expression, context))).GetAwaiter().GetResult();
+            if (flow.Control is not null) throw flow.Control;
+            if (flow.Return is not null) throw flow.Return;
         }
         finally
         {

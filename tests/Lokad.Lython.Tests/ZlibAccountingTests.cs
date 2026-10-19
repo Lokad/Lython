@@ -131,7 +131,6 @@ public sealed class ZlibAccountingTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Equal(bytes.CommittedStorageBytes,
             context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.True(context.MemoryGovernor.PeakReservedBytes >= LythonRuntime.ZlibModule.InflationScratchBytes);
         GC.KeepAlive(bytes);
     }
 

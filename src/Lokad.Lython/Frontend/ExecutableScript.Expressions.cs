@@ -391,7 +391,7 @@ internal sealed partial class ExecutableScript
                 UnaryOperatorSyntax.Plus => ExecutableUnaryOperator.Plus,
                 UnaryOperatorSyntax.Minus => ExecutableUnaryOperator.Minus,
                 UnaryOperatorSyntax.BitwiseNot => ExecutableUnaryOperator.BitwiseNot,
-                _ => throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support unary operator {op}."),
+                _ => throw new InvalidOperationException($"Executable IR lowering does not support unary operator {op}."),
             };
 
         private static ExecutableAugmentedOperator MapAugmentedAssignmentOperator(AugmentedAssignmentOperatorSyntax op)
@@ -410,7 +410,7 @@ internal sealed partial class ExecutableScript
                 AugmentedAssignmentOperatorSyntax.BitwiseAnd => ExecutableAugmentedOperator.BitwiseAnd,
                 AugmentedAssignmentOperatorSyntax.LeftShift => ExecutableAugmentedOperator.LeftShift,
                 AugmentedAssignmentOperatorSyntax.RightShift => ExecutableAugmentedOperator.RightShift,
-                _ => throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support augmented assignment operator {op}."),
+                _ => throw new InvalidOperationException($"Executable IR lowering does not support augmented assignment operator {op}."),
             };
 
     }

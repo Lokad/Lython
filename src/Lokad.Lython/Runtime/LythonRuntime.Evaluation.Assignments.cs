@@ -14,19 +14,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static void ExecuteAssertStatement(AssertStatementSyntax statement, ExecutionContext context)
-    {
-        if (IsTruthy(EvaluateExpression(statement.Condition, context), context, statement.Condition.Span))
-        {
-            return;
-        }
-
-        ThrowAssertionError(
-            statement.Message is null ? null : EvaluateExpression(statement.Message, context),
-            context,
-            statement.Span);
-    }
-
     private static void ThrowAssertionError(object? message, ExecutionContext context, LythonSourceSpan span)
     {
         var args = new PyTuple(message is null ? [] : [message], context.MemoryGovernor, span);
@@ -38,11 +25,6 @@ internal sealed partial class LythonRuntime
         // args path so later str() sees mutations and invokes protocols lazily.
         CreatePythonExceptionInstance(error).ArgsOverride = args;
         throw error;
-    }
-
-    private static void ExecuteDeleteStatement(DeleteStatementSyntax statement, ExecutionContext context)
-    {
-        ExecuteDeleteTarget(statement.Target, statement.Span, context);
     }
 
     private static bool TryGetDeleteDisplayItems(
@@ -69,80 +51,6 @@ internal sealed partial class LythonRuntime
         syntaxItems = [];
         loweredItems = [];
         return false;
-    }
-
-    private static void ExecuteDeleteTarget(ExpressionSyntax targetSyntax, LythonSourceSpan span, ExecutionContext context)
-    {
-        while (targetSyntax is ParenthesizedExpressionSyntax parenthesized)
-        {
-            targetSyntax = parenthesized.Inner;
-        }
-
-        if (targetSyntax is TupleLiteralExpressionSyntax tuple)
-        {
-            foreach (var item in tuple.Items)
-            {
-                if (item is CollectionValueItemSyntax valueItem)
-                {
-                    ExecuteDeleteTarget(valueItem.Expression, valueItem.Span, context);
-                }
-            }
-
-            return;
-        }
-
-        if (targetSyntax is ListLiteralExpressionSyntax list)
-        {
-            foreach (var item in list.Items)
-            {
-                if (item is CollectionValueItemSyntax valueItem)
-                {
-                    ExecuteDeleteTarget(valueItem.Expression, valueItem.Span, context);
-                }
-            }
-
-            return;
-        }
-
-        switch (targetSyntax)
-        {
-            case IdentifierExpressionSyntax identifier:
-                if (!DeleteName(identifier.Name, context, span))
-                {
-                    throw MissingDeletedName(identifier.Name, context, span);
-                }
-
-                return;
-
-            case SubscriptExpressionSyntax subscript:
-                DeleteSubscriptValue(
-                    EvaluateExpression(subscript.Target, context),
-                    EvaluateExpression(subscript.Index, context),
-                    span,
-                    context);
-                return;
-
-            case SliceExpressionSyntax slice:
-                ExecuteSliceDeletion(
-                    EvaluateExpression(slice.Target, context),
-                    slice.Start is null ? null : EvaluateExpression(slice.Start, context),
-                    slice.End is null ? null : EvaluateExpression(slice.End, context),
-                    slice.Step is null ? null : EvaluateExpression(slice.Step, context),
-                    span, context);
-                return;
-
-            case MemberExpressionSyntax member:
-                var memberTarget = EvaluateExpression(member.Target, context);
-                if (!PyMemberAccess.TryDelete(memberTarget, member.MemberName, context, span))
-                {
-                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, member.MemberName, span, context, operation: MissingMemberOperation.Delete);
-                }
-
-                return;
-
-            default:
-                throw new LythonRuntimeException("RuntimeError", "Unsupported delete target.", span);
-        }
     }
 
     internal static void DeleteSubscriptValue(object target, object index, LythonSourceSpan span, ExecutionContext context)
@@ -227,14 +135,6 @@ internal sealed partial class LythonRuntime
     private static object CreateLambda(LambdaExpressionSyntax lambda, ExecutionContext context)
         => CreateLoweredLambda(new LoweredLambdaExpression(lambda, LoweredScript.LowerStandaloneExpression(lambda.Body)), context);
 
-    private static void ExecuteAugmentedAssignment(AugmentedAssignmentStatementSyntax statement, ExecutionContext context)
-    {
-        var target = ResolveAugmentedAssignmentTarget(statement.Target, context);
-        var right = EvaluateExpression(statement.Expression, context);
-        var updated = EvaluateAugmentedAssignment(target.CurrentValue, right, statement.Operator, context, statement.Span);
-        target.Store(updated);
-    }
-
     private sealed record AugmentedAssignmentTargetReference(object CurrentValue, Action<object> Store, Func<object, ValueTask>? AsyncStore = null)
     {
         public ValueTask StoreValueAsync(object value)
@@ -242,34 +142,6 @@ internal sealed partial class LythonRuntime
             if (AsyncStore is not null) return AsyncStore(value);
             Store(value); return ValueTask.CompletedTask;
         }
-    }
-
-    private static void ExecuteAnnotatedAssignment(AnnotatedAssignmentStatementSyntax statement, ExecutionContext context)
-    {
-        if (statement.Expression is not null)
-        {
-            AssignTarget(statement.Target, EvaluateExpression(statement.Expression, context), context);
-        }
-        else foreach (var read in AssignmentTargetFacts.Reads(statement.Target)) EvaluateExpression(read, context);
-        StoreModuleAnnotationAsync(new LoweredAnnotatedAssignmentStatement(statement, LoweredScript.LowerExpression(statement.Annotation),
-            null), context, false).GetAwaiter().GetResult();
-    }
-
-    private static void ExecuteChainedAssignment(ChainedAssignmentStatementSyntax statement, ExecutionContext context)
-    {
-        var value = EvaluateExpression(statement.Expression, context);
-        foreach (var target in statement.Targets)
-        {
-            AssignTarget(target, value, context);
-        }
-    }
-
-    private static void ExecuteSubscriptAssignment(SubscriptAssignmentStatementSyntax statement, ExecutionContext context)
-    {
-        var target = EvaluateExpression(statement.Target, context);
-        var index = EvaluateExpression(statement.Index, context);
-        var value = EvaluateExpression(statement.Expression, context);
-        SetSubscriptValue(target, index, value, statement.Span, context);
     }
 
     private static void InvokeItemMutation(
@@ -288,26 +160,6 @@ internal sealed partial class LythonRuntime
         }
 
         _ = callable.Invoke(arguments, span, context);
-    }
-
-    private static void ExecuteSliceAssignment(SliceAssignmentStatementSyntax statement, ExecutionContext context)
-    {
-        var target = EvaluateExpression(statement.Target, context);
-        var start = statement.Start is null ? null : EvaluateExpression(statement.Start, context);
-        var end = statement.End is null ? null : EvaluateExpression(statement.End, context);
-        var step = statement.Step is null ? null : EvaluateExpression(statement.Step, context);
-        var value = EvaluateExpression(statement.Expression, context);
-        ExecuteSliceAssignment(target, start, end, step, value, statement.Span, context);
-    }
-
-    private static void ExecuteMemberAssignment(MemberAssignmentStatementSyntax statement, ExecutionContext context)
-    {
-        var value = EvaluateExpression(statement.Expression, context);
-        var target = EvaluateExpression(statement.Target, context);
-        if (!PyMemberAccess.TryAssign(target, statement.MemberName, value, context, statement.Span))
-        {
-            throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", statement.Span);
-        }
     }
 
     internal static void AssignTarget(AssignmentTargetSyntax target, object value, ExecutionContext context)
@@ -657,23 +509,16 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("TypeError", "Object does not support slice deletion.", span);
     }
 
-    private static void ExecuteUnpackingAssignment(UnpackingAssignmentStatementSyntax statement, ExecutionContext context)
-    {
-        AssignTargets(statement.Targets, EvaluateExpression(statement.Expression, context), statement.Expression.Span, context);
-    }
-
     private static void ExecuteWithStatement(
         WithStatementSyntax statement,
-        LoweredExpression? loweredContextExpression,
-        IReadOnlyList<LoweredStatement>? loweredBody,
+        LoweredExpression loweredContextExpression,
+        IReadOnlyList<LoweredStatement> loweredBody,
         ExecutionContext context)
     {
         _ = PyContextManagers.ExecuteWith(
-            loweredContextExpression is null
-                ? EvaluateExpression(statement.ContextExpression, context)
-                : EvaluateLoweredExpression(loweredContextExpression, context),
+            EvaluateLoweredExpression(loweredContextExpression, context),
             statement.LoweredTarget,
-            loweredBody ?? LoweredScript.Lower(new ScriptSyntax(statement.Body)).Statements,
+            loweredBody,
             statement.Span,
             statement.ContextExpression.Span,
             context);

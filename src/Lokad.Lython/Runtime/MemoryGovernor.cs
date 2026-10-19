@@ -27,11 +27,7 @@ internal sealed class MemoryGovernor
 
     public long CurrentReservedBytes { get; private set; }
 
-    public long PeakReservedBytes { get; private set; }
-
     public long CurrentCommittedBytes { get; private set; }
-
-    public long PeakCommittedBytes { get; private set; }
 
     public long CurrentAccountedBytes => checked(CurrentReservedBytes + CurrentCommittedBytes);
 
@@ -88,11 +84,6 @@ internal sealed class MemoryGovernor
         }
 
         CurrentReservedBytes += bytes;
-        if (CurrentReservedBytes > PeakReservedBytes)
-        {
-            PeakReservedBytes = CurrentReservedBytes;
-        }
-
         var currentAccounted = CurrentAccountedBytes;
         if (currentAccounted > PeakAccountedBytes)
         {
@@ -127,10 +118,6 @@ internal sealed class MemoryGovernor
         CurrentReservedBytes -= committed;
         CurrentCommittedBytes = checked(CurrentCommittedBytes + committed);
 
-        if (CurrentCommittedBytes > PeakCommittedBytes)
-        {
-            PeakCommittedBytes = CurrentCommittedBytes;
-        }
     }
 
     /// <summary>

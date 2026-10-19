@@ -31,12 +31,12 @@ public sealed class ChainMapUnpackingAccountingTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var chainMap = SharedChainMap(context, span);
+        var baseline = context.MemoryGovernor.CurrentAccountedBytes;
         var method = typeof(LythonRuntime).GetMethod("EnumerateMappingItems", BindingFlags.Static | BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("EnumerateMappingItems not found.");
         var pairs = (IEnumerable<KeyValuePair<object, object>>)method.Invoke(null, [chainMap, context, span])!;
         Assert.Equal(10, pairs.Count());
-        // 1,280,000B merge scratch reserved beside the call; nothing retained.
-        Assert.Equal(1280000L, context.MemoryGovernor.PeakReservedBytes);
+        Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -47,12 +47,12 @@ public sealed class ChainMapUnpackingAccountingTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var chainMap = SharedChainMap(context, span);
+        var baseline = context.MemoryGovernor.CurrentAccountedBytes;
         var method = typeof(LythonRuntime).GetMethod("Len", BindingFlags.Static | BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("Len not found.");
         var length = method.Invoke(null, [new object[] { chainMap }, span, context]);
         Assert.Equal(new BigInteger(10), length);
-        // Set-only scratch reuses the merge estimate conservatively.
-        Assert.Equal(1280000L, context.MemoryGovernor.PeakReservedBytes);
+        Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

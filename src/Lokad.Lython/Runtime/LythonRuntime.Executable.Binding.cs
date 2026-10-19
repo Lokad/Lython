@@ -347,7 +347,7 @@ internal sealed partial class LythonRuntime
         var hasAnnotations = functionBinding.Function.ReturnAnnotation is not null ||
             functionBinding.Function.Parameters.Any(p => p.Annotation is not null);
         var needsTypeMetadata = hasAnnotations || functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context);
-        if (needsTypeMetadata && (functionBinding.CodeObject is null || functionBinding.Function.GeneratorCode is not null))
+        if (needsTypeMetadata && functionBinding.Function.GeneratorCode is not null)
         {
             if (asynchronous) await ExecuteLoweredFunctionDefinitionAsync(functionBinding.Function, context).ConfigureAwait(false);
             else ExecuteLoweredFunctionDefinition(functionBinding.Function, context);
@@ -362,9 +362,7 @@ internal sealed partial class LythonRuntime
             var decorators = asynchronous
                 ? await EvaluateDecoratorsAsync(functionBinding.Function.Decorators, context).ConfigureAwait(false)
                 : EvaluateDecorators(functionBinding.Function.Decorators, context);
-            var closureCells = functionBinding.CodeObject is null
-                ? []
-                : CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Function.Span);
+            var closureCells = CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Function.Span);
             using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(functionBinding.DefaultValues.Count, context.MemoryGovernor, functionBinding.Function.Span);
             var defaults = asynchronous
                 ? await BuildDefaultArgumentMapAsync(functionBinding.Function.Parameters,
@@ -375,14 +373,6 @@ internal sealed partial class LythonRuntime
             var function = functionBinding.Function.GeneratorCode is not null
                 ? (object)new PyGeneratorFunction(functionBinding.Function, closure,
                     defaults, closureCells)
-                : functionBinding.CodeObject is null
-                ? new PyFunction(
-                    functionBinding.Function.Syntax.DeclaredName,
-                    functionBinding.Function.Parameters,
-                    functionBinding.Function.Body,
-                    closure,
-                    defaults,
-                    functionBinding.Function.ScopeFacts)
                 : new PyExecutableFunction(
                     functionBinding.Function.Syntax.DeclaredName,
                     functionBinding.Function.Parameters,

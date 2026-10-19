@@ -32,7 +32,7 @@ source
   -> Parser / syntax tree
   -> annotation and static-analysis passes
   -> LoweredScript
-  -> ExecutableScript when executable lowering supports the program
+  -> ExecutableScript for both public execution APIs
 ```
 
 The parser and syntax model live under `Frontend/`. `LythonFrontend` normalizes
@@ -64,10 +64,19 @@ parameters, and assignment targets cannot acquire path-specific scope rules.
 
 ## Lowering And Execution
 
-`LoweredScript` is the complete, general intermediate representation. Both sync
-and async execution support it. `ExecutableScript` is an optional, block-based
-representation for the synchronous fast path. Unsupported executable lowering
-falls back to `LoweredScript`; it is not a compilation error.
+`LoweredScript` is the general intermediate representation used to build
+`ExecutableScript`. Both public execution APIs run executable code. Frontend
+validation rejects invalid loop control and operators before lowering; compiler
+invariant failures surface directly rather than silently selecting another
+engine. The unused whole-module lowered representation is released after
+compilation.
+
+Lowered statement and expression evaluation remains necessary for local imports,
+class bodies, annotations and individual opcode fallbacks. Synchronous and async
+lowered `match` evaluate their already-lowered guards and case bodies; there is
+no raw-syntax statement interpreter. Pattern and expression helpers still use
+syntax where needed. Import execution consolidation onto the existing executable
+path is a separate future milestone.
 
 Lowered assignments are closed variants for names, chains, annotations,
 unpacking, subscripts, slices, members, and augmented targets. Consumers should
@@ -86,8 +95,8 @@ The executable path has two layers:
 Every executable control-flow edge must enter a block at one consistent stack
 depth. Exceptions and return/break/continue signals remain explicit while a
 `finally` block runs, then propagate when that block completes. Changes to
-lowered semantics should be tested against both the general and executable paths
-whenever the opcode path can represent the construct.
+shared semantics should be tested through executable modules/functions and real
+lowered consumers such as class bodies and imports, with both execution APIs.
 
 `ExecutionContext` owns per-run services and Python-visible state: globals,
 locals, closure resolution, exception state, module cache, decimal context,
@@ -126,7 +135,7 @@ projection converts governed values back for consumers. Runtime switches must
 not accept raw CLR strings as a second, partially compatible Python value kind.
 
 Protocol-aware unary, binary, comparison, and augmented-assignment dispatch is
-centralized so syntax-tree, lowered, executable, and `operator`-module paths do
+centralized so expression helpers, lowered, executable, and `operator`-module paths do
 not drift. Python sorting uses a stable merge operation with one key evaluation
 per item and ordered sync/async comparisons; proportional scratch storage must
 be accounted for before allocation.

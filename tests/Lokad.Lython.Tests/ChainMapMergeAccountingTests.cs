@@ -14,7 +14,7 @@ public sealed class ChainMapMergeAccountingTests
     public void MergedKeysReturnLiveViewsWithoutMergeScratch()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var map = new PyDict(context.MemoryGovernor, span);
         for (var i = 0; i < 10; i++)
@@ -30,9 +30,7 @@ public sealed class ChainMapMergeAccountingTests
         // stay visible through the same view object.
         map.SetItem(new BigInteger(10), new BigInteger(10));
         Assert.Equal(11, view.Count);
-        // No merge scratch is reserved anymore; only small shell charges peak,
-        // far below the 1,280,000B transient the snapshot copy required.
-        Assert.True(context.MemoryGovernor.PeakReservedBytes < 1280224L);
+        // The view fits the small allowance; a full merge snapshot would fail.
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

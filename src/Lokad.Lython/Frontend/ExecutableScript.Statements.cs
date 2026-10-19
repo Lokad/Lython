@@ -629,7 +629,7 @@ internal sealed partial class ExecutableScript
         {
             if (!_loops.TryPeek(out var loop))
             {
-                throw new ExecutableLoweringFallbackException("Executable IR lowering cannot emit break outside a loop.");
+                throw new InvalidOperationException("Executable IR lowering cannot emit break outside a loop.");
             }
 
             if (_protectedDepth > 0)
@@ -651,7 +651,7 @@ internal sealed partial class ExecutableScript
         {
             if (!_loops.TryPeek(out var loop))
             {
-                throw new ExecutableLoweringFallbackException("Executable IR lowering cannot emit continue outside a loop.");
+                throw new InvalidOperationException("Executable IR lowering cannot emit continue outside a loop.");
             }
 
             AddInstruction(currentBlock, _protectedDepth > 0

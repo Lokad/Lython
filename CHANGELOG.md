@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Run synchronous lowered `match` guards and cases directly, fixing assignment evaluation order in class/import cases. Remove the raw-syntax statement interpreter, unreachable whole-program/function lowering fallback and split reservation/commit peak bookkeeping. Both public APIs use executable code; imports, class bodies, annotations and opcode fallbacks retain their lowered evaluator. Live memory balances and aggregate peaks remain. No additional public API removal or measured speedup.
+
 - Breaking API cleanup: remove `MaxExecutionSteps`, `MaxHostCalls`, their default constants, quota counters, `ExecutionStepLimit`/`HostCallLimit` attribution and `Consumption.ExecutionSteps`/`HostCalls`. Hosts control execution time with `CancellationToken`; existing cancellation checkpoints, managed stack/recursion admission, memory/output bounds, host authorization and awaited cleanup remain. `LythonExecutionConsumption` now contains only retained stdout/stderr bytes. No replacement quotas or unmeasured speedup claim.
 
 - Forward bound async calls directly to their existing implementation ValueTasks, removing a redundant state machine. Preserve execution checks, named/presence binding, Python failure translation, awaited cleanup, cancellation and retained ownership.

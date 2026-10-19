@@ -69,22 +69,10 @@ public sealed class LythonEngine
             diagnostics = diagnostics.Append(new LythonDiagnostic("LA2000", exception.Message, LythonDiagnosticSeverity.Error, exception.Span)).ToArray();
             isValid = false;
         }
-        ExecutableScript? executableScript = null;
-        if (loweredScript is not null)
-        {
-            try
-            {
-                executableScript = ExecutableScript.Compile(loweredScript);
-            }
-            catch (ExecutableLoweringFallbackException)
-            {
-                executableScript = null;
-            }
-        }
-
-        // Executable code retains the function/fallback data it needs. Keep the
-        // original syntax for diagnostics, but release the whole lowered module.
-        if (executableScript is not null) loweredScript = null;
+        // Invalid source never executes. Valid source always uses executable code;
+        // compiler defects must surface instead of selecting another engine.
+        var executableScript = loweredScript is null ? null : ExecutableScript.Compile(loweredScript);
+        // Only the code object's real lowered consumers survive compilation.
 
         // Host-requirement diagnostics depend on the script plus exactly two
         // host capability flags (standard input and subprocess support), so
@@ -144,9 +132,7 @@ public sealed class LythonEngine
                 }
 
                 var runtime = new LythonRuntime();
-                return executableScript is not null
-                    ? runtime.Run(executableScript, host, options)
-                    : runtime.Run(loweredScript.RequireNotNull(), host, options);
+                return runtime.Run(executableScript.RequireNotNull(), host, options);
             },
             async (host, options) =>
             {
@@ -157,9 +143,7 @@ public sealed class LythonEngine
                 }
 
                 var runtime = new LythonRuntime();
-                return await (executableScript is not null
-                    ? runtime.RunAsync(executableScript, host, options)
-                    : runtime.RunAsync(loweredScript.RequireNotNull(), host, options)).ConfigureAwait(false);
+                return await runtime.RunAsync(executableScript.RequireNotNull(), host, options).ConfigureAwait(false);
             });
     }
 

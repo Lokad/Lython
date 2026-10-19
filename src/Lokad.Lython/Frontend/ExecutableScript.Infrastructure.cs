@@ -405,27 +405,20 @@ internal sealed partial class ExecutableScript
             return _functions.Count - 1;
         }
 
-        private ExecutableCodeObject? CompileFunctionCode(string name,
+        private ExecutableCodeObject CompileFunctionCode(string name,
             IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body,
             ScopeDirectiveFacts scopeFacts, IReadOnlyList<LoweredTypeParameter>? typeParameters = null)
         {
-            try
-            {
-                // Forward transitive free names as before. Comprehension names
-                // are inner bindings, even at module scope or when the caller
-                // declares a same-named global; add them after that exclusion.
-                var candidates = ChildClosureCandidates();
-                // Type parameters shadow enclosing locals in the body. Defaults
-                // still evaluate in the defining context before TypeScope exists.
-                if (candidates is not null && typeParameters is not null)
-                    candidates = candidates.Except(typeParameters.Select(static parameter => parameter.Syntax.Name), StringComparer.Ordinal);
-                return new Builder(parameters, candidates, scopeFacts)
-                    .CompileCodeObject(name, body);
-            }
-            catch (ExecutableLoweringFallbackException)
-            {
-                return null;
-            }
+            // Forward transitive free names as before. Comprehension names
+            // are inner bindings, even at module scope or when the caller
+            // declares a same-named global; add them after that exclusion.
+            var candidates = ChildClosureCandidates();
+            // Type parameters shadow enclosing locals in the body. Defaults
+            // still evaluate in the defining context before TypeScope exists.
+            if (candidates is not null && typeParameters is not null)
+                candidates = candidates.Except(typeParameters.Select(static parameter => parameter.Syntax.Name), StringComparer.Ordinal);
+            return new Builder(parameters, candidates, scopeFacts)
+                .CompileCodeObject(name, body);
         }
 
         private IEnumerable<string>? ChildClosureCandidates()

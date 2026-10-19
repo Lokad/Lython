@@ -21,41 +21,6 @@ internal sealed partial class LythonRuntime
             : EvaluateExpression(conditional.Alternative, context);
     }
 
-    private static void ExecuteMatchStatement(MatchStatementSyntax statement, ExecutionContext context)
-    {
-        var subject = EvaluateExpression(statement.Subject, context);
-        ExecuteMatch(statement, subject, context);
-    }
-
-    private static void ExecuteMatch(MatchStatementSyntax statement, object subject, ExecutionContext context)
-    {
-        foreach (var matchCase in statement.Cases)
-        {
-            var bindings = new Dictionary<string, object>(StringComparer.Ordinal);
-            if (!TryMatchRootPattern(matchCase.Pattern, subject, context, bindings))
-            {
-                continue;
-            }
-
-            foreach (var pair in bindings)
-            {
-                StoreName(pair.Key, pair.Value, context, matchCase.Span);
-            }
-
-            if (matchCase.Guard is not null &&
-                !IsTruthy(EvaluateExpression(matchCase.Guard, context), context, matchCase.Guard.Span))
-                continue;
-
-            var signal = ExecuteStatements(matchCase.Body, context);
-            if (signal is not null)
-            {
-                throw signal;
-            }
-
-            return;
-        }
-    }
-
     private static bool TryMatchPattern(PatternSyntax pattern, object subject, ExecutionContext context, Dictionary<string, object> bindings)
     {
         switch (pattern)

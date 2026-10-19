@@ -1,11 +1,8 @@
-using Lokad.Lython.Frontend;
-using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// Executable buffers have their own admitted capacity. Compare observable
-// values, bounded peaks and owner cleanup rather than identical internal peaks.
+// Literal storage and retained results stay funded through either public API.
 public sealed class ExecutionPathOwnershipParityTests
 {
     public static TheoryData<string> Programs => new()
@@ -19,25 +16,23 @@ public sealed class ExecutionPathOwnershipParityTests
 
     [Theory]
     [MemberData(nameof(Programs))]
-    public void LiteralPathsPreserveResultsAndBoundedOwnership(string source)
+    public async Task LiteralPathsPreserveResultsAndBoundedOwnership(string source)
     {
-        var frontend = LythonFrontend.Compile(source);
-        Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var lowered = LoweredScript.Lower(frontend.Script!);
-        var executable = ExecutableScript.Compile(lowered);
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         const long cap = 1024 * 1024;
         using (var owner = budget.CreateScope())
         {
             var options = new LythonRunOptions { MemoryBudget = owner, MaxExecutionMemoryBytes = cap };
-            using (var executableResult = new LythonRuntime().Run(executable, new MockLythonHost(), options))
-            using (var loweredResult = new LythonRuntime().Run(lowered, new MockLythonHost(), options))
+            using var compiled = new LythonEngine().Compile(source);
+            Assert.True(compiled.IsValid);
+            using (var syncResult = compiled.Run(new MockLythonHost(), options))
+            using (var asyncResult = await compiled.RunAsync(new MockLythonHost(), options))
             {
-                Assert.True(executableResult.Success, executableResult.Failure?.Message);
-                Assert.True(loweredResult.Success, loweredResult.Failure?.Message);
-                Assert.Equal(executableResult.ReturnValue, loweredResult.ReturnValue);
-                Assert.InRange(executableResult.PeakExecutionMemoryBytes, 1, cap);
-                Assert.InRange(loweredResult.PeakExecutionMemoryBytes, 1, cap);
+                Assert.True(syncResult.Success, syncResult.Failure?.Message);
+                Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+                Assert.Equal(syncResult.ReturnValue, asyncResult.ReturnValue);
+                Assert.InRange(syncResult.PeakExecutionMemoryBytes, 1, cap);
+                Assert.InRange(asyncResult.PeakExecutionMemoryBytes, 1, cap);
             }
         }
         Assert.Equal(0, budget.ReservedBytes);

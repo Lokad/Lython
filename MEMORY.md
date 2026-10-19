@@ -26,7 +26,7 @@ their unused admission. This preserves escaping code aliases without tracing the
 Executable compilation releases its unused whole-module lowered representation
 after building executable code. Original syntax stays for annotations and host
 diagnostics, and function/fallback data stays where needed. Both execution APIs
-use the executable representation directly when available. This changes ordinary
+use the executable representation directly. This changes ordinary
 CLR reference lifetimes, not allowance reclamation: the same conservative
 compilation estimate remains charged until the compiled script is disposed.
 No runtime forced GC, weak tracking or per-object refund is involved.

@@ -138,9 +138,8 @@ internal sealed partial class ExecutableScript
             var requiresLocalVariableMirroring =
                 moduleAnnotationNamespace || (_generator && generatorExpression is null) || _expressionFallbacks.Count != 0 ||
                 _statementFallbacks.Count != 0 ||
-                _functions.Any(function => function.CodeObject is null) ||
-                _functions.Any(function => function.CodeObject?.RequiresLocalVariableMirroring == true) ||
-                _constants.OfType<ExecutableCreateLambda>().Any(lambda => lambda.CodeObject is null || lambda.CodeObject.RequiresLocalVariableMirroring) ||
+                _functions.Any(function => function.CodeObject.RequiresLocalVariableMirroring) ||
+                _constants.OfType<ExecutableCreateLambda>().Any(lambda => lambda.CodeObject.RequiresLocalVariableMirroring) ||
                 _constants.OfType<ExecutableCreateGeneratorExpression>().Any(generator => generator.CodeObject.RequiresLocalVariableMirroring);
             var capturedLocalSlots = CollectCapturedLocalSlots();
 

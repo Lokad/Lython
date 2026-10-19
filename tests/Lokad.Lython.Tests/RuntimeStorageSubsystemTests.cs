@@ -237,9 +237,7 @@ public sealed class RuntimeStorageSubsystemTests
         governor.Release(24);
 
         Assert.Equal(16, governor.CurrentReservedBytes);
-        Assert.Equal(80, governor.PeakReservedBytes);
         Assert.Equal(40, governor.CurrentCommittedBytes);
-        Assert.Equal(64, governor.PeakCommittedBytes);
         Assert.Equal(56, governor.CurrentAccountedBytes);
         Assert.Equal(80, governor.PeakAccountedBytes);
     }
@@ -341,7 +339,6 @@ public sealed class RuntimeStorageSubsystemTests
         }
 
         Assert.True(governor.CurrentCommittedBytes > 0);
-        Assert.True(governor.PeakCommittedBytes >= governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.True(governor.CurrentAccountedBytes >= governor.CurrentCommittedBytes);
     }

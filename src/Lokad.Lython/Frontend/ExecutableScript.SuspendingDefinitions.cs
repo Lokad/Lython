@@ -2,7 +2,7 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed record ExecutableCreateFunction(LoweredFunctionDefinitionStatement Definition, IReadOnlyList<LoweredExpression> Inputs) : ExecutableOperation;
 internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression,
-    ExecutableCodeObject? CodeObject) : ExecutableOperation;
+    ExecutableCodeObject CodeObject) : ExecutableOperation;
 internal sealed record ExecutableAnnotationsEnabled : ExecutableOperation;
 internal sealed record ExecutableStartClassHeader(int Count) : ExecutableOperation;
 internal sealed record ExecutableCreateClass(LoweredClassDefinitionStatement Definition, bool ExpandedHeader) : ExecutableOperation;

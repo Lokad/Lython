@@ -252,58 +252,6 @@ internal sealed partial class LythonRuntime
             : PyString.FromUtf8(utf8, context.MemoryGovernor, span);
     }
 
-    public LythonExecutionResult Run(
-        LoweredScript script,
-        ILythonHost host,
-        LythonRunOptions? options)
-    {
-        return RunOnDedicatedStack(() =>
-        {
-            ExecutionContext? context = null;
-            try
-            {
-                context = new ExecutionContext(host, options);
-                InitializeModuleAnnotations(script.Syntax.Statements, context);
-                var flow = ExecuteStatements(script.Statements, context);
-                if (flow.Control is BreakSignal or ContinueSignal)
-                {
-                    throw RuntimeErrors.TopLevelLoopControl(null);
-                }
-
-                // Successful execution publishes outstanding writers instead of
-                // silently discarding accepted writes; a publication failure
-                // converts to a failure result below.
-                context.Services.State.CloseOpenFileWriters(context!);
-
-                if (flow.Return is not null)
-                {
-                    return CreateReturnedResult(flow.Return, context, options);
-                }
-
-                return CreateSuccessfulResult(context, null, options);
-            }
-            catch (ReturnSignal signal)
-            {
-                // A top-level return still publishes outstanding writers; a
-                // publication failure replaces the return with a failure.
-                try
-                {
-                    context?.Services.State.CloseOpenFileWriters(context!);
-                }
-                catch (LythonRuntimeException ex)
-                {
-                    return CreateRuntimeFailureResult(ex, context, options);
-                }
-
-                return CreateReturnedResult(signal, context, options);
-            }
-            catch (LythonRuntimeException ex)
-            {
-                return CreateRuntimeFailureResult(ex, context, options);
-            }
-        });
-    }
-
     // MG25: synchronous execution hops to a dedicated thread with a large
     // stack. Python-level nesting burns kilobytes of CLR stack per level
     // while the depth caps allow hundreds of levels, and even a catchable
@@ -569,81 +517,33 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static ControlSignal? ExecuteStatements(IReadOnlyList<StatementSyntax> statements, ExecutionContext context)
-    {
-        try
-        {
-            foreach (var statement in statements)
-            {
-                ExecuteStatement(statement, context);
-            }
-
-            return null;
-        }
-        catch (LythonRuntimeException ex)
-        {
-            ex.SetSourcePathIfMissing(context.SourcePath);
-            throw;
-        }
-        catch (ControlSignal signal)
-        {
-            return signal;
-        }
-    }
-
-    public Task<LythonExecutionResult> RunAsync(
-        LoweredScript script,
-        ILythonHost host,
-        LythonRunOptions? options)
-        => RunAsyncCore(script.Syntax, script.Statements, null, host, options);
-
-    public Task<LythonExecutionResult> RunAsync(
+    public async Task<LythonExecutionResult> RunAsync(
         ExecutableScript script,
         ILythonHost host,
         LythonRunOptions? options)
-        => RunAsyncCore(script.Syntax, null, script.EntryPoint, host, options);
-
-    private async Task<LythonExecutionResult> RunAsyncCore(
-        ScriptSyntax syntax,
-        IReadOnlyList<LoweredStatement>? loweredStatements,
-        ExecutableCodeObject? executableEntry,
-        ILythonHost host,
-        LythonRunOptions? options)
     {
-
         ExecutionContext? context = null;
         try
         {
             // Compiled definitions share the synchronous slot/cell contract.
             // Code-object fallback facts still request mirroring when needed.
             context = new ExecutionContext(host, options);
-            InitializeModuleAnnotations(syntax.Statements, context);
+            InitializeModuleAnnotations(script.Syntax.Statements, context);
             // MG25: no initial yield here. Yielding first would abandon the
             // calling thread (in particular the dedicated large stack the
             // public async entry runs on) to the pool before doing any work,
             // so deep recursion that never genuinely yields would nest on a
             // small pool thread instead. Genuine host delays still yield.
-            LoweredBlockFlow flow;
-            if (executableEntry is null)
-                flow = await ExecuteStatementsAsync(loweredStatements.RequireNotNull(), context).ConfigureAwait(false);
-            else
-            {
-                var returned = await ExecuteExecutableCodeObjectAsync(executableEntry, context).ConfigureAwait(false);
-                flow = returned is null ? default : new LoweredBlockFlow(null, new ReturnSignal(returned));
-            }
-            if (flow.Control is BreakSignal or ContinueSignal)
-            {
-                throw RuntimeErrors.TopLevelLoopControl(null);
-            }
+            var returned = await ExecuteExecutableCodeObjectAsync(script.EntryPoint, context).ConfigureAwait(false);
 
             // Successful execution publishes outstanding writers instead of
             // silently discarding accepted writes; the await keeps delayed hosts
             // honest, and a publication failure converts to a failure result below.
             await context.Services.State.CloseOpenFileWritersAsync(context).ConfigureAwait(false);
 
-            if (flow.Return is not null)
+            if (returned is not null)
             {
-                return CreateReturnedResult(flow.Return, context, options);
+                return CreateReturnedResult(new ReturnSignal(returned), context, options);
             }
 
             return CreateSuccessfulResult(context, null, options);

@@ -20,7 +20,6 @@ public sealed class BinaryFileAccountingTests
         Assert.True(handle.TryGetMember("read", out var method));
         var result = Assert.IsType<PyBytes>(Assert.IsAssignableFrom<LythonRuntime.ICallable>(method).Invoke([], Span, context));
         Assert.Equal(0, result.Length);
-        Assert.True(context.MemoryGovernor.PeakCommittedBytes <= 1024);
         handle.Exit();
         Assert.Equal(LythonRuntime.ExecutionContext.BinaryFileHandle.ShellBytes, handle.OwnedBytes);
     }

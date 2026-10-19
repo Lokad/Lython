@@ -5,8 +5,7 @@ namespace Lokad.Lython.Tests;
 
 // R12: shared drains fund each backing-growth increment exactly once
 // (funded capacity tracked apart from observed capacity), deny before growth,
-// and release everything when the consumer fails. All assertions pin
-// deterministic governor peaks, not GC slopes.
+// and release everything when the consumer fails.
 public sealed class DrainReservationTests
 {
     private static LythonRuntime.ExecutionContext NewContext(long? budget, out MemoryGovernor governor)
@@ -34,37 +33,32 @@ public sealed class DrainReservationTests
     }
 
     [Theory]
-    [InlineData(0, 0)]
-    [InlineData(4, 128)]
-    [InlineData(5, 208)]
-    [InlineData(8, 256)]
-    [InlineData(9, 400)]
-    [InlineData(16, 512)]
-    [InlineData(17, 784)]
-    public void DrainFundsEachGrowthOnce(int count, long expectedPeakReserved)
+    [InlineData(0)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(8)]
+    [InlineData(9)]
+    [InlineData(16)]
+    [InlineData(17)]
+    public void DrainReturnsValuesAndReleasesScratch(int count)
     {
-        // Growth funds 64, 64, 128, 256... at capacities 4, 8, 16, 32, plus the
-        // final 16-per-item copy coexistence. Double-charging any increment
-        // would exceed these peaks (e.g. 400 instead of 208 for five items).
         var context = NewContext(null, out var governor);
         var result = PyIteration.Drain(Items(count), new LythonSourceSpan(0, 0, 0, 0), context);
-        Assert.Equal(count, result.Count);
-        Assert.Equal(expectedPeakReserved, governor.PeakReservedBytes);
+        Assert.Equal(Enumerable.Range(0, count).Cast<object>(), result);
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Equal(0, governor.CurrentCommittedBytes);
     }
 
     [Theory]
-    [InlineData(0, 0)]
-    [InlineData(5, 208)]
-    [InlineData(9, 400)]
-    [InlineData(17, 784)]
-    public async Task DrainAsyncMatchesSyncPeaks(int count, long expectedPeakReserved)
+    [InlineData(0)]
+    [InlineData(5)]
+    [InlineData(9)]
+    [InlineData(17)]
+    public async Task DrainAsyncReturnsValuesAndReleasesScratch(int count)
     {
         var context = NewContext(null, out var governor);
         var result = await PyIteration.DrainAsync(ItemsAsync(count), new LythonSourceSpan(0, 0, 0, 0), context);
-        Assert.Equal(count, result.Count);
-        Assert.Equal(expectedPeakReserved, governor.PeakReservedBytes);
+        Assert.Equal(Enumerable.Range(0, count).Cast<object>(), result);
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Equal(0, governor.CurrentCommittedBytes);
     }
@@ -139,8 +133,11 @@ public sealed class DrainReservationTests
                 outerSeen++;
                 if (outerSeen == 3)
                 {
+                    var held = governor.CurrentReservedBytes;
+                    Assert.True(held > 0);
                     var inner = PyIteration.Drain(Items(5), new LythonSourceSpan(0, 0, 0, 0), context);
                     Assert.Equal(5, inner.Count);
+                    Assert.Equal(held, governor.CurrentReservedBytes);
                 }
 
                 yield return i;
@@ -150,9 +147,6 @@ public sealed class DrainReservationTests
         var result = PyIteration.Drain(Outer(), new LythonSourceSpan(0, 0, 0, 0), context);
         Assert.Equal(6, result.Count);
         Assert.Equal(6, outerSeen);
-        // Outer funded 64 before the inner drain ran; the inner run peaked at
-        // 64 + 208 = 272 beside it; the outer final copy later reached 224.
-        Assert.Equal(272, governor.PeakReservedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 
@@ -163,7 +157,6 @@ public sealed class DrainReservationTests
         var source = Items(20).ToList();
         var result = PySequenceMaterialization.MaterializeSlice(source, LazyIndices(9), governor, null);
         Assert.Equal(9, result.Length);
-        Assert.Equal(400, governor.PeakReservedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 

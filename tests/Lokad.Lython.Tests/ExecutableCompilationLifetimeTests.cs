@@ -34,21 +34,6 @@ public sealed class ExecutableCompilationLifetimeTests
         GC.KeepAlive(program);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task LoweredRoutePreservesAnnotationInitialization(bool asynchronous)
-    {
-        var syntax = LythonFrontend.Compile("print(__annotations__)\nvalue:int=1\nprint(__annotations__['value'] is int,value)").Script.RequireNotNull();
-        var program = LoweredScript.Lower(syntax);
-        var runtime = new LythonRuntime();
-        using var result = asynchronous
-            ? await runtime.RunAsync(program, new MockLythonHost(), null)
-            : runtime.Run(program, new MockLythonHost(), null);
-        Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("{}\nTrue 1\n", result.StandardOutput);
-    }
-
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static (ExecutableScript Program, WeakReference<LoweredScript> Lowered) Compile(string source)
     {

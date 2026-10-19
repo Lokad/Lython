@@ -6,9 +6,6 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
 
-// Signals that a valid lowered program must use the general interpreter instead of executable IR.
-internal sealed class ExecutableLoweringFallbackException(string message) : Exception(message);
-
 internal enum ExecutableOpCode
 {
     Import,
@@ -424,7 +421,7 @@ internal sealed record ExecutableCallSite(
 
 internal sealed record ExecutableFunctionBinding(
     LoweredFunctionDefinitionStatement Function,
-    ExecutableCodeObject? CodeObject,
+    ExecutableCodeObject CodeObject,
     IReadOnlyDictionary<string, LoweredExpression> DefaultValues);
 
 internal sealed record ExecutableMatchCaseBinding(

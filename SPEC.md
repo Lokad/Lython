@@ -3413,8 +3413,11 @@ and host boundaries. Lython has no instruction allowance, host-call-count quota,
 work-unit policy or internal deadline watchdog. Memory bounds alone do not
 terminate an infinite non-allocating loop.
 
-When executable compilation succeeds, both execution APIs and eligible ordinary
-function bodies share compiled code, argument slots and captured cells. Defaults,
+Both execution APIs run executable code. Eligible ordinary function bodies share
+compiled code, argument slots and captured cells. Invalid loop control is rejected
+before execution; compiler invariant failures do not select a different engine.
+Lowered evaluation remains for imports, class bodies, annotations and individual
+opcode fallbacks. Defaults,
 decorators and body callbacks can suspend without replaying effects. Eligible
 annotated and generic definitions keep executable bodies with their metadata and
 type-parameter scopes; required class/generator/contextual fallbacks remain.
