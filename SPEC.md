@@ -1001,7 +1001,7 @@ possible aliases, including separately created copies; a formerly provable error
 can move to the ordinary runtime check. Freshly established facts still justify
 diagnostics. Normalizing nested compiler facts has a finite work bound; unusually
 deep or branching facts can become unknown below that bound without changing
-guest values, execution limits or memory ownership.
+guest values, cooperative cancellation or memory ownership.
 
 Container-fact invalidation caused by calls analyzed inside eager list, set and
 dictionary comprehensions must reach the surrounding state, without exporting
@@ -1593,7 +1593,8 @@ leave the variable unbound. Parenthesized names and attribute/item targets
 evaluate annotations without storing an annotation entry. Annotation-only
 attribute/item targets evaluate their receivers and indices without reading the
 item. Function-local annotations remain unevaluated. Metadata and annotation
-protocol calls obey execution limits and await delayed effects in RunAsync.
+protocol calls preserve cancellation and managed stack admission, and await
+delayed effects in RunAsync.
 With postponed annotations, bare names store canonical strings; parenthesized
 names and attribute/item annotations remain unevaluated and store no entry.
 Class dictionaries are initialized before the body, including conditional
@@ -3146,8 +3147,8 @@ tuples through `__bases__`. Expat-specific error codes/positions are outside
 this inventory.
 
 Input/parser/stack/selector scratch, node shells, attribute maps, child storage,
-text builders and output lists are governed before growth. Node counts,
-attributes, strings and work obey execution limits. Unpublished graph values
+text builders and output lists are governed before growth. Storage uses the
+borrowed host allowance; traversal checks cancellation. Unpublished graph values
 refund on malformed input, denial or cancellation; published storage stays
 conservatively owned by its execution batch. Child, map and text aliases retain their own charges without
 keeping hidden parent links. Integer and slice-bound conversions resolve type

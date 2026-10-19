@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-19 JSON scalar completion check](results/2026-10-19-json-scalar-completion/README.md)
+compares immutable `3d1ec461` and `13375e82` on one complete fresh JSON helper
+job, with CPython context. The 9.298-second Windows capture is inconclusive:
+10.577/10.697 ms Lython medians and 10.45% candidate spread. Removing redundant
+async forwarding establishes no measured speedup; no retiming is planned.
+
 The [2026-10-19 regex boundary check](results/2026-10-19-regex-boundary/README.md)
 records one bounded before/after/control comparison of the maintained reuse
 workload. It reports added allocation and unqualified timing, with actual owned

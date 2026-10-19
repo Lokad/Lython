@@ -239,8 +239,8 @@ Capacity overlap can require more unused headroom and reject earlier. Long strea
 still require bounded host-driven execution batches; dropping guest references
 does not release arbitrary output ownership.
 
-Array-backed list growth reserves full replacement capacity against both the
-execution limit and shared host allowance before allocation. The old backing
+Array-backed list growth reserves full replacement capacity against the borrowed
+host allowance before allocation. The old backing
 remains charged until the copy finishes. Failed admission leaves its contents
 and funding unchanged; failed replacement refunds its reservation. Successful
 growth retains the existing final capacity estimate and returns temporary

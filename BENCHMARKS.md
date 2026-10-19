@@ -739,6 +739,14 @@ warm invocation, 0.612–0.626 ms before versus 0.701 ms after, with 16.1% more 
 allocation. Timing is unqualified and includes result disposal; compilation and
 startup are excluded. This records integration cost, without a speedup claim.
 
+The [JSON scalar completion check](benchmarks/results/2026-10-19-json-scalar-completion/README.md)
+compares `3d1ec461` with `13375e82` on a shared Windows workstation, separately
+from the Linux snapshots above: a complete fresh JSON helper job took 10.577 ms
+before and 10.697 ms after, versus CPython 3.13.2 at 14.624 ms. The change is
+inconclusive (10.45% candidate spread); this removal of redundant async forwarding
+has no demonstrated speedup. Startup is excluded; file staging/checks and cleanup
+are included. No cross-machine historical comparison follows.
+
 - [Measurement methods, commands and qualification rules](benchmarks/COMPARISON.md)
 - [Experimental history, profiles and rejected optimizations](benchmarks/EXPERIMENTS.md)
 - [Historical Lython-only BenchmarkDotNet scan baselines](benchmarks/Baselines.md)

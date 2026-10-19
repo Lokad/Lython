@@ -1,0 +1,24 @@
+{
+  "baselineRevision": "3d1ec46129cd8595021f658c7f0728b1622bc3fd",
+  "candidateRevision": "13375e82bddb4d232f0565d71eab1336b9615718",
+  "workload": "scripts.json-summary-helpers.large",
+  "lane": "compile-run",
+  "date": "2026-10-19T19:41:06.6055678+00:00",
+  "machine": "LOKAD-0399",
+  "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+  "logicalProcessors": 28,
+  "performanceQualified": false,
+  "sourceChange": "Remove always-async JSON scalar/constant forwarding while preserving pending numeric frames.",
+  "limitations": [
+    "One shared Windows workstation capture; no noise or platform qualification.",
+    "No allocation measurement; no demonstrated speedup.",
+    "Disk staging, resets, exact output checks and result/compilation cleanup are included; startup and worker protocol excluded.",
+    "Different machine and OS from historical Linux table; no historical multiplier comparison."
+  ],
+  "files": {
+    "micro.json": "fa9917a53878253a43d6a214b01e0932972b378486bfee0172f1a946ba33556b",
+    "catalog.json": "17af069933bb1694072d468d35cb90732671794bba4e8c04bfc49cec73d37681",
+    "process.receipt.json": "f789fca29c3028ea410e8b7102f80844666f86bcc648424fc5a522766ea59084",
+    "before-identity.json": "5caafbfcc96c54742b8939ca6631f8764c20bfe6a1b44fc80b702d3b097aa77c"
+  }
+}
