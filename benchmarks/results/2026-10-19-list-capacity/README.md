@@ -43,3 +43,20 @@ Evidence: [source patch](candidate.patch), [raw samples and identities](micro.js
 unchanged input catalog is shared with [the preceding diagnostic](../2026-10-19-native-prepared-routing/catalog.json.gz);
 its decompressed hash matches the receipt, which contains the selected source,
 fixture and independent golden. Existing comparison tooling was reused.
+
+The diagnostic above predates the extension correction in `fd5b60ab` and fixture
+migration in `bb38b2f0`; it is not a measurement of those revisions or current HEAD.
+The correction consolidates extension loops, checks cancellation during known-size
+stores, funds actual growth when a reported count changes, and removes redundant
+periodic counters. All three tiny controls reproduce failures on the preceding
+implementation and pass after the correction. [Patch](extension.patch) and
+[follow-up qualification receipts](extension-qualification.json) preserve both.
+
+Initial full CI 39327618805 failed on stale success/fee fixtures and one Windows
+float-conversion wait. Success controls are reduced while their original large
+DAG/CSV/scalar cases remain in Stress with explicit capacity headroom; refusal caps
+and existing Stress counts are preserved. Two touched batch fixtures now borrow
+their supplied root. Eight selected large-scale controls pass locally; the six
+float-conversion cases pass unchanged in focused runs, with no deadline changes.
+Both explicit Release package consumers pass at `bb38b2f0`. Final cross-platform
+ordinary/Stress/package qualification is pending; no full green is claimed here.

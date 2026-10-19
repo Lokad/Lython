@@ -1,0 +1,213 @@
+diff --git a/src/Lokad.Lython/Runtime/PyList.cs b/src/Lokad.Lython/Runtime/PyList.cs
+index 9d451d95..14b7efb1 100644
+--- a/src/Lokad.Lython/Runtime/PyList.cs
++++ b/src/Lokad.Lython/Runtime/PyList.cs
+@@ -84,8 +84,11 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
+         _items.Add(value);
+     }
+ 
+-    public void AddRange(IEnumerable<object> values)
++    public void AddRange(IEnumerable<object> values) => AddRange(values, null, null);
++
++    internal void AddRange(IEnumerable<object> values, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+     {
++        context?.CheckExecution(span);
+         if (values is PyIteration.CheckedSequence { Source: PyList or IPyListStorage or IReadOnlyCollection<object> } checkedSequence)
+         {
+             values = checkedSequence.Source;
+@@ -95,13 +98,13 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
+         {
+             // Snapshot the source (which may be this list) so extending appends
+             // the original elements; the copy itself is budget-checked.
+-            AddRange(sourceList.ToArray());
++            AddRange(sourceList.ToArray(), context, span);
+             return;
+         }
+ 
+         if (values is IPyListStorage sourceStorage)
+         {
+-            AddRange(sourceStorage.ToArray());
++            AddRange(sourceStorage.ToArray(), context, span);
+             return;
+         }
+ 
+@@ -109,67 +112,38 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
+         // through its sequence interfaces, so it must never reach this live count).
+         if (values is IReadOnlyCollection<object> known)
+         {
+-            // Bounded, known-size inputs reserve exactly once up front, so the
+-            // bulk append below cannot grow past the ensured capacity uncharged.
++            // Admit the reported count before mutation. A changing collection
++            // can yield more, so each store also ensures its actual capacity.
+             _items = PyListStorage.EnsureCapacity(_items, checked(Count + known.Count), _memoryGovernor, _allocationSpan);
+ 
+             foreach (var value in known)
+             {
+-                _items.Add(value);
++                context?.CheckExecution(span);
++                Add(value);
+             }
+ 
++            context?.CheckExecution(span);
+             return;
+         }
+ 
+         try
+         {
+-            // Unknown-length inputs stream incrementally: growth is charged per
+-            // item, so a failing iterable keeps its partial effects and an
+-            // unbounded one meets the memory budget instead of hanging.
++            // Unknown-length inputs stream incrementally, admitting actual
++            // capacity before each store. Failing iterables retain their
++            // successful prefix and its funding.
+             foreach (var value in values)
+             {
++                context?.CheckExecution(span);
+                 Add(value);
+             }
++            context?.CheckExecution(span);
+         }
+         catch (InvalidOperationException)
+         {
+             // Iteration observed our own concurrent growth (for example extending
+             // with a live iterator over this list). That cannot terminate like
+             // CPython does, so fail explicitly instead of leaking the CLR error.
+-            throw RuntimeErrors.Runtime("list modified during extension.", _allocationSpan);
+-        }
+-    }
+-
+-    internal void AddRange(IEnumerable<object> values, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+-    {
+-        if (values is PyIteration.CheckedSequence { Source: PyList or IPyListStorage or IReadOnlyCollection<object> } checkedSequence)
+-        {
+-            values = checkedSequence.Source;
+-        }
+-
+-        if (values is IReadOnlyCollection<object> || values is PyList || values is IPyListStorage)
+-        {
+-            AddRange(values);
+-            context.CheckExecution(span);
+-            return;
+-        }
+-
+-        try
+-        {
+-            var added = 0;
+-            foreach (var value in values)
+-            {
+-                Add(value);
+-                context.CheckExecution(span);
+-                if ((++added & 63) == 0)
+-                {
+-                    context.CheckExecution(span);
+-                }
+-            }
+-        }
+-        catch (InvalidOperationException)
+-        {
+-            throw RuntimeErrors.Runtime("list modified during extension.", span);
++            throw RuntimeErrors.Runtime("list modified during extension.", span ?? _allocationSpan);
+         }
+     }
+ 
+@@ -185,16 +159,13 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
+ 
+         try
+         {
+-            var added = 0;
++            context.CheckExecution(span);
+             await foreach (var value in LythonRuntime.ToSequenceAsync(source, span, context).ConfigureAwait(false))
+             {
+-                Add(value);
+                 context.CheckExecution(span);
+-                if ((++added & 63) == 0)
+-                {
+-                    context.CheckExecution(span);
+-                }
++                Add(value);
+             }
++            context.CheckExecution(span);
+         }
+         catch (InvalidOperationException)
+         {
+diff --git a/tests/Lokad.Lython.Tests/ListExtensionCancellationTests.cs b/tests/Lokad.Lython.Tests/ListExtensionCancellationTests.cs
+new file mode 100644
+index 00000000..9f66a59f
+--- /dev/null
++++ b/tests/Lokad.Lython.Tests/ListExtensionCancellationTests.cs
+@@ -0,0 +1,75 @@
++using Lokad.Lython.Runtime;
++using Lokad.Lython.Tests.Harness;
++
++namespace Lokad.Lython.Tests;
++
++public sealed class ListExtensionCancellationTests
++{
++    private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
++
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task InFlightCancellationStopsStoresAndDisposesKnownSource(bool asynchronous)
++    {
++        var budget = new LythonMemoryBudget(128 * 1024);
++        using var owner = budget.CreateScope();
++        using var cancellation = new CancellationTokenSource();
++        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
++            new LythonRunOptions { MemoryBudget = owner, CancellationToken = cancellation.Token });
++        var list = new PyList([], context.MemoryGovernor, Span);
++        var first = new object();
++        var afterCancellation = new object();
++        var source = new KnownSource(2, Values());
++        IEnumerable<object> Values()
++        {
++            yield return first;
++            cancellation.Cancel();
++            yield return afterCancellation;
++        }
++        var failure = asynchronous
++            ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await list.AddRangeAsync(source, context, Span))
++            : Assert.Throws<LythonRuntimeException>(() => list.AddRange(source, context, Span));
++        Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
++        Assert.Contains(first, list);
++        Assert.DoesNotContain(afterCancellation, list);
++        Assert.True(source.Disposed);
++        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
++        Assert.True(budget.ReservedBytes >= list.CommittedStorageBytes);
++        owner.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    [Fact]
++    public void UnderestimatedKnownCountCannotGrowPastAdmittedCapacity()
++    {
++        var budget = new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(9) + PyListStorage.EstimateCapacityBytes(18));
++        using var owner = budget.CreateScope();
++        var governor = new MemoryGovernor(owner);
++        var alias = new object();
++        var list = new PyList(Enumerable.Repeat(alias, 9), governor);
++        var source = new KnownSource(1, Enumerable.Repeat(alias, 32));
++        var failure = Assert.Throws<LythonRuntimeException>(() => list.AddRange(source));
++        Assert.Same(governor.AdmissionFailure, failure);
++        Assert.True(source.Disposed);
++        Assert.InRange(list.Count, 10, 40);
++        foreach (var value in list) Assert.Same(alias, value);
++        Assert.Equal(list.CommittedStorageBytes, governor.CurrentCommittedBytes);
++        Assert.Equal(governor.CurrentAccountedBytes, budget.ReservedBytes);
++        Assert.Equal(0, governor.CurrentReservedBytes);
++        owner.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    private sealed class KnownSource(int count, IEnumerable<object> values) : IReadOnlyCollection<object>
++    {
++        public int Count => count;
++        public bool Disposed;
++        public IEnumerator<object> GetEnumerator()
++        {
++            try { foreach (var value in values) yield return value; }
++            finally { Disposed = true; }
++        }
++        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
++    }
++}
