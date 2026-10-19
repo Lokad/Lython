@@ -36,6 +36,7 @@ public sealed class ExecutableCallTransferTests
         else CheckResult(Run(code, context));
         Assert.NotNull(probe.Frame);
         Assert.Empty(Operands(probe.Frame!));
+        probe.AssertReleasedArguments();
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
@@ -53,6 +54,7 @@ public sealed class ExecutableCallTransferTests
         // The call checked its live inputs during suspension. Terminal cleanup
         // must also withdraw the surrounding expression before frame exit.
         Assert.Empty(Operands(probe.Frame!));
+        probe.AssertReleasedArguments();
         Assert.Null(context.CurrentExecutableFrame);
     }
 
@@ -90,6 +92,9 @@ public sealed class ExecutableCallTransferTests
         internal readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal object? Frame;
         private CallArgumentValue[]? _arguments;
+
+        internal void AssertReleasedArguments()
+            => Assert.All(_arguments!, argument => Assert.True(argument.Value is null or PyNone));
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
