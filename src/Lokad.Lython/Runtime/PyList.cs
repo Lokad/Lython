@@ -87,7 +87,6 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     public void Add(object value)
     {
-        var committedBefore = CommittedStorageBytes;
         var target = checked(_numericStorageBytes + NumericBytes(value));
         var growth = ReserveNumericGrowth(target);
         try
@@ -100,7 +99,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             throw;
         }
         _items.Add(value);
-        CompleteNumericChange(target, committedBefore);
+        CompleteNumericChange(target);
     }
 
     // Numeric slots conservatively cover small boxes without consulting identity
@@ -129,7 +128,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         return growth;
     }
 
-    private void CompleteNumericChange(long target, long committedBefore)
+    private void CompleteNumericChange(long target)
     {
         var released = _numericStorageBytes - target;
         _numericStorageBytes = target;
@@ -178,7 +177,6 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         {
             // Bounded, known-size inputs reserve exactly once up front, so the
             // bulk append below cannot grow past the ensured capacity uncharged.
-            var committedBefore = CommittedStorageBytes;
             var target = checked(_numericStorageBytes + NumericBytes((IEnumerable<object>)known));
             var growth = ReserveNumericGrowth(target);
             try
@@ -196,7 +194,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
                 _items.Add(value);
             }
 
-            CompleteNumericChange(target, committedBefore);
+            CompleteNumericChange(target);
             return;
         }
 
@@ -285,7 +283,6 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     {
         var normalized = index < 0 ? index + Count : index;
         normalized = Math.Clamp(normalized, 0, Count);
-        var committedBefore = CommittedStorageBytes;
         var target = checked(_numericStorageBytes + NumericBytes(value));
         var growth = ReserveNumericGrowth(target);
         try
@@ -298,7 +295,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             throw;
         }
         _items.InsertAt(normalized, value);
-        CompleteNumericChange(target, committedBefore);
+        CompleteNumericChange(target);
     }
 
     public void Reverse()
@@ -331,7 +328,6 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             throw new LythonRuntimeException("RuntimeError", "List repetition is too large.", span);
         var total = (int)totalLength;
         var originalCount = Count;
-        var committedBefore = CommittedStorageBytes;
         var target = checked(_numericStorageBytes * count);
         var growth = ReserveNumericGrowth(target);
         try
@@ -344,7 +340,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             throw;
         }
         _items.RepeatFill(originalCount, total);
-        CompleteNumericChange(target, committedBefore);
+        CompleteNumericChange(target);
     }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)
@@ -367,21 +363,19 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     public void RemoveAt(int index)
     {
-        var committedBefore = CommittedStorageBytes;
         var target = _numericStorageBytes - NumericBytes(_items[index]);
         _items.RemoveAt(index);
-        CompleteNumericChange(target, committedBefore);
+        CompleteNumericChange(target);
     }
 
     public void RemoveRange(int index, int count)
     {
         if (count <= 0) return;
-        var committedBefore = CommittedStorageBytes;
         long outgoing = 0;
         // Read before mutation both to validate the range and to count its slots.
         for (var i = 0; i < count; i++) outgoing += NumericBytes(_items[index + i]);
         _items.RemoveRangeAt(index, count);
-        CompleteNumericChange(_numericStorageBytes - outgoing, committedBefore);
+        CompleteNumericChange(_numericStorageBytes - outgoing);
     }
 
     public void DeleteSlice(PyIndexing.SliceBounds bounds)
@@ -392,7 +386,6 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             return;
         }
         if (bounds.Count == 0) return;
-        var committedBefore = CommittedStorageBytes;
         var count = Count;
         var destination = 0;
         long outgoing = 0;
@@ -406,7 +399,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             }
         }
         if (destination < count) _items.RemoveRangeAt(destination, count - destination);
-        CompleteNumericChange(_numericStorageBytes - outgoing, committedBefore);
+        CompleteNumericChange(_numericStorageBytes - outgoing);
     }
 
     public void SetSlice(PyIndexing.SliceBounds bounds, IReadOnlyList<object> values, LythonSourceSpan span)
@@ -417,7 +410,6 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             IReadOnlyList<object> staged = values;
             if (values is PyList sourceList) staged = sourceList.ToArray();
             else if (values is IPyListStorage sourceStorage) staged = sourceStorage.ToArray();
-            var committedBefore = CommittedStorageBytes;
             long outgoing = 0;
             for (var i = 0; i < removeCount; i++) outgoing += NumericBytes(_items[bounds.Start + i]);
             var target = checked(_numericStorageBytes - outgoing + NumericBytes((IEnumerable<object>)staged));
@@ -432,19 +424,18 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
                 throw;
             }
             _items.ReplaceRange(bounds.Start, removeCount, staged);
-            CompleteNumericChange(target, committedBefore);
+            CompleteNumericChange(target);
             return;
         }
         if (bounds.Count != values.Count)
             throw new LythonRuntimeException("ValueError", "attempt to assign sequence of size " + values.Count + " to extended slice of size " + bounds.Count, span);
-        var extendedBefore = CommittedStorageBytes;
         long extendedOutgoing = 0;
         foreach (var index in bounds.Indices()) extendedOutgoing += NumericBytes(_items[index]);
         var extendedTarget = checked(_numericStorageBytes - extendedOutgoing + NumericBytes((IEnumerable<object>)values));
         ReserveNumericGrowth(extendedTarget);
         var position = 0;
         foreach (var index in bounds.Indices()) _items[index] = values[position++];
-        CompleteNumericChange(extendedTarget, extendedBefore);
+        CompleteNumericChange(extendedTarget);
     }
 
     public void Clear()
@@ -491,11 +482,10 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     {
         var outgoing = _items[index];
         if (ReferenceEquals(outgoing, value)) return;
-        var committedBefore = CommittedStorageBytes;
         var target = _numericStorageBytes - NumericBytes(outgoing) + NumericBytes(value);
         ReserveNumericGrowth(target);
         _items[index] = value;
-        CompleteNumericChange(target, committedBefore);
+        CompleteNumericChange(target);
     }
 
     public object[] ToArray()
@@ -552,10 +542,9 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
                 _memoryGovernor.Release(replacement.ReleaseCommittedBytes());
                 throw;
             }
-            var committedBefore = CommittedStorageBytes;
             _memoryGovernor.Release(_items.ReleaseCommittedBytes());
             _items = replacement;
-            CompleteNumericChange(target, committedBefore);
+            CompleteNumericChange(target);
             return;
         }
         _items = PyListStorage.Create(values);

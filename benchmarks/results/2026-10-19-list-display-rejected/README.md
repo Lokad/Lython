@@ -8,8 +8,9 @@ cancellation checks. Sets, dictionaries and unpacking kept their prior paths.
 passed; this was not rejected for an observed semantic failure.
 
 The extra receiver/stack dispatch adds complexity without a demonstrated benefit.
-`abd98e0e` removes the prototype. Production and architecture sources again match
-the fully qualified `66c050d0`; its six native-operation simplifications remain.
+`abd98e0e` removes the prototype. At that checkpoint, production and architecture
+sources again match the fully qualified `66c050d0`; its six native-operation
+simplifications remain.
 Do not revive or retime this guarded route as another qualification campaign.
 
 One 7.833-second capture on 2026-10-19 uses the maintained
