@@ -1,0 +1,327 @@
+{
+  "base": "93b4b17218f2064182fb41265a306b779e131a51",
+  "programs": 4,
+  "publicRuns": 8,
+  "captures": [
+    {
+      "label": "field-width",
+      "source": "text=f\"{'caf\u00e9 \ud83d\ude00'!r:>12}\"\nprint(repr(text),len(text))",
+      "asynchronous": false,
+      "report": {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "\"   'caf\u00e9 \ud83d\ude00'\" 11\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 752,
+          "PeakProjectionMemoryBytes": 74,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\"    'caf\u00e9 \ud83d\ude00'\" 12\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "method-width",
+      "source": "text='{0!r:>12}'.format('caf\u00e9 \ud83d\ude00')\nprint(repr(text),len(text))",
+      "asynchronous": false,
+      "report": {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "\"   'caf\u00e9 \ud83d\ude00'\" 11\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 895,
+          "PeakProjectionMemoryBytes": 74,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\"    'caf\u00e9 \ud83d\ude00'\" 12\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "precision",
+      "source": "print(repr(format('\ud83d\ude00z','.1s')))",
+      "asynchronous": false,
+      "report": {
+        "Index": 2,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": {
+            "ExceptionType": "CLR:System.Text.EncoderFallbackException",
+            "Message": "Unable to translate Unicode character \\\\uD83D at index 0 to specified code page.",
+            "Span": null,
+            "Frames": null
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "'\ud83d\ude00'\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "fill",
+      "source": "print(format('x','\ud83d\ude00>3'))",
+      "asynchronous": false,
+      "report": {
+        "Index": 3,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 160,
+          "PeakProjectionMemoryBytes": 192,
+          "DeniedReservationBytes": 0,
+          "Failure": {
+            "ExceptionType": "ValueError",
+            "Message": "Invalid format specifier '\ud83d\ude00>3' for object of type 'str'",
+            "Span": "line 1, column 7",
+            "Frames": [
+              "<module> (line 1)"
+            ]
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\ud83d\ude00\ud83d\ude00x\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "field-width",
+      "source": "text=f\"{'caf\u00e9 \ud83d\ude00'!r:>12}\"\nprint(repr(text),len(text))",
+      "asynchronous": true,
+      "report": {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "\"   'caf\u00e9 \ud83d\ude00'\" 11\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 752,
+          "PeakProjectionMemoryBytes": 74,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\"    'caf\u00e9 \ud83d\ude00'\" 12\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "method-width",
+      "source": "text='{0!r:>12}'.format('caf\u00e9 \ud83d\ude00')\nprint(repr(text),len(text))",
+      "asynchronous": true,
+      "report": {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "\"   'caf\u00e9 \ud83d\ude00'\" 11\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 895,
+          "PeakProjectionMemoryBytes": 74,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\"    'caf\u00e9 \ud83d\ude00'\" 12\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "precision",
+      "source": "print(repr(format('\ud83d\ude00z','.1s')))",
+      "asynchronous": true,
+      "report": {
+        "Index": 2,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": {
+            "ExceptionType": "CLR:System.Text.EncoderFallbackException",
+            "Message": "Unable to translate Unicode character \\\\uD83D at index 0 to specified code page.",
+            "Span": null,
+            "Frames": null
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "'\ud83d\ude00'\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "fill",
+      "source": "print(format('x','\ud83d\ude00>3'))",
+      "asynchronous": true,
+      "report": {
+        "Index": 3,
+        "Lython": {
+          "Success": false,
+          "StandardOutput": "",
+          "StandardError": "",
+          "ExitCode": 1,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 160,
+          "PeakProjectionMemoryBytes": 192,
+          "DeniedReservationBytes": 0,
+          "Failure": {
+            "ExceptionType": "ValueError",
+            "Message": "Invalid format specifier '\ud83d\ude00>3' for object of type 'str'",
+            "Span": "line 1, column 7",
+            "Frames": [
+              "<module> (line 1)"
+            ]
+          }
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\ud83d\ude00\ud83d\ude00x\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": false,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "base": "d212c3fa96f3dc366266ef63c4162268dc9e4b68",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.Formatting.cs": "5d2d5044495e3931f2e36e1b4da4e9badee5d74ce1a5707b3b6d94dcba5dfb4c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Complex.cs": "0eb821ada01a3694a24aae98601a0d5a0e7cbeb726a623dcc30bfd071ee9ba5e",
+    "src/Lokad.Lython/Runtime/PyRendering.cs": "3dab6f009e00444e459d77f66737f908e223381aeb4fd225a29777da313c4d38"
+  },
+  "proposal": "Use codepoint length and precision boundaries for strings;parse fill as a scalar value with -1 for unspecified (same4-byte storage as prior nullable char). Keep one shared padding path and existing capacity admission. Supplementary padding uses managed string.Create with cooperative checkpoints. No new budget/owner/pool or duplicate formatter. Numeric/BMP controls should retain allocation/work;Unicode outputs/funding intentionally change.",
+  "baselineCapture": "Reuse identity-wrapper candidate-native,all24 rows and248 records;no recapture.",
+  "limits": "Private format family and complex empty-fill marker only;preserve G03 core/real funding. No performance speedup claim."
+}

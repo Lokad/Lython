@@ -1,0 +1,224 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
+index e4c5cb21..f517843b 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
+@@ -233,7 +233,7 @@ internal sealed partial class LythonRuntime
+         public void AppendText(string text) => _builder.AppendString(text);
+ 
+         public void AppendValue(PyString value)
+-            => _builder.Append(PyRendering.OwnJoinItem(value, _context));
++            => _builder.Append(value);
+ 
+         public PyString Complete()
+         {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Operations.Formatting.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Operations.Formatting.cs
+index 1cf3fc17..e0cfbbe2 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Operations.Formatting.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Operations.Formatting.cs
+@@ -37,12 +37,12 @@ internal sealed partial class LythonRuntime
+                     var formatSpecifier = expression.FormatSpecifierParts is null
+                         ? expression.FormatSpecifier
+                         : EvaluateFormattedStringParts(expression.FormatSpecifierParts, context, span).AsString();
+-                    builder.Append(PyRendering.OwnJoinItem(FormatInterpolatedStringPart(
++                    builder.Append(FormatInterpolatedStringPart(
+                         fieldValue,
+                         null,
+                         formatSpecifier,
+                         context,
+-                        span), context));
++                        span));
+                     break;
+                 default:
+                     throw new InvalidOperationException($"Unknown formatted string part: {part.GetType().Name}");
+@@ -121,7 +121,7 @@ internal sealed partial class LythonRuntime
+ 
+     private static PyString EscapeNonAsciiPyString(PyString text, ExecutionContext context, LythonSourceSpan span)
+     {
+-        var input = PyRendering.OwnJoinItem(text, context).Utf8Bytes.Span;
++        var input = text.Utf8Bytes.Span;
+         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+         const string hex = "0123456789abcdef";
+         try
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.PercentFormatting.cs b/src/Lokad.Lython/Runtime/LythonRuntime.PercentFormatting.cs
+index 488ae95d..2d5cf663 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.PercentFormatting.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.PercentFormatting.cs
+@@ -165,20 +165,20 @@ internal sealed partial class LythonRuntime
+ 
+         private void AppendText(object value, PercentSpecifier specifier)
+         {
+-            var rendered = PyRendering.OwnJoinItem(specifier.Conversion switch
++            var rendered = specifier.Conversion switch
+             {
+                 's' => ToInterpolatedPyString(value, _context),
+                 'r' => ToReprPyString(value, _context),
+                 'a' => PyString.FromString(
+-                    EscapeNonAscii(PyRendering.OwnJoinItem(ToReprPyString(value, _context), _context).AsString()),
++                    EscapeNonAscii(ToReprPyString(value, _context).AsString()),
+                     _context.MemoryGovernor,
+                     _span),
+                 _ => PyString.Empty
+-            }, _context);
++            };
+ 
+             if (specifier.Precision is { } precision && rendered.Length > precision)
+             {
+-                rendered = PyRendering.OwnJoinItem(rendered.Slice(new PyIndexing.SliceBounds(0, precision, 1)), _context);
++                rendered = rendered.Slice(new PyIndexing.SliceBounds(0, precision, 1));
+             }
+ 
+             AppendPadded(rendered, specifier.Width, specifier.LeftAdjust);
+@@ -359,7 +359,7 @@ internal sealed partial class LythonRuntime
+                 _builder.AppendRepeated((byte)' ', padding);
+             }
+ 
+-            _builder.Append(PyRendering.OwnJoinItem(value, _context));
++            _builder.Append(value);
+             if (leftAdjust)
+             {
+                 _builder.AppendRepeated((byte)' ', padding);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.AffixFormat.cs b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.AffixFormat.cs
+index 9450683a..f9171332 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.AffixFormat.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.AffixFormat.cs
+@@ -97,15 +97,14 @@ internal sealed partial class LythonRuntime
+                                 }
+                             }
+ 
+-                            // Own each rendered part (it dies inside the join) and the
+-                            // governed result: CustomMethodCallable bypasses the call funnel
+-                            // that OwnMethodResult assumes will adopt governed results.
++                            // Parts retain their existing funding; keep the final
++                            // result governed when a formatter returns unowned text.
+                             var formatted = OwnMethodResult(PyStringOps.Format(
+                                 text,
+                                 positional,
+                                 keywords,
+                                 (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
+-                                (value, conversion, spec) => PyRendering.OwnJoinItem(FormatInterpolatedStringPart(value, conversion, spec, context, span), context)),text,context.MemoryGovernor,span);
++                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span)),text,context.MemoryGovernor,span);
+                             return formatted;
+                         }
+                         catch (InvalidOperationException ex)
+@@ -137,7 +136,7 @@ internal sealed partial class LythonRuntime
+                                 positional,
+                                 keywords,
+                                 (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
+-                                (value, conversion, spec) => PyRendering.OwnJoinItem(FormatInterpolatedStringPart(value, conversion, spec, context, span), context),
++                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span),
+                                 forbidPositionalFields: true),text,context.MemoryGovernor,span);
+                         }
+                         catch (InvalidOperationException ex)
+diff --git a/src/Lokad.Lython/Runtime/PyRendering.cs b/src/Lokad.Lython/Runtime/PyRendering.cs
+index 4b62a36e..8c86796a 100644
+--- a/src/Lokad.Lython/Runtime/PyRendering.cs
++++ b/src/Lokad.Lython/Runtime/PyRendering.cs
+@@ -147,11 +147,6 @@ internal static class PyRendering
+     public static PyString ToReprPyString(object value, PyRenderingContext context)
+         => ToReprPyStringCore(value, context, null);
+ 
+-    internal static PyString OwnJoinItem(PyString rendered, LythonRuntime.ExecutionContext context)
+-    {
+-        return rendered;
+-    }
+-
+     public static PyString JoinRenderedReprValues(
+         string prefix,
+         IEnumerable<object> values,
+@@ -168,7 +163,7 @@ internal static class PyRendering
+                 builder.AppendAscii(", ");
+             }
+ 
+-            builder.Append(OwnJoinItem(ToReprPyString(value, context), context.Context));
++            builder.Append(ToReprPyString(value, context));
+             first = false;
+         }
+ 
+@@ -188,7 +183,7 @@ internal static class PyRendering
+                 builder.AppendAscii(", ");
+             }
+ 
+-            builder.Append(OwnJoinItem(item, context.Context));
++            builder.Append(item);
+             first = false;
+         }
+ 
+@@ -213,7 +208,7 @@ internal static class PyRendering
+                 builder.AppendAscii(", ");
+             }
+ 
+-            builder.Append(OwnJoinItem(interpolated ? ToInterpolatedPyString(value, context) : ToPythonPyString(value, context), context.Context));
++            builder.Append(interpolated ? ToInterpolatedPyString(value, context) : ToPythonPyString(value, context));
+             first = false;
+         }
+ 
+@@ -243,18 +238,18 @@ internal static class PyRendering
+                 builder.AppendAscii(", ");
+             }
+ 
+-            builder.Append(OwnJoinItem(RenderDictionaryKey(pair.Key, context, interpolated), context.Context));
++            builder.Append(RenderDictionaryKey(pair.Key, context, interpolated));
+             builder.AppendAscii(": ");
+             // String values render through repr like CPython on the
+             // non-interpolated path; every other value already renders
+             // identically through the value renderer.
+             if (pair.Value is PyString text && !interpolated)
+             {
+-                builder.Append(OwnJoinItem(ToReprPyString(text, context), context.Context));
++                builder.Append(ToReprPyString(text, context));
+             }
+             else
+             {
+-                builder.Append(OwnJoinItem(interpolated ? ToInterpolatedPyString(pair.Value, context) : ToPythonPyString(pair.Value, context), context.Context));
++                builder.Append(interpolated ? ToInterpolatedPyString(pair.Value, context) : ToPythonPyString(pair.Value, context));
+             }
+             first = false;
+         }
+@@ -327,7 +322,7 @@ internal static class PyRendering
+         builder.AppendAscii(", ");
+         builder.AppendString(match.End.ToString());
+         builder.AppendAscii("), match=");
+-        builder.Append(OwnJoinItem(ToReprPyStringCore(match.Value, context, activeContainers), context.Context));
++        builder.Append(ToReprPyStringCore(match.Value, context, activeContainers));
+         builder.AppendAscii(">");
+         return builder.ToPyStringAndRelease();
+     }
+@@ -397,7 +392,7 @@ internal static class PyRendering
+         try
+         {
+             return tuple.Count == 1
+-                ? RenderSingletonTuple(OwnJoinItem(ToReprPyStringCore(tuple[0], context, activeContainers), context.Context), context.Context.MemoryGovernor)
++                ? RenderSingletonTuple(ToReprPyStringCore(tuple[0], context, activeContainers), context.Context.MemoryGovernor)
+                 : RenderReprItems(tuple, "(", ")", context, activeContainers);
+         }
+         finally
+@@ -447,7 +442,7 @@ internal static class PyRendering
+                 builder.AppendAscii(", ");
+             }
+ 
+-            builder.Append(OwnJoinItem(ToReprPyStringCore(item, context, activeContainers), context.Context));
++            builder.Append(ToReprPyStringCore(item, context, activeContainers));
+             first = false;
+         }
+ 
+@@ -475,9 +470,9 @@ internal static class PyRendering
+                     builder.AppendAscii(", ");
+                 }
+ 
+-                builder.Append(OwnJoinItem(ToReprPyStringCore(pair.Key, context, activeContainers), context.Context));
++                builder.Append(ToReprPyStringCore(pair.Key, context, activeContainers));
+                 builder.AppendAscii(": ");
+-                builder.Append(OwnJoinItem(ToReprPyStringCore(pair.Value, context, activeContainers), context.Context));
++                builder.Append(ToReprPyStringCore(pair.Value, context, activeContainers));
+                 first = false;
+             }
+ 
+@@ -542,7 +537,7 @@ internal static class PyRendering
+                 builder.AppendAscii(", ");
+             }
+ 
+-            builder.Append(OwnJoinItem(ToReprPyString(args[i], context), context.Context));
++            builder.Append(ToReprPyString(args[i], context));
+         }
+         builder.AppendAscii(")");
+         return builder.ToPyStringAndRelease();

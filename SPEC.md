@@ -2219,6 +2219,10 @@ fields, item and attribute traversal, and the supported format-spec
 mini-language. `str.format_map(...)` supports the corresponding mapping-based
 named fields. Unsupported conversions or format-spec combinations must fail
 explicitly rather than silently degrading to default formatting.
+String width and precision count Python Unicode characters, and a fill is one
+Unicode character, including a supplementary character. Precision never splits
+a surrogate pair. Padding admits its UTF-8 expansion before allocation; long
+supplementary fills retain cooperative execution checkpoints.
 Empty fields still invoke a guest value's `__format__` with an empty specification;
 they do not bypass formatting through `str`. Explicit `!s`, `!r` and `!a`
 conversions instead format the converted string. Format descriptor-binding errors

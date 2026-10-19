@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-19 Unicode formatting delivery](results/2026-10-19-unicode-format/README.md)
+removes inert OwnJoinItem/21 calls separately from fixing Unicode character units.
+All739 focused cases and58 jobs pass;31 CPython programs match both APIs. Native
+allocation/work arrays remain unchanged;correct output needs1-2B more retained
+funding in measured cases. Initial baseline failures and both comparisons remain
+visible. No elapsed speedup claim or new ownership/formatting framework.
+
 The [2026-10-18 recursive repr correction](results/2026-10-18-repr-stack-admission/README.md)
 supersedes unsafe intermediate8f00a1c3:its exact Release package overflows the CLR
 stack on a bounded acyclic-container witness despite green ordinary CI. Moving

@@ -1,0 +1,17 @@
+{
+  "base": "93b4b17218f2064182fb41265a306b779e131a51",
+  "diagnosticSha256": "aee22b33e16c31995c34663e6a0a83bab74754352904b1c4ddea5b96b116912b",
+  "tests": 26,
+  "allocationRows": 24,
+  "fuelRecords": 184,
+  "admissionRecords": 64,
+  "captureCountPerRevision": 1,
+  "warmups": 2,
+  "samples": 8,
+  "callsPerSample": 8,
+  "boundary": "Prepared warm executable or explicitly lowered expression execution;no compilation,startup scheduling,projection or host IO. Pure async completes on measured thread;allocation only,no elapsed timing.",
+  "acceptance": "All24 allocation/work/funding/output arrays and248 fuel/admission records identical;native managed recursive core and actual funding sources unchanged. Existing cycle/stack/IO/cancellation/retention tests plus58 jobs. No performance gain claim or permanent architecture test.",
+  "stop": "Only OwnJoinItem definition and21 direct calls in five files;keep all actual preflights/owners and corrected per-value managed admission. No new abstractions/configuration or broader audit.",
+  "invalidInitialAttempt": "Initial baseline-native failed six assertions exposing existing astral width bug;not a valid full capture. Raw attempt/source preserved. Snapshot three spaces only for mechanical equivalence;normative CPython four-space expectation remains in unicode-baseline-probes.json and pending correction.",
+  "knownUnicodeMismatch": true
+}

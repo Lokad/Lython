@@ -1,0 +1,12 @@
+{
+  "accepted": true,
+  "all24AllocationWorkFundingOutputArraysIdentical": true,
+  "exactFuelRecords": 184,
+  "exactAdmissionRecords": 64,
+  "elapsedMeasured": false,
+  "knownUnicodeBugsPreserved": true,
+  "initialInvalidBaselineAttemptPreserved": true,
+  "captureCountPerRevision": 1,
+  "baselineStage": "baseline-native-valid",
+  "candidateStage": "candidate-native"
+}

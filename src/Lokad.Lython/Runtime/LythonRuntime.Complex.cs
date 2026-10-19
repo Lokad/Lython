@@ -183,14 +183,14 @@ internal sealed partial class LythonRuntime
         if (spec.ZeroPad || spec.Fill == '0') throw new LythonRuntimeException("ValueError", "Zero padding is not allowed in complex format specifier", span);
         if (spec.Align == '=') throw new LythonRuntimeException("ValueError", "'=' alignment flag is not allowed in complex format specifier", span);
         if (spec.Type is not (null or 'e' or 'E' or 'f' or 'F' or 'g' or 'G' or 'n')) throw new LythonRuntimeException("ValueError", "Unknown format code for complex", span);
-        var component = spec with { Width = null, Fill = null, Align = null, ZeroPad = false,
+        var component = spec with { Width = null, Fill = -1, Align = null, ZeroPad = false,
             Type = spec.Type == 'n' || spec.Type is null && spec.Precision is not null ? 'g' : spec.Type };
         using var scratch = context.MemoryGovernor.ReserveTemporary(2048L + 16L * (spec.Precision ?? 32), span);
         var imaginaryOnly = spec.Type is null && value.Real == 0 && !double.IsNegative(value.Real);
         var imaginary = FormatComponent(value.Imaginary, component with { Sign = imaginaryOnly ? spec.Sign : '+' });
         var text = imaginaryOnly ? imaginary + "j" : FormatComponent(value.Real, component) + imaginary + "j";
         if (spec.Type is null && !imaginaryOnly) text = "(" + text + ")";
-        return ApplyInterpolatedFormatPadding(text, spec with { Align = spec.Align ?? '>' }, 0, numeric: false, span, context.MemoryGovernor);
+        return ApplyInterpolatedFormatPadding(text, spec with { Align = spec.Align ?? '>' }, 0, numeric: false, span, context);
 
         string FormatComponent(double number, InterpolatedFormatSpecifier formatSpec)
         {

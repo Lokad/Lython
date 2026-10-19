@@ -1,0 +1,350 @@
+{
+  "rows": [
+    {
+      "shape": "ascii",
+      "asynchronous": false,
+      "beforeBytes": 1000.0,
+      "afterBytes": 1000.0,
+      "beforeFunding": 288.0,
+      "afterFunding": 288.0,
+      "stepsPerCall": 10.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "ascii",
+      "asynchronous": true,
+      "beforeBytes": 1000.0,
+      "afterBytes": 1000.0,
+      "beforeFunding": 288.0,
+      "afterFunding": 288.0,
+      "stepsPerCall": 10.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "exception",
+      "asynchronous": false,
+      "beforeBytes": 1392.0,
+      "afterBytes": 1392.0,
+      "beforeFunding": 500.0,
+      "afterFunding": 500.0,
+      "stepsPerCall": 16.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "exception",
+      "asynchronous": true,
+      "beforeBytes": 1392.0,
+      "afterBytes": 1392.0,
+      "beforeFunding": 500.0,
+      "afterFunding": 500.0,
+      "stepsPerCall": 16.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "field",
+      "asynchronous": false,
+      "beforeBytes": 968.0,
+      "afterBytes": 968.0,
+      "beforeFunding": 283.0,
+      "afterFunding": 284.0,
+      "stepsPerCall": 8.0,
+      "outputCorrection": true
+    },
+    {
+      "shape": "field",
+      "asynchronous": true,
+      "beforeBytes": 968.0,
+      "afterBytes": 968.0,
+      "beforeFunding": 283.0,
+      "afterFunding": 284.0,
+      "stepsPerCall": 8.0,
+      "outputCorrection": true
+    },
+    {
+      "shape": "join-control",
+      "asynchronous": false,
+      "beforeBytes": 1440.0,
+      "afterBytes": 1440.0,
+      "beforeFunding": 341.0,
+      "afterFunding": 341.0,
+      "stepsPerCall": 14.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "join-control",
+      "asynchronous": true,
+      "beforeBytes": 1512.0,
+      "afterBytes": 1512.0,
+      "beforeFunding": 341.0,
+      "afterFunding": 341.0,
+      "stepsPerCall": 14.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "lowered",
+      "asynchronous": false,
+      "beforeBytes": 1080.0,
+      "afterBytes": 1080.0,
+      "beforeFunding": 426.0,
+      "afterFunding": 428.0,
+      "stepsPerCall": 5.0,
+      "outputCorrection": true
+    },
+    {
+      "shape": "lowered",
+      "asynchronous": true,
+      "beforeBytes": 1080.0,
+      "afterBytes": 1080.0,
+      "beforeFunding": 426.0,
+      "afterFunding": 428.0,
+      "stepsPerCall": 5.0,
+      "outputCorrection": true
+    },
+    {
+      "shape": "mapping",
+      "asynchronous": false,
+      "beforeBytes": 2712.0,
+      "afterBytes": 2712.0,
+      "beforeFunding": 756.0,
+      "afterFunding": 756.0,
+      "stepsPerCall": 14.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "mapping",
+      "asynchronous": true,
+      "beforeBytes": 2680.0,
+      "afterBytes": 2680.0,
+      "beforeFunding": 756.0,
+      "afterFunding": 756.0,
+      "stepsPerCall": 14.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "method",
+      "asynchronous": false,
+      "beforeBytes": 2120.0,
+      "afterBytes": 2120.0,
+      "beforeFunding": 426.0,
+      "afterFunding": 428.0,
+      "stepsPerCall": 11.0,
+      "outputCorrection": true
+    },
+    {
+      "shape": "method",
+      "asynchronous": true,
+      "beforeBytes": 2088.0,
+      "afterBytes": 2088.0,
+      "beforeFunding": 426.0,
+      "afterFunding": 428.0,
+      "stepsPerCall": 11.0,
+      "outputCorrection": true
+    },
+    {
+      "shape": "percent-a",
+      "asynchronous": false,
+      "beforeBytes": 1864.0,
+      "afterBytes": 1864.0,
+      "beforeFunding": 436.0,
+      "afterFunding": 436.0,
+      "stepsPerCall": 7.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "percent-a",
+      "asynchronous": true,
+      "beforeBytes": 1864.0,
+      "afterBytes": 1864.0,
+      "beforeFunding": 436.0,
+      "afterFunding": 436.0,
+      "stepsPerCall": 7.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "percent-r",
+      "asynchronous": false,
+      "beforeBytes": 1384.0,
+      "afterBytes": 1384.0,
+      "beforeFunding": 478.0,
+      "afterFunding": 478.0,
+      "stepsPerCall": 7.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "percent-r",
+      "asynchronous": true,
+      "beforeBytes": 1384.0,
+      "afterBytes": 1384.0,
+      "beforeFunding": 478.0,
+      "afterFunding": 478.0,
+      "stepsPerCall": 7.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "percent-s",
+      "asynchronous": false,
+      "beforeBytes": 1024.0,
+      "afterBytes": 1024.0,
+      "beforeFunding": 272.0,
+      "afterFunding": 272.0,
+      "stepsPerCall": 6.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "percent-s",
+      "asynchronous": true,
+      "beforeBytes": 1024.0,
+      "afterBytes": 1024.0,
+      "beforeFunding": 272.0,
+      "afterFunding": 272.0,
+      "stepsPerCall": 6.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "repr",
+      "asynchronous": false,
+      "beforeBytes": 640.0,
+      "afterBytes": 640.0,
+      "beforeFunding": 140.0,
+      "afterFunding": 140.0,
+      "stepsPerCall": 10.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "repr",
+      "asynchronous": true,
+      "beforeBytes": 640.0,
+      "afterBytes": 640.0,
+      "beforeFunding": 140.0,
+      "afterFunding": 140.0,
+      "stepsPerCall": 10.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "repr-container",
+      "asynchronous": false,
+      "beforeBytes": 1432.0,
+      "afterBytes": 1432.0,
+      "beforeFunding": 474.0,
+      "afterFunding": 474.0,
+      "stepsPerCall": 12.0,
+      "outputCorrection": false
+    },
+    {
+      "shape": "repr-container",
+      "asynchronous": true,
+      "beforeBytes": 1432.0,
+      "afterBytes": 1432.0,
+      "beforeFunding": 474.0,
+      "afterFunding": 474.0,
+      "stepsPerCall": 12.0,
+      "outputCorrection": false
+    }
+  ],
+  "all18ControlRowsIdentical": true,
+  "all24SmallInputWorkArraysIdentical": true,
+  "elapsedMeasured": false,
+  "accepted": true,
+  "all24AllocationAndWorkArraysIdentical": true,
+  "all184FuelOutcomesErrorsStepsIdentical": true,
+  "all64AdmissionOutcomesErrorsStepsIdentical": true,
+  "intentionalOutputAndFundingChanges": [
+    {
+      "shape": "field",
+      "asynchronous": false,
+      "headroom": 512,
+      "committedDelta": 1,
+      "deniedDelta": 0,
+      "success": true
+    },
+    {
+      "shape": "field",
+      "asynchronous": false,
+      "headroom": 1024,
+      "committedDelta": 1,
+      "deniedDelta": 0,
+      "success": true
+    },
+    {
+      "shape": "field",
+      "asynchronous": false,
+      "headroom": 4096,
+      "committedDelta": 1,
+      "deniedDelta": 0,
+      "success": true
+    },
+    {
+      "shape": "method",
+      "asynchronous": false,
+      "headroom": 512,
+      "committedDelta": 1,
+      "deniedDelta": 1,
+      "success": false
+    },
+    {
+      "shape": "method",
+      "asynchronous": false,
+      "headroom": 1024,
+      "committedDelta": 2,
+      "deniedDelta": 0,
+      "success": true
+    },
+    {
+      "shape": "method",
+      "asynchronous": false,
+      "headroom": 4096,
+      "committedDelta": 2,
+      "deniedDelta": 0,
+      "success": true
+    },
+    {
+      "shape": "field",
+      "asynchronous": true,
+      "headroom": 512,
+      "committedDelta": 1,
+      "deniedDelta": 0,
+      "success": true
+    },
+    {
+      "shape": "field",
+      "asynchronous": true,
+      "headroom": 1024,
+      "committedDelta": 1,
+      "deniedDelta": 0,
+      "success": true
+    },
+    {
+      "shape": "field",
+      "asynchronous": true,
+      "headroom": 4096,
+      "committedDelta": 1,
+      "deniedDelta": 0,
+      "success": true
+    },
+    {
+      "shape": "method",
+      "asynchronous": true,
+      "headroom": 512,
+      "committedDelta": 1,
+      "deniedDelta": 1,
+      "success": false
+    },
+    {
+      "shape": "method",
+      "asynchronous": true,
+      "headroom": 1024,
+      "committedDelta": 2,
+      "deniedDelta": 0,
+      "success": true
+    },
+    {
+      "shape": "method",
+      "asynchronous": true,
+      "headroom": 4096,
+      "committedDelta": 2,
+      "deniedDelta": 0,
+      "success": true
+    }
+  ],
+  "sourceFrozen": true
+}

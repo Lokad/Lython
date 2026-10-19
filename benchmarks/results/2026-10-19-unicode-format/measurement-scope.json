@@ -1,0 +1,16 @@
+{
+  "diagnosticSha256": "2b6430f8e3337c8c9bab34389bd9b4eaef972e737a28279704881bbe0edd3adf",
+  "baseline": "Reused identity-wrapper candidate-native;old three-space output is the documented bug",
+  "newCaptureCount": 2,
+  "allocationRows": 24,
+  "affectedRows": [
+    "field",
+    "method",
+    "lowered"
+  ],
+  "boundaryRecords": 248,
+  "acceptance": "Unicode padding output and funding may change;other18 native rows remain exact. Numeric/BMP/ASCII behavior qualified by public goldens. No elapsed claim. Existing per-value managed admission remains byte-identical.",
+  "draftCapture": "candidate-native passed26 cases before replacing the redundant full UTF16 width scan with existing PyString.Length;retained as superseded draft,not final proof. No elapsed measurements or data-driven tuning.",
+  "finalCaptureStage": "final-native",
+  "retainedDraftCaptures": 1
+}

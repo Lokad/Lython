@@ -1,0 +1,14 @@
+{
+  "source": "unicode-format-character-units-final",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "0856A9AEA9DEEFB7F6DA8A3C2B7F7396D51F56D7B714690C8880BABF7444BC6A",
+  "filter": "Category!=Stress&(FullyQualifiedName~IdentityWrapperDiagnostic|FullyQualifiedName~UnicodeFormatCheckpointTests)",
+  "pid": 60196,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1359,
+  "stdoutSha256": "62EFCA10F263FF47DB161A9A376183515F1FDDBCC26BA5181344B5AD1637522B",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

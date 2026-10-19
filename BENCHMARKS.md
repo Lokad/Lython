@@ -292,6 +292,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [Unicode formatting correction](benchmarks/results/2026-10-19-unicode-format/README.md)
+fixes astral width,precision and fill. The preceding identity-wrapper removal has
+24 identical allocation/work/funding arrays and248 exact boundaries. Correctness
+retains24 allocation/small-work arrays;extra output is charged.31 CPython programs
+match both APIs. This is a correctness/simplification result;no elapsed gain claim.
+
 The [repr cycle-storage change](benchmarks/results/2026-10-18-repr-cycle-storage/README.md)
 avoids an unused set, saving 64 B per affected rendering call. Intermediate
 `8f00a1c3` has a deep-repr stack regression despite green ordinary CI. The

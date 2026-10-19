@@ -1,0 +1,101 @@
+{
+  "base": "d212c3fa96f3dc366266ef63c4162268dc9e4b68",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Complex.cs": "214f61e12f1c4fbd68fe3cc913a58b8189eb42ad66cd323e19dfc2fb457a4fba",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.Formatting.cs": "c1d62301d847c3aee0a6fae239761fafd53868dbdcb7b4417556bb3f01349260"
+  },
+  "newTests": {
+    "tests/Lokad.Lython.PublicApi.Tests/UnicodeFormatCharacterTests.cs": "a07ed09e852e6597e84fede5d077c406755f0bf1ddafed1096190bc01f75be0f",
+    "tests/Lokad.Lython.Tests/UnicodeFormatCheckpointTests.cs": "adff342fd4cd223202bb9c04660b042d8a6c34cc0f6eaf01683abbb7ae14e0a5"
+  },
+  "groups": {
+    "final-white": {
+      "count": 134,
+      "process": {
+        "source": "unicode-format-final",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "75D60169A129B8CA8E0929827E1051809753DB3B86E187B30C37117B287EBA2A",
+        "filter": "Category!=Stress&(FullyQualifiedName~RenderingStackAdmissionTests|FullyQualifiedName~RenderingSubsystemTests|FullyQualifiedName~StringProtocolBoundaryTests|FullyQualifiedName~IntegerRenderingAdmissionTests|FullyQualifiedName~ExecutableStackAdmissionTests|FullyQualifiedName~FormattedStringExecutableTests|FullyQualifiedName~StringFormatPrimitiveTests|FullyQualifiedName~ExecutionOptionsScenarioTests|FullyQualifiedName~UnicodeFormatCheckpointTests)",
+        "pid": 52708,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1776,
+        "stdoutSha256": "DCFEA06384AD25DD933E4C6415D897B96A05EF850B71B4FDB902182F48088977",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "78374c7470a0cc83b7048dc3a0c52efacb84dfa24893a8fd652be580e3e5d125"
+    },
+    "public-regressions": {
+      "count": 453,
+      "process": {
+        "source": "unicode-format-final",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "BC2906AAF838918C967E04B3277FF747F94BE0D8B212D9B213ECE7C03275939E",
+        "filter": "Category!=Stress&(FullyQualifiedName~UnicodeFormatCharacterTests|FullyQualifiedName~StringProtocolTests|FullyQualifiedName~UnicodeReprCompatibilityTests|FullyQualifiedName~IntegerRenderingTests|FullyQualifiedName~FormatProtocolTests|FullyQualifiedName~SinglePartFormattedStringTests|FullyQualifiedName~BytesReprAccountingScenarioTests|FullyQualifiedName~RenderingStackAdmissionTests|FullyQualifiedName~PercentStringFormattingTests|FullyQualifiedName~StringFormatMethodTests|FullyQualifiedName~FormattedStringExecutionTests)",
+        "pid": 38024,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4571,
+        "stdoutSha256": "4B2D84DDB85590EAC7C9AB4215A5DA733A9049C87D4406CA203E4215722C3598",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "32d981568994d126335081baad4f9453fac0f0d3aa90603e3987e8898e13c947"
+    },
+    "owners": {
+      "count": 90,
+      "process": {
+        "source": "unicode-format-final",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "BC2906AAF838918C967E04B3277FF747F94BE0D8B212D9B213ECE7C03275939E",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 52640,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2879,
+        "stdoutSha256": "9C8212DB9CF97F1FBA2CE43996D212420D939FEE4E42222C75D14FA4A9C6AD9F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "0312bfbab956233f8515c0e88fa3970a8ca2e5875b3213c20fdae5e5cdf9d3e0"
+    },
+    "jobs": {
+      "count": 62,
+      "process": {
+        "source": "unicode-format-final",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "BC2906AAF838918C967E04B3277FF747F94BE0D8B212D9B213ECE7C03275939E",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 64700,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8085,
+        "stdoutSha256": "55750709A0EBB4EA0A29C6AAE467D72774CC88D7492159EBCB9F21D0CD15652F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "09ee1d878dded7de17b3ceee1a719abff73a03f1cbed03bc3da714bdd6a2cc9a"
+    }
+  },
+  "focusedDistinctPassed": 739,
+  "completeJobs": 58,
+  "newPermanentCases": 30,
+  "cpPythonPrograms": 31,
+  "publicProbeRuns": 62,
+  "identityDefinitionRemoved": true,
+  "identityCallsRemoved": 21,
+  "identityExactBoundaryRecords": 248,
+  "all24UnicodeAllocationAndSmallWorkArraysIdentical": true,
+  "unicodeExactFuelAndAdmissionOutcomes": 248,
+  "knownOutputFundingChanges": "Corrected extra padding adds1B/call(field),2B/call(method/lowered);partial rejected copy amount can increase. All18 unaffected rows match completely.",
+  "elapsedMeasured": false,
+  "temporaryDiagnosticRemoved": true,
+  "managedCoreAndActualFundingUnchanged": true,
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "regexPlanningOnly": true
+}

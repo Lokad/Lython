@@ -168,7 +168,7 @@ internal sealed partial class LythonRuntime
         var spec = ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
         if (TryFormatNumericValue(value, spec, context, span, out var numericText, out var numericPrefixLength))
         {
-            return ApplyInterpolatedFormatPadding(numericText, spec, numericPrefixLength, numeric: true, span, context.MemoryGovernor);
+            return ApplyInterpolatedFormatPadding(numericText, spec, numericPrefixLength, numeric: true, span, context);
         }
 
         // CPython's default __format__ only accepts the empty spec; any
@@ -215,12 +215,24 @@ internal sealed partial class LythonRuntime
             _ => ToInterpolatedString(value, context)
         };
 
-        if (spec.Precision is { } precision)
+        var textLength = value is PyString stringValue ? stringValue.Length : text.Length;
+        if (spec.Precision is { } precision && textLength > precision)
         {
-            text = text.Length <= precision ? text : text[..precision];
+            var end = precision;
+            if (textLength != text.Length)
+            {
+                end = 0;
+                for (var count = 0; count < precision; count++)
+                {
+                    if (count != 0 && (count & 1023) == 0) context.CheckExecution(span);
+                    end += Rune.GetRuneAt(text, end).Utf16SequenceLength;
+                }
+            }
+            text = text[..end];
+            textLength = precision;
         }
 
-        return ApplyInterpolatedFormatPadding(text, spec, numericPrefixLength: 0, numeric: false, span, context.MemoryGovernor);
+        return ApplyInterpolatedFormatPadding(text, spec, numericPrefixLength: 0, numeric: false, span, context, textLength);
     }
 
     private static bool TryFormatNumericValue(
@@ -997,19 +1009,24 @@ internal sealed partial class LythonRuntime
     private static InterpolatedFormatSpecifier ParseInterpolatedFormatSpecifier(string text, object value, LythonSourceSpan span)
     {
         var index = 0;
-        char? fill = null;
+        var fill = -1;
         char? align = null;
 
-        if (index + 1 < text.Length && IsFormatAlign(text[index + 1]))
+        if (text.Length > 0)
         {
-            fill = text[index];
-            align = text[index + 1];
-            index += 2;
-        }
-        else if (index < text.Length && IsFormatAlign(text[index]))
-        {
-            align = text[index];
-            index++;
+            var first = Rune.GetRuneAt(text, 0);
+            var next = first.Utf16SequenceLength;
+            if (next < text.Length && IsFormatAlign(text[next]))
+            {
+                fill = first.Value;
+                align = text[next];
+                index = next + 1;
+            }
+            else if (IsFormatAlign(text[0]))
+            {
+                align = text[0];
+                index = 1;
+            }
         }
 
         char? sign = null;
@@ -1091,19 +1108,21 @@ internal sealed partial class LythonRuntime
         int numericPrefixLength,
         bool numeric,
         LythonSourceSpan span,
-        MemoryGovernor? governor)
+        ExecutionContext context,
+        int? characterLength = null)
     {
-        if (spec.Width is not { } width || text.Length >= width)
+        var length = characterLength ?? text.Length;
+        if (spec.Width is not { } width || length >= width)
         {
             return text;
         }
 
         var align = spec.Align ?? (numeric ? '>' : '<');
-        var fill = spec.Fill ?? (spec.ZeroPad ? '0' : ' ');
+        var fill = new Rune(spec.Fill >= 0 ? spec.Fill : spec.ZeroPad ? '0' : ' ');
         if (numeric && spec.ZeroPad && spec.Align is null)
         {
             align = '=';
-            fill = '0';
+            fill = new Rune('0');
         }
 
         if (align == '=' && !numeric)
@@ -1111,26 +1130,34 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", "'=' alignment requires a numeric value.", span);
         }
 
-        var padding = width - text.Length;
+        var padding = width - length;
         // Bound the expansion before any padding buffer is built: the result
         // is exactly the source text plus one fill per missing char, so a
         // hostile width fails here instead of materializing multi-megabyte
         // CLR strings ahead of the governed result charge (zfill shape).
-        if (governor is not null)
-        {
-            var fillWidth = fill <= 0x7F ? 1L : fill <= 0x7FF ? 2L : 3L;
-            governor.EnsureCanReserve(32L + Encoding.UTF8.GetByteCount(text) + (fillWidth * padding), span);
-        }
+        context.MemoryGovernor.EnsureCanReserve(32L + Encoding.UTF8.GetByteCount(text) + ((long)fill.Utf8SequenceLength * padding), span);
 
-        var padText = new string(fill, padding);
         return align switch
         {
-            '<' => text + padText,
-            '>' => padText + text,
-            '^' => new string(fill, padding / 2) + text + new string(fill, padding - padding / 2),
-            '=' => text[..numericPrefixLength] + padText + text[numericPrefixLength..],
+            '<' => text + RepeatFill(fill, padding, context, span),
+            '>' => RepeatFill(fill, padding, context, span) + text,
+            '^' => RepeatFill(fill, padding / 2, context, span) + text + RepeatFill(fill, padding - padding / 2, context, span),
+            '=' => text[..numericPrefixLength] + RepeatFill(fill, padding, context, span) + text[numericPrefixLength..],
             _ => throw new LythonRuntimeException("ValueError", $"Unknown alignment option '{align}'.", span)
         };
+
+        static string RepeatFill(Rune fill, int count, ExecutionContext context, LythonSourceSpan span)
+        {
+            if (fill.IsBmp) return new string((char)fill.Value, count);
+            return string.Create(checked(count * 2), (fill, context, span), static (destination, state) =>
+            {
+                for (var i = 0; i < destination.Length; i += 2)
+                {
+                    if (i != 0 && (i & 2047) == 0) state.context.CheckExecution(state.span);
+                    state.fill.EncodeToUtf16(destination.Slice(i, 2));
+                }
+            });
+        }
     }
 
     private static string FormatNumericSign(bool negative, char? sign)
@@ -1224,7 +1251,7 @@ internal sealed partial class LythonRuntime
     }
 
     private sealed record InterpolatedFormatSpecifier(
-        char? Fill,
+        int Fill, // Unicode scalar; -1 means unspecified, so NUL remains a valid fill.
         char? Align,
         char? Sign,
         bool Alternate,
