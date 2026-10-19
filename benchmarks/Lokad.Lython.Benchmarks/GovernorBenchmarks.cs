@@ -27,7 +27,7 @@ public class GovernorBenchmarks
 
     public GovernorBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _scan20k = BenchmarkScripts.Compile(engine, ScanSource(20000));
         _scan200k = BenchmarkScripts.Compile(engine, ScanSource(200000));
         _scanFile20k = BenchmarkScripts.Compile(engine, "f = open(\"/scan.csv\")\ntotal = 0\nfor line in f:\n    total += 1\nreturn total\n");

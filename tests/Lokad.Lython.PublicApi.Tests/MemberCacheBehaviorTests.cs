@@ -12,7 +12,7 @@ public sealed class MemberCacheBehaviorTests
     [Fact]
     public async Task ZipInfoFilenameStaysCurrent()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import zipfile
             z = zipfile.ZipInfo("a")
             outs = []
@@ -35,7 +35,7 @@ public sealed class MemberCacheBehaviorTests
     [Fact]
     public async Task InstanceRebindingTakesEffect()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class A:
                 def m(self):
                     return 1

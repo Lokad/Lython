@@ -28,7 +28,7 @@ public sealed class BuiltinIterationCancellationTests
     [MemberData(nameof(Consumers))]
     public async Task CancellationDuringPrimitiveAggregationStopsTheActualRun(bool asynchronous, string expression)
     {
-        var script = new LythonEngine().Compile("n = 100000000\nimport itertools\nclass Values:\n"
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("n = 100000000\nimport itertools\nclass Values:\n"
             + "    def __iter__(self):\n        return iter(range(n))\n"
             + "print('started')\nprint(" + expression + ")\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
@@ -93,7 +93,7 @@ print(any(itertools.repeat(False, 100)), all(itertools.repeat(True, 100)))
 print(sum([]), any([]), all([]), min([], default=42), max([], default=-1))
 print(list(zip(range(3), range(4))), list(enumerate(range(3), 5)))
 """;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         for (var repeat = 0; repeat < 2; repeat++)
         {

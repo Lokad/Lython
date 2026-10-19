@@ -19,11 +19,11 @@ public sealed class DirectLengthCallTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var text = PyString.FromString("é😀", context.MemoryGovernor, null);
         var receiver = new Receiver(text);
         context.Variables["receive"] = receiver;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return len(receive())").Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return len(receive())",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
         var origin = new LythonSourceSpan(1000, 5, 50, 1);
         try
@@ -93,7 +93,7 @@ public sealed class DirectLengthCallTests
     [InlineData(true)]
     public async Task OrdinaryLengthGuardsPreserveTheFrozenBoundary(bool asynchronous)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return len(value)").Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return len(value)",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
         {
@@ -105,7 +105,7 @@ public sealed class DirectLengthCallTests
 
         Context Prepare(ILythonMemoryBudget owner)
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             context.Variables["value"] = PyString.FromString("é😀", context.MemoryGovernor, null);
             return context;
         }

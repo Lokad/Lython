@@ -13,7 +13,7 @@ public sealed class ZipAsyncHostScenarioTests
     public async Task ProtocolExitPublishesThroughDelayedHost()
     {
         var host = new DelayedLythonHost("/");
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
             import zipfile
             with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -31,7 +31,7 @@ public sealed class ZipAsyncHostScenarioTests
     public async Task ExplicitClosePublishesThroughDelayedHost()
     {
         var host = new DelayedLythonHost("/");
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")
@@ -52,7 +52,7 @@ public sealed class ZipAsyncHostScenarioTests
     {
         var host = new DelayedLythonHost("/");
         host.SeedBytes("/data.txt", new byte[] { 104, 101, 108, 108, 111 });
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w", strict_timestamps=False)
@@ -73,7 +73,7 @@ public sealed class ZipAsyncHostScenarioTests
     public async Task WriteMissingFileFailsExplicitlyThroughDelayedHost()
     {
         var host = new DelayedLythonHost("/");
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")
@@ -93,7 +93,7 @@ public sealed class ZipAsyncHostScenarioTests
     public async Task BodyExceptionStillPublishesThroughDelayedHost()
     {
         var host = new DelayedLythonHost("/");
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
             import zipfile
             try:
@@ -117,7 +117,7 @@ public sealed class ZipAsyncHostScenarioTests
         var host = new DelayedLythonHost("/");
         host.SeedBytes("/data.txt", new byte[] { 104, 101, 108, 108, 111 });
         using var cancellation = new CancellationTokenSource();
-        var task = new LythonEngine().RunAsync(
+        var task = new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w", strict_timestamps=False)

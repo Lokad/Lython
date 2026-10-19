@@ -16,7 +16,7 @@ public sealed class CounterShellAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedCountersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             objs = []
             i = 0
@@ -41,7 +41,7 @@ public sealed class CounterShellAccountingScenarioTests
     [Fact]
     public async Task CounterShellsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             c = collections.Counter("aab")
             d = c.copy()

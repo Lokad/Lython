@@ -17,7 +17,7 @@ public class IntegerSizingBenchmarks
 
     public IntegerSizingBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _shiftLarge = Compile(engine, "return (1 << 1000000) >> 999999\n");
         _powerLarge = Compile(engine, "return pow(2, 1000000) >> 999999\n");
         _shiftSmall = Compile(engine, "return (1 << 1000) >> 999\n");

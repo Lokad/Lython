@@ -50,7 +50,7 @@ public sealed class StatisticsStreamingTests
         // 200K doubles need ~1.6MB per materialized list; the 2K control
         // needs ~32KB. If mean materialized, the windows would differ by megabytes.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var palette = Enumerable.Range(0, 1024).Select(static i => (object)(double)i).ToArray();
         for (var i = 0; i < 5; i++)

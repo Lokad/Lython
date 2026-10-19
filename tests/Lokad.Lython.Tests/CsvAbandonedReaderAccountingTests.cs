@@ -16,7 +16,7 @@ public sealed class CsvAbandonedReaderAccountingTests
         var budget = new LythonMemoryBudget(262144);
         using var retainedOwner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = retainedOwner });
+            new LythonRunOptions { MemoryBudget = retainedOwner },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var lines = BuildLines();
         var live = new LythonRuntime.CsvRecordSource(lines, CreateOptions(), span, context);
@@ -34,7 +34,7 @@ public sealed class CsvAbandonedReaderAccountingTests
             using (var owner = budget.CreateScope())
             {
                 var temporary = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-                    new LythonRunOptions { MemoryBudget = owner });
+                    new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
                 abandoned.Add(ConsumeSource(temporary, lines, span));
                 Assert.True(budget.ReservedBytes > baseline);
             }

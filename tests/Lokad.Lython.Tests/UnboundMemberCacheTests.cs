@@ -14,7 +14,7 @@ public sealed class UnboundMemberCacheTests
     [Fact]
     public void RepeatedMethodLookupReturnsIdenticalDescriptor()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         Assert.True(context.TryGetBuiltin("list", out var listType));
         Assert.True(PyMemberAccess.TryResolve(listType!, "append", context, Span, out var first));
         Assert.True(PyMemberAccess.TryResolve(listType!, "append", context, Span, out var second));
@@ -24,7 +24,7 @@ public sealed class UnboundMemberCacheTests
     [Fact]
     public void UnsupportedMethodStillMisses()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         Assert.True(context.TryGetBuiltin("list", out var listType));
         Assert.False(PyMemberAccess.TryResolve(listType!, "no_such_method_xyz", context, Span, out _));
     }
@@ -32,7 +32,7 @@ public sealed class UnboundMemberCacheTests
     [Fact]
     public void RepeatedDataDescriptorLookupReturnsIdenticalDescriptor()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         Assert.True(context.TryGetBuiltin("int", out var intType));
         Assert.True(PyMemberAccess.TryResolve(intType!, "real", context, Span, out var first));
         Assert.True(PyMemberAccess.TryResolve(intType!, "real", context, Span, out var second));

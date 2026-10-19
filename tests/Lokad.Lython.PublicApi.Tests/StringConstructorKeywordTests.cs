@@ -50,7 +50,7 @@ public sealed class StringConstructorKeywordTests
     public async Task KeywordDefaultsAndErrorsMatchPython(string label, string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, label + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -77,7 +77,7 @@ public sealed class StringConstructorKeywordTests
         var source = original.Replace("str(Value())", "str(object=Value())", StringComparison.Ordinal);
         Assert.NotEqual(original, source);
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

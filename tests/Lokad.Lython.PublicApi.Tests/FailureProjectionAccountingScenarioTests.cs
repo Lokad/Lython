@@ -24,7 +24,7 @@ public sealed class FailureProjectionAccountingScenarioTests
     [Fact]
     public async Task RefusedFailureMessageKeepsTypeWithoutRetry()
     {
-        var script = new LythonEngine().Compile(RaiseHuge);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(RaiseHuge);
         Assert.True(script.IsValid);
         // The supplied owner cannot fund the full diagnostic.
         var options = new LythonRunOptions { ResultMemoryBudget = new LythonMemoryBudget(4096)};
@@ -48,7 +48,7 @@ public sealed class FailureProjectionAccountingScenarioTests
     [Fact]
     public async Task CapturesExhaustedFailureKeepsType()
     {
-        var script = new LythonEngine().Compile(PrintThenRaise);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(PrintThenRaise);
         Assert.True(script.IsValid);
         // Calibration: the 2000-char capture leaves 64 of 4096 bytes, so the
         // one-frame array fits but the diagnostic message does not;
@@ -78,7 +78,7 @@ public sealed class FailureProjectionAccountingScenarioTests
     [Fact]
     public async Task RoomyFailureMessageStaysExact()
     {
-        var script = new LythonEngine().Compile(RaiseHuge);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(RaiseHuge);
         Assert.True(script.IsValid);
         var expected = new string('x', 1000000);
         using var sync = script.Run(new MockLythonHost());

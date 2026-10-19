@@ -11,7 +11,7 @@ public sealed class DecimalContextValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedContextDecimalsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             ctx = decimal.getcontext()
@@ -36,7 +36,7 @@ public sealed class DecimalContextValueAccountingScenarioTests
     [Fact]
     public async Task ContextDecimalBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             ctx = decimal.getcontext()

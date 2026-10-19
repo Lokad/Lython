@@ -12,7 +12,7 @@ public sealed class ReviewHardeningExtendedTests
     public void GzipReadSupportsBoolIndexNegativeZeroAndEof()
     {
         var host = new MockLythonHost("/repo");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/review.gz", "wb") as writer:
@@ -44,7 +44,7 @@ with gzip.open("/repo/review.gz", "rb") as reader:
     public void GzipTextHugeSizeReturnsRemainder()
     {
         var host = new MockLythonHost("/repo");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/text.gz", "wt", encoding="utf-8") as writer:
@@ -62,7 +62,7 @@ with gzip.open("/repo/text.gz", "rt", encoding="utf-8") as reader:
     [Fact]
     public async Task ModuleIsolationHoldsConcurrentlyAndForCompiledScript()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var script = engine.Compile("import copy\ncopy.dispatch_table[\"k\"] = 1\nreturn copy.dispatch_table.get(\"k\", 0)");
         Assert.True(script.IsValid);
         var tasks = Enumerable.Range(0, 8).Select(_ => Task.Run(() =>
@@ -80,7 +80,7 @@ with gzip.open("/repo/text.gz", "rt", encoding="utf-8") as reader:
     [Fact]
     public void ContextManagerRunsOnceForReturnBreakContinueAndNested()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 calls = []
 class Manager:

@@ -19,7 +19,7 @@ public sealed class MappingSliceKeyCompatibilityTests
             del mapping[3:5:2]
             print(len(mapping))
             """;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

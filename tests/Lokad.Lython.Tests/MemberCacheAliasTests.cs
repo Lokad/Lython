@@ -27,7 +27,7 @@ public sealed class MemberCacheAliasTests
     }
 
     private static LythonRuntime.ExecutionContext NewContext()
-        => new(new MockLythonHost(), new LythonRunOptions());
+        => new(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
 
     private static object MakeZipInfo(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
@@ -82,7 +82,7 @@ public sealed class MemberCacheAliasTests
     [Fact]
     public void ExecutableMemberReadsAndImmediateCallsRemainDistinct()
     {
-        var frontend = LythonFrontend.Compile("items=[]\nmethod=items.append\n(items.append)(1)\n");
+        var frontend = LythonFrontend.Compile("items=[]\nmethod=items.append\n(items.append)(1)\n",regexProvider:Utf8RegexProvider.Instance);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
         var instructions = code.EntryPoint.Blocks.SelectMany(block => block.Instructions).ToArray();
         Assert.Single(instructions, i => i.OpCode == ExecutableOpCode.LoadMember);

@@ -17,7 +17,7 @@ public sealed class JsonIterencodeAbandonedScratchAccountingTests
         var budget = new LythonMemoryBudget(262144);
         using var retainedOwner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = retainedOwner });
+            new LythonRunOptions { MemoryBudget = retainedOwner },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var live = new PyDict();
         live.SetItem(PyString.FromString("b"), (object)1);
@@ -30,7 +30,7 @@ public sealed class JsonIterencodeAbandonedScratchAccountingTests
             using (var owner = budget.CreateScope())
             {
                 var temporary = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-                    new LythonRunOptions { MemoryBudget = owner });
+                    new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
                 AbandonIterators(temporary, big, span);
                 Assert.True(budget.ReservedBytes > baseline);
             }

@@ -32,7 +32,7 @@ candidate = 'z' * 40000
 return len(candidate)
 """;
         var budget = new LythonMemoryBudget(262144);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         var mock = asynchronous ? null : new MockLythonHost();
@@ -51,7 +51,7 @@ return len(candidate)
         Assert.True(result.FailureAttribution?.Requested >= 40000);
         result.Dispose();
         Assert.Equal(baseline, budget.ReservedBytes);
-        using var resumed = new LythonEngine().Run("return len('z' * 40000)", host,
+        using var resumed = new LythonEngine(Utf8RegexProvider.Instance).Run("return len('z' * 40000)", host,
             new LythonRunOptions { MemoryBudget = budget});
         Assert.True(resumed.Success, resumed.Failure?.Message);
         Assert.Equal(new BigInteger(40000), resumed.ReturnValue);

@@ -7,7 +7,7 @@ public sealed class OperatorModuleFunctionTests
     [Fact]
     public void OperatorModule_IndexAndLengthHint_DispatchUserProtocols()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import operator
 
@@ -39,7 +39,7 @@ print(operator.length_hint(object(), 5))
     [Fact]
     public void OperatorModule_IndexFailure_NamesTypeLikeCpython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import operator
 
@@ -63,7 +63,7 @@ print(operator.index(7))
     [Fact]
     public void OperatorModule_IndexReturnType_NamesTypeLikeCpython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import operator
 
@@ -102,7 +102,7 @@ except TypeError as e:
     public void OperatorModule_Functions_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import operator
 
@@ -150,7 +150,7 @@ __lython_file.close()
     public void OperatorModule_AbsAndAdd_MatchDirectDatetimeSemantics()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import datetime
 import operator
@@ -173,7 +173,7 @@ __lython_file.close()
     public void OperatorModule_ConcatTupleLikes_MatchDirectSemantics()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import namedtuple
 import operator
@@ -199,7 +199,7 @@ __lython_file.close()
     public void OperatorModule_ExpandedHelpers_MatchDirectSyntax()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import operator
 
@@ -430,7 +430,7 @@ operator.iconcat('d', 1)
         "can only concatenate str (not \"int\") to str")]
     public void OperatorModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -445,7 +445,7 @@ operator.iconcat('d', 1)
         // call-site boxes are pooled, scrubbed and reused after return. The
         // two-slot box the construction call used. Sync only: async calls
         // build their boxes on a separate path.
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import operator
             lst = []

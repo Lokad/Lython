@@ -17,7 +17,7 @@ public sealed class RendererGovernanceTests
     public void DeniedStringReprReleasesScratchOnEveryAttempt(long cap)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         var rendering = new PyRenderingContext(context);
         var input = PyString.FromString(new string('\u200b', 10));
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -35,7 +35,7 @@ public sealed class RendererGovernanceTests
     public void JoinRenderedSequenceCommitsExactOutput()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var rendering = new PyRenderingContext(context);
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
         var peakBefore = context.MemoryGovernor.PeakAccountedBytes;
@@ -68,7 +68,7 @@ public sealed class RendererGovernanceTests
         // Decimal rendering discarded its context entirely; the governed
         // result commits exactly its estimate with no builder transient.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var rendering = new PyRenderingContext(context);
         var value = new PyDecimal(1.5m);
 

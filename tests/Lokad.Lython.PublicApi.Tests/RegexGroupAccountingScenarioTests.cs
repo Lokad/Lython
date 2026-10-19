@@ -26,7 +26,7 @@ public sealed class RegexGroupAccountingScenarioTests
     [Fact]
     public async Task ManyGroupPatternsStayCharged()
     {
-        var script = new LythonEngine().Compile(BuildManyGroupPatterns);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildManyGroupPatterns);
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is ~1.32MB (20 x 64KiB), so this fits; the
         // slot/length backstop (187904 per pattern) pushes post-fix past 3.7MB.
@@ -43,7 +43,7 @@ public sealed class RegexGroupAccountingScenarioTests
     [Fact]
     public async Task RoomyManyGroupPatternsSucceed()
     {
-        var script = new LythonEngine().Compile(BuildManyGroupPatterns);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildManyGroupPatterns);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8388608) };
         var expected = new BigInteger(20);
@@ -59,7 +59,7 @@ public sealed class RegexGroupAccountingScenarioTests
     [Fact]
     public async Task ManyGroupSearchStillMatches()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import re
             pat = "(a)" * 50

@@ -20,7 +20,7 @@ public sealed class SubprocessArgsAccountingScenarioTests
     {
         var big1 = new string('A', 500);
         var big2 = new string('B', 500);
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import subprocess\n" +
             "ps = []\n" +
             "i = 0\n" +
@@ -48,7 +48,7 @@ public sealed class SubprocessArgsAccountingScenarioTests
     {
         var big1 = new string('A', 500);
         var big2 = new string('B', 500);
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import subprocess\n" +
             "ps = []\n" +
             "i = 0\n" +
@@ -78,7 +78,7 @@ public sealed class SubprocessArgsAccountingScenarioTests
     {
         var big1 = new string('A', 500);
         var big2 = new string('B', 500);
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import subprocess\n" +
             "i = 0\n" +
             "while i < 2000:\n" +
@@ -105,7 +105,7 @@ public sealed class SubprocessArgsAccountingScenarioTests
     {
         var big1 = new string('A', 8);
         var big2 = new string('B', 8);
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import subprocess\n" +
             "p = subprocess.Popen(" + ArgvCode(big1, big2) + ")\n" +
             "return p.args\n");

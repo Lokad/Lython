@@ -27,7 +27,7 @@ public sealed class FailureAttributionGuardTests
     [InlineData(true, true)]
     public void StructuralEntryDistinguishesConfiguredRecursionAndFixedNesting(bool pair, bool interpreter)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxRecursionDepth = 3 });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxRecursionDepth = 3 },regexProvider:Utf8RegexProvider.Instance);
         if (interpreter) context.Limits.CurrentInterpreterDepth = LythonRuntime.ExecutionLimits.MaxInterpreterDepth;
         else context.Limits.CurrentRecursionDepth = 3;
         var value = new object();

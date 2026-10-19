@@ -13,8 +13,8 @@ public sealed class SetOrderingOwnershipTests
         const string source = "events=[]\nclass Key:\n def __init__(self,n):self.n=n\n def __hash__(self):return self.n\n def __eq__(self,other):events.append('entered');return self.n==other.n\nleft={Key(0)}\nright={Key(0),Key(1)}";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         var left = Assert.IsType<PySet>(context.Variables["left"]);
         var right = Assert.IsType<PySet>(context.Variables["right"]);
@@ -52,8 +52,8 @@ public sealed class SetOrderingOwnershipTests
         var host = new DelayedLythonHost();
         var entered = host.PauseWriteUntilCancellation("/hold.txt");
         var context = new Context(host, new LythonRunOptions
-            { MemoryBudget = owner, CancellationToken = cancellation.Token });
-        var frontend = LythonFrontend.Compile(source);
+            { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.True(frontend.Script is not null, string.Join("; ", frontend.Diagnostics.Select(d => d.Message)));
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();

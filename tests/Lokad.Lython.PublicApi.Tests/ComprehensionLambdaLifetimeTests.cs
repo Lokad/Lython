@@ -12,7 +12,7 @@ public sealed class ComprehensionLambdaLifetimeTests
     {
         const string source = "def read(value):\n with open('/events.txt','a') as out:out.write(value)\n with open(value) as data:return data.read()\ncallbacks=[lambda:read(value) for value in ('/a.txt','/b.txt')]\nprint(callbacks[0](),callbacks[1]())";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -66,7 +66,7 @@ public sealed class ComprehensionLambdaLifetimeTests
     {
         const string source = "def default_value(value):\n with open('/defaults.txt','a') as out:out.write(str(value))\n return value\ncallbacks=[lambda saved=default_value(value):saved for value in range(2)]\nprint([f() for f in callbacks])";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -117,7 +117,7 @@ public sealed class ComprehensionLambdaLifetimeTests
     {
         const string source = "def make(value):\n return [lambda:value for value in ('a'*8192,value)]\ncallbacks=make('held'*4096)\nsaved=callbacks[0]()\ncallbacks.clear()\nreturn saved";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using var first = firstAsync ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());

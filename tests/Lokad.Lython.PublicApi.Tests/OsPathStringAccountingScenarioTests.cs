@@ -19,7 +19,7 @@ public sealed class OsPathStringAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedBaseNamesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             objs = []
             i = 0
@@ -44,7 +44,7 @@ public sealed class OsPathStringAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedNormPathsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             objs = []
             i = 0
@@ -69,7 +69,7 @@ public sealed class OsPathStringAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedSplitsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             objs = []
             i = 0
@@ -94,7 +94,7 @@ public sealed class OsPathStringAccountingScenarioTests
     [Fact]
     public async Task OsPathStringsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             return [os.path.basename("/a/b.txt"), os.path.dirname("/a/b.txt"), os.path.normpath("/a//b/./c"), os.path.splitext("/a/b.txt"), os.path.relpath("/a/b", "/a"), os.path.commonpath(["/a/b", "/a/c"])]
             """);

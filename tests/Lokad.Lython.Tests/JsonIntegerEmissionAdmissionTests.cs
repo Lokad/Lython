@@ -25,7 +25,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
     public async Task NumericKeysPreserveEveryCheckpointAndChunk(bool iterator, bool asynchronous)
     {
         var source = "import json\nreturn " + (iterator ? "list(json.JSONEncoder().iterencode(source))" : "json.dumps(source)");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         string[] chunks;
         using (var owner = budget.CreateScope())
@@ -45,7 +45,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
 
     private static Context PrepareGuard(ILythonMemoryBudget owner)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var dict = new PyDict(context.MemoryGovernor, Span);
         dict.SetItem(new BigInteger(long.MaxValue), BigInteger.One << 80);
         context.Variables["source"] = dict;
@@ -75,7 +75,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
         var budget = new LythonMemoryBudget(limit);
         using (var owner = budget.CreateScope())
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var input = BigInteger.One << 80;
             var callable = Load(context, iterator ? "iterator" : "dumps");
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
@@ -114,7 +114,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var input = new PyDict(context.MemoryGovernor, Span);
             input.SetItem(new BigInteger(long.MaxValue), BigInteger.One << 80);
             var callable = Load(context, "iterator");
@@ -138,7 +138,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
             var held = budget.ReservedBytes;
             using (var otherOwner = budget.CreateScope())
             {
-                var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner });
+                var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner },regexProvider:Utf8RegexProvider.Instance);
                 _ = PyString.FromString(new string('x', 1024), other.MemoryGovernor, Span);
                 Assert.True(budget.ReservedBytes > held);
             }
@@ -159,7 +159,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
             using (var owner = budget.CreateScope())
             {
                 var context = new Context(new MockLythonHost(), new LythonRunOptions
-                    { MemoryBudget = owner});
+                    { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
                 var governor = context.MemoryGovernor;
                 governor.Reserve(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(65537) + 64, Span);
                 governor.Commit(governor.CurrentReservedBytes);
@@ -234,7 +234,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
     private static LythonRuntime.ICallable Load(Context context, string route)
     {
         var target = route switch { "dumps" => "json.dumps", "encode" => "json.JSONEncoder().encode", _ => "json.JSONEncoder().iterencode" };
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn " + target).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn " + target,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         return Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
     }
 }

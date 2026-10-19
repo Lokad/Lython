@@ -19,7 +19,7 @@ public sealed class ContextualSetTests
     [Fact]
     public void CustomItemBasics()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):
@@ -49,7 +49,7 @@ public sealed class ContextualSetTests
     [Fact]
     public void CustomAlgebra()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):
@@ -74,7 +74,7 @@ public sealed class ContextualSetTests
     [Fact]
     public void CustomInplaceAndRelations()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):
@@ -106,7 +106,7 @@ public sealed class ContextualSetTests
     [Fact]
     public void CustomViews()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):
@@ -130,7 +130,7 @@ public sealed class ContextualSetTests
     [Fact]
     public void DefaultDictCounterChainMap()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):
@@ -160,7 +160,7 @@ public sealed class ContextualSetTests
     [Fact]
     public void ConstructionForms()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):
@@ -187,7 +187,7 @@ public sealed class ContextualSetTests
     [Fact]
     public async Task AsyncCustomSetOps()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
             class A:
                 def __init__(self, v):
@@ -210,7 +210,7 @@ public sealed class ContextualSetTests
     [Fact]
     public void RetainedProtocolSetsDeny()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):

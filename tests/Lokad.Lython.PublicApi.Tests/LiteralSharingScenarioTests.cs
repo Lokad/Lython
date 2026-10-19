@@ -13,7 +13,7 @@ public sealed class LiteralSharingScenarioTests
     [Fact]
     public async Task LiteralsAliasAcrossEvaluations()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "xs = []\n" +
             "i = 0\n" +
             "while i < 3:\n" +
@@ -34,7 +34,7 @@ public sealed class LiteralSharingScenarioTests
     [Fact]
     public async Task RetainedSharedLiteralsFit()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "xs = []\n" +
             "i = 0\n" +
             "while i < 2000:\n" +

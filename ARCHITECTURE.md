@@ -315,3 +315,18 @@ Before committing a behavior change:
    changes.
 3. Run the complete solution tests with warnings treated as errors.
 4. Keep package/version changes in a separate, explicit release commit.
+
+## Regex provider boundary
+
+`LythonEngine` borrows one `ILythonRegexProvider` across frontend analysis,
+execution and imports. The core defines the UTF-8 pattern/subject/cursor/capture
+contract; it references no backend package or types. Missing capabilities fail
+explicitly. The optional `Lokad.Lython.Utf8Regex` assembly owns backend adaptation
+and its separately documented limitations. Native wildcard matching stays native.
+
+Patterns expose immutable effective flags and metadata. Provider operations use
+the current cancellation token and existing shared owners; caches retain no
+token. Active regex iterators join deterministic execution cleanup. Callback
+replacements use the existing synchronous/asynchronous callable routes and keep
+subject storage funded while host I/O is pending. No tracing, new memory layer,
+regex time/work policy, dialect fallback or abandoned matching task is involved.

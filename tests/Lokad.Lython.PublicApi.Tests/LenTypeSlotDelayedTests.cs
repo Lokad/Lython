@@ -29,7 +29,7 @@ public sealed class LenTypeSlotDelayedTests
     public async Task DescriptorAndBodyAwaitWithFundingUntilCleanup(string? pausedPath)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(Source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

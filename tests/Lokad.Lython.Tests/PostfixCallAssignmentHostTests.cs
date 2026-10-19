@@ -53,13 +53,13 @@ public sealed class PostfixCallAssignmentHostTests
             target=Target()
             class Runner:
             """ + $"\n def run(self):\n  {target}=rhs()\n  return 7\n def identity(self):return self\nrunner=Runner()\n";
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
             SourcePath = "/postfix-store.py", MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             CancellationToken = cancellation.Token
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
         var runner = Assert.IsType<PyInstance>(root.Variables["runner"]);
         var actualTarget = Assert.IsType<PyInstance>(root.Variables["target"]);

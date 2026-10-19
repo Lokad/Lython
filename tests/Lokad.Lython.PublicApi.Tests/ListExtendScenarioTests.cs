@@ -13,7 +13,7 @@ public sealed class ListExtendScenarioTests
     [Fact]
     public async Task ExtendRangeRejectsBeforeLargeCopy()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             items = []
             items.extend(range(10000))
@@ -35,7 +35,7 @@ public sealed class ListExtendScenarioTests
     [Fact]
     public async Task ExtendFailingGeneratorKeepsPartialEffects()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             kept = []
             try:
@@ -57,7 +57,7 @@ public sealed class ListExtendScenarioTests
     [Fact]
     public async Task ExtendSelfAppendsOriginalElements()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             tiny = [1]
             tiny.extend(tiny)
@@ -84,7 +84,7 @@ public sealed class ListExtendScenarioTests
     [Fact]
     public async Task ExtendAcrossStorageTransition()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             five = [0, 1, 2, 3, 4]
             five.extend(range(5, 10))
@@ -116,7 +116,7 @@ public sealed class ListExtendScenarioTests
     [Fact]
     public async Task ExtendInfiniteIterableMeetsMemoryBudget()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             items = []
@@ -137,7 +137,7 @@ public sealed class ListExtendScenarioTests
     [Fact]
     public async Task InPlaceAddKeepsPartialEffects()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             items = []
             try:

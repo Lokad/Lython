@@ -8,7 +8,7 @@ public sealed class LinearScannerRegressionTests
     [Fact]
     public void EnvironmentExpansionPreservesLongUnterminatedBracedVariables()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 value = "${" * 32768
@@ -24,7 +24,7 @@ return str(len(expanded)) + "|" + str(expanded == value)
     [Fact]
     public void WildcardTranslationPreservesLongUnterminatedCharacterClasses()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import fnmatch
 import glob
@@ -41,17 +41,5 @@ return str(fnmatch_ok) + "|" + str(glob_ok)
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("True|True", result.ReturnValue);
-    }
-
-    [Fact]
-    public void RegexFactsHandleLongSequencesOfIncompleteNamedGroups()
-    {
-        var pattern = string.Concat(Enumerable.Repeat("(?P<", 32768));
-
-        var summary = RegexPatternFacts.SummarizeGroups(pattern);
-
-        Assert.False(summary.IsComplete);
-        Assert.Equal(1, summary.CaptureSlotCount);
-        Assert.Empty(summary.NamedGroups);
     }
 }

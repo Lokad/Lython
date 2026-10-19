@@ -24,7 +24,7 @@ public sealed class InstanceAttributeAccountingScenarioTests
         }
 
         builder.Append("return 0\n");
-        var script = new LythonEngine().Compile(builder.ToString());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(builder.ToString());
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -39,7 +39,7 @@ public sealed class InstanceAttributeAccountingScenarioTests
     [Fact]
     public async Task AttributeOverwriteAndDeleteBehave()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             class A:
                 pass

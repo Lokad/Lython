@@ -25,7 +25,7 @@ public sealed class OwnedFunctionLocalsTests
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var tap = new Tap();
         context.Variables["tap"] = tap;
         var function = Define(context);
@@ -56,7 +56,7 @@ public sealed class OwnedFunctionLocalsTests
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner});
+        { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var tap = new Tap();
         context.Variables["tap"] = tap;
         var function = Define(context);
@@ -107,7 +107,7 @@ public sealed class OwnedFunctionLocalsTests
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxRecursionDepth = failure == 3 ? 0 : 100 });
+        { MemoryBudget = owner, MaxRecursionDepth = failure == 3 ? 0 : 100 },regexProvider:Utf8RegexProvider.Instance);
         var tap = new Tap();
         context.Variables["tap"] = tap;
         var function = Define(context);
@@ -143,7 +143,7 @@ public sealed class OwnedFunctionLocalsTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var tap = new Tap { Suspend = true };
         context.Variables["tap"] = tap;
         var function = Define(context);
@@ -186,7 +186,7 @@ public sealed class OwnedFunctionLocalsTests
 
     private static PyExecutableFunction Define(Context context)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(Definition).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(Definition,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         return Assert.IsType<PyExecutableFunction>(context.Variables["f"]);
     }

@@ -9,12 +9,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
-using Lokad.Utf8Regex.PythonRe;
 
 namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private readonly ILythonRegexProvider? _regexProvider;
+    internal LythonRuntime(ILythonRegexProvider? regexProvider = null) => _regexProvider = regexProvider;
+
     /// <summary>Normalizes Python's null result and rejects text that bypassed the governed host boundary.</summary>
     internal static object RuntimeValue(object? value)
         => value switch
@@ -308,9 +310,17 @@ internal sealed partial class LythonRuntime
             diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
     }
 
+    internal static LythonExecutionResult CancellationFailure(LythonRunOptions? options)
+    {
+        var error = RuntimeErrors.Cancelled(null);
+        error.SetSourcePathIfMissing(options?.SourcePath);
+        return CreateRuntimeFailureResult(error, null, options);
+    }
+
     private static async ValueTask<LythonExecutionResult> CreateRuntimeFailureResultAsync(
         LythonRuntimeException exception, ExecutionContext? context, LythonRunOptions? options)
     {
+        context?.State.CloseRegexIterators();
         exception = context?.MemoryGovernor.AdmissionFailure ?? exception;
         var message = RuntimeFailureProjection.RenderFailureMessage(exception, context);
         if (context is not null && !context.Services.State.CancellationRequested)
@@ -321,6 +331,7 @@ internal sealed partial class LythonRuntime
     private static LythonExecutionResult CreateRuntimeFailureResult(
         LythonRuntimeException exception, ExecutionContext? context, LythonRunOptions? options, string? renderedMessage = null)
     {
+        context?.State.CloseRegexIterators();
         exception = context?.MemoryGovernor.AdmissionFailure ?? exception;
         // Diagnostics may run a lazy assertion/key protocol. Finish it before
         // closing their writers/capturing output. The async path already awaited
@@ -481,7 +492,7 @@ internal sealed partial class LythonRuntime
         {
             // Compiled definitions share the synchronous slot/cell contract.
             // Code-object fallback facts still request mirroring when needed.
-            context = new ExecutionContext(host, options);
+            context = new ExecutionContext(host, options, _regexProvider);
             InitializeModuleAnnotations(script.Syntax.Statements, context);
             // MG25: no initial yield here. Yielding first would abandon the
             // calling thread (in particular the dedicated large stack the

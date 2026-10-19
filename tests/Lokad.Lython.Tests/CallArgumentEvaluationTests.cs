@@ -12,11 +12,11 @@ public sealed class CallArgumentEvaluationTests
     [Fact]
     public void SyntaxArgumentsRunBeforeRejectingANonCallableTarget()
     {
-        var syntax = LythonFrontend.Compile("target(*[(marker:=1)])").Script!;
+        var syntax = LythonFrontend.Compile("target(*[(marker:=1)])",regexProvider:Utf8RegexProvider.Instance).Script!;
         var expression = Assert.IsType<CallExpressionSyntax>(Assert.IsType<ExpressionStatementSyntax>(Assert.Single(syntax.Statements)).Expression);
         var evaluate = typeof(LythonRuntime).GetMethod("EvaluateExpression", BindingFlags.NonPublic | BindingFlags.Static)!
             .CreateDelegate<Func<ExpressionSyntax, Context, object>>();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions());
+        var context = new Context(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         context.Variables["target"] = BigInteger.Zero;
         context.Variables["marker"] = BigInteger.Zero;
         var failure = Assert.Throws<LythonRuntimeException>(() => evaluate(expression, context));

@@ -106,7 +106,7 @@ public sealed class InstanceOwnerLifetimeTests
 
     private static async Task<LythonExecutionResult> Run(string source, bool asynchronous, ILythonMemoryBudget? budget = null)
     {
-        using var script = new LythonEngine().Compile("with open('/ready', 'r') as stream:\n stream.read()\n" + source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("with open('/ready', 'r') as stream:\n stream.read()\n" + source, budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         if (asynchronous)

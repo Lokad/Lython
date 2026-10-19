@@ -14,7 +14,7 @@ public sealed class ExecutableAugmentedSliceTests
     [InlineData("def run(items,start,stop,step,value):\n (yield items)[(yield start):(yield stop):(yield step)]+=(yield value)", true)]
     public void SliceUpdatesUseFrameOperandsWithoutFallbacks(string source, bool generator)
     {
-        var syntax = LythonFrontend.Compile(source).Script!;
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
         Assert.Empty(code.ExpressionFallbacks);
@@ -29,7 +29,7 @@ public sealed class ExecutableAugmentedSliceTests
     [InlineData("def run(items,value):\n (yield items).value=value", true)]
     public void YieldingOrdinaryStoresUseSharedOperations(string source, bool member)
     {
-        var syntax = LythonFrontend.Compile(source).Script!;
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
         Assert.Empty(code.ExpressionFallbacks);
@@ -42,10 +42,10 @@ public sealed class ExecutableAugmentedSliceTests
     [InlineData(true)]
     public async Task ReadRhsAndStoreUseTheChosenExecutionMode(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var checkpoint = new Checkpoint();
         context.Variables["checkpoint"] = checkpoint;
-        var syntax = LythonFrontend.Compile("class Key:\n def __init__(self,value): self.value=value\n def __index__(self): return checkpoint(self.value)\nitems=[1,2,3]\nitems[Key(0):Key(1):Key(1)]+=checkpoint()").Script!;
+        var syntax = LythonFrontend.Compile("class Key:\n def __init__(self,value): self.value=value\n def __index__(self): return checkpoint(self.value)\nitems=[1,2,3]\nitems[Key(0):Key(1):Key(1)]+=checkpoint()",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
@@ -63,10 +63,10 @@ public sealed class ExecutableAugmentedSliceTests
     public async Task DeniedGrowthKeepsTheOriginalTargetUnchanged(bool asynchronous, bool deny)
     {
         const long limit = 1024 * 1024;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         using var rhs = new CapacityGate(context.MemoryGovernor, limit, deny);
         context.Variables["rhs"] = rhs;
-        var syntax = LythonFrontend.Compile("items=[0,1,2]\nitems[1:2]+=rhs([0]*1024,items)").Script!;
+        var syntax = LythonFrontend.Compile("items=[0,1,2]\nitems[1:2]+=rhs([0]*1024,items)",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         try
         {

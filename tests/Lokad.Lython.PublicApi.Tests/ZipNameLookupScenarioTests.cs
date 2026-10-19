@@ -13,7 +13,7 @@ public sealed class ZipNameLookupScenarioTests
     [Fact]
     public async Task DuplicateNamesKeepOrderWithLastWinsLookup()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")
@@ -43,7 +43,7 @@ public sealed class ZipNameLookupScenarioTests
     [Fact]
     public async Task RenamedInfoLooksUpNothingNew()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")
@@ -77,7 +77,7 @@ public sealed class ZipNameLookupScenarioTests
     [Fact]
     public async Task MissingAndNonStringNamesRaiseKeyError()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")
@@ -115,7 +115,7 @@ public sealed class ZipNameLookupScenarioTests
     [Fact]
     public async Task ClosedArchiveLookupStaysAvailable()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")
@@ -140,7 +140,7 @@ public sealed class ZipNameLookupScenarioTests
     [Fact]
     public async Task ExtractByDuplicateNameTakesLast()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")

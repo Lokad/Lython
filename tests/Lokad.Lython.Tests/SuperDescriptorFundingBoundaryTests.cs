@@ -71,7 +71,7 @@ public sealed class SuperDescriptorFundingBoundaryTests
     public void EmptyAndInvalidClassCellsFailBeforeDescriptorFunding(bool invalid)
     {
         var context = Root();
-        var frontend = LythonFrontend.Compile("class C:\n    def method(self):\n        return super()\n");
+        var frontend = LythonFrontend.Compile("class C:\n    def method(self):\n        return super()\n",regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var definition = Assert.IsType<ClassDefinitionStatementSyntax>(Assert.Single(frontend.Script.RequireNotNull().Statements));
         var cell = Context.CreateClassBody(context, definition).ClassCell!;
@@ -152,5 +152,5 @@ public sealed class SuperDescriptorFundingBoundaryTests
 
     private static Context Root() => new(new MockLythonHost(), new LythonRunOptions
     {
-        MemoryBudget = new LythonMemoryBudget(8192)    });
+        MemoryBudget = new LythonMemoryBudget(8192)    },regexProvider:Utf8RegexProvider.Instance);
 }

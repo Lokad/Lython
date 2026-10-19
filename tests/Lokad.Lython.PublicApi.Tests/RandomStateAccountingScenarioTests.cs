@@ -15,7 +15,7 @@ public sealed class RandomStateAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedGeneratorsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import random
             objs = []
             i = 0
@@ -40,7 +40,7 @@ public sealed class RandomStateAccountingScenarioTests
     [Fact]
     public async Task GeneratorSeedsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import random
             r = random.Random(42)
             a = r.random()

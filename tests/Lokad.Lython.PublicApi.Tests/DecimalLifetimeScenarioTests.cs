@@ -30,7 +30,7 @@ public class DecimalLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedDecimalDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import decimal\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(decimal.Decimal('1.5'))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };

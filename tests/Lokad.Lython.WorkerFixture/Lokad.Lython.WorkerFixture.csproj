@@ -4,6 +4,11 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../src/Lokad.Lython.Utf8Regex/Lokad.Lython.Utf8Regex.csproj" />
+    <Using Include="Lokad.Lython.Utf8Regex" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../../src/Lokad.Lython/Lokad.Lython.csproj" />
     <Compile Include="../Lokad.Lython.Tests/Harness/MockLythonHost.cs" Link="Harness/MockLythonHost.cs" />
     <Compile Include="../Lokad.Lython.Tests/Harness/DelayedLythonHost.cs" Link="Harness/DelayedLythonHost.cs" />

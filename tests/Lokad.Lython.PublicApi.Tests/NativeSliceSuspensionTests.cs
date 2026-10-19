@@ -60,7 +60,7 @@ public sealed class NativeSliceSuspensionTests
         names.AddRange(["bind-step", "call-step", "bind-start", "call-start", "bind-stop", "call-stop"]);
         if (operation == "assign") names.AddRange(["iter", "next-0", "next-1"]);
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

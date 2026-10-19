@@ -16,7 +16,7 @@ public sealed class PropertyConstructorHostTests
     [Fact]
     public void AliasedNumericFieldsCarryAllowancesAndRejectedUpdateKeepsValue()
     {
-        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
+        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         object scalar = new BigInteger(7);
         var property = PyProperty.Create(scalar, scalar, scalar, scalar, root, Span);
         Assert.Equal(PyProperty.ShellBytes + 4 * RuntimeMemoryEstimates.ScalarStorageBytes, property.CommittedBytes);
@@ -38,7 +38,7 @@ public sealed class PropertyConstructorHostTests
     [Fact]
     public void ConstructorFieldDenialCommitsNoUnpublishedStorage()
     {
-        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
+        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) },regexProvider:Utf8RegexProvider.Instance);
         var before = root.MemoryGovernor.CurrentCommittedBytes;
         using (root.MemoryGovernor.ReserveTemporary(1024 - root.MemoryGovernor.CurrentAccountedBytes - PyProperty.ShellBytes, Span))
         {
@@ -53,7 +53,7 @@ public sealed class PropertyConstructorHostTests
     {
         var budget = new LythonMemoryBudget(4096);
         using var owner = budget.CreateScope();
-        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var weak = MakeDiscarded(root);
         var funded = budget.ReservedBytes;
         GC.Collect();
@@ -93,7 +93,7 @@ public sealed class PropertyConstructorHostTests
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(1024 * 1024), CancellationToken = cancellation.Token
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var started = new TaskCompletionSource<Context>(TaskCreationOptions.RunContinuationsAsynchronously);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
@@ -132,7 +132,7 @@ public sealed class PropertyConstructorHostTests
                 def __call__(self,obj,value=None):return tap(self,obj,value)
             accessor=Accessor()
             """ + "\nclass Target:\n p=property(" + propertyArgs + ")\ntarget=Target()\npayload=[]\ndef alias():return target\ndef run():\n " + operation + "\n";
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
         root.Services.SetCurrentException(active);
@@ -177,7 +177,7 @@ public sealed class PropertyConstructorHostTests
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(1024 * 1024), CancellationToken = cancellation.Token
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var doc = new PyList([], root.MemoryGovernor, Span);
         var enabled = false;
         var started = new TaskCompletionSource<Context>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -207,7 +207,7 @@ public sealed class PropertyConstructorHostTests
             original=property(accessor)
             def alias():return accessor
             """ + "\ndef build():return " + (derivative ? "original.setter(accessor)" : "property(accessor)") + "\n";
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
         var build = Assert.IsAssignableFrom<PyFunctionBase>(root.Variables["build"]);

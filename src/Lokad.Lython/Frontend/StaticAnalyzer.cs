@@ -10,10 +10,14 @@ internal static class StaticAnalyzer
         StaticNameBindingDiagnostics.Analyze,
     ];
 
-    public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script)
+    public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, ILythonRegexProvider? regexProvider = null, Runtime.MemoryGovernor? governor = null, CancellationToken cancellationToken = default)
     {
 
-        var context = new StaticAnalysisContext(script);
+        return Analyze(new StaticAnalysisContext(script, regexProvider, governor, cancellationToken));
+    }
+
+    internal static IReadOnlyList<LythonDiagnostic> Analyze(StaticAnalysisContext context)
+    {
         foreach (var pass in Passes)
         {
             pass(context);

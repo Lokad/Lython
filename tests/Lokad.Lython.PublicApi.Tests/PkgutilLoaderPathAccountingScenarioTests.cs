@@ -30,7 +30,7 @@ public sealed class PkgutilLoaderPathAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedLoadersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import pkgutil
             objs = []
             i = 0
@@ -54,7 +54,7 @@ public sealed class PkgutilLoaderPathAccountingScenarioTests
     [Fact]
     public async Task LoaderPathsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import importlib.util
             import pkgutil
             loader = pkgutil.find_loader("helper")

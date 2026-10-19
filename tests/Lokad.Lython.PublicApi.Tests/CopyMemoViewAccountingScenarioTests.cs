@@ -25,7 +25,7 @@ public sealed class CopyMemoViewAccountingScenarioTests
     [Fact]
     public async Task StashedMemoViewsStayCharged()
     {
-        var script = new LythonEngine().Compile(StashSource(true));
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(StashSource(true));
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -43,7 +43,7 @@ public sealed class CopyMemoViewAccountingScenarioTests
     public async Task UnstashedMemoViewBatchesReleaseTheirExecutionOwner()
     {
         var ownerBudget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(StashSource(false).Replace("for i in range(200):", "for i in range(8):"), ownerBudget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(StashSource(false).Replace("for i in range(200):", "for i in range(8):"), ownerBudget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(0);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
@@ -68,7 +68,7 @@ public sealed class CopyMemoViewAccountingScenarioTests
     [Fact]
     public async Task FundedStashedViewsStayUsable()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import copy\n"
             + "saved = []\n"
             + "class C:\n"
@@ -97,7 +97,7 @@ public sealed class CopyMemoViewAccountingScenarioTests
     [Fact]
     public async Task HookFailureReleasesMemo()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import copy\n"
             + "class B:\n"
             + "    def __deepcopy__(self, memo):\n"
@@ -122,7 +122,7 @@ public sealed class CopyMemoViewAccountingScenarioTests
     public async Task ShallowCopyBatchesReturnFunding()
     {
         var ownerBudget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import copy\n"
             + "src = [1, 2]\n"
             + "i = 0\n"
@@ -151,7 +151,7 @@ public sealed class CopyMemoViewAccountingScenarioTests
     [Fact]
     public async Task ExplicitMemoDictsBehave()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import copy\n"
             + "d = {}\n"
             + "m = copy.deepcopy([1, [2]], d)\n"
@@ -171,7 +171,7 @@ public sealed class CopyMemoViewAccountingScenarioTests
     public async Task MutatedViewBatchesReturnFundingAfterCleanup()
     {
         var ownerBudget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import copy\n"
             + "saved = []\n"
             + "class C:\n"

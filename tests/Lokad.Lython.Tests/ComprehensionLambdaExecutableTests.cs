@@ -19,7 +19,7 @@ public sealed class ComprehensionLambdaExecutableTests
     [InlineData("result={lambda:value for value in range(3)}")]
     public void BodiesAndCallerStayExecutableWithoutFallbackMirroring(string source)
     {
-        var syntax = LythonFrontend.Compile(source).Script.RequireNotNull();
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
         Check(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint);
 
         static void Check(ExecutableCodeObject code)
@@ -38,9 +38,9 @@ public sealed class ComprehensionLambdaExecutableTests
     [InlineData(true)]
     public async Task EscapedBodiesUseCompiledClosuresWithoutMirroringTheCaller(bool asynchronous)
     {
-        var syntax = LythonFrontend.Compile("global result\nresult=[lambda:value for value in range(3)]").Script.RequireNotNull();
+        var syntax = LythonFrontend.Compile("global result\nresult=[lambda:value for value in range(3)]",regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var functions = Assert.IsType<PyList>(context.Variables["result"]);
@@ -64,12 +64,12 @@ public sealed class ComprehensionLambdaExecutableTests
     public void MixedCellCaptureAdmitsBeforePublishingNamespaceOrRetentionMarks(bool deny)
     {
         const long cap = 1024 * 1024;
-        var syntax = LythonFrontend.Compile("def make(offset):return [lambda:(offset,value) for value in range(2)]").Script.RequireNotNull();
+        var syntax = LythonFrontend.Compile("def make(offset):return [lambda:(offset,value) for value in range(2)]",regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
         var module = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         var outer = Assert.Single(module.Functions).CodeObject.RequireNotNull();
         var lambda = Assert.Single(outer.Constants.OfType<ExecutableCreateLambda>()).CodeObject.RequireNotNull();
         var facts = Assert.Single(outer.Constants.OfType<ExecutableStartComprehension>()).ScopeFacts;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         var values = new object[outer.LocalNames.Count];
         var cells = new LythonRuntime.ExecutableCell?[values.Length];
         var parentCell = new LythonRuntime.ExecutableCell(new BigInteger(7));
@@ -135,9 +135,9 @@ public sealed class ComprehensionLambdaExecutableTests
     [InlineData(true)]
     public void RefusedConstructionRestoresBindingsAndThePriorTarget(bool asynchronous)
     {
-        var syntax = LythonFrontend.Compile("global target\ntarget=[lambda:value for value in range(10000)]").Script.RequireNotNull();
+        var syntax = LythonFrontend.Compile("global target\ntarget=[lambda:value for value in range(10000)]",regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) },regexProvider:Utf8RegexProvider.Instance);
         var original = new PyList([true], context.MemoryGovernor, null);
         context.Variables["target"] = original;
         var previousClosure = context.FunctionClosureContext;

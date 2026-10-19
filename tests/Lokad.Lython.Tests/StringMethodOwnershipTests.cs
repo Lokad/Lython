@@ -15,7 +15,7 @@ public sealed class StringMethodOwnershipTests
     public void EveryStringReturningMemberOwnsItsResult()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         AssertOwned("ABC", "lower");
         AssertOwned("abc", "upper");

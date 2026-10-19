@@ -23,7 +23,7 @@ public sealed class JsonDefaultDumpsBoundaryTests
     public async Task DefaultCallPreservesCheckpointsErrorsAndUnwind(bool asynchronous, string shape)
     {
         const string source = "import json\nreturn json.dumps(make())";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         string[] effects;
         string outcome;
@@ -63,7 +63,7 @@ public sealed class JsonDefaultDumpsBoundaryTests
 
     private static (Context Context, Make Make) Prepare(ILythonMemoryBudget owner, string shape)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         object value = new BigInteger(7);
         if (shape == "sequence") value = new PyList([PyString.FromString("é😀", context.MemoryGovernor, null), PyNone.Instance], context.MemoryGovernor, null);
         if (shape == "unsupported") value = new PySet(context.MemoryGovernor, null);

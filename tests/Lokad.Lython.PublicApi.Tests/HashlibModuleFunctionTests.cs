@@ -21,7 +21,7 @@ return "|".join([
     [Fact]
     public void ManagedAlgorithmsMatchStandardVectors()
     {
-        var result = new LythonEngine().Run(VectorSource, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(VectorSource, new MockLythonHost());
 
         Assert.True(result.Success, Describe(result));
         Assert.Equal(VectorResult, result.ReturnValue);
@@ -30,7 +30,7 @@ return "|".join([
     [Fact]
     public async Task AsyncExecutionHasTheSamePureHashResults()
     {
-        var result = await new LythonEngine().RunAsync(VectorSource, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(VectorSource, new MockLythonHost());
 
         Assert.True(result.Success, Describe(result));
         Assert.Equal(VectorResult, result.ReturnValue);
@@ -39,7 +39,7 @@ return "|".join([
     [Fact]
     public void HashObjectsSupportChunkingCopyRawDigestAndMetadata()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import hashlib
 
@@ -72,7 +72,7 @@ return "|".join([
     [Fact]
     public void NewAliasesSecurityKeywordAndAlgorithmInventoriesArePythonShaped()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import hashlib
 
@@ -93,7 +93,7 @@ return str(checks)
     [Fact]
     public void UnsupportedAlgorithmsAndNonBytesInputsFailPrecisely()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import hashlib
 
@@ -126,7 +126,7 @@ return "|".join(values)
     [Fact]
     public void FileDigestReportsTheGenericBinaryHandleBoundary()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import hashlib
 hashlib.file_digest(None, "sha256")
@@ -141,7 +141,7 @@ hashlib.file_digest(None, "sha256")
     [Fact]
     public void HashObjectsAndCopiesCountAgainstExecutionMemory()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import hashlib
 h = hashlib.sha256(b"abc")
@@ -159,7 +159,7 @@ h.copy()
     public void UpdatesDoNotRetainTheCompleteInputHistory()
     {
         var input = new string('a', 5000);
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             $"import hashlib\nh = hashlib.sha256()\nh.update(b\"{input}\")\nreturn h.hexdigest()\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(7000) });
@@ -171,7 +171,7 @@ h.copy()
     [Fact]
     public void StaticContractsRecognizeHashlibCallShapes()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import hashlib
 from hashlib import sha256
@@ -180,7 +180,7 @@ hashlib.md5(usedforsecurity=False)
 sha256(b"abc", usedforsecurity=True)
 hashlib.new("sha1", data=b"abc", usedforsecurity=False)
 """);
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import hashlib
 hashlib.md5(b"a", False)

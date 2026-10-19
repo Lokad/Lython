@@ -13,7 +13,7 @@ public sealed class StructCompatibilityTests
         var source = "import struct\nfrom pathlib import Path\nclass Number:\n    def " + hook +
             "(self):\n        with open('number.txt') as file: value=file.read()\n        " + conversion +
             "\nPath('packed.bin').write_bytes(struct.pack('>" + code + "',Number()))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var host = new DelayedLythonHost();
         host.SeedFile("/number.txt", "2");
@@ -46,7 +46,7 @@ public sealed class StructCompatibilityTests
     [InlineData("struct.unpack('>0p',b'')")]
     public async Task DeferredSurfacesFailExplicitly(string call)
     {
-        var script = new LythonEngine().Compile("import struct\ntry: " + call + "\nexcept NotImplementedError: print('unsupported')\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import struct\ntry: " + call + "\nexcept NotImplementedError: print('unsupported')\n");
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {
@@ -62,7 +62,7 @@ public sealed class StructCompatibilityTests
     [InlineData("struct.pack(format='>I')")]
     public void DirectKnownCallsRejectKeywordsStatically(string call)
     {
-        var script = new LythonEngine().Compile("import struct\n" + call);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import struct\n" + call);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, d => d.Code == "LA3151");
     }
@@ -96,7 +96,7 @@ public sealed class StructCompatibilityTests
     public async Task StandardFormatsMatchPython(string name, string source, string expected)
     {
         _ = name;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {
@@ -116,7 +116,7 @@ public sealed class StructCompatibilityTests
         delayed.SeedFile("/float.txt", "1.5");
         immediate.SeedFile("/truth.txt", "yes");
         delayed.SeedFile("/truth.txt", "yes");
-        var script = new LythonEngine().Compile("import struct\nfrom pathlib import Path\nclass Number:\n    def __index__(self):\n        with open('index.txt') as file: value=file.read()\n        print('index',value)\n        return int(value)\n    def __float__(self):\n        with open('float.txt') as file: value=file.read()\n        print('float',value)\n        return float(value)\n    def __bool__(self):\n        with open('truth.txt') as file: value=file.read()\n        print('truth',value)\n        return value=='yes'\nnumber=Number()\nnumber.__index__=lambda:999\nnumber.__float__=lambda:4.0\nnumber.__bool__=lambda:False\ndata=struct.pack('>Hf?',number,number,number)\nprint(data.hex(),struct.unpack('>Hf?',data))\nprint(Path('packed.bin').write_bytes(data),Path('packed.bin').read_bytes().hex())\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import struct\nfrom pathlib import Path\nclass Number:\n    def __index__(self):\n        with open('index.txt') as file: value=file.read()\n        print('index',value)\n        return int(value)\n    def __float__(self):\n        with open('float.txt') as file: value=file.read()\n        print('float',value)\n        return float(value)\n    def __bool__(self):\n        with open('truth.txt') as file: value=file.read()\n        print('truth',value)\n        return value=='yes'\nnumber=Number()\nnumber.__index__=lambda:999\nnumber.__float__=lambda:4.0\nnumber.__bool__=lambda:False\ndata=struct.pack('>Hf?',number,number,number)\nprint(data.hex(),struct.unpack('>Hf?',data))\nprint(Path('packed.bin').write_bytes(data),Path('packed.bin').read_bytes().hex())\n");
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(immediate), await script.RunAsync(delayed) })
         {

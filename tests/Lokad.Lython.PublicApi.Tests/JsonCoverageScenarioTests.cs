@@ -12,7 +12,7 @@ public sealed class JsonCoverageScenarioTests
     [Fact]
     public async Task ManyTinyValuesStayBounded()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             return len(json.dumps([{}] * 1000))
@@ -29,7 +29,7 @@ public sealed class JsonCoverageScenarioTests
     [Fact]
     public async Task LargeEscapedStringStaysBounded()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             return len(json.dumps(["\u0001" * 200000]))
@@ -51,7 +51,7 @@ public sealed class JsonCoverageScenarioTests
     [Fact]
     public async Task NestedObjectsRespectDepth()
     {
-        var ok = new LythonEngine().Compile(
+        var ok = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             v = 1
@@ -65,7 +65,7 @@ public sealed class JsonCoverageScenarioTests
         var syncOk = ok.Run(new MockLythonHost());
         Assert.True(syncOk.Success, syncOk.Failure?.Message);
 
-        var deep = new LythonEngine().Compile(
+        var deep = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             v = 1

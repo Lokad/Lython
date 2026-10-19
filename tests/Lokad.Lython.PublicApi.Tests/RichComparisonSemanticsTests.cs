@@ -9,7 +9,7 @@ public sealed class RichComparisonSemanticsTests
 {
     private static async Task AssertBothModes(string source, string expectedOutput)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -77,7 +77,7 @@ public sealed class RichComparisonSemanticsTests
     public async Task DelayedEqSuspendsAsync()
     {
         const string code = "from pathlib import Path\nclass E:\n    def __eq__(self, other):\n        return Path(\"/v.txt\").read_text() == \"x\\n\"\nprint(E() == E())\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var host = new DelayedLythonHost();
         host.SeedFile("/v.txt", "x\n");
@@ -91,7 +91,7 @@ public sealed class RichComparisonSemanticsTests
     public void DelayedEqFailsFastSync()
     {
         const string code = "from pathlib import Path\nclass E:\n    def __eq__(self, other):\n        return Path(\"/v.txt\").read_text() == \"x\\n\"\nprint(E() == E())\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var host = new DelayedLythonHost();
         host.SeedFile("/v.txt", "x\n");
@@ -122,7 +122,7 @@ public sealed class RichComparisonSemanticsTests
     public async Task OrderingNotImplementedDeclinesToTypeError()
     {
         const string code = "class N:\n    def __lt__(self, other):\n        return NotImplemented\nprint(N() < 1)\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.False(sync.Success);
@@ -154,7 +154,7 @@ public sealed class RichComparisonSemanticsTests
     public async Task DelayedElementProtocolsSuspendInOrdering()
     {
         const string code = "from pathlib import Path\nclass E:\n    def __eq__(self, other):\n        return Path(\"/v.txt\").read_text() == \"x\\n\"\n    def __lt__(self, other):\n        return False\nprint([E()] < [E(), E()])\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var host = new DelayedLythonHost();
         host.SeedFile("/v.txt", "x\n");

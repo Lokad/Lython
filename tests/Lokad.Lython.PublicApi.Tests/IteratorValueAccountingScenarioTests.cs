@@ -13,7 +13,7 @@ public sealed class IteratorValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedIteratorsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             xs = [1]
             its = []
@@ -37,7 +37,7 @@ public sealed class IteratorValueAccountingScenarioTests
     [Fact]
     public async Task IteratorBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return [list(map(abs, [-1])), list(filter(None, [0, 1])), list(zip([1], [2])), list(enumerate("ab"))]
             """);

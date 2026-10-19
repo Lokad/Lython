@@ -22,7 +22,7 @@ public sealed class IntegerProtocolAsyncTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, CancellationToken = cancellation.Token });
+            { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var value = LythonRuntime.OwnFreshInteger(explicitBase ? new BigInteger(2) : BigInteger.One << 2048, context.MemoryGovernor, null);
         var callback = new ConversionCallback(value);
         context.Variables["getnumber"] = callback;
@@ -41,7 +41,7 @@ public sealed class IntegerProtocolAsyncTests
             Assert.True(held > 0);
             using (var otherOwner = budget.CreateScope())
             {
-                var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner });
+                var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner },regexProvider:Utf8RegexProvider.Instance);
                 var data = PyString.FromString(new string('x', 1024), other.MemoryGovernor, null);
                 other.Variables["data"] = data;
                 Assert.Same(data, LythonRuntime.ExecuteExecutableCodeObject(Compile("return data"), other, default, null));
@@ -90,7 +90,7 @@ public sealed class IntegerProtocolAsyncTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     private sealed class ConversionCallback(object value) : LythonRuntime.ICallable
     {

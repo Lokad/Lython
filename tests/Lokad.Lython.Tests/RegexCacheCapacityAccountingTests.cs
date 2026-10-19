@@ -1,6 +1,5 @@
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
-using Lokad.Utf8Regex.PythonRe;
 
 namespace Lokad.Lython.Tests;
 
@@ -9,8 +8,8 @@ public sealed class RegexCacheCapacityAccountingTests
     // Reuse an already constructed pattern so these controls isolate cache
     // storage funding from compiled-pattern ownership and collection timing.
     private static LythonRuntime.RePatternObject Pattern() => new(
-        PyString.FromString("a"), PythonReCompileOptions.None, 32,
-        new Utf8PythonRegex("a"u8, PythonReCompileOptions.None), 1,
+        PyString.FromString("a"), 32,
+        Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), new LythonMemoryBudget(), default), 1,
         new Dictionary<string, int>());
 
     [Theory]

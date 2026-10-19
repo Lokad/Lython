@@ -19,7 +19,7 @@ def value():
 print(float(value()),float('2.5'))
 """;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -69,7 +69,7 @@ with open('report.json','w',newline='') as target:
 print('written')
 """;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -96,7 +96,7 @@ print('written')
     public async Task ParsedInputRemainsFundedWhileAnotherExecutionUsesTheRoot(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("text=' '*4096+'1.25'\nassert float(text)==1.25\nreturn text", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("text=' '*4096+'1.25'\nassert float(text)==1.25\nreturn text", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using var held = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());

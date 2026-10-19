@@ -16,7 +16,7 @@ public sealed class TimeZoneAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedLocaltimesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import time
             objs = []
             i = 0
@@ -41,7 +41,7 @@ public sealed class TimeZoneAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedTznamesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import time
             objs = []
             i = 0
@@ -66,7 +66,7 @@ public sealed class TimeZoneAccountingScenarioTests
     [Fact]
     public async Task TimeZonesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import time
             g = time.gmtime(0)
             l = time.localtime(0)

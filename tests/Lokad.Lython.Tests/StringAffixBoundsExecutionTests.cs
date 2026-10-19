@@ -15,9 +15,9 @@ public sealed class StringAffixBoundsExecutionTests
     [InlineData("class Bound:\n @property\n def __index__(self):return lambda:3\nreturn 'aé😀z'.endswith('😀',0,Bound())")]
     public async Task NativeAndCompletedGuestBoundsCompleteWithoutSuspension(string source)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
         Assert.True(pending.IsCompletedSuccessfully);
         Assert.Equal(true, await pending);

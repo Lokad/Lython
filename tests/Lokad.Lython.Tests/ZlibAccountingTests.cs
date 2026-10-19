@@ -14,7 +14,7 @@ public sealed class ZlibAccountingTests
     [Fact]
     public void InvalidStreamsRefundPrivateOutputWithoutCollectingGuestValues()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var badChecksum = Text.ToArray();
         badChecksum[^1] ^= 1;
         for (var attempt = 0; attempt < 30; attempt++)
@@ -37,7 +37,7 @@ public sealed class ZlibAccountingTests
     public void InflationDenialsRefundNativeScratchAndOutput(long cap)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         for (var attempt = 0; attempt < 20; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
@@ -58,7 +58,7 @@ public sealed class ZlibAccountingTests
         var data = new byte[20000];
         new Random(42).NextBytes(data);
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         for (var attempt = 0; attempt < 20; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
@@ -73,7 +73,7 @@ public sealed class ZlibAccountingTests
     public void PublicationCopyAdmissionDenialRefundsScratch()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(40) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(40) },regexProvider:Utf8RegexProvider.Instance);
         for (var attempt = 0; attempt < 20; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
@@ -94,7 +94,7 @@ public sealed class ZlibAccountingTests
         input[50002] = 3;
         input[^1] = 1;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { });
+            new LythonRunOptions { },regexProvider:Utf8RegexProvider.Instance);
         var value = Assert.IsType<PyBytes>(LythonRuntime.ZlibModule.DecompressBytes(input, context, Span));
         Assert.Equal(0, value.Length);
         Assert.Equal(value.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes);
@@ -107,7 +107,7 @@ public sealed class ZlibAccountingTests
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { CancellationToken = cancellation.Token });
+            new LythonRunOptions { CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         foreach (var action in new Action[]
         {
             () => LythonRuntime.ZlibModule.CompressBytes(new byte[1000], 6, context, Span),
@@ -124,7 +124,7 @@ public sealed class ZlibAccountingTests
     [Fact]
     public void ReturnedOutputKeepsOnlyItsPayloadFunding()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var bytes = LythonRuntime.ZlibModule.DecompressBytes(Expansion, context, Span);
         Assert.Equal(20000, bytes.Length);
         Assert.Same(context.MemoryGovernor, bytes.OwnerMemoryGovernor);
@@ -139,7 +139,7 @@ public sealed class ZlibAccountingTests
     {
         var budget = new LythonMemoryBudget(512000);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var weak = CreateDroppedOutput(context);
         var funded = budget.ReservedBytes;
         for (var attempt = 0; attempt < 4; attempt++) { GC.Collect(); GC.WaitForPendingFinalizers(); }

@@ -12,7 +12,7 @@ public sealed class DataclassHashSafetyTests
     {
         var source = Node + "node=Node(0)\nfor _ in range(64):node=Node(node)\ntry:hash(node)\nexcept RecursionError:print('configured')\nprint(hash(Node(7))==hash(Node(7)))";
         var budget = new LythonMemoryBudget(8 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxRecursionDepth = 16 };
@@ -38,7 +38,7 @@ public sealed class DataclassHashSafetyTests
         var source = Node + "for mutual in [False,True]:\n node=Node(None)\n other=Node(node)\n node.value=other if mutual else node\n try:" + expression +
             "\n except RecursionError:print('cycle')\n node.value=7\n print(hash(node)==hash(Node(7)))";
         var budget = new LythonMemoryBudget(8 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
@@ -60,7 +60,7 @@ public sealed class DataclassHashSafetyTests
             "node=Node(0)\nfor index in range(depth):node=Node(node)\ntry:print(isinstance(" + (tuple ? "hash((node,))" : "hash(node)") +
             ",int))\nexcept (RecursionError,RuntimeError):print('bounded')";
         var budget = new LythonMemoryBudget(8 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var delayed = new DelayedLythonHost(); delayed.SeedFile("/ready", "ready");

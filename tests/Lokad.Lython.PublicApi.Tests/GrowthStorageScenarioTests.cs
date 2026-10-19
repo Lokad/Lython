@@ -60,7 +60,7 @@ public class GrowthStorageScenarioTests : LifetimeScenario
     public async Task RetainedListGrowthDenies()
     {
         // Honest retention still trips: a fully retained 100k list cannot fit 1 MiB.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "x = []\nfor j in range(" + Iterations(100000) + "):\n    x.append(j)\nreturn len(x)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Budget(1048576)) };
@@ -78,7 +78,7 @@ public class GrowthStorageScenarioTests : LifetimeScenario
     {
         // Growth through one alias is visible through the other with a single
         // backing charge: coupons re-snapshot, they never double-commit.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "x = []\nfor j in range(100):\n    x.append(j)\ny = x\nfor j in range(100, 200):\n    y.append(j)\nreturn len(x)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(200);

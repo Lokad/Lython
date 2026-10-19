@@ -244,7 +244,7 @@ internal static class PathOps
 
     public static bool IsAbsolute(string path) => path.StartsWith("/", StringComparison.Ordinal);
 
-    public static bool Match(string path, string pattern)
+    public static bool Match(string path, string pattern, CancellationToken cancellationToken = default)
     {
         var normalized = NormalizeLexical(path);
         var pathIsAbsolute = normalized.StartsWith("/", StringComparison.Ordinal);
@@ -267,7 +267,7 @@ internal static class PathOps
         {
             if (!LythonRuntime.FnMatchModule.MatchSimple(
                     PyString.FromString(pathParts[offset + i]),
-                    PyString.FromString(patternParts[i])))
+                    PyString.FromString(patternParts[i]), cancellationToken))
             {
                 return false;
             }

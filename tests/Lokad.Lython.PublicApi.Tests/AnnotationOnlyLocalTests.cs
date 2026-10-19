@@ -13,7 +13,7 @@ public sealed class AnnotationOnlyLocalTests
             ? "def helper(value):\n unused:int\n def step(next_value):return helper(next_value)\n return step(value+1)\nhelper(0)"
             : "def helper(value):\n value:int\n return helper(value+1)\nhelper(0)";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxRecursionDepth = 16 };
@@ -47,7 +47,7 @@ public sealed class AnnotationOnlyLocalTests
     public async Task LocalDeclarationsPreservePythonScopesAndEffects(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name + ": " + string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -85,7 +85,7 @@ print(helper())
     public async Task TargetIoEvaluatesBasesAndIndexWithoutLookupOrAnnotation(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(TargetIo, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(TargetIo, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var delayed = asynchronous ? new DelayedLythonHost() : null;
@@ -116,7 +116,7 @@ print(helper())
     public async Task TargetIoCancellationStopsAndDrainsBeforeRefund(string pausedStage)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(TargetIo, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(TargetIo, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -175,7 +175,7 @@ def helper():
 helper()
 """;
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) };
@@ -202,7 +202,7 @@ reader=produce()
 return reader()
 """;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var first = script.Run(new MockLythonHost()))

@@ -31,7 +31,7 @@ public sealed class ModuleVariableAnnotationTests
             result:annotation()=value()
             print(list(__annotations__),__annotations__['result'] is int,box.item)
             """;
-        var compiled = new LythonEngine().Compile(imported ? "import helper" : source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(imported ? "import helper" : source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var options = new LythonRunOptions
         {
@@ -55,7 +55,7 @@ public sealed class ModuleVariableAnnotationTests
     [Fact]
     public async Task ReplacedAnnotationMappingAwaitsItsItemProtocol()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class Registry:
              def __setitem__(self,key,value):
               with open('/annotation.txt','w') as f:f.write(key)
@@ -78,7 +78,7 @@ public sealed class ModuleVariableAnnotationTests
     public async Task AnnotationMetadataObeysSharedAdmission()
     {
         var source = string.Join('\n', Enumerable.Range(0, 1000).Select(i => $"value{i}:int"));
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(32768) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
@@ -123,7 +123,7 @@ public sealed class ModuleVariableAnnotationTests
     public async Task CompatibleBindings(string name, string source, string expected)
     {
         _ = name;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

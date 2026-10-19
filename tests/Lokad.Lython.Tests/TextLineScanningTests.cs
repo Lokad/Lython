@@ -61,7 +61,7 @@ public sealed class TextLineScanningTests
 handle = open("/in.txt", "r", encoding="utf8")
 return handle.read()
 """;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.DoesNotContain(compiled.Diagnostics, diagnostic => diagnostic.Code == "LA3003");
         var host = new MockLythonHost();
         host.SeedFile("/in.txt", "hello utf8");

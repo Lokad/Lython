@@ -9,7 +9,7 @@ public sealed class ScopeDirectiveCompatibilityTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 value = 1
 
@@ -47,7 +47,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 value = "module"
 
@@ -83,7 +83,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def outer():
     x = "outer"
@@ -113,7 +113,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def outer():
     x = 0
@@ -157,7 +157,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def bind_globals():
     global GPath, g_func, GClass, g_loop, g_unpacked, g_exc, g_exc_text, g_match, g_walrus
@@ -258,7 +258,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 value = 1
 
@@ -300,7 +300,7 @@ __lython_file.close()
     [InlineData("def f():\n    if (value := 1):\n        pass\n    global value\n", "LA3206")]
     public void InvalidScopeDirectives_ReportStaticDiagnostics(string source, string code)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, diagnostic => diagnostic.Code == code);
@@ -312,7 +312,7 @@ __lython_file.close()
     [InlineData("def f():\n    global match\n    match = 1\n")]
     public void ValidScopeDirectives_Compile(string source)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(diagnostic => diagnostic.Message)));
     }

@@ -13,7 +13,7 @@ public sealed class IdentityAccountingScenarioTests
     [Fact]
     public async Task ManyIdentitiesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "objs = [set() for i in range(100000)]\nfor obj in objs:\n    id(obj)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SixteenMib) };
@@ -31,7 +31,7 @@ public sealed class IdentityAccountingScenarioTests
     [Fact]
     public async Task RepeatedIdLookupsShareCharge()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "x = set()\ni = 0\nwhile i < 20000:\n    id(x)\n    i = i + 1\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(0);
@@ -48,7 +48,7 @@ public sealed class IdentityAccountingScenarioTests
     [Fact]
     public async Task IdentityValuesBehave()
     {
-        var script = new LythonEngine().Compile("x = []\ny = []\nreturn [id(x) == id(x), id(x) == id(y)]\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("x = []\ny = []\nreturn [id(x) == id(x), id(x) == id(y)]\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new List<object?> { true, false };
         var sync = script.Run(new MockLythonHost());

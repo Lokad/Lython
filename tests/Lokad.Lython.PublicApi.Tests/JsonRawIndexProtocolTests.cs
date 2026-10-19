@@ -27,7 +27,7 @@ public sealed class JsonRawIndexProtocolTests
     public async Task RawIndexFollowsPythonSlotsAndValidation(string name, bool asynchronous, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
@@ -60,7 +60,7 @@ public sealed class JsonRawIndexProtocolTests
     public async Task CompletedHostsPreserveEffectsAndCharacterOffsets(bool keyword, bool descriptor, bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(HostSource(keyword, descriptor), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(HostSource(keyword, descriptor), budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new MockLythonHost(); host.SeedFile("/events.txt", "before");
@@ -78,7 +78,7 @@ public sealed class JsonRawIndexProtocolTests
     public async Task IndexAndDescriptorAwaitIOAndCancellation(bool keyword, bool descriptor, bool cancel)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(HostSource(keyword, descriptor), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(HostSource(keyword, descriptor), budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost(); host.SeedFile("/events.txt", "before");
@@ -121,7 +121,7 @@ public sealed class JsonRawIndexProtocolTests
         var source = "try:\n" + string.Join("\n", body.Split('\n').Select(line => " " + line)) +
             "\nexcept MemoryError:print('caught')\nprint('after')";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) };

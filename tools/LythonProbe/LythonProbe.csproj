@@ -4,6 +4,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/Lokad.Lython.Utf8Regex/Lokad.Lython.Utf8Regex.csproj" />
+    <Using Include="Lokad.Lython.Utf8Regex" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../../src/Lokad.Lython/Lokad.Lython.csproj" />
   </ItemGroup>
 </Project>

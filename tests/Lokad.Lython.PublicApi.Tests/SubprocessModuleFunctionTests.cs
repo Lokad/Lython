@@ -11,7 +11,7 @@ public sealed class SubprocessModuleFunctionTests
         host.EnableSubprocess();
         host.SeedSubprocessResult(["rg", "Lython", "."], 0, "one\ntwo", "");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
 proc = subprocess.run(["rg", "Lython", "."], capture_output=True)
@@ -32,7 +32,7 @@ __lython_file.close()
         host.EnableSubprocess();
         host.SeedSubprocessResult(["tool", "--flag"], 0, "ok", "");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
 subprocess.run(["tool", "--flag"], input="payload", cwd="/repo/work", timeout=1500)
@@ -53,7 +53,7 @@ subprocess.run(["tool", "--flag"], input="payload", cwd="/repo/work", timeout=15
         host.EnableSubprocess();
         host.SeedSubprocessResult(["tool"], 0, "ok", "");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import subprocess\nsubprocess.run(['tool'], cwd='work')",
             host);
 
@@ -69,7 +69,7 @@ subprocess.run(["tool", "--flag"], input="payload", cwd="/repo/work", timeout=15
         host.EnableSubprocess();
         host.SeedSubprocessResult(["tool"], 0, "ok", "");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import subprocess\nsubprocess.run(['tool'])",
             host,
             new LythonRunOptions
@@ -97,7 +97,7 @@ subprocess.run(["tool", "--flag"], input="payload", cwd="/repo/work", timeout=15
         host.EnableSubprocess();
         host.SeedSubprocessResult(["tool"], 0, "ok", "");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import subprocess\nsubprocess.run(['tool'])",
             host);
 
@@ -116,7 +116,7 @@ subprocess.run(["tool", "--flag"], input="payload", cwd="/repo/work", timeout=15
         host.EnableSubprocess();
         host.SeedSubprocessResult(["tool"], 0, "ok", "");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import subprocess\nsubprocess.run(['tool'], cwd='..\\\\outside')",
             host);
 
@@ -134,7 +134,7 @@ subprocess.run(["tool", "--flag"], input="payload", cwd="/repo/work", timeout=15
         host.EnableSubprocess();
         host.SeedSubprocessResult(["tool", "/repo/input.txt"], 0, "ok", "ignored");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 import subprocess
@@ -171,7 +171,7 @@ __lython_file.close()
         host.SeedSubprocessResult(["echo hi"], 0, "hi", "");
         host.SeedSubprocessResult(["/repo/script.sh"], 0, "path", "");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 import subprocess
@@ -196,7 +196,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.EnableSubprocess();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import subprocess\nsubprocess.run('echo hi', shell=True)\n",
             host);
 
@@ -217,7 +217,7 @@ __lython_file.close()
         host.SeedSubprocessResult(["call"], 3, "", "");
         host.SeedSubprocessResult(["check"], 0, "", "");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
 out = subprocess.check_output(["out"])
@@ -240,7 +240,7 @@ __lython_file.close()
         host.EnableSubprocess();
         host.SeedSubprocessResult(["quiet"], 0, "hidden", "ignored");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
 proc = subprocess.run(["quiet"])
@@ -262,7 +262,7 @@ __lython_file.close()
         host.EnableSubprocess();
         host.SeedSubprocessResult(["fail"], 7, "out", "bad");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
 try:
@@ -285,7 +285,7 @@ except subprocess.CalledProcessError as err:
         host.EnableSubprocess();
         host.SeedSubprocessResult(["fail"], 8, "", "");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
 proc = subprocess.run(["fail"], capture_output=True)
@@ -308,7 +308,7 @@ except subprocess.SubprocessError as err:
         var host = new MockLythonHost();
         host.EnableSubprocess();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
 
@@ -344,7 +344,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.EnableSubprocess();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             $"""
 import subprocess
 {statement}
@@ -361,7 +361,7 @@ import subprocess
         var host = new MockLythonHost();
         host.EnableSubprocess();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
 made = subprocess.CompletedProcess(["cmd"], True)
@@ -379,7 +379,7 @@ return str(made.returncode)
         var host = new MockLythonHost();
         host.EnableSubprocess();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
 
@@ -402,7 +402,7 @@ subprocess.list2cmdline(["ok", 1])
         host.CompleteSubprocessAsynchronously();
         host.SeedSubprocessResult(["tool"], 0, "done", "");
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import subprocess
 proc = subprocess.run(["tool"], capture_output=True)
@@ -425,7 +425,7 @@ __lython_file.close()
         host.CompleteSubprocessAsynchronously();
         host.SeedSubprocessResult(["tool"], 0, "done", "");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
 subprocess.run(["tool"])

@@ -7,7 +7,7 @@ public sealed class ParserCompatibilityTests
     [Fact]
     public async Task AdjacentFormattedStrings_Concatenate()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             n = 2
             s = (f"a{n}"
                  f"b{n}")
@@ -25,7 +25,7 @@ public sealed class ParserCompatibilityTests
     [Fact]
     public async Task MixedPlainAndFormattedSegments_AssembleInOrder()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             n = 2
             return [("a" f"b{n}" "c"), (f"a{n}" "b" f"c{n}")]
             """);
@@ -43,7 +43,7 @@ public sealed class ParserCompatibilityTests
     public async Task RawPlainSegment_PreservesBackslashNextToFormatted()
     {
         var backslash = (char)92;
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """s = r"a""" + backslash + """
             n" f"{1}"
             return s
@@ -61,7 +61,7 @@ public sealed class ParserCompatibilityTests
     [Fact]
     public async Task RawFormattedPrefixes_Concatenate()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             n = 2
             return [fr"x{n}y", rf"z{n}"]
             """);
@@ -78,7 +78,7 @@ public sealed class ParserCompatibilityTests
     [Fact]
     public async Task EscapedBracesConversionsAndSpecs_SpanSegments()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             n = 2
             return [f"{{}}", f"{n!r}", f"{n:03d}", f"{{}}" f"{n!r}" f"{n:03d}"]
             """);
@@ -95,7 +95,7 @@ public sealed class ParserCompatibilityTests
     [Fact]
     public async Task AdjacentSegments_EvaluateOnceLeftToRight()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             calls = []
             def p(v):
                 calls.append(v)
@@ -115,7 +115,7 @@ public sealed class ParserCompatibilityTests
     [Fact]
     public async Task EmptySegments_ConcatenateToEmpty()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             return "" f""
             """);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
@@ -141,7 +141,7 @@ public sealed class ParserCompatibilityTests
         };
         foreach (var source in cases)
         {
-            var script = new LythonEngine().Compile(source);
+            var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
             Assert.False(script.IsValid, source);
             Assert.Contains(script.Diagnostics, d => d.Code == "LA1007");
         }
@@ -150,7 +150,7 @@ public sealed class ParserCompatibilityTests
     [Fact]
     public void MalformedFieldAcrossSegments_StillRejected()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             return f"a{1" "b"
             """);
         Assert.False(script.IsValid);
@@ -162,7 +162,7 @@ public sealed class ParserCompatibilityTests
     {
         var source = "\uFEFFvalue = '''a\r\nb'''\r\nreturn chr(13) in value\r\n";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(FormatDiagnostic)));
         Assert.False(Assert.IsType<bool>(result.ReturnValue));
@@ -171,7 +171,7 @@ public sealed class ParserCompatibilityTests
     [Fact]
     public void Run_AcceptsPythonFloatAndDecimalSeparatorSpellings()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "return [.5, 5., 1_000.5, 1.2_3, 1e1_0, 1_000, 00, 0_0]\n",
             new MockLythonHost());
 
@@ -194,7 +194,7 @@ public sealed class ParserCompatibilityTests
     [Fact]
     public void Run_AcceptsAndNormalizesPythonUnicodeIdentifiers()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "café = 3\nK = café + 1\nreturn K\n",
             new MockLythonHost());
 
@@ -205,7 +205,7 @@ public sealed class ParserCompatibilityTests
     [Fact]
     public void Run_DecodesPythonStringEscapesAndRetainsUnknownEscapes()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 return [
     "\u0061" == "a",
@@ -226,8 +226,8 @@ return [
     [Fact]
     public void Compile_RejectsNonAsciiBytesSourceAndRetainsBytesUnicodeEscapes()
     {
-        var invalid = new LythonEngine().Compile("return b\"é\"\n");
-        var valid = new LythonEngine().Run("return b\"\\u0061\" == b\"\\\\u0061\"\n", new MockLythonHost());
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile("return b\"é\"\n");
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Run("return b\"\\u0061\" == b\"\\\\u0061\"\n", new MockLythonHost());
 
         Assert.False(invalid.IsValid);
         Assert.Contains(invalid.Diagnostics, d => d.Message.Contains("ASCII", StringComparison.Ordinal));
@@ -243,7 +243,7 @@ return [
     {
         LythonCompiledScript? compiled = null;
 
-        var exception = Record.Exception(() => compiled = new LythonEngine().Compile(source));
+        var exception = Record.Exception(() => compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source));
 
         Assert.Null(exception);
         Assert.NotNull(compiled);
@@ -254,7 +254,7 @@ return [
     [Fact]
     public void Compile_AcceptsOrdinarySoftKeywordContinuationAndPostfixShapes()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 match = "alpha"
 case = "beta"
@@ -271,7 +271,7 @@ line = items[0].upper().splitlines(True)[0]
     [Fact]
     public void Compile_AcceptsAnnotationRichOrdinaryPythonShapes()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from __future__ import annotations
 
@@ -289,7 +289,7 @@ result = helper("a", "b", suffix="?")
     [Fact]
     public void Compile_AcceptsMixedStarredAndKeywordCallShapes()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 def helper(*parts, suffix):
     return suffix
@@ -304,7 +304,7 @@ result = helper(*["a", "b"], suffix="?")
     [Fact]
     public void Compile_AcceptsImplicitLineJoiningAcrossGroupedPythonSyntax()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 class Base:
     pass
@@ -382,7 +382,7 @@ match [
     [Fact]
     public void Run_AcceptsContinuationIndentationThatClosesInsideCompoundHeaders()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = []
 for table in ["A4",
@@ -409,7 +409,7 @@ return values
     [Fact]
     public void Compile_ContinuationIndentationDoesNotHideRealSuiteDedents()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 if all([True,
         True]):
@@ -425,7 +425,7 @@ after = 3
     [Fact]
     public void Run_AcceptsUnparenthesizedTupleExpressionLists()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 events = []
 
@@ -465,7 +465,7 @@ return a, b, single, left is right, events, seen, choose(True), choose(False)
     [Fact]
     public void Compile_RejectsMissingTupleExpressionListItemsPrecisely()
     {
-        var compiled = new LythonEngine().Compile("return 1, , 2\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 1, , 2\n");
 
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, diagnostic =>
@@ -475,7 +475,7 @@ return a, b, single, left is right, events, seen, choose(True), choose(False)
     [Fact]
     public void Compile_AcceptsAdjacentTextLiteralConcatenation()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 plain = "hello" " " 'world'
 raw = (
@@ -507,7 +507,7 @@ unique = {
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 text = (
     "hello"
@@ -528,7 +528,7 @@ __lython_file.close()
     [Fact]
     public void Compile_FoldedAdjacentTextLiteralsStayVisibleToStaticDiagnostics()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 open("/repo/input.txt", "r" "+")
 """);
@@ -553,7 +553,7 @@ open("/repo/input.txt", "r" "+")
         string expectedCode,
         string expectedMessageFragment)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.False(compiled.IsValid);
         var diagnostic = Assert.Single(compiled.Diagnostics);
@@ -571,7 +571,7 @@ open("/repo/input.txt", "r" "+")
         var nesting = LythonEngine.MaxSyntaxNesting + 1;
         var source = "value = " + new string('(', nesting) + "0" + new string(')', nesting);
 
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.False(compiled.IsValid);
         var diagnostic = Assert.Single(compiled.Diagnostics);
@@ -585,7 +585,7 @@ open("/repo/input.txt", "r" "+")
         var delimiters = new string('(', LythonEngine.MaxSyntaxNesting + 1);
         var source = $"text = '{delimiters}'\n# {delimiters}\n";
 
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(FormatDiagnostic)));
     }
@@ -595,7 +595,7 @@ open("/repo/input.txt", "r" "+")
     {
         var source = "value = " + string.Concat(Enumerable.Repeat("not ", LythonEngine.MaxUnaryOperatorNesting + 1)) + "False\n";
 
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.False(compiled.IsValid);
         var diagnostic = Assert.Single(compiled.Diagnostics);
@@ -608,7 +608,7 @@ open("/repo/input.txt", "r" "+")
     {
         var source = "value = " + string.Concat(Enumerable.Repeat("not ", LythonEngine.MaxUnaryOperatorNesting)) + "False\n";
 
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(FormatDiagnostic)));
     }

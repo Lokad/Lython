@@ -43,7 +43,7 @@ return "|".join(checks)
     [Fact]
     public void ModuleExposesTheContextsExactSupportedBuiltinObjects()
     {
-        var result = new LythonEngine().Run(IdentitySource, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(IdentitySource, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? Describe(result.Diagnostics));
         Assert.Equal(
@@ -54,7 +54,7 @@ return "|".join(checks)
     [Fact]
     public async Task RunAsync_UsesTheSameBuiltinModuleView()
     {
-        var result = await new LythonEngine().RunAsync(IdentitySource, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(IdentitySource, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? Describe(result.Diagnostics));
         Assert.Equal(
@@ -75,7 +75,7 @@ same = builtins.len is len and builtins.object is object and builtins.ValueError
 metadata = builtins.__name__ + "|" + str(hasattr(builtins, "__file__")) + "|" + __name__
 """);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import builtins
 import helper
@@ -95,7 +95,7 @@ return str(helper.same) + "|" + helper.metadata + "|" + str(builtins.len is len)
     [Fact]
     public void StaticModuleSurfaceAcceptsSupportedNamesAndRejectsUnsupportedOnes()
     {
-        var supported = new LythonEngine().Compile(
+        var supported = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import builtins
 from builtins import len as size, ValueError
@@ -104,7 +104,7 @@ name = builtins.__name__
 """);
         Assert.True(supported.IsValid, Describe(supported.Diagnostics));
 
-        var unsupported = new LythonEngine().Compile(
+        var unsupported = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import builtins
 missing = builtins.eval

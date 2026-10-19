@@ -24,7 +24,7 @@ public sealed class BatchedTuplePreflightTests
 
     private static async Task AssertBothModes(string source, object? expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -50,7 +50,7 @@ public sealed class BatchedTuplePreflightTests
     public async Task EmptyBatchedHugeSize_SucceedsUnderTinyLimits()
     {
         const string code = "import itertools\nreturn next(itertools.batched([], 2000000), None)\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var sync = script.Run(new MockLythonHost(), Tiny());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Null(sync.ReturnValue);
@@ -63,7 +63,7 @@ public sealed class BatchedTuplePreflightTests
     public async Task ShortBatchedHugeSize_SucceedsUnderTinyLimits()
     {
         const string code = "import itertools\nreturn next(itertools.batched([1], 2000000))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var expected = new object?[] { new BigInteger(1) };
         var sync = script.Run(new MockLythonHost(), Tiny());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -83,7 +83,7 @@ public sealed class BatchedTuplePreflightTests
     public async Task StrictShortfall_ThrowsValueError()
     {
         const string code = "import itertools\nreturn list(itertools.batched([1], 2, strict=True))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         AssertError(script.Run(new MockLythonHost()), "ValueError", "incomplete batch");
         AssertError(await script.RunAsync(new MockLythonHost()), "ValueError", "incomplete batch");
@@ -104,7 +104,7 @@ public sealed class BatchedTuplePreflightTests
     public void BatchedHugeSource_DeniesUnderSharedAllowance()
     {
         const string code = "import itertools\nreturn next(itertools.batched(range(200000), 200000))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         AssertError(script.Run(new MockLythonHost(), Tiny()), "MemoryError", "shared memory budget");
     }
 
@@ -112,7 +112,7 @@ public sealed class BatchedTuplePreflightTests
     public async Task BatchedHugeSource_DeniesUnderSharedAllowanceAsync()
     {
         const string code = "import itertools\nreturn next(itertools.batched(range(200000), 200000))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         AssertError(await script.RunAsync(new MockLythonHost(), Tiny()), "MemoryError", "shared memory budget");
     }
 
@@ -120,7 +120,7 @@ public sealed class BatchedTuplePreflightTests
     public void TupleRepeatHuge_DeniesUnderTinyLimits()
     {
         const string code = "x = (0,) * 2000000\nreturn len(x)\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var result = script.Run(new MockLythonHost(), Tiny());
         Assert.False(result.Success);
         Assert.True(result.Failure?.ExceptionType is "MemoryError" or "RuntimeError", result.Failure?.ExceptionType);
@@ -130,7 +130,7 @@ public sealed class BatchedTuplePreflightTests
     public async Task TupleRepeatHuge_DeniesUnderTinyLimitsAsync()
     {
         const string code = "x = (0,) * 2000000\nreturn len(x)\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var result = await script.RunAsync(new MockLythonHost(), Tiny());
         Assert.False(result.Success);
         Assert.True(result.Failure?.ExceptionType is "MemoryError" or "RuntimeError", result.Failure?.ExceptionType);
@@ -153,7 +153,7 @@ public sealed class BatchedTuplePreflightTests
     {
         const string code = "with open(\"/r.txt\") as f:\n    return list(itertools.batched((line.strip() for line in f), 2))\n";
         const string full = "import itertools\n" + code;
-        var script = new LythonEngine().Compile(full);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(full);
         Assert.True(script.IsValid);
         var host = new DelayedLythonHost();
         host.SeedFile("/r.txt", "a\nb\nc\n");
@@ -169,7 +169,7 @@ public sealed class BatchedTuplePreflightTests
     public void BatchedOverDelayedFile_FailsFastSync()
     {
         const string full = "import itertools\nwith open(\"/r.txt\") as f:\n    return list(itertools.batched((line.strip() for line in f), 2))\n";
-        var script = new LythonEngine().Compile(full);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(full);
         Assert.True(script.IsValid);
         var host = new DelayedLythonHost();
         host.SeedFile("/r.txt", "a\nb\nc\n");

@@ -362,7 +362,7 @@ public sealed class GeneratorExpressionCompositionTests : LifetimeScenario
             _ => "print(g.send(items()))\n",
         };
         source += "g.close()\n";
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var immediate = new MockLythonHost();
         immediate.SeedFile("/number.txt", "2");
@@ -384,7 +384,7 @@ public sealed class GeneratorExpressionCompositionTests : LifetimeScenario
     [InlineData("{*(yield 'items'), (yield 'tail')}")]
     public async Task SuspendedExpansionEnforcesCollectionAndMemoryLimits(string expression)
     {
-        var compiled = new LythonEngine().Compile("def run(*args): return args\ndef generate():\n return " + expression
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("def run(*args): return args\ndef generate():\n return " + expression
             + "\ng=generate()\nnext(g)\ng.send(range(1000000))\n");
         Assert.True(compiled.IsValid);
         foreach (var (options, error) in new[]
@@ -413,7 +413,7 @@ public sealed class GeneratorExpressionCompositionTests : LifetimeScenario
             await AssertBatchCompletes(source.Replace("range(2000)", "range(8)"), null, 262144);
             return;
         }
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
@@ -429,7 +429,7 @@ public sealed class GeneratorExpressionCompositionTests : LifetimeScenario
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

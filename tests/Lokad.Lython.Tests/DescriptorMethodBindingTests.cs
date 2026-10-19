@@ -13,7 +13,7 @@ public sealed class DescriptorMethodBindingTests
     [InlineData("__delete__", "del box.value", 1)]
     public async Task AsyncSetterAndDeleterSlotBindingNeverUsesItsSyncEntry(string slot, string source, int arity)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var getter = new AsyncGetter();
         var property = PyProperty.Create(getter, PyNone.Instance, PyNone.Instance, PyNone.Instance, context, Span);
         var descriptorType = new PyType("Descriptor", [], new() { [slot] = property }, context.MemoryGovernor, Span);
@@ -25,7 +25,7 @@ public sealed class DescriptorMethodBindingTests
         var method = new AsyncMethod(receiver, payload, arity);
         context.Variables["box"] = receiver;
         context.Variables["payload"] = payload;
-        var syntax = LythonFrontend.Compile(source).Script!;
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
         try

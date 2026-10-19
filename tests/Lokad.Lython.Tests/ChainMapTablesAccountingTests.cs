@@ -22,7 +22,7 @@ public sealed class ChainMapTablesAccountingTests
     public void MapsAttributeCommitsTableBacking()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var map = new PyDict(context.MemoryGovernor, span);
         map.SetItem(new BigInteger(0), new BigInteger(0));
@@ -39,7 +39,7 @@ public sealed class ChainMapTablesAccountingTests
     public void UngovernedMapsAttributeStaysFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var chainMap = new PyChainMap(Enumerable.Repeat(new PyDict(), 100));
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var maps = ReadMaps(chainMap);

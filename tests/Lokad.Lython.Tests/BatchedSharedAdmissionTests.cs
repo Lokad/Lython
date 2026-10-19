@@ -16,7 +16,7 @@ public sealed class BatchedSharedAdmissionTests
         const long capacity = 65536;
         var budget = new LythonMemoryBudget(capacity);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var source = new Source(8);
         var batch = new PyBatchedIterator(source, 8, false, context.MemoryGovernor, new(1, 1, 1, 1), context);
         var held = budget.ReservedBytes;
@@ -50,7 +50,7 @@ public sealed class BatchedSharedAdmissionTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var source = new Source(2) { PauseSecond = true, FailSecond = route == "fault" };
         var batch = new PyBatchedIterator(source, 2, false, context.MemoryGovernor, new(1, 1, 1, 1), context);
         var baseline = budget.ReservedBytes;
@@ -92,7 +92,7 @@ public sealed class BatchedSharedAdmissionTests
         const long capacity = 65536;
         var budget = new LythonMemoryBudget(capacity);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var source = new Source(3);
         var batch = new PyBatchedIterator(source, 8, false, context.MemoryGovernor, new(1, 1, 1, 1), context);
         var held = budget.ReservedBytes;

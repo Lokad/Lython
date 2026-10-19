@@ -20,7 +20,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void UnderlyingMutationVisibleAndIdentityPreserved()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             d = collections.defaultdict(int, {"a": 1})
@@ -36,7 +36,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void CounterMissingYieldsZeroAndStopsChain()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             a = collections.ChainMap(collections.Counter(), {"a": 1})
@@ -52,7 +52,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void DefaultdictMissManufacturesAndStores()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             d = collections.defaultdict(int)
@@ -68,7 +68,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void ContainmentAndGetNeverManufacture()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             d = collections.defaultdict(int)
@@ -92,7 +92,7 @@ public sealed class ChainMapAliasingScenarioTests
             c = collections.ChainMap({"a": 1, "b": 1}, {"b": 2, "c": 2}, {"c": 3, "d": 3})
             return [list(c), len(c), dict(c) == {"a": 1, "b": 1, "c": 2, "d": 3}, list(dict(c)), list(c.keys())]
             """;
-        var sync = new LythonEngine().Run(code, new MockLythonHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         var expected = new List<object?>
         {
@@ -113,7 +113,7 @@ public sealed class ChainMapAliasingScenarioTests
             c = collections.ChainMap({"a": 1, "b": 1}, {"b": 2, "c": 2}, {"c": 3, "d": 3})
             return list(c)
             """;
-        var result = await new LythonEngine().RunAsync(code, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { "c", "d", "b", "a" }, result.ReturnValue);
     }
@@ -121,7 +121,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void IterationSnapshotsAgainstLaterMutation()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             c = collections.ChainMap({"a": 1}, {"b": 2})
@@ -137,7 +137,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void ValuesViewSeesValueMutationsButRaisesOnDeletion()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             c = collections.ChainMap({"a": 1, "b": 2})
@@ -166,7 +166,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void CopyPreservesKindAndAliasesRest()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             d = collections.defaultdict(int, {"a": 1})
@@ -184,7 +184,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void NewChildParentsAndWrites()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             c = collections.ChainMap({"a": 1})
@@ -206,7 +206,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void UpdateWritesThroughFirstMapKind()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             d = collections.defaultdict(int, {"a": 1})
@@ -223,7 +223,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void ContentEqualityAcrossMappingKinds()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             a = collections.ChainMap({"x": 1})
@@ -240,7 +240,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void UnionStructureMatchesCpython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             c = collections.ChainMap({"a": 1}, {"b": 2})
@@ -267,7 +267,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void NonMappingRejected()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import collections\nreturn collections.ChainMap([1, 2])\n",
             new MockLythonHost());
         AssertError(result, "TypeError", "must be dictionaries");
@@ -276,7 +276,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void PopGetDeleteBehaviors()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             c = collections.ChainMap({"a": 1, "w": 0}, {"b": 2})
@@ -297,7 +297,7 @@ public sealed class ChainMapAliasingScenarioTests
     [Fact]
     public void UpdateFromChainMapKeepsMergeOrder()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             d = {}

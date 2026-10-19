@@ -27,7 +27,7 @@ public sealed partial class PostponedAnnotationTests : LifetimeScenario
             class C:child:bad()=8
             print(identity(),__annotations__,C.__annotations__)
             """;
-        var compiled = new LythonEngine().Compile(imported ? "import helper" : source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(imported ? "import helper" : source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var options = new LythonRunOptions
         {
@@ -51,7 +51,7 @@ public sealed partial class PostponedAnnotationTests : LifetimeScenario
     [Fact]
     public async Task ModuleFlagsDoNotLeakIntoImportedModules()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from __future__ import annotations
             import eager
             import postponed
@@ -77,7 +77,7 @@ public sealed partial class PostponedAnnotationTests : LifetimeScenario
     [Fact]
     public async Task ReplacedClassMappingAwaitsItsItemProtocol()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from __future__ import annotations
             class Registry:
              def __setitem__(self,key,value):
@@ -116,7 +116,7 @@ public sealed partial class PostponedAnnotationTests : LifetimeScenario
     {
         var source = "from __future__ import annotations\nvalues=[]\nfor i in range(1000):\n def f(x:Missing)->Other:pass\n values.append(" +
             (retainFunction ? "f" : "f.__annotations__") + ")\n";
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(32768) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
@@ -134,7 +134,7 @@ public sealed partial class PostponedAnnotationTests : LifetimeScenario
         var declaration = collection ? "def f(" + string.Join(',', Enumerable.Range(0, 1000).Select(i => $"x{i}:T")) + "):pass"
             : "def f(x:" + new string('T', 131072) + "):pass";
         var source = "from __future__ import annotations\ndef deco(f):print('decorator');return f\n@deco\n" + declaration;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
@@ -154,7 +154,7 @@ public sealed partial class PostponedAnnotationTests : LifetimeScenario
     [InlineData("from __future__ import annotations\nx:(lambda a=(value:=int):a)")]
     public void InvalidPostponedScopesFailBeforeEffects(string source)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, diagnostic => diagnostic.Code == "LA1100");
     }
@@ -165,7 +165,7 @@ public sealed partial class PostponedAnnotationTests : LifetimeScenario
         var expression = "Missing";
         for (var i = 0; i < 28; i++) expression = "f\"{" + expression + "}\"";
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var compiled = new LythonEngine().Compile("from __future__ import annotations\nx:" + expression, budget);
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("from __future__ import annotations\nx:" + expression, budget);
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, diagnostic => diagnostic.Code == "LA0008");
     }

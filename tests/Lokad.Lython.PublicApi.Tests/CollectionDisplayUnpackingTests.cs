@@ -31,7 +31,7 @@ return [str(listed), str(tupled), str(setted), str(mapped), str(returned), str(e
     [Fact]
     public void Run_CollectionDisplaysUnpackIterablesAndMappingsLeftToRight()
     {
-        var result = new LythonEngine().Run(CompatibilitySource, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(CompatibilitySource, new MockLythonHost());
 
         Assert.True(result.Success, DescribeFailure(result));
         Assert.Equal(
@@ -50,7 +50,7 @@ return [str(listed), str(tupled), str(setted), str(mapped), str(returned), str(e
     [Fact]
     public async Task RunAsync_CollectionDisplaysMatchSynchronousExecution()
     {
-        var result = await new LythonEngine().RunAsync(CompatibilitySource, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(CompatibilitySource, new MockLythonHost());
 
         Assert.True(result.Success, DescribeFailure(result));
         Assert.Equal("{'x': 1, 'same': 2, 'z': 4, 'y': 3, 'custom': 9}", Assert.IsType<List<object?>>(result.ReturnValue)[3]);
@@ -62,7 +62,7 @@ return [str(listed), str(tupled), str(setted), str(mapped), str(returned), str(e
     [InlineData("return {*[[]]}\n", "TypeError")]
     public void Run_InvalidDisplayUnpackingRaisesPythonShapedErrors(string source, string exceptionType)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.Equal(exceptionType, result.Failure?.ExceptionType);
@@ -71,7 +71,7 @@ return [str(listed), str(tupled), str(setted), str(mapped), str(returned), str(e
     [Fact]
     public void Compile_RejectsBareStarredExpressions()
     {
-        var result = new LythonEngine().Compile("return (*[1, 2])\n");
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Compile("return (*[1, 2])\n");
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Diagnostics, diagnostic =>
@@ -84,7 +84,7 @@ return [str(listed), str(tupled), str(setted), str(mapped), str(returned), str(e
     [InlineData("return {1, **{'key': 2}}\n", "dictionary unpacking in set display")]
     public void Compile_RejectsMixedBraceDisplayKinds(string source, string messageFragment)
     {
-        var result = new LythonEngine().Compile(source);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Diagnostics, diagnostic =>

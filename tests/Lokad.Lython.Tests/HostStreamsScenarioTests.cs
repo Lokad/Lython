@@ -11,7 +11,7 @@ public sealed class HostStreamsScenarioTests
         var host = new MockLythonHost();
         host.SeedStandardInput("typed line\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 value = input("prompt> ")
@@ -35,7 +35,7 @@ __lython_file.close()
     [Fact]
     public void Input_FailsCleanlyWhenStandardInputIsUnavailable()
     {
-        var result = new LythonEngine().Run("input()\n", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("input()\n", new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.Null(result.Failure);

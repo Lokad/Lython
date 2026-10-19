@@ -18,7 +18,7 @@ public sealed class CsvSixColumnIncidentScenarioTests
     [Fact]
     public async Task RetainingSixColumnDictsTripsBudgetEarly()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             rows = ["a,b,c,d,e,f"] * 12000
             r = csv.DictReader(rows)
@@ -44,7 +44,7 @@ public sealed class CsvSixColumnIncidentScenarioTests
     public async Task FlatDictBatchesPreserveTheCompleteIncidentTotal()
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             rows = ["a,b,c,d,e,f"] * (count + 1)
             n = 0
@@ -83,7 +83,7 @@ public sealed class CsvSixColumnIncidentScenarioTests
     [Fact]
     public async Task EarlyBreakOverSixColumnsFitsSameBudget()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             rows = ["a,b,c,d,e,f"] * 12000
             r = csv.DictReader(rows)

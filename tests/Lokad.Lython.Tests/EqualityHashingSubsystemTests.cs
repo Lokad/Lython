@@ -75,7 +75,7 @@ public sealed class EqualityHashingSubsystemTests
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new Harness.MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new Harness.MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var text = PyString.FromString("é😀\0ab", context.MemoryGovernor, null);
         var bytes = new PyBytes([0, 1, 127, 128, 255], context.MemoryGovernor);
         var baseline = budget.ReservedBytes;

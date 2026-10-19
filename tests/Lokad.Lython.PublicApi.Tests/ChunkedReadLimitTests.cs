@@ -27,7 +27,7 @@ public sealed class ChunkedReadLimitTests
 print(len(first),first[-1],len(tail),tail.endswith('\n'),end)
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(x => x.Message)));
         var baseline = budget.ReservedBytes;
         using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))

@@ -44,7 +44,7 @@ public sealed class ListReplaceDuringIterationTests
                 lines[i] = line.upper()
             return '|'.join(lines)
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var expected = string.Join("|", Enumerable.Repeat("ALPHA", 9));
 
@@ -73,7 +73,7 @@ public sealed class ListReplaceDuringIterationTests
             Assert.True(run.ExitCode == 0, "CPython " + version + " exited with " + run.ExitCode + ": " + run.StandardError);
             var expected = run.StandardOutput.Replace("\r", string.Empty);
 
-            var script = new LythonEngine().Compile(Driver);
+            var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Driver);
             Assert.True(script.IsValid);
 
             var sync = script.Run(new MockLythonHost());

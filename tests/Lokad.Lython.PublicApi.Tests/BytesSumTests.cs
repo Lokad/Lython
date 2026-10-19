@@ -25,7 +25,7 @@ public sealed class BytesSumTests
     public async Task ExactBytesAndDynamicFallbacksPreservePythonResults(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -43,7 +43,7 @@ public sealed class BytesSumTests
     public async Task RetainedMagnitudeResultsRemainChargedAcrossAnotherExecution()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("return sum(b'\\xff'*4096, start)", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return sum(b'\\xff'*4096, start)", budget);
         var baseline = budget.ReservedBytes;
         var start = BigInteger.One << 200000;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["start"] = start } };
@@ -76,7 +76,7 @@ class Total:
 return sum(b'\x01\x02',Total(5)).value
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/events.txt", "before");

@@ -59,7 +59,7 @@ public class RangeLifetimeScenarioTests : LifetimeScenario
     // pooled shell, so construction must deny cleanly instead of stranding or crashing.
     private static async Task AssertDenies(string source, long budget)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) });
         Assert.False(sync.Success);

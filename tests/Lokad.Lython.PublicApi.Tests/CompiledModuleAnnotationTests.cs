@@ -22,7 +22,7 @@ public sealed class CompiledModuleAnnotationTests
     public async Task ModuleMetadataFollowsPythonOrderAndBindings(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name + ": " + string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -43,7 +43,7 @@ public sealed class CompiledModuleAnnotationTests
     public async Task ImportedMetadataKeepsFinalGlobals(string declaration, string expression)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("import helper\nprint(" + expression + " is str)", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import helper\nprint(" + expression + " is str)", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions
@@ -90,7 +90,7 @@ print('after')
     public async Task CancellationDuringMetadataCallbacksDrainsBeforeRefund(string phase)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(CallbackSource, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(CallbackSource, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -144,7 +144,7 @@ __annotations__=Registry()
         var source = common + "\n" + (mapping ? store : "def annotation():refuse();return int\n") +
             "\ntry:item:" + (mapping ? "int" : "annotation()") + "=7\nexcept BaseException:print('caught')\nprint('after')";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) };
@@ -173,7 +173,7 @@ item:annotation()=7
 return __annotations__
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var mock = new MockLythonHost();
@@ -208,7 +208,7 @@ return __annotations__
             .Replace("totals = {}", "totals:dict[str,int] = {}")
             .Replace("accepted = 0", "accepted:int = 0");
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -233,7 +233,7 @@ return __annotations__
     public async Task ModuleAnnotationsKeepManagedRecursionProtection()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("item:int\ndef recurse():return recurse()\nrecurse()", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("item:int\ndef recurse():return recurse()\nrecurse()", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxRecursionDepth = 16 };

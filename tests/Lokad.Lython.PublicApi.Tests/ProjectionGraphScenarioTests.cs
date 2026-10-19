@@ -11,7 +11,7 @@ public sealed class ProjectionGraphScenarioTests
     [Fact]
     public async Task DeepReturnValueFailsProjection()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             v = 1
             i = 0
@@ -35,7 +35,7 @@ public sealed class ProjectionGraphScenarioTests
     [Fact]
     public async Task ShallowReturnValueStillProjects()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return [1, {"name": "lokad"}]
             """);

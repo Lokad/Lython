@@ -32,7 +32,7 @@ public sealed class IntegerFromBytesOwnershipTests
     [InlineData("big", true)]
     public void TheReturnedBoxOwnsItsHeapPayload(string order, bool signed)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var method = Conversion(context);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var value = method.Invoke(Arguments(512, order, signed), Span, context);
@@ -45,7 +45,7 @@ public sealed class IntegerFromBytesOwnershipTests
     [Fact]
     public void OversizedConversionDeniesBeforeCommittingPayload()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) },regexProvider:Utf8RegexProvider.Instance);
         var method = Conversion(context);
         var before = context.MemoryGovernor.CurrentAccountedBytes;
         var error = Assert.Throws<LythonRuntimeException>(() => method.Invoke(Arguments(10000, "little", false), Span, context));
@@ -60,7 +60,7 @@ public sealed class IntegerFromBytesOwnershipTests
     {
         const long budget = 4096;
         const long payload = 32 + 513; // Unsigned 512 octets with a sign byte.
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) },regexProvider:Utf8RegexProvider.Instance);
         var method = Conversion(context);
         var governor = context.MemoryGovernor;
         var padding = budget - governor.CurrentAccountedBytes - payload;
@@ -76,7 +76,7 @@ public sealed class IntegerFromBytesOwnershipTests
     [Fact]
     public void EscapedPayloadStaysFundedAfterTheInputDrops()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var value = ConvertFresh(context);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
@@ -90,7 +90,7 @@ public sealed class IntegerFromBytesOwnershipTests
         var budget = new LythonMemoryBudget(4096);
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = owner });
+            new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var weak = ConvertDropped(context);
         var funded = budget.ReservedBytes;
         GC.Collect();

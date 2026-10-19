@@ -145,7 +145,7 @@ public sealed class AugmentedTargetRetentionTests
     [InlineData(true)]
     public async Task UserRetainedSliceKeysConsumeTheExecutionBudget(bool asynchronous)
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             keep=[]
             class Target:
              def __getitem__(self,key):keep.append(key);return 0
@@ -166,7 +166,7 @@ public sealed class AugmentedTargetRetentionTests
 
     private static async Task AssertOutput(string source, string expected, bool asynchronous)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var host = new MockLythonHost();
         var result = asynchronous ? await script.RunAsync(host) : script.Run(host);

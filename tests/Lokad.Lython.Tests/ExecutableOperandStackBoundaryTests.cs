@@ -104,7 +104,7 @@ public sealed class ExecutableOperandStackBoundaryTests
     {
         private static readonly Type StackType = typeof(LythonRuntime).GetNestedType("ExecutableValueStack", BindingFlags.NonPublic)!;
         private readonly LythonRuntime.ExecutionContext _context = new(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         private readonly object _stack;
         public StackView() => _stack = Activator.CreateInstance(StackType, [8, _context, null])!;
         public void Dispose()

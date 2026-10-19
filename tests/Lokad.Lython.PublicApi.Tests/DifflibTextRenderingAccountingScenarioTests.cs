@@ -12,7 +12,7 @@ public sealed class DifflibTextRenderingAccountingScenarioTests
     public async Task DifferOutputStaysCharged()
     {
         // Aliased long lines isolate rendering growth from matcher charges.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import difflib
             line = "y" * 2000
@@ -34,7 +34,7 @@ public sealed class DifflibTextRenderingAccountingScenarioTests
     [Fact]
     public async Task UnifiedDiffOutputStaysCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import difflib
             a = ["y" * 2000] * 40
@@ -56,7 +56,7 @@ public sealed class DifflibTextRenderingAccountingScenarioTests
     [Fact]
     public async Task TextRenderingBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import difflib
             d = list(difflib.Differ().compare(["a", "b"], ["a", "c"]))

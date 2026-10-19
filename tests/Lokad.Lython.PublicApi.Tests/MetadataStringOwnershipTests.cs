@@ -22,7 +22,7 @@ public sealed class MetadataStringOwnershipTests
     [Fact]
     public void RetainedQualnameReadsShareOneCopy()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "class C:\n def " + LongName + "(self):\n  pass\nf = C." + LongName + "\nqs = [f.__qualname__ for _ in range(1000)]\nreturn [len(qs), qs[0] is qs[-1], len(qs[0])]\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(LongBudget) });
@@ -36,7 +36,7 @@ public sealed class MetadataStringOwnershipTests
     [Fact]
     public async Task RetainedQualnameReadsShareOneCopyAsync()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             "class C:\n def " + LongName + "(self):\n  pass\nf = C." + LongName + "\nqs = [f.__qualname__ for _ in range(1000)]\nreturn [len(qs), qs[0] is qs[-1], len(qs[0])]\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(LongBudget) });
@@ -48,7 +48,7 @@ public sealed class MetadataStringOwnershipTests
     [Fact]
     public void QualnameIdentityStableAcrossShapes()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "class C:\n def f(self):\n  pass\ndef outer():\n def inner():\n  pass\n return inner\ndef top():\n pass\nf = outer()\nreturn [C.f.__qualname__ is C.f.__qualname__, f.__qualname__ is f.__qualname__, top.__qualname__ is top.__qualname__, top.__name__ is top.__name__]\n",
             new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -58,7 +58,7 @@ public sealed class MetadataStringOwnershipTests
     [Fact]
     public void QualnameAssignmentShadowsCache()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "class C:\n def f(self):\n  pass\nC.f.__qualname__ = \"custom\"\nC.f.__name__ = \"renamed\"\nreturn [C.f.__qualname__, C.f.__qualname__ is C.f.__qualname__, C.f.__name__]\n",
             new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -68,7 +68,7 @@ public sealed class MetadataStringOwnershipTests
     [Fact]
     public void AliasReadsShareOwnerCache()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "class C:\n def " + LongName + "(self):\n  pass\ng = C." + LongName + "\nreturn g.__qualname__ is C." + LongName + ".__qualname__\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(LongBudget) });
@@ -81,9 +81,9 @@ public sealed class MetadataStringOwnershipTests
     {
         var code = "class C:\n def " + LongName + "(self):\n  pass\nf = C." + LongName + "\nfor _ in range(1000):\n f.__qualname__\nreturn 0\n";
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(LongBudget) };
-        _ = new LythonEngine().Run(code, new MockLythonHost(), options);
+        _ = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), options);
         var before = GC.GetAllocatedBytesForCurrentThread();
-        var result = new LythonEngine().Run(code, new MockLythonHost(), options);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), options);
         var allocated = (long)GC.GetAllocatedBytesForCurrentThread() - before;
         Assert.True(result.Success, result.Failure?.Message);
         // Fresh mints per read cost ~10MB of transient strings; the shared cache
@@ -95,7 +95,7 @@ public sealed class MetadataStringOwnershipTests
     public void CachePublicationDenialIsStable()
     {
         var code = "class C:\n def " + LongName.Replace("x", "y") + "(self):\n  pass\nf = C." + LongName.Replace("x", "y") + "\ntry:\n f.__qualname__\n return \"first-ok\"\nexcept MemoryError:\n try:\n  f.__qualname__\n  return \"second-ok\"\n except MemoryError:\n  return \"denied-twice\"\n";
-        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(15000) });
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(15000) });
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
         Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
@@ -106,7 +106,7 @@ public sealed class MetadataStringOwnershipTests
     [Fact]
     public void BuiltinExceptionNameReadsAlias()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "return [ValueError.__name__ is ValueError.__name__, ValueError.type is ValueError.__name__]\n",
             new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -116,7 +116,7 @@ public sealed class MetadataStringOwnershipTests
     [Fact]
     public void NewSlotNameReadsAlias()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "return [int.__new__.__name__ is int.__new__.__name__, int.__new__.__qualname__ is int.__new__.__qualname__]\n",
             new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);

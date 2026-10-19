@@ -169,7 +169,7 @@ public sealed class InstanceMroLookupBoundaryTests
     {
         var host = new DelayedLythonHost();
         host.SeedFile("/payload", "payload");
-        var context = new Context(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192)});
+        var context = new Context(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192)},regexProvider:Utf8RegexProvider.Instance);
         var first = new object();
         var replacement = new object();
         var descriptor = new HostGetter(context, first);
@@ -201,7 +201,7 @@ public sealed class InstanceMroLookupBoundaryTests
         var context = new Context(host, new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(8192), CancellationToken = cancellation.Token
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var replacement = new object();
         var descriptor = new HostGetter(context, new object());
         var instance = Instance(context, descriptor);
@@ -221,7 +221,7 @@ public sealed class InstanceMroLookupBoundaryTests
     }
 
     private static Context Root(LythonRunOptions? options = null)
-        => new(new MockLythonHost(), options ?? new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192)});
+        => new(new MockLythonHost(), options ?? new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192)},regexProvider:Utf8RegexProvider.Instance);
     private static PyType Type(Context context, Dictionary<string, object> members)
         => new("C", [Assert.IsType<PyType>(context.State.BuiltinVariables["object"])], members);
     private static PyInstance Instance(Context context, object member)

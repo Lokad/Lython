@@ -14,7 +14,7 @@ public sealed class StripScratchAccountingScenarioTests
     public async Task ManyStrippedStringsStayBounded()
     {
         var big = new string('A', 500);
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "b = \"  \" + \"" + big + "\" + \"  \"\n" +
             "xs = []\n" +
             "i = 0\n" +
@@ -36,7 +36,7 @@ public sealed class StripScratchAccountingScenarioTests
     [Fact]
     public async Task StripBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "return [\"  a  \".strip(), \"  a  \".lstrip(), \"  a  \".rstrip(), \"xxaxx\".strip(\"x\"), \"\\u00a0x\\u00a0\".strip(), \"abc\".strip()]\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { "a", "a  ", "  a", "a", "x", "abc" };

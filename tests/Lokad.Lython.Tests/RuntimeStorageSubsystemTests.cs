@@ -265,7 +265,7 @@ public sealed class RuntimeStorageSubsystemTests
     public void StableSortBuffer_RemainsReservedUntilGovernedResultOwnsItsStorage()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) },regexProvider:Utf8RegexProvider.Instance);
         var governor = context.MemoryGovernor;
         PyList result;
 
@@ -471,7 +471,7 @@ public sealed class RuntimeStorageSubsystemTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(
             host,
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4_096) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4_096) },regexProvider:Utf8RegexProvider.Instance);
         var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output.txt", context);
 
         for (var i = 0; i < 200; i++)
@@ -491,7 +491,7 @@ public sealed class RuntimeStorageSubsystemTests
         var context = new LythonRuntime.ExecutionContext(
             host,
             // Preserve the original buffer headroom while funding the owner entry.
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256) },regexProvider:Utf8RegexProvider.Instance);
         var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output.txt", context);
         var owned = context.MemoryGovernor.CurrentAccountedBytes;
 
@@ -512,7 +512,7 @@ public sealed class RuntimeStorageSubsystemTests
     public void TextFileHandle_TellTracksPendingCrLfExpansionIncrementally()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite(
             "/output.txt",
             context,
@@ -536,7 +536,7 @@ public sealed class RuntimeStorageSubsystemTests
         host.SeedBytes("/output.txt", Enumerable.Repeat((byte)'a', 1_000).ToArray());
         var context = new LythonRuntime.ExecutionContext(
             host,
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256) },regexProvider:Utf8RegexProvider.Instance);
         var handle = await LythonRuntime.ExecutionContext.TextFileHandle.ForAppendAsync(
             "/output.txt",
             context,

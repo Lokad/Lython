@@ -15,7 +15,7 @@ public sealed class CommentAccountingTests
     public void CommentSlotsCommitAndReleaseExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.AttachMemoryGovernor(context.MemoryGovernor, span);
@@ -35,7 +35,7 @@ public sealed class CommentAccountingTests
     public void UngovernedCommentsStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.SetCellComment(1, 1, new LythonRuntime.OpenPyxlComment("note", "me"));
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);

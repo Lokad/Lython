@@ -168,7 +168,7 @@ public sealed class ClosureContextAccountingScenarioTests
     [Fact]
     public async Task FewLocalsRetainedFit()
     {
-        var script = new LythonEngine().Compile(MakerFew);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(MakerFew);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(6291456) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -181,7 +181,7 @@ public sealed class ClosureContextAccountingScenarioTests
     [Fact]
     public async Task UncapturedTempsFitBothExecutionAPIs()
     {
-        using var script = new LythonEngine().Compile(MakerManyUncaptured);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(MakerManyUncaptured);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(6291456) };
         using var sync = script.Run(new MockLythonHost(), options);
@@ -195,7 +195,7 @@ public sealed class ClosureContextAccountingScenarioTests
     [Fact]
     public async Task CapturedTempsTripBothPaths()
     {
-        var script = new LythonEngine().Compile(MakerManyCaptured);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(MakerManyCaptured);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(6291456) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -210,7 +210,7 @@ public sealed class ClosureContextAccountingScenarioTests
     [Fact]
     public async Task DeepUncapturedChainFitsBothExecutionAPIs()
     {
-        using var script = new LythonEngine().Compile(DeepUncaptured);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(DeepUncaptured);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(12582912) };
         using var sync = script.Run(new MockLythonHost(), options);
@@ -224,7 +224,7 @@ public sealed class ClosureContextAccountingScenarioTests
     [Fact]
     public async Task DroppedClosuresFitRoomyBudget()
     {
-        var script = new LythonEngine().Compile(DroppedManyUncaptured);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(DroppedManyUncaptured);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16777216) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -237,7 +237,7 @@ public sealed class ClosureContextAccountingScenarioTests
     [Fact]
     public async Task RetainedClosuresStillCapture()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "fs = []\n" +
             "def maker(a0):\n" +
             "    t1 = a0 + 1\n" +
@@ -263,7 +263,7 @@ public sealed class ClosureContextAccountingScenarioTests
     [Fact]
     public async Task RetainedGenexprOverBigStringsTrips()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "gs = []\n" +
             "i = 0\n" +
             "while i < 5:\n" +

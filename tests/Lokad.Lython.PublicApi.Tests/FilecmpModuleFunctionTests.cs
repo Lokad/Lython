@@ -13,7 +13,7 @@ public sealed class FilecmpModuleFunctionTests
         host.SeedBytes("/repo/c.bin", [0x61, 0x62, 0x63]);
         host.SeedBytes("/repo/short.bin", [0x61]);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import filecmp
 from pathlib import Path
@@ -48,13 +48,13 @@ return str(checks)
         host.MkDir("/repo/left");
         host.MkDir("/repo/right");
 
-        var directories = new LythonEngine().Run(
+        var directories = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import filecmp
 return filecmp.cmp("/repo/left", "/repo/right", False)
 """,
             host);
-        var missing = new LythonEngine().Run(
+        var missing = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import filecmp
 filecmp.cmp("/repo/missing", "/repo/right")
@@ -75,7 +75,7 @@ filecmp.cmp("/repo/missing", "/repo/right")
         host.SeedBytes("/repo/a.bin", [0x00, 0x7f, 0x80, 0xff]);
         host.SeedBytes("/repo/b.bin", [0x00, 0x7f, 0x80, 0xff]);
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import filecmp
 return filecmp.cmp("a.bin", "b.bin", shallow=False)
@@ -94,7 +94,7 @@ return filecmp.cmp("a.bin", "b.bin", shallow=False)
         host.SeedBytes("/repo/a.bin", Enumerable.Repeat((byte)0x61, 40).ToArray());
         host.SeedBytes("/repo/b.bin", Enumerable.Repeat((byte)0x61, 40).ToArray());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import filecmp
 filecmp.cmp("a.bin", "b.bin", shallow=False)
@@ -113,13 +113,13 @@ filecmp.cmp("a.bin", "b.bin", shallow=False)
         var host = new TextOnlyHost();
         host.SeedFile("/repo/a.txt", "abc");
 
-        var shallow = new LythonEngine().Run(
+        var shallow = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import filecmp
 return filecmp.cmp("/repo/a.txt", "/repo/a.txt")
 """,
             host);
-        var exact = new LythonEngine().Run(
+        var exact = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import filecmp
 filecmp.cmp("/repo/a.txt", "/repo/a.txt", False)
@@ -136,7 +136,7 @@ filecmp.cmp("/repo/a.txt", "/repo/a.txt", False)
     [Fact]
     public void RecursiveDirectoryComparisonFailsExplicitly()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import filecmp
 filecmp.dircmp("/repo/a", "/repo/b")
@@ -151,7 +151,7 @@ filecmp.dircmp("/repo/a", "/repo/b")
     [Fact]
     public void StaticContractsRecognizeFilecmpAndItsCallShapes()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import filecmp
 from filecmp import cmp, clear_cache
@@ -160,7 +160,7 @@ same = cmp("a", "b", shallow=False)
 filecmp.cmp("a", "b")
 clear_cache()
 """);
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import filecmp
 filecmp.cmp("a")

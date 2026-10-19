@@ -43,7 +43,7 @@ return values
     public async Task SequentialExecutionsKeepPrivateTypesModulesAndRetainedResults(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(Source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source, budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var firstHost = Host("aé");
@@ -74,7 +74,7 @@ return values
     public async Task SuspendedExecutionKeepsItsOwnerWhileAnotherExecutionUsesTheSameDefinitions()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(Source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var pausedHost = new DelayedLythonHost();
@@ -130,7 +130,7 @@ if replace:
     return [len('x'), repr('x'), ascii('x')]
 return [builtins.len('xy'), builtins.repr('é'), builtins.ascii('é')]
 """;
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var replace in new[] { true, false })
         {

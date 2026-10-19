@@ -13,7 +13,7 @@ public sealed class ListMutationScenarioTests
     [Fact]
     public async Task InsertRepeatReverseBehaviors()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             items = [1, 2, 3]
             items.insert(1, "x")
@@ -46,7 +46,7 @@ public sealed class ListMutationScenarioTests
     [Fact]
     public async Task SliceAssignAndDeleteBehaviors()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             grow = list(range(10))
             grow[2:5] = [7, 7, 7, 7]
@@ -83,7 +83,7 @@ public sealed class ListMutationScenarioTests
     [Fact]
     public async Task RepeatRejectsBeforeLargeScratch()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             items = [1, 2]
             items *= 50000

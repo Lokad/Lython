@@ -26,7 +26,7 @@ public sealed class StringReplacementBulkTests
     [InlineData("a\u0000b", "\u0000", "😀", 1, "a😀b")]
     public async Task ReplacementMatchesPython(string value, string oldValue, string newValue, int count, string expected)
     {
-        using var script = new LythonEngine().Compile("return value.replace(old, new, count)");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return value.replace(old, new, count)");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?>
             { ["value"] = value, ["old"] = oldValue, ["new"] = newValue, ["count"] = count } };
@@ -44,7 +44,7 @@ public sealed class StringReplacementBulkTests
     public async Task BoundedUnicodeReplacementKeepsAReasonableWorkingSetAndRetainedAliases(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var script = new LythonEngine().Compile("text='éλ😀'*256\nvalue=text.replace('', '|', 1)\nreturn [value,value]", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("text='éλ😀'*256\nvalue=text.replace('', '|', 1)\nreturn [value,value]", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var expected = "|" + string.Concat(Enumerable.Repeat("éλ😀", 256));

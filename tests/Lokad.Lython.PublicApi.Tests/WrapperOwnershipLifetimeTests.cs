@@ -75,7 +75,7 @@ public sealed class WrapperOwnershipLifetimeTests
     private static async Task<LythonExecutionResult> Run(string body, bool asynchronous, int batches = 8)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile("with open('/ready', 'r') as stream:\n stream.read()\n" + body, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("with open('/ready', 'r') as stream:\n stream.read()\n" + body, budget);
         var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };

@@ -33,7 +33,7 @@ public sealed class UnicodeFormatCharacterTests
         var source = (expression.Contains("Decimal(", StringComparison.Ordinal) ? "from decimal import Decimal\n" : "")
             + "value='café 😀'\nreturn " + expression;
         var budget = new LythonMemoryBudget(8 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -55,7 +55,7 @@ public sealed class UnicodeFormatCharacterTests
     [InlineData("format(None,'🧡>3')", "TypeError")]
     public async Task InvalidSpecificationsKeepTheirPythonError(string expression, string expected)
     {
-        using var script = new LythonEngine().Compile("return " + expression);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return " + expression);
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -68,7 +68,7 @@ public sealed class UnicodeFormatCharacterTests
     [Fact]
     public async Task SupplementaryFillRefusesExpansionBeforePublication()
     {
-        using var script = new LythonEngine().Compile("value=format('x','🧡>1000000')\nwith open('/events.txt','a') as output:output.write('after')");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("value=format('x','🧡>1000000')\nwith open('/events.txt','a') as output:output.write('after')");
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {

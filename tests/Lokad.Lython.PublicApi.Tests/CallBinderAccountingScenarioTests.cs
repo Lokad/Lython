@@ -15,7 +15,7 @@ public sealed class CallBinderAccountingScenarioTests
     [Fact]
     public async Task ManyCallsWithoutOverflowStayFlat()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             def outer():
                 pass
@@ -39,7 +39,7 @@ public sealed class CallBinderAccountingScenarioTests
     [Fact]
     public async Task VariadicOverflowStillProjects()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             def f(*a):
                 return len(a)

@@ -35,7 +35,7 @@ public sealed class IntegerAliasOwnershipTests : LifetimeScenario
     [MemberData(nameof(AliasCases))]
     public async Task ExactIntegerAliasesPreservePythonIdentity(string expression, bool asyncMode)
     {
-        var script = new LythonEngine().Compile(Prelude + "x = 1 << 4000\nreturn (" + expression + ") is x\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Prelude + "x = 1 << 4000\nreturn (" + expression + ") is x\n");
         Assert.True(script.IsValid);
         var result = asyncMode ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -60,7 +60,7 @@ public sealed class IntegerAliasOwnershipTests : LifetimeScenario
     [MemberData(nameof(RetentionCases))]
     public async Task RetainedAliasesKeepTheirPayloadFunded(string expression, bool asyncMode)
     {
-        var script = new LythonEngine().Compile(Prelude + "xs = []\nfor _ in range(2000):\n x = 1 << 4000\n xs.append(" + expression + ")\nreturn len(xs)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Prelude + "xs = []\nfor _ in range(2000):\n x = 1 << 4000\n xs.append(" + expression + ")\nreturn len(xs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
@@ -100,7 +100,7 @@ public sealed class IntegerAliasOwnershipTests : LifetimeScenario
         var host = new DelayedLythonHost();
         host.SeedFile("/value", "ready");
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(code, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code, budget);
         var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid);
         using var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) });

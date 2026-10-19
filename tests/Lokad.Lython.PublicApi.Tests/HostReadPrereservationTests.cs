@@ -88,7 +88,7 @@ public sealed class HostReadPrereservationTests
     public async Task HostBatchesReadAllLinesWithoutWholeFileTransfers()
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             total = 0
             with open("/data.txt") as f:
@@ -136,7 +136,7 @@ public sealed class HostReadPrereservationTests
         // MG21: retained line charges still trip mid-stream after several
         // windows: no whole-file transfer ever issues, and acquisition stops
         // well short of covering the file. Retained storage remains charged.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             lines = []
             with open("/data.txt") as f:
@@ -173,7 +173,7 @@ public sealed class HostReadPrereservationTests
         // MG21: open() streams fixed windows through ranged reads, so a funded
         // file arrives with no whole-file transfer: every ranged call stays
         // within the window and the windows cover the file exactly once.
-        var script = new LythonEngine().Compile("return len(open(\"/data.txt\").read())\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(open(\"/data.txt\").read())\n");
         Assert.True(script.IsValid);
         var expected = new BigInteger(100000);
         var host = new CountingHost();
@@ -200,7 +200,7 @@ public sealed class HostReadPrereservationTests
     [Fact]
     public async Task OversizedBinaryReadTripsBeforeHostRead()
     {
-        var script = new LythonEngine().Compile("import filecmp\nreturn filecmp.cmp(\"/a.bin\", \"/b.bin\", shallow=False)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import filecmp\nreturn filecmp.cmp(\"/a.bin\", \"/b.bin\", shallow=False)\n");
         Assert.True(script.IsValid);
         var payload = new byte[100000];
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
@@ -226,7 +226,7 @@ public sealed class HostReadPrereservationTests
     {
         // Unknown lengths fall through to the regular missing-file error even
         // under a tiny budget; the prereserve must not mask it.
-        var script = new LythonEngine().Compile("return len(open(\"/nope.txt\").read())\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(open(\"/nope.txt\").read())\n");
         Assert.True(script.IsValid);
         var tiny = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) };
         var tinyHost = new CountingHost();

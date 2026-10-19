@@ -336,7 +336,7 @@ public sealed class PrivateNameManglingTests
     public async Task PrivateNamesFollowLexicalClass(string name, string source, string expected)
     {
         _ = name;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -358,7 +358,7 @@ public sealed class PrivateNameManglingTests
               return self.__plain.value,self.__pkg.child.value,self.__alias,self.__imported
             print(C().read())
             """;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var options = new LythonRunOptions
         {
@@ -398,7 +398,7 @@ public sealed class PrivateNameManglingTests
               return self.__value
             print(C().increment())
             """;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var syncHost = new MockLythonHost();
         syncHost.SeedFile("/value.txt", "7");
@@ -422,7 +422,7 @@ public sealed class PrivateNameManglingTests
     [InlineData("class C:\n def method(self,other):\n  match other:\n   case [__x] | [_C__x]: pass\n")]
     public void InvalidDeclarationsAreCheckedAfterMangling(string source)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
     }
@@ -431,7 +431,7 @@ public sealed class PrivateNameManglingTests
     public async Task PrivateStorageKeepsMemoryLimits()
     {
         var source = "class C:\n def __init__(self): self.__value='x'*1000000\nC()\n";
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
@@ -453,7 +453,7 @@ public sealed class PrivateNameManglingTests
             : $" __value{i}=0\n");
         var source = "class " + className + ":\n" + string.Concat(statements);
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var compiled = new LythonEngine().Compile(source, budget);
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA0008");
         var result = compiled.Run(new MockLythonHost());
@@ -473,7 +473,7 @@ public sealed class PrivateNameManglingTests
         var source = "class " + className + ":\n __value=1\n" +
             string.Concat(Enumerable.Repeat(" __value=__value\n", 1100)) +
             "print(" + className + "._" + className + "__value)\n";
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -485,7 +485,7 @@ public sealed class PrivateNameManglingTests
     [Fact]
     public async Task ClassNamesNormalizeBeforePrivateNamesAreExpanded()
     {
-        var compiled = new LythonEngine().Compile("class \u212A:\n __x=1\nprint(K._K__x,K.__name__)\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("class \u212A:\n __x=1\nprint(K._K__x,K.__name__)\n");
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

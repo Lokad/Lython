@@ -11,7 +11,7 @@ public sealed class EofErrorCompatibilityTests
     [InlineData("try: raise EOFError('first')\nexcept EOFError:\n    try: raise\n    except BaseException as error: print(type(error).__name__,str(error))\n", "EOFError first\n")]
     public async Task EofErrorUsesTheBuiltinExceptionHierarchy(string source, string expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new DelayedLythonHost()) })
         {

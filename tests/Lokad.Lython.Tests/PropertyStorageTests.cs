@@ -13,7 +13,7 @@ public sealed class PropertyStorageTests
     [Fact]
     public void EachRetainedNumericFieldCarriesItsOwnAllowance()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         object shared = new BigInteger(7);
         var property = PyProperty.Create(shared, shared, shared, shared, context, Span);
         Assert.Equal(128 + 4 * 64, property.CommittedBytes);
@@ -28,7 +28,7 @@ public sealed class PropertyStorageTests
     [Fact]
     public void NumericDocReplacementTransfersItsFundedStorageAtAFullBudget()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) },regexProvider:Utf8RegexProvider.Instance);
         var property = PyProperty.Create(PyNone.Instance, PyNone.Instance, PyNone.Instance, new BigInteger(1), context, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         using (context.MemoryGovernor.ReserveTemporary(65536 - context.MemoryGovernor.CurrentAccountedBytes, Span))
@@ -45,7 +45,7 @@ public sealed class PropertyStorageTests
     [Fact]
     public void EmptyDescriptorKeepsItsShellOnly()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var property = PyProperty.Create(PyNone.Instance, PyNone.Instance, PyNone.Instance, PyNone.Instance, context, Span);
         Assert.Equal(128, property.CommittedBytes);
     }
@@ -53,7 +53,7 @@ public sealed class PropertyStorageTests
     [Fact]
     public void PositiveFieldGrowthRefusalPreservesMetadata()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) },regexProvider:Utf8RegexProvider.Instance);
         var property = PyProperty.Create(PyNone.Instance, PyNone.Instance, PyNone.Instance, PyNone.Instance, context, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         using (context.MemoryGovernor.ReserveTemporary(65536 - context.MemoryGovernor.CurrentAccountedBytes, Span))
@@ -79,7 +79,7 @@ public sealed class PropertyStorageTests
     [MemberData(nameof(NumericFields))]
     public void NumericIngressFieldsHaveUniformAllowanceAndPreserveIdentity(object value)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var property = PyProperty.Create(value, value, value, value, context, Span);
         Assert.Equal(384, property.CommittedBytes);
         foreach (var name in new[] { "fget", "fset", "fdel", "__doc__" })
@@ -97,7 +97,7 @@ public sealed class PropertyStorageTests
     [InlineData(true)]
     public void LargeIntegerFieldKeepsItsPayloadFundingAndReleasesOnlyFieldStorage(bool owned)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         object large = BigInteger.One << 4096;
         if (owned) LythonRuntime.OwnFreshInteger(large, context.MemoryGovernor,
 Span);
@@ -119,7 +119,7 @@ Span);
     public void CompositeConstructorDenialCommitsNoPartialFieldStorage()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) },regexProvider:Utf8RegexProvider.Instance);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         using (context.MemoryGovernor.ReserveTemporary(65536 - context.MemoryGovernor.CurrentAccountedBytes - 383, Span))
         {
@@ -136,7 +136,7 @@ Span);
     [Fact]
     public void EscapedLargeDocumentationKeepsItsOwnerAfterDescriptorCollection()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var (weak, escaped) = MakeEscapedDocumentation(context);
         GC.Collect();
         GC.WaitForPendingFinalizers();

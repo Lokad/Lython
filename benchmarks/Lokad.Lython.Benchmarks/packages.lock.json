@@ -179,7 +179,13 @@
       "lokad.lython": {
         "type": "Project",
         "dependencies": {
-          "Lokad.Parsing": "[1.1.0, )",
+          "Lokad.Parsing": "[1.1.0, )"
+        }
+      },
+      "lokad.lython.utf8regex": {
+        "type": "Project",
+        "dependencies": {
+          "Lokad.Lython": "[0.10.0, )",
           "Lokad.Utf8Regex.PythonRe": "[0.2.0, )"
         }
       },

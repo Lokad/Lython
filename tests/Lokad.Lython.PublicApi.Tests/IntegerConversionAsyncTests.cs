@@ -34,7 +34,7 @@ public sealed class IntegerConversionAsyncTests
             : route == "operator-index" ? "\nprint(operator.index(Converted()))"
             : route == "base" ? "\nprint(int('11', Converted()))" : "\nprint(int(Converted()))";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

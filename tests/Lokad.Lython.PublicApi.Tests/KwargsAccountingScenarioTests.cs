@@ -11,7 +11,7 @@ public sealed class KwargsAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task PlainCallControlFits()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             def f(a, b):
                 return a
@@ -33,7 +33,7 @@ public sealed class KwargsAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task PlainLoopControlFits()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             i = 0
             n = 0
@@ -82,7 +82,7 @@ public sealed class KwargsAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedStarargsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             out = []
             def f(*a):
@@ -107,7 +107,7 @@ public sealed class KwargsAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedKwargsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             out = []
             def f(**k):
@@ -132,7 +132,7 @@ public sealed class KwargsAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task KwargsBehaviorsProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             def f(*a, **k):
                 return (len(a), len(k), k["x"])

@@ -17,7 +17,7 @@ public sealed class StyleCopyAccountingScenarioTests
     [Fact]
     public async Task ManyDeepCopiedFontsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import copy
             from openpyxl.styles import Font
             f = Font(bold=True)
@@ -44,7 +44,7 @@ public sealed class StyleCopyAccountingScenarioTests
     [Fact]
     public async Task ManyShallowCopiedFontsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import copy
             from openpyxl.styles import Font
             f = Font(bold=True)
@@ -71,7 +71,7 @@ public sealed class StyleCopyAccountingScenarioTests
     [Fact]
     public async Task ManyDeepCopiedBordersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import copy
             from openpyxl.styles import Border, Side
             b = Border(left=Side(style="thin"), right=Side(style="thin"), top=Side(style="thin"), bottom=Side(style="thin"))
@@ -98,7 +98,7 @@ public sealed class StyleCopyAccountingScenarioTests
     [Fact]
     public async Task StyleCopiesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import copy
             from openpyxl.styles import Border, Font, Side
             f = copy.deepcopy(Font(bold=True))

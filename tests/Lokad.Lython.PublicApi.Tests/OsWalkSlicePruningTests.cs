@@ -21,7 +21,7 @@ public sealed class OsWalkSlicePruningTests
             "    dirs[:] = [name for name in dirs if name != 'skip']\n" +
             "    files[:] = [name for name in files if name != 'ignore.txt']\n" +
             "    print(root, dirs, files)\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(diagnostic => diagnostic.Message)));
         var expected = topdown
             ? "/tree ['keep'] ['root.txt']\n/tree/keep [] ['a.txt']\n"
@@ -53,7 +53,7 @@ public sealed class OsWalkSlicePruningTests
             replace(value)
             print(value)
             """;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {
@@ -68,7 +68,7 @@ public sealed class OsWalkSlicePruningTests
     [InlineData("value = (1, 2)\nvalue[:] = []")]
     public void KnownImmutableSequencesKeepSliceAssignmentDiagnostics(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA3158");
     }

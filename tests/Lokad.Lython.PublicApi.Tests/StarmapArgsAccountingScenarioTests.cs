@@ -21,7 +21,7 @@ public sealed class StarmapArgsAccountingScenarioTests
     [Fact]
     public async Task HugeStarmapCallStaysCharged()
     {
-        var script = new LythonEngine().Compile(BuildHugeCall);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildHugeCall);
         Assert.True(script.IsValid);
         // Calibration: pre-fix peaks are 1661728 (sync) and 2009024 (async),
         // so both fit; the 24B-per-arg backstop (+720000) trips both post-fix.
@@ -38,7 +38,7 @@ public sealed class StarmapArgsAccountingScenarioTests
     [Fact]
     public async Task RoomyStarmapCallSucceeds()
     {
-        var script = new LythonEngine().Compile(BuildHugeCall);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildHugeCall);
         Assert.True(script.IsValid);
         // N06: the 30000 distinct ints adopt coupons in the list and again in the
         // starmap arg tuple (cross-container double charge, peak ~8.9 MB sync),
@@ -56,7 +56,7 @@ public sealed class StarmapArgsAccountingScenarioTests
     [Fact]
     public async Task StarmapBehaviorStaysCompatible()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             r = list(itertools.starmap(lambda a, b: a + b, [(1, 2), (3, 4)]))

@@ -128,7 +128,7 @@ public sealed class UserSliceMutationOwnershipTests
         Collect();
         Assert.True(IsAlive(weak));
         var before = fixture.Root.MemoryGovernor.CurrentCommittedBytes;
-        var deletion = LythonFrontend.Compile("del target.saved\n");
+        var deletion = LythonFrontend.Compile("del target.saved\n",regexProvider:Utf8RegexProvider.Instance);
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(deletion.Script.RequireNotNull()).Statements, fixture.Root);
         Collect();
         Assert.False(IsAlive(weak));
@@ -163,7 +163,7 @@ public sealed class UserSliceMutationOwnershipTests
         {
             SourcePath = "/user-slice-ownership.py", MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             CancellationToken = cancellation
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var tape = new Tape(root, cancellation, direct, form == "delete", form == "index");
         root.Variables["mutate"] = new Callback(tape, "mutation");
         foreach (var stage in new[] { "receiver", "start", "stop", "step" })
@@ -198,7 +198,7 @@ public sealed class UserSliceMutationOwnershipTests
             pairs=[pair]
             def alias():return target
             """ + "\ndef run():\n " + operation + "\n";
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
         var active = new PyException("ValueError", "outer", PyNone.Instance);

@@ -12,7 +12,7 @@ public sealed class NamedStyleAccountingScenarioTests
     [Fact]
     public async Task ManyNamedStylesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             from openpyxl.styles import Font, NamedStyle
@@ -39,7 +39,7 @@ public sealed class NamedStyleAccountingScenarioTests
     [Fact]
     public async Task NamedStyleBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             from openpyxl.styles import NamedStyle

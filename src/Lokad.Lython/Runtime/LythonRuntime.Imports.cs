@@ -405,7 +405,7 @@ internal sealed partial class LythonRuntime
     {
         var estimate = RuntimeMemoryEstimates.EstimateCompilationBytes(source.Length);
         using var code = context.MemoryGovernor.ReserveTemporary(estimate, span);
-        var frontend = LythonFrontend.Compile(source, context.MemoryGovernor);
+        var frontend = LythonFrontend.Compile(source, context.MemoryGovernor, context.State.RegexProvider, context.Limits.CancellationToken);
         if (frontend.Script is null || frontend.Diagnostics.Count != 0)
         {
             var diagnostic = frontend.Diagnostics.FirstOrDefault();

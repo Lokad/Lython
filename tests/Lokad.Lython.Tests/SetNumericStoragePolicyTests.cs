@@ -26,7 +26,7 @@ public sealed class SetNumericStoragePolicyTests
     [InlineData(true)]
     public void NumericMembersPayTheSameAllowanceRegardlessOfPayloadOwnership(bool owned)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         object value = BigInteger.One << 4000;
         if (owned)
             LythonRuntime.OwnFreshInteger(value, context.MemoryGovernor, null);

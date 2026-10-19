@@ -13,7 +13,7 @@ public sealed class CounterIntegerAdmissionTests(ITestOutputHelper output)
 {
     private static readonly LythonSourceSpan Span = new(2, 3, 4, 5);
     private static readonly ExecutableCodeObject Add = ExecutableScript.Compile(
-        LoweredScript.Lower(LythonFrontend.Compile("return counts + other").Script!)).EntryPoint;
+        LoweredScript.Lower(LythonFrontend.Compile("return counts + other",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     public static IEnumerable<object[]> AdmissionCases()
     {
@@ -33,7 +33,7 @@ public sealed class CounterIntegerAdmissionTests(ITestOutputHelper output)
             var budget = new LythonMemoryBudget(1024 * 1024);
             using var owner = budget.CreateScope();
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner});
+                { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             var governor = context.MemoryGovernor;
             var key = PyString.FromString("x");
             var seed = LythonRuntime.OwnFreshInteger(BigInteger.One << 524288, governor, Span);
@@ -110,7 +110,7 @@ public sealed class CounterIntegerAdmissionTests(ITestOutputHelper output)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var key = PyString.FromString("x");
         var seed = LythonRuntime.OwnFreshInteger(BigInteger.One << 524288, context.MemoryGovernor, Span);
         var counts = new PyCounter(context.MemoryGovernor, Span);
@@ -164,7 +164,7 @@ public sealed class CounterIntegerAdmissionTests(ITestOutputHelper output)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var key = PyString.FromString("x");
         var seed = LythonRuntime.OwnFreshInteger(BigInteger.One << 524288, context.MemoryGovernor, Span);
         var negative = LythonRuntime.OwnFreshInteger(-(BigInteger)seed, context.MemoryGovernor, Span);

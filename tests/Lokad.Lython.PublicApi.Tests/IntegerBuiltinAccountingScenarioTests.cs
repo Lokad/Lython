@@ -17,7 +17,7 @@ public class IntegerBuiltinAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedFactorialsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             $"""
             import math
             rs = []
@@ -41,7 +41,7 @@ public class IntegerBuiltinAccountingScenarioTests
     [Fact]
     public async Task OneFactorialFitsTheRetentionBudget()
     {
-        var script = new LythonEngine().Compile($"import math\nreturn math.factorial({Argument}).bit_length()\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"import math\nreturn math.factorial({Argument}).bit_length()\n");
         Assert.True(script.IsValid);
         var factorial = BigInteger.One;
         for (var i = 2; i <= Argument; i++) factorial *= i;
@@ -58,7 +58,7 @@ public class IntegerBuiltinAccountingScenarioTests
     [Fact]
     public async Task IntegerBuiltinBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import math
             return [math.factorial(5), math.gcd(12, 18), round(3.5), math.trunc(9.99)]

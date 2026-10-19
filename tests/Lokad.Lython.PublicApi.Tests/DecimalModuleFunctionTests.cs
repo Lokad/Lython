@@ -8,7 +8,7 @@ public sealed class DecimalModuleFunctionTests
     public void DecimalModule_Functions_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from decimal import Decimal, ROUND_DOWN
 
@@ -43,7 +43,7 @@ __lython_file.close()
     public void DecimalModule_ConstantsAndRoundingModes_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from decimal import Decimal, ROUND_HALF_EVEN, ROUND_UP, InvalidOperation, DivisionByZero
 
@@ -74,7 +74,7 @@ __lython_file.close()
     public void DecimalModule_ContextsAndTuples_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from decimal import Decimal, DecimalTuple, Context, getcontext, setcontext, localcontext, ROUND_DOWN, ROUND_HALF_UP
 
@@ -111,7 +111,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from decimal import Decimal
 vals = []
@@ -141,7 +141,7 @@ __lython_file.close()
     public void DecimalModule_ActiveContextControlsRoundingOperations()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from decimal import Decimal, ROUND_DOWN, ROUND_UP, getcontext
 
@@ -169,7 +169,7 @@ __lython_file.close()
     public void DecimalModule_ExpandedMethodsAndRoundingModes_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, ROUND_HALF_DOWN, ROUND_05UP
 
@@ -212,7 +212,7 @@ __lython_file.close()
     public void DecimalModule_RetainsRepresentableExponentAndQuantumMetadata()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import copy
 from decimal import Decimal, DecimalTuple
@@ -241,7 +241,7 @@ __lython_file.close()
     [Fact]
     public void DecimalModule_StaticDiagnosticsCoverExpandedSurface()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from decimal import Decimal, DecimalTuple, Context, getcontext, setcontext, localcontext, ROUND_DOWN
 
@@ -274,7 +274,7 @@ Decimal(DecimalTuple(0, (1, 2), -1))
 
         Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
 
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from decimal import Decimal, Context
 
@@ -465,7 +465,7 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
         "overflowed")]
     public void DecimalModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -478,7 +478,7 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
     {
         // Decimal compares exactly against floats and huge integers like
         // CPython instead of refusing mixed domains, in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from decimal import Decimal
             results = []
             results.append(str(Decimal('1.5') == 1.5))
@@ -535,7 +535,7 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
     {
         // Decimal operator failures name the operation and both operand
         // types like CPython instead of the shared house text, in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from decimal import Decimal
             results = []
             def add_s(s):
@@ -638,7 +638,7 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
     {
         // NaN against a decimal signals decimal.InvalidOperation like CPython
         // (catchable, with the class-carrying argument shape), in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import decimal
             from decimal import Decimal
             from collections import Counter
@@ -711,7 +711,7 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
         // divmod, //= and operator.floordiv follow it, while integral-valued
         // decimals count as integer exponents and zero to the zeroth power
         // signals InvalidOperation, all like CPython in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import decimal
             import operator
             from decimal import Decimal
@@ -839,7 +839,7 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
         // dividends keep the established shapes (house DivisionByZero for /
         // and //, single-class InvalidOperation for %), divmod carries both
         // classes, and zero dividends are DivisionUndefined throughout.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import decimal
             from decimal import Decimal
             results = []
@@ -951,7 +951,7 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
         // Unary minus and plus yield positive zero for zero operands like
         // CPython (unlike the pure sign flip of copy_negate), at any
         // exponent, in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import operator
             from decimal import Decimal
             results = []
@@ -1002,7 +1002,7 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
         // when a decimal is involved), while negative exponents, zero
         // moduli and fractional operands signal InvalidOperation, in both
         // modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import decimal
             from decimal import Decimal
             results = []
@@ -1101,7 +1101,7 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
         // Zero sums and differences take their sign from the operands like
         // CPython (opposite-signed zeros add to +0, only -0 + -0 and
         // -0 - +0 stay negative), at any exponent, in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from decimal import Decimal
             results = []
             results.append(str(Decimal('-0') + Decimal('0')))
@@ -1157,7 +1157,7 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
         // Decimal arithmetic over decimals and integers resolves decimal
         // statically (not float), so member chains compile and unknown
         // members name decimal.Decimal.
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from decimal import Decimal
 (Decimal('1') + Decimal('2')).as_tuple()
@@ -1181,7 +1181,7 @@ k.as_tuple()
 
         Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
 
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from decimal import Decimal
 (Decimal('1') + Decimal('2')).bogus()
@@ -1197,7 +1197,7 @@ from decimal import Decimal
         // Decimal-float mixes fail at runtime instead of producing a float,
         // so they resolve unknown statically: member chains compile
         // instead of misreporting float members.
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from decimal import Decimal
 (Decimal('1') + 2.0).as_tuple()
@@ -1216,7 +1216,7 @@ x.as_tuple()
         // Decimal.fma computes the BCL multiply-add like CPython wherever
         // no double-rounding occurs (always Decimal), with house validation
         // for arity and operand kinds, in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from decimal import Decimal
             results = []
             results.append(str(Decimal('2').fma(3, 4)))
@@ -1288,7 +1288,7 @@ x.as_tuple()
         // canonical, conjugate, as_integer_ratio and the always-settled
         // predicates) match CPython like the runtime, with house validation
         // for arity and operand kinds, in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import decimal
             from decimal import Decimal
             results = []
@@ -1385,7 +1385,7 @@ x.as_tuple()
         // Optional decimal-method context arguments accept a Context or
         // None like CPython and fail uniformly otherwise (copy_abs and
         // copy_negate take no context at all), in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from decimal import Decimal, Context
             results = []
             results.append(str(Decimal('4').sqrt(None)))
@@ -1530,7 +1530,7 @@ x.as_tuple()
     public async Task DecimalComparisonDundersAdvanceLikeCpython()
     {
         // Decimal slots compute exactly across Decimal/int/float/bool through the shared exact core (including float-nan InvalidOperation signaling) and decline everything else with NotImplemented, exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 from decimal import Decimal
 def call2(f, a, b):
     return f(a, b)
@@ -1614,7 +1614,7 @@ return results
         // Decimal conversion dunders delegate to the same cores as the
         // int/float/round builtins (exact semantics, int-only ndigits with
         // the slot message), exactly like CPython; there is no __index__.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 from decimal import Decimal
 def call1(f, a):
     return f(a)

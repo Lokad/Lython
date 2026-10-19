@@ -15,8 +15,8 @@ public sealed class AsyncExecutionWorkerLifetimeTests
     public async Task PendingHostOperationsReleaseStartupThreadsAndKeepRunContexts(bool cancel)
     {
         var previous = Ambient.Value;
-        using var script = new LythonEngine().Compile("import time\ntime.sleep(1)\nprint('done')\nreturn 7");
-        using var child = new LythonEngine().Compile("return 11");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import time\ntime.sleep(1)\nprint('done')\nreturn 7");
+        using var child = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 11");
         var timings = Enumerable.Range(0, 8).Select(_ => new HeldTiming()).ToArray();
         var calls = new List<Task<LythonExecutionResult>>();
         using var cancellation = new CancellationTokenSource();

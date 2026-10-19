@@ -19,7 +19,7 @@ public sealed class CollectionKwargsKeyAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedCounterKeysStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             objs = []
             i = 0
@@ -44,7 +44,7 @@ public sealed class CollectionKwargsKeyAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedPartialKeywordsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import functools
             def f(a, k=0):
                 return k
@@ -71,7 +71,7 @@ public sealed class CollectionKwargsKeyAccountingScenarioTests
     [Fact]
     public async Task CollectionKwargsKeysBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             import functools
             def f(a, k=0):

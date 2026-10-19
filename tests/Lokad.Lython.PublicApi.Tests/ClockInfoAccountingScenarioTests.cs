@@ -15,7 +15,7 @@ public sealed class ClockInfoAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedClockInfosStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import time
             objs = []
             i = 0
@@ -40,7 +40,7 @@ public sealed class ClockInfoAccountingScenarioTests
     [Fact]
     public async Task ClockInfosBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import time
             c = time.get_clock_info("time")
             m = time.get_clock_info("monotonic")

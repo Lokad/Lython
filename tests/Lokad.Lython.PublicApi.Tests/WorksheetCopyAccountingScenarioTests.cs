@@ -14,7 +14,7 @@ public sealed class WorksheetCopyAccountingScenarioTests
     [Fact]
     public async Task CopiedTablesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             from openpyxl.styles import Font
@@ -47,7 +47,7 @@ public sealed class WorksheetCopyAccountingScenarioTests
     [Fact]
     public async Task CopyBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             wb = openpyxl.Workbook()

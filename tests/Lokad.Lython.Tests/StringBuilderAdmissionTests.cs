@@ -21,7 +21,7 @@ public sealed class StringBuilderAdmissionTests(ITestOutputHelper output)
             var budget = new LythonMemoryBudget(1024 * 1024);
             using var owner = budget.CreateScope();
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner});
+                { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             var governor = context.MemoryGovernor;
             var builder = new GovernedByteBuilder(governor, Span, 65536);
             builder.Append(new byte[65536]);
@@ -61,7 +61,7 @@ public sealed class StringBuilderAdmissionTests(ITestOutputHelper output)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var builder = new GovernedByteBuilder(context.MemoryGovernor, Span, 65536);
         builder.AppendRepeated((byte)'x', 65536);
         var result = consume ? builder.ToPyStringAndRelease() : builder.ToPyString();
@@ -81,7 +81,7 @@ public sealed class StringBuilderAdmissionTests(ITestOutputHelper output)
     {
         var budget = new LythonMemoryBudget(1024);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         byte[] bytes = [(byte)'x', (byte)'a', (byte)'b', (byte)'y'];
         var value = PyString.FromUtf8(bytes.AsMemory(1, 2), context.MemoryGovernor, Span);
         bytes[1] = (byte)'z';

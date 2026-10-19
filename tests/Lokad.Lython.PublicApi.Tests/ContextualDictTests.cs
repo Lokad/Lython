@@ -19,7 +19,7 @@ public sealed class ContextualDictTests
     [Fact]
     public void CustomKeyLookup()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):
@@ -45,7 +45,7 @@ public sealed class ContextualDictTests
     [Fact]
     public void MixedKeyMethods()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):
@@ -73,7 +73,7 @@ public sealed class ContextualDictTests
     [Fact]
     public void CustomKeyDictEquality()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):
@@ -96,7 +96,7 @@ public sealed class ContextualDictTests
     [Fact]
     public void UpdateCtorAndMerge()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):
@@ -122,7 +122,7 @@ public sealed class ContextualDictTests
     [Fact]
     public void InsertionOrderPreserved()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):
@@ -151,7 +151,7 @@ public sealed class ContextualDictTests
     [Fact]
     public void MissingKeysFail()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):
@@ -187,7 +187,7 @@ public sealed class ContextualDictTests
     [Fact]
     public void CallbackFailuresPropagate()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class H:
                 def __hash__(self):
@@ -214,7 +214,7 @@ public sealed class ContextualDictTests
     [Fact]
     public async Task AsyncCustomKeyLookup()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
             class A:
                 def __init__(self, v):
@@ -240,7 +240,7 @@ public sealed class ContextualDictTests
     [Fact]
     public void DerivedForms()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             class A:
@@ -268,7 +268,7 @@ public sealed class ContextualDictTests
     [Fact]
     public void RetainedProtocolTablesDeny()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             class A:
                 def __init__(self, v):

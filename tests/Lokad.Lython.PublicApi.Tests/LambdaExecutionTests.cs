@@ -7,12 +7,12 @@ public sealed class LambdaExecutionTests
     [Fact]
     public async Task NestedBodiesRespectExistingParserAdmission()
     {
-        using var admitted = new LythonEngine().Compile("f=" + string.Concat(Enumerable.Repeat("lambda: ", 48)) + "0\nprint(1)");
+        using var admitted = new LythonEngine(Utf8RegexProvider.Instance).Compile("f=" + string.Concat(Enumerable.Repeat("lambda: ", 48)) + "0\nprint(1)");
         Assert.True(admitted.IsValid);
         using var result = await admitted.RunAsync(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("1\n", result.StandardOutput);
-        using var refused = new LythonEngine().Compile("f=" + string.Concat(Enumerable.Repeat("lambda: ", 192)) + "0\nprint(1)");
+        using var refused = new LythonEngine(Utf8RegexProvider.Instance).Compile("f=" + string.Concat(Enumerable.Repeat("lambda: ", 192)) + "0\nprint(1)");
         Assert.False(refused.IsValid);
         Assert.Contains(refused.Diagnostics, d => d.Code == "LA0003" && d.Message.Contains("maximum of 64", StringComparison.Ordinal));
     }
@@ -38,7 +38,7 @@ public sealed class LambdaExecutionTests
     public async Task LambdasPreservePythonScopesDefaultsAndMetadata(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -59,7 +59,7 @@ public sealed class LambdaExecutionTests
     {
         const string source = "def read():\n with open('value.txt') as value:return value.read()\nf=lambda:read()\nprint(f())";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -102,7 +102,7 @@ public sealed class LambdaExecutionTests
     {
         const string source = "functions=[]\nfor i in range(10000):functions.append(lambda value=i:value)\nwith open('result.txt','w') as output:output.write('published')";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
@@ -124,7 +124,7 @@ public sealed class LambdaExecutionTests
     public async Task ReturnedAliasKeepsItsOwnerAfterLambdaInvocation()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("f=lambda:seed\nreturn f()", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("f=lambda:seed\nreturn f()", budget);
         var baseline = budget.ReservedBytes;
         var seed = System.Numerics.BigInteger.One << 10000;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["seed"] = seed } };

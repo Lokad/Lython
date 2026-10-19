@@ -28,7 +28,7 @@ public sealed class AugmentedMemberExecutionTests
     public async Task MemberUpdatesPreservePythonOrderAndAliases(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -88,7 +88,7 @@ public sealed class AugmentedMemberExecutionTests
             : "receiver().value+=rhs()\n") + "assert box.saved is payload\nprint(payload.items)";
         var paths = new[] { "/receiver.txt", "/get.txt", "/rhs.txt", "/iadd.txt", "/set.txt" };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -132,7 +132,7 @@ public sealed class AugmentedMemberExecutionTests
     public async Task UpdatedAliasesRemainFundedAcrossExecutions(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("class Box: pass\nbox=Box();box.value=[]\nalias=box.value\nbox.value+=['x'*4096]\nassert box.value is alias\nreturn alias", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("class Box: pass\nbox=Box();box.value=[]\nalias=box.value\nbox.value+=['x'*4096]\nassert box.value is alias\nreturn alias", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
@@ -153,7 +153,7 @@ public sealed class AugmentedMemberExecutionTests
     [InlineData("class C:\n @property\n def value(self): return 1\ndef run(obj):\n obj.value+=2\nrun(C())", 5, 6)]
     public async Task MemberFailuresKeepTargetAndCallerSpans(string source, int line, int callerLine)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {

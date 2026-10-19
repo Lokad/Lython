@@ -18,7 +18,7 @@ public sealed class GzipFileHostCompatibilityTests
     public async Task OwnedFilesFollowFrozenPythonControls(string name, string source, string expected,
         Dictionary<string,string> seeds, Dictionary<string,string> finalFiles)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var immediate = new MockLythonHost();
         var delayed = new DelayedLythonHost();

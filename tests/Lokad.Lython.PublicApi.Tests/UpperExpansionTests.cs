@@ -26,7 +26,7 @@ public sealed class UpperExpansionTests
     public async Task ExistingExpansionFamiliesKeepUpperAndLegacyCasing(string text, string upper, string title)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("return [text.upper(), text.title(), text.capitalize(), text.swapcase()]", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return [text.upper(), text.title(), text.capitalize(), text.swapcase()]", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new MockLythonHost();

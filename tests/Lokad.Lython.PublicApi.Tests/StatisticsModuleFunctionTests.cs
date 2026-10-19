@@ -9,7 +9,7 @@ public sealed class StatisticsModuleFunctionTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import statistics
 
@@ -40,7 +40,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import statistics
 
@@ -69,7 +69,7 @@ with open("/out.txt", "w") as output:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import statistics
 
@@ -95,7 +95,7 @@ with open("/out.txt", "w") as output:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import statistics
 from decimal import Decimal
@@ -156,7 +156,7 @@ __lython_file.close()
     [Fact]
     public void StatisticsModule_StaticContractsCoverExpandedSurface()
     {
-        var valid = new LythonEngine().Run(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import statistics
 
@@ -177,7 +177,7 @@ return "|".join(out)
             valid.Failure?.Message ?? string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         Assert.Equal("2.0|0.0|199|2", Assert.IsType<string>(valid.ReturnValue));
 
-        var invalid = new LythonEngine().Run(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import statistics
 
@@ -314,7 +314,7 @@ statistics.kde([1, 2])
         "unsupported")]
     public void StatisticsModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);

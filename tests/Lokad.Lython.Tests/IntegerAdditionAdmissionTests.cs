@@ -19,7 +19,7 @@ public sealed class IntegerAdditionAdmissionTests(ITestOutputHelper output)
         .GetMethod("SumAsync", BindingFlags.Static | BindingFlags.NonPublic)!
         .CreateDelegate<Func<object[], LythonSourceSpan, Context, ValueTask<object>>>();
     private static readonly ExecutableCodeObject Add = ExecutableScript.Compile(
-        LoweredScript.Lower(LythonFrontend.Compile("return left + right").Script!)).EntryPoint;
+        LoweredScript.Lower(LythonFrontend.Compile("return left + right",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     public static IEnumerable<object[]> Denials()
     {
@@ -41,7 +41,7 @@ public sealed class IntegerAdditionAdmissionTests(ITestOutputHelper output)
             var budget = new LythonMemoryBudget(1024 * 1024);
             using var owner = budget.CreateScope();
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner });
+                { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var governor = context.MemoryGovernor;
             var start = LythonRuntime.OwnFreshInteger(BigInteger.One << 524288, governor, SumSpan);
             context.Variables["left"] = start;
@@ -113,7 +113,7 @@ public sealed class IntegerAdditionAdmissionTests(ITestOutputHelper output)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var start = LythonRuntime.OwnFreshInteger(BigInteger.One << 524288, context.MemoryGovernor, SumSpan);
         context.Variables["left"] = start;
         context.Variables["right"] = route == 2 ? (object)1L : BigInteger.One;
@@ -136,7 +136,7 @@ public sealed class IntegerAdditionAdmissionTests(ITestOutputHelper output)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var left = LythonRuntime.OwnFreshInteger(BigInteger.One << 524288, context.MemoryGovernor, SumSpan);
         var right = LythonRuntime.OwnFreshInteger(-(BigInteger)left, context.MemoryGovernor, SumSpan);
         context.Variables["left"] = left;

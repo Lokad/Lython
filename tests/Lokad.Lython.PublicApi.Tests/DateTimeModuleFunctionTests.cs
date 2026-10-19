@@ -8,7 +8,7 @@ public sealed class DateTimeModuleFunctionTests
     public async Task DateTime_ReplaceAcceptsBoolFields()
     {
         const string source = "import datetime\nd = datetime.date(2024, 1, 1).replace(year=True)\nt = datetime.time(1).replace(hour=True)\nreturn str(d) + \"|\" + str(t)";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -22,7 +22,7 @@ public sealed class DateTimeModuleFunctionTests
     public async Task DateTime_MicrosecondsRoundTripLikeCpython()
     {
         const string source = "import datetime\nt = datetime.time(1, 2, 3, 1500)\nd = datetime.datetime(2024, 1, 1, 0, 0, 0, 999499)\nreturn str(t.microsecond) + \"|\" + str(d.microsecond) + \"|\" + t.isoformat() + \"|\" + repr(t)";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -36,7 +36,7 @@ public sealed class DateTimeModuleFunctionTests
     public void DateTime_DisplayAndRepresentationFollowDistinctPythonContracts()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import datetime
 
@@ -68,7 +68,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import datetime
 vals = []
@@ -96,7 +96,7 @@ __lython_file.close()
     public void DateTime_TimezonePreservesSubMinuteOffsets()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import datetime
 
@@ -121,7 +121,7 @@ __lython_file.close()
     public void DateTime_IsoParsingAcceptsBasicWeekAndLeadingTimeForms()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import datetime
 
@@ -316,7 +316,7 @@ __lython_file.close()
     [Fact]
     public void DateTimeModule_StaticContractsCoverExpandedSurface()
     {
-        var valid = new LythonEngine().Run(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import datetime
 delta = datetime.timedelta(days=1, seconds=2)
@@ -337,7 +337,7 @@ return "|".join(out)
         Assert.True(valid.Success, valid.Failure?.Message);
         Assert.Equal("86402.0|2025-01-02|1|2024-01-02T03:04:05+00:00|UTC", Assert.IsType<string>(valid.ReturnValue));
 
-        var invalid = new LythonEngine().Run(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import datetime
 datetime.date(2024, 1)
@@ -370,7 +370,7 @@ import datetime
 {{expression}}
 """;
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (result.Failure is null)
@@ -393,7 +393,7 @@ import datetime
 return str({{expression}})
 """;
 
-        var result = new LythonEngine().Run(source, host ?? new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host ?? new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         return Assert.IsType<string>(result.ReturnValue);

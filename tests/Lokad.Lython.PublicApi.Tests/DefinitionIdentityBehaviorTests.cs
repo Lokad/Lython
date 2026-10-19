@@ -13,7 +13,7 @@ public sealed class DefinitionIdentityBehaviorTests
     [Fact]
     public async Task DefinitionMembersAliasStably()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def f():
                 pass
             class C:

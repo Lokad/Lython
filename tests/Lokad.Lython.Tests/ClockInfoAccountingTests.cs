@@ -31,7 +31,7 @@ public sealed class ClockInfoAccountingTests
     public void ClockInfoCommitsShellAndSharesLabels()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var first = ImplementationOf(GetClockInfo(context, span, "time"), context, span);
@@ -47,7 +47,7 @@ public sealed class ClockInfoAccountingTests
     public void FailedClockInfoLeaksNothing()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var thrown = Assert.Throws<TargetInvocationException>(() => GetClockInfo(context, span, "bogus"));

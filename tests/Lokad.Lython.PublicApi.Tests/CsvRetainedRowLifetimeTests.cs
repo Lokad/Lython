@@ -14,7 +14,7 @@ public sealed class CsvRetainedRowLifetimeTests
     {
         var budget = new LythonMemoryBudget(512 * 1024);
         var reader = dictionary ? "DictReader" : "reader";
-        using var script = new LythonEngine().Compile($$"""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($$"""
             import csv
             with open('/csv') as file:
                 rows = list(csv.{{reader}}(file))

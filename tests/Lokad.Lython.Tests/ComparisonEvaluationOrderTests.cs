@@ -17,7 +17,7 @@ public sealed class ComparisonEvaluationOrderTests
     [InlineData(true, true)]
     public async Task ComparisonsDoNotReplayOperands(bool asynchronous, bool truthy)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return first()<middle()<last()").Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return first()<middle()<last()",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var expected = truthy ? new[] { "first", "middle", "last" } : new[] { "first", "middle" };
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -32,7 +32,7 @@ public sealed class ComparisonEvaluationOrderTests
 
     private static (Context Context, List<string> Effects) Prepare(ILythonMemoryBudget owner, bool truthy)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var effects = new List<string>();
         context.Variables["first"] = new Operand("first", truthy ? 0 : 2, effects);
         context.Variables["middle"] = new Operand("middle", 1, effects);

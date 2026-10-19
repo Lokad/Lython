@@ -29,7 +29,7 @@ public sealed class AugmentedSubscriptExecutionTests
     public async Task SubscriptUpdatesFollowPythonOrderAndAliases(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -92,7 +92,7 @@ public sealed class AugmentedSubscriptExecutionTests
             : "receiver()[key()]+=rhs()\n") + "assert box.saved is payload\nprint(payload.items)";
         var paths = new[] { "/receiver.txt", "/key.txt", "/get.txt", "/rhs.txt", "/iadd.txt", "/set.txt" };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -136,7 +136,7 @@ public sealed class AugmentedSubscriptExecutionTests
     public async Task UpdatedAliasesRemainFundedAcrossExecutions(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("values=[[]]\nalias=values[0]\nvalues[0]+=['x'*4096]\nassert values[0] is alias\nreturn alias", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("values=[[]]\nalias=values[0]\nvalues[0]+=['x'*4096]\nassert values[0] is alias\nreturn alias", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
@@ -157,7 +157,7 @@ public sealed class AugmentedSubscriptExecutionTests
     [InlineData("def run(obj):\n obj[0]+=2\nrun((1,))", "TypeError", 2, 3)]
     public async Task FailuresKeepTargetAndCallerSpans(string source, string type, int line, int callerLine)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {

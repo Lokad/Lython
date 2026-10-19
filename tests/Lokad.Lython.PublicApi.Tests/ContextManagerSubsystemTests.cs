@@ -9,7 +9,7 @@ public sealed class ContextManagerSubsystemTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 with open("/out.txt", "w") as handle:
     handle.write("hello")
@@ -27,7 +27,7 @@ return "ok"
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 try:
     with open("/out.txt", "w") as handle:

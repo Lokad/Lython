@@ -256,7 +256,7 @@ public sealed class GeneratorTargetCompositionTests
             "item" => "\ndef generate():\n try:\n  (yield 'receiver')[(yield 'index')]+=(yield 'rhs')\n  yield 'done'\n finally:Path('/closed.txt').write_text('closed')\ng=generate()\nprint(next(g),g.send(box),g.send(0),g.send(3))\ng.close()\n",
             _ => "\ndef generate():\n with Manager() as (yield 'receiver').value:yield 'done'\ng=generate()\nprint(next(g))\ng.close()\n",
         };
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var immediate = new MockLythonHost();
         immediate.SeedFile("/number.txt", "2");
@@ -275,7 +275,7 @@ public sealed class GeneratorTargetCompositionTests
     [Fact]
     public async Task SuspendedUnpackingHonorsCollectionLimitsBeforeStores()
     {
-        var compiled = new LythonEngine().Compile("def generate():\n a,*(yield 'receiver').rest=range(1000000)\nlist(generate())\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("def generate():\n a,*(yield 'receiver').rest=range(1000000)\nlist(generate())\n");
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
@@ -305,7 +305,7 @@ public sealed class GeneratorTargetCompositionTests
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

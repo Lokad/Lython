@@ -17,7 +17,7 @@ public sealed class FloatConversionAsyncTests
         var source = Source.Replace("CONVERSION_SLOT", slot).Replace("CONVERSION_VALUE", route == "float" ? "7.0" : "7")
             + "\nprint(float(Converted()))";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

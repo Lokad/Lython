@@ -27,7 +27,7 @@ public sealed class UnpackingConsumptionTests
     public async Task AssignmentConsumptionMatchesPython(string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -46,7 +46,7 @@ public sealed class UnpackingConsumptionTests
     {
         const string source = "seen=[]\ndef values():\n for i in range(5):\n  value=['x'*4096]\n  seen.append(value)\n  yield value\ntry: left,right=values()\nexcept ValueError: return seen";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -78,7 +78,7 @@ public sealed class UnpackingConsumptionTests
     {
         const string source = "from pathlib import Path\nclass Values:\n def __init__(self): self.index=0\n def __iter__(self): return self\n def __next__(self):\n  self.index+=1\n  Path('next'+str(self.index)+'.txt').write_text(str(self.index))\n  if self.index>5: raise StopIteration()\n  return self.index\nvalues=Values()\ntry: left,right=values\nexcept ValueError: print('too many',values.index)";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

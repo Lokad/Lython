@@ -10,7 +10,7 @@ public sealed class SubscriptSetterBindingTests
     [Fact]
     public async Task AsyncStoreAwaitsDescriptorWithoutUsingItsSyncEntry()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var setter = new Setter();
         var getter = new AsyncGetter();
         var property = PyProperty.Create(getter, PyNone.Instance, PyNone.Instance,
@@ -20,7 +20,7 @@ public sealed class SubscriptSetterBindingTests
         var payload = new PyList([true], context.MemoryGovernor, default);
         context.Variables["box"] = receiver;
         context.Variables["payload"] = payload;
-        var syntax = LythonFrontend.Compile("box[0]=payload").Script!;
+        var syntax = LythonFrontend.Compile("box[0]=payload",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
         try

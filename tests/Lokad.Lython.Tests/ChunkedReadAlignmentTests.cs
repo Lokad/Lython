@@ -29,7 +29,7 @@ public sealed class ChunkedReadAlignmentTests
         LythonRuntime.TextEncodingMode encoding, LythonRuntime.TextErrorMode errors,
         LythonRuntime.TextNewlineMode newline)
     {
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
             path, context, encoding, errors, newline, window);
         state.Prime();

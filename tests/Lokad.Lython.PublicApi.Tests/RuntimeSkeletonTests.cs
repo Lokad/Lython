@@ -7,7 +7,7 @@ public sealed class RuntimeSkeletonTests
     [Fact]
     public void Compile_EmptySource_YieldsValidCompiledScript()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
 
         var compiled = engine.Compile(string.Empty);
 
@@ -19,7 +19,7 @@ public sealed class RuntimeSkeletonTests
     [Fact]
     public void Compile_LocalStyleImport_RemainsValid()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
 
         var compiled = engine.Compile("import os");
 
@@ -30,7 +30,7 @@ public sealed class RuntimeSkeletonTests
     [Fact]
     public void Run_ReadTextRegexSubWriteText_UpdatesMockVfs()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var host = new MockLythonHost();
         host.SeedFile("/input.txt", "alpha beta alpha");
 
@@ -54,7 +54,7 @@ __lython_file.close()
     [Fact]
     public void Run_InvalidRegex_ReturnsRuntimeFailure()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var host = new MockLythonHost();
         host.SeedFile("/input.txt", "alpha");
 

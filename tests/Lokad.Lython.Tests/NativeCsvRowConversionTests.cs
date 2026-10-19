@@ -13,7 +13,7 @@ public sealed class NativeCsvRowConversionTests
     private const string FrozenGuards = """{"empty-tuple":{"shape":"empty-tuple","outcome":"saved","writes":["\n"]},"empty-list":{"shape":"empty-list","outcome":"saved","writes":["\n"]},"list":{"shape":"list","outcome":"saved","writes":["a,a\n"]},"bad-list":{"shape":"bad-list","outcome":"TypeError:CSV rows must contain scalar values.","writes":[]},"bad-tuple":{"shape":"bad-tuple","outcome":"TypeError:CSV rows must contain scalar values.","writes":[]},"tuple":{"shape":"tuple","outcome":"saved","writes":["a,a\n"]},"wide-tuple":{"shape":"wide-tuple","outcome":"saved","writes":["a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a\n"]},"wide-list":{"shape":"wide-list","outcome":"saved","writes":["a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a\n"]}}""";
     private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
     private static readonly ExecutableCodeObject Code = ExecutableScript.Compile(
-        LoweredScript.Lower(LythonFrontend.Compile("return writer.writerow(row)").Script!)).EntryPoint;
+        LoweredScript.Lower(LythonFrontend.Compile("return writer.writerow(row)",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     public static IEnumerable<object[]> Cases()
     {
@@ -61,7 +61,7 @@ public sealed class NativeCsvRowConversionTests
 
     private static (Context, Sink) Prepare(ILythonMemoryBudget owner, string shape)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var sink = new Sink(context.MemoryGovernor);
         var writer = new LythonRuntime.CsvWriterObject(CsvWriterowCallBoundaryTests.Options(), sink, context.MemoryGovernor, Span);
         var text = PyString.FromString("a", context.MemoryGovernor, Span);

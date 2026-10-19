@@ -26,7 +26,7 @@ public sealed class ImportedModuleScopeAccountingScenarioTests
     [Fact]
     public async Task ManyModuleMembersRetainedViaDefTrip()
     {
-        var script = new LythonEngine().Compile("import big\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import big\nreturn 0\n");
         Assert.True(script.IsValid);
         var host = SeededHost(out var allowed);
         var sync = script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2621440), AllowedLocalModules = allowed });
@@ -44,7 +44,7 @@ public sealed class ImportedModuleScopeAccountingScenarioTests
     {
         var host = new MockLythonHost();
         host.SeedFile("/helper.py", "def f(a, b=2):\n    return a + b\n");
-        var script = new LythonEngine().Compile("import helper\nreturn helper.f(1)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import helper\nreturn helper.f(1)\n");
         Assert.True(script.IsValid);
         var expected = new BigInteger(3);
         var syncHost = new MockLythonHost();

@@ -101,7 +101,7 @@ public sealed class ExpressionListCompletionTests
     [InlineData("xs += *[1, 2]")]
     public async Task BareStarredFormsRemainInvalidBeforeEffects(string statement)
     {
-        var compiled = new LythonEngine().Compile("print('effects')\nxs = []\n" + statement + "\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effects')\nxs = []\n" + statement + "\n");
         Assert.False(compiled.IsValid);
         var result = await compiled.RunAsync(new MockLythonHost());
         Assert.False(result.Success);
@@ -111,7 +111,7 @@ public sealed class ExpressionListCompletionTests
     [Fact]
     public async Task AugmentedDescriptorAndExpressionListAwaitDelayedHosts()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             class Store:
                 def __init__(self):
@@ -194,7 +194,7 @@ public sealed class ExpressionListCompletionTests
                         return object.__getattribute__(self, name)
                 """,
         };
-        var compiled = new LythonEngine().Compile("from pathlib import Path\nevents = []\n" + declaration + "\n" + """
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("from pathlib import Path\nevents = []\n" + declaration + "\n" + """
             store = Store()
             store.value += int(Path("/number.txt").read_text()),
             print(store.value)
@@ -227,7 +227,7 @@ public sealed class ExpressionListCompletionTests
     [InlineData("*range(100000),")]
     public async Task ExpressionListsReserveMemoryBeforeUnpackingGrowth(string statement)
     {
-        var compiled = new LythonEngine().Compile("xs = []\n" + statement + "\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("xs = []\n" + statement + "\n");
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         foreach (var result in new[]
@@ -244,7 +244,7 @@ public sealed class ExpressionListCompletionTests
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

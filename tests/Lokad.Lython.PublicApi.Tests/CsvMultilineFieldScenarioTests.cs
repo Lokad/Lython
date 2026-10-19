@@ -28,7 +28,7 @@ public sealed class CsvMultilineFieldScenarioTests
     [Fact]
     public async Task HugeMultilineFieldTripsBuilderBudget()
     {
-        var script = new LythonEngine().Compile(MultilineFieldScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(MultilineFieldScript);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MultilineFieldBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -43,7 +43,7 @@ public sealed class CsvMultilineFieldScenarioTests
     [Fact]
     public async Task SmallMultilineFieldParsesExactly()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             import itertools
             q = chr(34)

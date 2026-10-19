@@ -17,7 +17,7 @@ public sealed class CellStyleAccountingTests
     public void StyleSlotsCommitAndReleaseExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.AttachMemoryGovernor(context.MemoryGovernor, span);
@@ -34,7 +34,7 @@ public sealed class CellStyleAccountingTests
     public void UngovernedStylesStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.SetCellStyle(1, 1, LythonRuntime.OpenPyxlCellStyleComponent.Font, NewFont());
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);

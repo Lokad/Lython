@@ -15,7 +15,7 @@ public sealed class SysModulesAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedSnapshotsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import sys
             import math
             import json
@@ -42,7 +42,7 @@ public sealed class SysModulesAccountingScenarioTests
     [Fact]
     public async Task SysModulesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import sys
             import math
             first = sys.modules

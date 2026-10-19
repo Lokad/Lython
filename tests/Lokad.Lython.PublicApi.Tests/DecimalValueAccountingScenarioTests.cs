@@ -13,7 +13,7 @@ public sealed class DecimalValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedDecimalsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             ds = []
@@ -37,7 +37,7 @@ public sealed class DecimalValueAccountingScenarioTests
     [Fact]
     public async Task DecimalBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             return [str(decimal.Decimal(1) + decimal.Decimal(2)), decimal.Decimal("3.50")]

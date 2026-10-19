@@ -67,7 +67,7 @@ public sealed class ExecutionThreadContextTests
             Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity("host-mutation"), []);
             SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
         };
-        var script = new LythonEngine().Compile("print('capture')");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('capture')");
         var result = asyncRun ? script.RunAsync(host).GetAwaiter().GetResult() : script.Run(host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, actual);
@@ -97,7 +97,7 @@ public sealed class ExecutionThreadContextTests
     public async Task ConcurrentCallersKeepContextsSeparate()
     {
         using var barrier = new Barrier(4);
-        var script = new LythonEngine().Compile("print('capture')");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('capture')");
         var tasks = Enumerable.Range(0, 4).Select(index => Task.Run(() =>
         {
             Ambient.Value = index;
@@ -121,8 +121,8 @@ public sealed class ExecutionThreadContextTests
     [Fact]
     public async Task HostCanInvokeAnotherScriptSynchronously()
     {
-        var child = new LythonEngine().Compile("return 7");
-        var parent = new LythonEngine().Compile("print('nested')\nreturn 9");
+        var child = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 7");
+        var parent = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('nested')\nreturn 9");
         var host = new MockLythonHost();
         host.OnStandardOutputWrite = () => Assert.Equal(new System.Numerics.BigInteger(7), child.Run(new MockLythonHost()).ReturnValue);
         var result = await Task.Run(() => parent.Run(host)).WaitAsync(TimeSpan.FromSeconds(10));
@@ -137,7 +137,7 @@ public sealed class ExecutionThreadContextTests
     {
         var references = RunAndDrop(asyncRun);
         // Ensure completion has returned before testing the idle worker's roots.
-        var barrier = new LythonEngine().Compile("pass");
+        var barrier = new LythonEngine(Utf8RegexProvider.Instance).Compile("pass");
         using (barrier.Run(new MockLythonHost())) { }
         GC.Collect();
         GC.WaitForPendingFinalizers();
@@ -151,7 +151,7 @@ public sealed class ExecutionThreadContextTests
         var previous = Ambient.Value;
         var payload = new object();
         var host = new MockLythonHost();
-        var script = new LythonEngine().Compile("print('finished')\nreturn [1, 2, 3]");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('finished')\nreturn [1, 2, 3]");
         Ambient.Value = payload;
         try
         {

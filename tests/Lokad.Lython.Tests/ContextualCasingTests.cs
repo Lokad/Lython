@@ -103,7 +103,7 @@ public sealed class ContextualCasingTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
         {
             CancellationToken = cancellation.Token,
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var governor = context.MemoryGovernor;
         var input = PyString.FromString(new string('A', 4096), governor, null);
         var baseline = governor.CurrentCommittedBytes;

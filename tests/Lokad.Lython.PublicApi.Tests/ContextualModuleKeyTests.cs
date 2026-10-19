@@ -11,7 +11,7 @@ public sealed class ContextualModuleKeyTests
 
     private static async Task AssertBothModes(string source, string expectedOutput)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -49,7 +49,7 @@ public sealed class ContextualModuleKeyTests
     public async Task EqWithoutHashIsUnhashable()
     {
         const string code = "import statistics\nclass F:\n    def __eq__(self, other):\n        return True\nprint(statistics.mode([F(), F()]))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.False(sync.Success);
@@ -63,7 +63,7 @@ public sealed class ContextualModuleKeyTests
     public async Task UnhashableSequenceFailsDifflib()
     {
         const string code = "import difflib\nm = difflib.SequenceMatcher(None, [], [])\nm.set_seq2([[1]])\nprint(\"no-error\")\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var sync = script.Run(new MockLythonHost());
         Assert.False(sync.Success);
         Assert.Equal("TypeError", sync.Failure?.ExceptionType);

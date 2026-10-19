@@ -21,7 +21,7 @@ public sealed class RepeatedScopeDirectiveTests
     public async Task CompatibleBindings(string name, string source, string expected)
     {
         _ = name;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -40,5 +40,5 @@ public sealed class RepeatedScopeDirectiveTests
     [InlineData("match [1,2]:\n case x,x:pass")]
     [InlineData("def outer():\n x=1\n def f():\n  print(x)\n  nonlocal x,x")]
     public void InvalidNamesAndScopeConflictsFailBeforeEffects(string source)
-        => Assert.False(new LythonEngine().Compile("print('effect')\n" + source).IsValid);
+        => Assert.False(new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effect')\n" + source).IsValid);
 }

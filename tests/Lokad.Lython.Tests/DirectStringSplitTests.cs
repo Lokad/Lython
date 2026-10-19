@@ -19,7 +19,7 @@ public sealed class DirectStringSplitTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var code = Compile("for text in [left,right]:\n result=text.split(" + (separator ? "','" : "") + ")\n record()");
         context.Variables["left"] = PyString.FromString(separator ? "alpha,beta" : "alpha beta", context.MemoryGovernor, null);
         context.Variables["right"] = PyString.FromString(separator ? "café,😀" : " café\u00a0😀 ", context.MemoryGovernor, null);
@@ -45,7 +45,7 @@ public sealed class DirectStringSplitTests
     public async Task OrdinaryCallsPreserveResultsAndCleanup(bool asynchronous)
     {
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { },regexProvider:Utf8RegexProvider.Instance);
             context.Variables["text"] = PyString.FromString("word", context.MemoryGovernor, null);
             var code = Compile("return text.split()");
                 var result = Assert.IsType<PyList>(await Execute(code, context, asynchronous));
@@ -63,7 +63,7 @@ public sealed class DirectStringSplitTests
     {
                 var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var text = PyString.FromString("alpha beta", context.MemoryGovernor, null);
         var baseline = budget.ReservedBytes;
         using (var pad = new Pad(text, budget.LimitBytes!.Value))
@@ -101,7 +101,7 @@ public sealed class DirectStringSplitTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var text = PyString.FromString("alpha beta", context.MemoryGovernor, null);
         var receiver = new Receiver(argument ? PyString.FromString(" ", context.MemoryGovernor, null) : text);
         context.Variables["receive"] = receiver;
@@ -143,7 +143,7 @@ public sealed class DirectStringSplitTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     private static async ValueTask<object?> Execute(ExecutableCodeObject code, Context context, bool asynchronous)
         => asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)

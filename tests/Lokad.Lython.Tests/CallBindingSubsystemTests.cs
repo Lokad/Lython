@@ -157,7 +157,7 @@ public sealed class CallBindingSubsystemTests
     [Fact]
     public void CallExpansion_ProducesSameArgumentsForRawAndLoweredCalls()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         context.Variables["items"] = new PyList([new BigInteger(1), new BigInteger(2)]);
         var mapping = new PyDict();
         mapping.SetItem(PyString.FromString("name"), PyString.FromString("lokad"));
@@ -187,7 +187,7 @@ public sealed class CallBindingSubsystemTests
     [Fact]
     public void CallExpansion_RejectsNonStringDictionaryKeysForRawAndLoweredCalls()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         var mapping = new PyDict();
         mapping.SetItem(new BigInteger(1), PyString.FromString("bad"));
         context.Variables["mapping"] = mapping;
@@ -210,7 +210,7 @@ public sealed class CallBindingSubsystemTests
     [Fact]
     public void KeywordOnlyParameters_RejectMissingKeywordOnlyArgument()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def f(*args, name):
     return name
@@ -228,7 +228,7 @@ f("a")
     [Fact]
     public void KeywordOnlyParameters_RejectUnexpectedPositionalBinding()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def f(*, name):
     return name
@@ -264,7 +264,7 @@ f("a")
     [Fact]
     public void UnpackedDuplicateKeywordArgumentsAreRejected()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def f(x):
     return x
@@ -280,7 +280,7 @@ return f(x=1, **{'x': 2})
     [Fact]
     public void KeywordOnlyParametersRejectPositionalCalls()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 def f(*, x):
     return x

@@ -29,7 +29,7 @@ public sealed class CacheKeyAccountingTests
     public void KeywordNamesAreOwned()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var key = BuildKey(context, span, 0, CallArgumentValue.Keyword("k", new BigInteger(1)));
@@ -47,7 +47,7 @@ public sealed class CacheKeyAccountingTests
     public void TypeTokensAreOwned()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var key = BuildKey(context, span, 1, CallArgumentValue.Positional(new BigInteger(1)));
@@ -96,7 +96,7 @@ public sealed class CacheKeyAccountingTests
         // names. The widgets compare equal by value on purpose, so only the type
         // part can tell the keys apart: display-name tags would collide.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         Assert.Equal("Widget", typeof(WidgetKennelA.Widget).Name);
         Assert.Equal(typeof(WidgetKennelA.Widget).Name, typeof(WidgetKennelB.Widget).Name);

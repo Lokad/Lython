@@ -15,7 +15,7 @@ public sealed class RegexRewriteScenarioTests
             host.SeedFile(file.Key, file.Value);
         }
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.Equal(fixture.Result.Success, result.Success);
         Assert.Null(result.Failure);
@@ -38,7 +38,7 @@ public sealed class RegexRewriteScenarioTests
             host.SeedFile(file.Key, file.Value);
         }
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -48,7 +48,7 @@ public sealed class RegexRewriteScenarioTests
     [Fact]
     public void PatternError_PreservesLegacyErrorAliasIdentity()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 return re.error is re.PatternError
@@ -65,7 +65,7 @@ return re.error is re.PatternError
         var fixture = FixtureLoader.Load(Path.Combine("Workflows", "RegexRewrite", "SearchSplitAndEscape"));
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -88,7 +88,7 @@ return re.error is re.PatternError
             host.SeedFile(file.Key, file.Value);
         }
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.Equal(fixture.Result.Success, result.Success);
         Assert.Null(result.Failure);
@@ -105,7 +105,7 @@ return re.error is re.PatternError
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 m = re.search("beta", "alpha beta gamma")
@@ -125,7 +125,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 __lython_file = open("/out.txt", "w")
@@ -144,7 +144,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 pat = re.compile("(?P<word>beta)")
@@ -162,7 +162,7 @@ __lython_file.close()
     [Fact]
     public void Split_WithWrongArgumentType_FailsWithTypeError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 re.split(1, "alpha")
@@ -179,7 +179,7 @@ re.split(1, "alpha")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 parts = re.split(":+", ":a::b:")
@@ -199,7 +199,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 vals = []
@@ -221,7 +221,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 vals = []
@@ -243,7 +243,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 
@@ -265,7 +265,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 m = re.search("😀", "a😀b")
@@ -285,7 +285,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 m = re.search(".", "𝒜")
@@ -305,7 +305,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 vals = []
@@ -325,7 +325,7 @@ __lython_file.close()
     [Fact]
     public void ModuleRegexFunctions_RejectFlagsWhenPassedCompiledPattern()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 pat = re.compile("alpha")
@@ -355,7 +355,7 @@ re.split("a", "alpha", maxsplit=2147483648)
         "maxsplit is out of range")]
     public void ModuleRegexFunctions_ValidateCountAndMaxsplitContracts(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (exceptionType == "compile")
@@ -376,7 +376,7 @@ re.split("a", "alpha", maxsplit=2147483648)
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 pat = re.compile("alpha", re.IGNORECASE)
@@ -399,7 +399,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 
@@ -431,7 +431,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 
@@ -463,7 +463,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 
@@ -521,7 +521,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 
@@ -547,7 +547,7 @@ __lython_file.close()
     [InlineData("-1")]
     public async Task MatchGroup_InvalidIntegerIndicesRemainCatchable(string index)
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import re
             def check(match, key):
@@ -589,7 +589,7 @@ m.group("missing")
         "Regex group 'missing' is not defined.")]
     public void MatchGroup_ErrorsStayPythonShapedInScriptCode(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (exceptionType == "compile")

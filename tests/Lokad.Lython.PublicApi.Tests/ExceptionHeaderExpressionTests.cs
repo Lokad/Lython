@@ -216,7 +216,7 @@ public sealed class ExceptionHeaderExpressionTests
     [InlineData("except ValueError as target.value:")]
     public async Task InvalidHeadersAreRejectedBeforeEffects(string header)
     {
-        var compiled = new LythonEngine().Compile("print('effects')\ndef run():\n    try:\n        raise ValueError()\n    " + header + "\n        pass\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effects')\ndef run():\n    try:\n        raise ValueError()\n    " + header + "\n        pass\n");
         Assert.False(compiled.IsValid);
         var result = await compiled.RunAsync(new MockLythonHost());
         Assert.False(result.Success);
@@ -268,7 +268,7 @@ public sealed class ExceptionHeaderExpressionTests
                     return header()
             headers = Headers()
             """ + "\n" + (classBody ? "class C:\n" + string.Join("\n", body.Split('\n').Select(line => "    " + line)) : body);
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var immediate = new MockLythonHost();
         immediate.SeedFile("/number.txt", "2");
@@ -287,7 +287,7 @@ public sealed class ExceptionHeaderExpressionTests
     [Fact]
     public async Task DynamicHeaderTupleConstructionRemainsGoverned()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             try:
                 raise ValueError("x")
             except tuple(ValueError for _ in range(100000)):
@@ -331,7 +331,7 @@ public sealed class ExceptionHeaderExpressionTests
                 Path("/number.txt").read_text()
                 return int
             """ + "\ntry:\n" + string.Join("\n", protectedBody.Split('\n').Select(line => "    " + line)) + "\nexcept TypeError as error:\n    print(type(error.__context__).__name__)\n";
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var immediate = new MockLythonHost();
         immediate.SeedFile("/number.txt", "2");
@@ -350,7 +350,7 @@ public sealed class ExceptionHeaderExpressionTests
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

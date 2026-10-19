@@ -16,7 +16,7 @@ public sealed class NamedUnicodeEscapeBoundaryTests
     [InlineData("'prefix' u'\\N{LATIN SMALL LETTER A}'")]
     public async Task NamedEscapesFailExplicitlyBeforeEffects(string literal)
     {
-        var compiled = new LythonEngine().Compile("print('effects')\nvalue = " + literal + "\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effects')\nvalue = " + literal + "\n");
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, diagnostic => diagnostic.Code == "LA2000" &&
             diagnostic.Message.Contains("Unsupported named Unicode escape", StringComparison.Ordinal));
@@ -58,7 +58,7 @@ public sealed class NamedUnicodeEscapeBoundaryTests
     [Fact]
     public async Task NamedEscapePatternsFailBeforeEffects()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             print("effects")
             match "a":
                 case "\N{LATIN SMALL LETTER A}":
@@ -73,7 +73,7 @@ public sealed class NamedUnicodeEscapeBoundaryTests
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

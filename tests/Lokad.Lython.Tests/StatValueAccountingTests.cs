@@ -14,7 +14,7 @@ public sealed class StatValueAccountingTests
     {
         var host = new MockLythonHost();
         host.SeedFile("/d/f0", "x");
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var method = typeof(LythonRuntime).GetMethod("OsStat", BindingFlags.Static | BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("OsStat not found.");

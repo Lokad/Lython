@@ -12,7 +12,7 @@ public sealed class RegexCompilationAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedCompilationsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import re
             patterns = []
@@ -36,7 +36,7 @@ public sealed class RegexCompilationAccountingScenarioTests
     [Fact]
     public async Task EmptyMatchesAndExpandingSubstitutionsProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import re
             empties = re.findall("x*", "ab")
@@ -58,7 +58,7 @@ public sealed class RegexCompilationAccountingScenarioTests
     [Fact]
     public async Task CompiledPatternSearchStillProjects()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import re
             p = re.compile("a(b|c)*d")

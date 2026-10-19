@@ -7,7 +7,7 @@ public sealed class ShlexModuleFunctionTests
     [Fact]
     public void QuoteAndJoinMatchPythonShellSpelling()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import shlex
 
@@ -34,7 +34,7 @@ return "|".join(values)
     [Fact]
     public void SplitMatchesPosixWhitespaceQuoteEscapeCommentAndUnicodeRules()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import shlex
 
@@ -65,7 +65,7 @@ return str(values)
     [Fact]
     public void SplitSupportsTheLegacyNonPosixCallShape()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import shlex
 
@@ -89,7 +89,7 @@ return str(values)
     [Fact]
     public void InvalidInputsAndUnterminatedTokensFailExplicitly()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import shlex
 
@@ -118,7 +118,7 @@ return "|".join(values)
     [Fact]
     public void StaticContractsRecognizeShlexAndItsCallShapes()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import shlex
 from shlex import quote, join, split
@@ -127,7 +127,7 @@ escaped = quote("two words")
 command = join(["echo", escaped])
 words = split(command, comments=False, posix=True)
 """);
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import shlex
 shlex.quote()

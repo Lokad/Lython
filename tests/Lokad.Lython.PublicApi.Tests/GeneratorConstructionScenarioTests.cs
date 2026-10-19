@@ -13,7 +13,7 @@ public sealed class GeneratorConstructionScenarioTests
     [Fact]
     public async Task OuterIterableRebindingUsesCreationValue()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             data = [1, 2]
             g = (x for x in data)
@@ -36,12 +36,12 @@ public sealed class GeneratorConstructionScenarioTests
     {
         const string source = "g = (x for x in print(\"outer\") or [1, 2])\nprint(\"after\")\nprint(list(g))\n";
         var syncHost = new MockLythonHost();
-        var sync = new LythonEngine().Run(source, syncHost);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, syncHost);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal("outer\nafter\n[1, 2]\n", syncHost.CapturedStandardOutput());
 
         var asyncHost = new MockLythonHost();
-        var asyncResult = await new LythonEngine().RunAsync(source, asyncHost);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, asyncHost);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("outer\nafter\n[1, 2]\n", asyncHost.CapturedStandardOutput());
     }
@@ -53,11 +53,11 @@ public sealed class GeneratorConstructionScenarioTests
         const string nonIterable = "def probe():\n    try:\n        g = (x for x in 1)\n        return \"deferred\"\n    except TypeError:\n        return \"eager\"\nreturn probe()\n";
         foreach (var source in new[] { zeroDivision, nonIterable })
         {
-            var sync = new LythonEngine().Run(source, new MockLythonHost());
+            var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
             Assert.True(sync.Success, sync.Failure?.Message);
             Assert.Equal("eager", sync.ReturnValue);
 
-            var asyncResult = await new LythonEngine().RunAsync(source, new MockLythonHost());
+            var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, new MockLythonHost());
             Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
             Assert.Equal("eager", asyncResult.ReturnValue);
         }
@@ -66,7 +66,7 @@ public sealed class GeneratorConstructionScenarioTests
     [Fact]
     public async Task LaterClausesStayDeferred()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             log = []
             def inner():
@@ -95,7 +95,7 @@ public sealed class GeneratorConstructionScenarioTests
     [Fact]
     public async Task UserIterRunsAtConstruction()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             log = []
             class It:
@@ -127,7 +127,7 @@ public sealed class GeneratorConstructionScenarioTests
     [Fact]
     public async Task PureOuterNeedsNoSuspension()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             data = [1, 2]
             g = (x for x in data)
@@ -144,7 +144,7 @@ public sealed class GeneratorConstructionScenarioTests
     [Fact]
     public void LocalRebindingStillReportsReadBeforeAssigned()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             def f():
                 g = (x for x in data)

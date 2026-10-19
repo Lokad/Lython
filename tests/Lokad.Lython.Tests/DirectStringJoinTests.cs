@@ -18,7 +18,7 @@ public sealed class DirectStringJoinTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         context.Variables["left"] = PyString.FromString("|", context.MemoryGovernor, null);
         context.Variables["right"] = PyString.FromString("::", context.MemoryGovernor, null);
         context.Variables["parts"] = new PyList([PyString.FromString("café"), PyString.FromString("😀")], context.MemoryGovernor, null);
@@ -46,7 +46,7 @@ public sealed class DirectStringJoinTests
         var budget = new LythonMemoryBudget(limit);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner});
+            { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var first = PyString.FromString("abcd", context.MemoryGovernor, null);
         var last = PyString.FromString("efgh", context.MemoryGovernor, null);
         var parts = new PyList([first, last], context.MemoryGovernor, null);
@@ -74,7 +74,7 @@ public sealed class DirectStringJoinTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
     private static ValueTask<object?> Execute(ExecutableCodeObject code, Context context, bool asynchronous)
         => asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
             : ValueTask.FromResult(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));

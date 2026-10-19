@@ -12,7 +12,7 @@ public sealed class GzipFileWarningHostTests
     [InlineData(true)]
     public async Task NativeWarningAwaitsMediatedStderrAndHonorsCancellation(bool cancel)
     {
-        var script = new LythonEngine().Compile(Source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var host = new MockLythonHost();
         var stderr = new PausedTextOutput();
@@ -53,7 +53,7 @@ public sealed class GzipFileWarningHostTests
         var host = new MockLythonHost();
         var stderr = new PausedTextOutput();
         host.SetStandardError(stderr);
-        var result = new LythonEngine().Run(Source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(Source, host);
         Assert.False(result.Success);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
         Assert.Equal(0, stderr.Writes);

@@ -10,7 +10,7 @@ public sealed class CooperativeExecutionGuardTests
     [Fact]
     public void OrdinaryExecutionRetainsResourceLimits()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         Assert.Null(Assert.IsType<LythonMemoryBudget>(context.MemoryGovernor.Budget).LimitBytes);
         Assert.Equal(LythonRunOptions.DefaultMaxRecursionDepth, context.Limits.MaxRecursionDepth);
     }
@@ -71,7 +71,7 @@ public sealed class CooperativeExecutionGuardTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = owner,
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var dropped = CreateWorkingStorage(context);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.Equal(before, budget.ReservedBytes);

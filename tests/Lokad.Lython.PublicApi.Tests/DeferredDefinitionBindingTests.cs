@@ -34,14 +34,14 @@ public sealed class DeferredDefinitionBindingTests
     [InlineData("def f():\n items={}\n return items['missing']\n", "LA3157")]
     public void ProvenLocalErrorsStillProduceDiagnostics(string source, string diagnostic)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == diagnostic);
     }
 
     private static async Task AssertTrueInBothModes(string source)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var sync = compiled.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

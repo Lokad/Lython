@@ -8,7 +8,7 @@ public sealed class SubscriptStoreExecutionTests
     public async Task StoredAliasesRemainFundedAcrossExecutions()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("box={}\nvalue=['x'*4096]\nbox['key']=value\nreturn box['key']", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("box={}\nvalue=['x'*4096]\nbox['key']=value\nreturn box['key']", budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
@@ -39,7 +39,7 @@ public sealed class SubscriptStoreExecutionTests
         var paths = new[] { "/rhs.txt", "/receiver.txt", "/key.txt", "/bind.txt", "/set.txt" };
         var labels = new[] { "R", "C", "K", "B", "S" };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -103,7 +103,7 @@ public sealed class SubscriptStoreExecutionTests
     public async Task TargetOrderAndImplicitSettersMatchPython(string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })

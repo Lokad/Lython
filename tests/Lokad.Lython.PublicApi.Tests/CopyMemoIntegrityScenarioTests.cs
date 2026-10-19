@@ -45,7 +45,7 @@ public sealed class CopyMemoIntegrityScenarioTests
     [Fact]
     public async Task InternalDeepCopyPreservesDistinctCopies()
     {
-        var script = new LythonEngine().Compile(CheckCopies);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(CheckCopies);
         Assert.True(script.IsValid);
         var expected = new List<object?> { new BigInteger(20000), new BigInteger(0) };
         var sync = script.Run(new MockLythonHost());
@@ -60,7 +60,7 @@ public sealed class CopyMemoIntegrityScenarioTests
     [Fact]
     public async Task ExternalDeepCopyPreservesDistinctCopies()
     {
-        var script = new LythonEngine().Compile(CheckExternalCopies);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(CheckExternalCopies);
         Assert.True(script.IsValid);
         var expected = new List<object?> { new BigInteger(20000), new BigInteger(0), true };
         var sync = script.Run(new MockLythonHost());
@@ -77,7 +77,7 @@ public sealed class CopyMemoIntegrityScenarioTests
     {
         // MG03: a pre-seeded memo entry keyed by id() behaves like CPython:
         // the recorded replacement is returned as-is.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import copy\n"
             + "a = [1]\n"
             + "replacement = [\"replacement\"]\n"

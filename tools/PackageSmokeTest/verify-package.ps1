@@ -24,7 +24,7 @@ try {
     if ($nuspec.package.metadata.version -ne $version) { throw 'Package version mismatch.' }
     if ($nuspec.package.metadata.repository.commit -ne $commit) { throw 'Package repository commit mismatch.' }
     $dependencies = @($nuspec.package.metadata.dependencies.group.dependency.id | Sort-Object)
-    if (($dependencies -join ',') -ne 'Lokad.Parsing,Lokad.Utf8Regex.PythonRe') { throw 'Unexpected package dependencies.' }
+    if (($dependencies -join ',') -ne 'Lokad.Parsing') { throw 'Unexpected core package dependencies.' }
     if (@($entryNames | Where-Object { $_ -like 'lib/*/*.dll' }).Count -ne 1) { throw 'Unexpected package assemblies.' }
 } finally { $archive.Dispose() }
 $symbolArchive = [IO.Compression.ZipFile]::OpenRead($symbols)
@@ -32,30 +32,61 @@ try {
     if ('lib/net10.0/Lokad.Lython.pdb' -notin @($symbolArchive.Entries.FullName)) { throw 'Symbol package is missing the portable PDB.' }
 } finally { $symbolArchive.Dispose() }
 
+$adapterProject = Join-Path $repoRoot 'src/Lokad.Lython.Utf8Regex/Lokad.Lython.Utf8Regex.csproj'
+dotnet pack $adapterProject -c Release --nologo -o $OutputDirectory
+if ($LASTEXITCODE -ne 0) { throw 'Release adapter pack failed.' }
+$adapterPackage = Join-Path $OutputDirectory "Lokad.Lython.Utf8Regex.$version.nupkg"
+$archive = [IO.Compression.ZipFile]::OpenRead($adapterPackage)
+try {
+    $reader = [IO.StreamReader]::new($archive.GetEntry('Lokad.Lython.Utf8Regex.nuspec').Open())
+    try { [xml] $adapterNuspec = $reader.ReadToEnd() } finally { $reader.Dispose() }
+    if ($adapterNuspec.package.metadata.version -ne $version -or $adapterNuspec.package.metadata.repository.commit -ne $commit) { throw 'Adapter package identity mismatch.' }
+    $dependencies = @($adapterNuspec.package.metadata.dependencies.group.dependency.id | Sort-Object)
+    if (($dependencies -join ',') -ne 'Lokad.Lython,Lokad.Utf8Regex.PythonRe') { throw 'Unexpected adapter package dependencies.' }
+    foreach ($required in @('lib/net10.0/Lokad.Lython.Utf8Regex.dll', 'README.md', 'LICENSE.txt')) {
+        if ($required -notin @($archive.Entries.FullName)) { throw "Adapter package is missing $required." }
+    }
+} finally { $archive.Dispose() }
+
 # Keep the consumer outside the checkout, with its own sources, project,
 # NuGet configuration and package cache. Restore the exact local artifact.
-$consumer = Join-Path ([IO.Path]::GetTempPath()) ('lython-package-' + [guid]::NewGuid().ToString('N'))
+$consumerRoot = Join-Path ([IO.Path]::GetTempPath()) ('lython-package-' + [guid]::NewGuid().ToString('N'))
+foreach ($kind in @('core', 'adapter')) {
+$consumer = Join-Path $consumerRoot $kind
 [IO.Directory]::CreateDirectory($consumer) | Out-Null
 $feed = [Security.SecurityElement]::Escape($OutputDirectory)
 @"
 <configuration>
   <packageSources><clear /><add key="candidate" value="$feed" /><add key="nuget.org" value="https://api.nuget.org/v3/index.json" /></packageSources>
-  <packageSourceMapping><packageSource key="candidate"><package pattern="Lokad.Lython" /></packageSource><packageSource key="nuget.org"><package pattern="*" /></packageSource></packageSourceMapping>
+  <packageSourceMapping><packageSource key="candidate"><package pattern="Lokad.Lython" /><package pattern="Lokad.Lython.Utf8Regex" /></packageSource><packageSource key="nuget.org"><package pattern="*" /></packageSource></packageSourceMapping>
 </configuration>
 "@ | Set-Content -LiteralPath (Join-Path $consumer 'NuGet.Config') -Encoding utf8
+$packageId = if ($kind -eq 'core') { 'Lokad.Lython' } else { 'Lokad.Lython.Utf8Regex' }
 @"
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors><ImportDirectoryBuildProps>false</ImportDirectoryBuildProps><ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets><ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally></PropertyGroup>
-  <ItemGroup><PackageReference Include="Lokad.Lython" Version="$version" /></ItemGroup>
+  <ItemGroup><PackageReference Include="$packageId" Version="$version" /></ItemGroup>
 </Project>
 "@ | Set-Content -LiteralPath (Join-Path $consumer 'Consumer.csproj') -Encoding utf8
-Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Program.cs') -Destination (Join-Path $consumer 'Program.cs')
+$program = if ($kind -eq 'core') { 'Program.cs' } else { 'AdapterProgram.cs' }
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot $program) -Destination (Join-Path $consumer 'Program.cs')
 $consumerProject = Join-Path $consumer 'Consumer.csproj'
 $cache = Join-Path $consumer 'packages'
 dotnet restore $consumerProject --configfile (Join-Path $consumer 'NuGet.Config') --packages $cache --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Isolated package restore failed.' }
 $restoredPackage = Join-Path $cache "lokad.lython/$version/lokad.lython.$version.nupkg"
 if ((Get-FileHash -LiteralPath $package -Algorithm SHA512).Hash -ne (Get-FileHash -LiteralPath $restoredPackage -Algorithm SHA512).Hash) { throw 'Restored package hash mismatch.' }
+if ($kind -eq 'adapter') {
+    $restoredAdapter = Join-Path $cache "lokad.lython.utf8regex/$version/lokad.lython.utf8regex.$version.nupkg"
+    if ((Get-FileHash -LiteralPath $adapterPackage -Algorithm SHA512).Hash -ne (Get-FileHash -LiteralPath $restoredAdapter -Algorithm SHA512).Hash) { throw 'Restored adapter hash mismatch.' }
+}
 dotnet run --project $consumerProject -c Release --no-restore -- $version
 if ($LASTEXITCODE -ne 0) { throw 'Isolated package consumer failed.' }
-Write-Host "Verified package $package (SHA512 $((Get-FileHash -LiteralPath $package -Algorithm SHA512).Hash)). Consumer: $consumer"
+if ($kind -eq 'core') {
+    $deps = Get-Content -Raw -LiteralPath (Join-Path $consumer 'bin/Release/net10.0/Consumer.deps.json')
+    if ($deps.Contains('Utf8Regex')) { throw 'Core consumer still has a regex dependency edge.' }
+    if (@(Get-ChildItem -LiteralPath (Join-Path $consumer 'bin/Release/net10.0') -Filter '*Utf8Regex*').Count -ne 0) { throw 'Core consumer contains a regex assembly.' }
+}
+$candidate = if ($kind -eq 'core') { $package } else { $adapterPackage }
+Write-Host "Verified package $candidate (SHA512 $((Get-FileHash -LiteralPath $candidate -Algorithm SHA512).Hash)). Consumer: $consumer"
+}

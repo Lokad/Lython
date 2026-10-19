@@ -11,7 +11,7 @@ public sealed class AsciiCodecAccountingTests
     [InlineData(130)]
     public void DeniedNativeDecodingRefundsUnusedAdmission(long cap)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 100; attempt++)
         {
@@ -35,7 +35,7 @@ public sealed class AsciiCodecAccountingTests
         {
             var host = new MockLythonHost();
             host.SeedBytes("/input", [0xff, 0xc3, 0xa9, 0x0d, 0x0a]);
-            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) });
+            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) },regexProvider:Utf8RegexProvider.Instance);
             var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState("/input", context,
                 LythonRuntime.TextEncodingMode.Ascii, errors, LythonRuntime.TextNewlineMode.TranslateUniversal, window);
             var before = context.MemoryGovernor.CurrentCommittedBytes;

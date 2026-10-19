@@ -7,7 +7,7 @@ public sealed class Latin1CodecTests
     [Fact]
     public void CodecAliasesRoundTripEveryByteAcrossBuiltinAndMemberForms()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 payload = bytes("Aéÿ", "latin-1")
 decoded = bytes([0, 127, 128, 255]).decode("iso-8859-1")
@@ -31,7 +31,7 @@ return str(checks)
     [Fact]
     public void EncodeErrorHandlersMatchPythonLatin1Behavior()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 source = "A€😀B"
 values = [
@@ -62,7 +62,7 @@ return "|".join(values)
         host.SeedBytes("/repo/input.txt", [0x63, 0x61, 0x66, 0xe9, 0x0d, 0x0a]);
         host.SeedBytes("/repo/append.txt", [0x62, 0x61, 0x73, 0xe9]);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -97,7 +97,7 @@ return "|".join(values)
         var host = new DelayedLythonHost("/repo");
         host.SeedBytes("/repo/input.txt", [0x63, 0x61, 0x66, 0xe9]);
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 from pathlib import Path
 
@@ -120,7 +120,7 @@ return text
         var host = new MockLythonHost("/repo");
         host.SeedBytes("/repo/out.txt", [0x6b, 0x65, 0x65, 0x70]);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 Path("/repo/out.txt").write_text("€", encoding="latin-1")
@@ -139,13 +139,13 @@ Path("/repo/out.txt").write_text("€", encoding="latin-1")
         var host = new TextOnlyHost();
         host.SeedFile("/repo/input.txt", "alpha");
 
-        var read = new LythonEngine().Run(
+        var read = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 Path("/repo/input.txt").read_text(encoding="latin-1")
 """,
             host);
-        var write = new LythonEngine().Run(
+        var write = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 Path("/repo/out.txt").write_text("alpha", encoding="latin-1")
@@ -161,7 +161,7 @@ Path("/repo/out.txt").write_text("alpha", encoding="latin-1")
     [Fact]
     public void Latin1AliasesRemainAcceptedByStaticTextContracts()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 import argparse

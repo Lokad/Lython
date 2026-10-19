@@ -23,7 +23,7 @@ public sealed class PathConstructionAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedPathsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             objs = []
             i = 0
@@ -48,7 +48,7 @@ public sealed class PathConstructionAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedParentsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             objs = []
             i = 0
@@ -73,7 +73,7 @@ public sealed class PathConstructionAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedPartsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             objs = []
             i = 0
@@ -98,7 +98,7 @@ public sealed class PathConstructionAccountingScenarioTests
     [Fact]
     public async Task PathConstructionBehaves()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             p = Path("/a", "b/c")
             q = Path()

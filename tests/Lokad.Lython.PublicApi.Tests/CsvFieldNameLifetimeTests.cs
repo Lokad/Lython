@@ -33,7 +33,7 @@ public sealed class CsvFieldNameLifetimeTests
         var retained = kind.StartsWith("retained-", StringComparison.Ordinal);
         var count = retained ? 5000 : 16;
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source.Replace("5000", count.ToString()).Replace("4999", (count - 1).ToString()), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source.Replace("5000", count.ToString()).Replace("4999", (count - 1).ToString()), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };

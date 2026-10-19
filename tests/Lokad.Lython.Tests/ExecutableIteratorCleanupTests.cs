@@ -17,9 +17,9 @@ public sealed class ExecutableIteratorCleanupTests
     [InlineData(true, "for value in source:\n    break", false)]
     public void AbandonmentDisposesNativeIterationBeforeReturning(bool asynchronous, string source, bool fails)
     {
-        var syntax = LythonFrontend.Compile(source).Script!;
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
-        var context = new Context(new MockLythonHost(), new LythonRunOptions());
+        var context = new Context(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var iterable = new OwnedIterable(context.MemoryGovernor);
         context.Variables["source"] = iterable;
         void Run()

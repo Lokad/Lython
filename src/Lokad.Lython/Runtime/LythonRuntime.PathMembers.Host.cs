@@ -364,7 +364,7 @@ internal sealed partial class LythonRuntime
                         foreach (var name in context.HostListDir(path.Value.AsString(), span))
                         {
                             context.CheckExecution(span);
-                            if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern))
+                            if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern, context.Limits.CancellationToken))
                             {
                                 results.Add(OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)),path.Value,context.MemoryGovernor,span));
                                 context.CheckExecution(span);
@@ -383,7 +383,7 @@ internal sealed partial class LythonRuntime
                         foreach (var name in names)
                         {
                             context.CheckExecution(span);
-                            if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern))
+                            if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern, context.Limits.CancellationToken))
                             {
                                 results.Add(OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)),path.Value,context.MemoryGovernor,span));
                                 context.CheckExecution(span);

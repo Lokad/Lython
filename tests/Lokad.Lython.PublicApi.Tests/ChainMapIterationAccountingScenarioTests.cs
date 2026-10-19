@@ -24,7 +24,7 @@ public sealed class ChainMapIterationAccountingScenarioTests
     [Fact]
     public async Task ListedChainMapRespectsTransientBudget()
     {
-        var script = new LythonEngine().Compile(BuildSharedMaps + "\nreturn len(list(cm))\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildSharedMaps + "\nreturn len(list(cm))\n");
         Assert.True(script.IsValid);
         // Calibration: the merged visit total (20000 keys) backstops 1280000B;
         // the ten-key result alone fits comfortably below 512KiB.
@@ -41,7 +41,7 @@ public sealed class ChainMapIterationAccountingScenarioTests
     [Fact]
     public async Task RoomyListedChainMapSucceeds()
     {
-        var script = new LythonEngine().Compile(BuildSharedMaps + "\nreturn len(list(cm))\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildSharedMaps + "\nreturn len(list(cm))\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4194304) };
         var expected = new BigInteger(10);
@@ -57,7 +57,7 @@ public sealed class ChainMapIterationAccountingScenarioTests
     [Fact]
     public async Task ChainMapIterationBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import collections
             cm = collections.ChainMap({0: 10, 1: 11}, {1: 21, 2: 22})

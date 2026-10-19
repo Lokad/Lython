@@ -17,7 +17,7 @@ public sealed class ScalarStringLiteralDiagnosticsTests
         foreach (var source in sources)
         {
             var budget = new LythonMemoryBudget(128 * 1024);
-            using (var script = new LythonEngine().Compile(source, budget))
+            using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget))
             {
                 Assert.False(script.IsValid);
                 Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA2000" && diagnostic.Message.Contains("surrogate", StringComparison.Ordinal));
@@ -35,7 +35,7 @@ public sealed class ScalarStringLiteralDiagnosticsTests
     [InlineData("print('\\U80000000')")]
     public void OutOfRangeEscapesAreRejectedWithoutSignedWraparound(string source)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA1007");
     }

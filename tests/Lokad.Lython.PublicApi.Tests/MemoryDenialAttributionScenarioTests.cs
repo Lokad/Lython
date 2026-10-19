@@ -9,7 +9,7 @@ public sealed class MemoryDenialAttributionScenarioTests
     [Fact]
     public async Task DeniedReservationIsAttributed()
     {
-        var script = new LythonEngine().Compile("return \"x\" * 200000\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return \"x\" * 200000\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(512) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -26,7 +26,7 @@ public sealed class MemoryDenialAttributionScenarioTests
     [Fact]
     public async Task FundedRunReportsZeroDenial()
     {
-        var script = new LythonEngine().Compile("return \"x\" * 200\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return \"x\" * 200\n");
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

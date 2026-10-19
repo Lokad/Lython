@@ -114,7 +114,7 @@ public sealed class RegexMatchIndexTests
         var source = "import re\nimport operator\nclass Index:\n    def __index__(self):\n" +
             "        with open('/index.txt') as handle:\n            return int(handle.read())\n" +
             "m = re.search('(a)(b)', 'ab')\nkey = Index()\nprint(" + expression + ")";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var syncHost = new MockLythonHost();
         syncHost.SeedFile("/index.txt", "2");
@@ -166,7 +166,7 @@ public sealed class RegexMatchIndexTests
 
     private static async Task AssertBothModes(string source, string expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(diagnostic => diagnostic.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {

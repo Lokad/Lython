@@ -31,7 +31,7 @@ public sealed class ContextualHashTests
                 seen.append("set")
             return seen
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { "hash", "dict", "set" },
@@ -49,7 +49,7 @@ public sealed class ContextualHashTests
                 pass
             return [hash(B()), hash(C())]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(42), new BigInteger(42) },
@@ -75,7 +75,7 @@ public sealed class ContextualHashTests
                     seen.append(1)
             return seen
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(1), new BigInteger(1), new BigInteger(1) },
@@ -93,7 +93,7 @@ public sealed class ContextualHashTests
             b = B()
             return [hash((1, 2)) == hash((1, 2)), hash((a, 1)) == hash((b, 1))]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { true, true }, result.ReturnValue);
     }
@@ -111,7 +111,7 @@ public sealed class ContextualHashTests
             except TypeError:
                 return "unhashable"
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("unhashable", result.ReturnValue);
     }
@@ -128,7 +128,7 @@ public sealed class ContextualHashTests
             d[a] = 3
             return [d[a], b in d, hash(a) == hash(a)]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(3), false, true },
@@ -155,7 +155,7 @@ public sealed class ContextualHashTests
                 seen.append("unhashable")
             return seen
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { true, new BigInteger(9), "unhashable" },
@@ -171,7 +171,7 @@ public sealed class ContextualHashTests
             except TypeError as e:
                 return str(e)
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("unhashable type: 'list'", result.ReturnValue);
     }

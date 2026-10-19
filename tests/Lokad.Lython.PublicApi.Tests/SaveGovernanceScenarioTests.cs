@@ -29,7 +29,7 @@ public sealed class SaveGovernanceScenarioTests
     [Fact]
     public async Task HyperlinkHeavySaveRespectsBudget()
     {
-        var script = new LythonEngine().Compile(BuildAndSave);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildAndSave);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var syncHost = new MockLythonHost();
@@ -48,7 +48,7 @@ public sealed class SaveGovernanceScenarioTests
     [Fact]
     public async Task RoomySaveRoundTripsHyperlinks()
     {
-        var script = new LythonEngine().Compile(BuildAndSave);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildAndSave);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         var host = new MockLythonHost();
@@ -59,7 +59,7 @@ public sealed class SaveGovernanceScenarioTests
         Assert.Equal((byte)0x50, bytes[0]);
         Assert.Equal((byte)0x4B, bytes[1]);
 
-        var check = new LythonEngine().Compile(
+        var check = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             wb = openpyxl.load_workbook("/t.xlsx")

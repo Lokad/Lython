@@ -7,7 +7,7 @@ public sealed class ModuleFunctionSuperBoundaryTests
     [Fact]
     public async Task OwnerBindingAfterDefinitionKeepsMissingClassCellError()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def external(self): return super()
             class Base: pass
             class C(Base): method=external
@@ -34,7 +34,7 @@ public sealed class ModuleFunctionSuperBoundaryTests
             def keywords(**kwargs): return value+sum(kwargs.values())
             def no_receiver(): return value
             """;
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import helper
             value=1000
             print(helper.positional(3),helper.positional(3,offset=4),helper.named(),helper.named(receiver=5))
@@ -54,7 +54,7 @@ public sealed class ModuleFunctionSuperBoundaryTests
     [Fact]
     public async Task ImportedFunctionOwnerBindingKeepsFailureSourceAndSpan()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import helper
             class C: method=helper.external
             C().method()

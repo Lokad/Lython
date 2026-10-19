@@ -10,9 +10,9 @@ public sealed class PostponedAnnotationSubsystemTests
     [Fact]
     public void LoweredFunctionDefinitionUsesSharedAnnotationMetadata()
     {
-        var frontend = LythonFrontend.Compile("from __future__ import annotations\ndef f[T](x:Missing)->list[T]:pass\n");
+        var frontend = LythonFrontend.Compile("from __future__ import annotations\ndef f[T](x:Missing)->list[T]:pass\n",regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(frontend.Script);
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), null);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), null,regexProvider:Utf8RegexProvider.Instance);
         LythonRuntime.ExecuteStatements(LoweredScript.Lower(frontend.Script).Statements, context);
         var function = Assert.IsAssignableFrom<PyFunctionBase>(context.Variables["f"]);
         Assert.True(function.TryGetMember("__annotations__", out var metadata));

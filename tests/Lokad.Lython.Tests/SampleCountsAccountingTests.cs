@@ -21,7 +21,7 @@ public sealed class SampleCountsAccountingTests
         // on return, so only the result array stays committed, adopted at the
         // PyList boundary. Pools arrive by index with no drain.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var moduleType = typeof(LythonRuntime).GetNestedType("RandomModule", BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("RandomModule not found.");
@@ -55,7 +55,7 @@ public sealed class SampleCountsAccountingTests
         // Keep the same thousand-value input while checking the caller lifetime.
         // Drained backing is reserved scratch, not a durable unowned commit.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var moduleType = typeof(LythonRuntime).GetNestedType("RandomModule", BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("RandomModule not found.");

@@ -72,14 +72,14 @@ internal sealed partial class LythonRuntime
                         return OwnPathResult(current,path.Value,context.MemoryGovernor,span);
                     }),
                     "expanduser" => UnsupportedPathMember(PathExpanduserSignature, "Path.expanduser() is not supported by Lython; the host does not expose an ambient user home directory."),
-                    "match" => BoundCallable.Create((arguments, span, _) =>
+                    "match" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
                         {
                             throw new LythonRuntimeException("TypeError", "Path.match(pattern) expects one string argument.", span);
                         }
 
-                        return PathOps.Match(path.Value.AsString(), pattern.AsString());
+                        return PathOps.Match(path.Value.AsString(), pattern.AsString(), context.Limits.CancellationToken);
                     }, PathMatchSignature),
                     "is_relative_to" => BoundCallable.Create((arguments, span, _) =>
                     {

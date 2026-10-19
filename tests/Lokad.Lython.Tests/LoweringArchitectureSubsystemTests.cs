@@ -19,7 +19,7 @@ def helper():
     return 1
 
 value = 2
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
@@ -43,7 +43,7 @@ for item in [1]:
             print = item
         except Exception:
             pass
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var loop = Assert.IsType<LoweredForStatement>(Assert.Single(lowered.Statements));
@@ -62,7 +62,7 @@ for item in [1]:
 values = [f"{item:03d}" for item in [1, 2] if item]
 mapping = {item: f"{item!s}" for item in [1, 2]}
 unique = {f"{item}" for item in [1, 2] if item}
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var listAssignment = Assert.IsType<LoweredNameAssignmentStatement>(lowered.Statements[0]);
@@ -96,7 +96,7 @@ unique = {f"{item}" for item in [1, 2] if item}
 value = helper.items[1] + (-count if ready else 0)
 result = helper.run(*items, **mapping)
 ok = left < middle < right
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
@@ -130,7 +130,7 @@ if ready:
     pass
 else:
     raise Error("bad")
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
@@ -167,7 +167,7 @@ while False:
     pass
 else:
     pass
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
@@ -194,7 +194,7 @@ def outer():
     return inner
 
 helper.value = b"x"
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var outer = Assert.IsType<LoweredFunctionDefinitionStatement>(lowered.Statements[0]);
@@ -218,7 +218,7 @@ helper.value = b"x"
             """
 value = 1, 2
 return value, 3
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         Assert.Empty(frontend.Diagnostics);
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
@@ -245,7 +245,7 @@ left, right = (8, 9)
 items[0] = 10
 items[1:2] = [11]
 owner.member = 12
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         Assert.Empty(frontend.Diagnostics);
         var statements = LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements;
@@ -274,7 +274,7 @@ match pathlib.Path("/docs/guide.md"):
         value = name
     case _:
         value = suffix
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var matchStatement = Assert.IsType<LoweredMatchStatement>(lowered.Statements[1]);
@@ -297,7 +297,7 @@ def helper(xs, prefix="v"):
 values = [helper([1, 2]), helper([3], prefix="x")]
 mapping = {item: item.upper() for item in values if item}
 assert values[0].startswith("v")
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         Assert.DoesNotContain(FlattenStatements(lowered.Statements), statement => statement is LoweredOtherStatement);
@@ -321,7 +321,7 @@ def helper(*parts, sep="|", suffix):
 
 line = [match, case][0].upper().splitlines(True)[0]
 result = helper(*["a", "b"], suffix="?")
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         Assert.DoesNotContain(FlattenStatements(lowered.Statements), statement => statement is LoweredOtherStatement);
@@ -335,7 +335,7 @@ result = helper(*["a", "b"], suffix="?")
 x = 1
 y = x + 2
 y
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -373,7 +373,7 @@ total = 1
 total += 2
 values = [0, 1, 2, 3, 4]
 values[1:4:2]
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -397,7 +397,7 @@ values[1:4:2]
                 .Select(index => $"value_{index} = \"constant-{index}\"")
                 .Append("duplicate = \"constant-0\""));
 
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
 
@@ -420,7 +420,7 @@ while count:
     count = count - 1
 else:
     count = 99
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -444,7 +444,7 @@ else:
     value = 2
 
 return value
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -462,7 +462,7 @@ return value
         var frontend = LythonFrontend.Compile("""
 class Box:
     pass
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -484,7 +484,7 @@ while count > 1:
     count = count - 1
 
 return count
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -515,7 +515,7 @@ else:
     total = 99
 
 return total
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -530,7 +530,7 @@ return total
     {
         var frontend = LythonFrontend.Compile("""
 return len([1, 2, 3])
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -546,7 +546,7 @@ return len([1, 2, 3])
         var frontend = LythonFrontend.Compile("""
 import math
 return math.sqrt(9)
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -564,7 +564,7 @@ return math.sqrt(9)
         var frontend = LythonFrontend.Compile("""
 payload = {"items": (1, 2, 3)}
 return payload["items"][1]
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -584,7 +584,7 @@ value = part[0] + part[1]
 if ok:
     return value
 return 0
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -601,7 +601,7 @@ return 0
 a = b = 1
 a += 2
 return a + b
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -617,7 +617,7 @@ return a + b
         var frontend = LythonFrontend.Compile("""
 first, *middle, last = [1, 2, 3, 4]
 return first + len(middle) + last
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -635,7 +635,7 @@ def helper(value, step=1):
     return value + step
 
 return helper(2)
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -657,7 +657,7 @@ def outer(value):
     return inner()
 
 return outer(3)
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -680,7 +680,7 @@ def outer(value):
     return inner()
 
 return outer(3)
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -714,7 +714,7 @@ finally:
     value = value + 4
 
 return value
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -740,7 +740,7 @@ finally:
     value = value + 1
 
 return value
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -764,7 +764,7 @@ except Exception:
     value = "outer"
 
 return value
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -785,7 +785,7 @@ for value in [0, 1]:
     except ZeroDivisionError as ex:
         values.append(ex.type)
 return "|".join(values)
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -803,7 +803,7 @@ try:
     return 1
 finally:
     marker = 2
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -821,7 +821,7 @@ with open("/sample.txt", "w") as handle:
     handle.write("alpha")
 
 return open("/sample.txt").read()
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -852,7 +852,7 @@ except ValueError:
     events.append("caught")
 
 return "|".join(events)
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -874,7 +874,7 @@ def choose(value):
             return 0
 
 return choose({"x": 2, "y": 5})
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -889,7 +889,7 @@ return choose({"x": 2, "y": 5})
     {
         var frontend = LythonFrontend.Compile("""
 return sorted(*[[3, 1, 2]], reverse=True)
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -902,7 +902,7 @@ return sorted(*[[3, 1, 2]], reverse=True)
     [Fact]
     public void Engine_FallsBackToLoweredInterpreter_WhenExecutableIrIsNotAvailable()
     {
-        var result = new LythonEngine().Run("""
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("""
 def helper():
     return 7
 
@@ -916,7 +916,7 @@ return helper()
     [Fact]
     public void Engine_UsesExecutablePipeline_ForStarredCallViaFallbackExpression()
     {
-        var result = new LythonEngine().Run("""
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("""
 return len(sorted(*[[3, 1, 2]], reverse=True))
 """, new MockLythonHost());
 
@@ -933,7 +933,7 @@ for left, right in [(1, 2), (3, 4)]:
     total = total + left + right
 
 return total
-""");
+""",regexProvider:Utf8RegexProvider.Instance);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
@@ -946,7 +946,7 @@ return total
     [Fact]
     public void SupportedSubsetScript_ExecutesThroughLoweredPipelineWithoutFallbacks()
     {
-        var result = new LythonEngine().Run("""
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("""
 import json
 
 def helper(values, suffix="!"):

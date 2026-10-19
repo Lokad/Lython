@@ -27,7 +27,7 @@ public sealed class CsvBlankRecordTests
     public async Task BlankRecordsFollowPythonIterationAndFieldSemantics(string label, string source, string expected)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, label + ":" + string.Join(";", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -48,7 +48,7 @@ public sealed class CsvBlankRecordTests
     public async Task EndlessBlankSourceHonorsCancellation(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             class Source:
                 def __iter__(self): return self
@@ -84,7 +84,7 @@ public sealed class CsvBlankRecordTests
     public async Task BlankBatchesKeepAliasesAndReturnSharedAllowance(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             with open('/r.csv') as f:
                 r = csv.DictReader(f)

@@ -15,7 +15,7 @@ public sealed class StringCacheAccountingScenarioTests
     {
         // MG06 probe: indexing a 400 KiB string builds an 800 KiB rune-offset
         // cache, far above a 600 KiB budget.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             s = "é" * 200000
             return s[100]
@@ -36,7 +36,7 @@ public sealed class StringCacheAccountingScenarioTests
     {
         // Decoding no longer retains anything: 1,500 parsed strings fit the
         // same budget their storage alone already fit.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "objs = ['1' * 1000 for i in range(1500)]\nfor obj in objs:\n    float(obj)\nreturn len(objs)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(1500);
@@ -53,7 +53,7 @@ public sealed class StringCacheAccountingScenarioTests
     [Fact]
     public async Task RepeatedFloatDecodesStayCorrect()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "s = '3.14159'\ni = 0\nwhile i < 2000:\n    x = float(s)\n    i = i + 1\nreturn x\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
@@ -69,7 +69,7 @@ public sealed class StringCacheAccountingScenarioTests
     [Fact]
     public async Task DroppedDecodedStringsFit()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "i = 0\nwhile i < 5000:\n    x = float('1' * 100)\n    i = i + 1\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(0);

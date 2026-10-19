@@ -23,12 +23,12 @@ public sealed class StringJoinCleanupTests
         using (var owner = budget.CreateScope())
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner});
+                { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             var governor = context.MemoryGovernor;
             var first = PyString.FromString("abcd", governor, Span);
             var last = PyString.FromString("efgh", governor, Span);
             var parts = new PyList([first, last], governor, Span);
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return '|'.join").Script!)).EntryPoint;
+            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return '|'.join",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
             var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
             // Four drained slots (64), builder capacity (16), nine output bytes
             // plus metadata (137). Leave one byte too little for the final value.
@@ -73,10 +73,10 @@ public sealed class StringJoinCleanupTests
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var first = PyString.FromString("abcdefghij", context.MemoryGovernor, Span);
             var parts = new PyList([first, BigInteger.One], context.MemoryGovernor, Span);
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return '|'.join").Script!)).EntryPoint;
+            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return '|'.join",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
             var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
             var before = context.MemoryGovernor.CurrentCommittedBytes;
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(parts)];

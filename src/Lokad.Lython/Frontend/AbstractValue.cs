@@ -130,7 +130,8 @@ internal sealed record AbstractArgparseGroupSummary(
 internal sealed record AbstractRegexPatternSummary(
     string? PatternText,
     int? CaptureSlotCount,
-    IReadOnlyDictionary<string, int> NamedGroups);
+    IReadOnlyDictionary<string, int> NamedGroups,
+    int? Flags = null);
 
 internal sealed record AbstractRegexMatchSummary(
     int? CaptureSlotCount,

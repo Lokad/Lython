@@ -9,7 +9,7 @@ public sealed class ExecutionContextArchitectureSubsystemTests
     [Fact]
     public void ChildExecutionContext_SharesServicesButGetsDistinctFrame()
     {
-        var parent = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        var parent = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         var child = new LythonRuntime.ExecutionContext(parent);
 
         Assert.Same(parent.Services, child.Services);
@@ -21,7 +21,7 @@ public sealed class ExecutionContextArchitectureSubsystemTests
     [Fact]
     public void FunctionNamespaceAliasesRemainStableAcrossConcurrentContextAndFrameReads()
     {
-        var parent = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        var parent = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         var child = new LythonRuntime.ExecutionContext(parent, ScopeDirectiveFacts.Empty);
         var aliases = new Dictionary<string, object>[64];
         Parallel.For(0, aliases.Length, i =>

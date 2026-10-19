@@ -64,7 +64,7 @@ public sealed class ZipDirectoryReaderTests
         byte[] payload,
         LythonRunOptions? options = null)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
         return ZipDirectoryReader.Read(payload, false, context, span: null);
     }
 

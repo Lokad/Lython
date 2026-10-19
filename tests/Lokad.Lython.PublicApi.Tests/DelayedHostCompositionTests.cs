@@ -18,7 +18,7 @@ public sealed class DelayedHostCompositionTests
     [Fact]
     public async Task DelayedAsyncEnumerateOverOpenFile()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             with open("/s.txt") as f:
                 pairs = [(i, line) for i, line in enumerate(f)]
@@ -36,7 +36,7 @@ public sealed class DelayedHostCompositionTests
     [Fact]
     public async Task DelayedAsyncJsonLoadOverOpenFile()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             with open("/v.json") as f:
@@ -55,7 +55,7 @@ public sealed class DelayedHostCompositionTests
     [Fact]
     public async Task DelayedAsyncZipOverTwoDictReaders()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             with open("/a.csv") as before, open("/b.csv") as after:
@@ -77,7 +77,7 @@ public sealed class DelayedHostCompositionTests
     [Fact]
     public async Task DelayedAsyncStrictZipReportsLongerTail()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             with open("/c.csv") as one, open("/d.csv") as two:
@@ -118,7 +118,7 @@ public sealed class DelayedHostCompositionTests
 
     private static async Task AssertAsyncMatchesSync(string source, object? expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(diagnostic => diagnostic.Code + ":" + diagnostic.Message)));
 
         var sync = script.Run(SeedCompositionSyncHost());
@@ -211,7 +211,7 @@ public sealed class DelayedHostCompositionTests
     [InlineData("with open(\"/r.txt\") as f:\n    return \"|\".join(f)\n")]
     public void SyncRunsFailFastWithRunAsyncGuidance(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var result = script.Run(SeedCompositionHost());
         Assert.False(result.Success);

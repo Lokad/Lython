@@ -19,7 +19,7 @@ public sealed class GzipCallbackScopeLifetimeTests
     public async Task EscapingReaderPreservesBatchFundingAndExplicitAliases(bool asynchronous, bool close, bool retain)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile($$"""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($$"""
 import gzip, io
 def acquire():
     unrelated = 'x' * 16000
@@ -111,7 +111,7 @@ return len(candidate)
             except RuntimeError as error: assert 'reentrant' in str(error)
             else: raise AssertionError('reentrant operation accepted')
 """ : "";
-        var script = new LythonEngine().Compile($$"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($$"""
 import gzip, io
 class Source:
     def __init__(self): self.raw=io.BytesIO(bytes.fromhex('{{Member}}'))

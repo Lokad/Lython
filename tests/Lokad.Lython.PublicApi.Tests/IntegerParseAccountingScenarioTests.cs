@@ -18,7 +18,7 @@ public class IntegerParseAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedParsesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             $"""
             xs = []
             s = "9" * {Digits}
@@ -42,7 +42,7 @@ public class IntegerParseAccountingScenarioTests
     [Fact]
     public async Task OneParseFitsTheRetentionBudget()
     {
-        var script = new LythonEngine().Compile($"return int('9' * {Digits}).bit_length()\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"return int('9' * {Digits}).bit_length()\n");
         Assert.True(script.IsValid);
         var expected = new BigInteger(BigInteger.Parse(new string('9', Digits)).GetBitLength());
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MemoryLimit) };
@@ -57,7 +57,7 @@ public class IntegerParseAccountingScenarioTests
     [Fact]
     public async Task SmallParsesStillProject()
     {
-        var script = new LythonEngine().Compile("return [int(\"42\"), int(\"-7\"), int(3.99)]\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return [int(\"42\"), int(\"-7\"), int(3.99)]\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { new BigInteger(42), new BigInteger(-7), new BigInteger(3) };
         var sync = script.Run(new MockLythonHost());

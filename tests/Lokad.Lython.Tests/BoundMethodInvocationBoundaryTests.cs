@@ -100,7 +100,7 @@ public sealed class BoundMethodInvocationBoundaryTests
     [InlineData(true)]
     public async Task GeneralWrappedCallablesKeepFreshRetainableArrays(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { },regexProvider:Utf8RegexProvider.Instance);
         var receiver = new object();
         var callable = new RetainingCallable();
         var method = new PyBoundMethod(receiver, callable);
@@ -142,12 +142,12 @@ public sealed class BoundMethodInvocationBoundaryTests
     private static (PyExecutableFunction Function, LythonRuntime.ExecutionContext Context, ExecutableCodeObject Code) Function(int width, LythonRunOptions options)
     {
         var parameters = string.Concat(Enumerable.Range(0, width).Select(i => $", a{i}"));
-        var frontend = LythonFrontend.Compile($"def f(self{parameters}):\n    return self\n");
+        var frontend = LythonFrontend.Compile($"def f(self{parameters}):\n    return self\n",regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
         var binding = Assert.Single(executable.EntryPoint.Functions);
         var code = binding.CodeObject.RequireNotNull();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
         var closure = LythonRuntime.ExecutionContext.CreateModule(context, "/callee.py", "callee");
         return (new PyExecutableFunction("f", binding.Function.Parameters, code, closure, [], [], code.ScopeFacts), context, code);
     }

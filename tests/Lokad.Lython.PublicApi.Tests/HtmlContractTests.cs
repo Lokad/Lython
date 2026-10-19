@@ -12,7 +12,7 @@ public sealed class HtmlContractTests
     [InlineData("html.unescape('x',unexpected=True)")]
     public void KnownCallsRejectInvalidBinding(string call)
     {
-        var script = new LythonEngine().Compile("import html\n" + call);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import html\n" + call);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA3151");
     }
@@ -22,7 +22,7 @@ public sealed class HtmlContractTests
     {
         foreach (var name in new[] { "html.parser", "html.entities" })
         {
-            var script = new LythonEngine().Compile("import importlib\nimportlib.import_module('" + name + "')");
+            var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import importlib\nimportlib.import_module('" + name + "')");
             Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
             foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
             {
@@ -35,7 +35,7 @@ public sealed class HtmlContractTests
     [Fact]
     public async Task NamedDecodingDoesNotUseTheGuestCollectionLimit()
     {
-        var script = new LythonEngine().Compile("import html\nprint(html.unescape('&amp;&NotEqualTilde;&Tab;é😀'))");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import html\nprint(html.unescape('&amp;&NotEqualTilde;&Tab;é😀'))");
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var options = new LythonRunOptions { };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })

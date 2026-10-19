@@ -9,7 +9,7 @@ public sealed class ExecutableMemberStoreTests
     [Fact]
     public void OrdinaryMemberReceiverUsesInstructionsWithoutLoopTargetEvaluation()
     {
-        var syntax = LythonFrontend.Compile("def run(receiver,value):\n receiver().value=value").Script!;
+        var syntax = LythonFrontend.Compile("def run(receiver,value):\n receiver().value=value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
@@ -23,13 +23,13 @@ public sealed class ExecutableMemberStoreTests
     {
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         var objectType = Assert.IsType<PyType>(context.State.BuiltinVariables["object"]);
         var container = new PyInstance(new PyType("Box", [objectType], []), context.MemoryGovernor, null);
         using var deny = new DenyCapacity(container, context.MemoryGovernor, limit);
         context.Variables["receiver"] = deny;
         context.Variables["value"] = true;
-        var syntax = LythonFrontend.Compile("receiver().value=value").Script!;
+        var syntax = LythonFrontend.Compile("receiver().value=value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         try
         {

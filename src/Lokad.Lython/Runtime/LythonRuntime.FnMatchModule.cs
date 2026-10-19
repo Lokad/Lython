@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.Json;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
-using Lokad.Utf8Regex.PythonRe;
 
 namespace Lokad.Lython.Runtime;
 
@@ -35,7 +34,6 @@ internal sealed partial class LythonRuntime
 
         private object Match(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 2 ||
                 !PyStringOps.TryAsString(arguments[0], out var name) ||
                 !PyStringOps.TryAsString(arguments[1], out var pattern))
@@ -43,12 +41,11 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "fnmatch.fnmatch(name, pattern) expects two string arguments.", span);
             }
 
-            return MatchSimple(name, pattern);
+            return MatchSimple(name, pattern, context.Limits.CancellationToken);
         }
 
         private object MatchCase(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 2 ||
                 !PyStringOps.TryAsString(arguments[0], out var name) ||
                 !PyStringOps.TryAsString(arguments[1], out var pattern))
@@ -56,7 +53,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "fnmatch.fnmatchcase(name, pattern) expects two string arguments.", span);
             }
 
-            return MatchSimple(name, pattern);
+            return MatchSimple(name, pattern, context.Limits.CancellationToken);
         }
 
         private object Filter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -74,7 +71,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "fnmatch.filter(names, pattern) expects an iterable of strings.", span);
                 }
 
-                if (MatchSimple(name, pattern))
+                if (MatchSimple(name, pattern, context.Limits.CancellationToken))
                 {
                     result.Add(name);
                 }
@@ -90,19 +87,20 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "fnmatch.translate(pattern) expects a string pattern.", span);
             }
 
-            return CreateString(TranslatePattern(pattern.AsString()), context, span);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(checked(128L + 24L * pattern.Utf8Bytes.Length), span);
+            return CreateString(TranslatePattern(pattern.AsString(), context.Limits.CancellationToken), context, span);
         }
 
-        internal static bool MatchSimple(PyString name, PyString pattern)
+        internal static bool MatchSimple(PyString name, PyString pattern, CancellationToken cancellationToken = default)
         {
             // Rune identity never escapes a match: only the boolean does, so the
             // cached non-ASCII views (ASCII stays transient) are safe to share.
-            return MatchSimple(name.GetRunes(), pattern.GetRunes());
+            return MatchSimple(name.GetRunes(), pattern.GetRunes(), cancellationToken);
         }
 
         private static bool MatchSimple(
             IReadOnlyList<PyString> name,
-            IReadOnlyList<PyString> pattern)
+            IReadOnlyList<PyString> pattern, CancellationToken cancellationToken)
         {
             var nameIndex = 0;
             var patternIndex = 0;
@@ -111,10 +109,12 @@ internal sealed partial class LythonRuntime
 
             while (nameIndex < name.Count)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (patternIndex < pattern.Count && IsAsciiRune(pattern[patternIndex], '*'))
                 {
                     do
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         patternIndex++;
                     }
                     while (patternIndex < pattern.Count && IsAsciiRune(pattern[patternIndex], '*'));
@@ -130,7 +130,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 if (patternIndex < pattern.Count &&
-                    TryMatchSingleToken(name[nameIndex], pattern, patternIndex, out var nextPatternIndex))
+                    TryMatchSingleToken(name[nameIndex], pattern, patternIndex, cancellationToken, out var nextPatternIndex))
                 {
                     nameIndex++;
                     patternIndex = nextPatternIndex;
@@ -151,6 +151,7 @@ internal sealed partial class LythonRuntime
 
             while (patternIndex < pattern.Count && IsAsciiRune(pattern[patternIndex], '*'))
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 patternIndex++;
             }
 
@@ -160,6 +161,7 @@ internal sealed partial class LythonRuntime
                 PyString value,
                 IReadOnlyList<PyString> pattern,
                 int patternIndex,
+                CancellationToken cancellationToken,
                 out int nextPatternIndex)
             {
                 var token = pattern[patternIndex];
@@ -170,7 +172,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 if (IsAsciiRune(token, '[') &&
-                    TryMatchCharacterClass(value, pattern, patternIndex, out var classCloseIndex, out var classMatches))
+                    TryMatchCharacterClass(value, pattern, patternIndex, cancellationToken, out var classCloseIndex, out var classMatches))
                 {
                     nextPatternIndex = classCloseIndex + 1;
                     return classMatches;
@@ -185,6 +187,7 @@ internal sealed partial class LythonRuntime
             PyString value,
             IReadOnlyList<PyString> pattern,
             int openIndex,
+            CancellationToken cancellationToken,
             out int closeIndex,
             out bool matches)
         {
@@ -216,6 +219,7 @@ internal sealed partial class LythonRuntime
 
             for (var index = searchStart; index < pattern.Count; index++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (IsAsciiRune(pattern[index], ']'))
                 {
                     closeIndex = index;
@@ -229,15 +233,16 @@ internal sealed partial class LythonRuntime
             }
 
             var valueScalar = RuneScalarValue(value);
-            var included = CharacterClassIncludes(valueScalar, pattern, contentStart, closeIndex);
+            var included = CharacterClassIncludes(valueScalar, pattern, contentStart, closeIndex, cancellationToken);
             matches = negated ? !included : included;
             return true;
         }
 
-        private static bool CharacterClassIncludes(int valueScalar, IReadOnlyList<PyString> pattern, int start, int closeIndex)
+        private static bool CharacterClassIncludes(int valueScalar, IReadOnlyList<PyString> pattern, int start, int closeIndex, CancellationToken cancellationToken)
         {
             for (var index = start; index < closeIndex; index++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (index + 2 < closeIndex && IsAsciiRune(pattern[index + 1], '-'))
                 {
                     var rangeStart = RuneScalarValue(pattern[index]);
@@ -260,13 +265,14 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        private static string TranslatePattern(string pattern)
+        private static string TranslatePattern(string pattern, CancellationToken cancellationToken)
         {
             var builder = new StringBuilder(pattern.Length + 2);
             builder.Append('^');
             var noClosingBracketRemaining = false;
             for (var index = 0; index < pattern.Length; index++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var ch = pattern[index];
                 switch (ch)
                 {
@@ -283,7 +289,7 @@ internal sealed partial class LythonRuntime
                             break;
                         }
 
-                        index = AppendTranslatedCharacterClass(builder, pattern, index, out var foundClosingBracket);
+                        index = AppendTranslatedCharacterClass(builder, pattern, index, cancellationToken, out var foundClosingBracket);
                         noClosingBracketRemaining = !foundClosingBracket;
                         break;
                     default:
@@ -300,6 +306,7 @@ internal sealed partial class LythonRuntime
             StringBuilder builder,
             string pattern,
             int openIndex,
+            CancellationToken cancellationToken,
             out bool foundClosingBracket)
         {
             var contentStart = openIndex + 1;
@@ -332,6 +339,7 @@ internal sealed partial class LythonRuntime
             var closeIndex = -1;
             for (var index = searchStart; index < pattern.Length; index++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (pattern[index] == ']')
                 {
                     closeIndex = index;
@@ -350,6 +358,7 @@ internal sealed partial class LythonRuntime
             var classBuilder = new StringBuilder(closeIndex - contentStart);
             for (var index = contentStart; index < closeIndex; index++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (index + 2 < closeIndex && pattern[index + 1] == '-')
                 {
                     if (char.ConvertToUtf32(pattern, index) <= char.ConvertToUtf32(pattern, index + 2))

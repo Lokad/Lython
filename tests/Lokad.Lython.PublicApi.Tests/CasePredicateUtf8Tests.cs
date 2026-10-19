@@ -40,7 +40,7 @@ public sealed class CasePredicateUtf8Tests
     [InlineData(" ͅ", true, false, false)]
     public async Task CasePredicatesFollowPython(string value, bool lower, bool upper, bool title)
     {
-        using var script = new LythonEngine().Compile("return [value.islower(),value.isupper(),value.istitle()]");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return [value.islower(),value.isupper(),value.istitle()]");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["value"] = value } };
         foreach (var asynchronous in new[] { false, true })

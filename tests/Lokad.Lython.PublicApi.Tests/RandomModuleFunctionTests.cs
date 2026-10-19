@@ -10,7 +10,7 @@ public sealed class RandomModuleFunctionTests
     [InlineData("random.sample({1}, 1)", "random.sample")]
     public void RandomModule_PopulationsMustBeSequences(string expression, string owner)
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             $"import random\n{expression}\n",
             new MockLythonHost());
 
@@ -25,7 +25,7 @@ public sealed class RandomModuleFunctionTests
     public void RandomModule_Functions_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import random
 
@@ -62,7 +62,7 @@ __lython_file.close()
     public void RandomModule_ExpandedSurface_HasDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import math
 import random
@@ -157,7 +157,7 @@ __lython_file.close()
     [Fact]
     public void RandomModule_StaticContractsCoverExpandedSurface()
     {
-        var valid = new LythonEngine().Run(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import random
 
@@ -179,7 +179,7 @@ return "|".join(out)
             valid.Success,
             valid.Failure?.Message ?? string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
 
-        var invalid = new LythonEngine().Run(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import random
 
@@ -307,7 +307,7 @@ random.choices([1, 2], cum_weights=[1])
         "The number of weights does not match the population")]
     public void RandomModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -318,7 +318,7 @@ random.choices([1, 2], cum_weights=[1])
     [Fact]
     public void EmptyChoiceFailure_MatchesCpythonExactly()
     {
-        var result = new LythonEngine().Run("import random\nrandom.choice([])\n", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("import random\nrandom.choice([])\n", new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);

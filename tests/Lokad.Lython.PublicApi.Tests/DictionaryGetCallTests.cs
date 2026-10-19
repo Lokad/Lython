@@ -30,7 +30,7 @@ public sealed class DictionaryGetCallTests
     public async Task GetPreservesLookupBindingAndAliases(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -63,7 +63,7 @@ public sealed class DictionaryGetCallTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         var source = YieldingLookup.Replace("CALL", call);
         if (call == "reader('x')") source = source.Replace("method=d.get", "reader=d.__getitem__");
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -95,7 +95,7 @@ public sealed class DictionaryGetCallTests
             .Replace("print(CALL)\nprint(old is d)", "value=CALL\nprint(value is saved)\nreturn value[0]")
             .Replace("CALL", call);
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -119,7 +119,7 @@ public sealed class DictionaryGetCallTests
     public async Task CancelledEqualityDrainsBeforeAllowanceReturns(string call)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(YieldingLookup.Replace("CALL", call), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(YieldingLookup.Replace("CALL", call), budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/events.txt", "before");
@@ -153,7 +153,7 @@ public sealed class DictionaryGetCallTests
     public async Task RetainedValuesAndDefaultsStayFunded(string source)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {

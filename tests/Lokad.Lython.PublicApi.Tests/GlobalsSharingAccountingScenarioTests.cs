@@ -30,7 +30,7 @@ public sealed class GlobalsSharingAccountingScenarioTests
     [Fact]
     public async Task SharedGlobalsFitOnce()
     {
-        var script = new LythonEngine().Compile("return len(v0)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(v0)\n");
         Assert.True(script.IsValid);
         // N06: the 5000 distinct host longs adopt one 64 B coupon each (~320 KiB
         // beside content and copy), so the fit-once budget moved 256 KiB -> 1 MiB.
@@ -49,7 +49,7 @@ public sealed class GlobalsSharingAccountingScenarioTests
     [Fact]
     public async Task SharedGlobalsKeepIdentity()
     {
-        var script = new LythonEngine().Compile("return [v0 is v199, v0[0], v199[4999]]\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return [v0 is v199, v0[0], v199[4999]]\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { true, (object)(long)0, (object)(long)4999 };
         var sync = script.Run(new MockLythonHost(), new LythonRunOptions { Globals = SharedGlobals() });
@@ -67,7 +67,7 @@ public sealed class GlobalsSharingAccountingScenarioTests
         var cyclic = new List<object?>();
         cyclic.Add(cyclic);
         var globals = new Dictionary<string, object?> { ["c"] = cyclic };
-        var script = new LythonEngine().Compile("return 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 0\n");
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost(), new LythonRunOptions { Globals = globals });
         Assert.False(sync.Success);

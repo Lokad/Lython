@@ -22,7 +22,7 @@ public sealed class TextReadEmissionOwnershipTests
         var host = new MockLythonHost();
         host.SeedFile("/data.txt", "abc\nxyz\n");
         var context = new LythonRuntime.ExecutionContext(host,
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
             "/data.txt", context, LythonRuntime.TextEncodingMode.Utf8,
             LythonRuntime.TextErrorMode.Strict,
@@ -78,7 +78,7 @@ public sealed class TextReadEmissionOwnershipTests
     {
         var host = new MockLythonHost();
         host.SeedFile("/data.txt", "abc\nxyz\n");
-        var context = new LythonRuntime.ExecutionContext(host, null);
+        var context = new LythonRuntime.ExecutionContext(host, null,regexProvider:Utf8RegexProvider.Instance);
         var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
             "/data.txt", context, LythonRuntime.TextEncodingMode.Utf8,
             LythonRuntime.TextErrorMode.Strict,

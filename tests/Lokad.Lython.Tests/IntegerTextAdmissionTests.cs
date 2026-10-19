@@ -30,7 +30,7 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
             var budget = new LythonMemoryBudget(limit);
             using var owner = budget.CreateScope();
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner});
+                { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             var governor = context.MemoryGovernor;
             var input = Input(new string('9', 32768), bytes, governor);
             context.Variables["source"] = input;
@@ -79,7 +79,7 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var governor = context.MemoryGovernor;
         var input = Input(" \t-0x_" + new string('f', 512) + "\r\n", bytes, governor);
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["int"]);
@@ -92,7 +92,7 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
         var held = budget.ReservedBytes;
         using (var otherOwner = budget.CreateScope())
         {
-            var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner });
+            var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner },regexProvider:Utf8RegexProvider.Instance);
             _ = PyString.FromString(new string('x', 1024), other.MemoryGovernor, Span);
             Assert.True(budget.ReservedBytes > held);
         }

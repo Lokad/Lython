@@ -28,7 +28,7 @@ public sealed class FloatTextAdmissionTests
             var budget = new LythonMemoryBudget(limit);
             using var owner = budget.CreateScope();
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner});
+                { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             var governor = context.MemoryGovernor;
             var input = Input(new string('9', 32768), bytes, governor);
             context.Variables["source"] = input;
@@ -76,7 +76,7 @@ public sealed class FloatTextAdmissionTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var input = Input(" \t" + string.Concat(Enumerable.Repeat("0_", 1024)) + "1.5\r\n", bytes, context.MemoryGovernor);
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
         var before = budget.ReservedBytes;
@@ -85,7 +85,7 @@ public sealed class FloatTextAdmissionTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         using (var otherOwner = budget.CreateScope())
         {
-            var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner });
+            var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner },regexProvider:Utf8RegexProvider.Instance);
             _ = PyString.FromString(new string('x', 1024), other.MemoryGovernor, null);
             Assert.True(budget.ReservedBytes > before);
         }
@@ -102,7 +102,7 @@ public sealed class FloatTextAdmissionTests
         var budget = new LythonMemoryBudget(limit);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner});
+            { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var governor = context.MemoryGovernor;
         var input = Input(new string('\0', 2048) + "x", bytes, governor);
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
@@ -130,12 +130,12 @@ public sealed class FloatTextAdmissionTests
     public async Task RefusalPrecedesAssignmentAndUnwindsTheExecutableFrame(bool bytes, bool asynchronous, bool shared)
     {
         var code = ExecutableScript.Compile(LoweredScript.Lower(
-            LythonFrontend.Compile("target = float(source)\nreturn target").Script!)).EntryPoint;
+            LythonFrontend.Compile("target = float(source)\nreturn target",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         const long limit = 1024 * 1024;
         var budget = new LythonMemoryBudget(limit);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner});
+            { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var governor = context.MemoryGovernor;
         var input = Input(new string('9', 32768), bytes, governor);
         var original = new PyList([input], governor);
@@ -174,7 +174,7 @@ public sealed class FloatTextAdmissionTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var input = Input(new string('\0', 2048) + "x", bytes, context.MemoryGovernor);
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
         var before = budget.ReservedBytes;
@@ -199,12 +199,12 @@ public sealed class FloatTextAdmissionTests
     [InlineData(true, true)]
     public async Task OrdinaryNativeConversionPreservesResultsAndCleanup(bool bytes, bool asynchronous)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return float(value)").Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return float(value)",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         {
             using (var owner = budget.CreateScope())
             {
-                var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+                var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
                 context.Variables["value"] = Input("7.5", bytes, context.MemoryGovernor);
                     Assert.Equal(7.5, Assert.IsType<double>(await Execute()));
                 Assert.Null(context.CurrentExecutableFrame);

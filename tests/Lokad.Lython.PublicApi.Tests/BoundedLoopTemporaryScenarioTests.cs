@@ -29,7 +29,7 @@ public sealed class BoundedLoopTemporaryScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedConcatOutputStaysCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "b = 'a' * 1000\nxs = []\nfor i in range(10000):\n    xs.append(b + b)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
@@ -40,7 +40,7 @@ public sealed class BoundedLoopTemporaryScenarioTests : LifetimeScenario
     [Fact]
     public async Task AliasedConcatResultsShare()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "b = 'a' * 1000\nbase = b + b\nxs = []\nfor i in range(10000):\n    xs.append(base)\nreturn len(xs)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(10000);

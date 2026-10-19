@@ -23,7 +23,7 @@ public sealed class HtmlTableScratchAccountingScenarioTests
     [Fact]
     public async Task TableScratchStaysCharged()
     {
-        var script = new LythonEngine().Compile(BuildBigTable);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildBigTable);
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak fits (succeeds); the scratch backstop
         // pushes the post-fix peak over.
@@ -40,7 +40,7 @@ public sealed class HtmlTableScratchAccountingScenarioTests
     [Fact]
     public async Task RoomyTableSucceeds()
     {
-        var script = new LythonEngine().Compile(BuildBigTable);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildBigTable);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(12582912) };
         var expected = new BigInteger(2506652);

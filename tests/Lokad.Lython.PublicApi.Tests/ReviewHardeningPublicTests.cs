@@ -7,7 +7,7 @@ public sealed class ReviewHardeningPublicTests
     [Fact]
     public void CopyAndHashlibStateIsIsolatedAcrossPublicRuns()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var first = engine.Run(
             """
 import copy
@@ -34,7 +34,7 @@ return [copy.dispatch_table.get("review_marker", "absent"), len(hashlib.algorith
     [Fact]
     public async Task ContextManagerExitIsInvokedExactlyOncePublicAsync()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 calls = []
 class Manager:
@@ -63,9 +63,9 @@ import difflib
 matcher = difflib.SequenceMatcher(None, "abcd", "abXcd")
 return [matcher.ratio(), matcher.quick_ratio()]
 """;
-        var sync = new LythonEngine().Run(Source, new MinimalHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(Source, new MinimalHost());
         Assert.True(sync.Success, sync.Failure?.Message);
-        var asyncResult = await new LythonEngine().RunAsync(Source, new MinimalHost());
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(Source, new MinimalHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(sync.ReturnValue, asyncResult.ReturnValue);
     }
@@ -73,7 +73,7 @@ return [matcher.ratio(), matcher.quick_ratio()]
     [Fact]
     public void CustomWriteTextMethodCompilesCleanThroughPublicAssembly()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 class Writer:
     def write_text(self, value):
@@ -98,10 +98,10 @@ def f(*args):
 result.append(f(*v))
 return result
 """;
-        var sync = new LythonEngine().Run(Source, new MinimalHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(Source, new MinimalHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(4, Assert.IsType<List<object?>>(sync.ReturnValue).Count);
-        var asyncResult = await new LythonEngine().RunAsync(Source, new MinimalHost());
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(Source, new MinimalHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         var outer = Assert.IsType<List<object?>>(asyncResult.ReturnValue);
         Assert.Equal(4, outer.Count);
@@ -117,7 +117,7 @@ return result
             "x = " + string.Concat(Enumerable.Repeat("1+", 100)) + "1\n",
         })
         {
-            var compiled = new LythonEngine().Compile(source);
+            var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
             Assert.False(compiled.IsValid);
             Assert.Contains(compiled.Diagnostics, d => d.Code == "LA0003");
         }
@@ -138,12 +138,12 @@ except TypeError:
     calls.append("caught")
 return calls
 """;
-        var sync = new LythonEngine().Run(Source, new MinimalHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(Source, new MinimalHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(
             new List<object?> { "iter", "caught" },
             Assert.IsType<List<object?>>(sync.ReturnValue));
-        var asyncResult = await new LythonEngine().RunAsync(Source, new MinimalHost());
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(Source, new MinimalHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(
             new List<object?> { "iter", "caught" },

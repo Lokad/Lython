@@ -16,7 +16,7 @@ public sealed class CompileOnceRunManyTests
             x = input()
             return x
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var host = new MockLythonHost();
 
@@ -34,7 +34,7 @@ public sealed class CompileOnceRunManyTests
     [Fact]
     public void RepeatedRunsShareHostAnalysis()
     {
-        var script = new LythonEngine().Compile(LargeSource());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(LargeSource());
         var host = new MockLythonHost();
         for (var i = 0; i < 3; i++)
         {
@@ -49,7 +49,7 @@ public sealed class CompileOnceRunManyTests
     {
         // The 2000-statement walk costs ~1 MB per invocation uncached; shared
         // analysis keeps three warm runs far below one walk.
-        var script = new LythonEngine().Compile(LargeSource());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(LargeSource());
         var host = new MockLythonHost();
         script.Run(host);
         GC.Collect();

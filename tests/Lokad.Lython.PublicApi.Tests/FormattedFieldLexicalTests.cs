@@ -209,7 +209,7 @@ public sealed class FormattedFieldLexicalTests
     [Fact]
     public async Task MultilineFieldsAwaitOperandsAndNestedFormatFieldsInOrder()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             events=[]
             def load(label):
              with open('/value.txt') as f:value=int(f.read())
@@ -240,7 +240,7 @@ public sealed class FormattedFieldLexicalTests
     [InlineData("text=f\"{f\"{missing}\"}\"\n", 1, 12)]
     public async Task FieldFailuresRetainOriginalSourceLocations(string source, int line, int column)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid);
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -259,7 +259,7 @@ public sealed class FormattedFieldLexicalTests
     {
         var expression = "1";
         for (var i = 0; i < 192; i++) expression = "f\"{" + expression + "}\"";
-        var compiled = new LythonEngine().Compile("print('effect')\n" + expression);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effect')\n" + expression);
         Assert.False(compiled.IsValid);
         Assert.NotEmpty(compiled.Diagnostics);
     }
@@ -278,14 +278,14 @@ public sealed class FormattedFieldLexicalTests
     [InlineData("print(f\"{1:\n}\")")]
     [InlineData("print(f\"{1 #comment\n+}\")")]
     public void MalformedCommentFieldsFailBeforeEffects(string source)
-        => Assert.False(new LythonEngine().Compile("print('effect')\n" + source).IsValid);
+        => Assert.False(new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effect')\n" + source).IsValid);
 
     [Theory]
     [MemberData(nameof(Cases))]
     public async Task FieldGroupingAndCommentsFollowPython(string name, string source, string expected)
     {
         _ = name;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

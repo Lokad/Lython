@@ -16,7 +16,7 @@ public sealed class DescriptorValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedPropertiesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def f(self):
                 return 1
             objs = []
@@ -42,7 +42,7 @@ public sealed class DescriptorValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedStaticMethodsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def f(a):
                 return a
             objs = []
@@ -66,7 +66,7 @@ public sealed class DescriptorValueAccountingScenarioTests
     [Fact]
     public async Task DescriptorsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class C:
                 x = 5
                 @staticmethod

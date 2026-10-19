@@ -19,7 +19,7 @@ return [(0x010203).to_bytes(3), (-2).to_bytes(2, signed=True),
 return [int.from_bytes(b'\x01\x02'), int.from_bytes(b'\xff\xfe', signed=True),
         int.from_bytes(b'\x01\x02', 'little'), int.from_bytes(b'\x01\x02', 'big')]
 """;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var result = asyncMode ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);

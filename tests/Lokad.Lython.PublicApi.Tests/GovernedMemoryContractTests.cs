@@ -9,7 +9,7 @@ public sealed class GovernedMemoryContractTests
     {
         var budget = new LythonMemoryBudget(1);
         using var parent = budget.CreateScope();
-        using var script = new LythonEngine().Compile("return 123\n", parent);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 123\n", parent);
         Assert.False(script.IsValid);
         using (var result = script.Run(new MockLythonHost()))
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
@@ -23,7 +23,7 @@ public sealed class GovernedMemoryContractTests
     public void RetainedResultsRefuseFurtherWorkAndDisposalMakesAllowanceReusable()
     {
         var budget = new LythonMemoryBudget(512000);
-        using var script = new LythonEngine().Compile("return 'x' * 16000\n", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 'x' * 16000\n", budget);
         var baseline = budget.ReservedBytes;
         var retained = new List<LythonExecutionResult>();
         var refused = false;
@@ -73,7 +73,7 @@ public sealed class GovernedMemoryContractTests
     public void CompilationAndItsCacheKeepTheirLongerLivedOwner()
     {
         var budget = new LythonMemoryBudget(512000);
-        var script = new LythonEngine().Compile("return 'x' * 16000\n", budget);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 'x' * 16000\n", budget);
         Assert.True(script.IsValid);
         var compilation = budget.ReservedBytes;
         Assert.True(compilation >= 32768);
@@ -94,7 +94,7 @@ public sealed class GovernedMemoryContractTests
     public void CompilationRefusalAllocatesNoCompiledPayloadAndReturnsTheBaseline()
     {
         var budget = new LythonMemoryBudget(1);
-        using var script = new LythonEngine().Compile("return 123\n", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 123\n", budget);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA0008");
         Assert.Equal(0, budget.ReservedBytes);
@@ -104,7 +104,7 @@ public sealed class GovernedMemoryContractTests
     public void OneShotRunReleasesItsCompilationBeforeReturningRetainedOutput()
     {
         var budget = new LythonMemoryBudget(512000);
-        using var result = new LythonEngine().Run("return 'x' * 16000\n", new MockLythonHost(),
+        using var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return 'x' * 16000\n", new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = budget });
         Assert.True(result.Success);
         Assert.InRange(budget.ReservedBytes, 32000, 40000);
@@ -190,7 +190,7 @@ public sealed class GovernedMemoryContractTests
     public async Task ResultsOutliveExecutionCleanupAndShareTheAllowance(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(512000);
-        var script = new LythonEngine().Compile("return ['x' * 16000]\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return ['x' * 16000]\n");
         var options = new LythonRunOptions { MemoryBudget = budget };
         using var first = asynchronous ? await script.RunAsync(new DelayedLythonHost(), options) : script.Run(new MockLythonHost(), options);
         Assert.True(first.Success);
@@ -213,7 +213,7 @@ public sealed class GovernedMemoryContractTests
     {
         var root = new LythonMemoryBudget(512000);
         var invocation = root.CreateScope();
-        using var result = new LythonEngine().Compile("return 'x' * 16000\n").Run(new MockLythonHost(),
+        using var result = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 'x' * 16000\n").Run(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = invocation, ResultMemoryBudget = root });
         Assert.True(result.Success);
         invocation.Dispose();
@@ -227,7 +227,7 @@ public sealed class GovernedMemoryContractTests
     public void ReturnedMagnitudeKeepsItsStorageFundedAfterExecutionEnds()
     {
         var budget = new LythonMemoryBudget(512000);
-        using var result = new LythonEngine().Compile("return 1 << 128000\n").Run(new MockLythonHost(),
+        using var result = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 1 << 128000\n").Run(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = budget });
         Assert.True(result.Success);
         Assert.True(budget.ReservedBytes >= 16000);

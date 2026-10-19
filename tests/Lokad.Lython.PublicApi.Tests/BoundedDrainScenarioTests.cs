@@ -24,7 +24,7 @@ public sealed class BoundedDrainScenarioTests
 import math
 return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 0]), (y for y in [3, 4]))]
 """;
-        var sync = new LythonEngine().Run(code, new MockLythonHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new List<object?> { 5.0, 0.0, 5.0 }, sync.ReturnValue);
     }
@@ -36,7 +36,7 @@ return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 
 import math
 return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 0]), (y for y in [3, 4]))]
 """;
-        var result = await new LythonEngine().RunAsync(code, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { 5.0, 0.0, 5.0 }, result.ReturnValue);
     }
@@ -46,7 +46,7 @@ return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 
     {
         // Sized inputs report the dimension mismatch like CPython even when an
         // early element would fail conversion.
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.dist(['x', 1], [1, 2, 3])\n",
             new MockLythonHost());
         AssertError(result, "ValueError", "same number of dimensions");
@@ -55,7 +55,7 @@ return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 
     [Fact]
     public void DistElementErrorNamesFunction()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.dist([1, 'x'], [1, 2])\n",
             new MockLythonHost());
         AssertError(result, "TypeError", "math.dist");
@@ -64,7 +64,7 @@ return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 
     [Fact]
     public void DistHugeInputsDenyUnderTinyMemory()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.dist(range(200000), range(200000))\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
@@ -77,7 +77,7 @@ return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 
     {
         using var cts = new CancellationTokenSource();
         cts.Cancel();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.dist(range(200000), range(200000))\n",
             new MockLythonHost(),
             new LythonRunOptions { CancellationToken = cts.Token });
@@ -88,7 +88,7 @@ return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 
     [Fact]
     public void DistUnequalInfiniteFailsFast()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import itertools, math\nreturn math.dist(itertools.count(), range(5))\n",
             new MockLythonHost());
         AssertError(result, "ValueError", "same number of dimensions");
@@ -97,7 +97,7 @@ return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 
     [Fact]
     public async Task DistDelayedAsyncInputsSuspendThroughHost()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import math
             with open("/p.txt") as f1, open("/q.txt") as f2:
@@ -117,7 +117,7 @@ return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 
     [Fact]
     public void DistNumericalAccuracy()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import math
 return [math.dist([float('inf')], [1]), math.dist([1e308], [-1e308]), math.dist([1e-300], [0]), math.dist([1, 2, 3], [1, 2, 3])]
@@ -134,7 +134,7 @@ return [math.dist([float('inf')], [1]), math.dist([1e308], [-1e308]), math.dist(
     [Fact]
     public void DistNaNPayload()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.dist([float('nan')], [1])\n",
             new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -148,7 +148,7 @@ return [math.dist([float('inf')], [1]), math.dist([1e308], [-1e308]), math.dist(
 import math
 return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), math.sumprod((x for x in [1, 2]), (y for y in [3, 4])), math.sumprod([], [])]
 """;
-        var sync = new LythonEngine().Run(code, new MockLythonHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new List<object?> { new BigInteger(32), 11.0, new BigInteger(11), new BigInteger(0) }, sync.ReturnValue);
     }
@@ -160,7 +160,7 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
 import math
 return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), math.sumprod((x for x in [1, 2]), (y for y in [3, 4])), math.sumprod([], [])]
 """;
-        var result = await new LythonEngine().RunAsync(code, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { new BigInteger(32), 11.0, new BigInteger(11), new BigInteger(0) }, result.ReturnValue);
     }
@@ -168,7 +168,7 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
     [Fact]
     public void SumProdLengthMismatch()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.sumprod([1, 2], [3])\n",
             new MockLythonHost());
         AssertError(result, "ValueError", "same length");
@@ -177,7 +177,7 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
     [Fact]
     public void SumProdElementError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.sumprod([1, 'x'], [3, 4])\n",
             new MockLythonHost());
         AssertError(result, "TypeError", "real numbers");
@@ -186,7 +186,7 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
     [Fact]
     public async Task SumProdDelayedAsyncInputsSuspendThroughHost()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import math
             with open("/p.txt") as f1, open("/q.txt") as f2:
@@ -206,25 +206,25 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
     [Fact]
     public void StructTimeArityPreserved()
     {
-        var shortResult = new LythonEngine().Run("import time\nreturn time.struct_time((1, 2))\n", new MockLythonHost());
+        var shortResult = new LythonEngine(Utf8RegexProvider.Instance).Run("import time\nreturn time.struct_time((1, 2))\n", new MockLythonHost());
         AssertError(shortResult, "TypeError", "at least 9-sequence (2-sequence given)");
-        var longResult = new LythonEngine().Run("import time\nreturn time.struct_time(tuple(range(12)))\n", new MockLythonHost());
+        var longResult = new LythonEngine(Utf8RegexProvider.Instance).Run("import time\nreturn time.struct_time(tuple(range(12)))\n", new MockLythonHost());
         AssertError(longResult, "TypeError", "at most 11-sequence (12-sequence given)");
     }
 
     [Fact]
     public async Task StructTimeArityPreservedAsync()
     {
-        var shortResult = await new LythonEngine().RunAsync("import time\nreturn time.struct_time((1, 2))\n", new MockLythonHost());
+        var shortResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync("import time\nreturn time.struct_time((1, 2))\n", new MockLythonHost());
         AssertError(shortResult, "TypeError", "at least 9-sequence (2-sequence given)");
-        var longResult = await new LythonEngine().RunAsync("import time\nreturn time.struct_time(tuple(range(12)))\n", new MockLythonHost());
+        var longResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync("import time\nreturn time.struct_time(tuple(range(12)))\n", new MockLythonHost());
         AssertError(longResult, "TypeError", "at most 11-sequence (12-sequence given)");
     }
 
     [Fact]
     public void StructTimeHugeReportsExactArityWithoutMaterializing()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import time\nreturn time.struct_time(range(200000))\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
@@ -235,7 +235,7 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
     [Fact]
     public void StructTimeAcceptsGenerator()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import time\nreturn time.struct_time(x for x in range(9))[0]\n",
             new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -247,7 +247,7 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
     {
         var host = new MockLythonHost();
         host.EnableSubprocess();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import subprocess\nreturn subprocess.Popen(['t'], pass_fds=range(200000))\n",
             host);
         AssertError(result, "NotImplementedError", "pass_fds");
@@ -258,7 +258,7 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
     {
         // Built dynamically so the static separators check cannot see it: the
         // runtime count-first check fails without copying 5002 items.
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nseps = [',', ':']\nseps.extend(['x'] * 5000)\nreturn json.dumps({'a': 1}, separators=seps)\n",
             new MockLythonHost());
         AssertError(result, "TypeError", "two-item tuple/list");
@@ -267,7 +267,7 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
     [Fact]
     public void JsonSeparatorsOversizedRangeFailsFast()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nreturn json.dumps({'a': 1}, separators=tuple(range(200000)))\n",
             new MockLythonHost());
         AssertError(result, "TypeError", "two-item tuple/list");

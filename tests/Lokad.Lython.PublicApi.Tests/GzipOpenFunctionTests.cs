@@ -8,7 +8,7 @@ public sealed class GzipOpenFunctionTests
     public void BinaryHandlesSupportSequentialReadWriteFlushAndIteration()
     {
         var host = new MockLythonHost("/repo");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 from pathlib import Path
@@ -42,7 +42,7 @@ return "|".join(values)
     public void TextHandlesReuseCodecAndNewlineSemantics()
     {
         var host = new MockLythonHost("/repo");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 
@@ -77,7 +77,7 @@ return "|".join([str(count), encoding, errors, translated, preserved, str(lines)
     public void AppendWritesOneStableAdditionalMemberWithoutFlushDuplication()
     {
         var host = new MockLythonHost("/repo");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 
@@ -105,7 +105,7 @@ with gzip.open("/repo/data.gz", "rb") as reader:
     public async Task AsyncHandlesUseAsyncHostReadsAndWrites()
     {
         var host = new DelayedLythonHost("/repo");
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import gzip
 
@@ -128,7 +128,7 @@ with gzip.open("/repo/data.gz", "rt") as reader:
         host.SeedBytes("/repo/data.gz", PythonHelloGzip);
         using var cancellation = new CancellationTokenSource();
 
-        var task = new LythonEngine().RunAsync(
+        var task = new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import gzip
 gzip.open("/repo/data.gz", "rb").read()
@@ -148,13 +148,13 @@ gzip.open("/repo/data.gz", "rb").read()
     {
         var textOnly = new TextOnlyHost();
         textOnly.SeedFile("/repo/data.gz", "not binary");
-        var unavailable = new LythonEngine().Run(
+        var unavailable = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 gzip.open("/repo/data.gz", "rb")
 """,
             textOnly);
-        var unavailableWrite = new LythonEngine().Run(
+        var unavailableWrite = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/out.gz", "wb") as writer:
@@ -174,7 +174,7 @@ with gzip.open("/repo/out.gz", "wb") as writer:
         var host = new MockLythonHost("/repo");
         host.SeedBytes("/repo/data.gz", PythonHelloGzip);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/data.gz", "wt", encoding="latin-1") as writer:
@@ -190,7 +190,7 @@ with gzip.open("/repo/data.gz", "wt", encoding="latin-1") as writer:
     [Fact]
     public void UnsupportedModesTypesAndBinaryTextOptionsFailPrecisely()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 
@@ -221,14 +221,14 @@ return "|".join(values)
     {
         var host = new MockLythonHost("/repo");
         host.SeedBytes("/repo/data.gz", PythonHelloGzip);
-        var seek = new LythonEngine().Run(
+        var seek = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/data.gz", "rb") as reader:
     reader.seek(0)
 """,
             host);
-        var fileObject = new LythonEngine().Run(
+        var fileObject = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 gzip.open(gzip.open("/repo/data.gz", "rb"), "rb")
@@ -247,7 +247,7 @@ gzip.open(gzip.open("/repo/data.gz", "rb"), "rb")
         var host = new MockLythonHost("/repo");
         host.SeedBytes("/repo/bad.gz", [0x1f, 0x8b, 0x08]);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 gzip.open("/repo/bad.gz", "rb")
@@ -261,7 +261,7 @@ gzip.open("/repo/bad.gz", "rb")
     [Fact]
     public void StaticContractsRecognizeGzipOpenCallShape()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import gzip
 from gzip import open as gzip_open
@@ -269,7 +269,7 @@ from gzip import open as gzip_open
 gzip.open("a.gz")
 gzip_open("b.gz", "wt", 6, "utf-8", "strict", "")
 """);
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import gzip
 gzip.open()
@@ -286,7 +286,7 @@ gzip.open("a", "rb", 9, None, None, None, "extra")
     {
         // Gzip handles expose __iter__ (identity, closed-checked) and
         // __next__ (line advance or empty StopIteration) like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import gzip
             def closed_next(f):
                 return f.__next__()

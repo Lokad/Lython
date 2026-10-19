@@ -18,10 +18,10 @@ class Writer:
         return len(value)
 print(Writer().write_text(b"abc"))
 """;
-        var compiled = new LythonEngine().Compile(Source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source);
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         Assert.DoesNotContain(compiled.Diagnostics, d => d.Code == "LA3046");
-        var result = new LythonEngine().Run(Source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(Source, new MockLythonHost());
         Assert.True(result.Success, Describe(result));
         Assert.Equal("3\n", result.StandardOutput);
     }
@@ -29,7 +29,7 @@ print(Writer().write_text(b"abc"))
     [Fact]
     public void KnownPathWriteTextBytesStillDiagnosed()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 Path("/repo/out.txt").write_text(b"abc")
@@ -53,7 +53,7 @@ return result
     [Fact]
     public void CustomIterationParityAcrossSyncApis()
     {
-        var result = new LythonEngine().Run(IterableRepro, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(IterableRepro, new MockLythonHost());
         Assert.True(result.Success, Describe(result));
         var outer = Assert.IsType<List<object?>>(result.ReturnValue);
         Assert.Equal(4, outer.Count);
@@ -66,7 +66,7 @@ return result
     [Fact]
     public async Task CustomIterationParityAcrossAsyncApis()
     {
-        var result = await new LythonEngine().RunAsync(IterableRepro, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(IterableRepro, new MockLythonHost());
         Assert.True(result.Success, Describe(result));
         var outer = Assert.IsType<List<object?>>(result.ReturnValue);
         Assert.Equal(4, outer.Count);
@@ -76,7 +76,7 @@ return result
     [Fact]
     public void CustomIterationEffectsAndErrorsSync()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 calls = []
 class C:
@@ -93,7 +93,7 @@ return [calls, first, second]
         var outer = Assert.IsType<List<object?>>(result.ReturnValue);
         Assert.Equal(2, Assert.IsType<List<object?>>(outer[0]).Count);
 
-        var bad = new LythonEngine().Run(
+        var bad = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class D:
     pass
@@ -113,7 +113,7 @@ return errors
     [Fact]
     public async Task CustomIterationLoopsAndDisplaysAsync()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 class C:
     def __iter__(self):
@@ -139,7 +139,7 @@ return [total, comp, unpacked, list(v), tuple(v), sorted(v)]
         var stamp = new DateTimeOffset(2024, 5, 6, 7, 8, 10, TimeSpan.Zero);
         host.LocalNow = stamp;
         host.UtcNow = stamp;
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 wb = openpyxl.Workbook()
@@ -168,7 +168,7 @@ return loaded["Sheet"]["A1"].value
     public void UnrelatedBodyErrorStillPublishesValidGzipWrites()
     {
         var host = new MockLythonHost("/repo");
-        var failed = new LythonEngine().Run(
+        var failed = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/out.gz", "wb") as writer:
@@ -178,7 +178,7 @@ with gzip.open("/repo/out.gz", "wb") as writer:
             host);
         Assert.False(failed.Success);
         Assert.Equal("ValueError", failed.Failure?.ExceptionType);
-        var reread = new LythonEngine().Run(
+        var reread = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/out.gz", "rb") as reader:
@@ -193,7 +193,7 @@ with gzip.open("/repo/out.gz", "rb") as reader:
     public async Task UnrelatedBodyErrorStillPublishesValidGzipWritesAsync()
     {
         var host = new MockLythonHost("/repo");
-        var failed = await new LythonEngine().RunAsync(
+        var failed = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import gzip
 with gzip.open("/repo/out.gz", "wb") as writer:
@@ -203,7 +203,7 @@ with gzip.open("/repo/out.gz", "wb") as writer:
             host);
         Assert.False(failed.Success);
         Assert.Equal("ValueError", failed.Failure?.ExceptionType);
-        var reread = await new LythonEngine().RunAsync(
+        var reread = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import gzip
 with gzip.open("/repo/out.gz", "rb") as reader:
@@ -218,7 +218,7 @@ with gzip.open("/repo/out.gz", "rb") as reader:
     public void ValidationFailureStillDiscardsNewGzipFile()
     {
         var host = new MockLythonHost("/repo");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/new.gz", "wt", encoding="latin-1") as writer:
@@ -234,7 +234,7 @@ with gzip.open("/repo/new.gz", "wt", encoding="latin-1") as writer:
     public void ExplicitClosePublishesStagedWrites()
     {
         var host = new MockLythonHost("/repo");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 writer = gzip.open("/repo/out.gz", "wb")
@@ -245,7 +245,7 @@ return writer.closed
             host);
         Assert.True(result.Success, Describe(result));
         Assert.Equal(true, result.ReturnValue);
-        var reread = new LythonEngine().Run(
+        var reread = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/out.gz", "rb") as reader:
@@ -260,7 +260,7 @@ with gzip.open("/repo/out.gz", "rb") as reader:
     public void RepeatedCloseIsHarmless()
     {
         var host = new MockLythonHost("/repo");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 writer = gzip.open("/repo/out.gz", "wb")
@@ -272,7 +272,7 @@ return writer.closed
             host);
         Assert.True(result.Success, Describe(result));
         Assert.Equal(true, result.ReturnValue);
-        var reread = new LythonEngine().Run(
+        var reread = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/out.gz", "rb") as reader:
@@ -288,7 +288,7 @@ with gzip.open("/repo/out.gz", "rb") as reader:
     {
         var host = new MockLythonHost("/repo");
         host.FailNextWriteBytes("/repo/out.gz", "disk is full");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 writer = gzip.open("/repo/out.gz", "wb")
@@ -308,7 +308,7 @@ return [seen, writer.closed]
         // handle open with its staged writes; the retry published everything.
         Assert.True(result.Success, Describe(result));
         Assert.Equal(new List<object?> { true, true }, Assert.IsType<List<object?>>(result.ReturnValue));
-        var reread = new LythonEngine().Run(
+        var reread = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/out.gz", "rb") as reader:
@@ -326,7 +326,7 @@ with gzip.open("/repo/out.gz", "rb") as reader:
     {
         var host = new MockLythonHost("/repo");
         host.FailWriteBytes("/repo/out.gz", "disk is full");
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import gzip
 writer = gzip.open("/repo/out.gz", "wb")
@@ -346,7 +346,7 @@ return writer.closed
     {
         var host = new MockLythonHost("/repo");
         host.FailWriteBytes("/repo/out.gz", "controlled publication failure");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 writer = gzip.open("/repo/out.gz", "wb")
@@ -370,7 +370,7 @@ return [outcome, writer.closed]
     public void CloseAfterValidationFailureDiscardsStagedOutput()
     {
         var host = new MockLythonHost("/repo");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 writer = gzip.open("/repo/new.gz", "wb")
@@ -392,7 +392,7 @@ return writer.closed
     public void UseAfterCloseRaisesValueError()
     {
         var host = new MockLythonHost("/repo");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 writer = gzip.open("/repo/out.gz", "wb")

@@ -33,7 +33,7 @@ public sealed class ModuleAnnotationExecutionTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             context.Variables["__annotations__"] = new PyDict(context.MemoryGovernor, null);
             var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
                 : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
@@ -51,7 +51,7 @@ public sealed class ModuleAnnotationExecutionTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     [Theory]
     [InlineData(false)]
@@ -65,7 +65,7 @@ public sealed class ModuleAnnotationExecutionTests
         using (var owner = budget.CreateScope())
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner});
+                { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             using var pin = new Pin(budget);
             context.Variables["pin"] = pin;
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
@@ -109,7 +109,7 @@ public sealed class ModuleAnnotationExecutionTests
         {
             using (var owner = budget.CreateScope())
             {
-                var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+                var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
                 context.Variables["__annotations__"] = new PyDict(context.MemoryGovernor, null);
                 var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
                     : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);

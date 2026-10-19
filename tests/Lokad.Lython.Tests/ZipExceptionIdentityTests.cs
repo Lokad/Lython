@@ -14,7 +14,7 @@ public sealed class ZipExceptionIdentityTests
     [Fact]
     public void BadZipfileIsBadZipFile()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 return [zipfile.BadZipfile is zipfile.BadZipFile, zipfile.BadZipfile.__name__, zipfile.BadZipfile.__module__]
@@ -29,7 +29,7 @@ return [zipfile.BadZipfile is zipfile.BadZipFile, zipfile.BadZipfile.__name__, z
     [Fact]
     public void ModuleExposesReadSurfaceOnly()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 names = [zipfile.BadZipFile.__name__, zipfile.LargeZipFile.__name__]
@@ -66,7 +66,7 @@ return names
             ("zipfile.LargeZipFile", "LargeZipFile"),
         })
         {
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 $"import zipfile\nraise {expression}(\"torn\")\n",
                 new MockLythonHost());
             Assert.False(result.Success);
@@ -79,7 +79,7 @@ return names
     [Fact]
     public void AliasCatchesBothWays()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 outcomes = []
@@ -110,7 +110,7 @@ return outcomes
         // One except clause per try (subset boundary); nesting composes them
         // into ordered dispatch: a narrow handler that matched would swallow
         // the error instead of letting it reach the outer handler.
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 outcome = []
@@ -146,7 +146,7 @@ return outcome
     {
         // User-defined exception classes are outside the supported subset, so
         // collisions are pinned between module exception identities instead.
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 import zipfile
@@ -198,7 +198,7 @@ return outcomes
     [Fact]
     public void ImportFormsResolveErrorNames()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile as zf
 from zipfile import BadZipfile, LargeZipFile

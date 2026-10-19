@@ -4,7 +4,7 @@ namespace Lokad.Lython.Frontend;
 
 internal static class LythonFrontend
 {
-    public static FrontendResult Compile(string source, Runtime.MemoryGovernor? governor = null)
+    public static FrontendResult Compile(string source, Runtime.MemoryGovernor? governor = null, ILythonRegexProvider? regexProvider = null, CancellationToken cancellationToken = default)
     {
         if (ExceedsSyntaxNestingLimit(source))
         {
@@ -49,12 +49,21 @@ internal static class LythonFrontend
 
         PostponedAnnotationText.Attach(parsed.Script, source, governor);
 
-        var diagnostics = parsed.Diagnostics
-            .Concat(AnnotationDiagnostics.Analyze(parsed.Script))
-            .Concat(StaticAnalyzer.Analyze(parsed.Script))
-            .ToArray();
-        ImplicitSuperSyntaxFacts.Prepare(parsed.Script);
-        return new FrontendResult(parsed.Script, diagnostics);
+        var analysis = new StaticAnalysisContext(parsed.Script, regexProvider, governor, cancellationToken);
+        try
+        {
+            var diagnostics = parsed.Diagnostics
+                .Concat(AnnotationDiagnostics.Analyze(parsed.Script, analysis))
+                .Concat(StaticAnalyzer.Analyze(analysis))
+                .ToArray();
+            ImplicitSuperSyntaxFacts.Prepare(parsed.Script);
+            return new FrontendResult(parsed.Script, diagnostics);
+        }
+        catch (Runtime.LythonRuntimeException error) when (error.Attribution?.Reason == LythonFailureReason.HostCapabilityUnavailable)
+        {
+            return new FrontendResult(null, [new LythonDiagnostic("LA2010", error.Message,
+                LythonDiagnosticSeverity.Error, error.Span)]);
+        }
     }
 
     private static FrontendResult CompilationLimitExceeded(string code, string message)

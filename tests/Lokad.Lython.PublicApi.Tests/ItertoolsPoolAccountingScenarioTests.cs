@@ -12,7 +12,7 @@ public sealed class ItertoolsPoolAccountingScenarioTests
     [Fact]
     public async Task ProductPoolStaysCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             return itertools.product(range(100000))
@@ -31,7 +31,7 @@ public sealed class ItertoolsPoolAccountingScenarioTests
     [Fact]
     public async Task CombinationsPoolStaysCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             return itertools.combinations(range(100000), 2)
@@ -52,7 +52,7 @@ public sealed class ItertoolsPoolAccountingScenarioTests
         // MG12: itertools.repeat holds one shared value plus a counter, so an
         // absurd repeat count must neither allocate nor fail under a tiny
         // budget, and zero counts exhaust immediately.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             r = itertools.repeat("abc", 10 ** 18)
@@ -82,7 +82,7 @@ public sealed class ItertoolsPoolAccountingScenarioTests
         // is exhausted without ever yielding. An empty pool exhausts the
         // product immediately, so no result tuple exists to hide behind:
         // only retained pool charges can fail this script.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             holders = []
@@ -106,7 +106,7 @@ public sealed class ItertoolsPoolAccountingScenarioTests
     {
         // MG12: a retained exhausted iterator keeps yielding nothing instead
         // of failing or losing its pools, and later iterators still work.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             p = itertools.product([1, 2], [3])

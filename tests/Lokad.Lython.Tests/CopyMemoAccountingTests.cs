@@ -44,7 +44,7 @@ public sealed class CopyMemoAccountingTests
     private static (LythonRuntime.ExecutionContext Context, long Reserved, long Committed, long AfterDispose) RememberThreeAndDispose()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var memo = NewInternalMemo(context, span);
         Remember(memo, new object[] { 1 }, new object[] { 1 });
@@ -60,7 +60,7 @@ public sealed class CopyMemoAccountingTests
     public void ScalarCopiesHoldNoMemoScratch()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var memo = NewInternalMemo(context, span);
         ((IDisposable)memo).Dispose();

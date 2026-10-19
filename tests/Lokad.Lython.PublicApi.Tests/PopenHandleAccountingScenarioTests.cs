@@ -37,7 +37,7 @@ public sealed class PopenHandleAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedPopenHandlesStayCharged()
     {
-        var script = new LythonEngine().Compile(BuildHandles);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildHandles);
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is 201664, so this fits; the 128B-per-handle
         // backstop pushes the post-fix peak (~265664) over.
@@ -58,7 +58,7 @@ public sealed class PopenHandleAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedPipeStreamsStayCharged()
     {
-        var script = new LythonEngine().Compile(BuildPipeHandles);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildPipeHandles);
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is 201664, so this fits; handle plus two
         // 64B stream slots per Popen push the post-fix peak (~329664) over.
@@ -79,7 +79,7 @@ public sealed class PopenHandleAccountingScenarioTests
     [Fact]
     public async Task RoomyPopenHandlesSucceed()
     {
-        var script = new LythonEngine().Compile(BuildPipeHandles);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildPipeHandles);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { new BigInteger(500), new List<object?> { "tool" } };

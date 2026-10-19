@@ -13,7 +13,7 @@ public sealed class ZipRecordWidthScenarioTests
     [Fact]
     public async Task OversizedNameRejectedPreservingContents()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")
@@ -43,7 +43,7 @@ public sealed class ZipRecordWidthScenarioTests
     [Fact]
     public async Task MaxWidthNameRoundTrips()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")
@@ -69,7 +69,7 @@ public sealed class ZipRecordWidthScenarioTests
     [Fact]
     public async Task MultibyteNameWidthsAreByteBased()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")
@@ -105,7 +105,7 @@ public sealed class ZipRecordWidthScenarioTests
     [Fact]
     public async Task OversizedCommentAndExtraRejected()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             results = []
@@ -144,7 +144,7 @@ public sealed class ZipRecordWidthScenarioTests
     [Fact]
     public async Task OversizedArchiveCommentFailsAtClose()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")
@@ -166,7 +166,7 @@ public sealed class ZipRecordWidthScenarioTests
     [Fact]
     public async Task Zip64PromotionPreservesUnrelatedExtraFields()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")

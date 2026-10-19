@@ -23,7 +23,7 @@ public sealed class StatValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedStatsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             objs = []
             i = 0
@@ -48,7 +48,7 @@ public sealed class StatValueAccountingScenarioTests
     [Fact]
     public async Task StatValuesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             st = os.stat("/d/f0")
             return [st.exists, st.is_file, st.is_dir, st.size]

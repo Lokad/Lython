@@ -7,7 +7,7 @@ public sealed class MathModuleFunctionTests
     [Fact]
     public void MathModule_DispatchesRoundingAndIndexProtocols()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import math
 
@@ -35,7 +35,7 @@ print(math.gcd(indexed, 10), math.lcm(indexed, 10))
     [Fact]
     public void SensitiveMathFunctionsPreserveSmallInputsAndSpecialValues()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import math
 return str(math.expm1(1e-16) != 0.0) + "|" + str(math.log1p(1e-16) != 0.0) + "|" + str(math.erf(0.0) == 0.0) + "|" + str(math.erfc(0.0) == 1.0) + "|" + str(math.erf(math.inf) == 1.0) + "|" + str(math.erfc(-math.inf) == 2.0)
@@ -172,7 +172,7 @@ return str(math.expm1(1e-16) != 0.0) + "|" + str(math.log1p(1e-16) != 0.0) + "|"
     [InlineData("math.fsum([1e308, 1e308])", "OverflowError", "intermediate overflow")]
     public void MathModule_Failures_ArePythonShaped(string expression, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             $$"""
 import math
 {{expression}}
@@ -196,7 +196,7 @@ import math
     [Fact]
     public void MathModule_StaticContracts_CoverNewCallShapes()
     {
-        var valid = new LythonEngine().Run(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import math
 m, e = math.frexp(8)
@@ -211,7 +211,7 @@ return str((m, e, frac, whole, total, distance, step > 1))
         Assert.True(valid.Success, valid.Failure?.Message);
         Assert.Equal("(0.5, 4, 0.25, 1.0, 24, 5.0, True)", Assert.IsType<string>(valid.ReturnValue));
 
-        var invalid = new LythonEngine().Run(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import math
 math.factorial()
@@ -235,7 +235,7 @@ math.sumprod([1])
         // math.floor/ceil/trunc accept Decimals exactly like CPython,
         // delegating to the Decimal __floor__/__ceil__/__trunc__ cores;
         // other math functions still reject Decimals statically.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 import math
 from decimal import Decimal
 def call_floor(x):
@@ -307,7 +307,7 @@ import math
 return str({{expression}})
 """;
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         var diagnostics = string.Join(" | ", result.Diagnostics.Select(d => $"{d.Code}:{d.Message}"));
         Assert.True(result.Success, result.Failure?.Message ?? diagnostics);

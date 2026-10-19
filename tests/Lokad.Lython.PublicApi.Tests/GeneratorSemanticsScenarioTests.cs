@@ -13,7 +13,7 @@ public sealed class GeneratorSemanticsScenarioTests
 {
     private static async Task AssertValue(string source, object expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(new MockLythonHost(), new LythonRunOptions());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -82,7 +82,7 @@ public sealed class GeneratorSemanticsScenarioTests
                 cts.Cancel();
             }
         };
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "g = (print(\"item-\" + str(i)) or i for i in range(30))\nreturn list(g)\n",
             host,
             new LythonRunOptions { CancellationToken = cts.Token });
@@ -101,7 +101,7 @@ public sealed class GeneratorSemanticsScenarioTests
         // a separate deferred item (async outer acquisition).
         var host = new DelayedLythonHost();
         host.SeedFile("/d.txt", "a,b\n");
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "total = 0\nfor x in (last := open(\"/d.txt\").read() for i in range(5)):\n    total += 1\nreturn total + len(last)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var asyncResult = await script.RunAsync(host, new LythonRunOptions());

@@ -24,7 +24,7 @@ first, second = make(2)
 print(first(3), second(7), first(), second())
 """;
         var host = new MockLythonHost();
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var result = asynchronous ? await engine.RunAsync(source, host) : engine.Run(source, host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("5 8 5 8\n", result.StandardOutput);
@@ -54,7 +54,7 @@ print(value.identify())
 print(value.shadow(3))
 """;
         var host = new MockLythonHost();
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var result = asynchronous ? await engine.RunAsync(source, host) : engine.Run(source, host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("base:Derived\nshadowed\n", result.StandardOutput);

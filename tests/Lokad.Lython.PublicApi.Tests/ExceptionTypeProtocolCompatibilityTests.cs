@@ -21,7 +21,7 @@ public sealed class ExceptionTypeProtocolCompatibilityTests
     [MemberData(nameof(PythonControls))]
     public async Task ExceptionTypeChecksFollowPython(string source, string expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {

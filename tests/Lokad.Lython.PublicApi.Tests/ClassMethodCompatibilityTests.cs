@@ -51,7 +51,7 @@ public sealed class ClassMethodCompatibilityTests
     [MemberData(nameof(Cases))]
     public async Task MethodsFollowPython(string name, string source, string expected)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var asynchronous in new[] { false, true })
         {
@@ -67,7 +67,7 @@ public sealed class ClassMethodCompatibilityTests
     public async Task MethodBodyAwaitsHostIoAndReturnsAllowanceAfterCleanup()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using (var script = new LythonEngine().Compile(ReadSource, budget))
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(ReadSource, budget))
         {
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;
@@ -89,7 +89,7 @@ public sealed class ClassMethodCompatibilityTests
     public async Task CancellationDuringMethodIoKeepsOwnershipUntilTheRunEnds()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using (var script = new LythonEngine().Compile(ReadSource, budget))
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(ReadSource, budget))
         {
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;

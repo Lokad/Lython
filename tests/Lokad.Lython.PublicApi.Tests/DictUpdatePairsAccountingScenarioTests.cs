@@ -23,7 +23,7 @@ public sealed class DictUpdatePairsAccountingScenarioTests
     [Fact]
     public async Task UpdatePairsBehaveLikeBefore()
     {
-        var script = new LythonEngine().Compile(UpdateThroughParam + "\nreturn upd([(\"a\", 1), (\"b\", 2)])\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(UpdateThroughParam + "\nreturn upd([(\"a\", 1), (\"b\", 2)])\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { new BigInteger(1), new BigInteger(2), new BigInteger(2) };
         var sync = script.Run(new MockLythonHost());
@@ -47,7 +47,7 @@ public sealed class DictUpdatePairsAccountingScenarioTests
         };
         foreach (var (source, expectedType, expectedMessage) in cases)
         {
-            var script = new LythonEngine().Compile(UpdateThroughParam + "\nupd(" + source + ")\nreturn 0\n");
+            var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(UpdateThroughParam + "\nupd(" + source + ")\nreturn 0\n");
             Assert.True(script.IsValid);
             var sync = script.Run(new MockLythonHost());
             Assert.False(sync.Success);
@@ -72,7 +72,7 @@ public sealed class DictUpdatePairsAccountingScenarioTests
     {
         // dict() and dict.update accept Counter and ChainMap mappings
         // like CPython (multi-map key order follows the merge order).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import ChainMap, Counter, defaultdict
             results = []
             d = {}
@@ -119,7 +119,7 @@ public sealed class DictUpdatePairsAccountingScenarioTests
         // A deque of pairs is a valid update source like CPython; the
         // static gate used to reject the deque kind although the runtime
         // validates pair elements the same way as for lists.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import deque
             d = {}
             d.update(deque([("a", 1), ("b", 2)]))

@@ -29,7 +29,7 @@ public sealed class CsvIncrementalParsingScenarioTests
     public async Task EarlyBreakAvoidsTailParse()
     {
         // A full parse retains ~6MB; the first row plus the file fits in 1MB.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             f = open("/data.csv")
             r = csv.reader(f)
@@ -51,7 +51,7 @@ public sealed class CsvIncrementalParsingScenarioTests
     [Fact]
     public async Task EarlyBreakAvoidsTailParseDictReader()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             f = open("/data.csv")
             r = csv.DictReader(f, ["a", "b", "c", "d"])
@@ -73,7 +73,7 @@ public sealed class CsvIncrementalParsingScenarioTests
     [Fact]
     public async Task ConstructionAcceptsBrokenInputWithZeroLineNum()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             r = csv.reader(["\"broken"])
             return r.line_num
@@ -94,7 +94,7 @@ public sealed class CsvIncrementalParsingScenarioTests
     {
         // Readers stream single-pass; iteration is the incremental path and
         // line_num tracks pulled input.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             r = csv.reader(["a,b", "1,2", "3,4"])
             seen = []
@@ -119,7 +119,7 @@ public sealed class CsvIncrementalParsingScenarioTests
         // Breaking out early must not consume or poison the shared cursor: a
         // later pass over the same reader continues where the break left off,
         // over list and file sources alike.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             r = csv.reader(["a", "b", "c", "d"])
             first = []

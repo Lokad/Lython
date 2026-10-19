@@ -53,7 +53,7 @@ public sealed class StringReplaceBoundaryTests
     public async Task EveryCallCheckpointPreservesEffectsAndUnwinds(bool asynchronous, bool hooks)
     {
         var source = hooks ? "return source.replace(old(),replacement())" : "return source.replace('a','bb')";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         string[] fullEffects;
         using (var owner = budget.CreateScope())
@@ -70,7 +70,7 @@ public sealed class StringReplaceBoundaryTests
 
     private static (Context Context, List<string> Events) Prepare(ILythonMemoryBudget owner)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         context.Variables["source"] = PyString.FromString("a😀a", context.MemoryGovernor, null);
         var events = new List<string>();
         context.Variables["old"] = new Hook("old", PyString.FromString("a", context.MemoryGovernor, null), events);

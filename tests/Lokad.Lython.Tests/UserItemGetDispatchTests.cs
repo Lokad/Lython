@@ -14,7 +14,7 @@ public sealed class UserItemGetDispatchTests
     [InlineData(true, true)]
     public async Task BindingAndInvocationUseTheSelectedMode(bool asynchronous, bool descriptor)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var checkpoint = new Checkpoint();
         var key = new object();
         context.Variables["checkpoint"] = checkpoint;
@@ -22,7 +22,7 @@ public sealed class UserItemGetDispatchTests
         var source = descriptor
             ? "class Box:\n @property\n def __getitem__(self):\n  checkpoint()\n  def get(key):\n   checkpoint()\n   return key\n  return get\nbox=Box()\nresult=box[key]"
             : "class Box:\n def __getitem__(self,key):\n  checkpoint()\n  return key\nbox=Box()\nresult=box[key]";
-        var syntax = LythonFrontend.Compile(source).Script!;
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);

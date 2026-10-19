@@ -20,7 +20,7 @@ public sealed class EnumerableStateTests
         var probe = new AcquisitionProbe();
         context.Variables["probe"] = probe;
         context.Variables["iter"] = context.State.BuiltinVariables["iter"];
-        var parsed = LythonFrontend.Compile("class Source:\n    def __iter__(self):\n        probe()\n        return iter([1])\nreturn Source()\n");
+        var parsed = LythonFrontend.Compile("class Source:\n    def __iter__(self):\n        probe()\n        return iter([1])\nreturn Source()\n",regexProvider:Utf8RegexProvider.Instance);
         Assert.Empty(parsed.Diagnostics);
         var code = ExecutableScript.Compile(LoweredScript.Lower(parsed.Script!));
         var source = LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
@@ -152,7 +152,7 @@ public sealed class EnumerableStateTests
 
     private static LythonRuntime.ExecutionContext Context(CancellationToken cancellation = default)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { CancellationToken = cancellation });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { CancellationToken = cancellation },regexProvider:Utf8RegexProvider.Instance);
         context.Variables.Clear();
         return context;
     }

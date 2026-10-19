@@ -32,7 +32,7 @@ public sealed class DirectIntegerTextCallTests
 
         Context Prepare(ILythonMemoryBudget owner)
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             context.Variables["value"] = bytes ? new PyBytes([55], context.MemoryGovernor, null)
                 : PyString.FromString("7", context.MemoryGovernor, null);
             return context;
@@ -52,7 +52,7 @@ public sealed class DirectIntegerTextCallTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, CancellationToken = cancellation.Token });
+            { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var payload = new string('9', 101);
         object value = bytes ? new PyBytes(System.Text.Encoding.ASCII.GetBytes(payload), context.MemoryGovernor, null)
             : PyString.FromString(payload, context.MemoryGovernor, null);
@@ -70,7 +70,7 @@ public sealed class DirectIntegerTextCallTests
             Assert.True(held > 0);
             using (var otherOwner = budget.CreateScope())
             {
-                var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner });
+                var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner },regexProvider:Utf8RegexProvider.Instance);
                 _ = PyString.FromString(new string('x', 1024), other.MemoryGovernor, null);
                 Assert.True(budget.ReservedBytes > held);
             }
@@ -113,7 +113,7 @@ public sealed class DirectIntegerTextCallTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     private static async ValueTask<object?> Run(ExecutableCodeObject code, Context context, bool asynchronous)
         => asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)

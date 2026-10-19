@@ -96,7 +96,7 @@ public sealed class AdjacentBytesLiteralTests
     [InlineData("b'a' b'é'")]
     public async Task InvalidAdjacencyFailsBeforeEffects(string expression)
     {
-        var compiled = new LythonEngine().Compile("print('effects')\nvalue = " + expression + "\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effects')\nvalue = " + expression + "\n");
         Assert.False(compiled.IsValid);
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -119,7 +119,7 @@ public sealed class AdjacentBytesLiteralTests
     {
         var pieces = string.Concat(Enumerable.Repeat("b'x' ", 20000));
         var source = classBody ? "class C:\n    value = " + pieces + "\n" : "print(len(" + pieces + "))\n";
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16384) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
@@ -132,7 +132,7 @@ public sealed class AdjacentBytesLiteralTests
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

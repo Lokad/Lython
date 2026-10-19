@@ -15,7 +15,7 @@ public class SequenceMatcherBenchmarks
 
     public SequenceMatcherBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _ratioSmall = Compile(engine, RatioSource(500));
         _ratioLarge = Compile(engine, RatioSource(4000));
         _opcodesLarge = Compile(engine, OpcodesSource(4000));

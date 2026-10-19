@@ -538,6 +538,19 @@ short-lived temporaries uninstrumented; this is a design allowance, not a
 measured coverage percentage. Keep additional host headroom for CLR/runtime
 memory, native library buffers and delayed physical collection. Estimate counters
 are neither live CLR heap size nor process RSS.
+Provider allocations borrow the same root through existing child scopes. The
+host root's `ReservedBytes` is the aggregate balance across compilation, runs,
+providers and retained results. `PeakExecutionMemoryBytes` describes only the
+execution governor's own charges; it excludes charges made directly by providers
+under child scopes. Do not interpret it as the complete shared-root peak.
+Regex preparation/cursor storage remains funded through result processing,
+asynchronous replacement callbacks and deterministic cleanup. Compiled storage
+stays conservatively charged until its compilation/execution/cache owner ends,
+including patterns evicted while aliases can survive. No collector or per-object
+ledger is used. The optional adapter's coarse buffered-capture and replacement
+estimates include construction overlap and can refuse substantially earlier than
+the eventual output size; see its documented capability restrictions.
+
 
 Guest values can share storage and escape through closures or containers.
 Eligible compiled functions use captured cells under both `Run` and `RunAsync`;

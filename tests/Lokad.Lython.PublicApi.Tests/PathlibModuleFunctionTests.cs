@@ -7,7 +7,7 @@ public sealed class PathlibModuleFunctionTests
     [Fact]
     public void PathlibModule_PreservesLexicalParentSegmentsUntilResolution()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path, PurePosixPath
 
@@ -28,7 +28,7 @@ print(concrete.resolve())
     [Fact]
     public void PathlibModule_EmptyComponents_AreCurrentDirectoryPaths()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path, PurePath, PurePosixPath
 
@@ -48,7 +48,7 @@ print(PurePosixPath(" "))
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 from pathlib import Path, PosixPath, PurePath, PurePosixPath
@@ -81,7 +81,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -125,7 +125,7 @@ __lython_file.close()
         host.SeedFile("/repo/docs/sub/b.md", "bravo");
         host.SeedFile("/repo/docs/c.txt", "skip");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -176,7 +176,7 @@ __lython_file.close()
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/input.txt", "alpha\nbeta\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -224,7 +224,7 @@ __lython_file.close()
         host.SeedFile("/repo/docs/a.md", "a");
         host.SeedFile("/repo/docs/b.txt", "b");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path, WindowsPath
 
@@ -276,7 +276,7 @@ __lython_file.close()
     [Fact]
     public void PathlibModule_StaticContractsAcceptExpandedSurface()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path, PosixPath, PurePath, PurePosixPath
 import os
@@ -309,7 +309,7 @@ closed = handle.closed
         host.SeedFile("/repo/docs/sub/b.md", "bravo");
         host.SeedFile("/repo/docs/c.txt", "skip");
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 from pathlib import Path
 
@@ -379,7 +379,7 @@ Path("/repo/newdir").mkdir(parents="yes")
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/a.txt", "x");
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);

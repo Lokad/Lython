@@ -26,7 +26,7 @@ public sealed class CallArgumentEvaluationTests
     private static async Task CheckBoth(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["target"] = 0 } };
@@ -57,7 +57,7 @@ except TypeError:
     print('invalid-target')
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["target"] = 0 } };

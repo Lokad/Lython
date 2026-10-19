@@ -19,7 +19,7 @@ public sealed class CacheKeyAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedKeysStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import functools
             @functools.lru_cache(maxsize=None)
             def f(**kw):
@@ -46,7 +46,7 @@ public sealed class CacheKeyAccountingScenarioTests
     [Fact]
     public async Task ManyCacheHitsStayFlat()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import functools
             @functools.lru_cache(maxsize=None)
             def f(**kw):
@@ -71,7 +71,7 @@ public sealed class CacheKeyAccountingScenarioTests
     [Fact]
     public async Task CacheKeysBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import functools
             @functools.lru_cache(maxsize=None)
             def f(**kw):

@@ -13,7 +13,7 @@ public sealed class ExceptionBindAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedBoundExceptionsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "es = []\n" +
             "i = 0\n" +
             "while i < 20000:\n" +
@@ -37,7 +37,7 @@ public sealed class ExceptionBindAccountingScenarioTests
     [Fact]
     public async Task UnboundCatchesFitRoomyBudget()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "i = 0\n" +
             "while i < 16:\n" +
             "    try:\n" +
@@ -72,7 +72,7 @@ public sealed class ExceptionBindAccountingScenarioTests
     [Fact]
     public async Task BoundExceptionStillUsable()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "try:\n" +
             "    raise ValueError('oops')\n" +
             "except ValueError as e:\n" +

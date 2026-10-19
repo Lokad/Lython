@@ -376,7 +376,7 @@ public sealed class MixedSubscriptSyntaxTests
     [Fact]
     public async Task CompositeKeysAwaitDelayedItemAndBoundProtocols()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             events=[]
             def touch(label,value):
              with open('/value.txt') as f:f.read()
@@ -411,7 +411,7 @@ public sealed class MixedSubscriptSyntaxTests
     [Fact]
     public async Task RetainedSliceTupleKeysObeyMemoryLimit()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class Box:
              def __getitem__(self,key):return key
             box=Box()
@@ -444,7 +444,7 @@ public sealed class MixedSubscriptSyntaxTests
     [Fact]
     public async Task StarredKeysFailCollectionLimitBeforeItemProtocol()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class Box:
              def __getitem__(self,key):print('called')
             Box()[:,*range(1000000)]
@@ -472,7 +472,7 @@ public sealed class MixedSubscriptSyntaxTests
     [InlineData("x[a:=1:3]")]
     public void InvalidSubscriptionsFailBeforeEffects(string expression)
     {
-        var compiled = new LythonEngine().Compile("print('effect')\n" + expression);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effect')\n" + expression);
         Assert.False(compiled.IsValid);
     }
 
@@ -481,7 +481,7 @@ public sealed class MixedSubscriptSyntaxTests
     public async Task CompositeSubscriptionKeysFollowPython(string name, string source, string expected)
     {
         _ = name;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

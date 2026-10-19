@@ -26,7 +26,7 @@ public sealed class DecimalRoundAccountingTests
     public void RoundDecimalResultsPreserveValuesAndAliases()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = InvokeRound(context, span, new PyDecimal(1.54m), new BigInteger(1));
         _ = InvokeRound(context, span, new PyDecimal(1.55m), new BigInteger(1));

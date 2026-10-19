@@ -46,7 +46,7 @@ public class SliceLifetimeScenarioTests : LifetimeScenario
     public async Task RetainedSlicesStayUsableAndCleanupAllowsAnotherBatch()
     {
         var budget = new LythonMemoryBudget(Math.Max(512 * 1024, StreamingBudget + 256 * 1024));
-        using var script = new LythonEngine().Compile($$"""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($$"""
             b = 'a' * {{SliceLength}}
             objs = []
             for i in range(count):
@@ -73,7 +73,7 @@ public class SliceLifetimeScenarioTests : LifetimeScenario
                 Assert.Equal(new string('a', SliceLength - 1), result.ReturnValue);
             }
             Assert.Equal(retained, budget.ReservedBytes);
-            using var resumed = new LythonEngine().Run($"return len('a' * {SliceLength - 1})", new MockLythonHost(),
+            using var resumed = new LythonEngine(Utf8RegexProvider.Instance).Run($"return len('a' * {SliceLength - 1})", new MockLythonHost(),
                 new LythonRunOptions { MemoryBudget = budget});
             Assert.True(resumed.Success, resumed.Failure?.Message);
             Assert.Equal(new BigInteger(SliceLength - 1), resumed.ReturnValue);
@@ -89,7 +89,7 @@ public class SliceLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task SliceAliasesStayUsable()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "b = 'a' * " + SliceLength + "\n"
             + "s = b[1:]\n"
             + "t = s\n"

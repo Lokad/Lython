@@ -13,7 +13,7 @@ public sealed class StructuredUrlProjectionTests
     {
         var source = "import urllib.parse as p\nreturn p." + (parameters ? "urlparse(" : "urlsplit(") +
             (binary ? "b" : "") + "'http://X/a;b?q#f')\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         string[] expected = parameters ? ["http", "X", "/a", "b", "q", "f"] : ["http", "X", "/a;b", "q", "f"];
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })

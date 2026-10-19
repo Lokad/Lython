@@ -17,7 +17,7 @@ public sealed class PathElementOwnershipTests
     private static LythonRuntime.ExecutionContext NewContext(out LythonSourceSpan span)
     {
         span = new LythonSourceSpan(0, 0, 0, 0);
-        return new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        return new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
     }
 
     private static object InvokeOsPath(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, params object[] arguments)

@@ -7,7 +7,7 @@ public sealed class JsonSortingBeforeSkipTests
     [Fact]
     public async Task SortingPrecedesSkippingInBothEncoderPaths()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import json
             encoder = json.JSONEncoder(skipkeys=True, sort_keys=True)
             for obj in [{(1,): 1, 'x': 2}, {(1,): 1}, {(2,): 2, (1,): 1}]:

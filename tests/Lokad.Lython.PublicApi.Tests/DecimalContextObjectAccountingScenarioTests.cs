@@ -13,7 +13,7 @@ public sealed class DecimalContextObjectAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedContextsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             cs = []
@@ -37,7 +37,7 @@ public sealed class DecimalContextObjectAccountingScenarioTests
     [Fact]
     public async Task ContextBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             a = decimal.Context()

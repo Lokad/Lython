@@ -17,7 +17,7 @@ def inner():
 outer()
 """;
 
-        var result = new LythonEngine().Run(script, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(script, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);

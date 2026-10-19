@@ -25,7 +25,7 @@ public sealed class TableValidationAccountingScenarioTests
         }
 
         builder.Append("return 0\n");
-        var script = new LythonEngine().Compile(builder.ToString());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(builder.ToString());
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -40,7 +40,7 @@ public sealed class TableValidationAccountingScenarioTests
     [Fact]
     public async Task ManyValidationsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             from openpyxl.worksheet.datavalidation import DataValidation
@@ -67,7 +67,7 @@ public sealed class TableValidationAccountingScenarioTests
     [Fact]
     public async Task TableAndValidationBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             from openpyxl.worksheet.table import Table

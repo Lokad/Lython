@@ -28,7 +28,7 @@ public sealed class FunctoolsAsyncCompositionTests
 
     private static async Task AssertAsyncMatchesSync(string source, object? expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(SeedSyncHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -59,7 +59,7 @@ public sealed class FunctoolsAsyncCompositionTests
     [Fact]
     public async Task ReduceEmptyWithoutInitializerStillRejects()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import functools\nreturn functools.reduce(lambda a, b: a + b, [])\n");
         Assert.True(script.IsValid);
         var sync = script.Run(SeedSyncHost());
@@ -100,7 +100,7 @@ public sealed class FunctoolsAsyncCompositionTests
     [InlineData("import functools\nfrom pathlib import Path\ndef get(p):\n    return Path(p).read_text()\nreturn functools.partial(get)(\"/d.txt\")\n")]
     public void SyncRunsFailFastWithRunAsyncGuidance(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var result = script.Run(SeedDelayedHost());
         Assert.False(result.Success);
@@ -113,7 +113,7 @@ public sealed class FunctoolsAsyncCompositionTests
     {
         using var cancelled = new CancellationTokenSource();
         cancelled.Cancel();
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import functools\nwith open(\"/r.txt\") as f:\n    return functools.reduce(lambda a, b: a + int(b), f, 0)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { CancellationToken = cancelled.Token };

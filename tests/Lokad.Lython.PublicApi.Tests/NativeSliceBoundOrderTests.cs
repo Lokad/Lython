@@ -46,7 +46,7 @@ public sealed class NativeSliceBoundOrderTests
     public async Task BoundsValidateInPythonOrder(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -65,7 +65,7 @@ public sealed class NativeSliceBoundOrderTests
     [InlineData(true)]
     public async Task WorksheetCellSlicesKeepStringBounds(bool asynchronous)
     {
-        using var script = new LythonEngine().Compile("from openpyxl import Workbook\nws=Workbook().active\nws['B2']='value'\nprint(ws['B2':'C3'][0][0].value)");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("from openpyxl import Workbook\nws=Workbook().active\nws['B2']='value'\nprint(ws['B2':'C3'][0][0].value)");
         Assert.True(script.IsValid);
         using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);

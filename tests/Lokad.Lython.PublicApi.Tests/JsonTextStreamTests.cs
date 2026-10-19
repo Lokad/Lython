@@ -257,7 +257,7 @@ public sealed class JsonTextStreamTests : LifetimeScenario
 
     private static LythonCompiledScript Compile(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
         return script;
     }
@@ -311,7 +311,7 @@ public sealed class JsonTextStreamTests : LifetimeScenario
     [InlineData("json.dump([], None)")]
     public void DefiniteUnsupportedStreamShapesRetainStaticDiagnostics(string expression)
     {
-        var script = new LythonEngine().Compile("import json\n" + expression);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\n" + expression);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, d => d.Code == "LA3158");
     }

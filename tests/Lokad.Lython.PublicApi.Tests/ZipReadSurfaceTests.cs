@@ -165,7 +165,7 @@ public sealed class ZipReadSurfaceTests
         // Park archive publication until cancellation fires, so it provably
         // lands mid-operation instead of racing run startup.
         var publishStarted = host.PauseWriteUntilCancellation("/out.zip");
-        var task = new LythonEngine().RunAsync(
+        var task = new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -202,7 +202,7 @@ return 1
             return new LythonSubprocessResult(0, ReadOnlyMemory<byte>.Empty, ReadOnlyMemory<byte>.Empty);
         });
         using var cancellation = new CancellationTokenSource();
-        var task = new LythonEngine().RunAsync(
+        var task = new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             $"""
 import zipfile, subprocess
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -256,7 +256,7 @@ return 1
                     huge0 = h.readline(2147483647)
                 return [first, rest, eof, zero, neg, after, huge0]
             """;
-        var script = new LythonEngine().Compile(scriptText);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(scriptText);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -310,7 +310,7 @@ return 1
                     results.append(str(e))
             return results
             """;
-        var script = new LythonEngine().Compile(scriptText);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(scriptText);
         Assert.True(script.IsValid);
         var expected = new List<object?> { "True", "True", "True", "StopIteration", "()", "ValueError", "I/O operation on closed member." };
         var sync = script.Run(new MockLythonHost());
@@ -397,7 +397,7 @@ return 1
         for (var i = 0; i < text.Length; i++) text[i] = (byte)(65 + (i % 26));
         var full = BclDeflate(text);
         var archive = BuildDeflatedArchive(Encoding.ASCII.GetBytes("a.txt"), full[..^1], text.Length, ComputeCrc32(text));
-        var script = new LythonEngine().Compile(scriptText);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(scriptText);
         Assert.True(script.IsValid);
         var syncHost = new MockLythonHost();
         syncHost.SeedWorkbook("/t.zip", archive);
@@ -413,7 +413,7 @@ return 1
         Assert.Contains("truncated", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
         var zipHost = new MockLythonHost();
         zipHost.SeedWorkbook("/t.zip", archive);
-        var tested = new LythonEngine().Run(
+        var tested = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import zipfile
             with zipfile.ZipFile("/t.zip") as archive:

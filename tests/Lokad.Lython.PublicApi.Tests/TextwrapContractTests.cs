@@ -10,7 +10,7 @@ public sealed class TextwrapContractTests
     [InlineData("textwrap.indent('x','>',unexpected=True)")]
     public void KnownCallsRejectInvalidBinding(string call)
     {
-        var script = new LythonEngine().Compile("import textwrap\n" + call);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import textwrap\n" + call);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA3151");
     }
@@ -22,10 +22,10 @@ public sealed class TextwrapContractTests
     [InlineData("TextWrapper")]
     public async Task UninventoriedMembersFailStaticallyAndThroughDynamicLookup(string name)
     {
-        var direct = new LythonEngine().Compile("import textwrap\ntextwrap." + name);
+        var direct = new LythonEngine(Utf8RegexProvider.Instance).Compile("import textwrap\ntextwrap." + name);
         Assert.False(direct.IsValid);
         Assert.Contains(direct.Diagnostics, diagnostic => diagnostic.Code == "LA3113");
-        var dynamic = new LythonEngine().Compile("import textwrap\ngetattr(textwrap,'" + name + "')");
+        var dynamic = new LythonEngine(Utf8RegexProvider.Instance).Compile("import textwrap\ngetattr(textwrap,'" + name + "')");
         Assert.True(dynamic.IsValid, string.Join("; ", dynamic.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { dynamic.Run(new MockLythonHost()), await dynamic.RunAsync(new MockLythonHost()) })
         {

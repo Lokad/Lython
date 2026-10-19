@@ -20,7 +20,7 @@ public sealed class ExecutableGenericFunctionTests
     [MemberData(nameof(Programs))]
     public async Task GenericBodiesAndNestedHelpersRemainExecutable(string name, string source)
     {
-        var syntax = LythonFrontend.Compile(source);
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(syntax.Script);
         Assert.DoesNotContain(syntax.Diagnostics, diagnostic => diagnostic.Severity == LythonDiagnosticSeverity.Error);
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax.Script!)).EntryPoint;
@@ -28,7 +28,7 @@ public sealed class ExecutableGenericFunctionTests
         {
             var budget = new LythonMemoryBudget(4 * 1024 * 1024);
             using var owner = budget.CreateScope();
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var returned = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
                 : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
             var function = Assert.IsType<PyExecutableFunction>(returned);

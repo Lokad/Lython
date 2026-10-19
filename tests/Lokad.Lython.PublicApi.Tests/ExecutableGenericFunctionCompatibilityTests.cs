@@ -29,7 +29,7 @@ public sealed class ExecutableGenericFunctionCompatibilityTests
     public async Task GenericScopesAndCapturedCellsMatchPython(bool asynchronous, string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
@@ -43,7 +43,7 @@ public sealed class ExecutableGenericFunctionCompatibilityTests
     [Fact]
     public void TypeParameterCannotBeReboundThroughAnEnclosingNonlocal()
     {
-        using var script = new LythonEngine().Compile("def make():\n T=17\n def f[T]():\n  nonlocal T\n  return T\n return f\nprint(make()())");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("def make():\n T=17\n def f[T]():\n  nonlocal T\n  return T\n return f\nprint(make()())");
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, d => d.Code == "LA1100" && d.Message.Contains("nonlocal", StringComparison.Ordinal));
     }
@@ -66,7 +66,7 @@ print(value,parameter is read.__type_params__[0])
 return payload
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -115,7 +115,7 @@ return payload
     {
         var source = "def f[T](n):return f(n+1)\nf(0)\nprint('unreachable')";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxRecursionDepth = 8};

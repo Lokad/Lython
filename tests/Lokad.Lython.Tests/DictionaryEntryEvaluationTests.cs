@@ -12,11 +12,11 @@ public sealed class DictionaryEntryEvaluationTests
     [Fact]
     public void SyntaxEvaluationRunsOwnValueBeforeRejectingTheKey()
     {
-        var syntax = LythonFrontend.Compile("{[]:(marker:=1),**{}}").Script!;
+        var syntax = LythonFrontend.Compile("{[]:(marker:=1),**{}}",regexProvider:Utf8RegexProvider.Instance).Script!;
         var expression = Assert.IsType<ExpressionStatementSyntax>(Assert.Single(syntax.Statements)).Expression;
         var evaluate = typeof(LythonRuntime).GetMethod("EvaluateExpression", BindingFlags.NonPublic | BindingFlags.Static)!
             .CreateDelegate<Func<ExpressionSyntax, Context, object>>();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions());
+        var context = new Context(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         context.Variables["marker"] = BigInteger.Zero;
         var failure = Assert.Throws<LythonRuntimeException>(() => evaluate(expression, context));
         Assert.Equal("TypeError", failure.ExceptionType);

@@ -18,7 +18,7 @@ public sealed class StringAffixBoundsSuspensionTests
     {
         var source = Program(method, descriptor);
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -76,7 +76,7 @@ public sealed class StringAffixBoundsSuspensionTests
         var source = "class Bound:\n def __index__(self):return 0\ntext='aé😀z'*4096\nmethod=text." + method
             + "\ntext=None\nassert method('',Bound())\nreturn method.__self__";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -103,8 +103,8 @@ public sealed class StringAffixBoundsSuspensionTests
             + "': value='x'*2000000\n  return self.value\ntry: result='aé😀z'." + method
             + "('',Bound('start',1),Bound('end',3))\nexcept MemoryError: print('recovered')\nprint('after')";
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
-        using var retainedScript = new LythonEngine().Compile("return 'held'*1024", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        using var retainedScript = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 'held'*1024", budget);
         using var held = retainedScript.Run(new MockLythonHost());
         Assert.True(held.Success, held.Failure?.Message);
         var baseline = budget.ReservedBytes;
@@ -150,7 +150,7 @@ public sealed class StringAffixBoundsSuspensionTests
             + "': " + fault + "\n  return self.value\ntry: result='aé😀z'." + method
             + "('',Bound('start',1),Bound('end',3))\nexcept (TypeError,ValueError) as error:print(type(error).__name__)\nprint('after')";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

@@ -22,7 +22,7 @@ public sealed class RawDrainClosureTests
     public async Task ModeHugeInput_DeniesUnderTinyLimits()
     {
         const string code = "import statistics, itertools\nreturn statistics.mode(itertools.repeat(7, 200000))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         AssertDenied(script.Run(new MockLythonHost(), Tiny()));
         AssertDenied(await script.RunAsync(new MockLythonHost(), Tiny()));
     }
@@ -31,7 +31,7 @@ public sealed class RawDrainClosureTests
     public async Task ModeFunded_SucceedsBothModes()
     {
         const string code = "import statistics\nreturn [statistics.mode([1, 1, 2]), statistics.multimode([1, 1, 2, 2])]\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         var asyncResult = await script.RunAsync(new MockLythonHost());
@@ -43,7 +43,7 @@ public sealed class RawDrainClosureTests
     public async Task ModeInfiniteInput_DeniesBounded()
     {
         const string code = "import statistics, itertools\nreturn statistics.mode(itertools.count())\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         AssertDenied(script.Run(new MockLythonHost(), Tiny()));
     }
 
@@ -51,7 +51,7 @@ public sealed class RawDrainClosureTests
     public void ModeInvalidElements_ThrowTypeError()
     {
         const string code = "import statistics\nreturn statistics.mode([1, [2]])\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var result = script.Run(new MockLythonHost());
         Assert.False(result.Success);
     }
@@ -60,7 +60,7 @@ public sealed class RawDrainClosureTests
     public async Task UnifiedDiffHuge_DeniesUnderTinyLimits()
     {
         const string code = "import difflib\nreturn len(list(difflib.unified_diff([str(i) for i in range(200000)], [])))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         AssertDenied(script.Run(new MockLythonHost(), Tiny()));
         AssertDenied(await script.RunAsync(new MockLythonHost(), Tiny()));
     }
@@ -69,7 +69,7 @@ public sealed class RawDrainClosureTests
     public async Task UnifiedDiffFunded_SucceedsBothModes()
     {
         const string code = "import difflib\nreturn len(list(difflib.unified_diff(['a', 'b'], ['a', 'c'])))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         var asyncResult = await script.RunAsync(new MockLythonHost());
@@ -81,7 +81,7 @@ public sealed class RawDrainClosureTests
     public void UnifiedDiffInvalidElements_Rejects()
     {
         const string code = "import difflib\nreturn list(difflib.unified_diff([1, 2], ['a']))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var result = script.Run(new MockLythonHost());
         Assert.False(result.Success);
     }
@@ -90,7 +90,7 @@ public sealed class RawDrainClosureTests
     public void DiffBytesAlias_SucceedsFunded()
     {
         const string code = "import difflib\nreturn list(difflib.diff_bytes(difflib.unified_diff, [b\"alpha\\n\"], [b\"beta\\n\"]))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var result = script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
     }

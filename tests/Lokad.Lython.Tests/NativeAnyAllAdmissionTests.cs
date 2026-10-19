@@ -18,13 +18,13 @@ public sealed class NativeAnyAllAdmissionTests(ITestOutputHelper output)
     public async Task RangeRefusalPrecedesMutationAndKeepsItsAliasesFunded(string operation, bool denied)
     {
         var code = ExecutableScript.Compile(LoweredScript.Lower(
-            LythonFrontend.Compile("target[0]=" + operation + "(arm(values))\nreturn target[0]").Script!)).EntryPoint;
+            LythonFrontend.Compile("target[0]=" + operation + "(arm(values))\nreturn target[0]",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         foreach (var asynchronous in new[] { false, true })
         {
             const long limit = 4 * 1024 * 1024;
             var budget = new LythonMemoryBudget(limit);
             using var owner = budget.CreateScope();
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var start = BigInteger.Pow(10, 40);
             var range = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["range"]);
             var values = range.Invoke([CallArgumentValue.Positional(start), CallArgumentValue.Positional(start + 3)], new(0, 1, 1, 1), context);

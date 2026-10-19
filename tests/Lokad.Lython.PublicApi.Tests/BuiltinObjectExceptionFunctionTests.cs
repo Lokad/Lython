@@ -7,7 +7,7 @@ public sealed class BuiltinObjectExceptionFunctionTests
     [Fact]
     public void BuiltinTypesAndLocalNamespacesAreInspectable()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 x = 3
 names = dir()
@@ -23,7 +23,7 @@ return type(1).__name__ + "|" + str(issubclass(bool, int)) + "|" + str(issubclas
     [Fact]
     public void GlobalsAndLocalsExposeScopeNamespaces()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 x = 1
 def f(a, b=2):
@@ -43,7 +43,7 @@ return "|".join([";".join(g), ";".join(l), ";".join(fg), ";".join(fl)])
     [Fact]
     public void IdExposesStablePerRunObjectIdentity()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 x = object()
 y = object()
@@ -59,8 +59,8 @@ return str(isinstance(id(x), int)) + "|" + str(id(x) == id(x)) + "|" + str(id(x)
     public void IdIsDeterministicAcrossRuns()
     {
         const string source = "x = object()\nreturn str(id(x))\n";
-        var first = new LythonEngine().Run(source, new MockLythonHost());
-        var second = new LythonEngine().Run(source, new MockLythonHost());
+        var first = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
+        var second = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(first.Success, first.Failure?.Message);
         Assert.True(second.Success, second.Failure?.Message);
@@ -70,7 +70,7 @@ return str(isinstance(id(x), int)) + "|" + str(id(x) == id(x)) + "|" + str(id(x)
     [Fact]
     public void DictViewsExposeDirNames()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "return str(dir({1: 2}.keys())) + \"|\" + str(dir({1: 2}.items())) + \"|\" + str(dir({1: 2}.values())) + \"|\" + str(\"isdisjoint\" in dir({}.keys()))\n",
             new MockLythonHost());
 
@@ -81,7 +81,7 @@ return str(isinstance(id(x), int)) + "|" + str(id(x) == id(x)) + "|" + str(id(x)
     [Fact]
     public void InstancesDispatchTruthLengthAndCallProtocols()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Empty:
     def __bool__(self):
@@ -107,7 +107,7 @@ return str(bool(Empty())) + "|" + str(bool(Sized())) + "|" + str(len(Sized())) +
     [Fact]
     public void InstancesDispatchIterationContainmentAndSubscriptionProtocols()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Counter:
     def __init__(self):
@@ -148,7 +148,7 @@ return str(list(Counter())) + "|" + str(3 in box) + "|" + str(assigned) + "|" + 
     [Fact]
     public void InstancesAndContainersDispatchPythonRenderingProtocols()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __repr__(self):
@@ -170,7 +170,7 @@ return repr(box) + "|" + str(box) + "|" + format(box, "x") + "|" + str(["a", box
     [Fact]
     public void InstancesDispatchRichComparisonAndHashProtocols()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __init__(self, value):
@@ -196,7 +196,7 @@ return str(x == 3) + "|" + str(x != 4) + "|" + str(x < 4) + "|" + str(2 < x) + "
     [Fact]
     public void InstancesDispatchNumericConversionAndOperatorProtocols()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Seven:
     def __int__(self):
@@ -231,7 +231,7 @@ return str(int(Seven())) + "|" + str(float(Seven())) + "|" + str([10, 20][Seven(
     [Fact]
     public void ExceptionsExposePythonArgsTextAndClearHandlerAliases()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 e = ValueError("bad", 3)
 values = [str(e), repr(e), str(e.args), str(hasattr(e, "message"))]
@@ -285,7 +285,7 @@ return "|".join(values)
             return "|".join(values)
             """;
         const string expected = "('x', 1)|ValueError('x', 1)|(('x', 1),)|('solo',)|()|(9,)|(9,)";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
 
         var sync = script.Run(new MockLythonHost());
@@ -308,7 +308,7 @@ return "|".join(values)
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = []
 
@@ -377,7 +377,7 @@ __lython_file.close()
     [Fact]
     public void SystemExit_IsNotCaughtByExceptionCategory()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 try:
     raise SystemExit(5)
@@ -399,7 +399,7 @@ except Exception:
     [InlineData("vars(1)\n", "TypeError", "must have __dict__ attribute")]
     public void ObjectHelpers_ReportExplicitFailures(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -412,7 +412,7 @@ except Exception:
         // None slots take None only and decline everything else with
         // NotImplemented on every dunder, ordering included, exactly like
         // CPython; unrelated members keep the house AttributeError.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 def call2(f, a, b):
     return f(a, b)
 results = []
@@ -491,7 +491,7 @@ return results
         // __bool__ members delegate to each type truthiness core (ints by
         // nonzero, floats including nan, ranges and Decimals by their own
         // IsTruthy), exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 from decimal import Decimal
 def call1(f, a):
     return f(a)
@@ -580,7 +580,7 @@ return results
     public async Task HashDundersAdvanceLikeCpython()
     {
         // hashable __hash__ members funnel through the same core as the hash builtin (self-consistency only, since house hashes stay CLR-shaped), with range hashing made equality-consistent.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 from decimal import Decimal
 def call1(f, a):
     return f(a)
@@ -689,7 +689,7 @@ return results
     public async Task UnhashableHashIsNoneLikeCpython()
     {
         // unhashable containers and views serve __hash__ as None like CPython, so hasattr holds and calls fail with the house not-callable error.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 from collections import defaultdict, Counter, deque, ChainMap
 results = []
 results.append(str([].__hash__))
@@ -760,7 +760,7 @@ return results
         // Exceptions hash by identity through the shared core, so direct
         // calls agree with hash() and set/dict behavior, exactly like
         // CPython; mutation never moves a live key.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 def call1(f, a):
     return f(a)
 results = []

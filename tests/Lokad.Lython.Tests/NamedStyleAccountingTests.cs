@@ -25,7 +25,7 @@ public sealed class NamedStyleAccountingTests
     public void NamedStyleSlotsCommitAndReleaseExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.AttachMemoryGovernor(context.MemoryGovernor, span);
@@ -45,7 +45,7 @@ public sealed class NamedStyleAccountingTests
     public void AppliedEntriesCommitAndPersist()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.AttachMemoryGovernor(context.MemoryGovernor, span);
@@ -64,7 +64,7 @@ public sealed class NamedStyleAccountingTests
     public void UngovernedNamedStylesStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.SetCellNamedStyle(1, 1, CreateNamedStyle());
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);

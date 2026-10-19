@@ -100,7 +100,7 @@ return next(cursor) + len(candidate)
 """,
             _ => throw new ArgumentOutOfRangeException(nameof(root))
         };
-        var script = new LythonEngine().Compile(prefix + body);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(prefix + body);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         var mock = asynchronous ? null : new MockLythonHost();

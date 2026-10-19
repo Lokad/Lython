@@ -38,7 +38,7 @@ public sealed class IntegerConversionSlotTests
     [MemberData(nameof(Programs))]
     public async Task ImplicitIntegerConversionUsesTypeSlots(string label, string source, string expected)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, label);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -57,7 +57,7 @@ public sealed class IntegerConversionSlotTests
             .Replace("CONVERSION_SLOT", viaOperator ? "__index__" : "__int__");
         if (viaOperator) source = source.Replace("int(", "operator.index(");
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -86,7 +86,7 @@ public sealed class IntegerConversionSlotTests
             .Replace("CONVERSION_SLOT", viaOperator ? "__index__" : "__int__")
             .Replace("CONVERT", viaOperator ? "operator.index" : "int");
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16 * 1024) };

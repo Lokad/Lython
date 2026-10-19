@@ -30,7 +30,7 @@ public sealed class PrefixCallCompatibilityTests
     public async Task PrefixCallsMatchPython(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -67,7 +67,7 @@ public sealed class PrefixCallCompatibilityTests
         var source = "text='abc'\ncallback=text." + method + "\ndef argument():\n with open('argument.txt','a') as output: output.write('x')\n return 'a'\ntry: "
             + call + "\nexcept TypeError: print('rejected')\nelse: raise AssertionError('keyword accepted')";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

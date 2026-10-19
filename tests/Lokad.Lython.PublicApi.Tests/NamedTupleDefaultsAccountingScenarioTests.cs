@@ -14,7 +14,7 @@ public sealed class NamedTupleDefaultsAccountingScenarioTests
     [Fact]
     public async Task DefaultsBehaveLikeBefore()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import collections
             P = collections.namedtuple("P", ["a", "b"], defaults=[10])
@@ -37,7 +37,7 @@ public sealed class NamedTupleDefaultsAccountingScenarioTests
     [Fact]
     public async Task TooManyDefaultsKeepTheirError()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import collections
             P = collections.namedtuple("P", ["a", "b"], defaults=[1, 2, 3])

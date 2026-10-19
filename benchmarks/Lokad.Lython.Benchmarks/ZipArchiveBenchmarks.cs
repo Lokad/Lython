@@ -19,7 +19,7 @@ public class ZipArchiveBenchmarks
 
     public ZipArchiveBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _writeMany = Compile(engine, WriteManySource);
         _readMany = Compile(engine, ReadManySource);
         _appendMany = Compile(engine, AppendManySource);

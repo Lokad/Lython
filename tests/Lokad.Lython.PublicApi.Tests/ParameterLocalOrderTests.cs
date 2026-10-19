@@ -28,7 +28,7 @@ public sealed class ParameterLocalOrderTests
     public async Task OrderedParameterSnapshotsMatchPython(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -50,7 +50,7 @@ public sealed class ParameterLocalOrderTests
     public async Task EscapingSnapshotRemainsFundedAfterInvocationAndCompilationCleanup(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "def f(a,*args,b,**kw):return locals()\nshared=[7]\nreturn f(shared,shared,b=shared,tag=shared)", budget);
         Assert.True(script.IsValid);
         using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());

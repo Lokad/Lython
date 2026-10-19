@@ -13,7 +13,7 @@ public sealed class IteratorProtocolScenarioTests
     [Fact]
     public async Task IterRetainsIdentityForSelfIterators()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             class Counter:
                 def __init__(self):
@@ -42,7 +42,7 @@ public sealed class IteratorProtocolScenarioTests
     [Fact]
     public async Task IterReturnsFreshIteratorsWithoutIdentity()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             class Fresh:
                 def __iter__(self):
@@ -74,7 +74,7 @@ public sealed class IteratorProtocolScenarioTests
     [Fact]
     public async Task DirectNextHonorsDefaultAndExhaustion()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             class Counter:
                 def __init__(self):
@@ -108,7 +108,7 @@ public sealed class IteratorProtocolScenarioTests
     [Fact]
     public async Task InvalidIteratorsFailEagerly()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             results = []
             class BadResult:
@@ -154,7 +154,7 @@ public sealed class IteratorProtocolScenarioTests
     [Fact]
     public async Task GeneratorReturningIterStaysLazy()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             log = []
             class Gen:
@@ -201,7 +201,7 @@ public sealed class IteratorProtocolScenarioTests
             """;
         var host = new DelayedLythonHost("/");
         host.SeedFile("/data.txt", "hello");
-        var result = await new LythonEngine().RunAsync(source, host);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, host);
         Assert.True(result.Success, result.Failure?.Message);
         var values = Assert.IsType<List<object?>>(result.ReturnValue);
         Assert.Equal(new List<object?> { "hello", "hello", new List<object?> { "hello", "hello" } }, values);
@@ -229,7 +229,7 @@ public sealed class IteratorProtocolScenarioTests
             """;
         var host = new DelayedLythonHost("/");
         host.SeedFile("/data.txt", "hello");
-        var result = await new LythonEngine().RunAsync(source, host);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, host);
         Assert.True(result.Success, result.Failure?.Message);
         var values = Assert.IsType<List<object?>>(result.ReturnValue);
         Assert.Equal("hello", values[0]);
@@ -257,7 +257,7 @@ public sealed class IteratorProtocolScenarioTests
             """;
         var host = new DelayedLythonHost("/");
         host.SeedFile("/mark.txt", "x");
-        var result = await new LythonEngine().RunAsync(source, host);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { true, new BigInteger(1), "done" }, Assert.IsType<List<object?>>(result.ReturnValue));
         Assert.True(host.CompletedAsynchronously > 0);

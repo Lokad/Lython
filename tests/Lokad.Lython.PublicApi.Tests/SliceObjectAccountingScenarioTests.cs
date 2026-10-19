@@ -16,7 +16,7 @@ public sealed class SliceObjectAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedSlicesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             objs = []
             i = 0
             while i < 30000:
@@ -40,7 +40,7 @@ public sealed class SliceObjectAccountingScenarioTests
     [Fact]
     public async Task SliceObjectsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             s = slice(1, 3)
             t = slice(None, None, 2)
             return ["abcdef"[s], "abcdef"[t], s.start, s.stop, t.step]

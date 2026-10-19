@@ -37,7 +37,7 @@ internal static class StackGuardFixture
             "cancellation" => lists + "while True:\n try:\n  equal = x == y\n except RecursionError:\n  pass\n",
             _ => throw new ArgumentOutOfRangeException(nameof(scenario))
         };
-        var script = new LythonEngine().Compile(suspension + body);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(suspension + body);
         if (!script.IsValid) throw new InvalidOperationException("Stack fixture source did not compile.");
         var host = new DelayedLythonHost();
         host.SeedFile("/ready", "ready");

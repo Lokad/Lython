@@ -10,7 +10,7 @@ public sealed class TimeModuleTimingTests
         var host = new MockLythonHost();
         var timing = host.EnableTiming(1_250_000_000, resolutionNanoseconds: 100);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import time
 
@@ -48,7 +48,7 @@ return "|".join([
     [Fact]
     public void MissingTimingCapabilityAndUnsupportedClocksFailExplicitly()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import time
 
@@ -87,7 +87,7 @@ return "|".join(values) + "|" + str(wall.monotonic)
     {
         var host = new MockLythonHost();
         var timing = host.EnableTiming();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import time
 
@@ -112,7 +112,7 @@ return "|".join(values)
     {
         var host = new MockLythonHost();
         var timing = host.EnableTiming(10);
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import time
 time.monotonic_ns()
@@ -131,7 +131,7 @@ time.perf_counter_ns()
     {
         var syncHost = new MockLythonHost();
         syncHost.SetTiming(new YieldingTiming());
-        var sync = new LythonEngine().Run("import time\ntime.sleep(0.125)\n", syncHost);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run("import time\ntime.sleep(0.125)\n", syncHost);
 
         Assert.False(sync.Success);
         Assert.Equal("RuntimeError", sync.Failure?.ExceptionType);
@@ -139,7 +139,7 @@ time.perf_counter_ns()
 
         var asyncHost = new MockLythonHost();
         asyncHost.SetTiming(new YieldingTiming());
-        var asyncResult = await new LythonEngine().RunAsync(
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             "import time\ntime.sleep(0.125)\nreturn time.monotonic_ns()\n",
             asyncHost);
 
@@ -155,7 +155,7 @@ time.perf_counter_ns()
         var host = new MockLythonHost();
         host.SetTiming(timing);
 
-        var run = new LythonEngine().RunAsync(
+        var run = new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             "import time\ntime.sleep(60)\n",
             host,
             cancellationToken: cancellation.Token);
@@ -172,7 +172,7 @@ time.perf_counter_ns()
     [Fact]
     public void StaticContractsRecognizeTimingCallsAndRejectWrongShapes()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import time
 x = time.monotonic()
@@ -184,7 +184,7 @@ info = time.get_clock_info("time")
 time.clock_gettime(0)
 time.clock_settime(0, 0)
 """);
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import time
 time.monotonic(1)

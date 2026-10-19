@@ -33,7 +33,7 @@ public sealed class PathListingAccountingScenarioTests
     [Fact]
     public async Task ManyIterdirEntriesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             it = list(Path("/d").iterdir())
             return len(it)
@@ -54,7 +54,7 @@ public sealed class PathListingAccountingScenarioTests
     [Fact]
     public async Task ManyGlobEntriesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             it = list(Path("/d").glob("*.txt"))
             return len(it)
@@ -75,7 +75,7 @@ public sealed class PathListingAccountingScenarioTests
     [Fact]
     public async Task ManyRglobEntriesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             it = list(Path("/d").rglob("*.txt"))
             return len(it)
@@ -100,7 +100,7 @@ public sealed class PathListingAccountingScenarioTests
     [Fact]
     public async Task PathListingsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             names = sorted([e.name for e in Path("/d").iterdir()])
             matches = sorted([p.as_posix() for p in Path("/d").glob("*.txt")])

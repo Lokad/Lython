@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Text.Unicode;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
-using Lokad.Utf8Regex.PythonRe;
 
 namespace Lokad.Lython.Runtime;
 

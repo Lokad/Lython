@@ -385,7 +385,7 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("vars(\"x\")\n", "TypeError", "vars() argument must have __dict__ attribute")]
     public void BuiltinContractFailure_ReportsExpectedException(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (exceptionType == "compile")
@@ -405,7 +405,7 @@ public sealed class BuiltinValidationScenarioTests
     public void SumWithInstances_ResolvesAddProtocols()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C:
     def __init__(self, v):
@@ -435,7 +435,7 @@ __lython_file.close()
     public async Task CallDoubleStarMapping_AcceptsMappings()
     {
         const string source = "from collections import Counter, defaultdict, ChainMap\ndef f(**k):\n    return sorted(k)\nreturn str(f(**Counter(x=1))) + \"|\" + str(f(**defaultdict(int, y=2))) + \"|\" + str(f(**ChainMap({\"z\": 3}))) + \"|\" + str(f(**{\"w\": 4}))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -449,7 +449,7 @@ __lython_file.close()
     public async Task DateTimeConstruction_AcceptsIndexOperands()
     {
         const string source = "import datetime\nclass J:\n    def __init__(self, v):\n        self.v = v\n    def __index__(self):\n        return self.v\nreturn str(datetime.date(J(2024), J(1), J(2))) + \"|\" + str(datetime.time(J(3), J(4), J(5), J(6))) + \"|\" + str(datetime.datetime(J(2024), J(1), J(2), J(3))) + \"|\" + str(datetime.date(2024, 1, 1).replace(year=J(2025))) + \"|\" + str(datetime.time(1, 2, 3).replace(hour=J(4), fold=J(1))) + \"|\" + str(datetime.date(True, True, True))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -463,7 +463,7 @@ __lython_file.close()
     public async Task TimedeltaConstruction_AccumulatesExactly()
     {
         const string source = "import datetime\nreturn str(datetime.timedelta(weeks=1, hours=25)) + \"|\" + str(datetime.timedelta(milliseconds=1500)) + \"|\" + str(datetime.timedelta(microseconds=1.5).microseconds) + \"|\" + str(datetime.timedelta(days=-1, seconds=3)) + \"|\" + str(datetime.timedelta(microseconds=9007199254740993).microseconds)\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -477,7 +477,7 @@ __lython_file.close()
     public async Task DateFromOrdinalIsoCalendar_RoundTrip()
     {
         const string source = "import datetime\nclass J:\n    def __index__(self):\n        return 5\nreturn str(datetime.date.fromordinal(1)) + \"|\" + str(datetime.date.fromordinal(3652059)) + \"|\" + str(datetime.date.fromordinal(J())) + \"|\" + str(datetime.date.fromisocalendar(2020, 53, 7)) + \"|\" + str(datetime.date.fromisocalendar(2015, 53, 7)) + \"|\" + str(datetime.datetime.fromisocalendar(2024, 1, J())) + \"|\" + str(datetime.datetime.fromordinal(737425))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -491,7 +491,7 @@ __lython_file.close()
     public async Task FromTimestampAcceptsIndexOperands()
     {
         const string source = "import datetime\nclass J:\n    def __index__(self):\n        return 0\nreturn datetime.datetime.fromtimestamp(J(), tz=datetime.timezone.utc).isoformat() + \"|\" + datetime.datetime.fromtimestamp(True, tz=datetime.timezone.utc).isoformat() + \"|\" + datetime.datetime.fromtimestamp(0.5, tz=datetime.timezone.utc).isoformat()\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -505,7 +505,7 @@ __lython_file.close()
     public async Task IsoFormatTruncatesLongFractions()
     {
         const string source = "import datetime\nreturn str(datetime.time.fromisoformat(\"030405.1234567\")) + \"|\" + str(datetime.time.fromisoformat(\"03:04:05,1234567\"))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -519,7 +519,7 @@ __lython_file.close()
     public async Task StrptimeAcceptsRelaxedShapes()
     {
         const string source = "import datetime\nreturn str(datetime.datetime.strptime(\"2024-01- 2\", \"%Y-%m-%d\")) + \"|\" + str(datetime.datetime.strptime(\"2023-366\", \"%Y-%j\"))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -533,7 +533,7 @@ __lython_file.close()
     public async Task StrptimeParsesOffsetSeconds()
     {
         const string source = "import datetime\nreturn datetime.datetime.strptime(\"2024-01-02 03:04:05 +02:00:30\", \"%Y-%m-%d %H:%M:%S %z\").isoformat() + \"|\" + datetime.datetime.strptime(\"2024-01-02 03:04:05 +020030\", \"%Y-%m-%d %H:%M:%S %z\").isoformat() + \"|\" + datetime.datetime.strptime(\"2024-01-02 03:04:05 +02:00:30.123456\", \"%Y-%m-%d %H:%M:%S %z\").isoformat() + \"|\" + datetime.datetime.strptime(\"2024-01-02 03:04:05 +23:59:59.999999\", \"%Y-%m-%d %H:%M:%S %z\").isoformat() + \"|\" + datetime.datetime.strptime(\"2024-01-02 03:04:05 -02:00:30\", \"%Y-%m-%d %H:%M:%S %z\").isoformat() + \"|\" + datetime.datetime.strptime(\"2024-01-02 03:04:05 -00:00\", \"%Y-%m-%d %H:%M:%S %z\").isoformat()\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -547,7 +547,7 @@ __lython_file.close()
     public async Task FromTimestampRoundsDustHalfEven()
     {
         const string source = "import datetime\nreturn datetime.datetime.fromtimestamp(1.00000055, tz=datetime.timezone.utc).isoformat() + \"|\" + datetime.datetime.fromtimestamp(1.00000045, tz=datetime.timezone.utc).isoformat() + \"|\" + datetime.datetime.fromtimestamp(2.0000005, tz=datetime.timezone.utc).isoformat() + \"|\" + datetime.datetime.fromtimestamp(-1.0000005, tz=datetime.timezone.utc).isoformat() + \"|\" + datetime.datetime.fromtimestamp(0.30000000000000004, tz=datetime.timezone.utc).isoformat()\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -561,7 +561,7 @@ __lython_file.close()
     public async Task FromTimestampFloorsDateDust()
     {
         const string source = "import datetime\nreturn str(datetime.date.fromtimestamp(82799.99999999))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -575,7 +575,7 @@ __lython_file.close()
     public async Task FromTimestampKeepsIntegerPrecision()
     {
         const string source = "import datetime\nreturn datetime.datetime.fromtimestamp(200000000001, tz=datetime.timezone.utc).isoformat()\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -589,7 +589,7 @@ __lython_file.close()
     public async Task IsoformatDefaultsOmittedOptions()
     {
         const string source = "import datetime\nreturn datetime.datetime(2024, 1, 2).isoformat(timespec=\"seconds\") + \"|\" + datetime.datetime(2024, 1, 2).isoformat(sep=\"|\") + \"|\" + datetime.time(1, 2, 3).isoformat()\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -603,7 +603,7 @@ __lython_file.close()
     public async Task TimezoneRendersLikeCPython()
     {
         const string source = "import datetime\nz = datetime.timezone(datetime.timedelta(hours=2))\nx = datetime.timezone(datetime.timedelta(hours=2), 'X')\nreturn str(z) + \"|\" + repr(z) + \"|\" + str(datetime.timezone.utc) + \"|\" + repr(datetime.timezone.utc) + \"|\" + str(x) + \"|\" + repr(x) + \"|\" + repr(datetime.datetime(2024, 1, 2, 3, 4, 5, tzinfo=x)) + \"|\" + str(datetime.timezone(datetime.timedelta(0), 'X'))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -617,7 +617,7 @@ __lython_file.close()
     public async Task DateArithmeticUsesWholeDays()
     {
         const string source = "import datetime\nreturn str(datetime.date(2024, 1, 1) + datetime.timedelta(hours=36)) + \"|\" + str(datetime.date(2024, 1, 1) - datetime.timedelta(hours=36)) + \"|\" + str(datetime.date(2024, 1, 1) + datetime.timedelta(hours=-36)) + \"|\" + str(datetime.date(2024, 1, 1) + datetime.timedelta(hours=-12))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -631,7 +631,7 @@ __lython_file.close()
     public async Task TimedeltaScalesExactly()
     {
         const string source = "import datetime\nreturn str(datetime.timedelta(seconds=5) // 3) + \"|\" + str(datetime.timedelta(seconds=5) / 3) + \"|\" + str(datetime.timedelta(microseconds=1) * (2**31)) + \"|\" + str(datetime.timedelta(seconds=5) // True) + \"|\" + str(datetime.datetime(2024, 1, 1) + datetime.timedelta(days=200000))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -645,7 +645,7 @@ __lython_file.close()
     public async Task ReplaceDistinguishesOmittedFromNone()
     {
         const string source = "import datetime\nclass J:\n    def __index__(self):\n        return 2025\nreturn str(datetime.date(2024, 1, 1).replace(day=5)) + \"|\" + str(datetime.time(1, 2, 3).replace(fold=1)) + \"|\" + str(datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc).replace(tzinfo=None)) + \"|\" + str(datetime.date(2024, 1, 1).replace(year=J()))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -659,7 +659,7 @@ __lython_file.close()
     public async Task StrptimeComputesWeekDates()
     {
         const string source = "import datetime\nreturn str(datetime.datetime.strptime(\"2023 00 1\", \"%Y %W %u\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01 1\", \"%Y %U %w\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01 0\", \"%Y %U %w\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01\", \"%Y %U\")) + \"|\" + str(datetime.datetime.strptime(\"2024 02 29 01 4\", \"%Y %m %d %U %w\")) + \"|\" + str(datetime.datetime.strptime(\"02 29 01 4\", \"%m %d %U %w\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01 7\", \"%Y %U %u\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01 2 02 29\", \"%G %V %u %m %d\")) + \"|\" + str(datetime.datetime.strptime(\"2024 100 01\", \"%Y %j %U\")) + \"|\" + str(datetime.datetime.strptime(\"2023 00 0\", \"%Y %U %w\"))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -673,7 +673,7 @@ __lython_file.close()
     public async Task StrptimeResolvesWeekdayNames()
     {
         const string source = "import datetime\nreturn str(datetime.datetime.strptime(\"2024-W01-Tue\", \"%G-W%V-%a\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01 Tue\", \"%Y %U %a\")) + \"|\" + str(datetime.datetime.strptime(\"2024-W01-Tuesday\", \"%G-W%V-%A\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01 Wednesday\", \"%Y %U %A\")) + \"|\" + str(datetime.datetime.strptime(\"Tuesday\", \"%A\")) + \"|\" + str(datetime.datetime.strptime(\"September 02\", \"%B %d\"))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -687,7 +687,7 @@ __lython_file.close()
     public async Task StrptimeMatchesTrailingPercent()
     {
         const string source = "import datetime\nreturn str(datetime.datetime.strptime(\"2024%\", \"%Y%\"))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -701,7 +701,7 @@ __lython_file.close()
     public async Task NaiveAwareEquality_ComparesUnequal()
     {
         const string source = "import datetime\na = datetime.datetime(2024, 1, 1)\nb = datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc)\nc = datetime.time(1, 2)\nd = datetime.time(1, 2, tzinfo=datetime.timezone.utc)\nreturn str(a == b) + \"|\" + str(a != b) + \"|\" + str(c == d) + \"|\" + str(c != d)\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -717,7 +717,7 @@ __lython_file.close()
     [InlineData("def f(p):\n return dict(p)\nf([(1, 2), 42])\n", "TypeError", "cannot convert dictionary update sequence element #1 to a sequence")]
     public void DictConstructorFailure_ReportsExpectedException(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -731,7 +731,7 @@ __lython_file.close()
     [InlineData("d = {(1, []): 2}\n", "unhashable type: 'list'")]
     public void DictionaryKeyHashabilityFailures_ReportTypeError(string source, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -754,7 +754,7 @@ __lython_file.close()
     [InlineData("type(\"Name\", (), {})\n", "supports exactly one argument in Lython")]
     public void BuiltinArityFailure_ReportsTypeError(string source, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -766,7 +766,7 @@ __lython_file.close()
     [InlineData("key = 1\nsorted([1], key = key)\n", "TypeError", "'int' object is not callable")]
     public void SortedKeywordFailures_ReportExpectedFailure(string source, string expectedFailureKind, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (expectedFailureKind == "compile")
@@ -785,7 +785,7 @@ __lython_file.close()
     [Fact]
     public void CallBindingMatchesPositionalOnlyAndTruthTestSemantics()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = ["a\n".splitlines(1)[0], str(sorted([1, 2], reverse=1))]
 items = [1, 2]
@@ -806,7 +806,7 @@ return "|".join(values)
     [Fact]
     public void LenAllAnyArityFailures_NameCountLikeCpython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 for f in [len, all, any]:
     try:
@@ -827,7 +827,7 @@ for f in [len, all, any]:
     [Fact]
     public void FloatUnderscorePlacement_RejectsLikeCpython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 for src in ["1__0", "_1", "1_", "+_1", "1_.5", "1._5", "1e_5", "0.5_"]:
     try:
@@ -847,7 +847,7 @@ print(float("1.5_0"))
     [Fact]
     public void FloatBytesInputs_ParseLikeCpython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 for src in [b"1", b" 1.5 ", b"1_0", b"a", b"  a  ", bytes([97, 39, 98]), bytes([255]), b""]:
     try:
@@ -865,7 +865,7 @@ for src in [b"1", b" 1.5 ", b"1_0", b"a", b"  a  ", bytes([97, 39, 98]), bytes([
     public void CharBaseFailures_MatchCpythonShapes()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class J:
     def __index__(self):
@@ -908,7 +908,7 @@ __lython_file.close()
     [Fact]
     public void AbsFailures_MatchCpythonShapes()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C: pass
 
@@ -931,7 +931,7 @@ print(abs(True))
     public void PowProtocol_MatchesCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C:
     def __pow__(self, exp):
@@ -989,7 +989,7 @@ __lython_file.close()
     public void DivModProtocol_MatchesCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C:
     def __divmod__(self, other):
@@ -1025,7 +1025,7 @@ __lython_file.close()
     public void RangeBounds_CoerceIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class J:
     def __index__(self):
@@ -1067,7 +1067,7 @@ __lython_file.close()
     public void RoundProtocol_MatchesCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C:
     def __round__(self):
@@ -1121,7 +1121,7 @@ __lython_file.close()
     [Fact]
     public void IntFailures_MatchCpythonShapes()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C: pass
 class I:
@@ -1150,7 +1150,7 @@ print(int(True))
     [Fact]
     public void FloatFailures_MatchCpythonShapes()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class F:
     def __float__(self):
@@ -1180,7 +1180,7 @@ print(float(" 1.5 "))
     [Fact]
     public void DictionaryConstructionUpdateAndPopMatchPythonForms()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 d = dict([("a", 1)], b=2)
 d.update({"c": 3}, d=4)
@@ -1196,7 +1196,7 @@ return str(d) + "|" + str(d.pop("missing", None)) + "|" + str(d.pop("other", 9))
     [Fact]
     public void DictionaryUnionOperatorsMatchPythonForms()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import operator
 merged = {'a': 1} | {'b': 2}
@@ -1220,7 +1220,7 @@ return "|".join([str(merged), str(over), str(grown), str(base is ref), str(base)
     [Fact]
     public void DictionaryUpdateAcceptsSetsOfPairs()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 d = {}
 d.update({("f", 6), ("g", 7)})
@@ -1243,7 +1243,7 @@ return str(sorted(d.items()))
     [InlineData("print({1}.remove(2))\n", "2")]
     public void UncaughtKeyErrors_ProjectQuotedKeys(string source, string message)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.Equal("KeyError", result.Failure?.ExceptionType);
@@ -1256,7 +1256,7 @@ return str(sorted(d.items()))
         var host = new MockLythonHost();
         host.SeedFile("/input.txt", "alpha");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 
@@ -1287,7 +1287,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedFile("/input.txt", "alpha");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = ["a", "b"]
 pairs = []
@@ -1332,7 +1332,7 @@ with open(file = "/out.txt", mode = "w") as handle:
     [InlineData("d = {}\nd.get(default = 1)\n", "dict.get(key[, default]) expects one key and an optional default.")]
     public void KeywordArgumentContractFailures_ReportExpectedMessage(string source, string message)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (result.Failure is null)
@@ -1363,7 +1363,7 @@ with open(file = "/out.txt", mode = "w") as handle:
     [InlineData("write_text")]
     public void NonPythonHostHelpers_AreNotDefaultScriptGlobals(string name)
     {
-        var result = new LythonEngine().Run(name + "\n", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(name + "\n", new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -1374,7 +1374,7 @@ with open(file = "/out.txt", mode = "w") as handle:
     [Fact]
     public void CallDoubleStarUnpacking_RejectsNonStringKeys()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def f(**kwargs):
     return kwargs
@@ -1394,7 +1394,7 @@ f(**{1: 2})
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 source = {"a": 1}
 copy = dict(source)
@@ -1415,7 +1415,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 d = dict([(1, "one"), ((2, 3), "pair")])
 same = d.get(1)
@@ -1457,7 +1457,7 @@ __lython_file.close()
     [InlineData("items = set([1])\nitems.clear(1)\n", "set.clear() expects no arguments.")]
     public void CollectionMethodContractFailure_ReportsTypeError(string source, string message)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (result.Failure is null)

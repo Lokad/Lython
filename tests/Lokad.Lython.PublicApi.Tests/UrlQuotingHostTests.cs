@@ -55,7 +55,7 @@ public sealed class UrlQuotingHostTests
 
     private static LythonCompiledScript Compile(string source)
     {
-        var result = new LythonEngine().Compile(source);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(result.IsValid, string.Join("; ", result.Diagnostics.Select(d => d.Code + ": " + d.Message)));
         return result;
     }

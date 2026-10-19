@@ -15,7 +15,7 @@ public sealed class TableViewAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedItemsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import openpyxl
             wb = openpyxl.Workbook()
             data = wb.active
@@ -45,7 +45,7 @@ public sealed class TableViewAccountingScenarioTests
     [Fact]
     public async Task TableViewsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import openpyxl
             wb = openpyxl.Workbook()
             data = wb.active

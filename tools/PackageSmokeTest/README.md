@@ -3,7 +3,7 @@
 Run `./tools/PackageSmokeTest/verify-package.ps1` on Windows or Linux with
 PowerShell and .NET 10. It explicitly packs Release, verifies metadata,
 dependencies, documentation and portable symbols, and restores that exact
-artifact into a fresh consumer outside the repository. The consumer exercises
+core and optional adapter artifacts into separate fresh consumers outside the repository. The core consumer verifies that no regex package edge or assembly is present and that missing regex functionality fails explicitly. The adapter consumer exercises flags, captures, offsets, replacements, splitting, findall projection, cleanup/budget reuse and its explicit cancellation limitation. The consumer exercises
 Compile, Run and RunAsync through only the package reference. It checks core
 syntax, stream/text helpers and representative compatibility fixes, then uses an isolated in-memory
 host to load/dump JSON and verify exact file bytes and UTF-16 endian/BOM/flush/append behavior, including a writer left open
@@ -27,8 +27,8 @@ The script and CI gate prepare and verify packages; publishing is a separate
 release action. Generated artifacts and the temporary consumer remain
 available for inspection.
 
-The CSV ownership control runs eight bounded batches per execution API at a
-3 MiB cap, including a genuinely paused asynchronous acquisition. Each result
+The CSV ownership control runs eight bounded batches per execution API under a
+4 MiB shared allowance, including a genuinely paused asynchronous acquisition. Each result
 keeps its execution storage funded until disposal; disposing it returns the
 shared allowance to the compiled-script baseline independently of CLR collection.
 Disposing the compiled script then returns the allowance to zero.

@@ -19,7 +19,7 @@ public sealed class SetNumericStoragePolicyTests : LifetimeScenario
                 values.clear()
             return len(values)
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
@@ -33,7 +33,7 @@ public sealed class SetNumericStoragePolicyTests : LifetimeScenario
     [InlineData(true)]
     public async Task RetainedLargeMembersDenyAtTheSameCap(bool asyncMode)
     {
-        var script = new LythonEngine().Compile("values = set()\nfor i in range(2000):\n values.add((1 << 4000) + i)\nreturn len(values)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("values = set()\nfor i in range(2000):\n values.add((1 << 4000) + i)\nreturn len(values)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
@@ -66,7 +66,7 @@ public sealed class SetNumericStoragePolicyTests : LifetimeScenario
         var host = new DelayedLythonHost();
         host.SeedFile("/value", "ready");
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(code, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code, budget);
         var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid);
         using var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) });

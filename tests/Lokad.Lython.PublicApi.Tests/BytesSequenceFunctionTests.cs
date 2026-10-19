@@ -8,7 +8,7 @@ public sealed class BytesSequenceFunctionTests
     public void BytesConcatenationAndRepetition_MatchCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import operator
 vals = []
@@ -52,7 +52,7 @@ __lython_file.close()
     public async Task BytesComparisonDundersAdvanceLikeCpython()
     {
         // bytes slots take bytes only and decline everything else with NotImplemented on every dunder, ordering included, exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 def call2(f, a, b):
     return f(a, b)
 results = []

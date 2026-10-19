@@ -11,7 +11,7 @@ public sealed class BinaryFileScopeLifetimeTests
     public async Task ClosedEscapingFilePreservesBatchFundingAndWorksWithHeadroom(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 def acquire():
     unrelated = 'x' * 16000
     assert len(locals()['unrelated']) == 16000

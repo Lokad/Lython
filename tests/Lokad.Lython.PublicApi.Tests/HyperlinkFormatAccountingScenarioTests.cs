@@ -12,7 +12,7 @@ public sealed class HyperlinkFormatAccountingScenarioTests
     [Fact]
     public async Task ManyHyperlinksStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             wb = openpyxl.Workbook()
@@ -38,7 +38,7 @@ public sealed class HyperlinkFormatAccountingScenarioTests
     [Fact]
     public async Task ManyNumberFormatsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             wb = openpyxl.Workbook()
@@ -64,7 +64,7 @@ public sealed class HyperlinkFormatAccountingScenarioTests
     [Fact]
     public async Task HyperlinkAndFormatBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             wb = openpyxl.Workbook()

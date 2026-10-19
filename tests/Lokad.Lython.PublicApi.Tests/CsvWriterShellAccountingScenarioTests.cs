@@ -18,7 +18,7 @@ public sealed class CsvWriterShellAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedWritersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             objs = []
             i = 0
@@ -43,7 +43,7 @@ public sealed class CsvWriterShellAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedDictWritersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             f = open("/w.csv", "w")
             fn = ["a"]
@@ -68,7 +68,7 @@ public sealed class CsvWriterShellAccountingScenarioTests
     [Fact]
     public async Task WritersBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             w = csv.writer()
             w.writerow(["a", "b"])

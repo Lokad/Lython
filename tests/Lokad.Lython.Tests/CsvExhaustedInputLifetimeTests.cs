@@ -22,7 +22,7 @@ public sealed class CsvExhaustedInputLifetimeTests
     public async Task EofDropsInputReferencesWhilePreservingBatchFunding(bool indexed, bool asynchronous, string retention)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) },regexProvider:Utf8RegexProvider.Instance);
         var (source, input, keptInput, field) = ReadToEnd(context, indexed, asynchronous, retention);
         var funded = context.MemoryGovernor.CurrentCommittedBytes;
         Collect();
@@ -71,7 +71,7 @@ public sealed class CsvExhaustedInputLifetimeTests
     [InlineData(true, true)]
     public async Task TerminalParseErrorReleasesInputAndScratch(bool indexed, bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var (source, input) = MalformedSource(context, indexed);
         var error = asynchronous
             ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => { await source.TryMoveNextAsync(); })
@@ -90,7 +90,7 @@ public sealed class CsvExhaustedInputLifetimeTests
     [InlineData(true)]
     public async Task CompletedReaderKeepsReturnedRecordFundedAfterEof(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var source = new LythonRuntime.CsvRecordSource(new PyList([PyString.FromString("kept,😀\n")]), Options(), new(0, 0, 0, 0), context);
         var row = asynchronous ? await source.TryMoveNextAsync() : source.TryMoveNext(out var next) ? next : null;
         Assert.NotNull(row);
@@ -114,7 +114,7 @@ public sealed class CsvExhaustedInputLifetimeTests
     [InlineData(true)]
     public async Task EofPreservesQueuedFinalRecordAndItsFunding(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var (source, input, firstField) = CompleteWithQueuedRecord(context, asynchronous);
         Collect();
         Assert.False(input.TryGetTarget(out _));
@@ -143,7 +143,7 @@ public sealed class CsvExhaustedInputLifetimeTests
     [InlineData(true, "async")]
     public async Task MixedCursorCleanupReleasesScratchEvenWhenDisposalFails(bool asynchronous, string failure)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var sync = new CleanupCursor(failure == "sync");
         var asyncCursor = new AsyncCleanupCursor(failure == "async");
         var (source, input) = EmptySource(context);

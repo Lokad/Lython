@@ -19,7 +19,7 @@ public sealed class DictUpdatePairsAccountingTests
     [Fact]
     public void OversizedPairAllocatesNoProportionalTransient()
     {
-        var script = new LythonEngine().Compile(OversizedPair);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(OversizedPair);
         Assert.True(script.IsValid);
         // Warm up JIT and caches so the measured run counts steady-state work.
         _ = script.Run(new MockLythonHost());

@@ -47,7 +47,7 @@ public sealed class FunctoolsRegistryAccountingTests
     public void PartialBoundArgumentsCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = NewPartial(
             [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2), CallArgumentValue.Positional(3)],
@@ -62,7 +62,7 @@ public sealed class FunctoolsRegistryAccountingTests
     public void DispatchRegistrationCommitsAndReplaceReuses()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var dispatcher = NewDispatcher(context, span);
         var first = new PyType("T1", [], new Dictionary<string, object>());
@@ -80,7 +80,7 @@ public sealed class FunctoolsRegistryAccountingTests
     public void WrapperMetadataOverwritesStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var wrapper = (IPyMutableDynamicAttributes)NewLruWrapper(context);
         Assert.True(wrapper.TrySetMember("a", 1));
         Assert.True(wrapper.TrySetMember("b", 2));

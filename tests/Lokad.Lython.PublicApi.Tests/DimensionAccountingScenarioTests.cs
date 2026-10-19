@@ -13,7 +13,7 @@ public sealed class DimensionAccountingScenarioTests
     [Fact]
     public async Task ManyRowDimensionsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             wb = openpyxl.Workbook()
@@ -61,7 +61,7 @@ public sealed class DimensionAccountingScenarioTests
         }
 
         builder.Append("return 0\n");
-        var script = new LythonEngine().Compile(builder.ToString());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(builder.ToString());
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -76,7 +76,7 @@ public sealed class DimensionAccountingScenarioTests
     [Fact]
     public async Task DimensionBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             wb = openpyxl.Workbook()

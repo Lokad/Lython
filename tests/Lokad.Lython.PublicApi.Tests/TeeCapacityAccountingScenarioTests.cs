@@ -14,7 +14,7 @@ public sealed class TeeCapacityAccountingScenarioTests
     {
         // MG13 probe: 20 retained pairs, each drained unevenly in turn. Item
         // charges release on dequeue, but the backing arrays stay retained.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             pairs = []
@@ -42,7 +42,7 @@ public sealed class TeeCapacityAccountingScenarioTests
     {
         // MG13: advancing only one clone queues the whole source into the
         // abandoned clone under per-item and backing charges.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             a, b = itertools.tee(range(200000))
@@ -66,7 +66,7 @@ public sealed class TeeCapacityAccountingScenarioTests
     {
         // MG13: a fully lagging clone still yields every item once funded, so
         // the backlog charges cannot starve legitimate uneven consumption.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             a, b = itertools.tee(range(5000))
@@ -107,7 +107,7 @@ public sealed class TeeCapacityAccountingScenarioTests
         // MG13: when the source raises mid-iteration, items already fanned out
         // to a lagging clone stay queued and charged instead of being lost
         // with the failed pull.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             def f(x):

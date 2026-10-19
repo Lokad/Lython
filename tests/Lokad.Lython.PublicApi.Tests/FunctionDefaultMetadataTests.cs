@@ -27,7 +27,7 @@ public sealed class FunctionDefaultMetadataTests
     public async Task MetadataAndBindingUseTheSameLiveDefaults(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -54,7 +54,7 @@ public sealed class FunctionDefaultMetadataTests
         var source = retainAlias
             ? YieldingLookup.Replace("f.__kwdefaults__={Key():7,'y':8}", "original={Key():7,'y':8}\nf.__kwdefaults__=original")
             : YieldingLookup;
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
@@ -77,7 +77,7 @@ public sealed class FunctionDefaultMetadataTests
     public async Task CancelledKeywordLookupDrainsBeforeReturningAllowance()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(YieldingLookup, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(YieldingLookup, budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/events.txt", "before");
@@ -109,7 +109,7 @@ public sealed class FunctionDefaultMetadataTests
     public async Task DeniedDefaultReplacementFailsBeforeGuestContinuation()
     {
         var budget = new LythonMemoryBudget(128 * 1024);
-        using var script = new LythonEngine().Compile("def f(x=1): return x\nold=f.__defaults__\ntry: f.__defaults__=(0,)*10000\nexcept MemoryError: print('denied')\nprint(f(),f.__defaults__ is old)", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("def f(x=1): return x\nold=f.__defaults__\ntry: f.__defaults__=(0,)*10000\nexcept MemoryError: print('denied')\nprint(f(),f.__defaults__ is old)", budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
@@ -127,7 +127,7 @@ public sealed class FunctionDefaultMetadataTests
     public async Task EscapedDefaultsRemainFundedAfterMetadataIsCleared()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("def f(value='x'*4096): return value\nsaved=f.__defaults__\nf.__defaults__=None\nreturn saved[0]", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("def f(value='x'*4096): return value\nsaved=f.__defaults__\nf.__defaults__=None\nreturn saved[0]", budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {

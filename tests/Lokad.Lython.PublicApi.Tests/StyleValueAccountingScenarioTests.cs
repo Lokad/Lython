@@ -11,7 +11,7 @@ public sealed class StyleValueAccountingScenarioTests
     [Fact]
     public async Task ManyStyleValuesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from openpyxl.styles import Font
             fs = []
@@ -35,7 +35,7 @@ public sealed class StyleValueAccountingScenarioTests
     [Fact]
     public async Task StyleValuesStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from openpyxl.styles import Font
             f = Font(bold=True, size=12)

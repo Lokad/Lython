@@ -30,7 +30,7 @@ public sealed class WorksheetCopyAccountingTests
     public void CopyDuplicatesChargedTablesExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.AttachMemoryGovernor(context.MemoryGovernor, span);
@@ -58,7 +58,7 @@ public sealed class WorksheetCopyAccountingTests
     public void UngovernedCopyStaysFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.SetCellValue(1, 1, new BigInteger(5));
         sheet.SetCellNumberFormat(1, 1, PyString.FromString("0.00"));

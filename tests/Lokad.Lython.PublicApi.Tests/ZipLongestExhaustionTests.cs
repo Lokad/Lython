@@ -20,7 +20,7 @@ public sealed class ZipLongestExhaustionTests
     [Fact]
     public void LatchedExhaustionStopsBesideFiniteInput()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import itertools
             calls = []
@@ -49,7 +49,7 @@ public sealed class ZipLongestExhaustionTests
     [Fact]
     public async Task LatchedExhaustionStopsBesideFiniteInputAsync()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
             import itertools
             calls = []
@@ -78,7 +78,7 @@ public sealed class ZipLongestExhaustionTests
     [Fact]
     public void RepeatedlyRaisingInputPulledOnce()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import itertools
             calls = []
@@ -104,7 +104,7 @@ public sealed class ZipLongestExhaustionTests
     [Fact]
     public void EmptyAndUnevenShapes()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import itertools
             return [list(itertools.zip_longest()), list(itertools.zip_longest([], [])),
@@ -126,7 +126,7 @@ public sealed class ZipLongestExhaustionTests
     [Fact]
     public void PartialConsumptionThenRest()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import itertools
             it = itertools.zip_longest([1, 2, 3], [1])
@@ -147,7 +147,7 @@ public sealed class ZipLongestExhaustionTests
     [Fact]
     public void RepeatedNextAfterExhaustion()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import itertools
             it = iter(itertools.zip_longest([1], [1, 2]))
@@ -179,7 +179,7 @@ public sealed class ZipLongestExhaustionTests
     [Fact]
     public void NonStopExceptionPropagates()
     {
-        var sync = new LythonEngine().Run(
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import itertools
             class Boom:
@@ -202,7 +202,7 @@ public sealed class ZipLongestExhaustionTests
     [Fact]
     public async Task NonStopExceptionPropagatesAsync()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
             import itertools
             class Boom:
@@ -225,7 +225,7 @@ public sealed class ZipLongestExhaustionTests
     [Fact]
     public async Task DelayedAsyncInputsSuspendThroughHost()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             with open("/v.txt") as f:

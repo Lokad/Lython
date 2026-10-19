@@ -25,9 +25,9 @@ public sealed class PositionalCallTransportTests
     {
         var parameters = string.Join(",", Enumerable.Range(0, width).Select(i => "a" + i));
         var arguments = string.Join(",", Enumerable.Range(0, width).Select(i => keywords ? $"a{i}=value" : "value"));
-        var frontend = LythonFrontend.Compile($"def f({parameters}):\n    a0=value\n    tap()\n    return a0\nreturn f({arguments})\n");
+        var frontend = LythonFrontend.Compile($"def f({parameters}):\n    a0=value\n    tap()\n    return a0\nreturn f({arguments})\n",regexProvider:Utf8RegexProvider.Instance);
         var script = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var marker = new object();
         var storage = new object[width];
         var tap = new StorageTap(storage);
@@ -73,9 +73,9 @@ public sealed class PositionalCallTransportTests
     [InlineData(true)]
     public async Task BorrowedLocalsRemainOwnedUntilSuspendedInvocationFinishes(bool cancel)
     {
-        var frontend = LythonFrontend.Compile("def f(value):\n    tap()\n    return value\nreturn f(value)\n");
+        var frontend = LythonFrontend.Compile("def f(value):\n    tap()\n    return value\nreturn f(value)\n",regexProvider:Utf8RegexProvider.Instance);
         var script = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var marker = new object();
         var storage = new object[1];
         var tap = new SuspendedStorageTap(storage);
@@ -145,9 +145,9 @@ public sealed class PositionalCallTransportTests
     {
         var parameters = string.Join(",", Enumerable.Range(0, width).Select(i => "a" + i));
         var arguments = string.Join(",", Enumerable.Repeat("value", width));
-        var frontend = LythonFrontend.Compile($"def f({parameters}):\n    return a0\nreturn f({arguments})\n");
+        var frontend = LythonFrontend.Compile($"def f({parameters}):\n    return a0\nreturn f({arguments})\n",regexProvider:Utf8RegexProvider.Instance);
         var script = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var marker = new object();
         context.Variables["value"] = marker;
         var field = typeof(LythonRuntime).GetField(width == 1 ? "_pooledOneCallArgument" : width == 2 ? "_pooledTwoCallArguments" : "_pooledThreeCallArguments",
@@ -187,11 +187,11 @@ public sealed class PositionalCallTransportTests
     public async Task RealLoweredMethodsPreserveValuesWithoutArgumentPackaging(int width, bool asynchronous, bool keywords)
     {
         var parameters = string.Join(",", Enumerable.Range(0, width).Select(i => "a" + i));
-        var definition = LythonFrontend.Compile($"class Box:\n def method(self,{parameters}):return a0\nbox=Box()\nmethod=box.method");
+        var definition = LythonFrontend.Compile($"class Box:\n def method(self,{parameters}):return a0\nbox=Box()\nmethod=box.method",regexProvider:Utf8RegexProvider.Instance);
         var code = ExecutableScript.Compile(LoweredScript.Lower(definition.Script.RequireNotNull())).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         _ = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
             : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var method = Assert.IsType<PyBoundMethod>(context.Variables["method"]);
@@ -199,7 +199,7 @@ public sealed class PositionalCallTransportTests
         var marker = new object();
         context.Variables["value"] = marker;
         var arguments = string.Join(",", Enumerable.Range(0, width).Select(i => keywords ? $"a{i}=value" : "value"));
-        var call = LythonFrontend.Compile("return method(" + arguments + ")");
+        var call = LythonFrontend.Compile("return method(" + arguments + ")",regexProvider:Utf8RegexProvider.Instance);
         code = ExecutableScript.Compile(LoweredScript.Lower(call.Script.RequireNotNull())).EntryPoint;
         var field = typeof(LythonRuntime).GetField(width == 1 ? "_pooledOneCallArgument" : width == 2 ? "_pooledTwoCallArguments" : "_pooledThreeCallArguments",
             BindingFlags.NonPublic | BindingFlags.Static).RequireNotNull();
@@ -230,11 +230,11 @@ public sealed class PositionalCallTransportTests
     [InlineData(true)]
     public async Task LoweredMethodInputsRemainOwnedUntilItsNativeHookFinishes(bool cancel)
     {
-        var definition = LythonFrontend.Compile("class Box:\n def method(self,value):\n  tap()\n  return value\nbox=Box()\nmethod=box.method");
+        var definition = LythonFrontend.Compile("class Box:\n def method(self,value):\n  tap()\n  return value\nbox=Box()\nmethod=box.method",regexProvider:Utf8RegexProvider.Instance);
         var code = ExecutableScript.Compile(LoweredScript.Lower(definition.Script.RequireNotNull())).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         var marker = Runtime.Text.PyString.FromString("owned", context.MemoryGovernor, null);
         var storage = new object[2];
@@ -242,7 +242,7 @@ public sealed class PositionalCallTransportTests
         context.Variables["value"] = marker;
         context.Variables["tap"] = tap;
         var baseline = budget.ReservedBytes;
-        var call = LythonFrontend.Compile("return method(value)");
+        var call = LythonFrontend.Compile("return method(value)",regexProvider:Utf8RegexProvider.Instance);
         code = ExecutableScript.Compile(LoweredScript.Lower(call.Script.RequireNotNull())).EntryPoint;
         var field = typeof(LythonRuntime).GetField("_pooledTwoBoundValues", BindingFlags.NonPublic | BindingFlags.Static).RequireNotNull();
         var previous = field.GetValue(null);
@@ -315,9 +315,9 @@ public sealed class PositionalCallTransportTests
     public async Task RealMethodCallSitesKeepEveryGuardAndBodyEffect(bool asynchronous, bool defaulted)
     {
         const string definitionSource = "class Box:\n def method(self,value=7):\n  stamp(self,value)\n  return value\nbox=Box()\nmethod=box.method";
-        var definition = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(definitionSource).Script!)).EntryPoint;
+        var definition = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(definitionSource,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var callSource = defaulted ? "return method()" : "return method(value)";
-        var call = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(callSource).Script!)).EntryPoint;
+        var call = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(callSource,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         var marker = new object();
         string[] fullEffects;
@@ -344,7 +344,7 @@ public sealed class PositionalCallTransportTests
         async ValueTask<(LythonRuntime.ExecutionContext, MethodEffects)> Prepare(ILythonMemoryBudget owner)
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner});
+            { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             var tape = new MethodEffects(defaulted ? new BigInteger(7) : marker);
             context.Variables["value"] = marker;
             context.Variables["stamp"] = tape;

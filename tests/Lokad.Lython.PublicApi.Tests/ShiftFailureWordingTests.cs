@@ -16,7 +16,7 @@ public sealed class ShiftFailureWordingTests
     [InlineData("x = 1\nx >>= -1\nreturn x\n")]
     public void NegativeShifts_KeepValueErrorIdentityAndMessage(string source)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
         Assert.False(result.Success);
         Assert.Equal("ValueError", result.Failure?.ExceptionType);
         Assert.Contains("negative shift count", result.Failure?.Message, StringComparison.Ordinal);
@@ -30,7 +30,7 @@ public sealed class ShiftFailureWordingTests
         // The guest wording is identical to the internal marker message; only
         // the typed marker converts to ValueError, never message text.
         var source = "class S:\n    def __lshift__(self, other):\n        raise " + errorType + "(\"negative shift count\")\ntry:\n    S() << 1\n    return \"no-failure\"\nexcept " + errorType + " as e:\n    return str(e)\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -44,7 +44,7 @@ public sealed class ShiftFailureWordingTests
     public async Task NegativeShiftAsyncMatchesSync()
     {
         const string source = "return 1 << -1\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.False(sync.Success);

@@ -20,7 +20,7 @@ public sealed class ExceptionalDictionaryFactsTests
     public async Task ExceptionalPathsForgetPreTryMappingContents(string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -39,7 +39,7 @@ public sealed class ExceptionalDictionaryFactsTests
     [InlineData("try: raise ValueError()\nexcept ValueError:\n box={}\n print(box['missing'])")]
     public void FreshMissingKeyFactsRemainDiagnosed(string source)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, d => d.Code == "LA3157");
     }

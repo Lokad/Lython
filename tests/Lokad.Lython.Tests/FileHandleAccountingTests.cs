@@ -13,7 +13,7 @@ public sealed class FileHandleAccountingTests
     public void WriteHandleConstructionCommitsExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var method = typeof(LythonRuntime.ExecutionContext).GetNestedType("TextFileHandle", BindingFlags.NonPublic)
             ?.GetMethod("ForWrite", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, [typeof(string), typeof(LythonRuntime.ExecutionContext)])
             ?? throw new InvalidOperationException("ForWrite not found.");

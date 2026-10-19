@@ -58,7 +58,7 @@ public sealed class ReviewHardening7RegressionTests
 
     private static byte[] SaveCreatedWorkbook(MockLythonHost host)
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 wb = openpyxl.Workbook()
@@ -139,7 +139,7 @@ return ws.max_row
         var host = new MockLythonHost();
         host.LocalNow = HostTime;
         host.SeedWorkbook("/in.xlsx", seed);
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 wb = openpyxl.load_workbook("/in.xlsx")

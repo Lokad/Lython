@@ -30,7 +30,7 @@ public sealed class GzipAppendAccountingScenarioTests
     public async Task AppendOpenPeakCoversOneCopy()
     {
         var seeded = MakeSeededGzip(300000);
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import gzip
             f = gzip.open("/a.gz", "ab")
@@ -54,7 +54,7 @@ public sealed class GzipAppendAccountingScenarioTests
     public async Task AppendedContentReadsBack()
     {
         var seeded = MakeSeededGzip(300000);
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import gzip
             f = gzip.open("/a.gz", "ab")

@@ -10,7 +10,7 @@ public sealed class PkgutilModuleFunctionTests
         var host = new MockLythonHost();
         host.SeedFile("/helper.py", "value = 1");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import pkgutil
 
@@ -37,7 +37,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import pkgutil
 
@@ -75,7 +75,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import pkgutil
 
@@ -105,7 +105,7 @@ __lython_file.close()
         host.SeedFile("/repo/.hidden.py", "value = 'hidden'");
         host.SeedFile("/repo/not-module.txt", "skip");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import pkgutil
 
@@ -146,7 +146,7 @@ __lython_file.close()
         host.SeedFile("/repo/pkg/__init__.py", "kind = 'package'");
         host.FailListDir("/repo/pkg", "blocked package");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import pkgutil
 
@@ -177,7 +177,7 @@ __lython_file.close()
         host.SeedFile("/helper.py", "value = 42");
         host.SeedFile("/pkg/__init__.py", "kind = 'package'");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 import pkgutil
@@ -217,7 +217,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import pkgutil
 
@@ -238,7 +238,7 @@ __lython_file.close()
     [Fact]
     public void Pkgutil_StaticDiagnosticsCoverExpandedSurface()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import pkgutil
 
@@ -279,7 +279,7 @@ info.index("x", "bad")
     [InlineData("import pkgutil\npkgutil.ModuleInfo(None, 1, False)\n", "ModuleInfo")]
     public void PkgutilModule_NearMisses_FailPrecisely(string source, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (result.Failure is null)

@@ -166,14 +166,14 @@ public sealed class NativeAggregateStateTests
 
     private static ExecutableScript Compile(string source)
     {
-        var parsed = LythonFrontend.Compile(source);
+        var parsed = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.Empty(parsed.Diagnostics);
         return ExecutableScript.Compile(LoweredScript.Lower(parsed.Script!));
     }
 
     private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? owner = null)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         context.Variables.Clear();
         return context;
     }

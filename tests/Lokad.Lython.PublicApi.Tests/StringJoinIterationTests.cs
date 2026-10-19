@@ -33,7 +33,7 @@ public sealed class StringJoinIterationTests
     [MemberData(nameof(Cases))]
     public async Task MatchesPythonDrainAndErrorOrder(bool asynchronous, string name, string source, string expected)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -51,7 +51,7 @@ public sealed class StringJoinIterationTests
         var source = argument
             ? "def parts():\n with open('audit.txt','a') as output:output.write('seen')\n return ['café','😀']\nreturn '|'.join(parts())"
             : "def parts():\n yield 1\n with open('audit.txt','a') as output:output.write('seen')\n yield 'valid'\nreturn '|'.join(parts())";
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -103,7 +103,7 @@ public sealed class StringJoinIterationTests
     public async Task RetainedResultKeepsSharedFundingAcrossExecutions(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using (var script = new LythonEngine().Compile("return '|'.join(['café','😀'])", budget))
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return '|'.join(['café','😀'])", budget))
         {
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;

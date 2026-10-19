@@ -13,7 +13,7 @@ public sealed class ChainMapTablesAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedMapTablesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import collections
             m = {0: 0}
@@ -39,7 +39,7 @@ public sealed class ChainMapTablesAccountingScenarioTests
     [Fact]
     public async Task MapsAttributeBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import collections
             cm = collections.ChainMap({0: 10}, {1: 11})

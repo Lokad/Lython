@@ -21,7 +21,7 @@ public sealed class NativeItemMutationDispatchTests
     [MemberData(nameof(Cases))]
     public async Task IndexBindingAndCallUseTheSelectedMode(string operation, bool deque, bool descriptor, bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var checkpoint = new Checkpoint();
         context.Variables["checkpoint"] = checkpoint;
         var hook = descriptor ? " @property\n def __index__(self):\n  checkpoint()\n  return lambda:1\n"
@@ -29,7 +29,7 @@ public sealed class NativeItemMutationDispatchTests
         var immutable = operation.StartsWith("immutable", StringComparison.Ordinal);
         var action = operation switch { "set" or "immutable-set" => "values[key]=7", "delete" or "immutable-delete" => "del values[key]", _ => "values[key]+=7" };
         var source = "class Key:\n" + hook + "key=Key()\n" + (immutable ? "values=(0,1,2)\n" : deque ? "from collections import deque\nvalues=deque([0,1,2])\n" : "values=[0,1,2]\n") + action;
-        var syntax = LythonFrontend.Compile(source).Script!;
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         if (immutable)
         {
@@ -56,7 +56,7 @@ public sealed class NativeItemMutationDispatchTests
     public async Task ConvertedIndexPreservesCallbackAdmissionBeforeMutation(bool asynchronous, bool denied)
     {
         const long limit = 1024 * 1024;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var target = new PyList([BigInteger.Zero], context.MemoryGovernor, span);
         using var fund = new AllocationGate(context.MemoryGovernor, limit, denied);
@@ -64,7 +64,7 @@ public sealed class NativeItemMutationDispatchTests
         context.Variables["target"] = target;
         context.Variables["fund"] = fund;
         context.Variables["ready"] = ready;
-        var syntax = LythonFrontend.Compile("class Key:\n def __index__(self):\n  fund()\n  scratch=[0]*1024\n  ready()\n  return 0\nkey=Key()\ntarget[key]=1").Script!;
+        var syntax = LythonFrontend.Compile("class Key:\n def __index__(self):\n  fund()\n  scratch=[0]*1024\n  ready()\n  return 0\nkey=Key()\ntarget[key]=1",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         try
         {

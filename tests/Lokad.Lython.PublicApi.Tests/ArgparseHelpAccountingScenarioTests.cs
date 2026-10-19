@@ -15,7 +15,7 @@ public sealed class ArgparseHelpAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedHelpsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import argparse
             p = argparse.ArgumentParser(prog="p", description="Do things.")
             p.add_argument("--foo", help="Foo.")
@@ -42,7 +42,7 @@ public sealed class ArgparseHelpAccountingScenarioTests
     [Fact]
     public async Task FormatHelpBehaves()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import argparse
             p = argparse.ArgumentParser(prog="p", description="Do things.")
             p.add_argument("--foo", help="Foo.")

@@ -20,7 +20,7 @@ __lython_file.write(str(choose(["a", "b"])))
 __lython_file.close()
 """;
 
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(d => d.Message)));
         Assert.Empty(compiled.Diagnostics);
@@ -57,7 +57,7 @@ __lython_file.write(root.as_posix())
 __lython_file.close()
 """;
 
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(d => d.Message)));
         Assert.Empty(compiled.Diagnostics);
@@ -92,7 +92,7 @@ __lython_file.write(pat.sub(replacer, "ab cd"))
 __lython_file.close()
 """;
 
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(d => d.Message)));
         Assert.Empty(compiled.Diagnostics);
@@ -107,7 +107,7 @@ __lython_file.close()
     [Fact]
     public void AnnotationDiagnostics_ReportHighConfidenceLiteralMismatches()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 x: int = "bad"
 
@@ -124,7 +124,7 @@ def sample(flag: bool = "oops") -> int:
     [Fact]
     public void AnnotationDiagnostics_UseAbstractValueFlowForProvableMismatches()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -148,7 +148,7 @@ def sample(default: int = text) -> list:
     [Fact]
     public void AnnotationDiagnostics_WidenUnknownBranchValuesInsteadOfGuessing()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 

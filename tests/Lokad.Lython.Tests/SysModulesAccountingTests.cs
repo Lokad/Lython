@@ -25,7 +25,7 @@ public sealed class SysModulesAccountingTests
     public void SnapshotKeysAreOwned()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var snapshot = CreateSnapshot(context);
         Assert.True(snapshot.Count > 50);
         foreach (var key in snapshot.Keys)
@@ -39,7 +39,7 @@ public sealed class SysModulesAccountingTests
     public void ReaddedKeysCommit()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         context.State.ImportedModules["helper"] = new ScriptPyModule("helper", LythonRuntime.ExecutionContext.CreateModule(context, null, "helper"), new(0, 0, 0, 0));
         var snapshot = CreateSnapshot(context);
         var key = snapshot.Keys.OfType<PyString>().Single(k => k.AsString() == "helper");

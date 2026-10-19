@@ -22,7 +22,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var bytes = Enumerable.Repeat((byte)'a', length).ToArray();
             bytes[^1] = 255;
             var input = PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, Span);
@@ -57,7 +57,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
         using (var owner = budget.CreateScope())
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner});
+                { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             var governor = context.MemoryGovernor;
             var input = PyString.FromString("a", governor, Span);
             var callable = Load(context, route);
@@ -115,7 +115,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
             using (var owner = budget.CreateScope())
             {
                 var context = new Context(new MockLythonHost(), new LythonRunOptions
-                    { MemoryBudget = owner});
+                    { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
                 var governor = context.MemoryGovernor;
                 var input = PyString.FromString(new string('a', 65536), governor, Span);
                 object value = input;
@@ -196,7 +196,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
         var budget = new LythonMemoryBudget(limit);
         using (var owner = budget.CreateScope())
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var input = PyString.FromString(new string('a', 4097), context.MemoryGovernor, Span);
             var callable = Load(context, iterator ? "iterator" : "dumps");
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
@@ -236,7 +236,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var input = PyString.FromString(new string('a', 4097), context.MemoryGovernor, Span);
             var callable = Load(context, "iterator");
             var iterator = Assert.IsType<LythonRuntime.JsonEncodeIterator>(callable.Invoke([CallArgumentValue.Positional(input)], Span, context));
@@ -255,7 +255,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
             var held = budget.ReservedBytes;
             using (var otherOwner = budget.CreateScope())
             {
-                var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner });
+                var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner },regexProvider:Utf8RegexProvider.Instance);
                 Assert.True(budget.ReservedBytes >= held);
                 Assert.Equal(0, other.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal('"', chunk.AsString()[0]);
@@ -268,7 +268,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
     private static LythonRuntime.ICallable Load(Context context, string route)
     {
         var target = route switch { "dumps" => "json.dumps", "encode" => "json.JSONEncoder().encode", _ => "json.JSONEncoder().iterencode" };
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn " + target).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn " + target,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         return Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
     }
 }

@@ -18,7 +18,7 @@ public sealed class ValueShellAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedStructTimesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import time
             objs = []
             i = 0
@@ -43,7 +43,7 @@ public sealed class ValueShellAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedSupersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class C:
                 def m(self):
                     return super()
@@ -68,7 +68,7 @@ public sealed class ValueShellAccountingScenarioTests
     [Fact]
     public async Task ValueShellsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import time
             st = time.gmtime(0)
             class B:

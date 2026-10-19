@@ -16,7 +16,7 @@ public sealed class CsvFieldNameStorageTests
         .GetMethod("FinishCsvFieldNames", BindingFlags.NonPublic | BindingFlags.Static)!;
 
     private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? budget = null) => new(new MockLythonHost(),
-        new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(Cap) });
+        new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(Cap) },regexProvider:Utf8RegexProvider.Instance);
 
     private static PyString[] Create(LythonRuntime.ExecutionContext context, int count)
         => (PyString[])Finish.Invoke(null, [Enumerable.Range(0, count).Select(_ => PyString.FromString("name")).ToList(), context, Span])!;

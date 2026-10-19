@@ -149,7 +149,7 @@ public sealed class StructuralGuardAsyncIsolationTests
     public async Task DelayedListComparisons_SucceedWithHopsAndLeaveNoWorkerRoots()
     {
         var host = new HoppingHost();
-        var script = new LythonEngine().Compile(DelayedListScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(DelayedListScript);
         Assert.True(script.IsValid);
 
         for (var i = 0; i < 2; i++)
@@ -174,7 +174,7 @@ public sealed class StructuralGuardAsyncIsolationTests
     public async Task InterleavedRuns_OnSharedWorkers_DoNotContaminate()
     {
         var host = new HoppingHost();
-        var script = new LythonEngine().Compile(DelayedListScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(DelayedListScript);
         Assert.True(script.IsValid);
 
         var t1 = script.RunAsync(host);
@@ -196,7 +196,7 @@ public sealed class StructuralGuardAsyncIsolationTests
     public async Task CancellationDuringDelayedComparison_CleansUpAndAllowsRetry()
     {
         var host = new HoppingHost();
-        var script = new LythonEngine().Compile(DelayedListScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(DelayedListScript);
         Assert.True(script.IsValid);
 
         using var cts = new CancellationTokenSource();
@@ -229,12 +229,12 @@ public sealed class StructuralGuardAsyncIsolationTests
             "        Path(\"/delay\").read_text()\n" +
             "        raise ValueError(\"boom\")\n" +
             "print([E()] == [E()])\n";
-        var bad = new LythonEngine().Compile(failing);
+        var bad = new LythonEngine(Utf8RegexProvider.Instance).Compile(failing);
         var failed = await bad.RunAsync(host);
         Assert.False(failed.Success);
         Assert.Equal("ValueError", failed.Failure?.ExceptionType);
 
-        var good = new LythonEngine().Compile(DelayedListScript);
+        var good = new LythonEngine(Utf8RegexProvider.Instance).Compile(DelayedListScript);
         var ok = await good.RunAsync(host);
         Assert.True(ok.Success, ok.Failure?.Message);
         foreach (var obs in host.WorkerObservations)
@@ -257,13 +257,13 @@ public sealed class StructuralGuardAsyncIsolationTests
             "a.append(a)\n" +
             "b.append(b)\n" +
             "print(a == b)\n";
-        var script = new LythonEngine().Compile(cyclic);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(cyclic);
         var result = await script.RunAsync(host);
         Assert.False(result.Success);
         Assert.Equal("RecursionError", result.Failure?.ExceptionType);
 
         // Subsequent healthy run still succeeds with clean workers.
-        var healthy = new LythonEngine().Compile(DelayedListScript);
+        var healthy = new LythonEngine(Utf8RegexProvider.Instance).Compile(DelayedListScript);
         var ok = await healthy.RunAsync(host);
         Assert.True(ok.Success, ok.Failure?.Message);
     }
@@ -273,7 +273,7 @@ public sealed class StructuralGuardAsyncIsolationTests
     {
         var host = new MockLythonHost();
         var options = new LythonRunOptions { MaxRecursionDepth = 5 };
-        var context = new LythonRuntime.ExecutionContext(host, options);
+        var context = new LythonRuntime.ExecutionContext(host, options,regexProvider:Utf8RegexProvider.Instance);
         var state = context.Services.State.StructuralTraversal;
 
         var scopes = new List<IDisposable>();

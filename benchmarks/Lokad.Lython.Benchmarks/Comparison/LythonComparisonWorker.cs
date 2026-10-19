@@ -8,7 +8,7 @@ namespace Lokad.Lython.Benchmarks.Comparison;
 
 internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string? fileDirectory = null)
 {
-    private readonly LythonEngine _engine = new();
+    private readonly LythonEngine _engine = new(Utf8RegexProvider.Instance);
     private readonly ComparisonHost _host = new();
     private readonly Dictionary<string, LythonCompiledScript> _compiled = new(StringComparer.Ordinal);
     private readonly HashSet<string> _verified = new(StringComparer.Ordinal);

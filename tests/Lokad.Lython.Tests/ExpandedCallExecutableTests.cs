@@ -11,7 +11,7 @@ public sealed class ExpandedCallExecutableTests
     [InlineData("target(*values,flag=marker)")]
     public void OrdinaryExpansionDoesNotForceFallbackOrLocalMirroring(string expression)
     {
-        var syntax = LythonFrontend.Compile($"def invoke(target,values,keywords,marker):\n    return {expression}").Script!;
+        var syntax = LythonFrontend.Compile($"def invoke(target,values,keywords,marker):\n    return {expression}",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax));
         var body = Assert.Single(code.EntryPoint.Functions).CodeObject;
         Assert.NotNull(body);

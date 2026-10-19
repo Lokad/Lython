@@ -74,7 +74,7 @@ public sealed class AugmentedIntegerCompatibilityTests
     [MemberData(nameof(Cases))]
     public async Task IntegerAugmentationAndFallbackMatchPython(string name, string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, name + ": " + string.Join("; ", compiled.Diagnostics));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

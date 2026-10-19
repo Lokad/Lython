@@ -229,7 +229,7 @@ public sealed class GeneratorCleanupCompositionTests
     [Fact]
     public async Task DelayedNestedWithCleanupPreservesTheOuterClose()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             class Manager:
              def __enter__(self):Path('/data.txt').read_text()
@@ -269,7 +269,7 @@ public sealed class GeneratorCleanupCompositionTests
             "function" => "def generate():\n def run(value=(yield 'default'),*,tail=Path('/data.txt').read_text()):return value,tail\n yield run()\ng=generate()\nprint(next(g),g.send(1))\n",
             _ => "class Box:\n @property\n def value(self):return int(Path('/data.txt').read_text())\n @value.setter\n def value(self,value):Path('/stored.txt').write_text(str(value))\nbox=Box()\ndef generate():\n (yield 'receiver').value+=(yield 'rhs')\n yield 'done'\ng=generate()\nprint(next(g),g.send(box),g.send(2))\n",
         });
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var host = new DelayedLythonHost();
         host.SeedFile("/data.txt", "1");
@@ -295,7 +295,7 @@ public sealed class GeneratorCleanupCompositionTests
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

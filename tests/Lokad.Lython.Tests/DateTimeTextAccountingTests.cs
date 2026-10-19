@@ -27,7 +27,7 @@ public sealed class DateTimeTextAccountingTests
     public void EveryDateTimeTextMemberOwnsItsResult()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var zone = new PyTimezone(TimeSpan.FromHours(2), "EET");
         var date = new PyDate(new DateOnly(2020, 1, 2));
@@ -62,7 +62,7 @@ public sealed class DateTimeTextAccountingTests
     public void DateTimeTextValuesStillRender()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var zone = new PyTimezone(TimeSpan.FromHours(2), "EET");
         var date = new PyDate(new DateOnly(2020, 1, 2));

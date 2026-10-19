@@ -10,7 +10,7 @@ public sealed class ImportArchitectureSubsystemTests
         var host = new CountingHost();
         host.SeedFile("/helper.py", "seen_name = __name__\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import helper
 import math
@@ -33,7 +33,7 @@ return [__name__, helper.__name__, helper.seen_name, math.__name__]
     {
         var host = new CountingHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json, re
 return json.dumps({"ok": True}) + "|" + str(re.search("a+", "caaab").span())
@@ -52,7 +52,7 @@ return json.dumps({"ok": True}) + "|" + str(re.search("a+", "caaab").span())
         var host = new CountingHost();
         host.SeedFile("/helper.py", "value = 1\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import hashlib
 import helper
@@ -81,7 +81,7 @@ return [
     [Fact]
     public void DottedBuiltinImports_FollowPythonPackageBindingRules()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os.path, openpyxl.styles as styles
 import os
@@ -109,7 +109,7 @@ return [
         host.SeedFile("/repo/pkg/__init__.py", "package_value = 1\n");
         host.SeedFile("/repo/pkg/child.py", "value = 42\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import pkg.child
 import pkg.child as leaf
@@ -144,7 +144,7 @@ return [pkg.package_value, pkg.child.value, leaf is pkg.child, leaf is sys.modul
         host.SeedFile("/repo/pkg/__init__.py", "package_value = 1\n");
         host.SeedFile("/repo/pkg/child.py", "value = 42\n");
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             "import pkg.child as leaf\nreturn leaf.value\n",
             host,
             new LythonRunOptions
@@ -166,7 +166,7 @@ return [pkg.package_value, pkg.child.value, leaf is pkg.child, leaf is sys.modul
     [Fact]
     public void DottedImports_ReportMalformedNamesAtCompileTime()
     {
-        var result = new LythonEngine().Compile("import os.\n");
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Compile("import os.\n");
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Diagnostics, diagnostic =>
@@ -192,7 +192,7 @@ import helper as again
 return (helper.value, again.value)
 """;
 
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
 
         var options = new LythonRunOptions
         {
@@ -215,7 +215,7 @@ return (helper.value, again.value)
         var host = new CountingHost();
         host.SeedFile("/helper.py", "value = 1");
 
-        var result = new LythonEngine().Run("""
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("""
 import helper
 import helper as again
 return helper is again
@@ -241,7 +241,7 @@ import shared
 value = shared.value + 1
 """);
 
-        var result = new LythonEngine().Run("""
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("""
 import helper
 return helper.value
 """,
@@ -261,7 +261,7 @@ return helper.value
         var host = new CountingHost();
         host.SeedFile("/helper.py", "value = 42");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import helper
 return helper.value
@@ -283,7 +283,7 @@ return helper.value
         var host = new CountingHost();
         host.SeedFile("/other.py", "value = 1");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import other",
             host,
             new LythonRunOptions
@@ -305,7 +305,7 @@ return helper.value
         host.SeedFile("/repo/tools/helper.py", "value = 42");
         host.SeedFile("/helper.py", "value = 1");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import helper
 return helper.value
@@ -336,7 +336,7 @@ def fail():
 fail()
 """);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import helper",
             host,
             new LythonRunOptions
@@ -357,7 +357,7 @@ fail()
         var host = new CountingHost();
         host.SeedFile("/helper.py", "value = 1");
 
-        var builtin = new LythonEngine().Run(
+        var builtin = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nreturn json.dumps({'ok': True})",
             host,
             new LythonRunOptions
@@ -368,7 +368,7 @@ fail()
         Assert.True(builtin.Success, builtin.Failure?.Message);
         Assert.Equal("{\"ok\": true}", builtin.ReturnValue);
 
-        var local = new LythonEngine().Run(
+        var local = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import helper",
             host,
             new LythonRunOptions
@@ -386,14 +386,14 @@ fail()
     [Fact]
     public void ImportFailures_KeepStablePythonShapedMessages()
     {
-        var missingModule = new LythonEngine().Run("import missing", new MockLythonHost());
+        var missingModule = new LythonEngine(Utf8RegexProvider.Instance).Run("import missing", new MockLythonHost());
         Assert.False(missingModule.Success);
         Assert.Equal("ModuleNotFoundError", missingModule.Failure?.ExceptionType);
         Assert.Contains("No module named 'missing'", missingModule.Failure?.Message);
 
         var host = new CountingHost();
         host.SeedFile("/helper.py", "value = 1");
-        var missingMember = new LythonEngine().Run(
+        var missingMember = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "from helper import missing",
             host,
             new LythonRunOptions

@@ -532,7 +532,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                if (stat.IsFile && MatchRglobPattern(name, pattern))
+                if (stat.IsFile && MatchRglobPattern(name, pattern, context.Limits.CancellationToken))
                 {
                     yield return child;
                 }
@@ -555,7 +555,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                if (stat.IsFile && MatchRglobPattern(name, pattern))
+                if (stat.IsFile && MatchRglobPattern(name, pattern, context.Limits.CancellationToken))
                 {
                     results.Add(child);
                     context.CheckExecution(span);
@@ -563,9 +563,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static bool MatchRglobPattern(string name, PyString pattern)
+        private static bool MatchRglobPattern(string name, PyString pattern, CancellationToken cancellationToken)
         {
-            return LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern);
+            return LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern, cancellationToken);
         }
     }
 }

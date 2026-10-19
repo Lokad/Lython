@@ -18,7 +18,7 @@ public sealed class ExactSequenceSubscriptTests
     public async Task ResultsErrorsAndExcludedTargetsMatchPython(string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -38,7 +38,7 @@ public sealed class ExactSequenceSubscriptTests
     public async Task IndexedAliasesKeepTheirSurvivingOwner(string container)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("holder=" + container + "\nreturn holder[-1]", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("holder=" + container + "\nreturn holder[-1]", budget);
         var baseline = budget.ReservedBytes;
         var seed = System.Numerics.BigInteger.One << 10000;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["seed"] = seed } };
@@ -64,7 +64,7 @@ public sealed class ExactSequenceSubscriptTests
     {
         const string source = "class Items:\n def __getitem__(self,key):\n  with open('events.txt','a') as output: output.write('item')\n  return key+41\nprint(Items()[1])";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

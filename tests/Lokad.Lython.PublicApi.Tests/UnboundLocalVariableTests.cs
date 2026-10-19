@@ -71,7 +71,7 @@ public sealed class UnboundLocalVariableTests
     [InlineData("from math import pi\nreturn math\nmath = 1")]
     public void StaticallyCertainUnboundReadsStillHaveCompileDiagnostics(string body)
     {
-        var script = new LythonEngine().Compile("def f():\n " + body.Replace("\n", "\n "));
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("def f():\n " + body.Replace("\n", "\n "));
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA3146");
     }
@@ -96,7 +96,7 @@ public sealed class UnboundLocalVariableTests
 
     private static async Task Check(string source, string expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {

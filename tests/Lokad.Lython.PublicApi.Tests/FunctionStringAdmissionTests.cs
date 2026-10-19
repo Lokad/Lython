@@ -14,7 +14,7 @@ public sealed class FunctionStringAdmissionTests
     [InlineData(true, "held = None", true)]
     public async Task WithdrawalInsideFunctionPreservesConservativeBatchFunding(bool asynchronous, string withdrawal, bool retain)
     {
-        using var script = new LythonEngine().Compile($$"""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($$"""
 def work():
     held = 'x' * 16000
     kept = held if {{(retain ? "True" : "False")}} else None

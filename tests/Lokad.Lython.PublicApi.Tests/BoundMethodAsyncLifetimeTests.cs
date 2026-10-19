@@ -10,7 +10,7 @@ public sealed class BoundMethodAsyncLifetimeTests
     [InlineData(2)]
     public async Task OverlappingSuspendedCallsKeepAllInvocationValues(int width)
     {
-        var compiled = new LythonEngine().Compile(Source(width));
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source(width));
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var first = new DelayedLythonHost();
         var second = new DelayedLythonHost();
@@ -26,7 +26,7 @@ public sealed class BoundMethodAsyncLifetimeTests
     [Fact]
     public async Task CancellationOfSuspendedMethodKeepsCompiledScriptReusable()
     {
-        var compiled = new LythonEngine().Compile(Source(2));
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source(2));
         Assert.True(compiled.IsValid);
         var host = new DelayedLythonHost();
         host.SeedFile("/value", "paused");

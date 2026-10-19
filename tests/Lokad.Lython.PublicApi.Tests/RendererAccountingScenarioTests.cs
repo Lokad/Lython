@@ -15,7 +15,7 @@ public sealed class RendererAccountingScenarioTests
     {
         // MG06: governed joins, dataclass reprs and the singleton-tuple shape
         // render byte-identically to before.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import operator
             import collections
@@ -59,7 +59,7 @@ public sealed class RendererAccountingScenarioTests
     {
         // MG06: governed joins must not break legitimately large reprs; a
         // 2,000-entry defaultdict repr stays proportional and succeeds funded.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import collections
             d = collections.defaultdict(int)
@@ -86,7 +86,7 @@ public sealed class RendererAccountingScenarioTests
     {
         // MG06: routing str.join through the owning governor must not change
         // joined output or the non-string rejection.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             results = []
             results.append(",".join(["a", "b", "c"]))
@@ -115,7 +115,7 @@ public sealed class RendererAccountingScenarioTests
     {
         // MG06: governed joins must not break legitimately large joins; a
         // 2,000-part join stays proportional and succeeds funded.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             parts = ["abcdefghij"] * 2000
             r = ",".join(parts)
@@ -136,7 +136,7 @@ public sealed class RendererAccountingScenarioTests
     {
         // MG06 probe: 30 retained reprs of a 20KB integer hold ~600KB of
         // digit text beside a small charged source under a 64KiB budget.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             big = 10 ** 20000
             out = []
@@ -160,7 +160,7 @@ public sealed class RendererAccountingScenarioTests
     {
         // MG06: governing scalar outputs must not change rendered values,
         // including interpolated ints, doubles, and exception messages.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             results = []
             results.append(repr(12345678901234567890123))
@@ -196,7 +196,7 @@ public sealed class RendererAccountingScenarioTests
     {
         // MG06 probe: 1,000 retained decimal reprs hold ~40KB of text beside
         // small charged sources under a 64KiB budget.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from decimal import Decimal
             d = Decimal("1.234567890123456789012345678")
@@ -220,7 +220,7 @@ public sealed class RendererAccountingScenarioTests
     public async Task DecimalRendererContractsStayExact()
     {
         // MG06: governing decimal rendering must not change repr/str output.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from decimal import Decimal
             d = Decimal("1.5")

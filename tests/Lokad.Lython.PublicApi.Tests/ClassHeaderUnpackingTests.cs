@@ -219,7 +219,7 @@ public sealed class ClassHeaderUnpackingTests
     [InlineData("**{'flag': 1}, **{'flag': 2}")]
     public async Task InvalidUnpackingFailsBeforeTheClassSuite(string arguments)
     {
-        var compiled = new LythonEngine().Compile("class C(" + arguments + "):\n    print('body')\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("class C(" + arguments + "):\n    print('body')\n");
         Assert.True(compiled.IsValid);
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -235,7 +235,7 @@ public sealed class ClassHeaderUnpackingTests
     [InlineData("flag=1, flag=2")]
     public async Task InvalidArgumentOrderAndRepeatedExplicitKeywordsFailAtCompilation(string arguments)
     {
-        var compiled = new LythonEngine().Compile("print('effects')\nclass C(" + arguments + "):\n    pass\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effects')\nclass C(" + arguments + "):\n    pass\n");
         Assert.False(compiled.IsValid);
         var result = await compiled.RunAsync(new MockLythonHost());
         Assert.False(result.Success);
@@ -245,7 +245,7 @@ public sealed class ClassHeaderUnpackingTests
     [Fact]
     public async Task ExpandedMetaclassOptionsRemainExplicitlyUnsupported()
     {
-        var compiled = new LythonEngine().Compile("class C(**{'metaclass': type}):\n    print('body')\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("class C(**{'metaclass': type}):\n    print('body')\n");
         Assert.True(compiled.IsValid);
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -298,7 +298,7 @@ public sealed class ClassHeaderUnpackingTests
                 Path("/number.txt").read_text()
                 return cls
             """ + "\n" + (nestedClass ? "class Outer:\n" + string.Join("\n", body.Split('\n').Select(line => "    " + line)) : body);
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var immediate = new MockLythonHost();
         immediate.SeedFile("/number.txt", "2");
@@ -317,7 +317,7 @@ public sealed class ClassHeaderUnpackingTests
     [Fact]
     public async Task DelayedDuplicateMappingsDoNotFetchTheDuplicateValue()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             class Options:
                 def keys(self):
@@ -355,7 +355,7 @@ public sealed class ClassHeaderUnpackingTests
                 def __getitem__(self, key):
                     return 1
             """ + "\nclass C(" + (kind == "bases" ? "*(Base for _ in range(100000))" : "**Mapping()") + "):\n    print('body')\n";
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid);
         foreach (var (options, exceptionType) in new[]
         {
@@ -374,7 +374,7 @@ public sealed class ClassHeaderUnpackingTests
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

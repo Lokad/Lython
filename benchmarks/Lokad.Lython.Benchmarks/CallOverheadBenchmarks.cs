@@ -23,7 +23,7 @@ public class CallOverheadBenchmarks
 
     public CallOverheadBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _identity10k = BenchmarkScripts.Compile(engine, "def f(a):\n    return a\nx = 0\nfor i in range(10000):\n    x = f(i)\nreturn x\n");
         _keyword10k = BenchmarkScripts.Compile(engine, "def f(a, b=1):\n    return a + b\nx = 0\nfor i in range(10000):\n    x = f(i, b=2)\nreturn x\n");
         _ternary10k = BenchmarkScripts.Compile(engine, "def f(a, b, c):\n    return a + b + c\nx = 0\nfor i in range(10000):\n    x = f(i, i, i)\nreturn x\n");

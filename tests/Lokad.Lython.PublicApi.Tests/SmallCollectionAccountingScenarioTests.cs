@@ -14,7 +14,7 @@ public sealed class SmallCollectionAccountingScenarioTests
     {
         // MG04 probe: 5,000 six-item lists hold 30,000 reference slots in
         // small backing arrays alone, far above a 256 KiB budget.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return [[0, 1, 2, 3, 4, 5] for i in range(5000)]
             """);
@@ -34,7 +34,7 @@ public sealed class SmallCollectionAccountingScenarioTests
     {
         // MG04 probe: thousands of small governed dicts hold uncharged
         // backing arrays when they never promote to map storage.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             out = []
             for i in range(5000):
@@ -59,7 +59,7 @@ public sealed class SmallCollectionAccountingScenarioTests
         // successful insertion cannot retain substantial storage outside the
         // execution allowance. The floor detects loss of that storage funding;
         // deterministic before-mutation denial is covered by native controls.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             s = set()
             for i in range(3000):
@@ -84,7 +84,7 @@ public sealed class SmallCollectionAccountingScenarioTests
     {
         // MG05: set.copy/union/operator paths route through the governed
         // snapshot constructor; funded copies must still succeed in both modes.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             s = set(range(5000))
             t = s.copy()
@@ -109,7 +109,7 @@ public sealed class SmallCollectionAccountingScenarioTests
     {
         // MG05: the same copies stay bounded; a budget far below one table
         // charge must fail instead of retaining uncharged copies.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             s = set(range(5000))
             t = s.copy()
@@ -133,7 +133,7 @@ public sealed class SmallCollectionAccountingScenarioTests
     {
         // MG05: set intersection/difference paths rebuild through governed
         // filter scratch; funded operations must still succeed in both modes.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             s = set(range(3000))
             t = set(range(1500, 4500))
@@ -170,7 +170,7 @@ public sealed class SmallCollectionAccountingScenarioTests
     {
         // MG05: the same filters stay bounded; a budget far below one table
         // charge must fail instead of retaining uncharged scratch.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             s = set(range(3000))
             t = set(range(1500, 4500))
@@ -198,7 +198,7 @@ public sealed class SmallCollectionAccountingScenarioTests
     {
         // MG05: byte slices drain lazy bounds through governed scratch;
         // funded slices must still succeed in both modes.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             data = bytes(10240)
             a = data[::2]
@@ -224,7 +224,7 @@ public sealed class SmallCollectionAccountingScenarioTests
         // MG05: the same slices stay bounded; a budget far below the combined
         // source, scratch and copies must fail instead of retaining uncharged
         // scratch.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             data = bytes(10240)
             a = data[::2]
@@ -251,7 +251,7 @@ public sealed class SmallCollectionAccountingScenarioTests
         // Fixed arity needs only one excess value. Starred unpacking must
         // retain the remainder and still meet its allocation budget. Even
         // reference storage alone for 4,096 values exceeds this allowance.
-        using var script = new LythonEngine().Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             $"""
             try:
                 try:
@@ -285,7 +285,7 @@ public sealed class SmallCollectionAccountingScenarioTests
     {
         // MG05: funded fixed-arity and starred unpacking must still succeed in
         // both modes.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             a, *b = range(5)
             c, d = [10, 20]

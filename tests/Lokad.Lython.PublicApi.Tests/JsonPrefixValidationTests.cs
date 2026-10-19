@@ -7,7 +7,7 @@ public sealed class JsonPrefixValidationTests
     [Fact]
     public async Task StrictStringsRejectBeforeDependentHooks()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import json
             events = []
             def hook(o):
@@ -34,7 +34,7 @@ public sealed class JsonPrefixValidationTests
     [Fact]
     public async Task PrefixIgnoresPrecedingAndTrailingInvalidStrings()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import json
             d = json.JSONDecoder()
             print(d.raw_decode('"a' + chr(1) + '" 42', 5))
@@ -50,7 +50,7 @@ public sealed class JsonPrefixValidationTests
     [Fact]
     public async Task SmallPrefixDoesNotReserveOrScanItsLargeSuffix()
     {
-        var script = new LythonEngine().Compile("import json\nreturn str(json.JSONDecoder().raw_decode(source))");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\nreturn str(json.JSONDecoder().raw_decode(source))");
         var options = new LythonRunOptions
         {
             Globals = new Dictionary<string, object?> { ["source"] = "0 \"" + new string('\u0001', 250000) + "\"" },
@@ -68,7 +68,7 @@ public sealed class JsonPrefixValidationTests
     [InlineData(30000, false)]
     public async Task LenientControlBufferIsFundedBeforeGrowth(long budget, bool success)
     {
-        var script = new LythonEngine().Compile("import json\nreturn len(json.loads(source, strict=False))");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\nreturn len(json.loads(source, strict=False))");
         var options = new LythonRunOptions
         {
             Globals = new Dictionary<string, object?> { ["source"] = "\"" + new string('\u0001', 5000) + "\"" },

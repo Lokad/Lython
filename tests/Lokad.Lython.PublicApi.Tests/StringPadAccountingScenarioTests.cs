@@ -12,7 +12,7 @@ public sealed class StringPadAccountingScenarioTests
     [Fact]
     public async Task HugeZfillWidthIsBounded()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return "1".zfill(2000000)
             """);
@@ -31,7 +31,7 @@ public sealed class StringPadAccountingScenarioTests
     {
         // MG07 probe: interpolated padding built multi-megabyte CLR strings
         // before the governed result charge observed them.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return f"{'x':>2000000}"
             """);
@@ -54,7 +54,7 @@ public sealed class StringPadAccountingScenarioTests
         // only the governed path avoids the multi-megabyte peak. Allocation
         // is measured on the synchronous run only: awaits may resume on a
         // different thread, which would invalidate the per-thread counter.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             try:
                 x = f"{'x':>2000000}"
@@ -63,7 +63,7 @@ public sealed class StringPadAccountingScenarioTests
             return "unexpected"
             """);
         Assert.True(script.IsValid);
-        var warm = new LythonEngine().Compile("return f\"{'x':>10}\"");
+        var warm = new LythonEngine(Utf8RegexProvider.Instance).Compile("return f\"{'x':>10}\"");
         Assert.True(warm.IsValid);
         var warmOptions = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16777216) };
         Assert.True(warm.Run(new MockLythonHost(), warmOptions).Success);
@@ -93,7 +93,7 @@ public sealed class StringPadAccountingScenarioTests
     {
         // MG07: preflighting padding must not change a byte of formatted
         // output, including non-ASCII fills and the format() builtin path.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             a = f"{'x':>5}"
             b = f"{1:03d}"
@@ -118,7 +118,7 @@ public sealed class StringPadAccountingScenarioTests
     {
         // MG07 probe: float precision scales the output without bound from a
         // tiny input, materializing it before the governed result charge.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return f"{1.5:.2000000f}"
             """);
@@ -140,7 +140,7 @@ public sealed class StringPadAccountingScenarioTests
         // materializes tens of megabytes. Both runs report MemoryError; only
         // the governed path avoids the peak. Allocation is measured on the
         // synchronous run only (awaits invalidate the per-thread counter).
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             try:
                 x = f"{1.5:.20000000f}"
@@ -149,7 +149,7 @@ public sealed class StringPadAccountingScenarioTests
             return "unexpected"
             """);
         Assert.True(script.IsValid);
-        var warm = new LythonEngine().Compile("return f\"{1.5:.2f}\"");
+        var warm = new LythonEngine(Utf8RegexProvider.Instance).Compile("return f\"{1.5:.2f}\"");
         Assert.True(warm.IsValid);
         var warmOptions = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16777216) };
         Assert.True(warm.Run(new MockLythonHost(), warmOptions).Success);
@@ -181,7 +181,7 @@ public sealed class StringPadAccountingScenarioTests
         // materialize. Mirrors FloatPrecisionPeakStaysBounded on the exact
         // decimal path (stash round-trip would show tens-of-MB peaks without
         // the preflight, as tens of thousands of padded zeros prove).
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from decimal import Decimal
             try:
@@ -215,7 +215,7 @@ public sealed class StringPadAccountingScenarioTests
         // MG07: preflighting precision must not change formatted output, and
         // small precisions behave exactly as before. Non-finite values
         // render CPython words ("inf", not BCL "Infinity") at any precision.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             a = f"{1.5:.2f}"
             b = f"{1.23456789:.3g}"
@@ -240,7 +240,7 @@ public sealed class StringPadAccountingScenarioTests
     {
         // MG07: percent width padding streams through the governed builder,
         // so a two-million pad fails on growth charges instead of escaping.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return "%2000000s" % "x"
             """);
@@ -260,7 +260,7 @@ public sealed class StringPadAccountingScenarioTests
     {
         // MG07: ljust/rjust/center pad through the same governed builder
         // shape; a two-million pad fails on growth charges.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return "x".ljust(2000000)
             """);

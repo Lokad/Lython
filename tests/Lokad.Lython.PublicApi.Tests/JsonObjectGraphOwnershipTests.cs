@@ -45,7 +45,7 @@ public sealed class JsonObjectGraphOwnershipTests : LifetimeScenario
                 xs.append(json.loads('{"a":["hello","world"]}'))
             return len(xs)
             """;
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             code,
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3145728) });
@@ -62,7 +62,7 @@ public sealed class JsonObjectGraphOwnershipTests : LifetimeScenario
                 xs.append(json.loads('{"a":["hello","world"]}'))
             return len(xs)
             """;
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             code,
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3145728) });
@@ -101,7 +101,7 @@ public sealed class JsonObjectGraphOwnershipTests : LifetimeScenario
                 xs.append(json.loads('"hi"'))
             return len(xs)
             """;
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             code,
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3145728) });
@@ -116,7 +116,7 @@ public sealed class JsonObjectGraphOwnershipTests : LifetimeScenario
             x = json.loads('{"a":1,"a":2}')
             return [x["a"], len(x)]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { new BigInteger(2), new BigInteger(1) }, result.ReturnValue);
     }
@@ -131,7 +131,7 @@ public sealed class JsonObjectGraphOwnershipTests : LifetimeScenario
             z = json.loads('{"a":1}', object_hook=lambda d: y)
             return [x["a"], len(x), z is y, z["k"]]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(1), new BigInteger(1), true, new BigInteger(9) },
@@ -157,7 +157,7 @@ public sealed class JsonObjectGraphOwnershipTests : LifetimeScenario
             x = json.loads('{"a":1}', object_pairs_hook=lambda p: p)
             return [x[0][0], x[0][1], len(x)]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { "a", new BigInteger(1), new BigInteger(1) },
@@ -185,7 +185,7 @@ public sealed class JsonObjectGraphOwnershipTests : LifetimeScenario
             c = json.loads('NaN', parse_constant=lambda s: 7)
             return [a[0], a[1], b, c]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(99), new BigInteger(99), 0.25, new BigInteger(7) },

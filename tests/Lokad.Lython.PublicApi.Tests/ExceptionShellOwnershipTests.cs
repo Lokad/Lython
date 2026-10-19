@@ -28,7 +28,7 @@ public sealed class ExceptionShellOwnershipTests
         if (success) source = source.Replace("5000", "16");
         if (asynchronous) source = "import time\ntime.sleep(0)\n" + source;
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
@@ -79,7 +79,7 @@ for i in range(400):
 print('done')
 """;
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(retain ? source : source.Replace("range(400)", "range(16)"), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(retain ? source : source.Replace("range(400)", "range(16)"), budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {

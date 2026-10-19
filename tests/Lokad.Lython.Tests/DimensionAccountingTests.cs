@@ -20,7 +20,7 @@ public sealed class DimensionAccountingTests
     public void DimensionEntriesCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var sheet = NewSheet(context, span);
         _ = sheet.GetOrCreateRowDimension(1);
@@ -35,7 +35,7 @@ public sealed class DimensionAccountingTests
     public void UngovernedDimensionsStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         _ = sheet.GetRowDimension(1);
         _ = sheet.GetColumnDimension(1);

@@ -11,9 +11,9 @@ public sealed class ResultPeakAccountingScenarioTests
     [Fact]
     public async Task PeaksGrowWithRetainedAllocations()
     {
-        var small = new LythonEngine().Compile("return 0\n");
+        var small = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 0\n");
         Assert.True(small.IsValid);
-        var big = new LythonEngine().Compile(
+        var big = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             xs = []
             i = 0
@@ -42,7 +42,7 @@ public sealed class ResultPeakAccountingScenarioTests
     [Fact]
     public async Task FailurePeakStaysWithinBudget()
     {
-        var script = new LythonEngine().Compile("x = [0] * 100000\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("x = [0] * 100000\nreturn 0\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -61,7 +61,7 @@ public sealed class ResultPeakAccountingScenarioTests
     [Fact]
     public async Task ProjectionPeakIsExactForReturnValue()
     {
-        var script = new LythonEngine().Compile("return \"x\" * 10000\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return \"x\" * 10000\n");
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

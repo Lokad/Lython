@@ -22,7 +22,7 @@ public sealed class OsHostStringAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedCwdsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             objs = []
             i = 0
@@ -47,7 +47,7 @@ public sealed class OsHostStringAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedGetenvsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             objs = []
             i = 0
@@ -73,7 +73,7 @@ public sealed class OsHostStringAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedExecPathsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             objs = []
             i = 0
@@ -99,7 +99,7 @@ public sealed class OsHostStringAccountingScenarioTests
     [Fact]
     public async Task HostStringsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             return [os.getcwd(), os.getenv("K"), os.get_exec_path(), os.getenv("MISSING", "dflt")]
             """);

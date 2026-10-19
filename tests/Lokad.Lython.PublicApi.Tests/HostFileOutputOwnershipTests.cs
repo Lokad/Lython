@@ -44,7 +44,7 @@ public sealed class HostFileOutputOwnershipTests
     [Fact]
     public void RetainingAndSinkHostsAgreeOnRuntimePeak()
     {
-        var script = new LythonEngine().Compile(BatchScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BatchScript);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(BudgetBytes) };
 
@@ -80,7 +80,7 @@ public sealed class HostFileOutputOwnershipTests
     [Fact]
     public async Task RetainingAndSinkHostsAgreeOnRuntimePeakAsync()
     {
-        var script = new LythonEngine().Compile(BatchScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BatchScript);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(BudgetBytes) };
 
@@ -110,7 +110,7 @@ public sealed class HostFileOutputOwnershipTests
     [Fact]
     public async Task DelayedAsyncCompletionDeliversIntactBatch()
     {
-        var script = new LythonEngine().Compile(BatchScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BatchScript);
         Assert.True(script.IsValid);
         var host = new DelayedLythonHost();
         var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(BudgetBytes) });
@@ -125,7 +125,7 @@ public sealed class HostFileOutputOwnershipTests
     [Fact]
     public async Task RepeatedCloseToSamePathStaysBounded()
     {
-        var script = new LythonEngine().Compile(RepeatScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(RepeatScript);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(BudgetBytes) };
 

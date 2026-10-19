@@ -29,7 +29,7 @@ public sealed class DecimalContextValueAccountingTests
     public void CreateDecimalAliasingStaysFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var existing = InvokeFactory(context, span, "create_decimal", new BigInteger(7));
         var retained = context.MemoryGovernor.CurrentCommittedBytes;

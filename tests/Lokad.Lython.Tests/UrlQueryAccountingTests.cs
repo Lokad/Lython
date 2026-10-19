@@ -34,7 +34,7 @@ public sealed class UrlQueryAccountingTests
             using (var owner = budget.CreateScope())
             {
                 var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-                    new LythonRunOptions { MemoryBudget = owner });
+                    new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
                 Deny(callable, input, context);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
@@ -53,7 +53,7 @@ public sealed class UrlQueryAccountingTests
     [Fact]
     public void FieldLimitPrecedesDecodingAndOutputAllocation()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1) },regexProvider:Utf8RegexProvider.Instance);
         Assert.True(LythonRuntime.UrllibParseModule.Instance.TryGetMember("parse_qsl", out var member));
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(member);
         var failure = Assert.Throws<LythonRuntimeException>(() => callable.Invoke(

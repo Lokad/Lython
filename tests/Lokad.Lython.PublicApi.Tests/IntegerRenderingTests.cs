@@ -54,7 +54,7 @@ public sealed class IntegerRenderingTests
 
     private static async Task AssertBoth(string source, string expected)
     {
-        using var compiled = new LythonEngine().Compile(source);
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var asynchronous in new[] { false, true })
         {

@@ -15,7 +15,7 @@ public sealed class BytesSliceAccountingTests
     public void LazySliceScratchStaysBounded()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PyBytes(new byte[20000], context.MemoryGovernor, span);
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
@@ -37,7 +37,7 @@ public sealed class BytesSliceAccountingTests
     public void EmptySliceChargesOnlyItsEstimate()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(128) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(128) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PyBytes(Array.Empty<byte>(), context.MemoryGovernor, span);
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;

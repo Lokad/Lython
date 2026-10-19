@@ -17,7 +17,7 @@ public sealed class Windows1252CodecCompatibilityTests
     public async Task CodecSurfacesMatchPython(string name, string source, string expected)
     {
         _ = name;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {
@@ -37,7 +37,7 @@ public sealed class Windows1252CodecCompatibilityTests
     {
         var host = new MockLythonHost();
         host.SeedBytes("/source.bin", Convert.FromHexString(seedHex));
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, result.StandardOutput);
         Assert.Equal(Convert.FromHexString(outputHex), host.ReadBytes("/output.bin"));
@@ -49,7 +49,7 @@ public sealed class Windows1252CodecCompatibilityTests
     {
         var host = new DelayedLythonHost();
         host.SeedBytes("/source.bin", Convert.FromHexString(seedHex));
-        var result = await new LythonEngine().RunAsync(source, host);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, result.StandardOutput);
         Assert.Equal(Convert.FromHexString(outputHex), host.ReadBytes("/output.bin"));

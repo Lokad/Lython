@@ -191,7 +191,7 @@ public sealed class CsvWriterowCallBoundaryTests
 
     private static (Context, Writer, Argument, Sink) Prepare(ILythonMemoryBudget owner, string shape, bool history = false)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var sink = new Sink(context.MemoryGovernor);
         var writer = new Writer(Options(), history ? null : sink, context.MemoryGovernor, Span);
         object row = shape switch
@@ -207,7 +207,7 @@ public sealed class CsvWriterowCallBoundaryTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     private static ValueTask<object?> Run(ExecutableCodeObject code, Context context, bool asynchronous)
         => asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)

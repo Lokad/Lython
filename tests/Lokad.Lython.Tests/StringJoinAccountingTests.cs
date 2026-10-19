@@ -17,7 +17,7 @@ public sealed class StringJoinAccountingTests
     public void JoinStringsCommitsExactOutput()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         // JoinStrings lives directly on LythonRuntime, shared by string and CSV members.
         var join = typeof(LythonRuntime).GetMethod("JoinStrings", BindingFlags.NonPublic | BindingFlags.Static)

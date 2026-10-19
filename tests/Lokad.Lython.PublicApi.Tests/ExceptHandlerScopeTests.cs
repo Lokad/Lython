@@ -13,7 +13,7 @@ public sealed class ExceptHandlerScopeTests
     [Fact]
     public async Task HandlerRebindingSurvivesInBothModes()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             flag = "no-stop"
             try:
@@ -36,7 +36,7 @@ public sealed class ExceptHandlerScopeTests
     [Fact]
     public async Task HandlerRebindingSurvivesInsideFunctions()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             def f():
                 flag = "no-stop"
@@ -61,7 +61,7 @@ public sealed class ExceptHandlerScopeTests
     [Fact]
     public async Task AsVariableStillDeletedAfterSuite()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             try:
                 {}["k"]

@@ -15,7 +15,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public void AnonymousWrite_PublishesAtSuccessfulEnd()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run("print(open('/out.txt', 'w').write('yes'))", host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("print(open('/out.txt', 'w').write('yes'))", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("3\n", result.StandardOutput);
         Assert.True(host.Exists("/out.txt"));
@@ -26,7 +26,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public async Task AnonymousWrite_PublishesAtSuccessfulEndAsync()
     {
         var host = new MockLythonHost();
-        var result = await new LythonEngine().RunAsync("print(open('/out.txt', 'w').write('yes'))", host);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync("print(open('/out.txt', 'w').write('yes'))", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("3\n", result.StandardOutput);
         Assert.True(await host.ExistsAsync("/out.txt", CancellationToken.None));
@@ -37,7 +37,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public async Task AnonymousWrite_AwaitsDelayedPublication()
     {
         var host = new DelayedLythonHost();
-        var result = await new LythonEngine().RunAsync("print(open('/out.txt', 'w').write('yes'))", host);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync("print(open('/out.txt', 'w').write('yes'))", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(host.CompletedAsynchronously > 0);
         Assert.Equal("yes", host.ReadText("/out.txt"));
@@ -47,7 +47,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public void AssignedHandleWithoutClose_Publishes()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run("f = open('/out.txt', 'w')\nf.write('yes')", host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("f = open('/out.txt', 'w')\nf.write('yes')", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("yes", host.ReadText("/out.txt"));
     }
@@ -56,7 +56,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public void HandleReassignedToNone_Publishes()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run("f = open('/out.txt', 'w')\nf.write('yes')\nf = None", host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("f = open('/out.txt', 'w')\nf.write('yes')\nf = None", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("yes", host.ReadText("/out.txt"));
     }
@@ -65,7 +65,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public void TopLevelReturn_PublishesDirtyWriter()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run("f = open('/out.txt', 'w')\nf.write('yes')\nreturn 7", host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("f = open('/out.txt', 'w')\nf.write('yes')\nreturn 7", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(7), result.ReturnValue);
         Assert.Equal("yes", host.ReadText("/out.txt"));
@@ -75,7 +75,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public async Task TopLevelReturn_PublishesDirtyWriterAsync()
     {
         var host = new MockLythonHost();
-        var result = await new LythonEngine().RunAsync("f = open('/out.txt', 'w')\nf.write('yes')\nreturn 7", host);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync("f = open('/out.txt', 'w')\nf.write('yes')\nreturn 7", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(7), result.ReturnValue);
         Assert.Equal("yes", host.ReadText("/out.txt"));
@@ -90,7 +90,7 @@ public sealed class UnclosedWriterEndOfRunTests
     [InlineData(true, "return 7")]
     public async Task PublicationFailureReplacesCompletionAndPreservesCapturedOutput(bool asynchronous, string ending)
     {
-        var script = new LythonEngine().Compile("print('before')\nf = open('/out.txt', 'w')\nf.write('yes')\n" + ending);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('before')\nf = open('/out.txt', 'w')\nf.write('yes')\n" + ending);
         Assert.True(script.IsValid);
         var host = new MockLythonHost();
         host.FailNextWriteText("/out.txt", "publication blocked");
@@ -114,7 +114,7 @@ public sealed class UnclosedWriterEndOfRunTests
     [InlineData(true)]
     public async Task PublicationFailureStillClosesOtherOutstandingWriters(bool asynchronous)
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             good = open('/good.txt', 'w')
             good.write('kept')
             bad = open('/bad.txt', 'w')
@@ -137,7 +137,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public void FlushThenDirtySuffix_PublishesBoth()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run("f = open('/out.txt', 'w')\nf.write('yes')\nf.flush()\nf.write('!')", host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("f = open('/out.txt', 'w')\nf.write('yes')\nf.flush()\nf.write('!')", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("yes!", host.ReadText("/out.txt"));
     }
@@ -146,7 +146,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public void BareOpen_PublishesEmptyFile()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run("open('/out.txt', 'w')", host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("open('/out.txt', 'w')", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(host.Exists("/out.txt"));
         Assert.Equal(string.Empty, host.ReadText("/out.txt"));
@@ -157,7 +157,7 @@ public sealed class UnclosedWriterEndOfRunTests
     {
         var host = new MockLythonHost();
         host.SeedFile("/out.txt", "old");
-        var result = new LythonEngine().Run("f = open('/out.txt', 'a')\nf.write('yes')", host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("f = open('/out.txt', 'a')\nf.write('yes')", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("oldyes", host.ReadText("/out.txt"));
     }
@@ -166,7 +166,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public void FailureStillPublishes_PreservesFailure()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run("f = open('/out.txt', 'w')\nf.write('yes')\nraise ValueError('boom')", host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("f = open('/out.txt', 'w')\nf.write('yes')\nraise ValueError('boom')", host);
         Assert.False(result.Success);
         Assert.Equal("ValueError", result.Failure?.ExceptionType);
         Assert.Equal("yes", host.ReadText("/out.txt"));
@@ -176,7 +176,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public async Task FailureStillPublishes_PreservesFailureAsync()
     {
         var host = new DelayedLythonHost();
-        var result = await new LythonEngine().RunAsync("f = open('/out.txt', 'w')\nf.write('yes')\nraise ValueError('boom')", host);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync("f = open('/out.txt', 'w')\nf.write('yes')\nraise ValueError('boom')", host);
         Assert.False(result.Success);
         Assert.Equal("ValueError", result.Failure?.ExceptionType);
         Assert.Equal("yes", host.ReadText("/out.txt"));
@@ -186,7 +186,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public void ExplicitClose_RemainsIdempotent()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run("f = open('/out.txt', 'w')\nf.write('yes')\nf.close()\nf.close()", host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("f = open('/out.txt', 'w')\nf.write('yes')\nf.close()\nf.close()", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("yes", host.ReadText("/out.txt"));
     }
@@ -195,7 +195,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public void ContextManager_Publishes()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run("with open('/out.txt', 'w') as f:\n    f.write('yes')", host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("with open('/out.txt', 'w') as f:\n    f.write('yes')", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("yes", host.ReadText("/out.txt"));
     }
@@ -206,7 +206,7 @@ public sealed class UnclosedWriterEndOfRunTests
     public async Task CancelledRunWithNormalLimits_PublishesNothing(bool asynchronous)
     {
         using var cts = new CancellationTokenSource();
-        var script = new LythonEngine().Compile("f = open('/out.txt', 'w')\nf.write('yes')\nprint('buffered')\nwhile True:\n    pass");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("f = open('/out.txt', 'w')\nf.write('yes')\nprint('buffered')\nwhile True:\n    pass");
         Assert.True(script.IsValid);
         var buffered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var host = new MockLythonHost { OnStandardOutputWrite = () => buffered.TrySetResult(true) };

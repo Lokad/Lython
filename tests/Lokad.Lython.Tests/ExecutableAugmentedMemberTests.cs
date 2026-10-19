@@ -10,7 +10,7 @@ public sealed class ExecutableAugmentedMemberTests
     [Fact]
     public void MemberUpdatesUseExistingInstructionsWithoutMirroring()
     {
-        var syntax = LythonFrontend.Compile("def run(receiver,value):\n receiver().total+=value").Script!;
+        var syntax = LythonFrontend.Compile("def run(receiver,value):\n receiver().total+=value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
         Assert.Empty(code.ExpressionFallbacks);
@@ -25,10 +25,10 @@ public sealed class ExecutableAugmentedMemberTests
     public async Task DeniedAttributeGrowthAfterRhsDoesNotStore(bool asynchronous)
     {
         const long limit = 1024 * 1024;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         using var rhs = new DenyCapacity(context.MemoryGovernor, limit);
         context.Variables["rhs"] = rhs;
-        var syntax = LythonFrontend.Compile("class Box:\n def __getattr__(self,name): return 1\nbox=Box()\nbox.value+=rhs()").Script!;
+        var syntax = LythonFrontend.Compile("class Box:\n def __getattr__(self,name): return 1\nbox=Box()\nbox.value+=rhs()",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         try
         {
@@ -51,10 +51,10 @@ public sealed class ExecutableAugmentedMemberTests
     [InlineData(true)]
     public async Task GetterRhsAndSetterUseTheChosenExecutionMode(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var checkpoint = new Checkpoint();
         context.Variables["checkpoint"] = checkpoint;
-        var syntax = LythonFrontend.Compile("class Box:\n @property\n def value(self): return checkpoint()\n @value.setter\n def value(self,value): checkpoint()\nbox=Box()\nbox.value+=checkpoint()").Script!;
+        var syntax = LythonFrontend.Compile("class Box:\n @property\n def value(self): return checkpoint()\n @value.setter\n def value(self,value): checkpoint()\nbox=Box()\nbox.value+=checkpoint()",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);

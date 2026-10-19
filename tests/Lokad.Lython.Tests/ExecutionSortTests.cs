@@ -12,7 +12,7 @@ public sealed class ExecutionSortTests
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(1024) });
+            new LythonRunOptions { CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(1024) },regexProvider:Utf8RegexProvider.Instance);
         var values = Enumerable.Range(0, size).Reverse().ToList();
         var failure = Assert.Throws<LythonRuntimeException>(() => ExecutionSort.Sort(values, context, null,
             (left, right) => { cancellation.Cancel(); return left.CompareTo(right); }));
@@ -27,7 +27,7 @@ public sealed class ExecutionSortTests
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { CancellationToken = cancellation.Token });
+            new LythonRunOptions { CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var called = false;
         Assert.Throws<LythonRuntimeException>(() => ExecutionSort.Sort(new List<int> { 2, 1 }, context, null,
             (left, right) => { called = true; return left.CompareTo(right); }));
@@ -39,7 +39,7 @@ public sealed class ExecutionSortTests
     public void DeniedSortScratchDoesNotInvokeTheComparer()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(128) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(128) },regexProvider:Utf8RegexProvider.Instance);
         var called = false;
         var failure = Assert.Throws<LythonRuntimeException>(() => ExecutionSort.Sort(new List<int> { 2, 1 }, context, null,
             (left, right) => { called = true; return left.CompareTo(right); }));
@@ -51,7 +51,7 @@ public sealed class ExecutionSortTests
     [Fact]
     public void ComparerPythonFailureKeepsItsOriginalIdentity()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         var expected = RuntimeErrors.Value("comparison failed", null);
         var actual = Assert.Throws<LythonRuntimeException>(() => ExecutionSort.Sort(new List<int> { 2, 1 }, context, null,
             (left, right) => throw expected));
@@ -62,7 +62,7 @@ public sealed class ExecutionSortTests
     [Fact]
     public void DefaultAndExplicitComparersPreserveOrdering()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         var values = new List<int> { 3, 1, 2 };
         ExecutionSort.Sort(values, context, null);
         Assert.Equal(new[] { 1, 2, 3 }, values);

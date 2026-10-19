@@ -23,7 +23,7 @@ public sealed class StructAccountingTests
     {
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(10000) });
+            new LythonRunOptions { CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(10000) },regexProvider:Utf8RegexProvider.Instance);
         var hook = new SuspendedIndex();
         var number = new PyInstance(new PyType("Number", [], new() { ["__index__"] = hook }));
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -54,7 +54,7 @@ public sealed class StructAccountingTests
     [Fact]
     public void HugePaddingDeniesBeforeAllocationAndRefunds()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) },regexProvider:Utf8RegexProvider.Instance);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         foreach (var size in new[] { "1000000", "2147483648" })
             for (var attempt = 0; attempt < 10; attempt++)
@@ -70,7 +70,7 @@ public sealed class StructAccountingTests
     [Fact]
     public void RangeFailureRefundsThePrivatePackedOutput()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 100; attempt++)
         {
@@ -86,7 +86,7 @@ public sealed class StructAccountingTests
     [InlineData(128)]
     public void TupleStorageDenialsRefundUnusedAdmission(long cap)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 25; attempt++)
         {
@@ -101,7 +101,7 @@ public sealed class StructAccountingTests
     [Fact]
     public void IteratorDenialRefundsAndDoesNotDecodeRecords()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(127) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(127) },regexProvider:Utf8RegexProvider.Instance);
         for (var attempt = 0; attempt < 25; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() => Callable("iter_unpack").Invoke(
@@ -115,7 +115,7 @@ public sealed class StructAccountingTests
     [Fact]
     public void LazyRecordDenialLeavesNoFreshReservationsOrGuestContinuation()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) },regexProvider:Utf8RegexProvider.Instance);
         var iterator = Assert.IsAssignableFrom<IPyIteratorValue>(Callable("iter_unpack").Invoke(
             Arguments(PyString.FromString(">20d"), new PyBytes(new byte[160])), Span, context));
         var before = context.MemoryGovernor.CurrentCommittedBytes;

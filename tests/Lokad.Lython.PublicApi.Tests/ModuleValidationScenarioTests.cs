@@ -9,7 +9,7 @@ public sealed class ModuleValidationScenarioTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re as regex
 from json import dumps
@@ -34,7 +34,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json as js, re
 __lython_file = open("/out.txt", "w")
@@ -53,7 +53,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from json import (
     dumps,
@@ -75,7 +75,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from os.path import basename, join
 __lython_file = open("/out.txt", "w")
@@ -94,7 +94,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 import re
@@ -135,7 +135,7 @@ def bump(value):
     return value + count
 """);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import helper
 import helper as again
@@ -162,7 +162,7 @@ __lython_file.close()
     [InlineData("from missing import value\n", "ModuleNotFoundError", "No module named 'missing'")]
     public void FromImport_UnknownMember_FailsWithImportError(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -174,7 +174,7 @@ __lython_file.close()
     public async Task ImportFailures_SpellLikeCpython()
     {
         const string source = "results = []\ntry:\n    import missing\n    results.append(\"no-error\")\nexcept ModuleNotFoundError as e:\n    results.append(str(e))\ntry:\n    from re import missing\n    results.append(\"no-error\")\nexcept ImportError as e:\n    results.append(str(e))\nreturn \"|\".join(results)";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -209,7 +209,7 @@ __lython_file.close()
     [InlineData("from pathlib import Path\nPath(\"/repo/out.txt\").write_text(1)\n", "compile", "expects a string plus optional keyword-compatible arguments")]
     public void ModuleContractFailure_ReportsExpectedException(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (exceptionType == "compile")
@@ -230,7 +230,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 vals = list(re.findall("a+", "caaab a"))
@@ -254,7 +254,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 left = str(list(re.findall("(a)?b", "b ab b")))
@@ -276,7 +276,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 __lython_file = open("/out.txt", "w")
@@ -299,7 +299,7 @@ __lython_file.close()
     [InlineData("import re\nm = re.search(\"a\", \"a\")\nm.span(1, 2)\n", "match.span(group=0) expects zero or one group identifier.")]
     public void ModuleMemberContractFailure_ReportsTypeError(string source, string message)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (result.Failure is null)
@@ -316,7 +316,7 @@ __lython_file.close()
     [Fact]
     public void JsonDumps_UnsupportedRuntimeType_FailsWithTypeError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 import re
@@ -335,7 +335,7 @@ json.dumps(re.search("a", "a"))
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 vals = []

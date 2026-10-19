@@ -23,7 +23,7 @@ public sealed class ListComprehensionExecutionTests
     public async Task LexicalBindingsAndAbruptCleanupMatchPython(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -42,7 +42,7 @@ public sealed class ListComprehensionExecutionTests
     {
         const string source = "def emit(x):\n    with open('out.txt','a') as target:\n        target.write(str(x))\n    return x\nx=99\nvalues=[emit(x) for x in range(3)]\nprint(values,x)";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/out.txt", "");
@@ -60,7 +60,7 @@ public sealed class ListComprehensionExecutionTests
     public async Task CancellationDrainsTheYieldingBodyBeforeReturningFunding()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("def emit(x):\n    with open('out.txt','w') as target:\n        target.write(str(x))\n    return x\nvalues=[emit(x) for x in range(3)]", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("def emit(x):\n    with open('out.txt','w') as target:\n        target.write(str(x))\n    return x\nvalues=[emit(x) for x in range(3)]", budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         var entered = host.PauseWriteUntilCancellation("/out.txt");

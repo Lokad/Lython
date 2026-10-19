@@ -22,7 +22,7 @@ public sealed class CursorDispatchTests
     {
         foreach (var direction in new[] { 1, -1 })
         {
-            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { });
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { },regexProvider:Utf8RegexProvider.Instance);
             await using var cursor = PyIteration.Cursor.Create(new PyRange(10, 10 + direction * length, direction), Span, context);
             var checksum = BigInteger.Zero;
             for (var i = 0; i <= length; i++)
@@ -46,7 +46,7 @@ public sealed class CursorDispatchTests
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-            { CancellationToken = cancellation.Token});
+            { CancellationToken = cancellation.Token},regexProvider:Utf8RegexProvider.Instance);
         var source = new SyncIteratorAndAsyncIterable();
         await using var cursor = PyIteration.Cursor.Create(source, Span, context);
         for (var i = 0; i < 64; i++) Assert.True((await Pull(cursor, asynchronous)).HasValue);
@@ -89,7 +89,7 @@ public sealed class CursorDispatchTests
     public async Task AcquiredAsyncEnumeratorPrecedesIteratorAndIsDisposedOnce()
     {
         var source = new AsyncIterator();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var outer = new PyIteration.GeneratorOuter(source, source.Iterate());
         await using var cursor = PyIteration.Cursor.FromGeneratorOuter(outer, source, true, Span, context);
         var next = await cursor.TryMoveNextAsync();

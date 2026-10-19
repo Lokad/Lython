@@ -18,7 +18,7 @@ public sealed class TextReaderConstructionAccountingTests
     {
         var host = new MockLythonHost();
         host.SeedFile("/invalid", "x");
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 30; attempt++)
         {

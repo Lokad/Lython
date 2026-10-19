@@ -21,7 +21,7 @@ public sealed class CsvSourceStorageLifetimeTests
         var retained = retention == "all";
         var count = retained ? 5000 : 16;
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source.Replace("5000", count.ToString()), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source.Replace("5000", count.ToString()), budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };

@@ -13,7 +13,7 @@ public sealed class CommentAccountingScenarioTests
     [Fact]
     public async Task ManyCommentsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             from openpyxl.comments import Comment
@@ -40,7 +40,7 @@ public sealed class CommentAccountingScenarioTests
     [Fact]
     public async Task ManyConstructedCommentsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             from openpyxl.comments import Comment
@@ -67,7 +67,7 @@ public sealed class CommentAccountingScenarioTests
     [Fact]
     public async Task CommentBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             from openpyxl.comments import Comment

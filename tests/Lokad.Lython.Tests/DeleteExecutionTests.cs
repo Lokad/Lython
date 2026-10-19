@@ -43,7 +43,7 @@ public sealed class DeleteExecutionTests
         {
             using (var owner = budget.CreateScope())
             {
-                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
                 var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
                     : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
                 Assert.Equal(new BigInteger(expected), result);
@@ -57,7 +57,7 @@ public sealed class DeleteExecutionTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     [Theory]
     [InlineData(false)]
@@ -69,7 +69,7 @@ public sealed class DeleteExecutionTests
         using (var owner = budget.CreateScope())
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-                new LythonRunOptions { MemoryBudget = owner});
+                new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             using var pin = new Pin(budget);
             var mark = new Mark();
             context.Variables["pin"] = pin;

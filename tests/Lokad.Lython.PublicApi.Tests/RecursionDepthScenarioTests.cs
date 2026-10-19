@@ -39,7 +39,7 @@ public sealed class RecursionDepthScenarioTests
     [Fact]
     public void FundedRecursionDepthSucceeds()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "def f(n):\n return 7 if n <= 0 else f(n - 1)\nreturn f(100)\n",
             new MockLythonHost());
 
@@ -50,7 +50,7 @@ public sealed class RecursionDepthScenarioTests
     [Fact]
     public async Task FundedRecursionDepthSucceedsAsync()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             "def f(n):\n return 7 if n <= 0 else f(n - 1)\nreturn f(100)\n",
             new MockLythonHost());
 
@@ -61,7 +61,7 @@ public sealed class RecursionDepthScenarioTests
     [Fact]
     public async Task FundedAccumulatingRecursionDepthSucceedsAsync()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             "def f(n):\n return 0 if n <= 0 else 1 + f(n - 1)\nreturn f(100)\n",
             new MockLythonHost());
 
@@ -72,7 +72,7 @@ public sealed class RecursionDepthScenarioTests
     [Fact]
     public async Task DeepCallRecursionRaisesAsync()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             "def loop():\n loop()\nloop()\n",
             new MockLythonHost());
 

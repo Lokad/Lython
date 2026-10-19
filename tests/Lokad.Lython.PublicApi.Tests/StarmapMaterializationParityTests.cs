@@ -16,7 +16,7 @@ public sealed class StarmapMaterializationParityTests
     public async Task StarmapDivergenceCase_RejectsInBothModes()
     {
         const string code = "import itertools\nreturn next(itertools.starmap(lambda *x: len(x), [range(1000)]))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost(), Tiny());
         Assert.False(sync.Success);
@@ -30,7 +30,7 @@ public sealed class StarmapMaterializationParityTests
     public async Task StarmapFunded_MatchesBothModes()
     {
         const string code = "import itertools\nreturn list(itertools.starmap(lambda a, b: a + b, [(1, 2), (3, 4)]))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         var asyncResult = await script.RunAsync(new MockLythonHost());
@@ -42,7 +42,7 @@ public sealed class StarmapMaterializationParityTests
     public async Task StarmapDelayedSource_ComposesAsyncAndFailsFastSync()
     {
         const string code = "import itertools\nwith open(\"/r.txt\") as f:\n    return list(itertools.starmap(lambda a: a.strip(), [(line,) for line in f]))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var delayed = new DelayedLythonHost();
         delayed.SeedFile("/r.txt", "a\nb\n");
@@ -60,7 +60,7 @@ public sealed class StarmapMaterializationParityTests
     public async Task StarmapNestedCallback_SucceedsFunded()
     {
         const string code = "import itertools\nreturn list(itertools.starmap(lambda *a: list(a), [[1, 2], [3]]))\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         var asyncResult = await script.RunAsync(new MockLythonHost());

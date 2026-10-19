@@ -81,7 +81,7 @@ public sealed class ExecutableLocalImportTests
     {
         var (module, entry, expected) = Cases[scenario];
         var budget = new LythonMemoryBudget(8 * 1024 * 1024);
-        using var compiled = new LythonEngine().Compile(entry, budget);
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(entry, budget);
         Assert.True(compiled.IsValid, string.Join(";", compiled.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         ILythonHost host = asynchronous ? new DelayedLythonHost() : new MockLythonHost();
@@ -115,7 +115,7 @@ public sealed class ExecutableLocalImportTests
     {
         ILythonHost host = asynchronous ? new DelayedLythonHost() : new MockLythonHost();
         Seed(host, "/selected.py", module);
-        using var compiled = new LythonEngine().Compile("import selected");
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("import selected");
         var options = Options();
         using var result = asynchronous ? await compiled.RunAsync(host, options) : compiled.Run(host, options);
         Assert.False(result.Success);
@@ -130,7 +130,7 @@ public sealed class ExecutableLocalImportTests
     {
         ILythonHost host = asynchronous ? new DelayedLythonHost() : new MockLythonHost();
         Seed(host, "/selected.py", "if False:return\nvalue=7");
-        using var compiled = new LythonEngine().Compile("import selected\nreturn selected.value");
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("import selected\nreturn selected.value");
         using var result = asynchronous ? await compiled.RunAsync(host, Options()) : compiled.Run(host, Options());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new System.Numerics.BigInteger(7), result.ReturnValue);
@@ -144,7 +144,7 @@ public sealed class ExecutableLocalImportTests
     public async Task ImportCancellationAndRefusalStopGuestWorkAndReleaseOwners(bool asynchronous, bool refusal)
     {
         var budget = new LythonMemoryBudget(8 * 1024 * 1024);
-        using var compiled = new LythonEngine().Compile(
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "try:\n import selected\nexcept BaseException:print('caught')\nprint('after')", budget);
         Assert.True(compiled.IsValid);
         var baseline = budget.ReservedBytes;
@@ -188,7 +188,7 @@ public sealed class ExecutableLocalImportTests
     {
         ILythonHost host = asynchronous ? new DelayedLythonHost() : new MockLythonHost();
         Seed(host, "/selected.py", "value=1\ndef get():return value\ndef change(n):\n global value\n value=n\ndef scope():return globals()");
-        using var compiled = new LythonEngine().Compile("""
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import selected as m
             print(m.value,m.get())
             m.change(2)
@@ -213,7 +213,7 @@ public sealed class ExecutableLocalImportTests
     {
         ILythonHost host = asynchronous ? new DelayedLythonHost() : new MockLythonHost();
         Seed(host, "/selected.py", "len=3\nstr=4");
-        using var compiled = new LythonEngine().Compile("import selected as m\nfrom selected import len as length\nprint(m.len,m.str,length)");
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("import selected as m\nfrom selected import len as length\nprint(m.len,m.str,length)");
         using var result = asynchronous ? await compiled.RunAsync(host, Options()) : compiled.Run(host, Options());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("3 4 3\n", result.StandardOutput);

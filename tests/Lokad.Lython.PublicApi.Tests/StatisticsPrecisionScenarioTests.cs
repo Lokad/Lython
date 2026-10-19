@@ -10,7 +10,7 @@ public sealed class StatisticsPrecisionScenarioTests
 {
     private static LythonCompiledScript Compile(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         return script;
     }

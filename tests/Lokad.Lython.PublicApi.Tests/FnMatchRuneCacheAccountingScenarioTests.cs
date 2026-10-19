@@ -17,7 +17,7 @@ public sealed class FnMatchRuneCacheAccountingScenarioTests
     [Fact]
     public async Task RepeatedNonAsciiMatchesFit()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import fnmatch
             name = "é" * 100
             pat = "*x"
@@ -41,7 +41,7 @@ public sealed class FnMatchRuneCacheAccountingScenarioTests
     [Fact]
     public async Task NonAsciiMatchesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import fnmatch
             return [fnmatch.fnmatch("héllo", "h?llo"), fnmatch.fnmatch("école", "*.txt"), fnmatch.fnmatch("abc", "a*"), fnmatch.fnmatch("é", "[é]"), fnmatch.fnmatchcase("ABC", "a*")]
             """);
@@ -59,7 +59,7 @@ public sealed class FnMatchRuneCacheAccountingScenarioTests
     [Fact]
     public async Task AstralMatchesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import fnmatch
             return [fnmatch.fnmatch("😀x", "?x"), fnmatch.fnmatch("😀😀", "*"), fnmatch.fnmatch("a😀b", "a*b")]
             """);

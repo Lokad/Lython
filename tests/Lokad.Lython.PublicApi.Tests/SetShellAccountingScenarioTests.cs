@@ -18,7 +18,7 @@ public sealed class SetShellAccountingScenarioTests
     internal static async Task AssertRetainedCells(int count, long budget, bool sets)
     {
         var cell = sets ? "set()" : "None";
-        using var script = new LythonEngine().Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             $"objs = []\ni = 0\nwhile i < {count}:\n    objs.append({cell})\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) };
@@ -43,7 +43,7 @@ public sealed class SetShellAccountingScenarioTests
     [Fact]
     public async Task FundedEmptySetsBehave()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "s = set()\ns.add(1)\ns.discard(2)\nreturn [len(s), 1 in s]\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new List<object?> { new BigInteger(1), true };
@@ -59,7 +59,7 @@ public sealed class SetShellAccountingScenarioTests
     [Fact]
     public async Task CopiesOwnShells()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "a = set()\na.add(1)\nb = a.copy()\nc = set(a)\nd = a | set()\nb.add(2)\nreturn [len(a), len(b), len(c), len(d), 2 in a]\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new List<object?> { new BigInteger(1), new BigInteger(2), new BigInteger(1), new BigInteger(1), false };
@@ -75,7 +75,7 @@ public sealed class SetShellAccountingScenarioTests
     [Fact]
     public async Task ClearReleasesCapacityForReuse()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "s = set()\ns.add(1)\ns.clear()\ns.add(2)\nreturn [len(s), 2 in s, 1 in s]\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new List<object?> { new BigInteger(1), true, false };
@@ -132,7 +132,7 @@ public sealed class SetShellAccountingScenarioTests
     [Fact]
     public async Task SetAliasesShareShell()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "a = set()\n"
             + "a.add(1)\n"
             + "b = a\n"

@@ -20,7 +20,7 @@ public sealed class ConvertedTextAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedHexRendersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             objs = []
             i = 0
             while i < 20000:
@@ -44,7 +44,7 @@ public sealed class ConvertedTextAccountingScenarioTests
     [Fact]
     public async Task ManyParsedNamespacesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import argparse
             p = argparse.ArgumentParser(prog="p")
             p.add_argument("--foo")
@@ -70,7 +70,7 @@ public sealed class ConvertedTextAccountingScenarioTests
     [Fact]
     public async Task ConvertedTextBehaves()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import argparse
             p = argparse.ArgumentParser(prog="p")
             p.add_argument("--foo")

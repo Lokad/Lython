@@ -14,7 +14,7 @@ public sealed class TypingNamedTupleAccountingTests
     public void GovernedInstanceCommitsBackingExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var instance = new PyTypingNamedTupleObject(
             "P",
@@ -31,7 +31,7 @@ public sealed class TypingNamedTupleAccountingTests
     public void UngovernedInstanceStaysFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         _ = new PyTypingNamedTupleObject("P", ["x", "y"], [new BigInteger(1), new BigInteger(2)]);
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

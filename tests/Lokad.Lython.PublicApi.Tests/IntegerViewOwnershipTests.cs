@@ -15,7 +15,7 @@ public sealed class IntegerViewOwnershipTests
     [InlineData("as_integer_ratio()[0]", true)]
     public async Task ExactIntegerViewsPreservePythonIdentity(string view, bool asyncMode)
     {
-        var script = new LythonEngine().Compile("x = 1 << 4000\nreturn x." + view + " is x\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("x = 1 << 4000\nreturn x." + view + " is x\n");
         Assert.True(script.IsValid);
         var result = asyncMode ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -33,7 +33,7 @@ public sealed class IntegerViewOwnershipTests
     [InlineData("as_integer_ratio()[0]", true)]
     public async Task RetainedViewsKeepTheirPayloadFunded(string view, bool asyncMode)
     {
-        var script = new LythonEngine().Compile("xs = [(1 << 4000)." + view + " for _ in range(2000)]\nreturn len(xs)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("xs = [(1 << 4000)." + view + " for _ in range(2000)]\nreturn len(xs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);

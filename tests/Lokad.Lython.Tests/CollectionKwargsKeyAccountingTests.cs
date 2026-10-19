@@ -33,7 +33,7 @@ public sealed class CollectionKwargsKeyAccountingTests
     public void CounterKwargsKeysCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var counter = Assert.IsType<PyCounter>(InvokeFactory("Counter", context, span, CallArgumentValue.Keyword("k", new BigInteger(1))));
         var pair = counter.Single();
@@ -48,7 +48,7 @@ public sealed class CollectionKwargsKeyAccountingTests
     public void DefaultDictKwargsKeysCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var dict = Assert.IsType<PyDefaultDict>(InvokeFactory("DefaultDict", context, span, CallArgumentValue.Keyword("k", new BigInteger(1))));
         var key = Assert.IsType<PyString>(dict.Single().Key);
@@ -62,7 +62,7 @@ public sealed class CollectionKwargsKeyAccountingTests
     public void OrderedDictKwargsKeysCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var dict = Assert.IsType<PyDict>(InvokeFactory("OrderedDict", context, span, CallArgumentValue.Keyword("k", new BigInteger(1))));
         Assert.Equal("k", SingleKey(dict, context.MemoryGovernor).AsString());

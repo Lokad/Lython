@@ -35,7 +35,7 @@ return "|".join([
     [Fact]
     public void PercentFormatting_CoversTupleMappingFlagsWidthsAndConversions()
     {
-        var result = new LythonEngine().Run(CompatibilitySource, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(CompatibilitySource, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(Expected, result.ReturnValue);
@@ -44,7 +44,7 @@ return "|".join([
     [Fact]
     public async Task RunAsync_PercentFormattingUsesTheSameRuntimeCore()
     {
-        var result = await new LythonEngine().RunAsync(CompatibilitySource, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(CompatibilitySource, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(Expected, result.ReturnValue);
@@ -53,7 +53,7 @@ return "|".join([
     [Fact]
     public void OperatorMod_UsesStringFormattingAndKeepsNumericModulo()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import operator
 return operator.mod("%03d", 7) + "|" + str(operator.mod(-7, 3))
@@ -86,7 +86,7 @@ def apply_percent(template, value):
 return apply_percent({{ToPythonLiteral(format)}}, {{argumentExpression}})
 """;
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -97,7 +97,7 @@ return apply_percent({{ToPythonLiteral(format)}}, {{argumentExpression}})
     [Fact]
     public void PercentFormatOutput_ObservesExecutionMemoryBudget()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "return \"%1000000s\" % \"x\"\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) });
@@ -110,7 +110,7 @@ return apply_percent({{ToPythonLiteral(format)}}, {{argumentExpression}})
     [Fact]
     public void StaticContractsAcceptPlausibleFormatsAndRejectProvableInvalidLiterals()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 text = "%s:%04d" % ("x", 7)
 mapped = "%(name)s" % {"name": "x"}
@@ -119,7 +119,7 @@ dynamic = "%s" % object()
 
         Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Message)));
 
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 plain = "plain" % 1
 too_many = "%s" % (1, 2)

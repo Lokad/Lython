@@ -43,7 +43,7 @@ public sealed class JsonTrailingDataTests
         var message = $"Extra data: line {line} column {column} (char {position})";
         var expected = $"Extra data\n{message}\n('{message}',)\n{position} {line} {column} True\n{rawEnd}\n";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var entry in new[] { "loads", "decode", "load" })
@@ -91,7 +91,7 @@ public sealed class JsonTrailingDataTests
             """;
         var summary = $"{message}: line {line} column {column} (char {position})";
         var expected = $"{message}\n{summary}\n('{summary}',)\n{position} {line} {column} True\n";
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?>
             { ["source"] = document, ["index"] = index } };

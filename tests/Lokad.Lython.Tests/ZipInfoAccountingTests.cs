@@ -26,7 +26,7 @@ public sealed class ZipInfoAccountingTests
     public void FactoryDefaultsCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = InvokeZipInfo(context, span, []);
         // Shell (128) plus the NoName filename (128 + 6) plus the default

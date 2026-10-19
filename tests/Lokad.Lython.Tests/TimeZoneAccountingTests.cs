@@ -31,7 +31,7 @@ public sealed class TimeZoneAccountingTests
     public void GmtimeSharesZoneLabel()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var first = ZoneOf(InvokeTimeFunction("Gmtime", context, span));
         var second = ZoneOf(InvokeTimeFunction("Gmtime", context, span));
@@ -43,7 +43,7 @@ public sealed class TimeZoneAccountingTests
     public void LocaltimeOwnsZoneLabel()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var zone = ZoneOf(InvokeTimeFunction("Localtime", context, span));
@@ -59,7 +59,7 @@ public sealed class TimeZoneAccountingTests
     public void StrptimeOwnsZoneLabel()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var zone = ZoneOf(InvokeTimeFunction(
@@ -80,7 +80,7 @@ public sealed class TimeZoneAccountingTests
     public void TznameMembersAreOwned()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var moduleType = typeof(LythonRuntime).GetNestedType("TimeModule", BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("TimeModule not found.");

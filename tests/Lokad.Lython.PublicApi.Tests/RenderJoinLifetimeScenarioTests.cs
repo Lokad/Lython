@@ -44,7 +44,7 @@ public class RenderJoinLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task MultiArgExceptionRendersBehave()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "e = ValueError(1, 2)\nreturn [str(e), repr(e)]\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { "(1, 2)", "ValueError(1, 2)" };
@@ -59,7 +59,7 @@ public class RenderJoinLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedReprDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(repr([1, 2]))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);
@@ -96,7 +96,7 @@ public class RenderJoinLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedFStringDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(f\"v{i}\")\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);

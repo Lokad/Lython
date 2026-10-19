@@ -10,7 +10,7 @@ public sealed class DrainReservationTests
 {
     private static LythonRuntime.ExecutionContext NewContext(long? budget, out MemoryGovernor governor)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) },regexProvider:Utf8RegexProvider.Instance);
         governor = context.MemoryGovernor;
         return context;
     }

@@ -23,7 +23,7 @@ public sealed class FancyTagScratchAccountingScenarioTests
     [Fact]
     public async Task FancyTagScratchStaysCharged()
     {
-        var script = new LythonEngine().Compile(BuildFancyTags);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildFancyTags);
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is 201591, so this fits; the per-pair
         // scratch backstop (24 x 4000 UTF-16 units) pushes the post-fix peak over.
@@ -40,7 +40,7 @@ public sealed class FancyTagScratchAccountingScenarioTests
     [Fact]
     public async Task RoomyFancyTagsSucceed()
     {
-        var script = new LythonEngine().Compile(BuildFancyTags);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildFancyTags);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         var expected = new List<object?> { new BigInteger(4), new BigInteger(2002) };
@@ -56,7 +56,7 @@ public sealed class FancyTagScratchAccountingScenarioTests
     [Fact]
     public async Task FancyTagBehaviorStaysCompatible()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import difflib
             d = list(difflib.Differ().compare(["abcde"], ["abcXe"]))

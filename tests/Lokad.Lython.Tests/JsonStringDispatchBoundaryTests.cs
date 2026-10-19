@@ -37,7 +37,7 @@ public sealed class JsonStringDispatchBoundaryTests
     public async Task EveryStringCheckpointPreservesEffectsAndUnwinds(bool asynchronous, bool pairs)
     {
         var source = "import json\nreturn json.loads(source" + (pairs ? ",object_pairs_hook=hook)" : ")");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         string[] fullEffects;
         using (var owner = budget.CreateScope())
@@ -55,7 +55,7 @@ public sealed class JsonStringDispatchBoundaryTests
     private static (Context Context, Hook Hook) Prepare(ILythonMemoryBudget owner, bool pairs)
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner});
+        { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var document = pairs ? "{\"café\":\"a\\n😀\",\"z\":\"end\"}" : "\"a\\n😀\"";
         context.Variables["source"] = PyString.FromString(document, context.MemoryGovernor, null);
         var hook = new Hook();

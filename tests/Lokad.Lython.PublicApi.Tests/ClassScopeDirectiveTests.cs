@@ -260,7 +260,7 @@ public sealed class ClassScopeDirectiveTests
     [InlineData("def f():\n x=0\n def g():\n  global x\n  class C:\n   nonlocal x\n", "LA3205")]
     public void InvalidDeclarationsFailBeforeEffects(string source, string code)
     {
-        var compiled = new LythonEngine().Compile("print('effect')\n" + source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effect')\n" + source);
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == code);
     }
@@ -268,7 +268,7 @@ public sealed class ClassScopeDirectiveTests
     [Fact]
     public async Task ClassDirectivesAwaitHostEffectsAndRetainCells()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             module=0
             def outer():
@@ -372,7 +372,7 @@ public sealed class ClassScopeDirectiveTests
         var source = nonlocal
             ? "def outer():\n x=None\n class C:\n  nonlocal x\n  x='a'*1000000\n outer_result=x\nouter()\n"
             : "class C:\n global x\n x='a'*1000000\n";
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
@@ -385,7 +385,7 @@ public sealed class ClassScopeDirectiveTests
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

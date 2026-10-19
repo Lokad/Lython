@@ -15,7 +15,7 @@ public sealed class DateTimeValueResultTests
     private static LythonRuntime.ExecutionContext NewContext(out LythonSourceSpan span)
     {
         span = new LythonSourceSpan(0, 0, 0, 0);
-        return new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        return new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
     }
 
     [Fact]

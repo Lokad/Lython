@@ -23,7 +23,7 @@ public sealed class CopyOwnerCleanupTests
             "class Bomb:\n def __deepcopy__(self, memo):\n  raise ValueError('stop')\nsource = " + expression +
             "\nfor i in range(1500):\n try:\n  copy.deepcopy(source)\n except ValueError:\n  pass\nreturn i + 1\n";
         var budget = new LythonMemoryBudget(262144);
-        using var script = new LythonEngine().Compile(source.Replace("1500", "16"), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source.Replace("1500", "16"), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var baseline = budget.ReservedBytes;
         for (var batch = 0; batch < 8; batch++)

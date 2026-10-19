@@ -92,7 +92,7 @@ public sealed class WrapperConstructionTests
     [Fact]
     public void RepeatedCaughtInvalidFactoriesKeepTheirBoundedBudget()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             def build(ctor):
                 try:
@@ -121,7 +121,7 @@ public sealed class WrapperConstructionTests
             "\n except (TypeError, ValueError):\n  return True\n return False\n" +
             "for i in range(16):\n assert build(collections." + (counter ? "Counter" : "defaultdict") + ")\nreturn i + 1\n";
         var budget = new LythonMemoryBudget(512000);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         for (var batch = 0; batch < 8; batch++)
@@ -139,7 +139,7 @@ public sealed class WrapperConstructionTests
     public void DefaultDictionaryCopyBatchesKeepTheirBoundedBudget()
     {
         var budget = new LythonMemoryBudget(512000);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict
             original = defaultdict(None, [(1, None)])
             for i in range(16):

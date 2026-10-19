@@ -17,7 +17,7 @@ public sealed class StringPredicateCallTests(ITestOutputHelper output)
         {
             var budget = new LythonMemoryBudget(4 * 1024 * 1024);
             using var owner = budget.CreateScope();
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             context.Variables["values"] = new PyList(Enumerable.Range(0, 128).Select(index =>
                 PyString.FromString("word" + new string((char)('a' + index % 26), 3), context.MemoryGovernor, null)), context.MemoryGovernor);
             var before = GC.GetAllocatedBytesForCurrentThread();
@@ -45,7 +45,7 @@ public sealed class StringPredicateCallTests(ITestOutputHelper output)
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, CancellationToken = cancellation.Token });
+            { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var text = PyString.FromString("λambda", context.MemoryGovernor, null);
         var receiver = new Receiver(text);
         context.Variables["receive"] = receiver;
@@ -85,7 +85,7 @@ public sealed class StringPredicateCallTests(ITestOutputHelper output)
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     private static void Unwound(Context context)
     {

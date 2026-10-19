@@ -81,7 +81,7 @@ if (snippets.Length == 0)
     return 2;
 }
 
-var engine = new LythonEngine();
+var engine = new LythonEngine(Utf8RegexProvider.Instance);
 var host = new PureProbeHost();
 var exitCode = 0;
 

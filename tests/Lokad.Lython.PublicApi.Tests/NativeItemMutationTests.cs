@@ -39,7 +39,7 @@ public sealed class NativeItemMutationTests
     public async Task NativeMutationUsesTypeIndexBeforeItsBounds(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -82,7 +82,7 @@ public sealed class NativeItemMutationTests
             + (delete ? "del values[key]\n" : "values[key]=7\n")
             + "with open('result.txt','w') as output: output.write(str(list(values)))";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

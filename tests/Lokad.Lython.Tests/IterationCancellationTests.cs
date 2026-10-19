@@ -19,7 +19,7 @@ public sealed class IterationCancellationTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
         {
             CancellationToken = cancellation.Token,
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var source = new CancellingIterable(cancellation);
 
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>

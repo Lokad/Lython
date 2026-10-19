@@ -10,7 +10,7 @@ public sealed class ZipCompatibilityTests
     public void ZipRunsAgainstTheReferencedProductionAssembly()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -27,7 +27,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void PublicReadSurfaceListsAndReadsFixtures()
     {
         var host = SeedFixture("zip-stored");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -47,7 +47,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void PublicDuplicatesKeepOrderLastWins()
     {
         var host = SeedFixture("zip-duplicates");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -64,7 +64,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void PublicCorruptMembersFailExplicitly()
     {
         var host = SeedFixture("zip-corrupt-crc");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 out = []
@@ -84,7 +84,7 @@ return out
     public void PublicWriteRoundTrip()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w", compression=zipfile.ZIP_DEFLATED) as archive:
@@ -102,7 +102,7 @@ with zipfile.ZipFile("/out.zip") as archive:
         Assert.Equal(new byte[] { 104, 101, 108, 108, 111 }, Assert.IsType<byte[]>(values[1]));
         Assert.Equal(Encoding.UTF8.GetBytes("caf\u00e9"), Assert.IsType<byte[]>(values[2]));
         Assert.Equal(new byte[] { (byte)'c', (byte)'m', (byte)'t' }, Assert.IsType<byte[]>(values[3]));
-        var abandoned = new LythonEngine().Run(
+        var abandoned = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 archive = zipfile.ZipFile("/abandoned.zip", "w")
@@ -118,7 +118,7 @@ return 1
     public void PublicWriterBasics()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w", compression=zipfile.ZIP_DEFLATED) as archive:
@@ -145,7 +145,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     {
         var host = new ZipPublicHost();
         host.SeedBytes("/seed.bin", new byte[] { 1, 2, 3 });
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 events = []
@@ -184,7 +184,7 @@ return events
         var printed = host.StandardOutputText;
         Assert.Contains("docs/", printed);
         Assert.DoesNotContain("a.txt", printed);
-        var reread = new LythonEngine().Run(
+        var reread = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip") as archive:
@@ -201,7 +201,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void PublicAppendPreservesAcrossRuns()
     {
         var host = new ZipPublicHost();
-        var first = new LythonEngine().Run(
+        var first = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/a.zip", "w") as archive:
@@ -210,7 +210,7 @@ return 1
 """,
             host);
         Assert.True(first.Success, first.Failure?.Message);
-        var second = new LythonEngine().Run(
+        var second = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/a.zip", "a") as archive:
@@ -224,7 +224,7 @@ return 1
         {
             Assert.Equal(new[] { "old.txt", "new.txt", "docs/" }, appended.Entries.Select(e => e.FullName).ToArray());
         }
-        var third = new LythonEngine().Run(
+        var third = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/a.zip") as archive:
@@ -242,7 +242,7 @@ with zipfile.ZipFile("/a.zip") as archive:
     public void PublicExtractBuildsContainedTree()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "w") as archive:
@@ -280,7 +280,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void PublicExtractSymlinkDenied()
     {
         var host = new ZipPublicHost();
-        var written = new LythonEngine().Run(
+        var written = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "w") as archive:
@@ -293,7 +293,7 @@ return 1
 """,
             host);
         Assert.True(written.Success, written.Failure?.Message);
-        var denied = new LythonEngine().Run(
+        var denied = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -303,7 +303,7 @@ with zipfile.ZipFile("/t.zip") as archive:
         Assert.False(denied.Success);
         Assert.Equal("NotImplementedError", denied.Failure?.ExceptionType);
         Assert.False(host.Exists("/out/link"));
-        var allowed = new LythonEngine().Run(
+        var allowed = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -319,7 +319,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void PublicLifecycleRecoversAndCommits()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 archive = zipfile.ZipFile("/out.zip", "w")
@@ -346,7 +346,7 @@ with zipfile.ZipFile("/out.zip") as check:
     public void PublicBodyErrorStillCommits()
     {
         var host = new ZipPublicHost();
-        var failed = new LythonEngine().Run(
+        var failed = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -357,7 +357,7 @@ with zipfile.ZipFile("/out.zip", "w") as archive:
             host);
         Assert.False(failed.Success);
         Assert.Equal("ValueError", failed.Failure?.ExceptionType);
-        var reread = new LythonEngine().Run(
+        var reread = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip") as archive:
@@ -368,7 +368,7 @@ with zipfile.ZipFile("/out.zip") as archive:
         var values = Assert.IsType<List<object?>>(reread.ReturnValue);
         Assert.Equal(Encoding.UTF8.GetBytes("committed?"), Assert.IsType<byte[]>(values[0]));
         Assert.Equal(true, values[1]);
-        var archived = new LythonEngine().Run(
+        var archived = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out2.zip", "w") as archive:
@@ -378,7 +378,7 @@ with zipfile.ZipFile("/out2.zip", "w") as archive:
             host);
         Assert.False(archived.Success);
         Assert.Equal("ValueError", archived.Failure?.ExceptionType);
-        var rereadArchived = new LythonEngine().Run(
+        var rereadArchived = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out2.zip") as archive:
@@ -395,7 +395,7 @@ with zipfile.ZipFile("/out2.zip") as archive:
         var host = new ZipPublicHost();
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -415,7 +415,7 @@ return 1
     [Fact]
     public async Task PublicSyncAsyncParity()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -437,7 +437,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     {
         var host = SeedFixture("zip-stored");
         host.FailWriteBytes("/out/hello.txt", "disk full");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -464,8 +464,8 @@ with zipfile.ZipFile("/t.zip") as archive:
             """;
         var firstHost = new ZipPublicHost();
         var secondHost = new ZipPublicHost();
-        var first = new LythonEngine().Run(script, firstHost);
-        var second = new LythonEngine().Run(script, secondHost);
+        var first = new LythonEngine(Utf8RegexProvider.Instance).Run(script, firstHost);
+        var second = new LythonEngine(Utf8RegexProvider.Instance).Run(script, secondHost);
         Assert.True(first.Success, first.Failure?.Message);
         Assert.True(second.Success, second.Failure?.Message);
         Assert.Equal(firstHost.ReadBytes("/a.zip"), secondHost.ReadBytes("/a.zip"));
@@ -489,11 +489,11 @@ with zipfile.ZipFile("/t.zip") as archive:
         };
         foreach (var (expression, typeName) in cases)
         {
-            var setup = new LythonEngine().Run(
+            var setup = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "import zipfile\nwith zipfile.ZipFile(\"/t.zip\", \"w\") as archive:\n    archive.writestr(\"a.txt\", b\"A\")\n",
                 host);
             Assert.True(setup.Success, setup.Failure?.Message);
-            var result = new LythonEngine().Run("import zipfile\nzipfile." + expression + "\n", host);
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run("import zipfile\nzipfile." + expression + "\n", host);
             Assert.False(result.Success, expression);
             Assert.Equal(typeName, result.Failure?.ExceptionType);
         }
@@ -503,7 +503,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void PublicForceZip64AndComment()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -523,7 +523,7 @@ return 1
         Assert.Equal(20, raw[4]);
         Assert.Equal(45, raw[44]);
         Assert.Contains("f.bin", host.StandardOutputText, StringComparison.Ordinal);
-        var second = new LythonEngine().Run(
+        var second = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -533,7 +533,7 @@ return 1
 """,
             host);
         Assert.True(second.Success, second.Failure?.Message);
-        var denied = new LythonEngine().Run(
+        var denied = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/z.zip", "w", allowZip64=False) as archive:
@@ -549,7 +549,7 @@ with zipfile.ZipFile("/z.zip", "w", allowZip64=False) as archive:
     public void PublicBclReadsGeneratedArchives()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w", compression=zipfile.ZIP_DEFLATED) as archive:
@@ -688,7 +688,7 @@ return 1
         var host = new ZipPublicHost();
         host.LocalNow = new DateTimeOffset(2024, 5, 6, 7, 8, 10, TimeSpan.FromHours(2));
         var stamp = "2024-05-06 07:08:10";
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -722,7 +722,7 @@ with zipfile.ZipFile("/out.zip", "w") as archive:
     public void WriterRejectsNonBytesAndClosedUse()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 checks = []
@@ -769,7 +769,7 @@ return checks
     public void WriterWritelinesKeepsPartialItems()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -795,7 +795,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void WriterEmptyMemberAndDirectory()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -821,7 +821,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     {
         // R18: CPython exposes supplied booleans as bools instead of rewriting
         // them to integers; the values still encode like 0/1 on write.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             info = zipfile.ZipInfo("b.bin", date_time=(1980, 1, 1, True, False, 0))
@@ -861,7 +861,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void ZipInfoWriterInputsAreHonored()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 results = []
@@ -904,7 +904,7 @@ return results
     public async Task WriterSurfaceWorksAsync()
     {
         var host = new ZipPublicHost();
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -923,7 +923,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void DuplicatesAndSuppliedInfoSurvive()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -957,7 +957,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void AppendMissingCreatesEmptyAppendSkipsPublish()
     {
         var created = new ZipPublicHost();
-        var missing = new LythonEngine().Run(
+        var missing = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/n.zip", "a") as archive:
@@ -971,7 +971,7 @@ with zipfile.ZipFile("/n.zip") as archive:
 
         var host = SeedFixture("zip-stored");
         var before = host.ReadBytes("/t.zip");
-        var untouched = new LythonEngine().Run(
+        var untouched = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "a") as archive:
@@ -984,7 +984,7 @@ return 1
 
         var guarded = SeedFixture("zip-stored");
         guarded.FailNextWriteBytes("/t.zip", "must not publish an unmodified append");
-        var skipped = new LythonEngine().Run(
+        var skipped = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "a"):
@@ -999,7 +999,7 @@ return 1
     public void AppendCommentPreservedUnlessReassigned()
     {
         var host = SeedFixture("zip-comments");
-        var preserved = new LythonEngine().Run(
+        var preserved = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "a") as archive:
@@ -1013,7 +1013,7 @@ with zipfile.ZipFile("/t.zip") as archive:
             HexToBytes("61726368697665205a3020c3a920ff20726177"),
             Assert.IsType<byte[]>(preserved.ReturnValue));
 
-        var replaced = new LythonEngine().Run(
+        var replaced = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "a") as archive:
@@ -1030,7 +1030,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void AppendDuplicatesAcrossBoundary()
     {
         var host = SeedFixture("zip-duplicates");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "a") as archive:
@@ -1053,7 +1053,7 @@ with zipfile.ZipFile("/t.zip") as archive:
         host.SeedBytes("/t.zip", BuildRawArchive(
             (Encoding.ASCII.GetBytes("plain.txt"), (ushort)0, (ushort)0, Encoding.ASCII.GetBytes("plain")),
             (Encoding.ASCII.GetBytes("enc.txt"), (ushort)1, (ushort)0, Encoding.ASCII.GetBytes("secret"))));
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 out = []
@@ -1082,7 +1082,7 @@ return out
     public void AppendZip64Source()
     {
         var host = SeedFixture("zip-zip64");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "a") as archive:
@@ -1103,7 +1103,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void ExtractMembersSubset()
     {
         var host = SeedFixture("zip-stored");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 out = []
@@ -1133,7 +1133,7 @@ return out
     public void ExtractFileDirectoryConflictsFail()
     {
         var host = new ZipPublicHost();
-        var written = new LythonEngine().Run(
+        var written = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "w") as archive:
@@ -1144,7 +1144,7 @@ return 1
 """,
             host);
         Assert.True(written.Success, written.Failure?.Message);
-        var conflict = new LythonEngine().Run(
+        var conflict = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1158,7 +1158,7 @@ with zipfile.ZipFile("/t.zip") as archive:
 
         var blocked = new ZipPublicHost();
         blocked.SeedBytes("/out/d2", new byte[] { 1 });
-        var setup = new LythonEngine().Run(
+        var setup = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "w") as archive:
@@ -1167,7 +1167,7 @@ return 1
 """,
             blocked);
         Assert.True(setup.Success, setup.Failure?.Message);
-        var dirConflict = new LythonEngine().Run(
+        var dirConflict = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1183,7 +1183,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     {
         var host = SeedFixture("zip-duplicates");
         host.SeedBytes("/out/dup.txt", Encoding.ASCII.GetBytes("OLD"));
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1201,7 +1201,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public async Task ExtractSurfaceWorksAsync()
     {
         var host = SeedFixture("zip-deflated");
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1219,7 +1219,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void ExtractModeGuards()
     {
         var wrote = new ZipPublicHost();
-        var setup = new LythonEngine().Run(
+        var setup = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "w") as archive:
@@ -1230,7 +1230,7 @@ return 1
         Assert.True(setup.Success, setup.Failure?.Message);
         foreach (var mode in new[] { "w", "a" })
         {
-            var denied = new LythonEngine().Run(
+            var denied = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "import zipfile\nwith zipfile.ZipFile(\"/t.zip\", \"" + mode + "\") as archive:\n    archive.extract(\"a.txt\", \"/out\")\n",
                 wrote);
             Assert.False(denied.Success);
@@ -1243,7 +1243,7 @@ return 1
     public void AppendModeGuards()
     {
         var host = SeedFixture("zip-stored");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 checks = []
@@ -1293,7 +1293,7 @@ return checks
     public async Task AppendSurfaceWorksAsync()
     {
         var host = SeedFixture("zip-deflated");
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "a") as archive:
@@ -1313,7 +1313,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     {
         var garbage = new ZipPublicHost();
         garbage.SeedBytes("/t.zip", Encoding.ASCII.GetBytes("this is not a zip file"));
-        var denied = new LythonEngine().Run(
+        var denied = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import zipfile\nzipfile.ZipFile(\"/t.zip\", \"a\")\n",
             garbage);
         Assert.False(denied.Success);
@@ -1322,14 +1322,14 @@ with zipfile.ZipFile("/t.zip") as archive:
         var truncated = new ZipPublicHost();
         var full = File.ReadAllBytes(Path.Combine(FindCasesRoot(), "zip-stored", "input.zip"));
         truncated.SeedBytes("/t.zip", full[..Math.Min(40, full.Length)]);
-        var shortDenied = new LythonEngine().Run(
+        var shortDenied = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import zipfile\nzipfile.ZipFile(\"/t.zip\", \"a\")\n",
             truncated);
         Assert.False(shortDenied.Success);
         Assert.Equal("BadZipFile", shortDenied.Failure?.ExceptionType);
 
         var rooted = new ZipPublicHost();
-        var directory = new LythonEngine().Run(
+        var directory = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import zipfile\nzipfile.ZipFile(\"/\", \"a\")\n",
             rooted);
         Assert.False(directory.Success);
@@ -1341,7 +1341,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     {
         var host = new ZipPublicHost();
         host.LocalNow = new DateTimeOffset(2024, 5, 6, 7, 8, 57, TimeSpan.FromHours(2));
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -1363,7 +1363,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void CompressionOptionsHonored()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w", compression=zipfile.ZIP_DEFLATED) as archive:
@@ -1400,7 +1400,7 @@ with zipfile.ZipFile("/out.zip") as archive:
         })
         {
             var host = new ZipPublicHost();
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "import zipfile\nwith zipfile.ZipFile(\"/out.zip\", \"w\") as archive:\n    archive." + expression + "\n",
                 host);
             Assert.False(result.Success);
@@ -1413,7 +1413,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void FailedWritestrStagesNothing()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -1435,7 +1435,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     {
         var host = new ZipPublicHost();
         host.FailWriteBytes("/out.zip", "disk is full");
-        var failed = new LythonEngine().Run(
+        var failed = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -1453,7 +1453,7 @@ with zipfile.ZipFile("/out.zip", "w") as archive:
         Assert.Equal("RuntimeError", failed.Failure?.ExceptionType);
         Assert.False(host.Exists("/out.zip"));
         host.ClearWriteBytesFailures();
-        var recovered = new LythonEngine().Run(
+        var recovered = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -1472,7 +1472,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void HugeDeclaredSizesRequireZip64Explicitly()
     {
         var host = new ZipPublicHost();
-        var denied = new LythonEngine().Run(
+        var denied = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w", allowZip64=False) as archive:
@@ -1483,7 +1483,7 @@ with zipfile.ZipFile("/out.zip", "w", allowZip64=False) as archive:
             host);
         Assert.False(denied.Success);
         Assert.Equal("LargeZipFile", denied.Failure?.ExceptionType);
-        var reopened = new LythonEngine().Run(
+        var reopened = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import zipfile\nwith zipfile.ZipFile(\"/out.zip\") as archive:\n    return archive.namelist()\n",
             host);
         Assert.True(reopened.Success, reopened.Failure?.Message);
@@ -1494,7 +1494,7 @@ with zipfile.ZipFile("/out.zip", "w", allowZip64=False) as archive:
     public void PrintdirReadsDirectoryListings()
     {
         var host = SeedFixture("zip-stored");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1530,7 +1530,7 @@ with zipfile.ZipFile("/t.zip") as archive:
         };
         foreach (var (expression, message) in cases)
         {
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    archive.extract(" + expression + ", \"/out\")\n",
                 host);
             Assert.False(result.Success, expression);
@@ -1543,13 +1543,13 @@ with zipfile.ZipFile("/t.zip") as archive:
     [Fact]
     public void ExclusiveCreationIsRejected()
     {
-        var missing = new LythonEngine().Run(
+        var missing = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import zipfile\nzipfile.ZipFile(\"/n.zip\", \"x\")\n",
             new ZipPublicHost());
         Assert.False(missing.Success);
         Assert.Equal("NotImplementedError", missing.Failure?.ExceptionType);
 
-        var existing = new LythonEngine().Run(
+        var existing = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import zipfile\nzipfile.ZipFile(\"/t.zip\", \"x\")\n",
             SeedFixture("zip-stored"));
         Assert.False(existing.Success);
@@ -1560,7 +1560,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void IndependentBclReaderConsumesWrittenArchives()
     {
         var host = new ZipPublicHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w", compression=zipfile.ZIP_DEFLATED) as archive:
@@ -1588,7 +1588,7 @@ return 1
     {
         var host = new ZipPublicHost();
         host.SeedBytes("/src.txt", Encoding.UTF8.GetBytes("host data"));
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w", strict_timestamps=False) as archive:
@@ -1619,7 +1619,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     {
         var host = new ZipPublicHost();
         host.SeedBytes("/src.txt", Encoding.UTF8.GetBytes("host data"));
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -1633,7 +1633,7 @@ with zipfile.ZipFile("/out.zip", "w") as archive:
     [Fact]
     public void OpenListsOrderedNames()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1649,7 +1649,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     [Fact]
     public void DuplicatesKeepOrderLastWinsExplicitInfoSelectsEarly()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1671,7 +1671,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     [Fact]
     public void GetinfoExposesEntryMetadata()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1706,7 +1706,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     [Fact]
     public void ReadDeflatedAndEmptyMembers()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1726,7 +1726,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     {
         foreach (var expression in new[] { "getinfo(\"missing\")", "read(\"missing\")" })
         {
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    archive." + expression + "\n",
                 SeedFixture("zip-stored"));
             Assert.False(result.Success);
@@ -1738,7 +1738,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     [Fact]
     public void PasswordsAreIgnoredForPlainMembers()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1764,7 +1764,7 @@ with zipfile.ZipFile("/t.zip") as archive:
             ("read(\"enc.txt\", pwd=\"x\")", "TypeError", "pwd: expected bytes"),
         })
         {
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    archive." + expression + "\n",
                 host);
             Assert.False(result.Success);
@@ -1780,7 +1780,7 @@ with zipfile.ZipFile("/t.zip") as archive:
         host.SeedBytes("/t.zip", BuildRawArchive((Encoding.ASCII.GetBytes("m99.txt"), (ushort)0, (ushort)99, Encoding.ASCII.GetBytes("data"))));
         foreach (var expression in new[] { "read(\"m99.txt\")", "testzip()" })
         {
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    archive." + expression + "\n",
                 host);
             Assert.False(result.Success);
@@ -1792,7 +1792,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     [Fact]
     public void CorruptChecksumReadFailsTestzipNames()
     {
-        var read = new LythonEngine().Run(
+        var read = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1804,7 +1804,7 @@ with zipfile.ZipFile("/t.zip") as archive:
         Assert.Contains("Bad CRC-32", read.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
 
         var host = SeedFixture("zip-corrupt-crc");
-        var tested = new LythonEngine().Run(
+        var tested = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1820,7 +1820,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     {
         foreach (var caseId in new[] { "zip-corrupt-central", "zip-truncated" })
         {
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1836,7 +1836,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void CloseLifecycleIsExplicit()
     {
         var host = SeedFixture("zip-deflated");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 archive = zipfile.ZipFile("/t.zip")
@@ -1862,7 +1862,7 @@ return [names, after, archive.namelist()]
     {
         var host = SeedFixture("zip-stored");
         host.SeedBytes("/note.txt", Encoding.UTF8.GetBytes("plain text"));
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 return [zipfile.is_zipfile("/t.zip"), zipfile.is_zipfile("/missing.zip"),
@@ -1875,7 +1875,7 @@ return [zipfile.is_zipfile("/t.zip"), zipfile.is_zipfile("/missing.zip"),
             Assert.IsType<List<object?>>(result.ReturnValue));
         foreach (var probe in new[] { "123", "None" })
         {
-            var denied = new LythonEngine().Run(
+            var denied = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "import zipfile\nreturn zipfile.is_zipfile(" + probe + ")\n",
                 host);
             Assert.False(denied.Success, probe);
@@ -1898,7 +1898,7 @@ return [zipfile.is_zipfile("/t.zip"), zipfile.is_zipfile("/missing.zip"),
         };
         foreach (var (expression, typeName, message) in cases)
         {
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    archive." + expression + "\n",
                 host);
             Assert.False(result.Success);
@@ -1906,7 +1906,7 @@ return [zipfile.is_zipfile("/t.zip"), zipfile.is_zipfile("/missing.zip"),
             Assert.Contains(message, result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
         }
 
-        var early = new LythonEngine().Run(
+        var early = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1922,7 +1922,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void MemberOpenEnforcesIntegrityUpFront()
     {
         var host = SeedFixture("zip-corrupt-crc");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1936,7 +1936,7 @@ with zipfile.ZipFile("/t.zip") as archive:
 
         var encrypted = new ZipPublicHost();
         encrypted.SeedBytes("/t.zip", BuildRawArchive((Encoding.ASCII.GetBytes("enc.txt"), (ushort)1, (ushort)0, Encoding.ASCII.GetBytes("secret"))));
-        var denied = new LythonEngine().Run(
+        var denied = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1952,7 +1952,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void MemberSeekIsUnsupported()
     {
         var host = SeedFixture("zip-stored");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1972,7 +1972,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public async Task MemberReadsWorkAsync()
     {
         var host = SeedFixture("zip-deflated");
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -1992,7 +1992,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public async Task ReadSurfaceWorksAsync()
     {
         var host = SeedFixture("zip-deflated");
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -2013,7 +2013,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public async Task CorruptTestzipWorksAsync()
     {
         var host = SeedFixture("zip-corrupt-crc");
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -2027,7 +2027,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     [Fact]
     public void ZipInfoMemberSurface_BehavesLikePython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 texts = []
@@ -2089,7 +2089,7 @@ return texts
     [Fact]
     public void ZipInfoSlotDeletes_BehaveLikePython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 texts = []
@@ -2159,7 +2159,7 @@ return texts
     [Fact]
     public void ZipInfoDefaultsAndErrorAlias()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 from zipfile import error, BadZipfile
@@ -2186,7 +2186,7 @@ return [info.filename, info.date_time, info.compress_type, info.file_size,
     public void MetadataEncodingUtf8DecodesUnflaggedNames()
     {
         var host = SeedFixture("zip-cp437-names");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", metadata_encoding="cp437") as archive:
@@ -2201,7 +2201,7 @@ return names
     [Fact]
     public void MemberReadsAreSequential()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -2239,7 +2239,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     {
         var host = new ZipPublicHost();
         host.SeedBytes("/t.zip", BuildRawArchive((Encoding.ASCII.GetBytes("lines.txt"), (ushort)0, (ushort)0, Encoding.ASCII.GetBytes("l1\nl2\r\nl3\n"))));
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -2266,7 +2266,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void MemberSurvivesParentCloseWithinOwnedBudget()
     {
         var host = SeedFixture("zip-deflated");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 archive = zipfile.ZipFile("/t.zip")
@@ -2288,7 +2288,7 @@ return [len(data), data[:4], is_closed, handle.closed]
     public void MemberCloseLifecycleIsExplicit()
     {
         var host = SeedFixture("zip-stored");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -2315,7 +2315,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     [Fact]
     public void NamesTimestampsAndDirectoriesMatchManifests()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 out = []
@@ -2352,7 +2352,7 @@ return out
     [Fact]
     public void SmallZip64ReadsUnderDefaultPolicy()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", allowZip64=False) as archive:
@@ -2368,7 +2368,7 @@ with zipfile.ZipFile("/t.zip", allowZip64=False) as archive:
     [Fact]
     public void ArchiveAttributesExposeMetadata()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip") as archive:
@@ -2398,7 +2398,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public async Task WriteSurfaceWorksAsync()
     {
         var host = new ZipPublicHost();
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -2417,7 +2417,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void AppendPreservesAndExtends()
     {
         var host = SeedFixture("zip-stored");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "a") as archive:
@@ -2445,7 +2445,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     {
         foreach (var member in new[] { "PyZipFile", "ZipExtFile", "Path" })
         {
-            var compiled = new LythonEngine().Compile("import zipfile\nvalue = zipfile." + member + "\n");
+            var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("import zipfile\nvalue = zipfile." + member + "\n");
             Assert.False(compiled.IsValid);
             Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3113");
         }
@@ -2454,7 +2454,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     [Fact]
     public void ZipImportStaysUnavailable()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import zipimport\n",
             new ZipPublicHost());
         Assert.False(result.Success);
@@ -2465,7 +2465,7 @@ with zipfile.ZipFile("/t.zip") as archive:
     public void PathlikeArgumentsWork()
     {
         var host = SeedFixture("zip-stored");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 from pathlib import Path
@@ -2488,13 +2488,13 @@ return [names, zipfile.is_zipfile(Path("/t.zip")), zipfile.is_zipfile(Path("/mis
     {
         var host = new NoBinaryZipHost();
         host.SeedText("/seed.txt", "text");
-        var read = new LythonEngine().Run(
+        var read = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import zipfile\nwith zipfile.ZipFile(\"/seed.txt\") as archive:\n    return archive.namelist()\n",
             host);
         Assert.False(read.Success);
         Assert.Equal("RuntimeError", read.Failure?.ExceptionType);
         Assert.Contains("binary file I/O", read.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
-        var write = new LythonEngine().Run(
+        var write = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -2504,7 +2504,7 @@ return 1
             host);
         Assert.False(write.Success);
         Assert.Equal("RuntimeError", write.Failure?.ExceptionType);
-        var pure = new LythonEngine().Run(
+        var pure = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 info = zipfile.ZipInfo("a.txt")
@@ -2518,7 +2518,7 @@ return [info.filename, zipfile.ZIP_STORED, zipfile.is_zipfile("/missing.txt")]
     public void AppendOverlappingEntriesFails()
     {
         var host = new ZipPublicHost();
-        var written = new LythonEngine().Run(
+        var written = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/o.zip", "w") as archive:
@@ -2539,7 +2539,7 @@ return 1
         WriteUInt16(duplicated, movedEnd + 10, (ushort)(eocd.EntryCount + 1));
         WriteUInt32(duplicated, movedEnd + 12, (uint)(eocd.DirectorySize + first.Length));
         host.SeedBytes("/d.zip", duplicated);
-        var readable = new LythonEngine().Run(
+        var readable = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/d.zip") as archive:
@@ -2547,7 +2547,7 @@ with zipfile.ZipFile("/d.zip") as archive:
 """,
             host);
         Assert.True(readable.Success, readable.Failure?.Message);
-        var denied = new LythonEngine().Run(
+        var denied = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/d.zip", "a") as archive:

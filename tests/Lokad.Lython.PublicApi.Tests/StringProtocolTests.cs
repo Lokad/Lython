@@ -31,7 +31,7 @@ public sealed class StringProtocolTests
     public async Task ConversionsUseTypeSlotsAndPreservePythonErrors(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name + ": " + string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -82,7 +82,7 @@ print(CONVERT(Value()))
     public async Task RootConversionAwaitsProtocolAndDescriptorIo(string slot, string conversion, bool descriptor)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(IoSource(slot, conversion, descriptor), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(IoSource(slot, conversion, descriptor), budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -117,7 +117,7 @@ print(CONVERT(Value()))
     public async Task CancellationDuringBindingOrCallCannotBecomeDefaultRepr(string slot, string conversion, bool descriptor, string paused)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(IoSource(slot, conversion, descriptor), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(IoSource(slot, conversion, descriptor), budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -177,7 +177,7 @@ class Value:
         var source = "def refuse():\n print('before')\n try:unused=[0]*8192\n except BaseException:pass\n" +
             (descriptor ? binding : method) + "\ntry:print(" + conversion + "(Value()))\nexcept BaseException:print('caught')\nprint('after')";
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) };
@@ -203,7 +203,7 @@ class Value:
     {
         var source = "class Value:\n def " + slot + "(self):\n  with open('call.txt','a') as target:target.write('call')\n  return self.payload\nv=Value()\nv.payload='é'*4096\nreturn " + conversion + "(v)";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var mock = new MockLythonHost();
@@ -241,7 +241,7 @@ class Value:
             ? "entered=False\nclass Descriptor:\n def __get__(self,instance,owner):\n  " + body + "\nclass Value:" + slot + "=Descriptor()\n" + conversion + "(Value())"
             : "entered=False\nclass Value:\n def " + slot + "(self):\n  " + body + "\n" + conversion + "(Value())";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxRecursionDepth = 16 };

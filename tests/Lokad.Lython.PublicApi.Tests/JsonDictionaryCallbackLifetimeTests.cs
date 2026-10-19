@@ -19,7 +19,7 @@ return json.dumps({'value':{1}},default=replacement)
 """;
         var expected = "{\"value\": \"" + new string('a', 4096) + "\"}";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost(); host.SeedFile("/callback.txt", "before");

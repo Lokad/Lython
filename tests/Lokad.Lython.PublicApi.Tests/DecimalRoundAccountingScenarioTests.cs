@@ -11,7 +11,7 @@ public sealed class DecimalRoundAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedRoundedResultsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             a = decimal.Decimal("1.55")
@@ -36,7 +36,7 @@ public sealed class DecimalRoundAccountingScenarioTests
     [Fact]
     public async Task RoundBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             a = decimal.Decimal("1.51")

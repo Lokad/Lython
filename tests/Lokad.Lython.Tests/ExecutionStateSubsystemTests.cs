@@ -66,7 +66,7 @@ public sealed class ExecutionStateSubsystemTests
     [Fact]
     public void ExecutionState_BuiltinInventoryResolvesWithoutModuleBindings()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
 
         Assert.Equal(
             ExecutionState.BuiltinNames.Order(StringComparer.Ordinal),
@@ -81,7 +81,7 @@ public sealed class ExecutionStateSubsystemTests
     {
         var context = new LythonRuntime.ExecutionContext(
             new MockLythonHost("/repo"),
-            new LythonRunOptions { SourcePath = "scripts/tool.py" });
+            new LythonRunOptions { SourcePath = "scripts/tool.py" },regexProvider:Utf8RegexProvider.Instance);
 
         Assert.DoesNotContain("__file__", ExecutionState.BuiltinNames);
         Assert.DoesNotContain("__name__", ExecutionState.BuiltinNames);
@@ -97,11 +97,11 @@ public sealed class ExecutionStateSubsystemTests
     public void ExecutionContext_SourceLessScriptDoesNotExposeFileGlobal()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, options: null);
+        var context = new LythonRuntime.ExecutionContext(host, options: null,regexProvider:Utf8RegexProvider.Instance);
 
         Assert.DoesNotContain("__file__", context.Frame.Variables.Keys);
 
-        var result = new LythonEngine().Run("return __file__", host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return __file__", host);
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);

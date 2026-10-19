@@ -11,7 +11,7 @@ public sealed class JsonEncoderScenarioTests
 {
     private static async Task<object?[]> RunBothModes(string script)
     {
-        var compiled = new LythonEngine().Compile(script);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(script);
         Assert.True(compiled.IsValid);
         var sync = compiled.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -244,7 +244,7 @@ public sealed class JsonEncoderScenarioTests
     public async Task DumpToFileHonorsEncoderClass()
     {
         var host = new MockLythonHost();
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             with open("/out.txt", "w") as handle:
@@ -410,7 +410,7 @@ public sealed class JsonEncoderScenarioTests
     [Fact]
     public async Task StreamedDropSucceedsWhileRetainedDenies()
     {
-        var drop = new LythonEngine().Compile(
+        var drop = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             e = json.JSONEncoder()
@@ -430,7 +430,7 @@ public sealed class JsonEncoderScenarioTests
         Assert.Equal(new BigInteger(128890), dropAsync.ReturnValue);
 
         var denyOptions = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
-        var join = new LythonEngine().Compile(
+        var join = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             return len("".join(json.JSONEncoder().iterencode(list(range(20000)))))
@@ -443,7 +443,7 @@ public sealed class JsonEncoderScenarioTests
         Assert.False(joinAsync.Success);
         Assert.Equal("MemoryError", joinAsync.Failure?.ExceptionType);
 
-        var dumps = new LythonEngine().Compile(
+        var dumps = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             return len(json.dumps(list(range(20000))))
@@ -457,7 +457,7 @@ public sealed class JsonEncoderScenarioTests
     [Fact]
     public async Task DeniedAdvanceFailsTheCommandAndFundedCommandWorks()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             it = json.JSONEncoder().iterencode(["xy" * 1000] * 2000)
@@ -486,7 +486,7 @@ public sealed class JsonEncoderScenarioTests
         Assert.False(deniedAsync.Success);
         Assert.Equal("MemoryError", deniedAsync.Failure?.ExceptionType);
 
-        var funded = new LythonEngine().Compile(
+        var funded = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             return len("".join(json.JSONEncoder().iterencode(["xy" * 1000] * 2000)))

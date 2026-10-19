@@ -13,7 +13,7 @@ public sealed class StringReplaceCallTests
             ? "method=text.replace\ntext='changed'\nreturn method('a','b')"
             : "return text.replace('a','b')");
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
@@ -39,7 +39,7 @@ public sealed class StringReplaceCallTests
             "print('ready')\ntry: value=" + (exposed ? "method('a','b')" : "text.replace('a','b')") +
             "\nexcept MemoryError: print(value,len(text))";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(80 * 1024) };
@@ -63,7 +63,7 @@ public sealed class StringReplaceCallTests
     {
         const string source = "class Text:\n @property\n def replace(self):\n  with open('bind.txt','a') as output: output.write('bind')\n  def convert(old,new):\n   with open('call.txt','a') as output: output.write('call')\n   return 'custom'\n  return convert\nprint(Text().replace('a','b'))";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -129,7 +129,7 @@ public sealed class StringReplaceCallTests
     public async Task ImmediateExposedAndDynamicCallsMatchPython(string label, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, label);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -152,7 +152,7 @@ public sealed class StringReplaceCallTests
     {
         const string source = "text='aa'\ndef old():\n global text\n text='changed'\n with open('argument.txt','a') as output:output.write('old')\n return 'a'\nprint(text.replace(old(),'b'),text)";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

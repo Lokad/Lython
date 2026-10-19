@@ -146,7 +146,7 @@ public sealed class JsonNumberTokenStorageTests
     {
         var text = floating ? (callback ? "1.2300e+04" : "-0.0") : (callback ? "-0" : "9223372036854775808");
         var source = "import json\nreturn json.loads(source" + (callback ? "," + (floating ? "parse_float" : "parse_int") + "=capture)" : ")");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!));
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         string[] effects;
         using (var owner = budget.CreateScope())
@@ -177,7 +177,7 @@ public sealed class JsonNumberTokenStorageTests
     {
         var text = floating ? "1.2300e+04" : "-0";
         var source = "import json\nreturn json.loads(source," + (floating ? "parse_float" : "parse_int") + "=capture)";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!));
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var (context, _) = Boundary(owner, text);
@@ -220,7 +220,7 @@ public sealed class JsonNumberTokenStorageTests
     private static (LythonRuntime.ExecutionContext Context, Capture Capture) Boundary(ILythonMemoryBudget owner, string text)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner});
+        { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         context.Variables["source"] = PyString.FromString(text, context.MemoryGovernor, null);
         var capture = new Capture();
         context.Variables["capture"] = capture;
@@ -250,7 +250,7 @@ public sealed class JsonNumberTokenStorageTests
     }
 
     private static (ExecutableScript, LythonRuntime.ExecutionContext) Prepare(string source, long? limit = null)
-        => (ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)), new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) }));
+        => (ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)), new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) }));
 
     private static ValueTask<object?> Run(ExecutableScript code, LythonRuntime.ExecutionContext context, bool asynchronous)
         => asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)

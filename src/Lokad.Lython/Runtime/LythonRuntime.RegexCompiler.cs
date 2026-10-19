@@ -1,13 +1,12 @@
 using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
-using Lokad.Utf8Regex.PythonRe;
 
 namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static class RegexCompiler
+    internal static class RegexCompiler
     {
         internal const int PythonIgnoreCaseFlag = 2;
         internal const int PythonLocaleFlag = 4;
@@ -18,25 +17,45 @@ internal sealed partial class LythonRuntime
         internal const int RegexDebugFlag = 128;
         internal const int PythonAsciiFlag = 256;
 
-        // Retained dependency compilation state scales with capture slots and
-        // pattern size, not just pattern count. Base allowance holds the
-        // audited single-group shape (~65MiB per 1000 retained compilations of
-        // 'a(b|c)*d', heap-measured 1:1); each further slot budgets 2KiB and
-        // each pattern byte past 64 budgets 256B, covering the steepest
-        // heap-measured shapes (50-group, 500-group, and 2KB single-group
-        // patterns at 1.0-2.4x headroom). Lython-owned record and group tables
-        // ride inside it; per-match scratch stays separately bounded.
-        internal const long CompiledPatternBytes = 65536;
-        private const long GroupSlotBytes = 2048;
-        private const long PatternByteBytes = 256;
-        private const int BaseGroupSlots = 2;
-        private const int BasePatternBytes = 64;
-
-        internal static long EstimatePatternBytes(int captureSlotCount, int patternLength)
-            => checked(
-                CompiledPatternBytes +
-                (GroupSlotBytes * Math.Max(0, captureSlotCount - BaseGroupSlots)) +
-                (PatternByteBytes * Math.Max(0, patternLength - BasePatternBytes)));
+        internal static T ProviderCall<T>(Func<T> operation, MemoryGovernor? governor,
+            CancellationToken cancellationToken, LythonSourceSpan? span)
+        {
+            governor?.ThrowIfAdmissionFailed();
+            if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            try
+            {
+                var result = operation();
+                try
+                {
+                    governor?.ThrowIfAdmissionFailed();
+                    if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                    return result;
+                }
+                catch
+                {
+                    // Ownership has not reached the caller's using/field yet.
+                    // A token changing as preparation returns must still close
+                    // the acquired working resource before its owner can end.
+                    if (result is ILythonRegexSubject subject) subject.Dispose();
+                    else if (result is ILythonRegexCursor cursor) cursor.Dispose();
+                    throw;
+                }
+            }
+            catch (OperationCanceledException) { throw RuntimeErrors.Cancelled(span); }
+            catch (LythonRegexException error)
+            {
+                throw error.Failure switch
+                {
+                    LythonRegexFailure.Capability => RuntimeErrors.Capability(error.Message, span),
+                    LythonRegexFailure.MemoryAdmission => governor?.RefuseAdmission(error.Message, error.RequestedBytes, span)
+                        ?? RuntimeErrors.Attributed("MemoryError", error.Message, span,
+                            LythonFailureReason.SharedMemoryAllowance, requested: error.RequestedBytes),
+                    _ => new LythonRuntimeException(ModuleException("re", "PatternError"), error.Message, span),
+                };
+            }
+            catch (Exception error) when (error is not LythonRuntimeException and not OutOfMemoryException)
+            { throw RuntimeErrors.Host("regex provider", error, span); }
+        }
 
         internal readonly record struct RegexPatternRange(RePatternObject Pattern, RegexSubjectRange Range);
 
@@ -71,12 +90,11 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "first argument must be string or compiled pattern", span);
             }
 
-            var (options, rawFlags) = arguments.Length == 2
+            var options = arguments.Length == 2
                 ? ParseFlags(arguments[1], span, context)
-                : (PythonReCompileOptions.None, PythonUnicodeFlag);
+                : new LythonRegexOptions(PythonUnicodeFlag, false);
+            var rawFlags = options.Flags;
 
-            // Summarizing never throws (best-effort scan); hoisting it ahead of
-            // the reservation sizes both the peak scratch and the durable charge.
             var patternText = pattern.AsString();
             var cache = context.Services.State.RegexCache ??= new RegexPatternCache();
             if (cache.TryGet(patternText, rawFlags, out var cached) && cached is not null)
@@ -84,33 +102,18 @@ internal sealed partial class LythonRuntime
                 return cached;
             }
 
-            var groupSummary = RegexPatternFacts.SummarizeGroups(patternText);
-            var patternBytes = EstimatePatternBytes(groupSummary.CaptureSlotCount, pattern.Utf8Bytes.Length);
-
-            // Cover peak compilation scratch as well as the retained pattern;
-            // the temporary releases on invalid patterns, the durable charge stays.
-            using var scratch = context.MemoryGovernor.ReserveTemporary(patternBytes, span);
-            try
-            {
-                var compiled = new Utf8PythonRegex(pattern.Utf8Bytes.Span, options);
-                var reportedFlags = rawFlags | ParseLeadingInlinePythonFlags(pattern.AsString());
-
-                var result = new RePatternObject(
-                    pattern,
-                    options,
-                    reportedFlags,
-                    compiled,
-                    groupSummary.CaptureSlotCount,
-                    groupSummary.NamedGroups);
-                context.MemoryGovernor.Reserve(patternBytes, span);
-                context.MemoryGovernor.Commit(patternBytes);
-                cache.Add(patternText, rawFlags, result, context.MemoryGovernor, span);
-                return result;
-            }
-            catch (PythonRePatternException ex)
-            {
-                throw new LythonRuntimeException(ModuleException("re", "PatternError"), ex.Message, span);
-            }
+            var provider = context.State.RegexProvider
+                ?? throw RuntimeErrors.Capability("Python regex functionality requires a host-supplied Lython regex provider.", span);
+            var compiled = ProviderCall(() => provider.Compile(pattern.Utf8Bytes, options,
+                context.MemoryGovernor.Budget, context.Limits.CancellationToken), context.MemoryGovernor,
+                context.Limits.CancellationToken, span);
+            var wrapperBytes = checked(128L + 64L * compiled.CaptureSlotCount);
+            using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);
+            var result = new RePatternObject(pattern, compiled.Flags, compiled,
+                compiled.CaptureSlotCount, compiled.NamedGroups);
+            storage.Commit(wrapperBytes);
+            cache.Add(patternText, rawFlags, result, context.MemoryGovernor, span);
+            return result;
         }
 
         // The cache lookup hashes flags first, so unhashable flags fail before
@@ -314,7 +317,7 @@ internal sealed partial class LythonRuntime
         // the _code/_sre combines): verbose/locale/ascii checks, the unicode
         // combine, debug checks, then the state combines; the converted C int
         // carries unknown bits through to the echo.
-        private static (PythonReCompileOptions Options, int Flags) ParseFlags(object value, LythonSourceSpan span, ExecutionContext context)
+        private static LythonRegexOptions ParseFlags(object value, LythonSourceSpan span, ExecutionContext context)
         {
             // Verbose parsing follows the dispatched bit like CPython.
             var verbose = IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(PythonVerboseFlag), context, span), context, span);
@@ -351,13 +354,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("NotImplementedError", "re.DEBUG is not supported by Lython's regex runtime.", span);
             }
 
-            var options = PythonReCompileOptions.None;
-            if (verbose) options |= PythonReCompileOptions.Verbose;
-            if ((flagBits & PythonIgnoreCaseFlag) != 0) options |= PythonReCompileOptions.IgnoreCase;
-            if ((flagBits & PythonMultilineFlag) != 0) options |= PythonReCompileOptions.Multiline;
-            if ((flagBits & PythonDotAllFlag) != 0) options |= PythonReCompileOptions.DotAll;
-            if ((flagBits & PythonAsciiFlag) != 0) options |= PythonReCompileOptions.Ascii;
-            return (options, flagBits);
+            return new(flagBits, verbose);
         }
 
         // `flags |= UNICODE` like CPython. Only instances carry hooks, so only
@@ -414,30 +411,5 @@ internal sealed partial class LythonRuntime
                 _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span),
             };
 
-        private static int ParseLeadingInlinePythonFlags(string pattern)
-        {
-            if (!pattern.StartsWith("(?", StringComparison.Ordinal))
-            {
-                return 0;
-            }
-
-            var flags = 0;
-            for (var index = 2; index < pattern.Length; index++)
-            {
-                switch (pattern[index])
-                {
-                    case ')': return flags;
-                    case 'a': flags |= PythonAsciiFlag; break;
-                    case 'i': flags |= PythonIgnoreCaseFlag; break;
-                    case 'm': flags |= PythonMultilineFlag; break;
-                    case 's': flags |= PythonDotAllFlag; break;
-                    case 'u': flags |= PythonUnicodeFlag; break;
-                    case 'x': flags |= PythonVerboseFlag; break;
-                    default: return 0;
-                }
-            }
-
-            return 0;
-        }
     }
 }

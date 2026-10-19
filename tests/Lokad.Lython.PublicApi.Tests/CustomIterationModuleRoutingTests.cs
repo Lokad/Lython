@@ -62,7 +62,7 @@ return checks
     [Fact]
     public void ModuleCallablesResolveCustomIterationSync()
     {
-        var result = new LythonEngine().Run(ModuleRoutingSource, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(ModuleRoutingSource, new MockLythonHost());
         Assert.True(result.Success, Describe(result));
         CheckRoutingResult(result.ReturnValue);
     }
@@ -116,7 +116,7 @@ return checks
     [Fact]
     public void UnpackingAndMembersResolveCustomIterationSync()
     {
-        var result = new LythonEngine().Run(UnpackingAndMemberSource, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(UnpackingAndMemberSource, new MockLythonHost());
         Assert.True(result.Success, Describe(result));
         CheckUnpackingResult(result.ReturnValue);
     }
@@ -124,7 +124,7 @@ return checks
     [Fact]
     public async Task UnpackingAndMembersResolveCustomIterationAsync()
     {
-        var result = await new LythonEngine().RunAsync(UnpackingAndMemberSource, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(UnpackingAndMemberSource, new MockLythonHost());
         Assert.True(result.Success, Describe(result));
         CheckUnpackingResult(result.ReturnValue);
     }
@@ -161,7 +161,7 @@ return checks
     [Fact]
     public void StatisticsAndDifflibResolveCustomIterationSync()
     {
-        var result = new LythonEngine().Run(StatisticsAndDifflibSource, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(StatisticsAndDifflibSource, new MockLythonHost());
         Assert.True(result.Success, Describe(result));
         CheckStatisticsResult(result.ReturnValue);
     }
@@ -169,7 +169,7 @@ return checks
     [Fact]
     public async Task StatisticsAndDifflibResolveCustomIterationAsync()
     {
-        var result = await new LythonEngine().RunAsync(StatisticsAndDifflibSource, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(StatisticsAndDifflibSource, new MockLythonHost());
         Assert.True(result.Success, Describe(result));
         CheckStatisticsResult(result.ReturnValue);
     }
@@ -231,7 +231,7 @@ return checks
     [Fact]
     public void LazyIteratorsResolveCustomIterationSync()
     {
-        var result = new LythonEngine().Run(LazyIteratorSource, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(LazyIteratorSource, new MockLythonHost());
         Assert.True(result.Success, Describe(result));
         CheckLazyResult(result.ReturnValue);
     }
@@ -239,7 +239,7 @@ return checks
     [Fact]
     public async Task LazyIteratorsResolveCustomIterationAsync()
     {
-        var result = await new LythonEngine().RunAsync(LazyIteratorSource, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(LazyIteratorSource, new MockLythonHost());
         Assert.True(result.Success, Describe(result));
         CheckLazyResult(result.ReturnValue);
     }
@@ -247,7 +247,7 @@ return checks
     [Fact]
     public async Task ModuleCallablesResolveCustomIterationAsync()
     {
-        var result = await new LythonEngine().RunAsync(ModuleRoutingSource, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(ModuleRoutingSource, new MockLythonHost());
         Assert.True(result.Success, Describe(result));
         CheckRoutingResult(result.ReturnValue);
     }

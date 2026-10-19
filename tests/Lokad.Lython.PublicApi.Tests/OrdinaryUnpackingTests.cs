@@ -23,7 +23,7 @@ public sealed class OrdinaryUnpackingTests
     public async Task UnpackingUsesCurrentBindingsAndPreservesPythonEffects(string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -42,7 +42,7 @@ public sealed class OrdinaryUnpackingTests
     [InlineData("1", "TypeError")]
     public async Task NestedFailureKeepsTargetSpanAndCallerFrame(string value, string errorType)
     {
-        using var script = new LythonEngine().Compile("def run(value):\n first,(left,right)=[9,value]\nrun(" + value + ")");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("def run(value):\n first,(left,right)=[9,value]\nrun(" + value + ")");
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -60,7 +60,7 @@ public sealed class OrdinaryUnpackingTests
     public async Task EscapingStarredValuesStayFundedAcrossExecutions()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("head,*tail,last=[0,['x'*4096],['y'*4096],1]\nreturn tail", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("head,*tail,last=[0,['x'*4096],['y'*4096],1]\nreturn tail", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -95,7 +95,7 @@ public sealed class OrdinaryUnpackingTests
         var paths = new[] { "/rhs.txt", "/receiver.txt", "/set.txt" };
         var labels = new[] { "R", "C", "S" };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

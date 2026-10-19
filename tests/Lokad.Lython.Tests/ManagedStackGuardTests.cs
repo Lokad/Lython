@@ -17,7 +17,7 @@ public sealed class ManagedStackGuardTests
     [InlineData("projection")]
     public void LowStackEntryFailsBeforePublishingDepthOrTraversal(string entry)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var state = new StructuralGuardState();
         var span = new LythonSourceSpan(4, 2, 1, 1);
         object left = new(), right = new();

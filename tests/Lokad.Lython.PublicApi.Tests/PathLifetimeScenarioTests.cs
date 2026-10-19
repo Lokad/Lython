@@ -50,7 +50,7 @@ public class PathLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedPathParentsDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "from pathlib import Path\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(Path('/a/b/c/d/e/f/g').parents)\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };
@@ -71,7 +71,7 @@ public class PathLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedPathJoinDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "from pathlib import Path\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(Path('/a') / 'b')\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };

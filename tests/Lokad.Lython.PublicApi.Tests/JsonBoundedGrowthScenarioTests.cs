@@ -24,7 +24,7 @@ public sealed class JsonBoundedGrowthScenarioTests
 import json
 return [json.dumps({"b": 1, "a": 2}, sort_keys=True), json.dumps({}, sort_keys=True)]
 """;
-        var sync = new LythonEngine().Run(code, new MockLythonHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new List<object?> { "{\"a\": 2, \"b\": 1}", "{}" }, sync.ReturnValue);
     }
@@ -36,7 +36,7 @@ return [json.dumps({"b": 1, "a": 2}, sort_keys=True), json.dumps({}, sort_keys=T
 import json
 return json.dumps({"b": 1, "a": 2}, sort_keys=True)
 """;
-        var result = await new LythonEngine().RunAsync(code, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("{\"a\": 2, \"b\": 1}", result.ReturnValue);
     }
@@ -44,7 +44,7 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     [Fact]
     public void SortKeysHugeDeniesUnderTinyMemory()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nd = {str(i): i for i in range(20000)}\nreturn len(json.dumps(d, sort_keys=True))\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
@@ -54,7 +54,7 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     [Fact]
     public void LongIndentDeniesBeforeWriting()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nreturn json.dumps([1], indent=\"x\" * 100000)\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
@@ -66,7 +66,7 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     [Fact]
     public void LongSeparatorDeniesBeforeWriting()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nreturn json.dumps([1, 2], separators=(\",\", \":\" * 100000))\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
@@ -77,7 +77,7 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     [Fact]
     public void LargeScalarDeniesBeforeWriting()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nimport json\nreturn json.dumps([10**100000])\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
@@ -87,7 +87,7 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     [Fact]
     public void HugeDefaultResultDenies()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nreturn json.dumps({\"a\": {1, 2}}, default=lambda o: \"z\" * 200000)\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
@@ -97,7 +97,7 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     [Fact]
     public void DefaultCallbackFundedEquivalence()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nreturn json.dumps({\"a\": {1, 2}}, default=lambda o: sorted(o))\n",
             new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -109,7 +109,7 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     {
         // The streaming core preserves the previous backend limit: nesting
         // past 64 containers fails explicitly instead of recursing unbounded.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             return json.loads("[" * 100 + "]" * 100)
@@ -152,7 +152,7 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
             ? $"ok 64 {(objects ? 64 : 0)}\n"
             : $"limited 65 {position} 1 {position + 1} 0\n";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions
@@ -176,7 +176,7 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     [Fact]
     public void DeepContainersStayDepthBounded()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nx = []\nfor i in range(600):\n x = [x]\nreturn json.dumps(x)\n",
             new MockLythonHost());
         AssertError(result, "RecursionError", "maximum recursion depth exceeded");
@@ -188,7 +188,7 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
         // 10,004 output chars: each leaf decode and transient scratch fit
         // 45,000 B, but the final UTF-16 copy (2x output) does not. Two leaves
         // isolate final-copy overlap from one large active input decode.
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nreturn len(json.dumps([\"x\" * 4998, \"x\" * 4998]))\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(45000) });
@@ -200,9 +200,9 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     public void DenseSmallTokensCalibrateDocumentEstimate()
     {
         const string code = "import json\nx = json.loads(\"[\" + \"1,\" * 200000 + \"1]\")\nreturn len(x)\n";
-        var denied = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1000000) });
+        var denied = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1000000) });
         AssertError(denied, "MemoryError", "shared memory budget exceeded");
-        var funded = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256 * 1024 * 1024) });
+        var funded = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256 * 1024 * 1024) });
         Assert.True(funded.Success, funded.Failure?.Message);
         Assert.Equal(new BigInteger(200001), funded.ReturnValue);
     }
@@ -211,9 +211,9 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     public async Task DenseSmallTokensCalibrateDocumentEstimateAsync()
     {
         const string code = "import json\nx = json.loads(\"[\" + \"1,\" * 200000 + \"1]\")\nreturn len(x)\n";
-        var denied = await new LythonEngine().RunAsync(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1000000) });
+        var denied = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1000000) });
         AssertError(denied, "MemoryError", "shared memory budget exceeded");
-        var funded = await new LythonEngine().RunAsync(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256 * 1024 * 1024) });
+        var funded = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256 * 1024 * 1024) });
         Assert.True(funded.Success, funded.Failure?.Message);
         Assert.Equal(new BigInteger(200001), funded.ReturnValue);
     }
@@ -223,7 +223,7 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     {
         // Single-quoted Lython literals plus chr() keep every quote and the
         // JSON backslash out of the Lython string-escape rules entirely.
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nx = json.loads('[' + chr(34) + chr(92) + 'u00e9' + chr(34) + ']')\nreturn x\n",
             new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -235,9 +235,9 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     {
         var code =
             "import json\ne = chr(34) + chr(92) + 'u00e9' + chr(34)\nx = json.loads('[' + ','.join([e] * 100000) + ']')\nreturn len(x)\n";
-        var denied = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1000000) });
+        var denied = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1000000) });
         AssertError(denied, "MemoryError", "shared memory budget exceeded");
-        var funded = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256 * 1024 * 1024) });
+        var funded = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256 * 1024 * 1024) });
         Assert.True(funded.Success, funded.Failure?.Message);
         Assert.Equal(new BigInteger(100000), funded.ReturnValue);
     }

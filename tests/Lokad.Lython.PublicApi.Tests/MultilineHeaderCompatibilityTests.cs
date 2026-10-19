@@ -24,7 +24,7 @@ public sealed class MultilineHeaderCompatibilityTests
         _ = name;
         foreach (var text in new[] { source, source.Replace("\n", "\r\n") })
         {
-            var script = new LythonEngine().Compile(text);
+            var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(text);
             Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
             foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
             {
@@ -41,7 +41,7 @@ public sealed class MultilineHeaderCompatibilityTests
     [InlineData("if True:\n    if (\n        True):\n    print('missing nested body')\n")]
     public void MissingSuiteIndentationRemainsInvalid(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(script.IsValid);
         Assert.NotEmpty(script.Diagnostics);
     }

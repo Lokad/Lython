@@ -19,7 +19,7 @@ public sealed class DirEntryIdentityBehaviorTests
     [Fact]
     public async Task DirEntryMembersAliasStably()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             found = None
             for e in os.scandir("/d"):

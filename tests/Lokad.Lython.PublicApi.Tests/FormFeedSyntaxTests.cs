@@ -7,7 +7,7 @@ public sealed class FormFeedSyntaxTests
     [Fact]
     public async Task IndentationMaskPreservesOriginalFailureSpan()
     {
-        var compiled = new LythonEngine().Compile(" \fmissing\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(" \fmissing\n");
         Assert.True(compiled.IsValid);
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -42,7 +42,7 @@ public sealed class FormFeedSyntaxTests
     public async Task CompatibleBindings(string name, string source, string expected)
     {
         _ = name;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -59,5 +59,5 @@ public sealed class FormFeedSyntaxTests
     [InlineData("x=1\\ \f\n+2")]
     [InlineData("x=1\u000b+2")]
     public void InvalidNamesAndScopeConflictsFailBeforeEffects(string source)
-        => Assert.False(new LythonEngine().Compile("print('effect')\n" + source).IsValid);
+        => Assert.False(new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effect')\n" + source).IsValid);
 }

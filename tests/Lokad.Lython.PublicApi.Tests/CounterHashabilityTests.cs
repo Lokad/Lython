@@ -10,7 +10,7 @@ public sealed class CounterHashabilityTests
     [InlineData(true)]
     public async Task CounterUsesDictionaryHashabilityWithoutChangingNumericTwins(bool asynchronous)
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import Counter
             def count(ctor, values):
                 try:

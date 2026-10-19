@@ -40,10 +40,10 @@ public sealed class NativeSliceDispatchTests
             _ => "values[:]=replacement()"
         };
         var source = "class Bound:\n" + hook + "bound=Bound()\nvalues=[0,1,2]\ndef replacement():\n yield checkpoint()\n" + action;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var checkpoint = new Checkpoint();
         context.Variables["checkpoint"] = checkpoint;
-        var syntax = LythonFrontend.Compile(source).Script!;
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
@@ -60,10 +60,10 @@ public sealed class NativeSliceDispatchTests
     public async Task OversizedReplacementFailsBeforeDestinationMutation(bool asynchronous)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         var target = new PyList([BigInteger.Zero], context.MemoryGovernor, new(0, 0, 0, 0));
         context.Variables["target"] = target;
-        var syntax = LythonFrontend.Compile("def source():\n yield from range(100000)\ntarget[:]=source()").Script!;
+        var syntax = LythonFrontend.Compile("def source():\n yield from range(100000)\ntarget[:]=source()",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         LythonRuntimeException error;
         if (asynchronous)

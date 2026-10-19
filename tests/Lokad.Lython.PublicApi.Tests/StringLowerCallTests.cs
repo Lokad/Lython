@@ -15,7 +15,7 @@ public sealed class StringLowerCallTests
             ? "method=text." + method + "\ntext='changed'\nreturn method()"
             : "return text." + method + "()");
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
@@ -43,7 +43,7 @@ public sealed class StringLowerCallTests
             "print('ready')\ntry: value=" + (exposed ? "method()" : "text." + method + "()") +
             "\nexcept MemoryError: print(value,len(text))";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(80 * 1024) };
@@ -70,7 +70,7 @@ public sealed class StringLowerCallTests
     {
         var source = "class Text:\n @property\n def lower(self):\n  with open('bind.txt','a') as output: output.write('bind')\n  def convert():\n   with open('call.txt','a') as output: output.write('call')\n   return 'custom'\n  return convert\nprint(Text().lower())".Replace("lower", method, StringComparison.Ordinal);
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -123,7 +123,7 @@ public sealed class StringLowerCallTests
     public async Task ImmediateExposedAndDynamicCallsMatchPython(string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })

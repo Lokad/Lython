@@ -31,7 +31,7 @@ public sealed class RepresentativeProtocolCancellationTests
             input = "{\"nested\":{\"value\":1},\"kind\":\"red\",\"amount\":3}\n{\"kind\":\"blue\",\"amount\":2}\n";
             inputPath = "/input.jsonl"; reportPath = "/report.json"; checkpoints = 1;
         }
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         var mock = asynchronous ? null : new MockLythonHost();

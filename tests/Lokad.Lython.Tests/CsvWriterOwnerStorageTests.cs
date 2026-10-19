@@ -12,7 +12,7 @@ public sealed class CsvWriterOwnerStorageTests
     private const long Cap = 262144;
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
     private static readonly Type Module = typeof(LythonRuntime).GetNestedType("CsvModule", BindingFlags.NonPublic)!;
-    private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? budget = null) => new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(Cap) });
+    private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? budget = null) => new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(Cap) },regexProvider:Utf8RegexProvider.Instance);
     private static LythonRuntime.CsvOptions Options() => new(PyStringOps.CommaLiteral, null,
         LythonRuntime.CsvQuotingMode.Minimal, true, null, false, PyString.FromString("\n"), false);
     private static LythonRuntime.CsvWriterObject Create(LythonRuntime.ExecutionContext context)

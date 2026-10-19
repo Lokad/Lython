@@ -87,7 +87,7 @@ public sealed class SetConstructionAccountingTests
     public void LazySourceConstructionStopsAtBudgetInsteadOfSnapshotting()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var pulls = 0;
         var lazy = Enumerable.Range(0, 100000).Select(value =>
@@ -109,7 +109,7 @@ public sealed class SetConstructionAccountingTests
     public void SizedCopyHoldsSnapshotTransientlyAlongsideTable()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PySet(Enumerable.Range(0, 100).Select(static value => (object)new BigInteger(value)));
 
@@ -129,7 +129,7 @@ public sealed class SetConstructionAccountingTests
         // Empty payloads and snapshot scratch stay free, but each distinct
         // object owns its shell: three empty copies commit three shells.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
 
         var fromSet = new PySet(new PySet(), context.MemoryGovernor, span);
@@ -159,7 +159,7 @@ public sealed class SetConstructionAccountingTests
         // The N-item filter list coexists with the live table; pre-fix only
         // the table was charged, so no new peak could appear during the op.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var left = new PySet(Enumerable.Range(0, 20000).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
         var right = new PySet(Enumerable.Range(0, 20000).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
@@ -181,7 +181,7 @@ public sealed class SetConstructionAccountingTests
         // Same transient site as IntersectWith, pinned separately so each
         // reservation line is covered.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var left = new PySet(Enumerable.Range(0, 20000).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
         var right = new PySet(Enumerable.Range(10000, 20000).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
@@ -202,7 +202,7 @@ public sealed class SetConstructionAccountingTests
         // Identical inputs keep the rebuilt table within existing capacity, so
         // only the combined scratch reservation can move the peak.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var left = new PySet(Enumerable.Range(0, 20000).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
         var right = new PySet(Enumerable.Range(0, 20000).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
@@ -241,7 +241,7 @@ public sealed class SetConstructionAccountingTests
     public void ClearKeepsShellButReleasesCapacity()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var set = new PySet(Enumerable.Range(0, 100).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
         var grown = context.MemoryGovernor.CurrentCommittedBytes;
@@ -275,7 +275,7 @@ public sealed class SetConstructionAccountingTests
     public void CopyCtorOwnsShell()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PySet(context.MemoryGovernor, span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;

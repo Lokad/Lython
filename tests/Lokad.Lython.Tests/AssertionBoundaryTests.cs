@@ -25,7 +25,7 @@ public sealed class AssertionBoundaryTests
     [MemberData(nameof(Programs))]
     public async Task AssertionsPreserveEffectsAndUnwind(string label, string source, bool fails)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -65,7 +65,7 @@ public sealed class AssertionBoundaryTests
 
     private static (Context Context, List<string> Effects) Prepare(ILythonMemoryBudget owner)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var effects = new List<string>();
         context.Variables["no"] = new Argument(effects, "condition", false);
         context.Variables["note"] = new Note(effects);

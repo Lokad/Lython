@@ -15,11 +15,11 @@ public class OpenPyxlPersistenceBenchmarks
 
     public OpenPyxlPersistenceBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _createAndSave = Compile(engine, CreateAndSaveSource);
         _loadAndRead = Compile(engine, LoadAndReadSource);
         var seed = new WorkbookBenchmarkHost();
-        var built = new LythonEngine().Run(CreateAndSaveSource, seed);
+        var built = new LythonEngine(Utf8RegexProvider.Instance).Run(CreateAndSaveSource, seed);
         if (!built.Success)
         {
             throw new InvalidOperationException(built.Failure?.Message ?? "Workbook benchmark seed failed.");

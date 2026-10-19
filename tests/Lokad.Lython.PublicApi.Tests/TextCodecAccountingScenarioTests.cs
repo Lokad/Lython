@@ -13,7 +13,7 @@ public sealed class TextCodecAccountingScenarioTests
     {
         // MG07: bounding decode scratch must not change decoded values,
         // newline translation, or the strict/handler error contracts.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             results = []
             results.append(bytes([72, 105]).decode("utf-8"))

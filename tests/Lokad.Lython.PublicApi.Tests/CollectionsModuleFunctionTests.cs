@@ -8,7 +8,7 @@ public sealed class CollectionsModuleFunctionTests
     public void Collections_DefaultDict_HasDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import defaultdict
 
@@ -36,7 +36,7 @@ __lython_file.close()
     public void Collections_DefaultDict_MethodSurface_HasDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import defaultdict
 
@@ -66,7 +66,7 @@ __lython_file.close()
     public void Collections_Counter_HasDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter
 
@@ -93,7 +93,7 @@ __lython_file.close()
     public void Collections_Counter_MethodSurface_HasDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter
 
@@ -121,7 +121,7 @@ __lython_file.close()
     public void Collections_CounterAndDefaultDict_ViewsAreLive()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter, defaultdict
 
@@ -158,7 +158,7 @@ __lython_file.close()
         // Counter.update/subtract take mapping values (not key counts)
         // from defaultdict and ChainMap sources like CPython.
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter, ChainMap, defaultdict
 
@@ -189,7 +189,7 @@ __lython_file.close()
     public void Collections_ChainMap_ViewsAreLive()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import ChainMap
 
@@ -227,7 +227,7 @@ __lython_file.close()
     public void Collections_ChainMap_DelMiss_NamesKeyLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import ChainMap
 
@@ -258,7 +258,7 @@ __lython_file.close()
     public void Collections_ViewAndDequeRendering_QuotesElements()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 
@@ -289,7 +289,7 @@ __lython_file.close()
     public void Collections_DequeConcat_BehavesLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 import operator
@@ -328,7 +328,7 @@ __lython_file.close()
     public void Collections_DequeRepeat_BehavesLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 import operator
@@ -374,7 +374,7 @@ __lython_file.close()
     public void Collections_DequeErrorTexts_NameDottedType()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 
@@ -427,7 +427,7 @@ __lython_file.close()
     [Fact]
     public void Collections_CounterLengthCountsStoredDistinctKeys()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import ChainMap, Counter, defaultdict
 
@@ -469,7 +469,7 @@ return lengths
     public void Collections_Deque_HasDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 
@@ -501,7 +501,7 @@ __lython_file.close()
     public void Collections_Deque_CopyClearAndReverse_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 
@@ -527,7 +527,7 @@ __lython_file.close()
     public void Collections_NamedTuple_HasDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import namedtuple
 
@@ -566,7 +566,7 @@ __lython_file.close()
     public void Collections_OrderedDictChainMapAndAbc_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import ChainMap, OrderedDict, UserDict, abc
 from collections.abc import Iterable, Mapping
@@ -610,7 +610,7 @@ __lython_file.close()
     public void Collections_DefaultDictKeywordInitializationAndFactoryMutation_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import defaultdict
 
@@ -641,7 +641,7 @@ __lython_file.close()
     public void Collections_CounterArithmeticAndKeywordUpdates_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter
 
@@ -673,7 +673,7 @@ __lython_file.close()
     public void Collections_EmptyCounterRendersBare()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter
 vals = [repr(Counter()), str(Counter()), repr(Counter({"a": 1})), f"{Counter()}", "{}".format(Counter())]
@@ -691,7 +691,7 @@ __lython_file.close()
     public void Collections_CounterDictEqualityFollowsDictRules()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter, defaultdict
 vals = []
@@ -717,7 +717,7 @@ __lython_file.close()
     public void Collections_CounterRetainsNumericCountsAndSupportsUnaryFiltering()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter
 
@@ -739,7 +739,7 @@ __lython_file.close()
     public void Collections_DequeBoundedIndexInsertRemoveAndEquality_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 
@@ -776,7 +776,7 @@ __lython_file.close()
     public void Collections_DequeRotateReducesArbitrarySizeIntegersBeforeNarrowing()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 
@@ -797,7 +797,7 @@ __lython_file.close()
     [Fact]
     public void Collections_StaticDiagnosticsCoverExpandedSurface()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from collections import ChainMap, Counter, OrderedDict, abc, defaultdict, deque, namedtuple
 from collections.abc import Iterable, Mapping
@@ -832,7 +832,7 @@ Mapping[str, int]
 
         Assert.True(valid.IsValid, string.Join(Environment.NewLine, valid.Diagnostics.Select(d => $"{d.Code}: {d.Message}")));
 
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from collections import ChainMap, Counter, OrderedDict, defaultdict, deque, namedtuple
 
@@ -912,7 +912,7 @@ deque().pop()
         "empty deque")]
     public void Collections_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (exceptionType == "compile")
@@ -935,7 +935,7 @@ deque().pop()
         // CPython on the shared non-interpolated path, so quoting and
         // escapes match plain-dict rendering (single-key Counter rows keep
         // the test free of the separate most-common ordering gap).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict, Counter
             results = []
             d = defaultdict(list)
@@ -981,7 +981,7 @@ deque().pop()
         // with ties in insertion order, while unorderable values keep
         // insertion order; string values render through repr on the same
         // path (float rows and the most_common error shape stay out).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import Counter, defaultdict
             results = []
             c = Counter()
@@ -1044,7 +1044,7 @@ deque().pop()
         // most_common on unorderable values surfaces the comparison
         // TypeError like CPython instead of the BCL comparer wrap; funded
         // paths keep most-common order in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import Counter
             results = []
             c = Counter()
@@ -1083,7 +1083,7 @@ deque().pop()
     {
         // Decimal counts order numerically in repr like most_common,
         // mirroring the PyComparison domain order in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from decimal import Decimal
             from collections import Counter
             results = []
@@ -1118,7 +1118,7 @@ deque().pop()
         // Mapping | builds a fresh merged mapping (defaultdict keeps the
         // left factory, Counter mixes merge plain) and |= merges in place
         // with Counter max-plus-purge semantics, like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict, Counter, ChainMap
             results = []
             a = defaultdict(list, {"x": [1]})
@@ -1224,7 +1224,7 @@ deque().pop()
         // Unions involving a ChainMap build a fresh ChainMap (copied
         // first map plus shared tails, or one merged map) with CPython
         // last-map-first merged key order (R14).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import ChainMap, Counter, defaultdict
             results = []
             m = {"c": 3}
@@ -1288,7 +1288,7 @@ deque().pop()
     {
         // ChainMap.update writes mappings, pair sequences and keywords
         // into the first map like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import ChainMap
             results = []
             cm = ChainMap({"a": 1})
@@ -1336,7 +1336,7 @@ deque().pop()
     {
         // defaultdict, Counter, deque and ChainMap are first-class types
         // for isinstance (with dict-subclass relations), like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict, Counter, deque, ChainMap
             results = []
             results.append(str(isinstance(defaultdict(list), defaultdict)))
@@ -1399,7 +1399,7 @@ deque().pop()
     {
         // Collection factories report short __name__/__qualname__ plus
         // the collections __module__, like CPython type objects.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict, Counter, deque, ChainMap
             results = []
             results.append(str(defaultdict.__name__))
@@ -1441,7 +1441,7 @@ deque().pop()
         // Collection factories report CPython-style __bases__ (dict for
         // the dict-backed kinds, object otherwise since ABCs are absent)
         // and an __mro__ running through object.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict, Counter, deque, ChainMap
             results = []
             results.append(str(defaultdict.__bases__))
@@ -1479,7 +1479,7 @@ deque().pop()
         // dict __or__/__ror__/__ior__ merge plainly (NotImplemented
         // outside mappings) and deque __add__/__mul__/__rmul__ repeat
         // through the shared cores, like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict, Counter, deque
             def call2(f, a, b):
                 return f(a, b)
@@ -1571,7 +1571,7 @@ deque().pop()
         // rule (left wins, so __ror__ keeps the other factory), NotImplemented
         // outside mappings, and an in-place form that stages pairs exactly
         // like dict.__ior__; |= statements accept pair iterables as well.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import Counter, defaultdict, ChainMap
             def call2(f, a, b):
                 return f(a, b)
@@ -1674,7 +1674,7 @@ deque().pop()
         // __ror__ is a plain-dict merge like dict, and the in-place forms
         // mutate with max-plus-purge semantics through other.items(), keeping
         // the incumbent object on ties exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import Counter, ChainMap
             def call2(f, a, b):
                 return f(a, b)
@@ -1830,7 +1830,7 @@ deque().pop()
     public async Task RangeDefaultdictCounterEqualityDundersAdvanceLikeCpython()
     {
         // range slots take ranges only, defaultdict __eq__/__ne__ take mappings (Counter included, now content-equal through the shared core) with always-decline ordering, and Counter __eq__/__ne__ take Counters only with missing-as-zero multiset semantics, exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 from collections import defaultdict, Counter
 def call2(f, a, b):
     return f(a, b)
@@ -1931,7 +1931,7 @@ return results
     public async Task CounterMultisetOrderingDundersAdvanceLikeCpython()
     {
         // Counter ordering compares every key on either side with missing counts as zero through the full <= operator, declining non-Counters with NotImplemented, exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 from collections import Counter
 def call2(f, a, b):
     return f(a, b)
@@ -2016,7 +2016,7 @@ return results
     public async Task MappingReversedDundersAdvanceLikeCpython()
     {
         // dict, defaultdict and Counter __reversed__ members build the same key iterators as the reversed builtin, exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 def call1(f, a):
     return f(a)
 results = []

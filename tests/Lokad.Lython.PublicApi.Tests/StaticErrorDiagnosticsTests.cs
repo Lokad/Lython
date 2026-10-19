@@ -8,7 +8,7 @@ public sealed class StaticErrorDiagnosticsTests
     [Fact]
     public void OpenLiteralContracts_ReportCompileErrors()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 open("/repo/in.txt", "rb")
 open("/repo/in.txt", encoding="utf-32")
@@ -26,7 +26,7 @@ open("/repo/in.txt", errors="surrogateescape")
     [Fact]
     public void OsWalkAndSubprocessLiteralContracts_ReportCompileErrors()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import os
 import subprocess
@@ -54,7 +54,7 @@ subprocess.run(["rg", 1], timeout="fast", check="yes", capture_output="sure")
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 open("/repo/out.txt", "rb+")
 __lython_file = open("/repo/created.txt", "w")
@@ -72,7 +72,7 @@ __lython_file.close()
     [Fact]
     public void LiteralUnpackingAndLoopShapeErrors_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 a, b = [1]
 x, *rest, y = [1]
@@ -91,7 +91,7 @@ values = [x for x in None]
     [Fact]
     public void LiteralBuiltinMisuse_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 list(1)
 tuple(None)
@@ -117,7 +117,7 @@ sorted(1)
     [Fact]
     public void CatchableLiteralMisuse_DoesNotBecomeACompileError()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 try:
     len(1)
@@ -131,7 +131,7 @@ except TypeError:
     [Fact]
     public void TryElse_UsesFactsFromTheSuccessfulProtectedBody()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 try:
     value = 1
@@ -148,7 +148,7 @@ else:
     [Fact]
     public void PropertyDataclassesAndCommonPathLiteralMisuse_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import os
 from dataclasses import asdict, astuple, field
@@ -173,7 +173,7 @@ os.path.commonpath("/repo/docs")
     [Fact]
     public void RegexUnsupportedLocaleAndNamedEntityPatterns_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import re
 
@@ -194,7 +194,7 @@ re.search("a", "a", FLAGS)
     [Fact]
     public void ByteTextBoundaryMisuse_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 import sys
@@ -219,7 +219,7 @@ Path("/repo/in.bin").read_bytes()
     [Fact]
     public void StructuralDiagnostics_UseCanonicalExpandedLibraryTypeNames()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from collections import Counter
 from decimal import Decimal
@@ -236,7 +236,7 @@ Decimal("1").not_a_decimal_member
     [Fact]
     public void PathReadTextDefaultDictAndArgparseTypeLiteralMisuse_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 from collections import defaultdict
@@ -257,7 +257,7 @@ parser.add_argument("--count", type="int")
     [Fact]
     public void ArgparseActionNargsAndPathWriteTextLiteralMisuse_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 import argparse
@@ -278,7 +278,7 @@ Path("/repo/output.txt").write_text("alpha", encoding="utf-32", newline="bad")
     [Fact]
     public void ArgparseStringContractsAndPathOpenLiteralMisuse_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 import argparse
@@ -307,7 +307,7 @@ Path("/repo/input.txt").open("rb", -1, "utf-32")
     [Fact]
     public void PathAliasTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -330,7 +330,7 @@ same_path.write_bytes(b"abc")
     [Fact]
     public void PathReadTextStringTypeFlow_ReportStringStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -355,7 +355,7 @@ again.startswith("a", start="bad")
     [Fact]
     public void StringListTypeFlow_ReportPathWriteTextStaticErrorAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -371,7 +371,7 @@ Path("/repo/output.txt").write_text(lines)
     [Fact]
     public void AbstractNonCallableValues_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -391,7 +391,7 @@ path()
     [Fact]
     public void TextFileHandleTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -424,7 +424,7 @@ handle()
     [Fact]
     public void AbstractStateMergesBranchStringTypeFlow_ReportStaticErrorAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -443,7 +443,7 @@ text.find(1)
     [Fact]
     public void AbstractStateWidensDisagreeingBranches_DoesNotReportSpeculativeTypeError()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -461,7 +461,7 @@ value.find(1)
     [Fact]
     public void WithBodyTypeFlow_PropagatesNonHandleAssignmentsAfterBlock()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 with open("/repo/in.txt", "r") as reader:
     text = reader.readline()
@@ -476,7 +476,7 @@ text.find(1)
     [Fact]
     public void SimpleFunctionSummaryTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -503,7 +503,7 @@ Path("/repo/output.txt").write_text(lines)
     [Fact]
     public void ParameterizedFunctionSummaryTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -538,7 +538,7 @@ Path("/repo/output.txt").write_text(lines)
     [Fact]
     public void ParameterizedFunctionSummaryTypeFlow_WidensUnknownArguments()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -560,7 +560,7 @@ result.find(1)
     [Fact]
     public void ConditionalFunctionSummaryTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -592,7 +592,7 @@ name.startswith(1)
     [Fact]
     public void ConditionalFunctionSummaryTypeFlow_WidensDisagreeingReturns()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -612,7 +612,7 @@ value.find(1)
     [Fact]
     public void KnownSealedRuntimeMemberSurfaces_ReportMissingMembersAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -634,7 +634,7 @@ with open("/repo/input.txt", "r") as reader:
     [Fact]
     public void PathMemberValueTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -660,7 +660,7 @@ resolved_parent.not_a_path_member
     [Fact]
     public void StaticCallableContracts_ReportSealedMemberArityErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -689,7 +689,7 @@ with open("/repo/input.txt", "r") as reader:
     [Fact]
     public void StaticCallableContracts_ReportKeywordShapeErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -718,7 +718,7 @@ mapping.get(missing="name")
     [Fact]
     public void ContainerMemberSurfaces_ReportMissingMembersAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 items = ["alpha"]
 mapping = {"name": "alpha"}
@@ -741,7 +741,7 @@ pair.not_a_tuple_member
     [Fact]
     public void ContainerCallableContracts_ReportArityErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 items = ["alpha"]
 items.append()
@@ -794,7 +794,7 @@ seen.clear(1)
     [Fact]
     public void ContainerMemberReturnFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -828,7 +828,7 @@ seen_copy.not_a_set_member
     [Fact]
     public void DictionaryMemberReturnFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -862,7 +862,7 @@ inserted.find(1)
     [Fact]
     public void DictionaryMemberReturnFlow_AcceptsKeywordBoundKeys()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 mapping = {"name": "alpha"}
 name = mapping.get(key="name")
@@ -883,7 +883,7 @@ popped.startswith(1)
     [Fact]
     public void DictionaryMemberReturnFlow_WidensUnknownKeys()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -898,7 +898,7 @@ Path("/repo/out.txt").write_text(value)
     [Fact]
     public void ContainerMemberArgumentTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 items = []
 items.extend(1)
@@ -920,7 +920,7 @@ mapping.update(1)
     [Fact]
     public void ContainerMutationsInvalidateReceiverFacts()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -940,7 +940,7 @@ Path("/repo/out.txt").write_text(mapping["name"])
     [Fact]
     public void ContainerMutationsPreserveReturnFlowForAssignedResults()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 items = ["alpha"]
 value = items.pop()
@@ -954,7 +954,7 @@ value.find(1)
     [Fact]
     public void LoopTargetTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -983,7 +983,7 @@ for name, value in [("alpha", 1)]:
     [Fact]
     public void LoopTargetTypeFlow_ReportTextFileWrongModeAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 with open("/repo/output.txt", "w") as writer:
     for line in writer:
@@ -998,7 +998,7 @@ with open("/repo/output.txt", "w") as writer:
     [Fact]
     public void SubscriptTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1031,7 +1031,7 @@ items[99]
     [Fact]
     public void SliceTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1059,7 +1059,7 @@ text[::0]
     [Fact]
     public void SubscriptTypeFlow_WidensHeterogeneousIndexResults()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 items = ["alpha", 1]
 value = items[index]
@@ -1072,7 +1072,7 @@ value.find(1)
     [Fact]
     public void ListComprehensionTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1099,7 +1099,7 @@ with open("/repo/output.txt", "w") as writer:
     [Fact]
     public void SetComprehensionTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1122,7 +1122,7 @@ with open("/repo/output.txt", "w") as writer:
     [Fact]
     public void ConditionalExpressionTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1142,7 +1142,7 @@ item.startswith(1)
     [Fact]
     public void ConditionalExpressionTypeFlow_WidensDisagreeingArms()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1156,7 +1156,7 @@ value.find(1)
     [Fact]
     public void LambdaExpressionAnalysis_DoesNotLeakOuterBindingsIntoParameters()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1170,7 +1170,7 @@ callback = lambda value: value.find(1)
     [Fact]
     public void UnpackingAssignmentTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1210,7 +1210,7 @@ empty[0]
     [Fact]
     public void AbstractNonIterableValues_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1233,7 +1233,7 @@ for name, value in [Path("/repo/input.txt")]:
     [Fact]
     public void BinaryExpressionTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1276,7 +1276,7 @@ b"a" - b"b"
     [InlineData("~1.5\n", "LA3145", "bad operand type for unary ~: 'float'")]
     public void InvalidOperands_ReportPythonShapedStaticTexts(string source, string code, string message)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == code && d.Message.Contains(message, StringComparison.Ordinal));
@@ -1285,7 +1285,7 @@ b"a" - b"b"
     [Fact]
     public void TimedeltaOperatorDiagnostics_ShareTheRuntimeCompatibilityMatrix()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from datetime import timedelta
 
@@ -1298,7 +1298,7 @@ left // 2
 
         Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
 
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from datetime import timedelta
 
@@ -1315,7 +1315,7 @@ delta % 2
     [Fact]
     public void BinaryExpressionTypeFlow_WidensShortCircuitDisagreement()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1329,7 +1329,7 @@ value.find(1)
     [Fact]
     public void SequenceConstructorTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1365,7 +1365,7 @@ bad_path_items = list(Path("/repo/input.txt"))
     [Fact]
     public void LenTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1390,7 +1390,7 @@ with open("/repo/input.txt", "r") as reader:
     [Fact]
     public void ScalarConstructorTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1414,7 +1414,7 @@ Path("/repo/out.txt").write_text(data)
     [Fact]
     public void SortedTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1442,7 +1442,7 @@ with open("/repo/out.txt", "w") as writer:
     [Fact]
     public void ComparisonExpressionTypeFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1464,7 +1464,7 @@ Path("/repo/out.txt").write_text(same)
     [Fact]
     public void OperatorOperandContracts_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1497,7 +1497,7 @@ b"a" - b"b"
     [Fact]
     public void OperatorOperandContracts_RemainConservativeForValidAndUnknownShapes()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1520,7 +1520,7 @@ maybe + 1
     [Fact]
     public void ArgparseParseArgsLiteralMisuse_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import argparse
 
@@ -1538,7 +1538,7 @@ parser.parse_args(["--lang", 1])
     [Fact]
     public void CsvReaderAndFnmatchFilterLiteralMisuse_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import csv
 import fnmatch
@@ -1565,7 +1565,7 @@ fnmatch.filter(["a.txt"], 1)
     [Fact]
     public void PathWriteTextAndStringPrefixSuffixLiteralMisuse_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1583,7 +1583,7 @@ Path("/repo/out.txt").write_text(1)
     [Fact]
     public void StringSingleArgumentLiteralMisuse_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 "hello".find(1)
 "hello".index(1)
@@ -1603,7 +1603,7 @@ Path("/repo/out.txt").write_text(1)
     [Fact]
     public void StringBoundsLiteralMisuse_ReportAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 "hello".startswith("he", "1")
 "hello".endswith("lo", 0, "5")
@@ -1621,7 +1621,7 @@ Path("/repo/out.txt").write_text(1)
     [Fact]
     public void StableLiteralAliases_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 import fnmatch
@@ -1657,7 +1657,7 @@ text2.find(needle2)
     [Fact]
     public void Utf8SigPathTextEncodings_RemainAcceptedAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 
@@ -1673,7 +1673,7 @@ Path("/repo/out.txt").open("w", encoding="utf-8-sig", errors="strict", newline="
     [Fact]
     public void BuiltinModuleAndStringContractAliases_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import argparse
 import functools
@@ -1748,7 +1748,7 @@ replace_count2 = replace_count1
     [Fact]
     public void AdditionalModuleIterableAndStringContracts_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import argparse
 import functools
@@ -1806,7 +1806,7 @@ items2 = items1
     [Fact]
     public void FunctoolsExpandedContracts_ReportKnownMembersAndShapeErrors()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import functools
 
@@ -1830,7 +1830,7 @@ functools.recursive_repr(fillvalue="...")(f)
 
         Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Message)));
 
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import functools
 
@@ -1854,7 +1854,7 @@ functools.recursive_repr(fillvalue=1)
     [Fact]
     public void DataclassOrderDunders_StayStaticallyPrecise()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from dataclasses import dataclass
 
@@ -1874,7 +1874,7 @@ P(1).__lt__(P(2))
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 for left, right in [1, 2]:
     __lython_file = open("/repo/created.txt", "w")
@@ -1893,7 +1893,7 @@ for left, right in [1, 2]:
     public void Run_DoesNotStartExecutionWhenHostLacksStandardInput()
     {
         var host = new MockLythonHost("/repo");
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 value = input()
 __lython_file = open("/repo/created.txt", "w")
@@ -1915,7 +1915,7 @@ __lython_file.close()
     public void Run_DoesNotStartExecutionWhenHostLacksSubprocessSupport()
     {
         var host = new MockLythonHost("/repo");
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import subprocess
 proc = subprocess.run(["rg", "x"], capture_output=True)
@@ -1938,7 +1938,7 @@ __lython_file.close()
     public void Run_DoesNotStartExecutionWhenHostLacksSubprocessImportCapability()
     {
         var host = new MockLythonHost("/repo");
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import subprocess
 __lython_file = open("/repo/created.txt", "w")
@@ -1961,7 +1961,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 PATTERN = r"\N{LATIN SMALL LETTER A}"
@@ -1985,7 +1985,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 parser = argparse.ArgumentParser()
@@ -2007,7 +2007,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 __lython_file = open("/repo/out.txt", "w")
@@ -2032,7 +2032,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -2056,7 +2056,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def ask():
     return input()
@@ -2079,7 +2079,7 @@ __lython_file.close()
     {
         var eagerHost = new MockLythonHost("/repo");
 
-        var eager = new LythonEngine().Run(
+        var eager = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = [input() for item in [1]]
 __lython_file = open("/repo/eager.txt", "w")
@@ -2093,7 +2093,7 @@ __lython_file.close()
         Assert.False(eagerHost.Stat("/repo/eager.txt").Exists);
 
         var deferredHost = new MockLythonHost("/repo");
-        var deferred = new LythonEngine().Run(
+        var deferred = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = (input() for item in [1])
 __lython_file = open("/repo/deferred.txt", "w")
@@ -2109,7 +2109,7 @@ __lython_file.close()
     [Fact]
     public void SimpleDataclassFieldFlow_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from dataclasses import dataclass
 
@@ -2128,7 +2128,7 @@ box.text.find(1)
     [Fact]
     public void OrdinaryUserClasses_RemainDynamicForStaticAnalysis()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 class Box:
     text: str
@@ -2143,7 +2143,7 @@ box.text.find(1)
     [Fact]
     public void FunctionLocalReadBeforeAssignment_ReportStaticErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 def bad():
     value.find("x")
@@ -2159,7 +2159,7 @@ bad()
     [Fact]
     public async Task ComprehensionTarget_BeforeLaterOuterAssignment()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def f():
                 result = [v for v in [1, 2]]
                 v = 0
@@ -2179,7 +2179,7 @@ bad()
     [Fact]
     public async Task ComprehensionTargets_CoverAllKindsLaterOuterLoopAndNesting()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def f():
                 total = sum(v for v in [1, 2])
                 unique = sorted({v for v in [2, 1]})
@@ -2211,7 +2211,7 @@ bad()
     [Fact]
     public void FirstIterableReadBeforeAssignment_StillReported()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def f():
                 g = [x for x in data]
                 data = [1]
@@ -2224,7 +2224,7 @@ bad()
     [Fact]
     public void PatternAndExceptionBindings_AreFunctionLocalsBeforeTheirStatementsRun()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 def bad_exception():
     error.find("x")
@@ -2247,7 +2247,7 @@ def bad_pattern(subject):
     [Fact]
     public void HandlerAndCaseBindings_AreAssignedWithinTheirBodies()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 def read_except():
     try:
@@ -2269,7 +2269,7 @@ def read_case(subject):
     [Fact]
     public void FunctionLocalMaybeAssignedBranches_RemainAccepted()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 def maybe(flag):
     if flag:
@@ -2283,7 +2283,7 @@ def maybe(flag):
     [Fact]
     public void DataclassFieldDefaultsAndFactories_FlowIntoStaticDiagnostics()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from dataclasses import dataclass, field
 
@@ -2305,7 +2305,7 @@ box.items.extend(1)
     [Fact]
     public void DataclassKeywordOnlyAndInitFalseFields_FlowIntoStaticDiagnostics()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from dataclasses import dataclass, field
 
@@ -2326,7 +2326,7 @@ box.label.find(1)
     [Fact]
     public void DataclassMethodReturnFlow_BindsSelfFieldAtCallSite()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from dataclasses import dataclass
 
@@ -2348,7 +2348,7 @@ box.as_text().find(1)
     [Fact]
     public void KnownModuleSurfaces_ReportMissingMembersThroughAliases()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import json as j
 import os
@@ -2367,7 +2367,7 @@ pattern.not_real
     [Fact]
     public void KnownCallableContracts_ReportAliasAndFromImportShapeErrors()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import json as j
 from csv import writer
@@ -2386,7 +2386,7 @@ Path(1)
     [Fact]
     public void OperatorExpandedContracts_ReportKnownMembersAndShapeErrors()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import operator
 
@@ -2419,7 +2419,7 @@ operator.methodcaller("strip")
 
         Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
 
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import operator
 
@@ -2444,7 +2444,7 @@ operator.call()
     [Fact]
     public void KnownRuntimeObjectContracts_FlowThroughReturnValues()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import csv
 import subprocess
@@ -2468,7 +2468,7 @@ result.not_real
     [Fact]
     public void OpenPyxlRuntimeObjectContracts_ReportSealedMemberTypos()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import openpyxl
 from openpyxl.chart import BarChart
@@ -2525,7 +2525,7 @@ cell.offset(1, 2, 3)
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3113" && d.Message.Contains("openpyxl.styles.Font has no member", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3161");
 
-        var worksheetSatellites = new LythonEngine().Compile(
+        var worksheetSatellites = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import openpyxl
 
@@ -2551,7 +2551,7 @@ ws._drawing.not_a_drawing_member
     [Fact]
     public void UserDefinedCallShapes_ReportProvableMismatches()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from dataclasses import dataclass
 
@@ -2586,7 +2586,7 @@ row.render("!", suffix="?")
     [Fact]
     public void ConstantBranches_DoNotAnalyzeUnreachableStaticErrors()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 value = None
 if value is None:
@@ -2605,7 +2605,7 @@ value.find(1)
     [Fact]
     public void ArgparseNamespaceShapeFlow_ReportTyposAndMemberMisuseAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import argparse
 
@@ -2630,7 +2630,7 @@ args.max_rounds + "x"
     [Fact]
     public void RegexMaybeMatchRefinements_ReportGuardedMemberErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import re
 
@@ -2658,7 +2658,7 @@ first("abc").find(1)
     [Fact]
     public void RegexExpandedContracts_ReportKnownMembersAndShapeErrorsAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import re
 
@@ -2698,7 +2698,7 @@ re.purge(1)
     [Fact]
     public void DataclassHelperShapeFlow_ReportHelperMisuseAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from dataclasses import asdict, astuple, dataclass, field, fields, replace
 
@@ -2725,7 +2725,7 @@ replace(row, hidden="y")
     [Fact]
     public void DataclassExpandedHelperSurface_IsAcceptedAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from dataclasses import Field, dataclass, field, fields, make_dataclass
 
@@ -2744,7 +2744,7 @@ Dynamic = make_dataclass("Dynamic", [("x", int)])
     [Fact]
     public void SealedPrimitiveDataclassAndDictSurfaces_ReportProvableTyposAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from dataclasses import asdict, dataclass
 
@@ -2771,7 +2771,7 @@ asdict(row)["nmae"]
     [Fact]
     public void KnownCallAbstractTypeContracts_ReportAliasBackedRuntimeTypeErrors()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import json
 import os
@@ -2792,7 +2792,7 @@ subprocess.run(["rg", 1])
     [Fact]
     public void RegexSummaries_ReportImpossibleGroupsAndLiteralNoMatch()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import re
 
@@ -2814,7 +2814,7 @@ n.group()
     [Fact]
     public void ExactStarArgumentExpansion_FeedsShapeAndSemanticContracts()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from pathlib import Path
 import re
@@ -2839,7 +2839,7 @@ re.search(*args)
     [Fact]
     public void ExpandedSysContracts_RecognizeMetadataAndReportBadCalls()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import sys
 
@@ -2865,7 +2865,7 @@ sys.audit("event", 1)
 
         Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
 
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import sys
 
@@ -2884,7 +2884,7 @@ sys.audit()
     [Fact]
     public void BooleanLiteralsPassMoreIntegerContracts()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import math, random, re, difflib
 print(random.randint(True, 5))
@@ -2902,7 +2902,7 @@ print(difflib.SequenceMatcher(None, "abcd", "abXcd").find_longest_match(True, 4,
     [Fact]
     public void BooleanFalseStillFailsPositiveIntegerContracts()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import difflib
 print(difflib.get_close_matches("a", ["a", "b"], n=False))
@@ -2915,7 +2915,7 @@ print(difflib.get_close_matches("a", ["a", "b"], n=False))
     [Fact]
     public void BooleanLiteralsPassOptionalIntegerContracts()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 print("a,b,c".split(",", True))
 print("aaa".replace("a", "b", True))
@@ -2931,7 +2931,7 @@ print(random.choices([1, 2], k=True))
     [Fact]
     public async Task CounterBitwiseOperators_AcceptCounterPairsAtCompileTime()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             from collections import Counter
@@ -2962,7 +2962,7 @@ print(random.choices([1, 2], k=True))
     [Fact]
     public void CounterBitwiseXor_StillRejectedAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from collections import Counter
             c = Counter({"a": 1})
@@ -2976,7 +2976,7 @@ print(random.choices([1, 2], k=True))
     [Fact]
     public async Task OrderedDictSubscript_AcceptsStoredKeysAtCompileTime()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import collections
             o = collections.OrderedDict(a=1)
@@ -3006,7 +3006,7 @@ print(random.choices([1, 2], k=True))
     [Fact]
     public async Task FixedAndDynamicDictShapes_AcceptStoredKeysAtCompileTime()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             import os
@@ -3039,7 +3039,7 @@ print(random.choices([1, 2], k=True))
     [Fact]
     public void AsDict_StillRejectsUnknownKeysAtCompileTime()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import statistics
             r = statistics.linear_regression([1, 2], [3, 4])
@@ -3052,7 +3052,7 @@ print(random.choices([1, 2], k=True))
     [Fact]
     public async Task MatchGroups_AcceptsStoredIndexesAtCompileTime()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import re
             m = re.search("(a)(b)", "cab")
@@ -3080,7 +3080,7 @@ print(random.choices([1, 2], k=True))
     [Fact]
     public void MatchCaseReachability_ReportsUnreachablePatterns()
     {
-        var capture = new LythonEngine().Compile(
+        var capture = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             x = 1
             match x:
@@ -3092,7 +3092,7 @@ print(random.choices([1, 2], k=True))
         Assert.False(capture.IsValid);
         Assert.Contains(capture.Diagnostics, d => d.Code == "LA1106" && d.Message.Contains("name capture 'y' makes remaining patterns unreachable", StringComparison.Ordinal));
 
-        var wildcard = new LythonEngine().Compile(
+        var wildcard = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             x = 1
             match x:
@@ -3104,7 +3104,7 @@ print(random.choices([1, 2], k=True))
         Assert.False(wildcard.IsValid);
         Assert.Contains(wildcard.Diagnostics, d => d.Code == "LA1106" && d.Message.Contains("wildcard makes remaining patterns unreachable", StringComparison.Ordinal));
 
-        var nestedOr = new LythonEngine().Compile(
+        var nestedOr = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             x = 1
             match x:
@@ -3116,7 +3116,7 @@ print(random.choices([1, 2], k=True))
         Assert.False(nestedOr.IsValid);
         Assert.Contains(nestedOr.Diagnostics, d => d.Code == "LA1106" && d.Message.Contains("name capture 'y' makes remaining patterns unreachable", StringComparison.Ordinal));
 
-        var guarded = new LythonEngine().Compile(
+        var guarded = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             x = 1
             match x:
@@ -3127,7 +3127,7 @@ print(random.choices([1, 2], k=True))
             """);
         Assert.True(guarded.IsValid);
 
-        var trailing = new LythonEngine().Compile(
+        var trailing = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             x = 1
             match x:
@@ -3138,7 +3138,7 @@ print(random.choices([1, 2], k=True))
             """);
         Assert.True(trailing.IsValid);
 
-        var starred = new LythonEngine().Compile(
+        var starred = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             x = [1]
             match x:

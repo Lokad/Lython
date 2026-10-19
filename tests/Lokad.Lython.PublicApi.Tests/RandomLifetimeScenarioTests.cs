@@ -30,7 +30,7 @@ public class RandomLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedRandomDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import random\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(random.Random())\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };

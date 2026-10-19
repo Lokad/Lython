@@ -42,7 +42,7 @@ public sealed class ReadmeExampleTests
     [Fact]
     public void RepresentativeScriptProducesBothOutputs()
     {
-        var script = new LythonEngine().Compile(LoadRepresentativeScript());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(LoadRepresentativeScript());
         Assert.True(script.IsValid, string.Join("\n", script.Diagnostics.Select(d => d.Message)));
         var host = new MockLythonHost();
         host.SeedFile(

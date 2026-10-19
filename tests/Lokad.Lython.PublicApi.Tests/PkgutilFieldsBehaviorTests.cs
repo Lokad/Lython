@@ -12,7 +12,7 @@ public sealed class PkgutilFieldsBehaviorTests
     [Fact]
     public async Task FieldsTupleIsShared()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import pkgutil
             a = pkgutil.ModuleInfo(None, "m", False)
             b = pkgutil.ModuleInfo(None, "n", True)
@@ -32,7 +32,7 @@ public sealed class PkgutilFieldsBehaviorTests
     [Fact]
     public async Task AsDictBehaves()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import pkgutil
             mi = pkgutil.ModuleInfo(None, "m", True)
             d = mi._asdict()

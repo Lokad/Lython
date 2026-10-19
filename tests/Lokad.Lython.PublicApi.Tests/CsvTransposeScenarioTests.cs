@@ -15,7 +15,7 @@ public sealed class CsvTransposeScenarioTests
             host.SeedFile(file.Key, file.Value);
         }
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -32,7 +32,7 @@ public sealed class CsvTransposeScenarioTests
     [Fact]
     public void InvalidQuotedRow_FailsWithCsvError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 rows = list(csv.reader(["\"broken"]))
@@ -50,7 +50,7 @@ rows = list(csv.reader(["\"broken"]))
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 writer = csv.writer()
@@ -73,7 +73,7 @@ __lython_file.close()
     [Fact]
     public void Writerows_WithNonIterableArgument_FailsWithTypeError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 writer = csv.writer()
@@ -89,7 +89,7 @@ writer.writerows(None)
     [Fact]
     public void Writerow_WithNonScalarCell_FailsWithTypeError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 writer = csv.writer()
@@ -108,7 +108,7 @@ writer.writerow([["nested"]])
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 rows = list(csv.reader(["\"a,b\",\"c\"\"d\"", "plain,tail"]))
@@ -128,7 +128,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 writer = csv.writer()
@@ -151,7 +151,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 writer = csv.writer()
@@ -172,7 +172,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 rows = list(csv.reader([",,\"\",tail"]))
@@ -192,7 +192,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 rows = csv.reader(["name\tvalue", "alpha\t1"], delimiter = "\t")
@@ -214,7 +214,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 rows = csv.reader(["😀,é", "\"é,😀\",ok"])

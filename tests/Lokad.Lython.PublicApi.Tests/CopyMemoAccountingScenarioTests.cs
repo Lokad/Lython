@@ -13,7 +13,7 @@ public sealed class CopyMemoAccountingScenarioTests
     {
         // Scalar copies never touch the memo, so only its construction backing
         // can accumulate: 500 operations must fit in 64KiB.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import copy
             i = 0
@@ -37,7 +37,7 @@ public sealed class CopyMemoAccountingScenarioTests
         // One shared input list isolates per-operation costs: each result
         // leaks its own backing either way, but memo scratch must not add up.
         var ownerBudget = new LythonMemoryBudget(262144);
-        using var script = new LythonEngine().Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import copy
             src = [1, 2]
@@ -68,7 +68,7 @@ public sealed class CopyMemoAccountingScenarioTests
     [Fact]
     public async Task DeepCopySharingAndCyclesBehave()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import copy
             shared = [1]

@@ -22,7 +22,7 @@ except ValueError:
 row = next(reader)
 return [row['kind'], int(row['amount']), next(reader, None)]
 """;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { "good", new System.Numerics.BigInteger(2), null }, result.ReturnValue);
@@ -78,7 +78,7 @@ return [row['kind'], int(row['amount']), next(reader, None)]
             : indent + "if not held:\n" + indent + "    held.append(" + capture + ")\n";
         source = "held = []\n" + source.Replace(needle, insertion + needle) + "\nassert source.closed\nreturn held[0]\n";
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var delayed = asynchronous ? new DelayedLythonHost() : null;

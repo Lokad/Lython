@@ -30,7 +30,7 @@ public sealed class RawDescriptorGetTests
     public async Task GetterSlotsFollowPythonRawCallSemantics(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -85,7 +85,7 @@ public sealed class RawDescriptorGetTests
             + "\nassert result is payload\nwith open('result.txt','w') as output: output.write('ok')";
         var paths = item ? new[] { "/get.txt", "/item.txt" } : new[] { "/get.txt" };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -131,7 +131,7 @@ public sealed class RawDescriptorGetTests
     public async Task RawGetterResultsRemainFundedAcrossExecutions(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("payload=['x'*4096]\nclass Descriptor:\n def __get__(self,obj,owner): return payload\nclass Box: value=Descriptor()\nreturn Box().value", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("payload=['x'*4096]\nclass Descriptor:\n def __get__(self,obj,owner): return payload\nclass Box: value=Descriptor()\nreturn Box().value", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
@@ -152,7 +152,7 @@ public sealed class RawDescriptorGetTests
     [InlineData("class Descriptor:\n @property\n def __get__(self): raise AssertionError('must not bind')\nclass Box: value=Descriptor()\ndef run(obj):\n return obj.value\nrun(Box())", 6, 7)]
     public async Task InvalidRawGettersKeepTargetAndCallerSpans(string source, int line, int callerLine)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {

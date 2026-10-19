@@ -32,7 +32,7 @@ public sealed class ImportedDeferredGraphScenarioTests
     {
         var item = "g = ([" + string.Concat(Enumerable.Repeat("1,", 20000)) + "1] for i in range(1))\n";
         var host = SeededHost(["m0", "m1", "m2"], [item, item, item], out var allowed, out var imports);
-        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "print(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576), AllowedLocalModules = allowed };
         AssertMemoryError(script.Run(host, options), 1048576);
@@ -46,7 +46,7 @@ public sealed class ImportedDeferredGraphScenarioTests
     {
         var body = "def f():\n    return '" + new string('x', 250000) + "'\n";
         var host = SeededHost(["m0", "m1", "m2"], [body, body, body], out var allowed, out var imports);
-        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "print(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576), AllowedLocalModules = allowed };
         AssertMemoryError(script.Run(host, options), 1048576);
@@ -60,7 +60,7 @@ public sealed class ImportedDeferredGraphScenarioTests
     {
         var body = "def f():\n    return [" + string.Concat(Enumerable.Repeat("1,", 10000)) + "1]\n";
         var host = SeededHost(["m0", "m1", "m2"], [body, body, body], out var allowed, out var imports);
-        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "print(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3145728), AllowedLocalModules = allowed };
         AssertMemoryError(script.Run(host, options), 3145728);
@@ -92,7 +92,7 @@ public sealed class ImportedDeferredGraphScenarioTests
         host.SeedFile("/m0.py", moduleBody);
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "m0" };
         var baseline = allowance.ReservedBytes;
-        using var script = new LythonEngine().Compile(entry, allowance);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(entry, allowance);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         using var result = script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget), AllowedLocalModules = allowed });
         Assert.True(result.Success, result.Failure?.Message);
@@ -110,7 +110,7 @@ public sealed class ImportedDeferredGraphScenarioTests
         host.SeedFile("/m0.py", moduleBody);
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "m0" };
         var baseline = allowance.ReservedBytes;
-        using var script = new LythonEngine().Compile(entry, allowance);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(entry, allowance);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         using var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget), AllowedLocalModules = allowed });
         Assert.True(result.Success, result.Failure?.Message);
@@ -126,7 +126,7 @@ public sealed class ImportedDeferredGraphScenarioTests
     {
         var item = "f = lambda: '" + new string('x', 250000) + "'\n";
         var host = SeededHost(["m0", "m1", "m2"], [item, item, item], out var allowed, out var imports);
-        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "print(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576), AllowedLocalModules = allowed };
         AssertMemoryError(script.Run(host, options), 1048576);
@@ -142,7 +142,7 @@ public sealed class ImportedDeferredGraphScenarioTests
         // host-owned compilation, so big uncalled entry graphs fit.
         var source = "g = ([" + string.Concat(Enumerable.Repeat("1,", 20000)) + "1] for i in range(1))\n"
             + "f = lambda: '" + new string('x', 250000) + "'\nreturn 1\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(1);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
@@ -162,7 +162,7 @@ public sealed class ImportedDeferredGraphScenarioTests
     {
         var item = "g = ([" + string.Concat(Enumerable.Repeat("1,", 2000)) + "1] for i in range(1))\n";
         var host = SeededHost(["m0", "m1", "m2"], [item, item, item], out var allowed, out var imports);
-        var script = new LythonEngine().Compile(imports + "return len(list(m0.g)[0]) + len(list(m1.g)[0]) + len(list(m2.g)[0])\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "return len(list(m0.g)[0]) + len(list(m1.g)[0]) + len(list(m2.g)[0])\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(6003);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2097152), AllowedLocalModules = allowed };
@@ -182,7 +182,7 @@ public sealed class ImportedDeferredGraphScenarioTests
         var lit = "def f():\n    return '" + new string('x', 2500) + "'\n";
         var wide = "def f():\n    return [" + string.Concat(Enumerable.Repeat("1,", 100)) + "1]\n";
         var host = SeededHost(["m0", "m1"], [lit, wide], out var allowed, out var imports);
-        var script = new LythonEngine().Compile(imports + "return len(m0.f()) + len(m1.f())\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "return len(m0.f()) + len(m1.f())\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(2601);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576), AllowedLocalModules = allowed };

@@ -19,7 +19,7 @@ public sealed class SyntaxValidityTests
     [InlineData("def f():\n    print(end='', end='')")]
     public async Task InvalidProgramsFailBeforeAnyGuestEffects(string source)
     {
-        var compiled = new LythonEngine().Compile("print('side effect')\n" + source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('side effect')\n" + source);
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA1100" && d.Span is not null);
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
@@ -32,7 +32,7 @@ public sealed class SyntaxValidityTests
     [Fact]
     public async Task ValidContextsAndRuntimeKeywordCollisionsRemainSupported()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             for x in range(2):
                 for y in range(2):
                     break

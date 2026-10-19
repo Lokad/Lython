@@ -13,7 +13,7 @@ public sealed class DecimalContextSingletonScenarioTests
     [Fact]
     public async Task SharedContextsKeepIdentity()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             checks = [decimal.DefaultContext is decimal.DefaultContext]
@@ -42,7 +42,7 @@ public sealed class DecimalContextSingletonScenarioTests
     [Fact]
     public async Task SharedContextsRetainFree()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             ds = []

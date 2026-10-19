@@ -17,7 +17,7 @@ public sealed class BinaryFileWindowAndLifecycleTests
             print(count)
             """;
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
         foreach (var asynchronous in new[] { false, true })
@@ -50,7 +50,7 @@ public sealed class BinaryFileWindowAndLifecycleTests
     {
         var payload = Enumerable.Repeat((byte)'A', 16 * 1024 - 1)
             .Concat(new byte[] { 13, 10, 255, 0, 10, (byte)'B' }).ToArray();
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             with open('/source.bin','rb') as f:
                 line = f.readline()
                 print(len(line),line[-2:].hex(),f.tell())
@@ -70,7 +70,7 @@ public sealed class BinaryFileWindowAndLifecycleTests
     [Fact]
     public async Task ShortHostWindowsDoNotMeanEndOfFile()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             with open('/source.bin','rb') as f:
                 print(f.read(7).hex(),f.tell())
                 print(f.read(5).hex(),f.tell(),f.read().hex())
@@ -95,7 +95,7 @@ public sealed class BinaryFileWindowAndLifecycleTests
     [InlineData("f=open('/output.bin','wb'); f.write(b'abc'); raise ValueError('original')", false)]
     public async Task UnclosedBinaryWritersFollowExecutionEndPublication(string source, bool success)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -111,7 +111,7 @@ public sealed class BinaryFileWindowAndLifecycleTests
     public async Task UnclosedBinaryWriterAwaitsPublication()
     {
         var host = new DelayedLythonHost();
-        var result = await new LythonEngine().RunAsync("open('/output.bin','wb').write(b'abc')", host);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync("open('/output.bin','wb').write(b'abc')", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new byte[] { 97, 98, 99 }, host.ReadBytes("/output.bin"));
         Assert.True(host.CompletedAsynchronously >= 2);

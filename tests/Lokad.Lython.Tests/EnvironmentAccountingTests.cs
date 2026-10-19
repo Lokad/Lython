@@ -15,7 +15,7 @@ public sealed class EnvironmentAccountingTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(
             host,
-            new LythonRunOptions { Environment = new Dictionary<string, string> { ["a"] = "b", ["c"] = "d" } });
+            new LythonRunOptions { Environment = new Dictionary<string, string> { ["a"] = "b", ["c"] = "d" } },regexProvider:Utf8RegexProvider.Instance);
         Assert.Equal(80L + (32L * 2), context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Equal(2, context.State.Environment.Count);
@@ -25,7 +25,7 @@ public sealed class EnvironmentAccountingTests
     public void EmptyEnvironmentStaysFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }

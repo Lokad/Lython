@@ -30,7 +30,7 @@ public sealed class JsonTokenExecutionTests
     public async Task TokenDecodingPreservesPythonBehavior(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -59,7 +59,7 @@ public sealed class JsonTokenExecutionTests
         var source = "import json\ndef hook(value):\n with open('hook.txt','a') as output: output.write('x')\n if isinstance(value,list): value=dict(value)\n assert value['café😀']==expected\n return value\nresult=json.loads(source,"
             + (pairs ? "object_pairs_hook" : "object_hook") + "=hook)\nassert list(result)==['café😀']\nprint('ok')";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -109,7 +109,7 @@ public sealed class JsonTokenExecutionTests
         var expected = new string('a', 4096);
         var document = mapping ? "{\"" + expected + "\":\"" + expected + "\"}" : "\"" + expected + "\"";
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["source"] = document } };
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
@@ -136,7 +136,7 @@ public sealed class JsonTokenExecutionTests
     public async Task HostDrivenJsonBatchesReturnAllowanceToBaseline(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var script = new LythonEngine().Compile("import json\nrows=json.loads(source)\nreturn [len(rows),sum(len(row['note']) for row in rows)]", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\nrows=json.loads(source)\nreturn [len(rows),sum(len(row['note']) for row in rows)]", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var document = "[" + string.Join(",", Enumerable.Repeat("{\"kind\":\"blue\",\"note\":\"café😀\"}", 64)) + "]";

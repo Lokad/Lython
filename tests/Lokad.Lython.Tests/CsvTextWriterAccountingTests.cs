@@ -11,7 +11,7 @@ public sealed class CsvTextWriterAccountingTests
     public void DeniedEscapingRowNeverReachesTheCallbackOrLeaksBuilderCapacity()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(500) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(500) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var callback = new CapturingWrite();
         var writer = CreateWriter(context, span, callback);
@@ -35,7 +35,7 @@ public sealed class CsvTextWriterAccountingTests
     [InlineData(true)]
     public async Task CallbackReceivesAnOwnedStringAndItsResultIsPreserved(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var callback = new CapturingWrite();
         var writer = CreateWriter(context, span, callback);

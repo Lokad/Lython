@@ -182,7 +182,7 @@ public sealed class MatchGuardScopeTests
                         print(x, "go")
                 """,
         };
-        var compiled = new LythonEngine().Compile("from pathlib import Path\n" + source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("from pathlib import Path\n" + source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var immediate = new MockLythonHost();
         immediate.SeedFile("/guard.txt", "go");
@@ -199,7 +199,7 @@ public sealed class MatchGuardScopeTests
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

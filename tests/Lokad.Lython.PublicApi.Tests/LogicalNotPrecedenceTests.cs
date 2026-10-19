@@ -17,7 +17,7 @@ public sealed class LogicalNotPrecedenceTests
     [InlineData("'yes' if not 1 == 2 else 'no'", "yes")]
     public async Task ExpressionsFollowPythonPrecedence(string expression, string expected)
     {
-        var compiled = new LythonEngine().Compile($"print({expression})");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile($"print({expression})");
         Assert.True(compiled.IsValid);
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -31,5 +31,5 @@ public sealed class LogicalNotPrecedenceTests
     [InlineData("-not 2")]
     [InlineData("2 ** not 2")]
     public void LogicalNotCannotBeAnArithmeticOperand(string expression)
-        => Assert.False(new LythonEngine().Compile("print(" + expression + ")").IsValid);
+        => Assert.False(new LythonEngine(Utf8RegexProvider.Instance).Compile("print(" + expression + ")").IsValid);
 }

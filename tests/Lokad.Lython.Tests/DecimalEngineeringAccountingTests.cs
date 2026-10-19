@@ -14,7 +14,7 @@ public sealed class DecimalEngineeringAccountingTests
     public void ToEngineeringStringCommitsExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var member = LythonRuntime.DecimalMembers.TryGetMember(new PyDecimal(1.5m), "to_eng_string", out var value)
             ? value

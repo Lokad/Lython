@@ -21,7 +21,7 @@ public sealed class ExactIntegerAdditionTests
 
     private static async Task AssertResult(string source, string expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         var asyncResult = await script.RunAsync(new MockLythonHost());
@@ -46,7 +46,7 @@ public sealed class ExactIntegerAdditionTests
     [InlineData("value += i")]
     public async Task RetainedHeapAdditionResultsKeepTheirCharges(string addition)
     {
-        var script = new LythonEngine().Compile($"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
             seed = 1 << 10000
             values = []
             for i in range(20000):

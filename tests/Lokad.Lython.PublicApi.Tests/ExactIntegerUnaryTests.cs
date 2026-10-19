@@ -13,7 +13,7 @@ public sealed class ExactIntegerUnaryTests
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         var expression = token switch { "abs" => "abs(-seed)", "abs-positive" => "abs(seed)", _ => token + "seed" };
-        using var script = new LythonEngine().Compile("return " + expression, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return " + expression, budget);
         var baseline = budget.ReservedBytes;
         var seed = System.Numerics.BigInteger.One << 10000;
         var expected = token == "-" ? -seed : token == "~" ? ~seed : seed;
@@ -47,7 +47,7 @@ public sealed class ExactIntegerUnaryTests
     public async Task ScalarAndExcludedProtocolsMatchPython(string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -84,7 +84,7 @@ value={{token}}Number(7)
 print(value)
 """;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

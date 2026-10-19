@@ -17,7 +17,7 @@ def key(value):
 return sorted(items, key=key)
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var pausedHost = new DelayedLythonHost();
@@ -85,7 +85,7 @@ return sorted(items, key=key)
             + "target=sorted\nordered=" + (expanded ? "target(*[[3,1,2]],**{'key':key})" : "target([3,1,2],key=key)")
             + "\nprint(ordered)\nreturn ordered";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

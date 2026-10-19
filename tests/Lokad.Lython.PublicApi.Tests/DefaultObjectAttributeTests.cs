@@ -8,7 +8,7 @@ public sealed class DefaultObjectAttributeTests
     [MemberData(nameof(Cases))]
     public async Task AttributeSlotsPreservePythonBehaviorInBothModes(string source)
     {
-        var compiled = new LythonEngine().Compile(source + "\nreturn 'ok'\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source + "\nreturn 'ok'\n");
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var asynchronous in new[] { false, true })
         {
@@ -212,7 +212,7 @@ public sealed class DefaultObjectAttributeTests
     [InlineData(true)]
     public async Task DefaultSlotsAwaitPropertiesAndKeepOverlappingRunsDistinct(bool setter)
     {
-        var compiled = new LythonEngine().Compile(SuspendingProperty(setter));
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(SuspendingProperty(setter));
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var first = new DelayedLythonHost();
         var second = new DelayedLythonHost();
@@ -230,7 +230,7 @@ public sealed class DefaultObjectAttributeTests
     [InlineData(true)]
     public async Task CancelingSuspendedPropertyKeepsCompiledScriptReusable(bool setter)
     {
-        var compiled = new LythonEngine().Compile(SuspendingProperty(setter));
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(SuspendingProperty(setter));
         Assert.True(compiled.IsValid);
         var host = new DelayedLythonHost();
         host.SeedFile("/value", "paused");
@@ -277,7 +277,7 @@ public sealed class DefaultObjectAttributeTests
         var source = "class C:\n def get(self):return 0\n def put(self,value):\n  with open('/value') as f:self.saved=f.read()\n value=property(get,put)\nclass Work:\n def run(self,c):\n" +
             string.Join('\n', assignment.Split('\n').Select(line => "  " + line)) +
             "\nc=C()\nWork().run(c)\nreturn c.saved\n";
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var host = new DelayedLythonHost();
         host.SeedFile("/value", "stored");
@@ -294,7 +294,7 @@ public sealed class DefaultObjectAttributeTests
     {
         var source = "class C:\n def remove(self):\n  with open('/value') as f:self.saved=f.read()\n value=property(None).deleter(remove)\nc=C()\n" +
             (explicitSlot ? "object.__delattr__(c,'value')" : "del c.value") + "\nreturn c.saved\n";
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var host = new DelayedLythonHost();
         host.SeedFile("/value", "deleted");
@@ -314,7 +314,7 @@ public sealed class DefaultObjectAttributeTests
         // Writing saved must delegate to the object slot to avoid reentering
         // the custom setter while its descriptor is still binding.
         source = source.Replace("obj.saved=f.read()", "object.__setattr__(obj,'saved',f.read())", StringComparison.Ordinal);
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var host = new DelayedLythonHost();
         host.SeedFile("/value", "bound");

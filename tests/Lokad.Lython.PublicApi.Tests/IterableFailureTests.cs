@@ -32,7 +32,7 @@ public sealed class IterableFailureTests
                 seen.append(str(ex))
             return seen
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { "'Evil' object is not iterable", "'Evil' object is not iterable", "'Evil' object is not iterable" },
@@ -61,7 +61,7 @@ public sealed class IterableFailureTests
                 seen.append(str(ex))
             return seen
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { "'Evil' object is not iterable", "'Evil' object is not iterable" },
@@ -87,7 +87,7 @@ public sealed class IterableFailureTests
                 seen.append(str(ex))
             return seen
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { "cannot unpack non-iterable int object", "'int' object is not iterable", "cannot convert 'float' object to bytes" },
@@ -110,7 +110,7 @@ public sealed class IterableFailureTests
                 seen.append(str(ex))
             return seen
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { "'Evil' object is not iterable" },
@@ -137,7 +137,7 @@ public sealed class IterableFailureTests
                 seen.append(str(ex))
             return seen
             """;
-        var result = await new LythonEngine().RunAsync(code, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { "'Evil' object is not iterable", "'Evil' object is not iterable" },

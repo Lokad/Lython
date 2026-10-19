@@ -9,7 +9,7 @@ public sealed class ReviewHardening4RegressionTests
     [Fact]
     public void CallUnpackingRespectsMemoryBudget()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def take(*args):
     return len(args)
@@ -30,7 +30,7 @@ take(*range(100000))
     [Fact]
     public async Task CallUnpackingRespectsMemoryBudgetAsync()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 def take(*args):
     return len(args)
@@ -51,7 +51,7 @@ take(*range(100000))
     [Fact]
     public void SliceMaterializationStaysCorrectUnderBudget()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = list(range(2000))
 every = values[::1]
@@ -79,7 +79,7 @@ return [len(every), len(sparse), len(letters), every[1999], sparse[0], letters[0
         {
             MemoryBudget = new LythonMemoryBudget(262144)
         };
-        var baseline = new LythonEngine().Run(
+        var baseline = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = list(range(2000))
 return len(values)
@@ -88,7 +88,7 @@ return len(values)
             options);
         Assert.True(baseline.Success, baseline.Failure?.Message);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = list(range(2000))
 every = values[::1]

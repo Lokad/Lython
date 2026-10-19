@@ -17,7 +17,7 @@ public sealed class CounterDecimalAccountingTests
     public void CounterDecimalIncrementsPreserveValuesAndAliases()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var key = PyString.FromString("a");
         var counter = new PyCounter(context.MemoryGovernor, span);
@@ -34,7 +34,7 @@ public sealed class CounterDecimalAccountingTests
     public void CounterDecimalTotalsPreserveValuesAndAliases()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var counter = new PyCounter(context.MemoryGovernor, span);
         counter.SetItem(PyString.FromString("a"), new PyDecimal(1m));
@@ -51,7 +51,7 @@ public sealed class CounterDecimalAccountingTests
     public void UngovernedCounterDecimalsStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var counter = new PyCounter();
         counter.SetItem(PyString.FromString("a"), new PyDecimal(1m));
@@ -64,7 +64,7 @@ public sealed class CounterDecimalAccountingTests
     public void CounterDecimalSubtractsPreserveValuesAndAliases()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var key = PyString.FromString("a");
         var counter = new PyCounter(context.MemoryGovernor, span);
@@ -102,7 +102,7 @@ public sealed class CounterDecimalAccountingTests
     public void CounterDecimalOperatorsPreserveValuesAndAliases()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var key = PyString.FromString("a");
         static PyCounter CounterWith(LythonRuntime.ExecutionContext context, LythonSourceSpan span, object key, object value)
@@ -136,7 +136,7 @@ public sealed class CounterDecimalAccountingTests
     public void CounterBitwiseSelectionsPreserveAliasesAndFundStorage()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var key = PyString.FromString("a");
         static PyCounter CounterWith(LythonRuntime.ExecutionContext context, LythonSourceSpan span, object key, object value)

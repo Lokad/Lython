@@ -20,14 +20,14 @@ public sealed class AnnotatedHelperExecutionTests
     [InlineData("def outer():\n result:int\n result=7\n def inner():return result\n return inner\nreturn outer")]
     public async Task OrdinaryAnnotatedBodiesRemainExecutable(string source)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         Assert.False(code.RequiresLocalVariableMirroring);
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
             using (var owner = budget.CreateScope())
             {
-                var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+                var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
                 var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
                     : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
                 Assert.IsType<PyExecutableFunction>(result);

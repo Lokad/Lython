@@ -10,7 +10,7 @@ public sealed class ReturnDeliveryScenarioTests
 {
     private static async Task AssertBothModes(string script, Action<LythonExecutionResult, MockLythonHost> assert)
     {
-        var compiled = new LythonEngine().Compile(script);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(script);
         Assert.True(compiled.IsValid);
         var syncHost = new MockLythonHost();
         assert(compiled.Run(syncHost, new LythonRunOptions()), syncHost);

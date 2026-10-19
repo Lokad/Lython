@@ -304,7 +304,7 @@ public sealed class GeneratorDefinitionCompositionTests : LifetimeScenario
             "class" => "\ndef generate():\n try:\n  @(yield 'decorator')\n  class Child((yield 'base'),**(yield 'mapping')):\n   value=Path('/number.txt').read_text()\n  yield Child.value\n finally:Path('/closed.txt').write_text('closed')\ng=generate()\nprint(next(g),g.send(decorate),g.send(Base),g.send(Mapping()))\ng.close()\n",
             _ => "\ndef generate():\n try:\n  run=lambda value=(yield 'default'),*,tail=int(Path('/number.txt').read_text()):value+tail\n  yield run()\n finally:Path('/closed.txt').write_text('closed')\ng=generate()\nprint(next(g),g.send(7))\ng.close()\n",
         };
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var immediate = new MockLythonHost();
         immediate.SeedFile("/number.txt", "2");
@@ -331,7 +331,7 @@ public sealed class GeneratorDefinitionCompositionTests : LifetimeScenario
             await AssertBatchCompletes(source.Replace("range(2000)", "range(8)") + "return run() == 7\n", true, 262144);
             return;
         }
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
@@ -352,7 +352,7 @@ public sealed class GeneratorDefinitionCompositionTests : LifetimeScenario
     [InlineData("def outer():\n class Child[T]((yield 1)):pass")]
     public void AnnotationScopesRejectSuspensionBeforeEffects(string source)
     {
-        var compiled = new LythonEngine().Compile("print('must not execute')\n" + source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('must not execute')\n" + source);
         Assert.False(compiled.IsValid);
         Assert.Equal("", compiled.Run(new MockLythonHost()).StandardOutput);
     }
@@ -373,7 +373,7 @@ public sealed class GeneratorDefinitionCompositionTests : LifetimeScenario
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

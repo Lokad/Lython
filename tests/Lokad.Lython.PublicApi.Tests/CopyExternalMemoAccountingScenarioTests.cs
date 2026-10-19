@@ -23,7 +23,7 @@ public sealed class CopyExternalMemoAccountingScenarioTests
     [Fact]
     public async Task ExternalMemoMirrorStaysCharged()
     {
-        var script = new LythonEngine().Compile(BuildExternalMemoCopy);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildExternalMemoCopy);
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is 9534720, so this fits; the 128B-per-entry
         // mirror backstop (+2560000) pushes the post-fix peak past 12MB.
@@ -40,7 +40,7 @@ public sealed class CopyExternalMemoAccountingScenarioTests
     [Fact]
     public async Task RoomyExternalMemoCopySucceeds()
     {
-        var script = new LythonEngine().Compile(BuildExternalMemoCopy);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildExternalMemoCopy);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(33554432) };
         var expected = new List<object?> { new BigInteger(20000), true };
@@ -56,7 +56,7 @@ public sealed class CopyExternalMemoAccountingScenarioTests
     [Fact]
     public async Task ExternalMemoSharesCopies()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import copy
             shared = [1]

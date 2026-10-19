@@ -193,7 +193,7 @@ public sealed class DirectStringStartsWithTests
 
     private static (ExecutableScript, LythonRuntime.ExecutionContext) Prepare(string source, LythonRunOptions? options = null, string method = "startswith")
     {
-        var frontend = LythonFrontend.Compile(source.Replace("startswith", method, StringComparison.Ordinal));
+        var frontend = LythonFrontend.Compile(source.Replace("startswith", method, StringComparison.Ordinal),regexProvider:Utf8RegexProvider.Instance);
         return (ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())), new(new MockLythonHost(), options ?? new()));
     }
 

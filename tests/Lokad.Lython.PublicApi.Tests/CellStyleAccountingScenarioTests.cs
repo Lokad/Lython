@@ -12,7 +12,7 @@ public sealed class CellStyleAccountingScenarioTests
     [Fact]
     public async Task ManyStyledCellsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             from openpyxl.styles import Font
@@ -39,7 +39,7 @@ public sealed class CellStyleAccountingScenarioTests
     [Fact]
     public async Task StyleBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             from openpyxl.styles import Font

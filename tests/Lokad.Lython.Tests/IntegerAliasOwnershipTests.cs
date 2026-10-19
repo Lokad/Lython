@@ -14,7 +14,7 @@ public sealed class IntegerAliasOwnershipTests
     [InlineData("round")]
     public void BuiltinAliasesReuseTheActualOwner(string name)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         Assert.True(context.TryGetBuiltin(name, out var builtin));
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(builtin);
         object receiver = BigInteger.One << 4000;
@@ -35,7 +35,7 @@ public sealed class IntegerAliasOwnershipTests
     [InlineData("__round__")]
     public void MemberAliasesReuseTheActualOwner(string member)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         object receiver = BigInteger.One << 4000;
         LythonRuntime.OwnFreshInteger(receiver, context.MemoryGovernor, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -51,7 +51,7 @@ public sealed class IntegerAliasOwnershipTests
     [InlineData("round")]
     public void ChangedMagnitudesStillOwnTheirNewPayload(string name)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         Assert.True(context.TryGetBuiltin(name, out var builtin));
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(builtin);
         object receiver = -(BigInteger.One << 4000);

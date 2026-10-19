@@ -11,15 +11,6 @@
           "JetBrains.Annotations": "11.1.0"
         }
       },
-      "Lokad.Utf8Regex.PythonRe": {
-        "type": "Direct",
-        "requested": "[0.2.0, )",
-        "resolved": "0.2.0",
-        "contentHash": "8aQ2gzf/tKiUJBq86eHe4HqO1AstEf5e6WNZQcxtuNMmkAuRC8iDZTnciayuurf7X4covUD5O+AtEIByQjhDxA==",
-        "dependencies": {
-          "Lokad.Utf8Regex": "0.2.0"
-        }
-      },
       "Microsoft.SourceLink.GitHub": {
         "type": "Direct",
         "requested": "[10.0.401, )",
@@ -35,11 +26,6 @@
         "type": "Transitive",
         "resolved": "11.1.0",
         "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
-      },
-      "Lokad.Utf8Regex": {
-        "type": "Transitive",
-        "resolved": "0.2.0",
-        "contentHash": "AK2u9bIayI3bqbHvuRYuyB9pUVbzIMhimSsFhy7GAvESangIWACzc1TdJWHKFoXD2hus0F+G1MFj343tPdeAUg=="
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",

@@ -13,7 +13,7 @@ public sealed class ExecutableLoopTargetTests
     [InlineData("def run(values):\n return [left+right for left,right in values]")]
     public void LoopGroupsUseExecutableOperations(string source)
     {
-        var syntax = LythonFrontend.Compile(source).Script!;
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
@@ -33,7 +33,7 @@ public sealed class ExecutableLoopTargetTests
     {
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         var sink = new ExecutableUnpackingTests.Sink();
         var outerSink = new ExecutableUnpackingTests.Sink();
         using var values = new ExecutableUnpackingTests.LimitAfterEnumeration(context.MemoryGovernor, limit);
@@ -45,7 +45,7 @@ public sealed class ExecutableLoopTargetTests
         var input = nested ? "outer" : "source";
         var source = comprehension ? "[None for " + target + " in [" + input + "]]"
             : "for " + target + " in [" + input + "]: pass";
-        var syntax = LythonFrontend.Compile(source).Script!;
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         try
         {

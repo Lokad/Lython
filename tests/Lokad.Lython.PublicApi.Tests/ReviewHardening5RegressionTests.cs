@@ -25,7 +25,7 @@ public sealed class ReviewHardening5RegressionTests
                 cts.Cancel();
             }
         };
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import difflib
 matcher = difflib.SequenceMatcher(None, "x" * 4000, "x" * 4000, autojunk=False)
@@ -54,7 +54,7 @@ return i
         {
             MemoryBudget = new LythonMemoryBudget(327680)
         };
-        var baseline = new LythonEngine().Run(
+        var baseline = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import difflib
 matcher = difflib.SequenceMatcher(None, list(range(3000)), list(range(3000)))
@@ -65,7 +65,7 @@ return matcher.ratio()
         Assert.True(baseline.Success, baseline.Failure?.Message);
         Assert.Equal(1.0, baseline.ReturnValue);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import difflib
 matcher = difflib.SequenceMatcher(None, list(range(3000)), list(range(3000)))
@@ -83,7 +83,7 @@ return matcher.ratio()
     [Fact]
     public void DissimilarSequencesCompareCorrectly()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import difflib
 matcher = difflib.SequenceMatcher(None, "a" * 2000, "b" * 2000)
@@ -97,7 +97,7 @@ return [matcher.ratio(), matcher.quick_ratio(), matcher.find_longest_match().siz
     [Fact]
     public void SetSeqInvalidationUpdatesRatios()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import difflib
 matcher = difflib.SequenceMatcher(None, "abcd", "abXcd")

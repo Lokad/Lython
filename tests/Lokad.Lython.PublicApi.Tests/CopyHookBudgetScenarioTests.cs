@@ -14,7 +14,7 @@ public sealed class CopyHookBudgetScenarioTests
     [Fact]
     public async Task HookBuiltResultsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import copy
             class Big:
@@ -38,7 +38,7 @@ public sealed class CopyHookBudgetScenarioTests
     [Fact]
     public async Task HookFailureCleansUp()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import copy
             results = []

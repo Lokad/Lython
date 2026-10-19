@@ -13,7 +13,7 @@ public sealed class ListConstructionHandoffTests
     // Complete records frozen on19cd6654 before runtime changes.
     private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
     private static readonly ExecutableCodeObject Code = ExecutableScript.Compile(
-        LoweredScript.Lower(LythonFrontend.Compile("return list(source)").Script!)).EntryPoint;
+        LoweredScript.Lower(LythonFrontend.Compile("return list(source)",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     public static IEnumerable<object[]> Cases()
     {
@@ -70,7 +70,7 @@ public sealed class ListConstructionHandoffTests
         var budget = new LythonMemoryBudget(512 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var value = PyString.FromString(new string('x', 4096), context.MemoryGovernor, Span);
             var source = new PendingCleanup(value);
             var list = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["list"]);
@@ -119,7 +119,7 @@ public sealed class ListConstructionHandoffTests
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MemoryBudget = owner,                     });
+            MemoryBudget = owner,                     },regexProvider:Utf8RegexProvider.Instance);
         var events = new List<string>();
         var count = shape.Contains("empty", StringComparison.Ordinal) ? 0 : shape.Contains("wide", StringComparison.Ordinal) ? 65 : 2;
         context.Variables["source"] = shape.StartsWith("known", StringComparison.Ordinal)

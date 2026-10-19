@@ -14,7 +14,7 @@ public sealed class ModuleSingletonBehaviorTests
     [Fact]
     public async Task ModuleSingletonsAliasStably()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             import sys
             sys.path.append("/x")

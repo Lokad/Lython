@@ -7,7 +7,7 @@ public sealed class IoExceptionTypeCompatibilityTests
     [Fact]
     public async Task UnsupportedOperationPreservesPythonTypeProtocols()
     {
-        var script = new LythonEngine().Compile("from io import UnsupportedOperation as U\nprint(U.__name__,U.__module__,isinstance(U,type),issubclass(U,OSError),issubclass(U,ValueError))\nerror=U('unavailable')\nprint(type(error) is U,isinstance(error,U),isinstance(error,(KeyError,ValueError)),str(error),error.args)\ntry: raise error\nexcept ValueError as caught: print(caught is error)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("from io import UnsupportedOperation as U\nprint(U.__name__,U.__module__,isinstance(U,type),issubclass(U,OSError),issubclass(U,ValueError))\nerror=U('unavailable')\nprint(type(error) is U,isinstance(error,U),isinstance(error,(KeyError,ValueError)),str(error),error.args)\ntry: raise error\nexcept ValueError as caught: print(caught is error)\n");
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {

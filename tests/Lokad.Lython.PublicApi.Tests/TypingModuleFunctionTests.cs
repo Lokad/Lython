@@ -9,7 +9,7 @@ public sealed class TypingModuleFunctionTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from typing import *
 
@@ -60,7 +60,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from typing import Dict, List, Optional, Union, get_args, get_origin
 
@@ -88,7 +88,7 @@ with open("/out.txt", "w") as output:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass, fields
 from typing import ClassVar, List
@@ -116,7 +116,7 @@ __lython_file.close()
     [Fact]
     public void TypingModule_StaticContractsAcceptCommonAnnotationHeavySnippets()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from dataclasses import dataclass
 from typing import *
@@ -140,7 +140,7 @@ args = get_args(Dict[str, int])
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import typing
 

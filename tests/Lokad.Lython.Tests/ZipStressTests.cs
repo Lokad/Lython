@@ -32,7 +32,7 @@ public sealed class ZipStressTests
     public void ManyTinyEntriesStayOrdered()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -55,7 +55,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void ManyEmptyDuplicatesCollapseToLast()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -77,7 +77,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     {
         var host = new MockLythonHost();
         host.SeedWorkbook("/big.bin", new byte[2_000_000]);
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w", strict_timestamps=False) as archive:
@@ -94,7 +94,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void DeclaredHugeSizesSerializeActualLengths()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -115,7 +115,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void TightMemoryBudgetFailsStagingExplicitly()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
@@ -138,7 +138,7 @@ return 1
         {
             var host = new MockLythonHost();
             host.SeedWorkbook("/t.zip", full[..cut]);
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    archive.testzip()\n",
                 host);
             if (result.Success)
@@ -162,7 +162,7 @@ return 1
             mutated[(sample * 97 + 7) % mutated.Length] ^= 0xFF;
             var host = new MockLythonHost();
             host.SeedWorkbook("/t.zip", mutated);
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    archive.testzip()\n",
                 host);
             if (result.Success)
@@ -182,7 +182,7 @@ return 1
         var host = new MockLythonHost();
         for (var i = 0; i < 200; i++)
         {
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 """
 import zipfile
 with zipfile.ZipFile("/c.zip", "w") as archive:
@@ -193,7 +193,7 @@ return 1
             Assert.True(result.Success, $"cycle {i}: {result.Failure?.Message}");
         }
 
-        var reread = new LythonEngine().Run(
+        var reread = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import zipfile\nwith zipfile.ZipFile(\"/c.zip\") as archive:\n    return archive.read(\"a\")\n",
             host);
         Assert.True(reread.Success, reread.Failure?.Message);
@@ -204,7 +204,7 @@ return 1
     public void DeepNestedExtractionStaysContained()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/t.zip", "w") as archive:
@@ -227,7 +227,7 @@ with zipfile.ZipFile("/t.zip") as archive:
         host.SeedBytes("/t.zip", File.ReadAllBytes(Path.Combine(FindCasesRoot(), "zip-deflated", "input.zip")));
         using var cancellation = new CancellationTokenSource();
         var readStarted = host.PauseReadUntilCancellation("/t.zip");
-        var task = new LythonEngine().RunAsync(
+        var task = new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    return archive.testzip()\n",
             host,
             cancellationToken: cancellation.Token);

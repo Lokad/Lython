@@ -21,7 +21,7 @@ public sealed class EscapedJsonStorageTests
         var budget = new LythonMemoryBudget(limit);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner});
+            { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var callable = Load(context);
         var governor = context.MemoryGovernor;
         var source = PyString.FromString("\"" + new string('x', 240) + "\\n\"", governor, Span);
@@ -54,7 +54,7 @@ public sealed class EscapedJsonStorageTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var callable = Load(context);
         var source = PyString.FromString("\"a\\n\\u03bb\\ud83d\\ude00\"", context.MemoryGovernor, Span);
         var before = budget.ReservedBytes;
@@ -66,7 +66,7 @@ public sealed class EscapedJsonStorageTests
         var held = budget.ReservedBytes;
         using (var otherOwner = budget.CreateScope())
         {
-            var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner });
+            var other = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = otherOwner },regexProvider:Utf8RegexProvider.Instance);
             _ = PyString.FromString(new string('x', 1024), other.MemoryGovernor, Span);
             Assert.True(budget.ReservedBytes > held);
         }
@@ -78,7 +78,7 @@ public sealed class EscapedJsonStorageTests
 
     private static LythonRuntime.ICallable Load(Context context)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn json.loads").Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn json.loads",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         return Assert.IsAssignableFrom<LythonRuntime.ICallable>(LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
     }
 

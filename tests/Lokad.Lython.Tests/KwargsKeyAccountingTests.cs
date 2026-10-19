@@ -30,7 +30,7 @@ public sealed class KwargsKeyAccountingTests
     public void KwargsKeysCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var bound = BindKwargs(context, span, "alpha", new BigInteger(1));
         var kwargs = (PyDict)bound.Values[0];

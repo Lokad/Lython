@@ -8,7 +8,7 @@ public sealed class FunctoolsModuleFunctionTests
     public void FunctoolsModule_Functions_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from functools import cmp_to_key, partial, reduce, total_ordering, update_wrapper, wraps
 
@@ -81,7 +81,7 @@ __lython_file.close()
     public void FunctoolsModule_ExpandedHelpers_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from functools import (
     WRAPPER_ASSIGNMENTS,
@@ -282,7 +282,7 @@ functools.reduce(lambda a, b: a + b, [])
         "reduce() of empty iterable with no initial value")]
     public void FunctoolsModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -292,7 +292,7 @@ functools.reduce(lambda a, b: a + b, [])
     [Fact]
     public void ReduceEmptyFailure_MatchesCpythonExactly()
     {
-        var result = new LythonEngine().Run("import functools\nfunctools.reduce(lambda a, b: a + b, [])\n", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("import functools\nfunctools.reduce(lambda a, b: a + b, [])\n", new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -303,7 +303,7 @@ functools.reduce(lambda a, b: a + b, [])
     [Fact]
     public void SingleDispatch_SelectsNearestRegisteredMroType()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from functools import singledispatch
 
@@ -330,7 +330,7 @@ return f(Child()) + "|" + f.dispatch(Child)(Child())
     [Fact]
     public void SingleDispatch_ResolvesExplicitObjectRegistration()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from functools import singledispatch
 
@@ -351,7 +351,7 @@ return f(1) + "|" + f("x")
     [Fact]
     public void LruCache_MaintainsConstantTimeRecencyAndSkipsItWhenUnbounded()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from functools import cache, lru_cache
 
@@ -397,7 +397,7 @@ return "|".join([
     [Fact]
     public void SingleDispatch_PublicDispatchUsesBuiltinMroResolution()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from functools import singledispatch
 
@@ -418,7 +418,7 @@ return f(True) + "|" + f.dispatch(bool)(True)
     [Fact]
     public void CmpToKey_WrappersExposeComparatorBackedRichComparisons()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from functools import cmp_to_key
 

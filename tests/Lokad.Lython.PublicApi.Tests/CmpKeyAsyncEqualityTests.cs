@@ -21,7 +21,7 @@ public sealed class CmpKeyAsyncEqualityTests
     public async Task OrdinaryWrappedEqualityPreservesResultsAndEffects(string expression, bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(Source(expression), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source(expression), budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new MockLythonHost(); host.SeedFile("/events.txt", "before");
@@ -39,7 +39,7 @@ public sealed class CmpKeyAsyncEqualityTests
     public async Task WrappedEqualityAwaitsIOAndCancellation(string expression, bool cancel)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(Source(expression), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source(expression), budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost(); host.SeedFile("/events.txt", "before");
@@ -82,7 +82,7 @@ public sealed class CmpKeyAsyncEqualityTests
         var source = "try:\n" + string.Join("\n", body.Split('\n').Select(line => " " + line)) +
             "\nexcept MemoryError:print('caught')\nprint('after')";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) };

@@ -13,7 +13,7 @@ public sealed class WorkbookMutationAccountingScenarioTests
     [Fact]
     public async Task ManyMutatedCellsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             wb = openpyxl.Workbook()
@@ -38,7 +38,7 @@ public sealed class WorkbookMutationAccountingScenarioTests
     [Fact]
     public async Task CellMutationBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             wb = openpyxl.Workbook()

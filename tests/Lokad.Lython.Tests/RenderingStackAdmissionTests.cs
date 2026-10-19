@@ -14,7 +14,7 @@ public sealed class RenderingStackAdmissionTests
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var dictionary = new PyDict(); dictionary.SetItem(BigInteger.One, BigInteger.One);
         object value = kind switch { "list" => new PyList([BigInteger.One]), "tuple" => new PyTuple([BigInteger.One]), _ => dictionary };
         context.Limits.CurrentInterpreterDepth = LythonRuntime.ExecutionLimits.MaxInterpreterDepth - 1;

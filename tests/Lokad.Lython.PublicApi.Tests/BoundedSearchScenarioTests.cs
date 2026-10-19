@@ -15,7 +15,7 @@ public sealed class BoundedSearchScenarioTests
 
     private static async Task AssertCompletes(string source, string expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(new MockLythonHost(), Budgeted(ThreeMib));
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -27,7 +27,7 @@ public sealed class BoundedSearchScenarioTests
 
     private static async Task AssertValue(string source, object expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(new MockLythonHost(), new LythonRunOptions());
         Assert.True(sync.Success, sync.Failure?.Message);

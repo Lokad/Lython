@@ -15,7 +15,7 @@ public sealed class PartialValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedPartialsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import functools
             def add(a, b):
                 return a + b
@@ -42,7 +42,7 @@ public sealed class PartialValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedPartialMethodsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import functools
             def add(a, b):
                 return a + b
@@ -67,7 +67,7 @@ public sealed class PartialValueAccountingScenarioTests
     [Fact]
     public async Task PartialFactoriesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import functools
             def add(a, b):
                 return a + b

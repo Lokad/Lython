@@ -8,7 +8,7 @@ public sealed class EagerComprehensionExecutionTests
     public async Task ReturnedStorageStaysFundedAfterIterationScopeEnds()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("return [seed for value in range(2)]", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return [seed for value in range(2)]", budget);
         var baseline = budget.ReservedBytes;
         var seed = System.Numerics.BigInteger.One << 10000;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["seed"] = seed } };
@@ -42,7 +42,7 @@ public sealed class EagerComprehensionExecutionTests
     [MemberData(nameof(Programs))]
     public async Task EagerScopesMatchPython(string source, string expected)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var asynchronous in new[] { false, true })
         {
@@ -75,7 +75,7 @@ def convert(value):
 print([convert(value) for value in Values() if Guard(value)])
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

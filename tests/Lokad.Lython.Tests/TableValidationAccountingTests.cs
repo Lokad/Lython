@@ -41,7 +41,7 @@ public sealed class TableValidationAccountingTests
     public void ConstructedValuesCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = Create("CreateTable", [], context, span);
         _ = Create("CreateTableStyleInfo", [], context, span);
@@ -54,7 +54,7 @@ public sealed class TableValidationAccountingTests
     public void ContextFreeValuesStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         _ = Create("CreateTable", [], null, null);
         _ = Create("CreateTableStyleInfo", [], null, null);
         _ = Create("CreateDataValidation", [], null, null);
@@ -66,7 +66,7 @@ public sealed class TableValidationAccountingTests
     public void RegistryEntriesCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.AttachMemoryGovernor(context.MemoryGovernor, span);
@@ -82,7 +82,7 @@ public sealed class TableValidationAccountingTests
     public void CopyCarriesRegistryTotals()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.AttachMemoryGovernor(context.MemoryGovernor, span);
@@ -99,7 +99,7 @@ public sealed class TableValidationAccountingTests
     public void UngovernedRegistriesStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = Call(sheet, context, span, "add_table", new LythonRuntime.OpenPyxlTable("T1", "A1:B2"));

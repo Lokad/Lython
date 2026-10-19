@@ -62,7 +62,7 @@ public sealed class PyStringPrimitiveTests
         // reuses it instead of charging again (ASCII results are cached
         // singletons, so the table is the only charge here).
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var text = PyString.FromString("abé", context.MemoryGovernor, span);
         var alias = text;
@@ -80,7 +80,7 @@ public sealed class PyStringPrimitiveTests
         // Full decodes stay transient: repeated reads return equal values
         // without committing or retaining anything.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var text = PyString.FromString("héllo wörld", context.MemoryGovernor, span);
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;

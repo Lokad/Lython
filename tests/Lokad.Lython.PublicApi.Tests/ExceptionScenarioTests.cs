@@ -10,7 +10,7 @@ public sealed class ExceptionScenarioTests
         var fixture = FixtureLoader.Load(Path.Combine("Language", "Exceptions", "RaiseCatchAndFinally"));
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);

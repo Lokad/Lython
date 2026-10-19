@@ -49,7 +49,7 @@ public class ImportedCodeRetentionScenarioTests
     public async Task UncalledImportedBodiesStayCharged()
     {
         var host = SeededHost(3, LargeStatements, out var allowed, out var imports);
-        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "print(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget), AllowedLocalModules = allowed };
         AssertMemoryError(script.Run(host, options));
@@ -61,7 +61,7 @@ public class ImportedCodeRetentionScenarioTests
     public async Task FundedImportedBodiesSucceedAndRun()
     {
         var host = SeededHost(3, LargeStatements, out var allowed, out var imports);
-        var script = new LythonEngine().Compile(imports + "return m2.f2()\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "return m2.f2()\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(1);
         var sync = script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(FundedBudget), AllowedLocalModules = allowed });
@@ -78,7 +78,7 @@ public class ImportedCodeRetentionScenarioTests
     public async Task SmallImportedBodiesFitTightBudget()
     {
         var host = SeededHost(1, SmallStatements, out var allowed, out var imports);
-        var script = new LythonEngine().Compile(imports + "return m0.f0()\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "return m0.f0()\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(1);
         var sync = script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget), AllowedLocalModules = allowed });
@@ -97,7 +97,7 @@ public class ImportedCodeRetentionScenarioTests
         var host = new MockLythonHost();
         host.SeedFile("/m0.py", "print('loaded')\n" + BigFunction("f0", SharedStatements));
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "m0" };
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import m0\nimport m0\nfrom m0 import f0\nimport m0 as mm\nassert mm is m0 and f0 is m0.f0\nreturn f0() + mm.f0()\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(2);
@@ -128,7 +128,7 @@ public class ImportedCodeRetentionScenarioTests
             imports += "import p" + i + "\n";
         }
 
-        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "print(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget), AllowedLocalModules = allowed });
         AssertMemoryError(sync);
@@ -154,7 +154,7 @@ public class ImportedCodeRetentionScenarioTests
         var host = new MockLythonHost();
         host.SeedFile("/k.py", body);
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "k" };
-        var script = new LythonEngine().Compile("import k\nprint(3)\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import k\nprint(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         AssertMemoryError(script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget), AllowedLocalModules = allowed }));
 
@@ -172,7 +172,7 @@ public class ImportedCodeRetentionScenarioTests
         host.SeedFile("/n0.py", body);
         host.SeedFile("/n1.py", body);
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "n0", "n1" };
-        var script = new LythonEngine().Compile("import n0\nimport n1\nprint(3)\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import n0\nimport n1\nprint(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         AssertMemoryError(script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget), AllowedLocalModules = allowed }));
 
@@ -192,7 +192,7 @@ public class ImportedCodeRetentionScenarioTests
         var host = new MockLythonHost();
         host.SeedFile("/loop.py", loopModule);
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "loop" };
-        var script = new LythonEngine().Compile("import loop\nassert loop.fs[0]() == 1\nassert loop.fs[-1]() == 1\nreturn len(loop.fs)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import loop\nassert loop.fs[0]() == 1\nassert loop.fs[-1]() == 1\nreturn len(loop.fs)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(LoopDefinitions);
         var sync = script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(LoopRetainBudget), AllowedLocalModules = allowed });
@@ -223,7 +223,7 @@ public class ImportedCodeRetentionScenarioTests
             imports += "import m" + i + "\n";
         }
 
-        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "print(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget), AllowedLocalModules = allowed };
         AssertMemoryError(script.Run(host, options));
@@ -253,7 +253,7 @@ public class ImportedCodeRetentionScenarioTests
             imports += "import m" + i + "\n";
         }
 
-        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "print(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget), AllowedLocalModules = allowed };
         AssertMemoryError(script.Run(host, options));
@@ -280,7 +280,7 @@ public class ImportedCodeRetentionScenarioTests
             host.SeedFile("/" + name + ".py", "__name__ = '__main__'\n" + BigFunction("f" + name.Substring(1), LargeStatements));
         }
 
-        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "print(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget), AllowedLocalModules = allowed };
         AssertMemoryError(script.Run(host, options));
@@ -298,7 +298,7 @@ public class ImportedCodeRetentionScenarioTests
     public async Task OrdinarySizedBodiesStayCharged()
     {
         var host = SeededHost(3, 3000, out var allowed, out var imports);
-        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "print(3)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget), AllowedLocalModules = allowed };
         AssertMemoryError(script.Run(host, options));
@@ -312,7 +312,7 @@ public class ImportedCodeRetentionScenarioTests
     {
         // The other direction: entry-script definitions alias the reusable
         // host-owned compilation, so a big uncalled main body fits.
-        var script = new LythonEngine().Compile(BigFunction("f", LargeStatements) + "return f()\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BigFunction("f", LargeStatements) + "return f()\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(1);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };

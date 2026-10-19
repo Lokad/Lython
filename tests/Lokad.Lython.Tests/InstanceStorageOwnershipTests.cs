@@ -83,7 +83,7 @@ public sealed class InstanceStorageOwnershipTests
     [InlineData(true)]
     public async Task AllocatorAliasNeedsNoDiscardedPlaceholder(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) },regexProvider:Utf8RegexProvider.Instance);
         var allocator = new Allocator();
         var type = new PyType("Alias", [], new() { ["__new__"] = allocator });
         var instance = new PyInstance(type, context.MemoryGovernor, Span);
@@ -100,7 +100,7 @@ public sealed class InstanceStorageOwnershipTests
     [InlineData(true)]
     public async Task AllocatorForeignResultNeedsNoInstanceFunding(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) },regexProvider:Utf8RegexProvider.Instance);
         var wanted = new object();
         var type = new PyType("Foreign", [], new() { ["__new__"] = new Allocator { Result = wanted } });
         PinRemaining(context.MemoryGovernor);
@@ -121,7 +121,7 @@ public sealed class InstanceStorageOwnershipTests
     public void CancellationDuringDeepcopyReleasesStagingButKeepsPinnedScratch()
     {
         using var cancellation = new CancellationTokenSource();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { CancellationToken = cancellation.Token });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var hook = new CancelCopy(cancellation);
         var objectType = Assert.IsType<PyType>(context.State.BuiltinVariables["object"]);
         var hookType = new PyType("Cancel", [objectType], new() { ["__deepcopy__"] = hook });

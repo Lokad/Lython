@@ -25,7 +25,7 @@ public sealed class DirectPrefixExecutionTests
             + "def argument():\n with open('argument.txt','a') as output: output.write('x')\n text[0]='other'\n return ('a',None)\nassert "
             + call + "\nassert text[0]=='other'\nprint('ok')";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -68,7 +68,7 @@ public sealed class DirectPrefixExecutionTests
     public async Task ExposedReceiverAliasesRemainFundedAcrossExecutions(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("text='a'*4096\nold=text\ncallback=text.startswith\ntext='other'\nassert callback('a') and old.startswith('a')\nreturn old", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("text='a'*4096\nold=text\ncallback=text.startswith\ntext='other'\nassert callback('a') and old.startswith('a')\nreturn old", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
@@ -88,7 +88,7 @@ public sealed class DirectPrefixExecutionTests
     [InlineData("(None,)")]
     public async Task InvalidPrefixesKeepCallAndCallerSpans(string value)
     {
-        using var script = new LythonEngine().Compile("def run(text,value):\n return text.startswith(value)\nrun('abc'," + value + ")");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("def run(text,value):\n return text.startswith(value)\nrun('abc'," + value + ")");
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {

@@ -38,7 +38,7 @@ public sealed class IntegerRenderingAdmissionTests
             using (var owner = budget.CreateScope())
             {
                 var context = new Context(new MockLythonHost(), new LythonRunOptions
-                    { MemoryBudget = owner});
+                    { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
                 var governor = context.MemoryGovernor;
                 var inputBytes = RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(65537) + 64;
                 governor.Reserve(inputBytes, null);
@@ -81,7 +81,7 @@ public sealed class IntegerRenderingAdmissionTests
         var controlBudget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = controlBudget.CreateScope())
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var before = context.MemoryGovernor.CurrentCommittedBytes;
             _ = Render(value, context, mode);
             working = context.MemoryGovernor.PeakAccountedBytes - context.MemoryGovernor.CurrentCommittedBytes;
@@ -94,7 +94,7 @@ public sealed class IntegerRenderingAdmissionTests
         var budget = new LythonMemoryBudget(limit);
         using (var owner = budget.CreateScope())
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             Assert.True(budget.TryReserve(limit - budget.ReservedBytes - working - 1, out var padding));
             using (padding)
             {
@@ -119,7 +119,7 @@ public sealed class IntegerRenderingAdmissionTests
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var before = budget.ReservedBytes;
             var result = Render(BigInteger.One << 256, context, mode);
             Assert.Equal(BigInteger.One << 256, BigInteger.Parse(result.AsString()));
@@ -140,7 +140,7 @@ public sealed class IntegerRenderingAdmissionTests
     public async Task RenderingPreservesResultsAndArgumentEffects(string route, bool asynchronous)
     {
         var source = "return " + (route == "format" ? "f'{argument()}'" : route + "(argument())");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
         {
@@ -154,7 +154,7 @@ public sealed class IntegerRenderingAdmissionTests
 
     private static (Context, Argument) Prepare(ILythonMemoryBudget owner)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var argument = new Argument();
         context.Variables["argument"] = argument;
         return (context, argument);

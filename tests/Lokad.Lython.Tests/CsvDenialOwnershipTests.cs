@@ -21,7 +21,7 @@ public sealed class CsvDenialOwnershipTests
         var budget = new LythonMemoryBudget(Cap);
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner});
+            { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var governor = context.MemoryGovernor;
         var source = new LythonRuntime.CsvRecordSource(new PyList([]),
             Options() with { Quoting = LythonRuntime.CsvQuotingMode.NonNumeric }, Span, context);
@@ -319,7 +319,7 @@ public sealed class CsvDenialOwnershipTests
             .GetField("_parser", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(source)!;
 
     private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? budget = null) => new(new MockLythonHost(),
-        new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(Cap) });
+        new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(Cap) },regexProvider:Utf8RegexProvider.Instance);
 
     private static LythonRuntime.CsvOptions Options() => new(PyStringOps.CommaLiteral,
         PyString.FromString("\""), LythonRuntime.CsvQuotingMode.Minimal, true, null,

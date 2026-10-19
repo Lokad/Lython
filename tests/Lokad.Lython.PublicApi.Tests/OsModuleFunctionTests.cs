@@ -10,7 +10,7 @@ public sealed class OsModuleFunctionTests
         var host = new MockLythonHost("/repo/work");
         host.SeedFile("/repo/docs/a.txt", string.Empty);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 from pathlib import Path
@@ -50,7 +50,7 @@ __lython_file.close()
         var host = new MockLythonHost("/repo/work");
         host.SeedFile("/repo/docs/a.txt", string.Empty);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 from os import path
@@ -93,7 +93,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 from os import environ
@@ -145,7 +145,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 __lython_file = open("/out.txt", "w")
@@ -164,7 +164,7 @@ __lython_file.close()
         var host = new MockLythonHost("/repo");
         using var cancellation = new CancellationTokenSource();
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import os
 __lython_file = open("/out.txt", "w")
@@ -192,7 +192,7 @@ __lython_file.close()
         host.SeedFile("/repo/docs/a.txt", "alpha");
         host.SeedFile("/repo/docs/sub/b.txt", "beta");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 from pathlib import Path
@@ -236,7 +236,7 @@ __lython_file.close()
         host.SeedFile("/repo/docs/a.txt", "alpha");
         host.SeedFile("/repo/docs/sub/b.txt", "beta");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 
@@ -262,7 +262,7 @@ __lython_file.close()
         host.SeedFile("/repo/a.txt", "a");
         host.SeedFile("/repo/b.txt", "b");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 __lython_file = open("/out.txt", "w")
@@ -281,7 +281,7 @@ __lython_file.close()
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/tmp.txt", "x");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 
@@ -312,7 +312,7 @@ __lython_file.close()
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/a.txt", "a");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             $"""
 import os
 {expression}
@@ -333,7 +333,7 @@ import os
         host.SeedFile("/repo/docs/a/alpha.txt", "a");
         host.SeedFile("/repo/docs/b/beta.txt", "b");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 
@@ -360,7 +360,7 @@ __lython_file.close()
         host.SeedFile("/repo/docs/a/alpha.txt", "a");
         host.SeedFile("/repo/docs/b/beta.txt", "b");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 
@@ -394,7 +394,7 @@ __lython_file.close()
         host.SeedFile("/repo/docs/b/beta.txt", "b");
         host.FailListDir("/repo/docs/a", "blocked a");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 
@@ -426,7 +426,7 @@ __lython_file.close()
         host.SeedFile("/repo/docs/a/alpha.txt", "a");
         host.SeedFile("/repo/docs/b/beta.txt", "b");
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import os
 
@@ -455,7 +455,7 @@ __lython_file.close()
         var host = new DelayedLythonHost("/repo");
         host.SeedFile("/repo/docs/root.txt", "r");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 
@@ -479,7 +479,7 @@ for root, dirs, files in os.walk("/repo/docs"):
         host.SeedFile("/repo/tmp/keep.txt", "keep");
         host.SeedFile("/repo/tmp/sub/leaf.txt", "leaf");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 
@@ -514,7 +514,7 @@ __lython_file.close()
         host.SeedFile("/repo/tmp/keep.txt", "keep");
         host.SeedFile("/repo/tmp/sub/leaf.txt", "leaf");
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import os
 
@@ -588,7 +588,7 @@ os.path.samefile("/repo/missing.txt", "/repo/also-missing.txt")
         "both paths")]
     public void OsModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost("/repo"));
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost("/repo"));
 
         Assert.False(result.Success);
         if (exceptionType == "compile")
@@ -619,7 +619,7 @@ list(os.walk("/repo", onerror="boom"))
         "callable or None")]
     public void OsModule_ProvableNearMissContracts_FailAtCompileTime(string source, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost("/repo"));
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost("/repo"));
 
         Assert.False(result.Success);
         Assert.Null(result.Failure);
@@ -629,7 +629,7 @@ list(os.walk("/repo", onerror="boom"))
     [Fact]
     public async Task OsModule_Environ_IsSharedSingleton()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             a = os.environ
             b = os.environ
@@ -654,7 +654,7 @@ list(os.walk("/repo", onerror="boom"))
     [Fact]
     public async Task BuiltinCallableSelf()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import builtins
             import math
             import datetime

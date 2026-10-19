@@ -29,7 +29,7 @@ public sealed class UserItemGetProtocolTests
     public async Task ImplicitItemReadsUseTypeSlots(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -90,7 +90,7 @@ public sealed class UserItemGetProtocolTests
         var paths = augmented ? new[] { "/bind.txt", "/call.txt", "/rhs.txt", "/store.txt" }
             : new[] { "/bind.txt", "/call.txt" };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -136,7 +136,7 @@ public sealed class UserItemGetProtocolTests
     public async Task ReturnedKeyAliasesRemainFundedAcrossExecutions(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("class Box:\n def __getitem__(self,key): return key\npayload=['x'*4096]\nreturn Box()[payload]", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("class Box:\n def __getitem__(self,key): return key\npayload=['x'*4096]\nreturn Box()[payload]", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
@@ -157,7 +157,7 @@ public sealed class UserItemGetProtocolTests
     [InlineData("class Box: __getitem__=None\ndef run(obj):\n return obj[0]\nrun(Box())", 3, 4)]
     public async Task ItemFailuresKeepTheirTargetAndCallerSpans(string source, int line, int callerLine)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {

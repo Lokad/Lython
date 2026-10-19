@@ -13,7 +13,7 @@ public sealed class RangeValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedRangesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             rs = []
             i = 0
@@ -36,7 +36,7 @@ public sealed class RangeValueAccountingScenarioTests
     [Fact]
     public async Task RangeBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile("return [list(range(3)), len(list(range(10)))]\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return [list(range(3)), len(list(range(10)))]\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { new List<object?> { new BigInteger(0), new BigInteger(1), new BigInteger(2) }, new BigInteger(10) };
         var sync = script.Run(new MockLythonHost());

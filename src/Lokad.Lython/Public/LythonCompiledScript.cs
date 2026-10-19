@@ -161,29 +161,6 @@ public sealed class LythonCompiledScript : IDisposable
         var mergedOptions = MergeCancellation(options, cancellationToken, out var linkedCancellation);
         return RunAndDisposeAsync(host, mergedOptions, linkedCancellation);
 
-        static LythonRunOptions? MergeCancellation(
-            LythonRunOptions? options,
-            CancellationToken cancellationToken,
-            out CancellationTokenSource? linkedCancellation)
-        {
-            linkedCancellation = null;
-            if (!cancellationToken.CanBeCanceled)
-            {
-                return options;
-            }
-
-            var effectiveCancellation = cancellationToken;
-            if (options?.CancellationToken.CanBeCanceled == true)
-            {
-                linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken, cancellationToken);
-                effectiveCancellation = linkedCancellation.Token;
-            }
-
-            return options is null
-                ? new LythonRunOptions { CancellationToken = effectiveCancellation }
-                : options.WithCancellation(effectiveCancellation);
-        }
-
         async Task<LythonExecutionResult> RunAndDisposeAsync(
             ILythonHost runHost,
             LythonRunOptions? runOptions,
@@ -217,4 +194,28 @@ public sealed class LythonCompiledScript : IDisposable
             }
         }
     }
+    internal static LythonRunOptions? MergeCancellation(
+        LythonRunOptions? options,
+        CancellationToken cancellationToken,
+        out CancellationTokenSource? linkedCancellation)
+    {
+        linkedCancellation = null;
+        if (!cancellationToken.CanBeCanceled)
+        {
+            return options;
+        }
+
+        var effectiveCancellation = cancellationToken;
+        if (options?.CancellationToken.CanBeCanceled == true)
+        {
+            linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken, cancellationToken);
+            effectiveCancellation = linkedCancellation.Token;
+        }
+
+        return options is null
+            ? new LythonRunOptions { CancellationToken = effectiveCancellation }
+            : options.WithCancellation(effectiveCancellation);
+    }
+
+
 }

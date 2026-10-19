@@ -5,6 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Using Include="Lokad.Lython.Utf8Regex" />
+    <Compile Include="../../src/Lokad.Lython.Utf8Regex/**/*.cs"
+      Exclude="../../src/Lokad.Lython.Utf8Regex/bin/**;../../src/Lokad.Lython.Utf8Regex/obj/**"
+      LinkBase="Adapter" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Lokad.Parsing" />
     <PackageReference Include="Lokad.Utf8Regex.PythonRe" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

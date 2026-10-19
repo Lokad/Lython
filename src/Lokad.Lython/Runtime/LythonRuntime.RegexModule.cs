@@ -1,7 +1,6 @@
 using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
-using Lokad.Utf8Regex.PythonRe;
 
 namespace Lokad.Lython.Runtime;
 
@@ -19,13 +18,13 @@ internal sealed partial class LythonRuntime
         BigInteger EndPos,
         int CaptureSlotCount,
         IReadOnlyList<ReCapture?> Captures,
-        IReadOnlyDictionary<string, int> NamedGroups);
+        IReadOnlyDictionary<string, int> NamedGroups,
+        int? LastCapturedIndex);
 
     internal sealed record RePatternObject(
         PyString Pattern,
-        PythonReCompileOptions Options,
         int Flags,
-        Utf8PythonRegex Regex,
+        ILythonRegexPattern Regex,
         int CaptureSlotCount,
         IReadOnlyDictionary<string, int> NamedGroups) : IPyRenderableValue
     {
@@ -73,8 +72,8 @@ internal sealed partial class LythonRuntime
                 "fullmatch" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReFullMatch, FullMatch),
                 "findall" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReFindAll, FindAll),
                 "finditer" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReFindIter, FindIter),
-                "sub" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReSub, Substitute),
-                "subn" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReSubn, SubstituteCount),
+                "sub" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReSub, Substitute, (arguments, span, context) => ExecuteSubstituteCoreAsync(arguments, span, context, RegexSubstitutionMode.TextOnly, true)),
+                "subn" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReSubn, SubstituteCount, (arguments, span, context) => ExecuteSubstituteCoreAsync(arguments, span, context, RegexSubstitutionMode.TextAndCount, true)),
                 "split" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReSplit, Split),
                 "escape" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReEscape, Escape),
                 "purge" => BuiltinCallable.Create(LythonKnownCallableSignatures.RePurge, Purge),
@@ -139,7 +138,7 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             var inputs = RegexCompiler.CreateSplitInputs(arguments, "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos])", span, context);
-            return RegexMatcher.ProjectSplitResult(inputs.Pattern.Regex.SplitDetailed(inputs.Range.Segment.Utf8Bytes.Span, inputs.MaxSplit), span, context);
+            return RegexMatcher.Split(inputs.Pattern, inputs.Range, inputs.MaxSplit, span, context);
         }
 
         private object Escape(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -191,16 +190,7 @@ internal sealed partial class LythonRuntime
                 return PyNone.Instance;
             }
 
-            var match = mode switch
-            {
-                RegexMatchMode.Search => inputs.Pattern.Regex.SearchDetailedData(inputs.Range.Segment.Utf8Bytes.Span),
-                RegexMatchMode.Match => inputs.Pattern.Regex.MatchDetailedData(inputs.Range.Segment.Utf8Bytes.Span),
-                RegexMatchMode.FullMatch => inputs.Pattern.Regex.FullMatchDetailedData(inputs.Range.Segment.Utf8Bytes.Span),
-                _ => throw new InvalidOperationException(),
-            };
-            return match.Success
-                ? RegexMatcher.CreateMatchObject(inputs.Pattern, inputs.Range, match, context, span)
-                : PyNone.Instance;
+            return RegexMatcher.Match(inputs.Pattern, inputs.Range, (LythonRegexMatchMode)mode, span, context);
         }
 
         private static object ExecuteSubstitute(
@@ -208,6 +198,10 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context,
             RegexSubstitutionMode mode)
+            => ExecuteSubstituteCoreAsync(arguments, span, context, mode, false).GetAwaiter().GetResult();
+
+        private static ValueTask<object> ExecuteSubstituteCoreAsync(object[] arguments, LythonSourceSpan span,
+            ExecutionContext context, RegexSubstitutionMode mode, bool asynchronous)
         {
             context.CheckExecution(span);
             var operationName = mode == RegexSubstitutionMode.TextAndCount ? "subn" : "sub";
@@ -216,14 +210,10 @@ internal sealed partial class LythonRuntime
                 $"re.{operationName}(pattern, replacement, string[, count][, flags][, pos][, endpos])",
                 span,
                 context);
-            return RegexMatcher.ExecuteSubstitute(
-                inputs.Pattern,
-                inputs.Replacement,
-                inputs.Range,
-                inputs.Count,
-                span,
-                context,
-                mode);
+            return asynchronous ? RegexMatcher.ExecuteSubstituteAsync(inputs.Pattern, inputs.Replacement,
+                inputs.Range, inputs.Count, span, context, mode)
+                : new ValueTask<object>(RegexMatcher.ExecuteSubstitute(inputs.Pattern, inputs.Replacement,
+                    inputs.Range, inputs.Count, span, context, mode));
         }
 
         private enum RegexMatchMode

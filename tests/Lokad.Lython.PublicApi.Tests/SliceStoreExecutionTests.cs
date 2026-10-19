@@ -22,7 +22,7 @@ public sealed class SliceStoreExecutionTests
     [MemberData(nameof(Programs))]
     public async Task SliceHeadersPreservePythonValuesAndOrder(string name, string source, string expected)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, name);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -69,7 +69,7 @@ public sealed class SliceStoreExecutionTests
         var paths = new[] { "/rhs.txt", "/receiver.txt", "/start.txt", "/stop.txt", "/step.txt", "/bind.txt", "/set.txt" };
         var labels = new[] { "V", "R", "A", "O", "T", "B", "S" };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -114,7 +114,7 @@ public sealed class SliceStoreExecutionTests
     public async Task SliceAliasesRemainFundedAcrossExecutions(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("payload=['x'*4096]\ntarget=[None]\ntarget[:]=[payload]\nassert target[0] is payload\nreturn target", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("payload=['x'*4096]\ntarget=[None]\ntarget[:]=[payload]\nassert target[0] is payload\nreturn target", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))

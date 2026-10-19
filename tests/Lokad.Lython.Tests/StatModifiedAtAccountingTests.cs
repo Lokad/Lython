@@ -16,7 +16,7 @@ public sealed class StatModifiedAtAccountingTests
     public void ModifiedAtOwnsItsResult()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var stat = new LythonPathStat(LythonPathKind.File, new BigInteger(1), DateTimeOffset.UnixEpoch);
         Assert.True(PyMemberAccess.TryResolve(stat, "modified_at", context, span, out var value));
@@ -29,7 +29,7 @@ public sealed class StatModifiedAtAccountingTests
     public void OtherStatMembersStayPut()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var stat = new LythonPathStat(LythonPathKind.File, new BigInteger(1), DateTimeOffset.UnixEpoch);
         Assert.True(PyMemberAccess.TryResolve(stat, "exists", context, span, out var exists));

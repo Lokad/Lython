@@ -11,7 +11,7 @@ public sealed class Utf16CodecCompatibilityTests
     public async Task DecodingPositionCookiesFailExplicitly(string encoding, string seedHex)
     {
         var source = $"import gzip\nfrom pathlib import Path\nwith open('source.bin',encoding='{encoding}') as file:\n    file.read(1)\n    try: file.tell()\n    except NotImplementedError: print('reader cookie')\nwith gzip.open('output.bin','wt',encoding='{encoding}') as file:\n    file.write('A')\n    try: file.tell()\n    except NotImplementedError: print('gzip cookie')\nwith gzip.open('output.bin','rt',encoding='{encoding}') as file:\n    file.read(1)\n    try: file.tell()\n    except NotImplementedError: print('gzip cookie')\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -29,7 +29,7 @@ public sealed class Utf16CodecCompatibilityTests
     [InlineData("utf-16-be")]
     public async Task Utf16DoesNotCrossTheUtf8SubprocessBoundary(string encoding)
     {
-        var script = new LythonEngine().Compile("import subprocess\nfor call in [subprocess.run,subprocess.Popen]:\n    try: call(['tool'],encoding=codec)\n    except ValueError: print('unsupported')\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import subprocess\nfor call in [subprocess.run,subprocess.Popen]:\n    try: call(['tool'],encoding=codec)\n    except ValueError: print('unsupported')\n");
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -54,7 +54,7 @@ public sealed class Utf16CodecCompatibilityTests
         var text = new string('a', leading) + "\ud83d\ude00\r\n" + new string('b', 8190) + "\r\n\u03a9\rfinal";
         var bytes = (bigEndian ? System.Text.Encoding.BigEndianUnicode : System.Text.Encoding.Unicode).GetBytes(text);
         if (encoding == "utf-16") bytes = [.. (bigEndian ? new byte[] { 0xfe, 0xff } : new byte[] { 0xff, 0xfe }), .. bytes];
-        var script = new LythonEngine().Compile($"from pathlib import Path\nn={leading}\nencoding='{encoding}'\nwith open('source.bin',encoding=encoding,newline='') as file:\n    print(file.read(n)=='a'*n,repr(file.read(1)),repr(file.readline()),len(file.read()))\nprint(len(Path('source.bin').read_text(encoding=encoding,newline='')))\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"from pathlib import Path\nn={leading}\nencoding='{encoding}'\nwith open('source.bin',encoding=encoding,newline='') as file:\n    print(file.read(n)=='a'*n,repr(file.read(1)),repr(file.readline()),len(file.read()))\nprint(len(Path('source.bin').read_text(encoding=encoding,newline='')))\n");
         Assert.True(script.IsValid);
         var immediate = new MockLythonHost();
         immediate.SeedBytes("/source.bin", bytes);
@@ -79,7 +79,7 @@ public sealed class Utf16CodecCompatibilityTests
         var started = write ? host.PauseWriteUntilCancellation("/blob") : host.PauseReadUntilCancellation("/blob");
         var source = write ? "with open('/blob','w',encoding='utf-16') as f:\n    f.write('changed')\nprint('published')"
             : "with open('/blob',encoding='utf-16') as f:\n    print(f.read())";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         var pending = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
@@ -112,7 +112,7 @@ public sealed class Utf16CodecCompatibilityTests
     public async Task CodecSurfacesMatchPython(string name, string source, string expected)
     {
         _ = name;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {
@@ -148,7 +148,7 @@ public sealed class Utf16CodecCompatibilityTests
         _ = name;
         var host = new MockLythonHost();
         host.SeedBytes("/source.bin", Convert.FromHexString(seedHex));
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, result.StandardOutput);
         Assert.Equal(Convert.FromHexString(finalSourceHex), host.ReadBytes("/source.bin"));
@@ -162,7 +162,7 @@ public sealed class Utf16CodecCompatibilityTests
         _ = name;
         var host = new DelayedLythonHost();
         host.SeedBytes("/source.bin", Convert.FromHexString(seedHex));
-        var result = await new LythonEngine().RunAsync(source, host);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, result.StandardOutput);
         Assert.Equal(Convert.FromHexString(finalSourceHex), host.ReadBytes("/source.bin"));

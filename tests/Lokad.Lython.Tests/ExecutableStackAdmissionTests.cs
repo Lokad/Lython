@@ -17,7 +17,7 @@ public sealed class ExecutableStackAdmissionTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner});
+        { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var fill = new FillBudget(budget);
         var sink = new Sink(64);
         context.Variables["fill"] = fill;
@@ -47,7 +47,7 @@ public sealed class ExecutableStackAdmissionTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner});
+        { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var baseline = budget.ReservedBytes;
         var sink = new Sink(1024, pause: true);
         context.Variables["sink"] = sink;
@@ -82,7 +82,7 @@ public sealed class ExecutableStackAdmissionTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner});
+        { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var code = Compile("result=([" + string.Join(",", Enumerable.Range(0, 1024)) + "] for i in source)");
         var operation = Assert.Single(code.Constants.OfType<ExecutableCreateGeneratorExpression>());
         var generator = await LythonRuntime.PyGenerator.CreateExpressionAsync(operation.CodeObject, context,
@@ -114,7 +114,7 @@ public sealed class ExecutableStackAdmissionTests
 
     private static ExecutableCodeObject Compile(string source)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(frontend.Script);
         return ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
     }

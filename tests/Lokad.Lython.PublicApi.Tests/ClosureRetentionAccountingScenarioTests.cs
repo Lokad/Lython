@@ -20,7 +20,7 @@ public sealed class ClosureRetentionAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedClosuresStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def make(n):
                 x = n
                 def inner():
@@ -58,7 +58,7 @@ public sealed class ClosureRetentionAccountingScenarioTests
         }
 
         body.Append("    def inner():\n        return ").Append(total).Append("\n    return inner\nfuncs = []\ni = 0\nwhile i < 3000:\n    funcs.append(make(i))\n    i = i + 1\nreturn len(funcs)\n");
-        var script = new LythonEngine().Compile(body.ToString());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(body.ToString());
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(WideClosureBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -73,7 +73,7 @@ public sealed class ClosureRetentionAccountingScenarioTests
     [Fact]
     public async Task ClosureIsolationAndNonlocalBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def make(n):
                 x = n
                 def get():

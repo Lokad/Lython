@@ -14,7 +14,7 @@ public sealed class HyperlinkFormatAccountingTests
     public void AnnotationSlotsCommitAndReleaseExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.AttachMemoryGovernor(context.MemoryGovernor, span);
@@ -33,7 +33,7 @@ public sealed class HyperlinkFormatAccountingTests
     public void UngovernedAnnotationsStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.SetCellHyperlink(1, 1, PyString.FromString("https://example.test/"));
         sheet.SetCellNumberFormat(1, 1, PyString.FromString("0.00"));

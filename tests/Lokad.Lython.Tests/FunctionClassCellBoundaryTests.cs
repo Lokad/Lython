@@ -151,7 +151,7 @@ public sealed class FunctionClassCellBoundaryTests
             new BoundCallArguments(values, default), mirror, owner, Span);
 
     private static LoweredFunctionParameter Parameter(string name, FunctionParameterKind kind) => new(name, kind, null, null);
-    private static Context Root() => new(new MockLythonHost(), new LythonRunOptions { SourcePath = "/root.py"});
+    private static Context Root() => new(new MockLythonHost(), new LythonRunOptions { SourcePath = "/root.py"},regexProvider:Utf8RegexProvider.Instance);
     private static Context ClassClosure()
     {
         var definition = Assert.IsType<ClassDefinitionStatementSyntax>(Assert.Single(
@@ -160,7 +160,7 @@ public sealed class FunctionClassCellBoundaryTests
     }
     private static ScriptSyntax Compile(string source)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         return frontend.Script.RequireNotNull();
     }

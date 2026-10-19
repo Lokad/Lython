@@ -31,7 +31,7 @@ public sealed class ChainMapAccountingTests
     private static long CommittedForEntries()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var dict = new PyDict(context.MemoryGovernor, span);
         for (var i = 0; i < EntryCount; i++)
@@ -46,7 +46,7 @@ public sealed class ChainMapAccountingTests
     public void ParentsFallbackCommitsExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         // The parent map is governed but stays empty; only its base charge
         // applies, while the fallback behind parents carries the entries.
@@ -62,7 +62,7 @@ public sealed class ChainMapAccountingTests
     public void UngovernedParentsStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var parents = ParentsOf(new PyChainMap([new PyDict()]));
         WritePairs(parents, span);

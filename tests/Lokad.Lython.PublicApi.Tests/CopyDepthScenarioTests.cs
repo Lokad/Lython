@@ -13,7 +13,7 @@ public sealed class CopyDepthScenarioTests
     [Fact]
     public async Task DeepCopyAtLimitSucceeds()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import copy
             v = 1
@@ -42,7 +42,7 @@ public sealed class CopyDepthScenarioTests
     [Fact]
     public async Task DeepCopyPastLimitFailsRecursion()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import copy
             v = 1
@@ -68,7 +68,7 @@ public sealed class CopyDepthScenarioTests
     [Fact]
     public async Task DeepCopyCyclePreservesIdentity()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import copy
             l = []

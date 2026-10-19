@@ -19,7 +19,7 @@ public sealed class PublicRuntimeCompatibilityTests
     [Fact]
     public void PublicEngineRunsAgentFacingCoreAndStandardLibraryBehavior()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 import hashlib
@@ -40,7 +40,7 @@ return digest[:8] + "|" + str(roundtrip) + "|" + str(words) + "|" + str(time.gmt
     [Fact]
     public async Task PublicCompiledScriptHasSyncAndAsyncParity()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "return '|'.join(str(value * value) for value in range(6))");
 
         var sync = script.Run(new PublicTestHost());
@@ -59,7 +59,7 @@ return digest[:8] + "|" + str(roundtrip) + "|" + str(words) + "|" + str(time.gmt
         var host = new PublicTestHost();
         host.SeedText("/input.txt", "hello");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 with open("/input.txt") as source:
     value = source.read()
@@ -80,13 +80,13 @@ return value
     [Fact]
     public void PublicDiagnosticsAndLimitValidationRemainExplicit()
     {
-        var compiled = new LythonEngine().Compile("if True print('missing colon')");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("if True print('missing colon')");
 
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, diagnostic =>
             diagnostic.Severity == LythonDiagnosticSeverity.Error);
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new LythonEngine().Run(
+            new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "return 1",
                 new PublicTestHost(),
                 new LythonRunOptions { MaxRecursionDepth = -1 }));
@@ -104,7 +104,7 @@ return value
     [Fact]
     public void PublicBoundaryProjectsNestedPythonValuesToClrShapes()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "return [seed, (2, None), {'name': 'lython', 'ready': True}]",
             new PublicTestHost(),
             new Dictionary<string, object?> { ["seed"] = 41 });
@@ -125,7 +125,7 @@ return value
     [Fact]
     public void PublicRuntimeFailuresPreserveSourceAndPythonFrames()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def outer():
     inner()
@@ -161,7 +161,7 @@ outer()
     {
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
-        var script = new LythonEngine().Compile("return 42");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 42");
 
         var result = await script.RunAsync(
             new PublicTestHost(),

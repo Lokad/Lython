@@ -122,9 +122,9 @@ public sealed class ExecutableValueTransferTests
 
     private static (ExecutableScript, LythonRuntime.ExecutionContext) Prepare(string source, long? cap = null)
     {
-        var parsed = LythonFrontend.Compile(source);
+        var parsed = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.Empty(parsed.Diagnostics);
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         context.Variables.Clear();
         return (ExecutableScript.Compile(LoweredScript.Lower(parsed.Script!)), context);
     }

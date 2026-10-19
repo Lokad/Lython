@@ -180,7 +180,7 @@ public sealed class Utf16CodecWindowTests
         {
             var host = new MockLythonHost();
             host.SeedBytes("/input", Convert.FromHexString(hex));
-            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) });
+            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) },regexProvider:Utf8RegexProvider.Instance);
             var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState("/input", context,
                 (LythonRuntime.TextEncodingMode)encoding, (LythonRuntime.TextErrorMode)errors, (LythonRuntime.TextNewlineMode)newline, window);
             try

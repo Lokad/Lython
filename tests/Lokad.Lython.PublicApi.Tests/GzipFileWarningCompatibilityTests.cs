@@ -17,7 +17,7 @@ public sealed class GzipFileWarningCompatibilityTests
     [MemberData(nameof(PythonControls))]
     public async Task InferredModesAndWarningIdentityFollowPython(string name, string source, string expected, string stderr)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var options = new LythonRunOptions { SourcePath = "/warning.py" };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })

@@ -7,7 +7,7 @@ public sealed class JsonRoundTripScenarioTests
     [Fact]
     public void JsonDumps_CheckCircularFalse_RemainsRecursionBounded()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 
@@ -34,7 +34,7 @@ json.dumps(value, check_circular=False)
             host.SeedFile(file.Key, file.Value);
         }
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -51,7 +51,7 @@ json.dumps(value, check_circular=False)
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 text = json.dumps({"n": 123456789012345678901234567890})
@@ -74,7 +74,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 text = json.dumps({"ok": True, "items": [1, None, {"name": "alpha"}], "pair": ["x", 2]})
@@ -95,7 +95,7 @@ __lython_file.close()
     [Fact]
     public void InvalidJson_FailsWithJsonDecodeError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 json.loads("{")
@@ -115,7 +115,7 @@ json.loads("{")
     [InlineData("None")]
     public void JsonLoads_NonStringInput_FailsWithTypeError(string expression)
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\njson.loads(" + expression + ")",
             new MockLythonHost());
 
@@ -127,7 +127,7 @@ json.loads("{")
     [Fact]
     public void InvalidJsonEscape_FailsWithJsonDecodeError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 json.loads("[\"abc\\y\"]")
@@ -144,7 +144,7 @@ json.loads("[\"abc\\y\"]")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 value = json.loads(" \n {\"a\": 1, \"b\": [true, null]} \t ")
@@ -164,7 +164,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 text = json.dumps({"text": "a\"b\nc\\d"})
@@ -187,7 +187,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 vals = []
@@ -211,7 +211,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 values = [
@@ -234,7 +234,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 vals = []
@@ -258,7 +258,7 @@ __lython_file.close()
     [InlineData("Null")]
     public void JsonLoads_InvalidConstantCase_FailsWithJsonDecodeError(string token)
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\njson.loads(\"" + token + "\")",
             new MockLythonHost());
 
@@ -272,7 +272,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 text = json.dumps({"emoji": "😀", "word": "café"})
@@ -294,7 +294,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 __lython_file = open("/out.txt", "w")
@@ -312,7 +312,7 @@ __lython_file.close()
     public void JsonDumps_UsesPythonFloatKeySpellingAndSortsOriginalKeys()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 
@@ -338,7 +338,7 @@ __lython_file.close()
     [Fact]
     public void JsonDumps_UnsupportedDictionaryKeys_FailWithTypeErrorUnlessSkipped()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 json.dumps({(1, 2): "pair"})
@@ -357,7 +357,7 @@ json.dumps({(1, 2): "pair"})
         var host = new MockLythonHost();
         host.SeedFile("/input.json", "{\"n\": 2, \"items\": [1, 2]}");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 import math
@@ -423,7 +423,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 
@@ -447,7 +447,7 @@ except json.JSONDecodeError as exc:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 
@@ -472,7 +472,7 @@ with open("/out.txt", "w") as output:
     public async Task JsonDumps_BoolIndentBehavesLikeIntegerOneAndZero()
     {
         // R18: Python bools are integers, so indent=True/False behave like 1/0.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             return [json.dumps([1], indent=True), json.dumps([1], indent=False), json.dumps([1], indent=None), json.dumps([1]), json.dumps([1], indent=1)]
@@ -500,10 +500,10 @@ with open("/out.txt", "w") as output:
                 return "TypeError"
             """;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["__bad"] = new List<object?>() } };
-        var sync = new LythonEngine().Run(source, new MockLythonHost(), options);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal("TypeError", sync.ReturnValue);
-        var asyncResult = await new LythonEngine().RunAsync(source, new MockLythonHost(), options);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("TypeError", asyncResult.ReturnValue);
     }
@@ -511,7 +511,7 @@ with open("/out.txt", "w") as output:
     [Fact]
     public void JsonExpandedSurface_InvalidOptionsFailAtCompileTime()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import json
 

@@ -11,7 +11,7 @@ public sealed class DecimalMethodAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedMethodResultsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             a = decimal.Decimal("1.55")
@@ -39,7 +39,7 @@ public sealed class DecimalMethodAccountingScenarioTests
     [Fact]
     public async Task MethodBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             a = decimal.Decimal("1.51")

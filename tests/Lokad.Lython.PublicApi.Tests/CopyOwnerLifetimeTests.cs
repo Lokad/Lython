@@ -51,7 +51,7 @@ public sealed class CopyOwnerLifetimeTests
             "class Bomb:\n def __deepcopy__(self, memo):\n" + capture +
             "  raise ValueError('stop')\nsource = " + expression +
             "\nfor i in range(1500):\n try:\n  copy.deepcopy(source)\n except ValueError:\n  pass\nreturn i + 1\n";
-        using var script = new LythonEngine().Compile(source.Replace("1500", (retain ? 1500 : 16).ToString()), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source.Replace("1500", (retain ? 1500 : 16).ToString()), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         if (asynchronous)

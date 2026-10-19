@@ -18,7 +18,7 @@ public sealed class ZipInfoAccountingScenarioTests
     [Fact]
     public async Task ManyExplicitInfosStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import zipfile
             objs = []
             i = 0
@@ -43,7 +43,7 @@ public sealed class ZipInfoAccountingScenarioTests
     [Fact]
     public async Task ManyDefaultInfosStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import zipfile
             objs = []
             i = 0
@@ -68,7 +68,7 @@ public sealed class ZipInfoAccountingScenarioTests
     [Fact]
     public async Task ZipInfoFactoryBehaves()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import zipfile
             info = zipfile.ZipInfo("a.txt", (2020, 1, 2, 3, 4, 5))
             dflt = zipfile.ZipInfo()

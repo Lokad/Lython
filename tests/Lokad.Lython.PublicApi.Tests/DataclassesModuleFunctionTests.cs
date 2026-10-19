@@ -80,7 +80,7 @@ public sealed class DataclassesModuleFunctionTests
     [InlineData("import dataclasses as dc", "dc.astuple(None, tuple_factory=1)", "LA3042")]
     public void InvalidAliasedDataclassCallsKeepTheirDiagnostics(string imports, string call, string code)
     {
-        var script = new LythonEngine().Compile(imports + "\n" + call);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(imports + "\n" + call);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == code);
     }
@@ -95,7 +95,7 @@ public sealed class DataclassesModuleFunctionTests
             "    label: str = " + field + "(default='beta', init=False)\n" +
             "    items: list = " + field + "(default_factory=list)\n" +
             "box = Box()\nbox.text.find(1)\nbox.label.find(1)\nbox.items.extend(1)\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(script.IsValid);
         Assert.Equal(2, script.Diagnostics.Count(diagnostic => diagnostic.Code == "LA3075"));
         Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA3140");
@@ -114,14 +114,14 @@ public sealed class DataclassesModuleFunctionTests
             "@dataclass\nclass Box:\n    value: int = " + field + "()\n" +
             "    keyword: int = " + field + "(default=7, kw_only=True)\n" +
             "    cached: int = " + field + "(default=9, init=False)\n" + call;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA3149");
     }
 
     private static async Task AssertBothModes(string source, string expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {
@@ -135,7 +135,7 @@ public sealed class DataclassesModuleFunctionTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import KW_ONLY, InitVar, asdict, astuple, dataclass, field, fields, is_dataclass, replace
 from typing import ClassVar
@@ -179,7 +179,7 @@ __lython_file.close()
     public void DataclassesModule_GeneratedRepresentationUsesFieldRepr()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass
 
@@ -206,7 +206,7 @@ __lython_file.close()
     public void DataclassesModule_AsDictPreservesAndRecursivelyCopiesMappingKeys()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import asdict, dataclass
 
@@ -229,7 +229,7 @@ __lython_file.close()
     public void DataclassesModule_FieldsAreStableAndReplaceErrorsRemainCatchable()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass, field, fields, replace
 
@@ -263,7 +263,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass, field
 
@@ -295,7 +295,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import dataclasses
 from dataclasses import Field, fields, is_dataclass
@@ -336,7 +336,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass, field, fields, make_dataclass
 
@@ -368,7 +368,7 @@ __lython_file.close()
     [Fact]
     public void DataclassesModule_InheritedDefaultOrdering_IsRejected()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass
 
@@ -391,7 +391,7 @@ class Bad(Base):
     [Fact]
     public void DataclassesModule_SlotsOptions_AreExplicitlyUnsupported()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import dataclasses
 

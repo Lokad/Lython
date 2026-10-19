@@ -34,7 +34,7 @@ public sealed class CsvWriterOwnerLifetimeTests
         var retained = kind.StartsWith("retained-", StringComparison.Ordinal);
         var count = retained ? 5000 : 16;
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source.Replace("5000", count.ToString()).Replace("4999", (count - 1).ToString()), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source.Replace("5000", count.ToString()).Replace("4999", (count - 1).ToString()), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
@@ -80,7 +80,7 @@ public sealed class CsvWriterOwnerLifetimeTests
         var make = dictionary ? "csv.DictWriter(f, ['a','b'], lineterminator='\\n')" : "csv.writer(f, lineterminator='\\n')";
         var row = dictionary ? "{'a':1,'b':2}" : "[1,2]";
         var source = "import csv\nwith open('/out.csv', 'w') as f:\n w = " + make + "\n w.writerow(" + row + ")\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var host = new DelayedLythonHost();
         var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) });

@@ -13,7 +13,7 @@ public sealed class CounterDecimalAccountingScenarioTests
     [Fact]
     public async Task ManyCounterDecimalUpdatesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             from collections import Counter
@@ -39,7 +39,7 @@ public sealed class CounterDecimalAccountingScenarioTests
     [Fact]
     public async Task CounterDecimalBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             from collections import Counter

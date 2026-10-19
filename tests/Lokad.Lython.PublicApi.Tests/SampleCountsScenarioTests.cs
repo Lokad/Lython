@@ -15,7 +15,7 @@ public sealed class SampleCountsScenarioTests
     {
         // MG15 probe: one pick out of a million expanded copies used to build
         // the whole expansion. Now only pools, one bound and one pick exist.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import random
             return random.sample(["x"], k=1, counts=[1000000])
@@ -38,7 +38,7 @@ public sealed class SampleCountsScenarioTests
         // MG15: the counts drain itself commits per growth, so a lazy
         // 200,000-long counts sequence fails on its own backing with an
         // empty total and no picks at all.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             import random
@@ -60,7 +60,7 @@ public sealed class SampleCountsScenarioTests
     {
         // MG15: the distinct-position set scales with picks, so half a million
         // picks fail on their own table while pools stay tiny.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import random
             return random.sample(["a", "b"], 500000, counts=[300000, 300000])
@@ -81,7 +81,7 @@ public sealed class SampleCountsScenarioTests
     {
         // N14: on a Floyd-selection collision the resume slot is the fresh
         // position, so a full draw over [x, y] x [2, 2] holds exact counts.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import random
             return random.sample(["x", "y"], k=4, counts=[2, 2]).count("x")
             """);
@@ -99,7 +99,7 @@ public sealed class SampleCountsScenarioTests
     {
         // Invariant over many seeds rather than one pinned sequence: every
         // full draw must reproduce the pool multiplicities exactly.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import random
             bad = 0
             for seed in range(50):
@@ -120,7 +120,7 @@ public sealed class SampleCountsScenarioTests
     [Fact]
     public async Task CountedSampling_ZeroSkewedAndEmptyCounts()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import random
             random.seed(7)
             partial = random.sample(["a", "b", "c"], k=2, counts=[3, 0, 2])
@@ -148,7 +148,7 @@ public sealed class SampleCountsScenarioTests
     [Fact]
     public async Task CountedSampling_PartialDrawStaysWithinCounts()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import random
             random.seed(11)
             r = random.sample(["x", "y"], k=2, counts=[2, 2])
@@ -170,7 +170,7 @@ public sealed class SampleCountsScenarioTests
         // MG15: position mapping must resolve pools exactly (degenerate
         // single-pool selections are RNG-independent) and preserve every
         // counts error contract.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import random
             results = []
@@ -213,7 +213,7 @@ public sealed class SampleCountsScenarioTests
         // sequence. 100,000 refs used to materialize free; now the backing
         // alone exceeds the budget. Small takes serve Floyd positions
         // without draining (see RandomDirectSelectionTests).
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import random
             return random.sample(range(100000), 50000)
@@ -234,7 +234,7 @@ public sealed class SampleCountsScenarioTests
     {
         // MG15: governing populations and weights must preserve sample shapes
         // and the oversized/mismatched error contracts.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import random
             results = []

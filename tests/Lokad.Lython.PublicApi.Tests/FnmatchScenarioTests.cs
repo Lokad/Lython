@@ -15,7 +15,7 @@ public sealed class FnmatchScenarioTests
             host.SeedFile(file.Key, file.Value);
         }
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -32,7 +32,7 @@ public sealed class FnmatchScenarioTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import fnmatch
 vals = []
@@ -54,7 +54,7 @@ __lython_file.close()
     [Fact]
     public void FnmatchFilter_WithNonStringItem_FailsAtCompileTime()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import fnmatch
 fnmatch.filter(["alpha.txt", 1], "*.txt")
@@ -71,7 +71,7 @@ fnmatch.filter(["alpha.txt", 1], "*.txt")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import fnmatch
 vals = []
@@ -95,7 +95,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import fnmatch
 vals = []
@@ -117,7 +117,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import fnmatch
 import re
@@ -154,7 +154,7 @@ __lython_file.close()
     [Fact]
     public void FnmatchExpandedSurface_WithInvalidArguments_FailsAtCompileTime()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import fnmatch
 fnmatch.fnmatchcase("alpha.txt", 1)

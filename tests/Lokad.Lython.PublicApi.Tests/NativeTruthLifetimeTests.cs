@@ -16,7 +16,7 @@ with open('report.json','w',newline='') as target:json.dump({'accepted':count},t
 print('written')
 """;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -49,7 +49,7 @@ print('written')
         var source = "payload='held'*1024\nclass Value:\n @property\n def __bool__(self):\n  with open('bind.txt','a') as target:target.write('bind')\n  def answer():\n   with open('call.txt','a') as target:target.write('call')\n   return True\n  return answer\nassert "
             + operation + "([" + (operation == "any" ? "False" : "True") + ",Value()])\nreturn payload";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -106,8 +106,8 @@ print('written')
         var source = "class Value:\n def __bool__(self):\n  with open('effect.txt','a') as target:target.write('before')\n  storage='x'*2000000\n  return True\ntry: result=" + operation
             + "(" + argument + ")\nexcept MemoryError:print('recovered')\nprint('after')";
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
-        using var retainedScript = new LythonEngine().Compile("return 'held'*1024", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        using var retainedScript = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 'held'*1024", budget);
         Assert.True(script.IsValid);
         using var held = retainedScript.Run(new MockLythonHost());
         Assert.True(held.Success, held.Failure?.Message);

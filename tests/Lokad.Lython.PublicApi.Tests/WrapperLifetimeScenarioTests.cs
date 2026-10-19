@@ -45,7 +45,7 @@ public class WrapperLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedFromKeysDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(dict.fromkeys(['a', 'b'], 0))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
@@ -72,7 +72,7 @@ public class WrapperLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedDefaultdictUpdateDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "from collections import defaultdict\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    d = defaultdict(int)\n    d.update(a=1)\n    objs.append(d)\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
@@ -94,7 +94,7 @@ public class WrapperLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task FromKeysDeniedRecoversWhenFunded()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "return str(dict.fromkeys(['a', 'b'], 0))\n");
         Assert.True(script.IsValid);
         var denied = script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100) });
@@ -113,7 +113,7 @@ public class WrapperLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task DefaultdictUpdateKwargsDeniedRecoversWhenFunded()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "from collections import defaultdict\nd = defaultdict(int)\nd.update(a=1)\nreturn str(dict(d))\n");
         Assert.True(script.IsValid);
         var denied = script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100) });

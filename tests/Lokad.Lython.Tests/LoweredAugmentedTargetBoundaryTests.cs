@@ -153,14 +153,14 @@ public sealed class LoweredAugmentedTargetBoundaryTests
 
     private static async Task<Context> Define(string source, bool asynchronous, CancellationToken cancellation = default)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             SourcePath = "/augmented-target.py", CancellationToken = cancellation
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         if (asynchronous) await LythonRuntime.ExecuteStatementsAsync(lowered.Statements, context);
         else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, context, default, null);
         AssertUnwound(context);

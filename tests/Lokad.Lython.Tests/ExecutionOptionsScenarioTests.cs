@@ -13,7 +13,7 @@ public sealed class ExecutionOptionsScenarioTests
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 value = "hello"
 """,
@@ -34,7 +34,7 @@ value = "hello"
     {
         using var cts = new CancellationTokenSource();
 
-        var runTask = Task.Run(() => new LythonEngine().Run(
+        var runTask = Task.Run(() => new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 while True:
     pass
@@ -62,7 +62,7 @@ while True:
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 value = "hello"
 """,
@@ -78,7 +78,7 @@ value = "hello"
     [Fact]
     public async Task RunAsync_SucceedsForNormalExecution()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 value = 40 + 2
 return_value = value
@@ -95,7 +95,7 @@ return_value = value
     {
         using var cts = new CancellationTokenSource();
 
-        var runTask = new LythonEngine().RunAsync(
+        var runTask = new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 while True:
     pass
@@ -120,7 +120,7 @@ while True:
     {
         using var cts = new CancellationTokenSource();
 
-        var runTask = new LythonEngine().RunAsync(
+        var runTask = new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 value = open("/input.txt").read()
 """,
@@ -141,7 +141,7 @@ value = open("/input.txt").read()
     [Fact]
     public void RecursionLimit_IsEnforced()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def loop():
     loop()
@@ -171,7 +171,7 @@ loop()
         };
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new LythonEngine().Run("return 1", new MockLythonHost(), options));
+            new LythonEngine(Utf8RegexProvider.Instance).Run("return 1", new MockLythonHost(), options));
     }
 
     [Fact]
@@ -179,7 +179,7 @@ loop()
     {
         var value = new CallbackGlobalValue();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "text = str(value)",
             new MockLythonHost(),
             new LythonRunOptions
@@ -201,7 +201,7 @@ loop()
         var cycle = new List<object?>();
         cycle.Add(cycle);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "value = payload",
             new MockLythonHost(),
             new LythonRunOptions
@@ -221,7 +221,7 @@ loop()
         var host = new DelayedReadHost();
         host.SeedFile("/input.txt", "hello");
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 return open("/input.txt").read()
 """,
@@ -239,7 +239,7 @@ return open("/input.txt").read()
         var host = new DelayedReadHost();
         host.SeedFile("/input.txt", "hello");
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 class Reader:
     def read(self):
@@ -262,7 +262,7 @@ return reader.read()
         var host = new DelayedReadHost();
         host.SeedFile("/input.txt", "hello");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 return open("/input.txt").read()
 """,
@@ -279,7 +279,7 @@ return open("/input.txt").read()
     [Fact]
     public void ExecutionMemoryBudget_RangeSliceDoesNotMaterializeAList()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = range(1000000000)
 tail = values[1:]
@@ -296,7 +296,7 @@ tail = values[1:]
     [Fact]
     public void SuppliedResultOwnerRejectsUnfundedProjection()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 return ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "cccccccccccccccccccccccccccccccc"]
 """,
@@ -318,7 +318,7 @@ return ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", 
     {
         // 100 astral runes project to 200 UTF-16 code units (432 bytes with
         // the object header); the old rune-based estimate charged only 232.
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 return chr(128512) * 100
 """,
@@ -341,7 +341,7 @@ return chr(128512) * 100
     {
         var nested = CreateDeeplyNestedList(depth);
 
-        using var result = new LythonEngine().Run(
+        using var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 text = str(data)
 """,
@@ -367,7 +367,7 @@ text = str(data)
     [Fact]
     public void RecursionCounterDoesNotWrapAtIntMaxValue()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         context.Limits.CurrentRecursionDepth = int.MaxValue;
         var failure = Assert.Throws<LythonRuntimeException>(() => context.EnterFunctionCall(null));
         Assert.Equal("RecursionError", failure.ExceptionType);
@@ -377,7 +377,7 @@ text = str(data)
     [Fact]
     public void InterpreterCounterDoesNotWrapAtIntMaxValue()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         context.Limits.CurrentInterpreterDepth = int.MaxValue;
         var failure = Assert.Throws<LythonRuntimeException>(() => context.EnterInterpreterFrame(null));
         Assert.Equal("RuntimeError", failure.ExceptionType);

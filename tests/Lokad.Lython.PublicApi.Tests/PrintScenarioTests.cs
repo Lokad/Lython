@@ -7,7 +7,7 @@ public sealed class PrintScenarioTests
     [Fact]
     public void Print_CapturesStandardOutputWithDefaults()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 print("alpha", 2, True)
 """,
@@ -20,7 +20,7 @@ print("alpha", 2, True)
     [Fact]
     public void Print_SupportsSepAndEndKeywords()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 print("a", "b", sep=":", end="!")
 print("tail")
@@ -35,12 +35,12 @@ print("tail")
     public void Print_RejectsNonStringSepAndEndLikePython()
     {
         // Both invocation strata share BindArguments, so one run covers each.
-        var sep = new LythonEngine().Run("print(1, sep=1)\n", new MockLythonHost());
+        var sep = new LythonEngine(Utf8RegexProvider.Instance).Run("print(1, sep=1)\n", new MockLythonHost());
         Assert.False(sep.Success);
         Assert.Equal("TypeError", sep.Failure?.ExceptionType);
         Assert.Equal("sep must be None or a string, not int", sep.Failure?.Message);
 
-        var end = new LythonEngine().Run("print(1, end=1.5)\n", new MockLythonHost());
+        var end = new LythonEngine(Utf8RegexProvider.Instance).Run("print(1, end=1.5)\n", new MockLythonHost());
         Assert.False(end.Success);
         Assert.Equal("TypeError", end.Failure?.ExceptionType);
         Assert.Equal("end must be None or a string, not float", end.Failure?.Message);
@@ -51,7 +51,7 @@ print("tail")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 print("x", file=sys.stderr)
@@ -70,7 +70,7 @@ print("x", file=sys.stderr)
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 print("x", flush=True)
 print("y", flush=False)
@@ -88,7 +88,7 @@ print("y", flush=False)
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 with open("/out.txt", "w") as f:
     print("alpha", file=f)

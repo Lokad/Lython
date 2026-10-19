@@ -38,7 +38,7 @@ public sealed class FloatConversionSlotTests
     public async Task ImplicitFloatConversionUsesTypeSlots(string label, string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, label);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -59,7 +59,7 @@ public sealed class FloatConversionSlotTests
     {
         const string source = "original=7.5\npayload='x'*4096\nclass Value:\n def __float__(self):return original\nreturn [payload,original,float(original),float(Value()),float(original) is original,float(Value()) is original]";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -88,7 +88,7 @@ public sealed class FloatConversionSlotTests
     {
         var source = $"class Value:\n def {slot}(self):\n  print('entered')\n  payload='x'*40000\n  return {(slot == "__float__" ? "7.0" : "7")}\ntry:float(Value())\nexcept MemoryError:print('recovered')\nprint('tail')";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16 * 1024) };

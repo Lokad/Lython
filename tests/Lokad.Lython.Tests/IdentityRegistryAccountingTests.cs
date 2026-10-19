@@ -10,7 +10,7 @@ public sealed class IdentityRegistryAccountingTests
 {
     private static LythonRuntime.ExecutionContext NewRoot(long? budget, out MemoryGovernor governor, ILythonMemoryBudget? shared = null)
     {
-        var root = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = shared });
+        var root = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = shared },regexProvider:Utf8RegexProvider.Instance);
         governor = root.MemoryGovernor;
         return root;
     }

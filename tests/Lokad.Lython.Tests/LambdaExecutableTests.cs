@@ -12,11 +12,11 @@ public sealed class LambdaExecutableTests
     [Fact]
     public void DeniedClosureCaptureDoesNotPublishFundingMarks()
     {
-        var syntax = LythonFrontend.Compile("def outer(value):\n    return lambda:value").Script!;
+        var syntax = LythonFrontend.Compile("def outer(value):\n    return lambda:value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var module = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         var outer = Assert.Single(module.Functions).CodeObject!;
         var lambda = Assert.Single(outer.Constants.OfType<ExecutableCreateLambda>()).CodeObject!;
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         var values = new object[outer.LocalNames.Count];
         var cells = new LythonRuntime.ExecutableCell?[values.Length];
         var cell = new LythonRuntime.ExecutableCell(BigInteger.One);
@@ -50,7 +50,7 @@ public sealed class LambdaExecutableTests
     [InlineData("lambda value:lambda step:value+step")]
     public void LambdaBodiesAreExecutableWithoutForcedMirroring(string expression)
     {
-        var syntax = LythonFrontend.Compile("result=" + expression).Script!;
+        var syntax = LythonFrontend.Compile("result=" + expression,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         Check(code);
         Assert.NotEmpty(code.Constants.OfType<ExecutableCreateLambda>());

@@ -16,7 +16,7 @@ public sealed class PathValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedNamesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             objs = []
             i = 0
@@ -41,7 +41,7 @@ public sealed class PathValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedParentsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             objs = []
             i = 0
@@ -66,7 +66,7 @@ public sealed class PathValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedJoinsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             p = Path("/a")
             objs = []
@@ -92,7 +92,7 @@ public sealed class PathValueAccountingScenarioTests
     [Fact]
     public async Task PathValuesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             base = Path("/repo/docs/page.md")
             return [base.name, base.suffix, base.stem, base.parent.as_posix(), base.joinpath("nested", "guide.txt").as_posix(), base.with_suffix(".txt").as_posix(), base.with_name("intro.md").as_posix(), base.relative_to("/repo").as_posix(), (Path("/a") / "b").as_posix()]

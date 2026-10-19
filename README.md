@@ -289,9 +289,11 @@ for the exact inventory.
 
 `functools` covers wrapper metadata helpers, `total_ordering`, `reduce`, `partial`, `partialmethod`, `cmp_to_key`, `lru_cache`, `cache`, `cached_property`, simple `singledispatch` and `singledispatchmethod` registration, and `recursive_repr`. Cache keys use Lython's hashable-value rules; `functools.Placeholder` is exposed only to fail explicitly because placeholder partial application is outside the supported subset.
 
-`re` is Unicode text-only and backed by `Utf8Regex.PythonRe`. It exposes common module helpers, compiled patterns, `finditer`, `Pattern` and `Match` attributes, named and optional group helpers, callable and template replacements, catchable `re.error`/`PatternError`, and the usual integer flags. `re.LOCALE` and `re.DEBUG` fail explicitly; bytes patterns and subjects remain outside the public bytes boundary.
+`re` is Unicode text-only. Regex work requires an explicit, borrowed `ILythonRegexProvider` on the engine; the core package includes no regex backend. The same provider handles frontend validation and constant analysis, execution and imports. Missing functionality reports an explicit capability failure. Native fnmatch/glob wildcard matching needs no provider; using their translated patterns through `re` does.
 
-The current PythonRe 0.2.0 backend discovers all `finditer` matches before guest iteration. Its scratch allocation and work are not fully covered by Lython's memory admission, and host cancellation cannot interrupt an in-progress backend call. Mixed named/unnamed capture numbering and nested `lastindex`/`lastgroup` also await backend corrections. These implementation gaps remain release work; see the measured scan costs in [benchmarks/Baselines.md](benchmarks/Baselines.md).
+For the optional adapter, reference `Lokad.Lython.Utf8Regex` and construct `new LythonEngine(Utf8RegexProvider.Instance)` (namespace `Lokad.Lython.Utf8Regex`). The provider contract preserves Python flags, captures, scalar offsets, iteration, replacements, splitting, errors and per-execution caching. The current token goes through compilation, preparation and matching; cached patterns keep no earlier caller token. Replacement callbacks can await host I/O under `RunAsync`.
+
+The supplied PythonRe 0.2.0 adapter **cannot interrupt backend work** and explicitly refuses cancellable backend operations. It also refuses affected buffered operations on mixed supplementary Unicode, following an isolated backend nontermination finding. Buffered iteration uses conservative working admission and can reject early. Mixed named/unnamed capture numbering and nested last-capture metadata retain backend limitations. See the [adapter capabilities](src/Lokad.Lython.Utf8Regex/README.md). Core releases are independent of producer releases and backend policy qualification.
 
 `fnmatch` is deterministic and platform-independent. `fnmatch.fnmatch`, `fnmatch.fnmatchcase`, and `filter` use POSIX-like case-sensitive matching with `*`, `?`, bracket classes, negated classes, and ranges; `translate` returns an anchored regex string compatible with Lython `re`.
 
@@ -373,7 +375,7 @@ Execution-time control uses the host-supplied `CancellationToken`. The host
 must arrange cancellation when a finite deadline is required; memory bounds alone
 do not stop a non-allocating infinite loop. Lython imposes no instruction or
 host-call-count quota and does not measure those totals. Cancellation must reach
-a checkpoint; the regex backend limitation described above still applies.
+a checkpoint. Providers must honor cancellation inside their work or report an explicit capability limitation; see the optional adapter limitations above.
 
 Cancellation checks surround bounded CLR/native conversion and parsing calls; those calls finish before the next checkpoint. Host implementations remain responsible for honoring their token during their own operations.
 
@@ -466,5 +468,6 @@ documented in [TESTING.md](TESTING.md).
 ## Dependencies
 
 - `Lokad.Parsing` for tokenization and the handwritten front-end infrastructure
-- `Lokad.Utf8Regex` for UTF-8-native regex execution primitives
-- `Lokad.Utf8Regex.PythonRe` for Python-shaped regular-expression semantics on top of UTF-8 regex execution
+Regex is a host-supplied capability through Lython-owned types. The optional
+`Lokad.Lython.Utf8Regex` package references `Lokad.Utf8Regex.PythonRe`; neither
+package is a runtime dependency of `Lokad.Lython`.

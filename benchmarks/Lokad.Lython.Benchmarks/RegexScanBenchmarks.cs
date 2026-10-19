@@ -17,7 +17,7 @@ public class RegexScanBenchmarks
     [GlobalSetup]
     public void Compile()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _scripts["iterator"] = BenchmarkScripts.Compile(engine,
             $"import re\ntext='ab '*{MatchCount}\nreturn sum(1 for match in re.finditer('(a)(b)',text))");
         _scripts["all"] = BenchmarkScripts.Compile(engine,

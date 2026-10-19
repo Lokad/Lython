@@ -16,7 +16,7 @@ public sealed class CsvReaderContractTests
     public async Task ReadersAreTheirOwnIteratorsAcrossMixedConsumption(bool dictionary)
     {
         var maker = dictionary ? "csv.DictReader" : "csv.reader";
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import csv\nr = " + maker + "(['a,b', '1,2', '3,4', '5,6'])\n" +
             """
             it = iter(r)
@@ -47,7 +47,7 @@ public sealed class CsvReaderContractTests
     [InlineData(true)]
     public async Task EmptyReadersHaveNormalIteratorExhaustion(bool dictionary)
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import csv\nr = " + (dictionary ? "csv.DictReader" : "csv.reader") + "([])\n" +
             """
             print(iter(r) is r, next(r, 'empty'))
@@ -67,7 +67,7 @@ public sealed class CsvReaderContractTests
     [Fact]
     public async Task ReaderIndexingAndLengthAreRejected()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             r = csv.reader(["a,b", "1,2"])
             d = csv.DictReader(["a,b", "1,2"])
@@ -80,7 +80,7 @@ public sealed class CsvReaderContractTests
     [Fact]
     public async Task ReaderIndexingAndLengthFailAtRuntime()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             def at(reader):
                 return reader[0]
@@ -116,7 +116,7 @@ public sealed class CsvReaderContractTests
     [Fact]
     public async Task TruthTestingAndRenderingNeverPullInput()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             r = csv.reader(["a,b", "1,2"])
             d = csv.DictReader(["a,b", "1,2"])
@@ -143,7 +143,7 @@ public sealed class CsvReaderContractTests
     {
         // The cursor is shared like CPython: after one pass the reader is
         // exhausted, while line_num keeps the pulled count.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             r = csv.reader(["a,b", "1,2"])
             first = list(r)

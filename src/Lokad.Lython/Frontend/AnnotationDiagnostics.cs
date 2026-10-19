@@ -18,10 +18,10 @@ internal static class AnnotationDiagnostics
         Set = 1 << 9,
     }
 
-    public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script)
+    public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, StaticAnalysisContext? context = null)
     {
         var diagnostics = new List<LythonDiagnostic>();
-        AnalyzeStatements(script.Statements, diagnostics, new AbstractState(), returnAnnotation: null);
+        AnalyzeStatements(script.Statements, diagnostics, new AbstractState(context), returnAnnotation: null);
         return diagnostics;
     }
 

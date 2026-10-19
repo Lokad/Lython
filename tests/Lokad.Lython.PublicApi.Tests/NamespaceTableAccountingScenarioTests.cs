@@ -31,7 +31,7 @@ public sealed class NamespaceTableAccountingScenarioTests
     [Fact]
     public async Task ManyNamespaceAttributesStayCharged()
     {
-        var script = new LythonEngine().Compile(AddStatements());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(AddStatements());
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(AddsBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -48,7 +48,7 @@ public sealed class NamespaceTableAccountingScenarioTests
     [Fact]
     public async Task ManyEmptyNamespacesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import argparse
             objs = []
             i = 0
@@ -71,7 +71,7 @@ public sealed class NamespaceTableAccountingScenarioTests
     [Fact]
     public async Task NamespaceTablesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import argparse
             ns = argparse.Namespace(x=1)
             ns.y = 2

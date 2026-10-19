@@ -107,7 +107,7 @@ public sealed class StringMethodCompatibilityTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 vals.append("banana".replace(old="na", new="X", count=1))
@@ -135,7 +135,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 parts = "  alpha\tbeta gamma  ".split(maxsplit=1)
@@ -170,7 +170,7 @@ from pathlib import Path
 return str({{expression}})
 """;
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         return Assert.IsType<string>(result.ReturnValue);
@@ -179,7 +179,7 @@ return str({{expression}})
     public async Task StringComparisonDundersAdvanceLikeCpython()
     {
         // str slots take strings only and decline everything else with NotImplemented on every dunder, ordering included, exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 def call2(f, a, b):
     return f(a, b)
 results = []

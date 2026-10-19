@@ -29,7 +29,7 @@ public sealed class ModuleContractParityTests
     {
         var host = new MockLythonHost();
         host.EnableSubprocess();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var missing = new List<string>();
 
@@ -63,7 +63,7 @@ public sealed class ModuleContractParityTests
         {
             var host = new MockLythonHost();
             host.EnableSubprocess();
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 "from " + moduleName + " import *\nreturn 1\n",
                 host);
             if (!result.Success)
@@ -94,7 +94,7 @@ public sealed class ModuleContractParityTests
             "Missing static contract for " + targetName);
         Assert.Equal(expectedShape, contract.ReturnShape.ToString());
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expectedShape, ClassifyRuntimeShape(result.ReturnValue));
     }
@@ -115,7 +115,7 @@ public sealed class ModuleContractParityTests
     [InlineData("d = {\"a\": 1}\nreturn d.keys().isdisjoint({\"b\"})")]
     public void SetCallAcceptedShapesRunCleanly(string source)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
         Assert.Empty(result.Diagnostics);
         Assert.Equal(true, result.ReturnValue);
@@ -127,7 +127,7 @@ public sealed class ModuleContractParityTests
     [InlineData("s = {1}\ns.isdisjoint()", "isdisjoint", 0, "LA3139")]
     public void SetCallRejectedShapesFailBothLayers(string source, string member, int argumentCount, string expectedCode)
     {
-        var staticResult = new LythonEngine().Run(source, new MockLythonHost());
+        var staticResult = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
         Assert.False(staticResult.Success);
         Assert.Null(staticResult.Failure);
         Assert.Contains(staticResult.Diagnostics, diagnostic => diagnostic.Code == expectedCode);
@@ -138,7 +138,7 @@ public sealed class ModuleContractParityTests
     private static string InvokeSetMember(string member, int argumentCount)
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var set = new PySet(context.MemoryGovernor, span);
         Assert.True(PyMemberAccess.TryResolve(set, member, context, span, out var resolved));
@@ -174,7 +174,7 @@ public sealed class ModuleContractParityTests
     [Fact]
     public void DirEntriesResolveAsMembers()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 targets = ["", b"", [], {}, set(), type([])]
 try:
@@ -221,7 +221,7 @@ return "|".join(missing)
     [Fact]
     public void ImportStarUsesTheSharedBuiltinModuleSurface()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from math import *
 from hashlib import *
@@ -241,7 +241,7 @@ return [sqrt(81), sha256(b"abc").hexdigest()[:8], split("a 'b c'")]
     {
         var host = new MockLythonHost();
         host.EnableSubprocess();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var missing = new List<string>();
 

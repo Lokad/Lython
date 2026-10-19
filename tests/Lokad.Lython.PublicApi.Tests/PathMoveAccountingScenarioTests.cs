@@ -17,7 +17,7 @@ public sealed class PathMoveAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedRenamesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             pa = Path("/a")
             pb = Path("/b")
@@ -51,7 +51,7 @@ public sealed class PathMoveAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedReplacesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             pa = Path("/a")
             pb = Path("/b")
@@ -85,7 +85,7 @@ public sealed class PathMoveAccountingScenarioTests
     [Fact]
     public async Task PathMovesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from pathlib import Path
             r1 = Path("/a").rename("/b")
             r2 = Path("/b").replace(Path("/c"))

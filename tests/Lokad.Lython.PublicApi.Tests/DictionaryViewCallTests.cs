@@ -23,7 +23,7 @@ public sealed class DictionaryViewCallTests
     public async Task ViewsPreservePythonBehavior(string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -44,7 +44,7 @@ public sealed class DictionaryViewCallTests
         var source = (method == "keys" ? "d={'a'*4096:1}" : "d={'a':'a'*4096}")
             + $"\nview=d.{method}()\nd=None\nreturn list(view)[0]" + (method == "items" ? "[1]" : "");
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -77,7 +77,7 @@ public sealed class DictionaryViewCallTests
             + "\n with open('receiver.txt','a') as target:target.write('value')\n return d\n"
             + $"view=receiver().{method}()\nreturn list(view)[0]" + (method == "items" ? "[1]" : "");
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost(); host.SeedFile("/receiver.txt", "before");

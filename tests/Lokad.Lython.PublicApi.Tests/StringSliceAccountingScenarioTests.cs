@@ -15,7 +15,7 @@ public sealed class StringSliceAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedSlicesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             objs = []
             i = 0
             while i < 20000:
@@ -39,7 +39,7 @@ public sealed class StringSliceAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedSteppedSlicesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             objs = []
             i = 0
             while i < 20000:
@@ -61,7 +61,7 @@ public sealed class StringSliceAccountingScenarioTests
     [Fact]
     public async Task StringSlicesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             s = "abcdefghij"
             return [s[1:3], s[::2], s[::-1], s[5:], s[:3], s[:], s[3:3]]
             """);

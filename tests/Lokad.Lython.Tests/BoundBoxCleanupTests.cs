@@ -27,7 +27,7 @@ public sealed class BoundBoxCleanupTests
     [Fact]
     public void FailingBindsReturnRentedBox()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var plan = TwoParameterPlan();
         var first = LythonRuntime.BindFunctionArguments(
             [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, plan, context).Values;
@@ -51,7 +51,7 @@ public sealed class BoundBoxCleanupTests
         var host = new MockLythonHost();
         // The frame hangs off the closure's guards, so the closure itself
         // carries the zero recursion cap that trips frame entry.
-        var closure = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxRecursionDepth = 0 });
+        var closure = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxRecursionDepth = 0 },regexProvider:Utf8RegexProvider.Instance);
         var parameters = new List<LoweredFunctionParameter>
         {
             new("a", FunctionParameterKind.Positional, null, null),
@@ -85,7 +85,7 @@ public sealed class BoundBoxCleanupTests
     public void DataclassInitsReturnRentedBox()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var fields = new List<DataclassFieldSpec>
         {
             new("x", PyNone.Instance, DataclassFieldKind.Normal, false, PyNone.Instance, false, PyNone.Instance, true, true, true, null, false, PyNone.Instance, true),

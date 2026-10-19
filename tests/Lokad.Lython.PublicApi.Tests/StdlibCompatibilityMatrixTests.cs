@@ -9,7 +9,7 @@ public sealed class StdlibCompatibilityMatrixTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 pat = re.compile("a+", re.IGNORECASE)
@@ -30,7 +30,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 parser = argparse.ArgumentParser()
@@ -51,7 +51,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 parser = argparse.ArgumentParser()
@@ -72,7 +72,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 parser = argparse.ArgumentParser()
@@ -94,7 +94,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 parser = argparse.ArgumentParser()
@@ -115,7 +115,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 parser = argparse.ArgumentParser()
@@ -139,7 +139,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 parser = argparse.ArgumentParser()
@@ -162,7 +162,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 parser = argparse.ArgumentParser()
@@ -185,7 +185,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 import fnmatch
@@ -223,7 +223,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 vals = []
@@ -245,7 +245,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 m = re.search(r"\d+ (\.\d+)+", "release 1.2.3", re.X | re.I)
@@ -264,7 +264,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 import re
@@ -290,7 +290,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 value = Path("/repo/docs/page.md").relative_to("/repo").as_posix()
@@ -309,7 +309,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 target = Path("/repo", "docs", "guide", "intro.md")
@@ -330,7 +330,7 @@ __lython_file.close()
         host.SeedFile("/repo/site/aaa", "alpha");
         host.SeedFile("/repo/site/foo.site", "beta");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 renamed = Path("/repo/site/aaa").rename(Path("/repo/site/bbb"))
@@ -355,7 +355,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 Path("/repo/subdir").mkdir()
@@ -376,7 +376,7 @@ __lython_file.close()
         host.SeedFile("/repo/docs/a.po", "# fr translations \n");
         host.SeedFile("/repo/docs/b.txt", "skip");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -399,7 +399,7 @@ __lython_file.close()
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/in.txt", "alpha\nbeta\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 with open("/repo/in.txt", encoding="UTF-8", newline="") as reader:
     first = reader.readline().rstrip()
@@ -419,7 +419,7 @@ with open("/repo/out.txt", "w", encoding="UTF-8", newline="") as writer:
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/in.txt", "\uFEFFalpha\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 with open("/repo/in.txt", encoding="utf-8-sig", errors="strict") as reader:
     first = reader.readline().rstrip()
@@ -440,7 +440,7 @@ with open("/repo/out.txt", "w", encoding="utf-8-sig", errors="strict") as writer
         host.SeedRawTextUtf8("/repo/invalid.txt", [(byte)'a', 0xFF, (byte)'b', (byte)'\n']);
         host.SeedFile("/repo/lines.txt", "alpha\r\nbeta\ngamma");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -473,7 +473,7 @@ Path("/repo/out.txt").write_text("|".join(attrs + [ignored, replaced, escaped, f
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/in.txt", "\uFEFFalpha\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -551,7 +551,7 @@ Path("/repo/created.txt").write_text("created")
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/input.txt", "alpha");
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.False(result.Success);
         Assert.Null(result.Failure);
@@ -564,7 +564,7 @@ Path("/repo/created.txt").write_text("created")
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 value = Path("/repo/docs/page.md").parent.parts
@@ -583,7 +583,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -609,7 +609,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 import os
@@ -745,7 +745,7 @@ parser.add_argument("--lang", choices=1)
         "Object is not iterable.")]
     public void NearMissStdlibSurfaces_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (exceptionType == "compile")
@@ -764,7 +764,7 @@ parser.add_argument("--lang", choices=1)
     [Fact]
     public void ProvableBuiltinOpenUpdateMode_FailsAtCompileTime()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 with open("/repo/in.txt", "rb+") as handle:
     handle.read()
@@ -817,7 +817,7 @@ Path("/repo/input.txt").open(encoding="utf-8", newline="bad")
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/input.txt", "alpha");
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.False(result.Success);
         if (exceptionType == "compile")
@@ -836,7 +836,7 @@ Path("/repo/input.txt").open(encoding="utf-8", newline="bad")
     [Fact]
     public void PathlibRelativeToOutsideRoot_FailsPrecisely()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 Path("/repo/a.txt").relative_to("/other")
@@ -852,7 +852,7 @@ Path("/repo/a.txt").relative_to("/other")
     [Fact]
     public void Argparse_MutuallyExclusiveGroup_RejectsConflictingOptions()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 parser = argparse.ArgumentParser()

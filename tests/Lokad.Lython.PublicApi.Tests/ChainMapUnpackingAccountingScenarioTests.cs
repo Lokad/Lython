@@ -13,7 +13,7 @@ public sealed class ChainMapUnpackingAccountingScenarioTests
     [Fact]
     public async Task UnpackedChainMapRespectsTransientBudget()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import collections
             m = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
@@ -39,7 +39,7 @@ public sealed class ChainMapUnpackingAccountingScenarioTests
     [Fact]
     public async Task MeasuredChainMapRespectsTransientBudget()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import collections
             m = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
@@ -64,7 +64,7 @@ public sealed class ChainMapUnpackingAccountingScenarioTests
     [Fact]
     public async Task UnpackedChainMapBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import collections
             cm = collections.ChainMap({0: 10, 1: 11}, {1: 21, 2: 22})

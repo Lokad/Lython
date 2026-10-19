@@ -12,7 +12,7 @@ public sealed class NamedTupleTypeIdentityBehaviorTests
     [Fact]
     public async Task NamedTupleTypeMembersAliasStably()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             from pathlib import Path
             N = collections.namedtuple("N", ["x", "y"], defaults=[2])

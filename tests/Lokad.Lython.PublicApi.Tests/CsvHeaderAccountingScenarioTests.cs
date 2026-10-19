@@ -20,7 +20,7 @@ public sealed class CsvHeaderAccountingScenarioTests
     [Fact]
     public async Task ManyExplicitFieldnamesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             r = csv.DictReader(["a,b"], ["k"] * 100000)
             return 0
@@ -41,7 +41,7 @@ public sealed class CsvHeaderAccountingScenarioTests
     [Fact]
     public async Task ManyHeaderColumnsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             line = "k," * 100000
             line = line + "k"
@@ -64,7 +64,7 @@ public sealed class CsvHeaderAccountingScenarioTests
     [Fact]
     public async Task SmallHeaderShapesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             rows1 = list(csv.DictReader(["a,b", "1,2"], ["x", "y"]))
             rows2 = list(csv.DictReader(["a,b", "1,2"]))

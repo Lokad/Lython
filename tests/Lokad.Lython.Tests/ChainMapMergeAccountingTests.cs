@@ -14,7 +14,7 @@ public sealed class ChainMapMergeAccountingTests
     public void MergedKeysReturnLiveViewsWithoutMergeScratch()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var map = new PyDict(context.MemoryGovernor, span);
         for (var i = 0; i < 10; i++)

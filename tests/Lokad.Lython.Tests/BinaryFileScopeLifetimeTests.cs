@@ -21,7 +21,7 @@ public sealed class BinaryFileScopeLifetimeTests
         host.SeedBytes("/blob", [(byte)'g']);
         var budget = new LythonMemoryBudget(28000);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var (handle, frame, payload) = CreateHandle(context, Enum.Parse<LythonRuntime.TextFileOperation>(mode), close);
         var funded = budget.ReservedBytes;
         GC.Collect();

@@ -224,7 +224,7 @@ public sealed class GeneratorStatementCompositionTests
         source += "\ndef generate():\n try:\n  del " + target + "\n  yield 'done'\n finally:Path('/closed.txt').write_text('closed')\ng=generate()\nprint(next(g))\nprint(g.send(" + (kind == "attribute" ? "Custom()" : "Box()") + "))\n";
         if (kind is "item" or "slice") source += "print(g.send(0))\n";
         source += "g.close()\n";
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var immediate = new MockLythonHost();
         var sync = compiled.Run(immediate);
@@ -240,7 +240,7 @@ public sealed class GeneratorStatementCompositionTests
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

@@ -25,9 +25,9 @@ public sealed class ImmutableStorageLifetimeTests : LifetimeScenario
         var declaration = named ? "from collections import namedtuple\nRow = namedtuple('Row', 'a b c')\n" : "";
         var value = named ? "Row(i, i, i + 1)" : "(i, i, i + 1)";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var streaming = new LythonEngine().Compile(declaration +
+        using var streaming = new LythonEngine(Utf8RegexProvider.Instance).Compile(declaration +
             $"total = 0\nfor i in range(start, start + count):\n row = {value}\n assert row[0] is row[1]\n total += row[0]\nreturn total\n", budget);
-        using var retaining = new LythonEngine().Compile(declaration +
+        using var retaining = new LythonEngine(Utf8RegexProvider.Instance).Compile(declaration +
             $"rows = []\nfor i in range(20000):\n rows.append({value})\nreturn len(rows)\n", budget);
         Assert.True(streaming.IsValid);
         Assert.True(retaining.IsValid);
@@ -70,7 +70,7 @@ public sealed class ImmutableStorageLifetimeTests : LifetimeScenario
     [Fact]
     public async Task AdequatelyFundedAliasesKeepTheirIdentity()
     {
-        var script = new LythonEngine().Compile("x = 12345\nt = (x,) * 100000\nreturn [len(t), t[0] is t[-1]]");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("x = 12345\nt = (x,) * 100000\nreturn [len(t), t[0] is t[-1]]");
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16 * 1024 * 1024) };
         var expected = new List<object?> { new BigInteger(100000), true };
         var sync = script.Run(new MockLythonHost(), options);

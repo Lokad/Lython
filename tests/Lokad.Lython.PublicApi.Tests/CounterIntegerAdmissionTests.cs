@@ -17,7 +17,7 @@ public sealed class CounterIntegerAdmissionTests
         var source = "from collections import Counter\ncounts = Counter(x=1 << 524288)\n"
             + "delta = {'x':1}\nupdate = counts.update\nprint('ready')\n" + body + "\nprint('after')\nreturn counts['x']";
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new MockLythonHost();
@@ -50,7 +50,7 @@ public sealed class CounterIntegerAdmissionTests
     public async Task RetainedCountAliasesStayFundedAndSequentialRunsReturnToBaseline(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import Counter
             counts = Counter(x=1 << 524288)
             counts.update(x=1)

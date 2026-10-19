@@ -114,7 +114,7 @@ public sealed class DefaultObjectAttributeBoundaryTests
     }
 
     private static Context Root(LythonRunOptions? options = null)
-        => new(new MockLythonHost(), options ?? new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192)});
+        => new(new MockLythonHost(), options ?? new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192)},regexProvider:Utf8RegexProvider.Instance);
 
     private static PyInstance Instance(Context context, Dictionary<string, object>? members = null)
         => new(new PyType("C", [Assert.IsType<PyType>(context.State.BuiltinVariables["object"])], members ?? []), context.MemoryGovernor, Span);

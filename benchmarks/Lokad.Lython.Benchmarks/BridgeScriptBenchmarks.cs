@@ -14,7 +14,7 @@ public class BridgeScriptBenchmarks
 
     public BridgeScriptBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
 
         _jsonHost.SeedUtf8("/input.json", "{\"ok\":true,\"items\":[1,2,3],\"name\":\"alpha\"}");
         _csvHost.SeedUtf8("/input.csv", "name,value\nalpha,1\nbeta,2");

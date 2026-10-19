@@ -14,7 +14,7 @@ public sealed class GzipFileIdentityCompatibilityTests
     [MemberData(nameof(PythonControls))]
     public async Task IdentityFollowsPython(string name,string source,string expected)
     {
-        var script=new LythonEngine().Compile(source);
+        var script=new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid,name+": "+string.Join("; ",script.Diagnostics.Select(d=>d.Message)));
         foreach(var result in new[]{script.Run(new MockLythonHost()),await script.RunAsync(new MockLythonHost())})
         {

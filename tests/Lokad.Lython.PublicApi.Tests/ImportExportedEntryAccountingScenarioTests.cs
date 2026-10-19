@@ -48,7 +48,7 @@ public sealed class ImportExportedEntryAccountingScenarioTests
     public async Task ManyRetainedGlobalsStayCharged()
     {
         var host = SeededBigHost(out var allowed);
-        var script = new LythonEngine().Compile("import big\nreturn big.v19999\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import big\nreturn big.v19999\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(GlobalsBudgetBytes), AllowedLocalModules = allowed };
         var sync = script.Run(host, options);
@@ -68,7 +68,7 @@ public sealed class ImportExportedEntryAccountingScenarioTests
     {
         var host = SeededBigHost(out var allowed, count: 32);
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("import big\nreturn big.v31\n", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import big\nreturn big.v31\n", budget);
         var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576), AllowedLocalModules = allowed };
@@ -94,7 +94,7 @@ public sealed class ImportExportedEntryAccountingScenarioTests
         var source = AddStatements();
         var host = new MockLythonHost();
         host.SeedFile("/helper.py", "value = 1\n");
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "helper" };
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(AddsBudgetBytes), AllowedLocalModules = allowed };
@@ -115,7 +115,7 @@ public sealed class ImportExportedEntryAccountingScenarioTests
     [Fact]
     public async Task FewModuleAttributeAddsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import helper
             helper.a1 = 1
             helper.a2 = 2

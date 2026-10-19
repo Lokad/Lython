@@ -13,7 +13,7 @@ public sealed class ExecutableSliceStoreTests
     [InlineData("def run(target,values):\n return [list(target) for target[:] in values]")]
     public void SliceHeadersUseExecutableStores(string source)
     {
-        var syntax = LythonFrontend.Compile(source).Script!;
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
@@ -28,13 +28,13 @@ public sealed class ExecutableSliceStoreTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         var target = new PyList([BigInteger.Zero], context.MemoryGovernor, span);
         using var deny = new DenyCapacity(context.MemoryGovernor, limit);
         context.Variables["target"] = target;
         context.Variables["values"] = new PyList([BigInteger.One], context.MemoryGovernor, span);
         context.Variables["step"] = deny;
-        var syntax = LythonFrontend.Compile("target[::step()]=values").Script!;
+        var syntax = LythonFrontend.Compile("target[::step()]=values",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         try
         {

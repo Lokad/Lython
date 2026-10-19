@@ -29,7 +29,7 @@ public sealed class ArgparseUnknownAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task ThirtyThousandRetainedUnknownsDeny()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import argparse
             p = argparse.ArgumentParser(prog="p")
             objs = []
@@ -55,7 +55,7 @@ public sealed class ArgparseUnknownAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task ParseKnownArgsBehaves()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import argparse
             p = argparse.ArgumentParser(prog="p")
             p.add_argument("--foo")

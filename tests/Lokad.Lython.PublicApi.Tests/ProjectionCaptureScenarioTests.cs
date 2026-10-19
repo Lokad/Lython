@@ -11,7 +11,7 @@ public sealed class ProjectionCaptureScenarioTests
     [Fact]
     public async Task LargeStandardOutputCountsAgainstProjectionBudget()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             i = 0
             while i < 2000:
@@ -37,7 +37,7 @@ public sealed class ProjectionCaptureScenarioTests
     [Fact]
     public async Task SmallOutputAndReturnStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             print("hi")
             return [1, 2]

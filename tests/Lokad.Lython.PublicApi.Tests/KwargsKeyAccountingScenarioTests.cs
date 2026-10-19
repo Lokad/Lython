@@ -13,7 +13,7 @@ public sealed class KwargsKeyAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedKwargsKeysStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             def f(**kw):
                 return kw
@@ -38,7 +38,7 @@ public sealed class KwargsKeyAccountingScenarioTests
     [Fact]
     public async Task KwargsBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             def f(**kw):
                 return kw

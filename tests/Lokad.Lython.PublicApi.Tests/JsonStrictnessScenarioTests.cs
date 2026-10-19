@@ -11,7 +11,7 @@ public sealed class JsonStrictnessScenarioTests
     [Fact]
     public async Task JsonDumpsSetUsesPythonTypeName()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             return json.dumps({1, 2})
@@ -31,7 +31,7 @@ public sealed class JsonStrictnessScenarioTests
     [Fact]
     public async Task JsonDumpsDefaultFreshObjectsHitRecursionBound()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             def fresh(value):
@@ -53,7 +53,7 @@ public sealed class JsonStrictnessScenarioTests
     [Fact]
     public async Task JsonDumpsDefaultCallbackContracts()
     {
-        var same = new LythonEngine().Compile(
+        var same = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             def same(value):
@@ -65,7 +65,7 @@ public sealed class JsonStrictnessScenarioTests
         Assert.False(sameResult.Success);
         Assert.Equal("ValueError", sameResult.Failure?.ExceptionType);
 
-        var fortytwo = new LythonEngine().Compile(
+        var fortytwo = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             def fortytwo(value):
@@ -84,7 +84,7 @@ public sealed class JsonStrictnessScenarioTests
     [Fact]
     public async Task JsonDumpsLargeScalarMeetsMemoryBudget()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             return json.dumps({"k": "x" * 200000})
@@ -105,7 +105,7 @@ public sealed class JsonStrictnessScenarioTests
     [Fact]
     public async Task JsonLoadsLargeDocumentMeetsMemoryBudget()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             return json.loads(json.dumps(list(range(50000))))
@@ -124,7 +124,7 @@ public sealed class JsonStrictnessScenarioTests
     [Fact]
     public async Task JsonDumpsStreamsUnsortedEntries()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             ordered = {"b": 1, "a": 2}
@@ -150,7 +150,7 @@ public sealed class JsonStrictnessScenarioTests
     [Fact]
     public async Task LoadsStrictDefaultRejectsControlCharacters()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             text = chr(34) + "a" + chr(1) + "b" + chr(34)
@@ -167,7 +167,7 @@ public sealed class JsonStrictnessScenarioTests
         Assert.Equal("JSONDecodeError", asyncResult.Failure?.ExceptionType);
         Assert.Equal("Invalid control character at: line 1 column 3 (char 2)", asyncResult.Failure?.Message);
 
-        var keyed = new LythonEngine().Compile(
+        var keyed = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             text = "{\"k" + chr(1) + "\": 1}"
@@ -183,7 +183,7 @@ public sealed class JsonStrictnessScenarioTests
     [Fact]
     public async Task LoadsStrictFalseAcceptsControlCharacters()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             text = chr(34) + "a" + chr(1) + "b" + chr(34)
@@ -203,7 +203,7 @@ public sealed class JsonStrictnessScenarioTests
     [Fact]
     public async Task LoadsStrictNoneAcceptsControlCharactersLikePython()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             text = chr(34) + "a" + chr(1) + "b" + chr(34)
@@ -222,7 +222,7 @@ public sealed class JsonStrictnessScenarioTests
     [Fact]
     public void LoadsStrictOptionRejectsNonBoolStatically()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\njson.loads('{}', strict='yes')",
             new MockLythonHost());
 

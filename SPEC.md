@@ -2361,36 +2361,51 @@ The canonical storage and interchange encoding for Lython text is UTF-8.
 
 The runtime may choose any internal execution strategy, but the preferred implementation direction is UTF-8-native execution over the canonical `PyString` / UTF-8 text model rather than pervasive decode-to-`.NET string` bridging.
 
-The full Python-compatible regex profile must be provided by the separate `Lokad.Utf8Regex.PythonRe` extension.
+Regex semantics are supplied by one borrowed `ILythonRegexProvider` bound to the
+engine. The core package has no Utf8Regex runtime dependency or exposed backend
+types. The same provider supplies frontend pattern validation, capture metadata
+and constant analysis, runtime `re`, and local-module compilation/execution.
+Absent required provider functionality is an explicit capability failure
+(`LA2010` during analysis); no alternative dialect is selected. Native fnmatch,
+glob and pathlib wildcard algorithms remain provider-free. Translated patterns
+used through `re` follow the engine's provider.
 
-Lython accepts `Lokad.Utf8Regex` and `Lokad.Utf8Regex.PythonRe` as implementation dependencies for `import re`.
+The UTF-8 contract includes immutable compiled-pattern flags and capture metadata,
+prepared subjects, scalar and byte offsets, matching, disposable find cursors,
+Python replacement templates, captured splitting and structured provider errors.
+Lython performs the Python flag-operator protocol before compilation. Normalized
+flag bits and parsing-time verbose state are separate because guest operators
+can return different results at different stages. Effective inline flags survive
+compiled-pattern constant analysis. Cached patterns retain no caller token.
 
-`Lokad.Utf8Regex.PythonRe` is responsible for the Python regex syntax, Python regex replacement rules, and Python-visible regex errors of the supported subset.
+All substantial provider storage borrows the supplied owner. Pattern/cache
+storage stays charged for its owner lifetime. Prepared storage includes capacity
+and construction overlap and is released only after cursors, result processing
+and replacement callbacks finish. Admission refusal is terminal. No independent
+memory allowance, work quota, regex timeout, fallback or background worker is
+introduced. Conservative estimates and earlier denial are allowed.
 
-Because `Utf8Regex` already supports UTF-8-oriented inputs and byte-aligned capture access, Lython should treat `re` as a UTF-8-native downstream subsystem, not as a justification for reintroducing `.NET string` as an internal semantic representation.
+The active token is forwarded through compilation, preparation, matching,
+enumeration and processing. Providers must interrupt actual work cooperatively,
+finish all users before returning or throwing, and dispose working resources
+synchronously without throwing. Lython awaits asynchronous guest replacement
+callbacks and retains their subject/cursor storage through cleanup. Checks only
+at entry and exit do not qualify a provider's in-flight cancellation.
+`Compile(source, budget, token)` returns an invalid script with `LA2011` after
+cancellation; running it reports the ordinary Cancelled failure. Engine
+compile-and-run APIs use the active (possibly merged) token for analysis too.
+General frontend parsing is not preemptible; this is cooperative cancellation.
 
-Where the runtime chooses to reject a regex feature that exists in Python, the failure must make clear that:
-
-- the script is using regex syntax outside the supported subset
-- the runtime is rejecting that syntax intentionally
-
-Regex execution must participate in the execution's finite memory and work
-budgets and host cancellation. Compilation, validation, search, candidate
-verification, backtracking and result projection must check work/cancellation
-and admit scratch, mapping, state, capture-stack and result growth before
-allocation. Ownership must release on failure, cancellation, iterator abandonment
-and disposal. `finditer` must discover matches incrementally, preserving Python's
-Unicode scalar progression and same-position empty/nonempty match rules, with
-one retained subject and reusable mapping where necessary.
-
-Current implementation status (2026-10-08): PythonRe 0.2.0 returns an eager
-detailed-match array, has no cancellation-token overload and defaults to an
-infinite match timeout. Lython checks cancellation around backend calls, but
-cannot interrupt their internal work or fully admit their scratch allocation.
-Mixed named/unnamed capture numbering and last-closed-capture metadata also
-require a corrected backend artifact. These are outstanding implementation gaps
-against this specification; the measured cost evidence is recorded in
-[benchmarks/Baselines.md](benchmarks/Baselines.md).
+The optional `Lokad.Lython.Utf8Regex` adapter currently uses immutable PythonRe
+0.2.0. It has no backend cancellation API and explicitly refuses cancellable
+backend work. It refuses affected buffered matching on multi-scalar supplementary
+Unicode after an isolated nontermination finding. One-shot Unicode captures retain
+the validated scalar-coordinate adaptation. Buffered enumeration is eager and
+conservatively admitted; mixed capture numbering and nested last-closed-group
+metadata have known limitations. These adapter restrictions do not weaken the
+provider contract or block core release independence. See
+[adapter capabilities](src/Lokad.Lython.Utf8Regex/README.md) and historical
+[scan measurements](benchmarks/Baselines.md).
 
 ### 11.8 JSON
 
@@ -3506,7 +3521,7 @@ bounds and bounded public projection remain independent protections.
 
 Cancellation is cooperative, not a hard wall-clock guarantee. An indivisible
 CLR or dependency operation finishes before its next checkpoint. The current
-PythonRe backend cannot be interrupted during an in-progress call (section 11.7).
+optional adapter refuses work it cannot interrupt (section 11.7).
 Host capabilities receive the token and must honor it during their own I/O;
 Lython cannot force a noncooperative host to complete. Guest exception handling
 must not suppress cancellation indefinitely. Cancelled writers keep their
@@ -3905,7 +3920,7 @@ If separate grammar tooling exists, it must remain separate enough that:
 - package dependencies stay small
 - consumers are not forced into source-generator workflows
 
-The accepted dependency set for the scripting runtime includes `Lokad.Utf8Regex` and `Lokad.Utf8Regex.PythonRe` for the `re` module surface.
+The core scripting package depends on `Lokad.Parsing`. Regex functionality uses the engine-bound Lython provider contract; Utf8Regex packages belong only to the optional adapter and tests.
 
 ---
 

@@ -142,7 +142,7 @@ public sealed class TextFileWriteCallBoundaryTests
     private static (Context, Handle, Argument, MockLythonHost) Prepare(ILythonMemoryBudget owner)
     {
         var host = new MockLythonHost();
-        var context = new Context(host, new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(host, new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var handle = Handle.ForWrite("/out", context);
         var argument = new Argument { Value = PyString.FromString("a\n😀", context.MemoryGovernor, null) };
         context.Variables["file"] = handle;
@@ -151,7 +151,7 @@ public sealed class TextFileWriteCallBoundaryTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     private static ValueTask<object?> Run(Context context, bool asynchronous)
         => asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(Code, context)

@@ -10,7 +10,7 @@ namespace Lokad.Lython.Tests;
 public sealed class ClosureRetentionAccountingTests
 {
     private static LythonRuntime.ExecutionContext NewRoot()
-        => new(new MockLythonHost(), new LythonRunOptions());
+        => new(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
 
     [Fact]
     public void ModuleRootOwnsOnlyUserEntries()

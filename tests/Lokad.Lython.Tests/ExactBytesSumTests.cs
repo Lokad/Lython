@@ -81,7 +81,7 @@ public sealed class ExactBytesSumTests
     {
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { CancellationToken = cancellation.Token });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var committed = context.MemoryGovernor.CurrentCommittedBytes;
         var failure = Assert.Throws<LythonRuntimeException>(() => Invoke([new PyBytes([1, 2]), BigInteger.Zero], context, asynchronous));
         Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
@@ -90,7 +90,7 @@ public sealed class ExactBytesSumTests
     }
 
     private static Context Context() => new(new MockLythonHost(),
-        new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
+        new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
 
     private static object Invoke(object[] arguments, Context context, bool asynchronous)
         => asynchronous ? SumAsync(arguments, Span, context).GetAwaiter().GetResult() : Sum(arguments, Span, context);

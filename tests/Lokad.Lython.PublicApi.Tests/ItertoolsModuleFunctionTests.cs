@@ -8,7 +8,7 @@ public sealed class ItertoolsModuleFunctionTests
     public void ItertoolsModule_Functions_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import itertools
 
@@ -35,7 +35,7 @@ __lython_file.close()
     public void ItertoolsModule_ExhaustionAndBoundaryShapes_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import itertools
 
@@ -62,7 +62,7 @@ __lython_file.close()
     [Fact]
     public void ItertoolsModule_IsliceAcceptsOpenEndedNoneBounds()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import itertools
 
@@ -80,7 +80,7 @@ print(list(itertools.islice("abcdef", None, None, None)))
     public void ItertoolsModule_ExpandedFiniteIterators_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import itertools
 
@@ -126,7 +126,7 @@ __lython_file.close()
     public void ItertoolsModule_GroupByAndTee_ShareConsumptionLikeCPython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import itertools
 
@@ -173,7 +173,7 @@ __lython_file.close()
         host.SeedFile("/repo/docs/b/beta.txt", "b");
         host.SeedFile("/repo/marker.txt", "m");
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import itertools
 import os
@@ -268,7 +268,7 @@ list(itertools.batched([1], 2, strict=True))
         "incomplete batch")]
     public void ItertoolsModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (exceptionType == "compile")
@@ -287,7 +287,7 @@ list(itertools.batched([1], 2, strict=True))
     [Fact]
     public void ItertoolsModule_StaticDiagnosticsCoverExpandedSurface()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import itertools
 
@@ -317,7 +317,7 @@ itertools.batched([1, 2], n=1, strict=True)
 
         Assert.True(valid.IsValid, string.Join(Environment.NewLine, valid.Diagnostics.Select(d => $"{d.Code}: {d.Message}")));
 
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import itertools
 

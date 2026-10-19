@@ -13,7 +13,7 @@ public sealed class BytesReprAccountingScenarioTests
     {
         // MG06 probe: 100 retained reprs of 10 KiB payloads hold megabytes
         // of escape-expanded text under a 256 KiB budget.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             data = bytes(10000)
             out = []

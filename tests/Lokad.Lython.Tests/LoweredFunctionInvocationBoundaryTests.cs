@@ -95,7 +95,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
             {
             MemoryBudget = new LythonMemoryBudget(8192), SourcePath = "/actual-frame.py"
-            });
+            },regexProvider:Utf8RegexProvider.Instance);
             var receiver = new object();
             var active = new PyException("ValueError", "outer", PyNone.Instance);
             context.Services.SetCurrentException(active);
@@ -141,14 +141,14 @@ public sealed class LoweredFunctionInvocationBoundaryTests
     {
         var parameters = string.Join(",", new[] { "self" }.Concat(Enumerable.Range(0, width).Select(i => $"arg{i}")));
         var definition = Definition($"def f({parameters}):\n return self\n");
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
         var function = new PyFunction("f", definition.Parameters, definition.Body, context, [], ScopeDirectiveFactsCollector.ForFunction(definition.Syntax));
         return (function, context, Assert.IsType<LoweredReturnStatement>(Assert.Single(definition.Body)).Expression!);
     }
 
     private static LoweredFunctionDefinitionStatement Definition(string source)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         return Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements));
     }

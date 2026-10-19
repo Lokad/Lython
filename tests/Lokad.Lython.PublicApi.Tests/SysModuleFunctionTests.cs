@@ -9,7 +9,7 @@ public sealed class SysModuleFunctionTests
     {
         var host = new MockLythonHost("/repo");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 
@@ -45,7 +45,7 @@ __lython_file.close()
     public void SysModuleNameSets_UseDiscoverableLythonBuiltinsAndHostGates()
     {
         var noProcessHost = new MockLythonHost();
-        var noProcess = new LythonEngine().Run(
+        var noProcess = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 parts = [
@@ -65,7 +65,7 @@ __lython_file.close()
 
         var processHost = new MockLythonHost();
         processHost.EnableSubprocess();
-        var process = new LythonEngine().Run(
+        var process = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 __lython_file = open("/out.txt", "w")
@@ -84,7 +84,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedFile("/helper.py", "value = 42");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 
@@ -120,7 +120,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 
@@ -154,7 +154,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 
@@ -186,7 +186,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 
@@ -211,7 +211,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedStandardInput("alpha\nbeta");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 
@@ -243,7 +243,7 @@ __lython_file.close()
     [InlineData("sys.audit(\"event\", 1)", "sys.audit(...) is not supported by Lython.")]
     public void SysProcessMutationHooks_FailExplicitly(string expression, string message)
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import sys\n" + expression + "\n",
             new MockLythonHost());
 

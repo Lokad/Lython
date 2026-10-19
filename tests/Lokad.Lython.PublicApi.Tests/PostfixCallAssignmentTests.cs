@@ -207,7 +207,7 @@ public sealed class PostfixCallAssignmentTests
     [MemberData(nameof(Cases))]
     public async Task AssignmentMatchesPython(string name, string source, string expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {
@@ -223,7 +223,7 @@ public sealed class PostfixCallAssignmentTests
     [InlineData("f().g(): int = 1", 0, 7)]
     public void BareCallsRemainInvalidAssignmentTargets(string source, int start, int length)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(script.IsValid);
         var diagnostic = Assert.Single(script.Diagnostics, d => d.Code == "LA1068");
         Assert.NotNull(diagnostic);

@@ -20,7 +20,7 @@ public class CompressionRatioBenchmarks
 
     public CompressionRatioBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _zeros = Compile(
             engine,
             "import random\n"

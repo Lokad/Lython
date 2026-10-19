@@ -13,7 +13,7 @@ public sealed class AnnotatedHelperTests
             ? "def helper(value:int)->int:\n def step(next_value:int)->int:return helper(next_value)\n return step(value+1)\nhelper(0)"
             : "def helper(value:int)->int:return helper(value+1)\nhelper(0)";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxRecursionDepth = 16 };
@@ -34,7 +34,7 @@ public sealed class AnnotatedHelperTests
     {
         const string source = "payload='x'*4096\ndef helper(value:payload)->int:return value+1\npayload=None\nreturn helper.__annotations__['value']";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -57,7 +57,7 @@ public sealed class AnnotatedHelperTests
     {
         const string source = "def decorate(function):\n with open('events.txt','a') as output:output.write('published')\n return function\nhelper='before'\nprint('ready')\n@decorate\ndef helper(value:'x'*262144)->int:return value\nprint('after')";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -87,7 +87,7 @@ public sealed class AnnotatedHelperTests
     {
         const string source = "def read(stage,value):\n with open(stage+'.txt','a') as output:output.write(stage)\n return value\ndef decorate(function):\n read('decorate',0)\n return function\n@decorate\ndef helper(value:read('annotation',int)=read('default',3))->int:\n return read('body',value)+1\nprint(helper())";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -159,7 +159,7 @@ public sealed class AnnotatedHelperTests
     public async Task HelpersPreservePythonAnnotationsAndEffects(string label, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, label);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })

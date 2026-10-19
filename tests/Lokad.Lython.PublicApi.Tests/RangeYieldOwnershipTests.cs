@@ -28,7 +28,7 @@ public class RangeYieldOwnershipTests : LifetimeScenario
             x = list(range(1 << 100000, (1 << 100000) + 1000))
             return len(x)
             """;
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             code,
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
@@ -45,7 +45,7 @@ public class RangeYieldOwnershipTests : LifetimeScenario
                 xs.append(r[i])
             return len(xs)
             """;
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             code,
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
@@ -73,7 +73,7 @@ public class RangeYieldOwnershipTests : LifetimeScenario
                 xs.append(range(1 << 100000, (1 << 100000) + 100)[10:20])
             return len(xs)
             """;
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             code,
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
@@ -87,7 +87,7 @@ public class RangeYieldOwnershipTests : LifetimeScenario
             r = range(5, 50, 7)
             return [r[-1], r[2:5][0], r[0], len(r[10:100])]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(47), new BigInteger(19), new BigInteger(5), new BigInteger(0) },
@@ -104,7 +104,7 @@ public class RangeYieldOwnershipTests : LifetimeScenario
             for v in range(100000):
                 pass
             """;
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             code,
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });

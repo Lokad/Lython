@@ -30,7 +30,7 @@ public sealed class OsListingNameAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedListDirNamesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             objs = []
             i = 0
@@ -55,7 +55,7 @@ public sealed class OsListingNameAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedEntryNamesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             objs = []
             for e in os.scandir("/d"):
@@ -78,7 +78,7 @@ public sealed class OsListingNameAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedEntryPathsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             objs = []
             for e in os.scandir("/d"):
@@ -101,7 +101,7 @@ public sealed class OsListingNameAccountingScenarioTests
     [Fact]
     public async Task ListingNamesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             names = sorted(os.listdir("/d"))
             entries = sorted([[e.name, e.path] for e in os.scandir("/d")])

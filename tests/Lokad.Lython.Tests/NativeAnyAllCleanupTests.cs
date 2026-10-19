@@ -29,11 +29,11 @@ public sealed class NativeAnyAllCleanupTests
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = owner,             CancellationToken = cancellation.Token,
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var source = new PausedSource(budget, context.MemoryGovernor, cancellation, all, route);
         if (cleanupFails) source.CleanupFailure = new InvalidOperationException("native cleanup failed");
         context.Variables["source"] = source;
-        var syntax = LythonFrontend.Compile("return " + (all ? "all" : "any") + "(source)").Script!;
+        var syntax = LythonFrontend.Compile("return " + (all ? "all" : "any") + "(source)",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         var baseline = budget.ReservedBytes;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();

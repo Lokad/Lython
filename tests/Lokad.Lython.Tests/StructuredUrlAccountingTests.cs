@@ -19,7 +19,7 @@ public sealed class StructuredUrlAccountingTests
         var budget = new LythonMemoryBudget(cap);
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = owner });
+            new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var path = PyString.FromString("/" + new string('é', 500));
         Assert.True(LythonRuntime.UrllibParseModule.Instance.TryGetMember("SplitResult", out var constructor));
         var result = Assert.IsType<LythonRuntime.UrllibParseModule.UrlResult>(
@@ -65,7 +65,7 @@ public sealed class StructuredUrlAccountingTests
             using (var owner = budget.CreateScope())
             {
                 var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-                    new LythonRunOptions { MemoryBudget = owner });
+                    new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
                 Deny(callable, arguments, context);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
@@ -90,7 +90,7 @@ public sealed class StructuredUrlAccountingTests
             using (var owner = budget.CreateScope())
             {
                 var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-                    new LythonRunOptions { MemoryBudget = owner });
+                    new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
                 Consume(context);
                 Assert.True(budget.ReservedBytes > 0);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -103,7 +103,7 @@ public sealed class StructuredUrlAccountingTests
     [Fact]
     public void CacheRetainsAtMost128ResultsAndClearReleasesItsInfrastructure()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         for (var i = 0; i < 129; i++)
         {
             CacheOne(context, i);
@@ -131,7 +131,7 @@ public sealed class StructuredUrlAccountingTests
     [Fact]
     public void CacheHitsReleaseTransientKeyCopies()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         CacheOne(context, 0);
         Sweep(context);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -157,7 +157,7 @@ public sealed class StructuredUrlAccountingTests
             using (var owner = budget.CreateScope())
             {
                 var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-                    new LythonRunOptions { MemoryBudget = owner });
+                    new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
                 var error = Assert.Throws<LythonRuntimeException>(() => CacheOne(context, 0));
                 Assert.Equal("MemoryError", error.ExceptionType);
                 Assert.Null(context.State.UrlSplitCache);
@@ -194,7 +194,7 @@ public sealed class StructuredUrlAccountingTests
     [InlineData(true, 127)]
     public void MetadataDenialRefundsAndPublishesNoDefaults(bool parameters, long cap)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         Assert.True(LythonRuntime.UrllibParseModule.Instance.TryGetMember(parameters ? "ParseResult" : "SplitResult", out var value));
         var type = Assert.IsAssignableFrom<IPyContextualDynamicAttributes>(value);
         var before = context.MemoryGovernor.CurrentCommittedBytes;

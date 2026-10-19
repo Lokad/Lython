@@ -9,7 +9,7 @@ public sealed class ExecutionConsumptionTests
     [InlineData(true)]
     public async Task RepeatedRunsReportExistingOutputSizes(bool asynchronous)
     {
-        var script = new LythonEngine().Compile("import sys\nprint('é')\nsys.stderr.write('😀')\nreturn 7");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import sys\nprint('é')\nsys.stderr.write('😀')\nreturn 7");
         for (var i = 0; i < 3; i++)
         {
             var options = new LythonRunOptions { };
@@ -27,7 +27,7 @@ public sealed class ExecutionConsumptionTests
     [InlineData("raise SystemExit(0)")]
     public async Task TerminalAdmissionDenialKeepsOutputSizes(string ending)
     {
-        var script = new LythonEngine().Compile("print('é')\ntry:\n    x = 'x' * 1000000\nexcept MemoryError:\n    pass\n" + ending);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('é')\ntry:\n    x = 'x' * 1000000\nexcept MemoryError:\n    pass\n" + ending);
         foreach (var asynchronous in new[] { false, true })
         {
             var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536)};
@@ -45,7 +45,7 @@ public sealed class ExecutionConsumptionTests
     [InlineData(true)]
     public async Task ProjectionFailureReportsRetainedBytesEvenWhenPublicOutputCannotFit(bool asynchronous)
     {
-        var script = new LythonEngine().Compile("print('é')\nreturn [1, 2, 3]");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('é')\nreturn [1, 2, 3]");
         var options = new LythonRunOptions { ResultMemoryBudget = new LythonMemoryBudget(0)};
         var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
         Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
@@ -56,7 +56,7 @@ public sealed class ExecutionConsumptionTests
     [Fact]
     public async Task UnadmittedRunsHaveNoConsumption()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         foreach (var asynchronous in new[] { false, true })
         {
             async Task<LythonExecutionResult> Run(string source, LythonRunOptions? options = null) => asynchronous
@@ -75,7 +75,7 @@ public sealed class ExecutionConsumptionTests
         var timing = new HeldTiming();
         host.SetTiming(timing);
         using var cancellation = new CancellationTokenSource();
-        var call = new LythonEngine().RunAsync("print('é')\nimport time\ntime.sleep(1)", host,
+        var call = new LythonEngine(Utf8RegexProvider.Instance).RunAsync("print('é')\nimport time\ntime.sleep(1)", host,
             new LythonRunOptions { CancellationToken = cancellation.Token});
         try { await timing.Started.Task.WaitAsync(TimeSpan.FromSeconds(5)); }
         finally { cancellation.Cancel(); }
@@ -90,7 +90,7 @@ public sealed class ExecutionConsumptionTests
     public async Task FailedHostWriteStillReportsAcceptedCapture(bool asynchronous)
     {
         var host = new MockLythonHost { OnStandardOutputWrite = () => throw new InvalidOperationException("controlled failure") };
-        var script = new LythonEngine().Compile("print('é')");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('é')");
         var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
         Assert.Equal(LythonFailureReason.HostOperationFailed, result.FailureAttribution?.Reason);
         Assert.Equal(2, result.Consumption?.StandardOutputBytes);
@@ -99,7 +99,7 @@ public sealed class ExecutionConsumptionTests
     [Fact]
     public async Task ReadmeCompileOnceExampleWorksWithPolicyInputsAndFiniteLimits()
     {
-        var script = new LythonEngine().Compile("import json\nvalues = json.loads(payload)\nprint(len(values))\nreturn sum(values)");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\nvalues = json.loads(payload)\nprint(len(values))\nreturn sum(values)");
         foreach (var (payload, expected, output) in new[] { ("[1,2,3]", "6", "3\n"), ("[4,5]", "9", "2\n") })
         foreach (var asynchronous in new[] { false, true })
         {

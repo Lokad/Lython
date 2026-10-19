@@ -10,7 +10,7 @@ public sealed class GovernedAdmissionPreflightTests
     [InlineData("return 'x' * 750000\n")]
     public void SharedRefusalPrecedesTheLargePayloadAllocation(string source)
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         using var warm = engine.Run("pass\n", new MockLythonHost());
         var script = engine.Compile(source);
         var budget = new RecordingBudget();

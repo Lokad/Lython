@@ -73,7 +73,7 @@ public sealed class GuardedDictionaryDiagnosticsTests
         var source = "import sys\nflag = bool(sys.argv)\nd = {}\n" +
             "def change():\n    d['x'] = 3\n    return True\n" + expression + "\n" +
             "try:\n    print(d['x'])\nexcept KeyError:\n    print('missing')\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(diagnostic => diagnostic.Message)));
         var options = new LythonRunOptions { Args = flag ? ["sample.py"] : [] };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
@@ -106,7 +106,7 @@ public sealed class GuardedDictionaryDiagnosticsTests
     [InlineData("d = {}\n'x' not in d and d['x']")]
     public void ReachedLiteralMissesKeepTheirDiagnostics(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA3157");
     }
@@ -126,7 +126,7 @@ public sealed class GuardedDictionaryDiagnosticsTests
 
     private static async Task AssertBothModes(string source, string expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(diagnostic => diagnostic.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {

@@ -22,7 +22,7 @@ public sealed class StatModifiedAtAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedTimestampsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             objs = []
             i = 0
@@ -47,7 +47,7 @@ public sealed class StatModifiedAtAccountingScenarioTests
     [Fact]
     public async Task StatTimestampsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             st = os.stat("/d/f0")
             return [st.exists, st.size, st.modified_at]

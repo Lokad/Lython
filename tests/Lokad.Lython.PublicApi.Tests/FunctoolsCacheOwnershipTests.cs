@@ -14,7 +14,7 @@ public sealed class FunctoolsCacheOwnershipTests
 
     private static async Task AssertBothModes(string source, string expectedOutput)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -82,7 +82,7 @@ public sealed class FunctoolsCacheOwnershipTests
     public async Task InsertionDenialLeavesExactCharges()
     {
         const string code = "import functools\n@functools.lru_cache(maxsize=1)\ndef f(x):\n    return x\nreturn f(1)\n";
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var denied = script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64) });
         Assert.False(denied.Success);

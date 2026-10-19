@@ -12,7 +12,7 @@ public sealed class ReviewHardeningRegressionTests
     public void GzipHugeReadSizesReturnRemainderWithoutEscaping()
     {
         var host = new MockLythonHost("/repo");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/review.gz", "wb") as writer:
@@ -36,7 +36,7 @@ with gzip.open("/repo/review.gz", "rb") as reader:
     public void GzipClosedHandleRejectsWithReentry()
     {
         var host = new MockLythonHost("/repo");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 with gzip.open("/repo/data.gz", "wb") as writer:
@@ -64,7 +64,7 @@ return "|".join(results)
     [Fact]
     public void CopyAndHashlibStateIsIsolatedAcrossRuns()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var first = engine.Run(
             """
 import copy
@@ -92,7 +92,7 @@ return [copy.dispatch_table.get("review_marker", "absent"), len(hashlib.algorith
     [Fact]
     public void ContextManagerExitIsInvokedExactlyOnceOnNormalExitFailure()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 calls = []
 class Manager:
@@ -116,7 +116,7 @@ return len(calls)
     [Fact]
     public async Task ContextManagerExitIsInvokedExactlyOnceAsync()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 calls = []
 class Manager:

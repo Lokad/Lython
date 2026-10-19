@@ -19,7 +19,7 @@ public sealed class SubprocessEnvAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedPopenEnvsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             EnvSetup +
             "ps = []\n" +
             "j = 0\n" +
@@ -45,7 +45,7 @@ public sealed class SubprocessEnvAccountingScenarioTests
     [Fact]
     public async Task DroppedPopenEnvsFitRoomyBudget()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             EnvSetup +
             "j = 0\n" +
             "while j < 20:\n" +
@@ -70,7 +70,7 @@ public sealed class SubprocessEnvAccountingScenarioTests
     [Fact]
     public async Task PopenEnvStillProjects()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import subprocess\n" +
             "p = subprocess.Popen([\"tool\"], env={\"A\": \"1\"})\n" +
             "p.wait()\n" +

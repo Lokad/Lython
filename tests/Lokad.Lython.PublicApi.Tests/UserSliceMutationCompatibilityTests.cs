@@ -64,7 +64,7 @@ public sealed class UserSliceMutationCompatibilityTests
     [MemberData(nameof(Cases))]
     public async Task RawBoundsOrderingAndEscapedKeysMatchPython(string name, string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(Common + source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(Common + source);
         Assert.True(compiled.IsValid, name + ": " + string.Join("; ", compiled.Diagnostics));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

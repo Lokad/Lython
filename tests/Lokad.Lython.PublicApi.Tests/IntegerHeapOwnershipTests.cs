@@ -30,7 +30,7 @@ public class IntegerHeapOwnershipTests : LifetimeScenario
                 xs.append(1 << 10000)
             return len(xs)
             """;
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             code,
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3145728) });
@@ -53,7 +53,7 @@ public class IntegerHeapOwnershipTests : LifetimeScenario
             for i in range(20000):
                 x = 1 << 60
             """;
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             code,
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192) });
@@ -71,7 +71,7 @@ public class IntegerHeapOwnershipTests : LifetimeScenario
             x = 1
             return [same, y == (1 << 10000), x]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { true, true, new BigInteger(1) },
@@ -86,7 +86,7 @@ public class IntegerHeapOwnershipTests : LifetimeScenario
             b = 10 ** 100
             return [a == b, a is b, a + 1 == b + 1, -a == 0 - a]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { true, false, true, true },
@@ -99,7 +99,7 @@ public class IntegerHeapOwnershipTests : LifetimeScenario
         const string code = """
             return [(1 << 100) + (1 << 100), (1 << 200) * 3 - 1, (1 << 10000) >> 9999, abs(0 - (1 << 90))]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?>

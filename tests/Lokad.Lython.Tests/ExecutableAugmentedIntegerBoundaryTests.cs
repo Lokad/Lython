@@ -156,7 +156,7 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests
         {
             MemoryBudget = new LythonMemoryBudget(HostAllowanceBytes),
             SourcePath = "/integer-augmentation.py", CancellationToken = cancellation
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         context.Variables["left"] = BigInteger.Parse(left, CultureInfo.InvariantCulture);
         context.Variables["right"] = BigInteger.Parse(right, CultureInfo.InvariantCulture);
         return context;
@@ -164,7 +164,7 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests
 
     private static void Run(Context context, bool asynchronous, string source = Source)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
         if (asynchronous) LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context).GetAwaiter().GetResult();

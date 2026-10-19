@@ -14,7 +14,7 @@ public sealed class ChainMapAccountingScenarioTests
     [Fact]
     public async Task ManyParentsEntriesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from collections import ChainMap
             cm = ChainMap()
@@ -42,7 +42,7 @@ public sealed class ChainMapAccountingScenarioTests
         // R14: ChainMap aliases its mappings, so construction itself stays cheap
         // and the entries below charge once in their home map. Two hundred
         // thousand entries still exceed a 1MiB budget while filling.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from collections import ChainMap, defaultdict
             d = defaultdict(int)
@@ -67,7 +67,7 @@ public sealed class ChainMapAccountingScenarioTests
     [Fact]
     public async Task ChainMapBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from collections import ChainMap, defaultdict
             d = defaultdict(int)

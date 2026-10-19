@@ -10,7 +10,7 @@ public sealed class NativeWarningAccountingTests
     [Fact]
     public async Task RepeatedNoticeAtOneLocationDoesNotGrowRegistryOrOutputOwnership()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         await LythonRuntime.EmitDefaultWarningAsync("FutureWarning", "notice", context, Span, true);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var length = context.State.StandardError.Length;
@@ -25,7 +25,7 @@ public sealed class NativeWarningAccountingTests
     public void DeniedRegistryGrowthPreservesPriorNoticesAndFunding()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) },regexProvider:Utf8RegexProvider.Instance);
         Assert.True(context.State.MarkDefaultWarning("/file.py", 1, "FutureWarning", "notice", Span));
         Assert.True(context.State.MarkDefaultWarning("/file.py", 2, "FutureWarning", "notice", Span));
         using var pressure = context.MemoryGovernor.ReserveTemporary(384, Span);
@@ -48,7 +48,7 @@ public sealed class NativeWarningAccountingTests
     public async Task CapturedOutputDenialRefundsFormattingAndThePrivateUtf8Value()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(512) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(512) },regexProvider:Utf8RegexProvider.Instance);
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             await LythonRuntime.EmitDefaultWarningAsync("FutureWarning", "notice", context, Span, true));
         Assert.Equal("MemoryError", error.ExceptionType);

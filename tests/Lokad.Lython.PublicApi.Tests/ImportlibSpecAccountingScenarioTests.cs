@@ -15,7 +15,7 @@ public sealed class ImportlibSpecAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedSpecsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import importlib.util
             objs = []
             i = 0
@@ -40,7 +40,7 @@ public sealed class ImportlibSpecAccountingScenarioTests
     [Fact]
     public async Task SpecValuesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import importlib.util
             s = importlib.util.find_spec("sys")
             return [s.name, s.origin, s.has_location, s.parent, importlib.util.resolve_name(".n", "m")]

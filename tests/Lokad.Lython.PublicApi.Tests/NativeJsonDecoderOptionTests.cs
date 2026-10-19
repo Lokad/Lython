@@ -29,7 +29,7 @@ public sealed class NativeJsonDecoderOptionTests
         var source = "import json\ndef load(**options):return json.loads(\"1\",**options)\n"
             + "try:print(load(" + options + "))\nexcept Exception as error:print(type(error).__name__,str(error))";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, label);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })

@@ -31,7 +31,7 @@ public sealed class ZlibCompatibilityTests
     public async Task WrappedByteProgramsMatchPython(string name, string source, string expected)
     {
         _ = name;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {
@@ -55,7 +55,7 @@ public sealed class ZlibCompatibilityTests
     [InlineData("zlib.crc32(b'x')")]
     public async Task DeferredOptionsAndObjectsFailExplicitly(string operation)
     {
-        var script = new LythonEngine().Compile("import zlib\ntry: "+operation+"\nexcept NotImplementedError: print('unsupported')\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import zlib\ntry: "+operation+"\nexcept NotImplementedError: print('unsupported')\n");
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {
@@ -73,7 +73,7 @@ public sealed class ZlibCompatibilityTests
         delayed.SeedBytes("/input.z", Convert.FromHexString("789cab56ca4bcc4d55b252503abcf2dcca0ff3673428e9282825e797e69500058d6b01d3f90c4c"));
         immediate.SeedFile("/index.txt", "1");
         delayed.SeedFile("/index.txt", "1");
-        var script = new LythonEngine().Compile(HostSource);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(HostSource);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(immediate), await script.RunAsync(delayed) })
         {
@@ -90,7 +90,7 @@ public sealed class ZlibCompatibilityTests
     [InlineData(true)]
     public async Task SuspendedConversionsAndPublicationCancelWithoutChangingOutput(bool write)
     {
-        var script = new LythonEngine().Compile(HostSource);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(HostSource);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var host = new DelayedLythonHost();
         host.SeedBytes("/input.z", Convert.FromHexString("789cab56ca4bcc4d55b252503abcf2dcca0ff3673428e9282825e797e69500058d6b01d3f90c4c"));

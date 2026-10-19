@@ -15,7 +15,7 @@ public sealed class MergeRangeAccountingTests
         public MergeHarness()
         {
             Host = new MockLythonHost();
-            Context = new LythonRuntime.ExecutionContext(Host, new LythonRunOptions());
+            Context = new LythonRuntime.ExecutionContext(Host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
             Span = new LythonSourceSpan(0, 0, 0, 0);
             Sheet = new LythonRuntime.OpenPyxlWorksheet("S");
             Sheet.AttachMemoryGovernor(Context.MemoryGovernor, Span);
@@ -65,7 +65,7 @@ public sealed class MergeRangeAccountingTests
     {
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         if (!Lokad.Lython.Runtime.PyMemberAccess.TryResolve(sheet, "merge_cells", context, span, out var found) ||
             found is not LythonRuntime.ICallable callable)

@@ -31,7 +31,7 @@ public sealed class PkgutilLoaderPathAccountingTests
         {
             AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "helper" },
         };
-        var context = new LythonRuntime.ExecutionContext(host, options);
+        var context = new LythonRuntime.ExecutionContext(host, options,regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var loader = CreateLoader("helper", context, span);
         var sourcePath = Assert.IsType<PyString>(loader.SourcePath);
@@ -46,7 +46,7 @@ public sealed class PkgutilLoaderPathAccountingTests
     public void BuiltinLoaderHasNoSourcePath()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var loader = CreateLoader("sys", context, span);
         Assert.Null(loader.SourcePath);

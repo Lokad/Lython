@@ -12,9 +12,9 @@ public sealed class RenderingSubsystemTests
     [Fact]
     public void RawFormattedAsciiConversionMatchesCompiledExecution()
     {
-        var frontend = LythonFrontend.Compile("f\"{chr(233)!a:>8}\"");
+        var frontend = LythonFrontend.Compile("f\"{chr(233)!a:>8}\"",regexProvider:Utf8RegexProvider.Instance);
         var expression = Assert.IsType<ExpressionStatementSyntax>(Assert.Single(frontend.Script!.Statements)).Expression;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), null);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), null,regexProvider:Utf8RegexProvider.Instance);
         var method = typeof(LythonRuntime).GetMethod("EvaluateExpression", BindingFlags.NonPublic | BindingFlags.Static)!;
         var text = Assert.IsType<PyString>(method.Invoke(null, [expression, context]));
         Assert.Equal("  '\\xe9'", text.AsString());
@@ -23,7 +23,7 @@ public sealed class RenderingSubsystemTests
     [Fact]
     public void RuntimeRendering_SeparatesPythonAndInterpolatedRendering()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var script = engine.Compile("""
 value = {"x": (1,), "y": {2, 1}}
 return (str(value), f"{value}")
@@ -40,7 +40,7 @@ return (str(value), f"{value}")
     [Fact]
     public void PyRendering_RendersNestedRuntimeValuesDirectly()
     {
-        var context = new PyRenderingContext(new LythonRuntime.ExecutionContext(new MockLythonHost(), null));
+        var context = new PyRenderingContext(new LythonRuntime.ExecutionContext(new MockLythonHost(), null,regexProvider:Utf8RegexProvider.Instance));
         var value = new PyDict();
         value.SetItem(PyString.FromString("items"), new PyList([new BigInteger(1), PyNone.Instance]));
 
@@ -52,7 +52,7 @@ return (str(value), f"{value}")
     [Fact]
     public void RuntimeRendering_DoesNotExposeClrTypeNamesForInternalObjects()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var script = engine.Compile("""
 import os
 import re

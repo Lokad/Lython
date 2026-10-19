@@ -69,7 +69,7 @@ public sealed class StringValidationScenarioTests
     [InlineData("\"{user[name}\".format(user={\"name\": \"x\"})\n", "expected '}' before end of string")]
     public void StringMethodContractFailure_ReportsTypeError(string source, string message)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (result.Failure is null)
@@ -86,7 +86,7 @@ public sealed class StringValidationScenarioTests
     [Fact]
     public void StringPartition_EmptySeparator_ReportsValueError()
     {
-        var result = new LythonEngine().Run("\"hello\".partition(\"\")\n", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("\"hello\".partition(\"\")\n", new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -97,7 +97,7 @@ public sealed class StringValidationScenarioTests
     [Fact]
     public void StringSplit_EmptySeparator_ReportsValueError()
     {
-        var result = new LythonEngine().Run("\"hello\".split(\"\")\n", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("\"hello\".split(\"\")\n", new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -110,7 +110,7 @@ public sealed class StringValidationScenarioTests
     [InlineData("\"hello\".rindex(\"zz\")\n")]
     public void StringIndexFamily_MissingSubstring_ReportsValueError(string source)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -123,7 +123,7 @@ public sealed class StringValidationScenarioTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 vals.append("banana".replace("na", "X"))
@@ -146,7 +146,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 vals.append(str("abc".find("")))
@@ -171,7 +171,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 vals.append(str("alpha".islower()))

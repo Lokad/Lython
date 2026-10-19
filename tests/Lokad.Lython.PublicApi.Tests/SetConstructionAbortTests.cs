@@ -150,7 +150,7 @@ public sealed class SetConstructionAbortTests
     private static (LythonCompiledScript Script, LythonMemoryBudget Budget) Compile(string source)
     {
         var budget = new LythonMemoryBudget(2 * OneMib);
-        var script = new LythonEngine().Compile(source.Replace("5000", "16"), budget);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source.Replace("5000", "16"), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
         return (script, budget);
     }

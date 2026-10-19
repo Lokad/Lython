@@ -18,10 +18,10 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var iterable = new CancellingSource(context.MemoryGovernor, cancellation);
         context.Variables["source"] = iterable;
-        var syntax = LythonFrontend.Compile("for item in source:pass").Script!;
+        var syntax = LythonFrontend.Compile("for item in source:pass",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
         {
@@ -50,7 +50,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var source = new PausedSource(route == "exhaust");
         if (route == "cancel") source.OnMove = cancellation.Cancel;
         var body = route switch
@@ -116,7 +116,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var outer = new PausedSource();
         outer.Release.TrySetResult();
         var inner = new PausedSource();
@@ -153,7 +153,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var outer = new PausedSource();
         var inner = new PausedSource();
         if (cleanupFails) inner.CleanupFailure = new InvalidOperationException("native cleanup failed");
@@ -193,7 +193,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var source = new PausedSource();
         var stamp = new Stamp();
         context.Variables["stamp"] = stamp;
@@ -238,7 +238,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
 
     private static LythonRuntime.PyGenerator Create(string body, Context context, params object[] sources)
     {
-        var frontend = LythonFrontend.Compile("def scan(source):\n" + body);
+        var frontend = LythonFrontend.Compile("def scan(source):\n" + body,regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(frontend.Script);
         var definition = Assert.Single(LoweredScript.Lower(frontend.Script).Statements.OfType<LoweredFunctionDefinitionStatement>());
         var frame = new Context(context, ScopeDirectiveFactsCollector.ForFunction(definition.Syntax))

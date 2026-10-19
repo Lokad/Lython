@@ -13,7 +13,7 @@ public sealed class GeneratorValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedGeneratorsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             xs = [1]
             gs = []
@@ -37,7 +37,7 @@ public sealed class GeneratorValueAccountingScenarioTests
     [Fact]
     public async Task GeneratorBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile("return list(x * 2 for x in [1, 2, 3])\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return list(x * 2 for x in [1, 2, 3])\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { new BigInteger(2), new BigInteger(4), new BigInteger(6) };
         var sync = script.Run(new MockLythonHost());

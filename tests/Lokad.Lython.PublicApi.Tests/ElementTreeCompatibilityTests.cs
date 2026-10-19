@@ -22,7 +22,7 @@ public sealed class ElementTreeCompatibilityTests
     [InlineData("root.find('{urn:x}*')")]
     public async Task DeferredSurfacesFailExplicitly(string operation)
     {
-        var script = new LythonEngine().Compile("import xml.etree.ElementTree as ET\nroot=ET.fromstring('<r><x/></r>')\ntry: " +
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import xml.etree.ElementTree as ET\nroot=ET.fromstring('<r><x/></r>')\ntry: " +
             operation + "\nexcept NotImplementedError: print('unsupported')\n");
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
@@ -66,7 +66,7 @@ public sealed class ElementTreeCompatibilityTests
     public async Task ContainedTreesMatchPython(string name, string source, string expected)
     {
         _ = name;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {
@@ -82,7 +82,7 @@ public sealed class ElementTreeCompatibilityTests
         var delayed = new DelayedLythonHost();
         immediate.SeedFile("/doc.xml", "<?xml version=\"1.0\"?><r xmlns=\"urn:sample\" a=\"\u00e9\">before<item>\u03a9\ud83d\ude00</item>after</r>");
         delayed.SeedFile("/doc.xml", "<?xml version=\"1.0\"?><r xmlns=\"urn:sample\" a=\"\u00e9\">before<item>\u03a9\ud83d\ude00</item>after</r>");
-        var script = new LythonEngine().Compile("import xml.etree.ElementTree as ET\nfrom pathlib import Path\nwith open('doc.xml') as file:\n    root=ET.fromstring(file.read())\nchild=root.find('{urn:sample}item')\nprint(root.tag,root.attrib,repr(root.text),child.tag,repr(child.text),repr(child.tail))\nprint(Path('result.txt').write_text(child.text),Path('result.txt').read_text())\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import xml.etree.ElementTree as ET\nfrom pathlib import Path\nwith open('doc.xml') as file:\n    root=ET.fromstring(file.read())\nchild=root.find('{urn:sample}item')\nprint(root.tag,root.attrib,repr(root.text),child.tag,repr(child.text),repr(child.tail))\nprint(Path('result.txt').write_text(child.text),Path('result.txt').read_text())\n");
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(immediate), await script.RunAsync(delayed) })
         {
@@ -103,7 +103,7 @@ public sealed class ElementTreeCompatibilityTests
         var delayed = new DelayedLythonHost();
         immediate.SeedFile("/index.txt", "1");
         delayed.SeedFile("/index.txt", "1");
-        var script = new LythonEngine().Compile(SuspendedIndexSource);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(SuspendedIndexSource);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(immediate), await script.RunAsync(delayed) })
         {
@@ -118,7 +118,7 @@ public sealed class ElementTreeCompatibilityTests
     [Fact]
     public async Task SuspendedIndexCancellationPreservesExistingOutput()
     {
-        var script = new LythonEngine().Compile(SuspendedIndexSource);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(SuspendedIndexSource);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var host = new DelayedLythonHost();
         host.SeedFile("/index.txt", "1");

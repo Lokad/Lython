@@ -8,7 +8,7 @@ public sealed class PureExecutionScenarioTests
     [Fact]
     public void ComprehensionsUseSharedCellsWithoutLeakingLoopTargets()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 total = 0
 values = [(total := total + x) for x in [1, 2, 3]]
@@ -32,7 +32,7 @@ return str(values) + "|" + str(total) + "|" + str([f() for f in functions]) + "|
         var fixture = FixtureLoader.Load(Path.Combine("Language", "Values", "SortedEnumerateAndRange"));
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -50,7 +50,7 @@ return str(values) + "|" + str(total) + "|" + str([f() for f in functions]) + "|
         var fixture = FixtureLoader.Load(Path.Combine("Language", "Operators", "LogicAndMembership"));
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -68,7 +68,7 @@ return str(values) + "|" + str(total) + "|" + str([f() for f in functions]) + "|
         var fixture = FixtureLoader.Load(Path.Combine("Language", "Values", "FloatAndTuple"));
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -86,7 +86,7 @@ return str(values) + "|" + str(total) + "|" + str([f() for f in functions]) + "|
         var fixture = FixtureLoader.Load(Path.Combine("Language", "Values", "ConstructorsAndStrings"));
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -104,7 +104,7 @@ return str(values) + "|" + str(total) + "|" + str([f() for f in functions]) + "|
         var fixture = FixtureLoader.Load(Path.Combine("Language", "Operators", "NumericOperatorsAndComparisons"));
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -122,7 +122,7 @@ return str(values) + "|" + str(total) + "|" + str([f() for f in functions]) + "|
         var host = new MockLythonHost();
         host.SeedFile("/input.txt", "a\r\nb\rc\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 text = open("/input.txt").read()
 __lython_file = open("/output.txt", "w")
@@ -141,7 +141,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 d = {"a": 1}
 ks = d.keys()
@@ -164,7 +164,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 if (n := 3):
@@ -190,7 +190,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 factor = 2
 values = (x * factor for x in [1, 2, 3] if x > 1)
@@ -215,7 +215,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import math
 vals = []
@@ -243,7 +243,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import datetime
 
@@ -293,7 +293,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 __lython_file = open("/out.txt", "w")
@@ -315,7 +315,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 pairs = list(zip(["a", "b"], [1, 2, 3]))
 first = next((x for x in [1, 2, 3] if x > 1), None)
@@ -335,7 +335,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 src_lines = ["src-a\n", "src-b\n"]
 dst_lines = ["dst-a\n", "dst-b\n"]
@@ -361,7 +361,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __init__(self, value):
@@ -387,7 +387,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __init__(self, value):
@@ -416,7 +416,7 @@ __lython_file.close()
     [Fact]
     public void PropertyWithoutSetter_FailsWithActionableAttributeError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     @property
@@ -437,7 +437,7 @@ box.value = 2
     [Fact]
     public void PropertyWithoutDeleter_FailsWithActionableAttributeError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     @property
@@ -460,7 +460,7 @@ del box.value
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 
@@ -490,7 +490,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 
@@ -522,7 +522,7 @@ __lython_file.close()
     [Fact]
     public void ArgparseFailures_UseSystemExitWithStructuredExitCode()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 
@@ -548,7 +548,7 @@ parser.parse_args()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 grouped = {}
 grouped.setdefault("a.md", []).append((12, "bad link"))
@@ -567,7 +567,7 @@ __lython_file.close()
     [Fact]
     public void SysExit_IntegerCode_UsesStructuredTermination()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 sys.exit(3)
@@ -583,7 +583,7 @@ sys.exit(3)
     [Fact]
     public void SysExit_OmittedCode_UsesZeroExitCode()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 sys.exit()
@@ -599,7 +599,7 @@ sys.exit()
     [Fact]
     public void SysExit_KeywordCode_UsesStructuredTermination()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import sys
 sys.exit(code=4)
@@ -615,7 +615,7 @@ sys.exit(code=4)
     [Fact]
     public void SystemExit_PropagatesAsStructuredTermination()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 raise SystemExit(3)
 """,
@@ -633,7 +633,7 @@ raise SystemExit(3)
         LythonExecutionResult? result = null;
         var exception = Record.Exception(() =>
         {
-            result = new LythonEngine().Run(
+            result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 """
 raise SystemExit(10 ** 100)
 """,
@@ -651,7 +651,7 @@ raise SystemExit(10 ** 100)
     [Fact]
     public void SystemExit_IsNotCaughtByExceptException()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 try:
     raise SystemExit(5)
@@ -672,7 +672,7 @@ except Exception:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 try:
     raise SystemExit(5)
@@ -692,7 +692,7 @@ except:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def outer():
     factor = 2
@@ -718,7 +718,7 @@ __lython_file.close()
         // including after the defining frame returns (late binding,
         // rebinding, nonlocal sharing, deep nesting and splat forwarding),
         // in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             def deco(arg):
                 def wrap(fn):
@@ -824,7 +824,7 @@ __lython_file.close()
         // CPython free-variable text instead of the generic name text.
         // Sync only: async runs the lowered tier, which has no cell
         // slots and keeps the generic text there.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def read_deleted():
                 x = 1
                 def inner():
@@ -880,7 +880,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def build(*parts, sep="|", suffix):
     return sep.join(parts) + suffix
@@ -902,7 +902,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 value = b"ab\x00"
 parts = []
@@ -926,7 +926,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedFile("helper.py", "value = 1\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import helper
 helper.value = 3
@@ -949,7 +949,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     kind = "box"
@@ -977,7 +977,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Base:
     def value(self):
@@ -1001,7 +1001,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Point:
     __match_args__ = ("x", "y")
@@ -1032,7 +1032,7 @@ match value:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class A:
     def order(self):
@@ -1064,7 +1064,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class X:
     pass
@@ -1094,7 +1094,7 @@ class C(A, B):
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass
 
@@ -1129,7 +1129,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass
 
@@ -1163,7 +1163,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import KW_ONLY, dataclass, field, is_dataclass
 
@@ -1222,7 +1222,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import FrozenInstanceError, dataclass
 
@@ -1263,7 +1263,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import asdict, astuple, dataclass, field, fields, replace
 
@@ -1304,7 +1304,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import InitVar, asdict, astuple, dataclass, field, fields, replace
 from typing import ClassVar
@@ -1353,7 +1353,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass
 
@@ -1386,7 +1386,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass, field
 
@@ -1437,7 +1437,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Base:
     @classmethod
@@ -1474,7 +1474,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -1507,7 +1507,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Base:
     pass
@@ -1549,7 +1549,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 parts = []
 parts.append(str(bytes()))
@@ -1570,7 +1570,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Base:
     prefix = "base"
@@ -1612,7 +1612,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Base:
     label = "base"
@@ -1647,7 +1647,7 @@ __lython_file.close()
     [Fact]
     public void Super_ParameterlessStaticMethodRaisesNoArguments()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Demo:
     @staticmethod
@@ -1669,7 +1669,7 @@ Demo.bad()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Descriptor:
     def __get__(self, instance, owner):
@@ -1705,7 +1705,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Descriptor:
     def __get__(self, instance, owner):
@@ -1733,7 +1733,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __init__(self, value):
@@ -1764,7 +1764,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __init__(self, value):
@@ -1795,7 +1795,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __init__(self, value):
@@ -1824,7 +1824,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Base:
     def __init__(self, value):
@@ -1854,7 +1854,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Base:
     def __init__(self, value):
@@ -1890,7 +1890,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Dynamic:
     def __getattr__(self, name):
@@ -1912,7 +1912,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __init__(self):
@@ -1937,7 +1937,7 @@ __lython_file.close()
     [Fact]
     public void ObjectGetAttribute_BypassesGetAttrFallback()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __getattr__(self, name):
@@ -1961,7 +1961,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __getattribute__(self, name):
@@ -1986,7 +1986,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Data:
     def __get__(self, instance, owner):
@@ -2019,7 +2019,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __setattr__(self, name, value):
@@ -2042,7 +2042,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __init__(self):
@@ -2069,7 +2069,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __init__(self):
@@ -2100,7 +2100,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Dropper:
     def __get__(self, instance, owner):
@@ -2132,7 +2132,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __init__(self, value):
@@ -2163,7 +2163,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Named:
     def __set_name__(self, owner, name):
@@ -2191,7 +2191,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Marker:
     def __getattr__(self, name):
@@ -2213,7 +2213,7 @@ __lython_file.close()
     [Fact]
     public void SetName_NonCallableFailsDuringClassCreation()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Marker:
     __set_name__ = 1
@@ -2234,7 +2234,7 @@ class Box:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Base:
     initialized = "base"
@@ -2261,7 +2261,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Base:
     def __init_subclass__(cls, label, **kwargs):
@@ -2286,7 +2286,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Descriptor:
     def __set_name__(self, owner, name):
@@ -2315,7 +2315,7 @@ __lython_file.close()
     [Fact]
     public void ClassHeader_MetaclassKeywordFailsPrecisely()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box(metaclass=object):
     pass
@@ -2333,7 +2333,7 @@ class Box(metaclass=object):
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Marker:
     def __set_name__(self, owner, name):
@@ -2358,7 +2358,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def __new__(cls, value):
@@ -2385,7 +2385,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Token:
     def __new__(cls, value):
@@ -2413,7 +2413,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Token:
     __new__ = str
@@ -2434,7 +2434,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Base:
     def render(self):
@@ -2462,7 +2462,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class A:
     def render(self):
@@ -2493,7 +2493,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class super:
     msg = "truly super"
@@ -2515,7 +2515,7 @@ __lython_file.close()
     [Fact]
     public void Super_WithNonTypeFirstArgument_FailsPrecisely()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Box:
     def render(self):
@@ -2534,7 +2534,7 @@ Box().render()
     [Fact]
     public void Super_WithMismatchedReceiver_FailsPrecisely()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class A:
     pass
@@ -2558,7 +2558,7 @@ B().render()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def twice(fn):
     def wrapped(value):
@@ -2584,7 +2584,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def named(cls):
     cls.label = "decorated"
@@ -2609,7 +2609,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "value = 1 + \\\n    2 + \\\n    3\n__lython_file = open(\"/out.txt\", \"w\")\n__lython_file.write(str(value))\n__lython_file.close()\n",
             host);
 
@@ -2622,7 +2622,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = []
 values.append(str(-7 // 3))
@@ -2646,7 +2646,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 text = "  alpha beta  "
 vals = []
@@ -2679,7 +2679,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 text = "a😀b"
 vals = []
@@ -2708,7 +2708,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 template = "😀 {1} {0}"
 __lython_file = open("/out.txt", "w")
@@ -2727,7 +2727,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 text = "é😀é"
 vals = []
@@ -2755,7 +2755,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 vals = []
@@ -2778,7 +2778,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 __lython_file = open("/out.txt", "w")
@@ -2805,7 +2805,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 vals.append(" \t😀 é \n".strip())
@@ -2828,7 +2828,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 value = {"name": "é😀", "items": ["α", "β"], "pair": ("x", 2)}
 __lython_file = open("/out.txt", "w")
@@ -2847,7 +2847,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 __lython_file = open("/out.txt", "w")
 __lython_file.write(values[0].replace("é", "x") + "|" + data["path"] + "|" + str("é" in items))
@@ -2872,7 +2872,7 @@ __lython_file.close()
     [Fact]
     public void PublicReturnValues_NormalizeInternalPyStrings()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 value = "a😀b"
 return value
@@ -2890,7 +2890,7 @@ return value
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 items = [1]
 items.append(2)
@@ -2916,7 +2916,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 d = {1: "one", (2, 3): "pair", True: "bool"}
 same = d[1]
@@ -2943,7 +2943,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 base = {(n, n + 1): n for n in [1, 2]}
 extra = {0: "zero"}
@@ -2962,7 +2962,7 @@ __lython_file.close()
     [Fact]
     public void PublicReturnValues_NormalizePyDictionariesWithNonStringKeys()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 return {1: "one", (2, 3): "pair"}
 """,
@@ -2987,7 +2987,7 @@ return {1: "one", (2, 3): "pair"}
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 items = [1, 2]
 items_copy = items.copy()
@@ -3024,7 +3024,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 vals.append(str(sorted([3, 1, 2])))
@@ -3052,7 +3052,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 line = " a\t\n"
 vals = []
@@ -3082,7 +3082,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 try:
@@ -3146,7 +3146,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 d = dict([("b", 2), ("a", 1)])
 copy = dict(d)
@@ -3174,7 +3174,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 total = 1
 total += 2
@@ -3242,7 +3242,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
@@ -3254,7 +3254,7 @@ __lython_file.close()
     [InlineData("items = [1]\nitems -= [1]\n", "TypeError", "unsupported operand type(s) for -=: 'list' and 'list'")]
     public void AugmentedAssignment_FailureCasesArePinned(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -3269,7 +3269,7 @@ __lython_file.close()
     [InlineData("def f():\n    return local_missing\nf()\n", "name 'local_missing' is not defined")]
     public void UndefinedNames_ReportPythonShapedTexts(string source, string expectedMessage)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -3282,7 +3282,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 x = "outer"
 values = [n * 2 for n in range(6) if n % 2 == 1]
@@ -3352,7 +3352,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
@@ -3364,7 +3364,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 text = "abcdef"
 items = [0, 1, 2, 3, 4]
@@ -3480,7 +3480,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
@@ -3492,7 +3492,7 @@ __lython_file.close()
     [InlineData("text = \"alpha\"\nwrite_text(\"/out.txt\", text[1:\"x\"])\n", "LA3119", "Slice indices must be integers or None")]
     public void Slicing_StaticFailureCasesAreRejectedAtCompileTime(string source, string diagnosticCode, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.Null(result.Failure);
@@ -3504,7 +3504,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def render(name, suffix = "!", loud = False):
     label = name.upper() if loud else name.lower()
@@ -3561,7 +3561,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
@@ -3615,7 +3615,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
@@ -3649,7 +3649,7 @@ render("x", name = "y")
         "duplicate binding for 'name'")]
     public void UserFunctionKeywordBindingFailures_ArePinned(string source, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (result.Failure is null)
@@ -3692,7 +3692,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
@@ -3704,7 +3704,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 pairs = [("a", 1), ("b", 2)]
 parts = []
@@ -3735,7 +3735,7 @@ __lython_file.close()
     [InlineData("import os\na, b = os\n", "LA3031", "cannot unpack non-iterable module object")]
     public void UnpackingAssignment_LiteralFailureCasesAreRejectedAtCompileTime(string source, string diagnosticCode, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.Null(result.Failure);
@@ -3748,7 +3748,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedFile("/input.txt", "hello");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 with open("/input.txt", "r") as reader:
     text = reader.read()
@@ -3830,7 +3830,7 @@ except ValueError as err:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
@@ -3893,7 +3893,7 @@ except ValueError as err:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
@@ -3905,7 +3905,7 @@ except ValueError as err:
     {
         // Text handles expose __iter__ (identity, closed-checked) and
         // __next__ (line advance or empty StopIteration) like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def closed_next(f):
                 return f.__next__()
             def closed_iter(f):
@@ -3995,7 +3995,7 @@ except ValueError as err:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 name = "alpha"
 count = 3
@@ -4071,7 +4071,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
@@ -4084,7 +4084,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedFile("/project/script.nvn", "zero\none\ntwo\nthree\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -4106,7 +4106,7 @@ for i in range(1, 3):
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 parts = []
 parts.append(f"{15:04d}")
@@ -4136,7 +4136,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 value = "a"
 width = 5
@@ -4157,7 +4157,7 @@ __lython_file.close()
     [InlineData("f\"{}\"\n")]
     public void FormattedStrings_InvalidShapes_ReportCompileDiagnostic(string source)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.False(compiled.IsValid);
         Assert.Contains(
@@ -4171,7 +4171,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 vals.append(str(list("eggs")))
@@ -4195,7 +4195,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 files = [
     "/input/A/Parts.csv",
@@ -4229,7 +4229,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = (
     [
@@ -4319,7 +4319,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 d = {"a": 1, "b": 2}
 d.update({"b": 20, "c": 3})
@@ -4339,7 +4339,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 vals.append(str([1, 2] == [1, 2]))
@@ -4369,7 +4369,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 seen = []
 def mid():
@@ -4395,7 +4395,7 @@ __lython_file.close()
     public void AssertStatement_SupportsSuccessAndMessageFailure()
     {
         var successHost = new MockLythonHost();
-        var success = new LythonEngine().Run(
+        var success = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 assert 1 < 2
 __lython_file = open("/out.txt", "w")
@@ -4408,7 +4408,7 @@ __lython_file.close()
         Assert.Null(success.Failure);
         Assert.Equal("ok", successHost.ReadText("/out.txt"));
 
-        var failure = new LythonEngine().Run(
+        var failure = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 assert 1 > 2, "bad guard"
 """,
@@ -4425,7 +4425,7 @@ assert 1 > 2, "bad guard"
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 value: int = 2 ** 3
 mask = (5 | 2) ^ 1
@@ -4449,7 +4449,7 @@ __lython_file.close()
         host.SeedFile("/left.txt", "L");
         host.SeedFile("/right.txt", "R");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 with open("/left.txt", "r") as left, open("/right.txt", "r") as right:
     __lython_file = open("/out.txt", "w")
@@ -4468,7 +4468,7 @@ with open("/left.txt", "r") as left, open("/right.txt", "r") as right:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "a = 1; b = 2; __lython_file = open(\"/out.txt\", \"w\"); __lython_file.write(str(a + b)); __lython_file.close()\n",
             host);
 
@@ -4482,7 +4482,7 @@ with open("/left.txt", "r") as left, open("/right.txt", "r") as right:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 if True: vals.append("if")
@@ -4514,7 +4514,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 for text in ["1", "x", "2"]:
@@ -4536,7 +4536,7 @@ if vals: __lython_file = open("/out.txt", "w"); __lython_file.write(",".join(val
         var host = new MockLythonHost();
         host.SeedFile("/source.txt", "L");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def inc(value): return value + 1
 class Box: label = "box"
@@ -4560,7 +4560,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 box = []
 def produce():
@@ -4584,7 +4584,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 items = [0, 0]
 items[0] = value = 42
@@ -4605,7 +4605,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 parts = []
 
@@ -4643,7 +4643,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import pathlib
 
@@ -4675,7 +4675,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 items = [1, 2, 3]
 items[1] = 20
@@ -4697,7 +4697,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 value = 1
 del value
@@ -4721,7 +4721,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 try:
@@ -4759,7 +4759,7 @@ __lython_file.close()
         // on normal completion and on abrupt exits alike, while staying
         // visible inside nested handling and before abrupt exits complete,
         // in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             def leak_normal():
                 try:
@@ -4873,7 +4873,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 rows = [("b", 2), ("a", 3), ("c", 1)]
 f = lambda row: row[1]
@@ -4894,7 +4894,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def describe(prefix, *items, **meta):
     return prefix + "|" + str(items) + "|" + str(meta)
@@ -4917,7 +4917,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 flat = [value for row in [[1, 2], [3]] for value in row]
 mapping = {str(x) + str(y): x + y for x in [1, 2] for y in [3]}
@@ -5024,7 +5024,7 @@ __lython_file.close()
     [InlineData("import re\ndef f(a, b):\n    return a + b\nf(re.compile('x').match('x'), 1)\n", "unsupported operand type(s) for +: 're.Match' and 'int'")]
     public void InvalidOperands_ReportPythonShapedTexts(string source, string message)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (result.Failure is null)
@@ -5040,7 +5040,7 @@ __lython_file.close()
     [Fact]
     public void StructTimeMemberNaming_ReportsDottedName()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import time\ntime.gmtime().missing\n",
             new MockLythonHost());
 
@@ -5058,7 +5058,7 @@ __lython_file.close()
     [InlineData("items = (1, 2)\ndel items[0]\n", "TypeError", "'tuple' object doesn't support item deletion")]
     public void BitwiseFailures_ReportExpectedErrors(string source, string exceptionType, string message)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (result.Failure is null)
@@ -5093,7 +5093,7 @@ __lython_file.close()
     [InlineData("str(type(len))", "<class 'builtin_function_or_method'>")]
     public void TypeObjects_RenderClassWrapper(string expression, string expected)
     {
-        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return str(" + expression + ")", new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -5107,7 +5107,7 @@ __lython_file.close()
     {
         var source = "from decimal import Decimal\nimport datetime\nreturn str(" + expression + ")";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -5127,7 +5127,7 @@ __lython_file.close()
     [InlineData("str(sorted)", "<built-in function sorted>")]
     public void BuiltinFunctions_RenderBuiltinFunctionWrapper(string expression, string expected)
     {
-        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return str(" + expression + ")", new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
     }
@@ -5139,7 +5139,7 @@ __lython_file.close()
     {
         var source = "import math\nimport sys\nreturn str(" + expression + ")";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -5156,7 +5156,7 @@ __lython_file.close()
     {
         var source = "import collections\nreturn str(" + expression + ")";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -5172,7 +5172,7 @@ __lython_file.close()
     [InlineData("def f():\n    x = []\n    return repr(x.append)\nreturn f()", "<built-in method append of list object>")]
     public void BoundEngineMethods_RenderBuiltinMethodForm(string source, string expected)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -5186,7 +5186,7 @@ __lython_file.close()
     [InlineData("import collections\nP = collections.namedtuple(\"P\", [\"x\"])\nreturn str(P.__new__)", "<function P.__new__>")]
     public void NewSlotMethods_RenderMethodForm(string source, string expected)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -5202,7 +5202,7 @@ __lython_file.close()
     [InlineData("str(range.start.__set__)", "<method-wrapper '__set__' of member_descriptor object>")]
     public void SlotWrapperMethods_RenderMethodWrapperForm(string expression, string expected)
     {
-        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return str(" + expression + ")", new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -5233,7 +5233,7 @@ __lython_file.close()
     {
         var source = "import itertools\nreturn str(" + expression + ")";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -5246,7 +5246,7 @@ __lython_file.close()
     {
         var source = "import itertools\nreturn str(" + expression + ")";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -5261,7 +5261,7 @@ __lython_file.close()
     {
         var source = "import operator\nreturn str(" + expression + ")";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -5273,7 +5273,7 @@ __lython_file.close()
     {
         var source = "import operator\nreturn str(" + expression + ")";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -5283,7 +5283,7 @@ __lython_file.close()
     public void UnaryProtocol_NonCallableRaisesNotCallable()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class N:
     __neg__ = 5
@@ -5327,7 +5327,7 @@ __lython_file.close()
     public void RepeatCount_CoercesIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class J:
     def __index__(self):
@@ -5366,7 +5366,7 @@ __lython_file.close()
     public void BytesConstructor_CoercesIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class J:
     def __index__(self):
@@ -5443,7 +5443,7 @@ __lython_file.close()
     public void ListPopInsert_CoerceIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class J:
     def __index__(self):
@@ -5489,7 +5489,7 @@ __lython_file.close()
     public void SequenceSearchBounds_CoerceIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 class J:
@@ -5564,7 +5564,7 @@ __lython_file.close()
     public void DequeIndexArgs_CoerceIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 class J:
@@ -5616,7 +5616,7 @@ __lython_file.close()
     public void SubscriptSliceBounds_CoerceIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class J:
     def __index__(self):
@@ -5691,7 +5691,7 @@ __lython_file.close()
     public void SliceAssignDeleteBounds_CoerceIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class J:
     def __index__(self):
@@ -5737,7 +5737,7 @@ __lython_file.close()
     public void SliceIndices_MatchesCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class J:
     def __index__(self):
@@ -5803,7 +5803,7 @@ __lython_file.close()
     public void SliceObjectAssignDelete_MatchesCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import operator
 
@@ -5882,7 +5882,7 @@ __lython_file.close()
     public void IndexMissValue_MatchesCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 
@@ -5923,7 +5923,7 @@ __lython_file.close()
     public void RemoveMissValue_MatchesCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 
@@ -5961,7 +5961,7 @@ __lython_file.close()
     public void IntFloatConversion_CoerceIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class J:
     def __index__(self):
@@ -6048,7 +6048,7 @@ __lython_file.close()
     public void WidthCountArgs_CoerceIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class J:
     def __index__(self):
@@ -6109,7 +6109,7 @@ __lython_file.close()
     public void ItertoolsRepeat_CoerceIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import itertools
 import operator
@@ -6163,7 +6163,7 @@ __lython_file.close()
     public void IsliceBounds_MatchCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import itertools
 
@@ -6226,7 +6226,7 @@ __lython_file.close()
     public void ProductRepeat_CoerceIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import itertools
 
@@ -6279,7 +6279,7 @@ __lython_file.close()
     public void RegexBounds_CoerceIndexLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 
@@ -6346,7 +6346,7 @@ __lython_file.close()
     public void DequeMaxlen_MatchesCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 
@@ -6394,7 +6394,7 @@ __lython_file.close()
     public void CounterMostCommon_MatchesCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter
 
@@ -6458,7 +6458,7 @@ __lython_file.close()
     public void SliceObjects_CompareHashAndKeyLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter, defaultdict
 import operator
@@ -6560,7 +6560,7 @@ __lython_file.close()
     public void ColonSliceSyntaxOnMappings_KeysLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter, defaultdict
 
@@ -6660,7 +6660,7 @@ __lython_file.close()
     public void ChainMapSliceKeys_ResolveLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import ChainMap
 
@@ -6719,7 +6719,7 @@ __lython_file.close()
     public void MappingMembership_ResolvesLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter, defaultdict, ChainMap
 
@@ -6772,7 +6772,7 @@ __lython_file.close()
     public void CounterAndChainMapPop_ResolveLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter, ChainMap
 
@@ -6858,7 +6858,7 @@ __lython_file.close()
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(@"2|0|42|9|'t'|3|0|2|0|42|'Key not found in the first mapping: 9'|""Key not found in the first mapping: 't'""|2|[{}, {1: 5, slice(2, 3, None): 7}]|9|Method 'Counter.pop' is missing argument 'key'.|Method 'Counter.pop' received too many positional arguments.|Method 'ChainMap.pop' is missing argument 'key'.|Method 'ChainMap.pop' received too many positional arguments.", host.ReadText("/out.txt"));
 
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 from collections import ChainMap, Counter
 Counter().pop()
@@ -6874,7 +6874,7 @@ ChainMap().pop(1, 2, 3)
     public void CounterMostCommon_KeepsTieOrderLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import Counter
 
@@ -6905,7 +6905,7 @@ __lython_file.close()
     public void RandomIntegerArguments_FlowLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import random
 
@@ -7051,7 +7051,7 @@ __lython_file.close()
     public void RegexFlags_FlowLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 
@@ -7168,7 +7168,7 @@ __lython_file.close()
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(@"unsupported operand type(s) for &: 'float' and 'int'|unsupported operand type(s) for &: 'str' and 'int'|unsupported operand type(s) for &: 'J' and 'int'|cannot use LOCALE flag with a str pattern|[('and', 64), ('and', 4)]|33|33|1056|32|34|Python int too large to convert to C int|cannot use LOCALE flag with a str pattern|ASCII and UNICODE flags are incompatible|True|True|True|cannot process flags argument with a compiled pattern|cannot process flags argument with a compiled pattern|False|unhashable type: 'dict_keys'|True|False|2", host.ReadText("/out.txt"));
 
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import re
 re.compile("a", "x")
@@ -7185,7 +7185,7 @@ re.search(re.compile("a"), "a", 2)
     public void IntToFloatOverflow_RaisesLikeCpython()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 parts = []
 try:
@@ -7251,7 +7251,7 @@ __lython_file.close()
     public void RegexMatchStr_RendersLikeRepr()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 
@@ -7281,7 +7281,7 @@ __lython_file.close()
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class NI:
     def __add__(self, other):
@@ -7328,7 +7328,7 @@ __lython_file.close()
     {
         var source = "import functools\nreturn str(" + expression + ")";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -7341,7 +7341,7 @@ __lython_file.close()
     [InlineData("return str(type.__new__)", "<built-in method __new__ of type object>")]
     public void ObjectNewSlot_RenderBuiltinMethodForm(string source, string expected)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -7356,7 +7356,7 @@ __lython_file.close()
     [InlineData("return repr(object.__init__)", "<slot wrapper '__init__' of 'object' objects>")]
     public void ObjectSlotWrappers_RenderSlotWrapperForm(string source, string expected)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -7367,7 +7367,7 @@ __lython_file.close()
     [InlineData("def f():\n    s = \"x\"\n    return str(s.__init__)\nreturn f()", "<method-wrapper '__init__' of str object>")]
     public void BoundObjectSlots_RenderReceiverOwner(string source, string expected)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -7385,7 +7385,7 @@ __lython_file.close()
     [InlineData("import functools\nreturn str(functools.total_ordering)", "<built-in function total_ordering>")]
     public void EngineFunctionKinds_RenderBuiltinFunction(string source, string expected)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -7399,7 +7399,7 @@ __lython_file.close()
     [InlineData("from decimal import Decimal\nreturn str(Decimal(\"9.999999999999999999999999999\") * Decimal(\"9.999999999999999999999999999\"))", "99.99999999999999999999999998")]
     public void DecimalPower_KeepsConsistentCoefficients(string source, string expected)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -7410,7 +7410,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C: pass
 c = C()
@@ -7439,7 +7439,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass
 
@@ -7466,7 +7466,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C: pass
 c = C()
@@ -7500,7 +7500,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass
 
@@ -7528,7 +7528,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class NeverNotEqual:
     def __ne__(self, other):
@@ -7567,7 +7567,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C:
     @staticmethod
@@ -7601,7 +7601,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class A:
     def who(self):
@@ -7632,7 +7632,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class A: pass
 class B(A): pass
@@ -7676,7 +7676,7 @@ __lython_file.close()
     [InlineData("return str(object.__init__)", "<slot wrapper '__init__' of 'object' objects>")]
     public void ObjectValueSlots_RenderSlotWrapperForm(string source, string expected)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -7687,7 +7687,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C: pass
 c = C()
@@ -7718,7 +7718,7 @@ __lython_file.close()
     [Fact]
     public void ObjectHash_UnhashableDataclassFails()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from dataclasses import dataclass
 
@@ -7744,7 +7744,7 @@ hash(P(1))
     [InlineData("return str(list.append)", "<method 'append' of 'list' objects>")]
     public void ObjectFormatSlot_RenderMethodDescriptorForm(string source, string expected)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -7755,7 +7755,7 @@ hash(P(1))
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C: pass
 c = C()
@@ -7784,7 +7784,7 @@ __lython_file.close()
     [Fact]
     public void ObjectFormatSlot_RejectsNonEmptySpec()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C: pass
 c = C()
@@ -7807,7 +7807,7 @@ c.__format__("x")
     [InlineData("return str(list.append)", "<method 'append' of 'list' objects>")]
     public void ObjectDirSlot_RenderMethodDescriptorForm(string source, string expected)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -7818,7 +7818,7 @@ c.__format__("x")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class C: pass
 c = C()
@@ -7852,7 +7852,7 @@ __lython_file.close()
     [InlineData("from dataclasses import dataclass\n@dataclass\nclass P:\n    x: int\nreturn str(sorted(P(1).__dir__()) == dir(P(1)))", "True")]
     public void DataclassDunders_PassStaticMemberCheck(string source, string expected)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -7867,7 +7867,7 @@ __lython_file.close()
     [InlineData("def f(a):\n    return len(a)\nf(1)\n", "object of type 'int' has no len()")]
     public void LenMissNamedObjects_ReportPythonShapedTexts(string source, string message)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (result.Failure is null)
@@ -7888,7 +7888,7 @@ __lython_file.close()
     [InlineData("a, *rest = [1]\n__lython_file = open(\"/out.txt\", \"w\")\n__lython_file.write(str(rest))\n__lython_file.close()\n", null, "[]")]
     public void SetAndSplattingEdgeCases_ArePinned(string source, string? exceptionType, string expectedFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         if (exceptionType is null)
         {
@@ -7919,7 +7919,7 @@ __lython_file.close()
     [InlineData("import operator\noperator.ge(\"a\", 1)\n", "TypeError", "'>=' not supported between instances of 'str' and 'int'")]
     public void UnsupportedComparisonShapes_ReportExpectedFailure(string source, string exceptionType, string message)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         if (result.Failure is null)
@@ -7935,7 +7935,7 @@ __lython_file.close()
     [Fact]
     public void ListPopOnEmptyList_FailsWithIndexError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 items = []
 items.pop()
@@ -7951,7 +7951,7 @@ items.pop()
     [Fact]
     public void DictPopOnMissingKey_FailsWithKeyError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 d = {}
 d.pop("missing")
@@ -7967,7 +7967,7 @@ d.pop("missing")
     [Fact]
     public void JoinWithNonStringElement_FailsWithTypeError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 "-".join(["a", 1])
 """,
@@ -7990,7 +7990,7 @@ d.pop("missing")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 __lython_file = open("/out.txt", "w")
 __lython_file.write("a{{b}}:{0}".format("x"))
@@ -8008,7 +8008,7 @@ __lython_file.close()
     [InlineData("\"}\".format()\n", "Single '}' encountered in format string")]
     public void Format_InvalidPattern_FailsWithValueError(string source, string message)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -8020,7 +8020,7 @@ __lython_file.close()
     public async Task NonDecimalIntegerLiterals_EvaluateLikeCpython()
     {
         const string source = "return str([0xFF, 0o17, 0b101, 0X1A, 0O7, 0B1, 0x_FF, 0b_101, 0x1_2, -0x10, 0xFFFFFFFFFFFFFFFFFF, 0b101 + 0o10 + 9])";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

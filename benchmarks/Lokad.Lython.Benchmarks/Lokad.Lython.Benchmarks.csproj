@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/Lokad.Lython.Utf8Regex/Lokad.Lython.Utf8Regex.csproj" />
+    <Using Include="Lokad.Lython.Utf8Regex" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="../scripts/*.py" Link="RepresentativeScripts/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <AssemblyMetadata Include="BuildSdkVersion" Value="$(NETCoreSdkVersion)" />
     <ProjectReference Include="..\..\src\Lokad.Lython\Lokad.Lython.csproj" />

@@ -14,7 +14,7 @@ internal static class LythonOnceWorker
         var completed = 0;
         string? fileDigest = null;
         var files = workload.Files is { } fixture ? new ComparisonFileHost(fixture, Environment.CurrentDirectory) : null;
-        using var script = new LythonEngine().Compile(workload.Source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(workload.Source);
         if (script.IsValid) files?.Reset();
         using var result = script.IsValid ? script.Run(host ?? (ILythonHost?)files ?? new ComparisonHost()) : null;
         if (!script.IsValid) reason = string.Join(" | ", script.Diagnostics.Select(d => d.Message));

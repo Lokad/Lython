@@ -16,7 +16,7 @@ public sealed class PkgutilSliceAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedSlicesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import pkgutil
             mi = pkgutil.ModuleInfo(None, "m", False)
             objs = []
@@ -42,7 +42,7 @@ public sealed class PkgutilSliceAccountingScenarioTests
     [Fact]
     public async Task ModuleInfoSlicesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import pkgutil
             mi = pkgutil.ModuleInfo(None, "m", True)
             return [mi[0:2], mi[1:], mi[2]]

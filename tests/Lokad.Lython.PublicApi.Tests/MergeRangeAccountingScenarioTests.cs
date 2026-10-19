@@ -12,7 +12,7 @@ public sealed class MergeRangeAccountingScenarioTests
     [Fact]
     public async Task ManyMergesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             wb = openpyxl.Workbook()
@@ -37,7 +37,7 @@ public sealed class MergeRangeAccountingScenarioTests
     [Fact]
     public async Task MergeAndUnmergeBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             wb = openpyxl.Workbook()

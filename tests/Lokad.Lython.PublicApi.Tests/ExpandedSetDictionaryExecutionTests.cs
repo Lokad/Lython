@@ -19,7 +19,7 @@ result={0,*items(),3}
 print(sorted(result))
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/events.txt", "before");
@@ -63,7 +63,7 @@ print(sorted(result))
     public async Task EscapingContainersRemainFundedAcrossAnotherRun(string expression)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("return " + expression, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return " + expression, budget);
         var baseline = budget.ReservedBytes;
         var seed = System.Numerics.BigInteger.One << 10000;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["seed"] = seed, ["source"] = new object[] { seed } } };
@@ -97,7 +97,7 @@ print(sorted(result))
     public async Task ResultsAndOwnershipMatchBothDrivers(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -129,7 +129,7 @@ result={**Mapping(),'suffix':'x'}
 print(result)
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -178,7 +178,7 @@ print(result)
     public async Task AdmissionFailurePreventsPublicationAndRefunds(string expression)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("result=" + expression + "\nwith open('result.txt','w') as target: target.write(str(result))", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("result=" + expression + "\nwith open('result.txt','w') as target: target.write(str(result))", budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {

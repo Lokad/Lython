@@ -30,7 +30,7 @@ public sealed class GzipPathScopeLifetimeTests
         host.SeedBytes("/data.gz", Member);
         var budget = new LythonMemoryBudget(28000);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var (handle, frame, payload) = CreateHandle(context, mode, close);
         GC.Collect();
         GC.WaitForPendingFinalizers();

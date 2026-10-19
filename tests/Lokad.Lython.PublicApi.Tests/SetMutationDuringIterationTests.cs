@@ -19,7 +19,7 @@ public sealed class SetMutationDuringIterationTests
             for x in s:
                 s.add(100)
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
 
         var sync = script.Run(new MockLythonHost());
@@ -41,7 +41,7 @@ public sealed class SetMutationDuringIterationTests
             for x in s:
                 s.remove(x)
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
 
         var sync = script.Run(new MockLythonHost());
@@ -65,7 +65,7 @@ public sealed class SetMutationDuringIterationTests
             s.discard(first)
             second = next(it)
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
 
         var sync = script.Run(new MockLythonHost());
@@ -90,7 +90,7 @@ public sealed class SetMutationDuringIterationTests
         };
         foreach (var code in cases)
         {
-            var script = new LythonEngine().Compile(code);
+            var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
             Assert.True(script.IsValid, code);
 
             var sync = script.Run(new MockLythonHost());
@@ -117,7 +117,7 @@ public sealed class SetMutationDuringIterationTests
                 s.discard(999)
             return [len(seen), len(s)]
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
 
         var sync = script.Run(new MockLythonHost());
@@ -169,7 +169,7 @@ public sealed class SetMutationDuringIterationTests
             Assert.True(run.ExitCode == 0, "CPython " + version + " exited with " + run.ExitCode + ": " + run.StandardError);
             var expected = run.StandardOutput.Replace("\r", string.Empty);
 
-            var script = new LythonEngine().Compile(driver);
+            var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(driver);
             Assert.True(script.IsValid);
 
             var sync = script.Run(new MockLythonHost());

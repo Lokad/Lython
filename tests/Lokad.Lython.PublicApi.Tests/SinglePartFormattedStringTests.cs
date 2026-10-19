@@ -11,7 +11,7 @@ public sealed class SinglePartFormattedStringTests
     public async Task SinglePartsPreserveFormattedStringIdentity(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -30,7 +30,7 @@ public sealed class SinglePartFormattedStringTests
     public async Task ForwardedResultKeepsItsOwnerAcrossAnotherExecution()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("return f'{value}'", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return f'{value}'", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var value = new string('\u00e9', 4096);
@@ -52,7 +52,7 @@ public sealed class SinglePartFormattedStringTests
     {
         const string source = "rendered='caf\u00e9 '+str(123456789)\nclass Value:\n def __format__(self,spec):\n  with open('/events.txt','a') as output:output.write('call')\n  return rendered\nprint(f'{Value()}' is rendered)";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost(); host.SeedFile("/events.txt", "before");

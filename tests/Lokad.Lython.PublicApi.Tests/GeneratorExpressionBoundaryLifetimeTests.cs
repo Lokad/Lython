@@ -11,7 +11,7 @@ public sealed class GeneratorExpressionBoundaryLifetimeTests
     {
         const string source = "class Truth:\n def __bool__(self):\n  with open('/events.txt','a') as output:output.write('truth')\n  return True\ng=(i for i in (7,) if Truth())\nprint(list(g))";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -60,7 +60,7 @@ public sealed class GeneratorExpressionBoundaryLifetimeTests
                 : "  return False\n g=(i for i in (7,) if (total:=i) and inspect(i))\n print(list(g),total)\n") +
             "run()";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Code + " " + d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -111,7 +111,7 @@ public sealed class GeneratorExpressionBoundaryLifetimeTests
     {
         const string source = "def run():\n value=None\n g=(i for i in (0,) if (value:=['kept'*1024]) and False)\n list(g)\n return value\nreturn run()";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using var first = script.Run(new MockLythonHost());

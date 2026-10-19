@@ -12,7 +12,7 @@ public sealed class TransitiveClosureCompatibilityTests
     [Fact]
     public async Task TransitiveDefCaptureSurvivesReturnedScopes()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def a():
                 v = 1
                 def b():
@@ -41,7 +41,7 @@ public sealed class TransitiveClosureCompatibilityTests
     [Fact]
     public async Task DecoratorFixedParamsCaptureOuterScope()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def deco(tag):
                 def wrap(fn):
                     def inner(x):
@@ -71,7 +71,7 @@ public sealed class TransitiveClosureCompatibilityTests
     [Fact]
     public async Task NearestEnclosingRebindingWins()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def a():
                 v = 1
                 def b():

@@ -9,7 +9,7 @@ public sealed class OpenPyxlModuleFunctionTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 from openpyxl import Workbook, load_workbook
@@ -57,7 +57,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-basic.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -91,7 +91,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 
@@ -129,7 +129,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 
@@ -162,7 +162,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/cached.xlsx", CachedFormulaWorkbookBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import load_workbook
 
@@ -189,7 +189,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/formulas.xlsx", SharedAndArrayFormulaWorkbookBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -215,7 +215,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var seed = new LythonEngine().Run(
+        var seed = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 
@@ -228,7 +228,7 @@ wb.save("/formula.xlsx")
 
         Assert.True(seed.Success, seed.Failure?.Message ?? string.Join(Environment.NewLine, seed.Diagnostics.Select(d => d.Message)));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import load_workbook
 
@@ -248,7 +248,7 @@ wb.save("/destroyed.xlsx")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 
@@ -275,7 +275,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/rich.xlsx", RichTextWorkbookBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import load_workbook
 
@@ -289,7 +289,7 @@ __lython_file.close()
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal("rich text", host.ReadText("/out.txt"));
 
-        var richText = new LythonEngine().Run(
+        var richText = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import load_workbook
 
@@ -310,7 +310,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/shared.xlsx", RichTextWorkbookBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -338,7 +338,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from decimal import Decimal
 from openpyxl import Workbook
@@ -366,7 +366,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import datetime
 from openpyxl import Workbook, load_workbook
@@ -408,7 +408,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/date1904.xlsx", Date1904WorkbookBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import load_workbook
 
@@ -435,7 +435,7 @@ wb.save("/copy.xlsx")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 
@@ -468,7 +468,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Protection, Side
@@ -503,7 +503,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from copy import copy, deepcopy
 from openpyxl import Workbook
@@ -555,7 +555,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Protection, Side
@@ -606,7 +606,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Border, Font, PatternFill, Side
@@ -664,7 +664,7 @@ __lython_file.close()
     [Fact]
     public void OpenPyxlColor_DerivesKindFromPayloadAndIgnoresLegacyTypeArgument()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl.styles.colors import Color
 
@@ -684,7 +684,7 @@ print(rgb.type, rgb.rgb, rgb.indexed is None)
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 from openpyxl.styles import Border, Font, NamedStyle, PatternFill, Side
@@ -734,7 +734,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Font
@@ -767,7 +767,7 @@ with open("/out.txt", "w") as output:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
@@ -804,7 +804,7 @@ with open("/out.txt", "w") as output:
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 
@@ -839,7 +839,7 @@ with open("/out.txt", "w") as output:
         var host = new MockLythonHost();
         host.SeedWorkbook("/named.xlsx", WorkbookWithNamedStyleBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import load_workbook
 
@@ -886,7 +886,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 
@@ -917,7 +917,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 
@@ -952,7 +952,7 @@ loaded.save("/copy.xlsx")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 from openpyxl.comments import Comment
@@ -977,7 +977,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl.workbook import Workbook
 from openpyxl.reader.excel import load_workbook
@@ -1006,7 +1006,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl.utils.cell import (
     absolute_coordinate,
@@ -1062,7 +1062,7 @@ __lython_file.close()
     [Fact]
     public void OpenPyxlSubmoduleImports_PreserveStaticCallShapeDiagnostics()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl.utils.cell import get_column_letter
 get_column_letter()
@@ -1073,7 +1073,7 @@ get_column_letter()
         Assert.Null(result.Failure);
         Assert.Contains(result.Diagnostics, d => d.Message.Contains("openpyxl.utils.get_column_letter(col_idx) expects one argument.", StringComparison.Ordinal));
 
-        var helperResult = new LythonEngine().Run(
+        var helperResult = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl.utils.cell import range_boundaries
 range_boundaries()
@@ -1084,7 +1084,7 @@ range_boundaries()
         Assert.Null(helperResult.Failure);
         Assert.Contains(helperResult.Diagnostics, d => d.Message.Contains("openpyxl.utils.range_boundaries(range_string) expects one argument.", StringComparison.Ordinal));
 
-        var constructorResult = new LythonEngine().Run(
+        var constructorResult = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl.comments import Comment
 Comment("text")
@@ -1101,7 +1101,7 @@ Comment("text")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 from datetime import date
@@ -1171,7 +1171,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var imports = new LythonEngine().Run(
+        var imports = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl.comments import Comment
 from openpyxl.chart import BarChart, Reference
@@ -1189,7 +1189,7 @@ __lython_file.close()
         Assert.Equal("ok", host.ReadText("/out.txt"));
 
         var setupHost = new MockLythonHost();
-        var setup = new LythonEngine().Run(
+        var setup = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 from openpyxl.chart import BarChart, Reference
@@ -1212,7 +1212,7 @@ __lython_file.close()
         Assert.True(setup.Success, setup.Failure?.Message ?? string.Join(Environment.NewLine, setup.Diagnostics.Select(d => d.Message)));
         Assert.Equal("BarChart|Sales|Qty|1", setupHost.ReadText("/out.txt"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 from openpyxl.chart import BarChart
@@ -1234,7 +1234,7 @@ wb.active.add_chart(BarChart(), "E2")
         var host = new MockLythonHost();
         host.SeedWorkbook("/bad.xlsx", System.Text.Encoding.UTF8.GetBytes("not a zip"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 from openpyxl.cell.cell import Cell
@@ -1270,7 +1270,7 @@ __lython_file.close()
         Assert.Equal("00000000,00FFFFFF,000000FF|saved|bad char|InvalidFileException", host.ReadText("/out.txt"));
 
         var imageSetupHost = new MockLythonHost();
-        var imageSetup = new LythonEngine().Run(
+        var imageSetup = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl.drawing.image import Image
 
@@ -1284,7 +1284,7 @@ __lython_file.close()
         Assert.True(imageSetup.Success, imageSetup.Failure?.Message ?? string.Join(Environment.NewLine, imageSetup.Diagnostics.Select(d => d.Message)));
         Assert.Equal("/image.png|png", imageSetupHost.ReadText("/image.txt"));
 
-        var unsupported = new LythonEngine().Run(
+        var unsupported = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image
@@ -1304,7 +1304,7 @@ wb.active.add_image(Image("/image.png"), "A1")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -1332,7 +1332,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 
@@ -1363,7 +1363,7 @@ __lython_file.close()
     [Fact]
     public void OpenPyxlWorkbook_DeleteSheetRejectsRemovingOnlyWorksheet()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 
@@ -1382,7 +1382,7 @@ del wb["Sheet"]
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 
@@ -1414,7 +1414,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 
@@ -1445,7 +1445,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 
@@ -1489,7 +1489,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 
@@ -1529,7 +1529,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 
@@ -1560,7 +1560,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 
@@ -1590,7 +1590,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 
@@ -1631,7 +1631,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 from openpyxl.comments import Comment
@@ -1680,7 +1680,7 @@ return "|".join([after_insert, after_move, with_edge, without_edge, after_append
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 
@@ -1709,7 +1709,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 
@@ -1749,7 +1749,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-sheet-view.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -1778,7 +1778,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 
@@ -1836,7 +1836,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-print-settings.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -1873,7 +1873,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", original);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -1932,7 +1932,7 @@ wb.save("/copy.xlsx")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import NamedStyle
@@ -1976,7 +1976,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-dimensions.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2003,7 +2003,7 @@ __lython_file.close()
     [Fact]
     public void OpenPyxlWorksheet_MoveRangeRejectsFormulaTranslation()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 
@@ -2025,7 +2025,7 @@ ws.move_range("A1:A1", rows=1, cols=0, translate=True)
         var original = FixtureBytes("excel-basic.xlsx");
         host.SeedWorkbook("/input.xlsx", original);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2061,7 +2061,7 @@ __lython_file.close()
         var original = WorkbookWithCustomPackagePartBytes();
         host.SeedWorkbook("/input.xlsx", original);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2113,7 +2113,7 @@ __lython_file.close()
         var original = WorkbookWithCustomStyleTableBytes();
         host.SeedWorkbook("/styled.xlsx", original);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2147,7 +2147,7 @@ __lython_file.close()
         var original = WorkbookWithWorksheetPreservedFeaturesBytes();
         host.SeedWorkbook("/features.xlsx", original);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2199,7 +2199,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/features.xlsx", WorkbookWithWorksheetPreservedFeaturesBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2238,7 +2238,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/features.xlsx", WorkbookWithWorksheetPreservedFeaturesBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2269,7 +2269,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/features.xlsx", WorkbookWithWorksheetPreservedFeaturesBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2304,7 +2304,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/tables.xlsx", WorkbookWithTableOnlyBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import load_workbook
 
@@ -2394,7 +2394,7 @@ __lython_file.close()
             var host = new MockLythonHost();
             host.SeedWorkbook("/features.xlsx", original);
 
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 $$"""
 from openpyxl import load_workbook
 
@@ -2457,7 +2457,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/features.xlsx", WorkbookWithWorksheetPreservedFeaturesBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2491,7 +2491,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/features.xlsx", WorkbookWithWorksheetPreservedFeaturesBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2516,7 +2516,7 @@ __lython_file.close()
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
         Assert.Equal("B2|cellIs|greaterThan|1|0|B2:cellIs", host.ReadText("/out.txt"));
 
-        var mutation = new LythonEngine().Run(
+        var mutation = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2536,7 +2536,7 @@ wb.active.conditional_formatting.add("A1", None)
         var host = new MockLythonHost();
         host.SeedWorkbook("/features.xlsx", WorkbookWithWorksheetPreservedFeaturesBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2563,7 +2563,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/features.xlsx", WorkbookWithWorksheetPreservedFeaturesBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2599,7 +2599,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 
@@ -2639,7 +2639,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 
@@ -2692,7 +2692,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.datavalidation import DataValidation
@@ -2735,7 +2735,7 @@ __lython_file.close()
     [InlineData("validation = DataValidation(); validation.operator = 'unsupported'", "DataValidation.operator")]
     public void OpenPyxlDataValidation_RejectsUnsupportedClosedValues(string expression, string messageFragment)
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             $"from openpyxl.worksheet.datavalidation import DataValidation\n{expression}\n",
             new MockLythonHost());
 
@@ -2749,7 +2749,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.datavalidation import DataValidation
@@ -2787,7 +2787,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from openpyxl import Workbook
 from openpyxl.worksheet.datavalidation import DataValidation
@@ -2832,7 +2832,7 @@ with open("/out.txt", "w") as output:
 <xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:x="urn:schemas-microsoft-com:office:excel"><v:shape id="_x0000_s1025"><x:ClientData ObjectType="Note"><x:Row>0</x:Row><x:Column>0</x:Column></x:ClientData></v:shape></xml>
 """));
 
-            var result = new LythonEngine().Run(
+            var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
                 $$"""
 import openpyxl
 
@@ -2857,7 +2857,7 @@ wb.save("/copy.xlsx")
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-basic.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2878,7 +2878,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/linked.xlsx", WorkbookWithExternalLinkBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2898,7 +2898,7 @@ openpyxl.load_workbook("/linked.xlsx", keep_links=False)
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-basic.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2919,7 +2919,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/macro.xlsm", WorkbookWithVbaProjectBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2943,7 +2943,7 @@ wb.save("/copy.xlsm")
         var original = WorkbookWithVbaProjectBytes();
         host.SeedWorkbook("/macro.xlsm", original);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2974,7 +2974,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/linked.xlsx", WorkbookWithExternalLinkBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -2996,7 +2996,7 @@ wb.save("/copy.xlsx")
         var host = new MockLythonHost();
         host.SeedWorkbook("/embedded.xlsx", WorkbookWithEmbeddedObjectBytes());
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -3015,7 +3015,7 @@ wb.save("/copy.xlsx")
     [Fact]
     public void OpenPyxlLoadWorkbook_RejectsNonPathWorkbookInput()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -3034,7 +3034,7 @@ openpyxl.load_workbook(123)
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-basic.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -3056,7 +3056,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-basic.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -3076,7 +3076,7 @@ wb["Inventory"]["A2"] = "A999"
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-basic.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -3097,7 +3097,7 @@ wb.active.iter_cols(values_only=True)
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-basic.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -3117,7 +3117,7 @@ wb.active.column_dimensions["B"].width = 12
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-basic.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -3137,7 +3137,7 @@ wb.active.sheet_view.selection[0].activeCell = "C3"
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-basic.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -3157,7 +3157,7 @@ wb.active.page_margins.left = 0.25
         var host = new MockLythonHost();
         host.SeedWorkbook("/input.xlsx", FixtureBytes("excel-basic.xlsx"));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 
@@ -3177,7 +3177,7 @@ wb.save("/copy.xlsx")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 import openpyxl
@@ -3202,7 +3202,7 @@ wb.save("/second.xlsx")
     [Fact]
     public void OpenPyxlSave_FailsAtRuntimeWhenBinaryHostIoIsUnavailable()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 wb = openpyxl.Workbook()
@@ -3978,7 +3978,7 @@ wb.save("/out.xlsx")
     {
         // R26: dimensions store validated doubles; arbitrary fields keep
         // Python values with None for absence.
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             from openpyxl.chart import BarChart
             from openpyxl.drawing.image import Image

@@ -24,10 +24,10 @@ public sealed class SumCursorCleanupTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024); using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, CancellationToken = cancellation.Token });
+            { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var source = new PausedSource(budget, context.MemoryGovernor, cancellation, route, cleanupFails);
         context.Variables["source"] = source;
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return sum(source)").Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return sum(source)",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var baseline = budget.ReservedBytes;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
         Exception? failure;

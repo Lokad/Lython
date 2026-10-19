@@ -13,7 +13,7 @@ public sealed class GlobModuleFunctionTests
         host.SeedFile("/repo/docs/sub/c.md", "charlie");
         host.SeedFile("/repo/docs/.hidden.md", "hidden");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import glob
 
@@ -40,7 +40,7 @@ __lython_file.close()
         host.SeedFile("/repo/a.py", "a");
         host.SeedFile("/repo/sub/b.py", "b");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import glob
 vals = sorted(glob.glob("**/*.py", recursive=True))
@@ -62,7 +62,7 @@ __lython_file.close()
         host.SeedFile("/repo/pkg/b.txt", "b");
         host.SeedFile("/repo/other/c.py", "c");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import glob
 from pathlib import Path
@@ -91,7 +91,7 @@ __lython_file.close()
         host.SeedFile("/repo/sub/.hidden.py", "hidden");
         host.SeedFile("/repo/sub/vis.py", "visible");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import glob
 
@@ -118,7 +118,7 @@ __lython_file.close()
         host.SeedFile("/repo/a.py", "a");
         host.SeedFile("/repo/sub/b.py", "b");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import glob
 __lython_file = open("/out.txt", "w")
@@ -138,7 +138,7 @@ __lython_file.close()
         host.SeedFile("/repo/a.py", "a");
         host.SeedFile("/repo/b.py", "b");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import glob
 
@@ -164,7 +164,7 @@ __lython_file.close()
         host.SeedFile("/repo/docs/sub/c.md", "charlie");
         host.SeedFile("/repo/docs/.hidden.md", "hidden");
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import glob
 
@@ -220,7 +220,7 @@ glob.glob("*.py", True)
         "expects one path-like argument plus supported keyword options")]
     public void GlobModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost("/repo"));
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost("/repo"));
 
         Assert.False(result.Success);
         if (exceptionType == "compile")

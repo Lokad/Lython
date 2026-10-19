@@ -30,7 +30,7 @@ public sealed class StaticRuntimeArityAgreementTests
     [MemberData(nameof(Cases))]
     public async Task BothLayersAcceptAndRejectTheSameShapes(string good, string bad, string aliasBad, string diagnosticCode, object? expected)
     {
-        var goodScript = new LythonEngine().Compile(good);
+        var goodScript = new LythonEngine(Utf8RegexProvider.Instance).Compile(good);
         Assert.True(goodScript.IsValid, string.Join("|", goodScript.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var syncGood = goodScript.Run(new MockLythonHost());
         Assert.True(syncGood.Success, syncGood.Failure?.Message);
@@ -39,11 +39,11 @@ public sealed class StaticRuntimeArityAgreementTests
         Assert.True(asyncGood.Success, asyncGood.Failure?.Message);
         Assert.Equal(syncGood.ReturnValue, asyncGood.ReturnValue);
 
-        var badScript = new LythonEngine().Compile(bad);
+        var badScript = new LythonEngine(Utf8RegexProvider.Instance).Compile(bad);
         Assert.False(badScript.IsValid);
         Assert.Contains(badScript.Diagnostics, d => d.Code == diagnosticCode);
 
-        var aliasScript = new LythonEngine().Compile(aliasBad);
+        var aliasScript = new LythonEngine(Utf8RegexProvider.Instance).Compile(aliasBad);
         Assert.True(aliasScript.IsValid, string.Join("|", aliasScript.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var syncBad = aliasScript.Run(new MockLythonHost());
         Assert.False(syncBad.Success);

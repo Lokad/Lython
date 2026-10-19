@@ -16,7 +16,7 @@ public sealed class ArgvAccountingTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(
             host,
-            new LythonRunOptions { Args = ["ab", "cde"] });
+            new LythonRunOptions { Args = ["ab", "cde"] },regexProvider:Utf8RegexProvider.Instance);
         // Array: 32 + 16 * 2 = 64; strings: (128 + 2) + (128 + 3) = 261.
         Assert.Equal(64L + 261L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -27,7 +27,7 @@ public sealed class ArgvAccountingTests
     public void EmptyArgvStaysFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }

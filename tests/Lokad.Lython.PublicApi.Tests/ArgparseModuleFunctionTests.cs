@@ -8,7 +8,7 @@ public sealed class ArgparseModuleFunctionTests
     [Fact]
     public void ArgparseModule_OptionTerminatorAndNegativePositionals_AreDisambiguated()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 
@@ -33,7 +33,7 @@ print(numeric.parse_args(["-2"]).value)
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 
@@ -72,7 +72,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 
@@ -101,7 +101,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 
@@ -125,7 +125,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 
@@ -147,7 +147,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 
@@ -190,7 +190,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 
@@ -223,7 +223,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.WriteText("/in.txt", "hello");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 
@@ -244,7 +244,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 
@@ -266,7 +266,7 @@ except argparse.ArgumentError as ex:
     [Fact]
     public void ArgparseModule_UnsupportedAdvancedFeatures_AreExplicit()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import argparse
 

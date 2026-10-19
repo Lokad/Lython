@@ -125,14 +125,14 @@ public sealed class MethodBodyControlBoundaryTests
     private sealed record Fixture(Context Root, PyInstance Receiver, PyBoundMethod Method, Tape Tape, PyException Active);
     private static async Task<Fixture> Define(bool asynchronous, CancellationToken cancellation = default)
     {
-        var frontend = LythonFrontend.Compile(Source);
+        var frontend = LythonFrontend.Compile(Source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             SourcePath = "/method-control.py", CancellationToken = cancellation
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         root.Services.SetCurrentException(active);
         var tape = new Tape(root, active, cancellation);

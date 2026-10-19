@@ -11,7 +11,7 @@ public sealed class ExecutableUnpackingTests
     [Fact]
     public void OrdinaryNestedGroupsAndLeavesUseExecutableOperations()
     {
-        var syntax = LythonFrontend.Compile("def run(values,box):\n first,(second,*rest),box.value=values\n return first,second,rest,box.value").Script!;
+        var syntax = LythonFrontend.Compile("def run(values,box):\n first,(second,*rest),box.value=values\n return first,second,rest,box.value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
@@ -32,7 +32,7 @@ public sealed class ExecutableUnpackingTests
     {
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         var sink = new Sink();
         var outerSink = new Sink();
         using var values = new LimitAfterEnumeration(context.MemoryGovernor, limit);
@@ -47,7 +47,7 @@ public sealed class ExecutableUnpackingTests
             (false, true) => "outerSink.value,(sink.value,*rest)=outer",
             _ => "def generate():\n outerSink.value,((yield 'sink').value,*rest)=outer\nnext(generate())",
         };
-        var syntax = LythonFrontend.Compile(source).Script!;
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         try
         {

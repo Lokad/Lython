@@ -678,7 +678,15 @@ internal static partial class StaticContracts
             ("decimal", "ROUND_DOWN") or
             ("decimal", "ROUND_UP") or
             ("decimal", "ROUND_05UP") => AbstractValue.StringType(span),
-            ("re", "NOFLAG") or ("re", "IGNORECASE") or ("re", "I") or ("re", "UNICODE") or ("re", "U") or ("re", "MULTILINE") or ("re", "M") or ("re", "DOTALL") or ("re", "S") or ("re", "VERBOSE") or ("re", "X") or ("re", "ASCII") or ("re", "A") or ("re", "LOCALE") or ("re", "L") or ("re", "DEBUG") => AbstractValue.IntegerType(span),
+            ("re", "NOFLAG") => AbstractValue.Integer("0", span),
+            ("re", "IGNORECASE" or "I") => AbstractValue.Integer("2", span),
+            ("re", "LOCALE" or "L") => AbstractValue.Integer("4", span),
+            ("re", "MULTILINE" or "M") => AbstractValue.Integer("8", span),
+            ("re", "DOTALL" or "S") => AbstractValue.Integer("16", span),
+            ("re", "UNICODE" or "U") => AbstractValue.Integer("32", span),
+            ("re", "VERBOSE" or "X") => AbstractValue.Integer("64", span),
+            ("re", "DEBUG") => AbstractValue.Integer("128", span),
+            ("re", "ASCII" or "A") => AbstractValue.Integer("256", span),
             ("csv", "QUOTE_MINIMAL") or ("csv", "QUOTE_ALL") or ("csv", "QUOTE_NONE") or ("csv", "QUOTE_NONNUMERIC") => AbstractValue.IntegerType(span),
             ("subprocess", "PIPE") or ("subprocess", "STDOUT") or ("subprocess", "DEVNULL") => AbstractValue.IntegerType(span),
             _ => default

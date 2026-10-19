@@ -17,7 +17,7 @@ public sealed class DateTimeValueResultScenarioTests
     [Fact]
     public async Task ManyRetainedDateArithmeticStaysCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             d = datetime.date(2020, 1, 2)
             t = datetime.timedelta(days=1)
@@ -44,7 +44,7 @@ public sealed class DateTimeValueResultScenarioTests
     [Fact]
     public async Task ManyRetainedTimetuplesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             d = datetime.date(2020, 1, 2)
             objs = []
@@ -70,7 +70,7 @@ public sealed class DateTimeValueResultScenarioTests
     [Fact]
     public async Task DateTimeValueResultsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             d = datetime.date(2020, 1, 2)
             t = datetime.timedelta(days=1, seconds=2)

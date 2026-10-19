@@ -21,7 +21,7 @@ public class CsvReaderBenchmarks
 
     public CsvReaderBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _retainAll = Compile(engine, """
             import csv
             f = open("/data.csv")

@@ -18,7 +18,7 @@ public class TextScanBenchmarks
 
     public TextScanBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _discardLines = BenchmarkScripts.Compile(engine, "return sum(len(line) for line in open('/lines'))");
         _retainLines = BenchmarkScripts.Compile(engine, "lines=list(open('/lines'))\nreturn len(lines)");
         _longRecord = BenchmarkScripts.Compile(engine, "return sum(len(line) for line in open('/xml'))");

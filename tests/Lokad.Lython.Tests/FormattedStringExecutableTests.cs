@@ -13,11 +13,11 @@ public sealed class FormattedStringExecutableTests
     [InlineData(true)]
     public void FinalJoinDenialPreservesTargetAndReleasesReservations(bool asynchronous)
     {
-        var syntax = LythonFrontend.Compile("global target\ntarget=f'{left}{right}'").Script!;
+        var syntax = LythonFrontend.Compile("global target\ntarget=f'{left}{right}'",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         Context Create()
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
             context.Variables["left"] = PyString.FromString(new string('a', 4096), context.MemoryGovernor, null);
             context.Variables["right"] = PyString.FromString(new string('b', 4096), context.MemoryGovernor, null);
             context.Variables["target"] = PyNone.Instance;
@@ -50,7 +50,7 @@ public sealed class FormattedStringExecutableTests
     [InlineData("f'{f\"{value}\"}'")]
     public void OrdinaryFieldsDoNotForceFallbackOrLocalMirroring(string expression)
     {
-        var syntax = LythonFrontend.Compile($"def render(value,width):\n    return {expression}").Script!;
+        var syntax = LythonFrontend.Compile($"def render(value,width):\n    return {expression}",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax));
         var body = Assert.Single(code.EntryPoint.Functions).CodeObject;
         Assert.NotNull(body);

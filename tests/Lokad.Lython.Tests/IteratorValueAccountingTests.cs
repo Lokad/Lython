@@ -21,7 +21,7 @@ public sealed class IteratorValueAccountingTests
     public void IteratorObjectsCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PyList([PyNone.Instance]);
         _ = new PyMapIterator(new StubCallable(), [source], context, span);
@@ -39,7 +39,7 @@ public sealed class IteratorValueAccountingTests
     public void YieldedTuplesCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PyList([PyNone.Instance]);
         var zip = new PyZipIterator([source], false, span, context);
@@ -57,7 +57,7 @@ public sealed class IteratorValueAccountingTests
     public void UngovernedReversedStaysFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         _ = new PyReversedIterator(1, static i => (object)PyNone.Instance);
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

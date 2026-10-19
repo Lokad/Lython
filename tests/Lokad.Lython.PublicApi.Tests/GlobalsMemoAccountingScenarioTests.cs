@@ -24,7 +24,7 @@ public sealed class GlobalsMemoAccountingScenarioTests
     [Fact]
     public async Task WideDagMemoStaysCharged()
     {
-        var script = new LythonEngine().Compile("return len(big)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(big)\n");
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is 22400064 (content only), so this fits;
         // the 64B-per-entry backstop (+6400064) pushes post-fix past 28.8MB.
@@ -41,7 +41,7 @@ public sealed class GlobalsMemoAccountingScenarioTests
     [Fact]
     public async Task RoomyDagGlobalsSucceed()
     {
-        var script = new LythonEngine().Compile("return [len(big), big[0][0], big[99999][0]]\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return [len(big), big[0][0], big[99999][0]]\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(67108864), Globals = DagGlobals(100000) };
         var expected = new List<object?> { new BigInteger(100000), (object)(long)0, (object)(long)99999 };

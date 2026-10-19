@@ -9,7 +9,7 @@ public sealed class UnsupportedFeatureScenarioTests
     {
         var fixture = FixtureLoader.Load(Path.Combine("Language", "Failures", "UnsupportedImport"));
 
-        var result = new LythonEngine().Run(fixture.Script, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.Null(result.Failure);
@@ -19,7 +19,7 @@ public sealed class UnsupportedFeatureScenarioTests
     [Fact]
     public void ProcessSpawningImports_RemainExplicitlyOutsideTheSafeBoundary()
     {
-        var result = new LythonEngine().Run("import subprocess\n", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("import subprocess\n", new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.Null(result.Failure);
@@ -34,7 +34,7 @@ public sealed class UnsupportedFeatureScenarioTests
     [InlineData("a, *b, *c = [1, 2, 3]\n", "multiple starred assignment targets")]
     public void UnsupportedConstruct_ReportsNamedDiagnostic(string source, string construct)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.False(compiled.IsValid);
         Assert.Contains(
@@ -46,7 +46,7 @@ public sealed class UnsupportedFeatureScenarioTests
     [Fact]
     public void DecoratorExpression_MustEvaluateToCallable()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 dec = 1
 
@@ -67,7 +67,7 @@ f()
     [Fact]
     public void AttributeAssignment_OnBuiltinMissingMemberReportsAttributeError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 value = "x"
 value.member = 1

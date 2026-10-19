@@ -15,7 +15,7 @@ public sealed class DequeAccountingScenarioTests
     {
         // MG10 probe: 100000 lazy inputs materialize deque nodes without any
         // governor ownership, retaining about 8.9 MiB live heap under 64 KiB.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from collections import deque
             d = deque(range(100000))
@@ -35,7 +35,7 @@ public sealed class DequeAccountingScenarioTests
     [Fact]
     public async Task SmallDequeOperationsSucceedWhenFunded()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from collections import deque
             d = deque([1, 2, 3])
@@ -58,7 +58,7 @@ public sealed class DequeAccountingScenarioTests
     {
         // Shells accumulate per live instance: 20k empty deques retain
         // ~2.5 MiB of shells alone.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from collections import deque
             ds = []
@@ -91,7 +91,7 @@ public sealed class DequeAccountingScenarioTests
     public async Task AliasedDequeSurvivesOneDrop()
     {
         // Dropping one alias must not release retention owned through the other.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from collections import deque
             d = deque([1, 2, 3])
@@ -115,7 +115,7 @@ public sealed class DequeAccountingScenarioTests
     public async Task ClearedDequeReusesCleanly()
     {
         // Clear releases nodes while the shell persists; regrowth re-charges.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from collections import deque
             d = deque([1] * 1000)

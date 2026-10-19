@@ -11,8 +11,8 @@ public sealed class FunctionDefaultConstructionTests
     {
         var parameters = Enumerable.Range(0, 8)
             .Select(i => new LoweredFunctionParameter("a" + i, FunctionParameterKind.Positional, null, null)).ToArray();
-        var requiredContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
-        var defaultContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var requiredContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        var defaultContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         _ = new FunctionBindingPlan("f", PythonCallableKind.Function, parameters, new Dictionary<string, object>(), requiredContext);
         var defaults = parameters.ToDictionary(p => p.Name, _ => (object)0);
         var plan = new FunctionBindingPlan("f", PythonCallableKind.Function, parameters, defaults, defaultContext);
@@ -29,7 +29,7 @@ public sealed class FunctionDefaultConstructionTests
         foreach (var available in new[] { 0, 64, 512, 768, 4096 })
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-                new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
+                new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
             var governor = context.MemoryGovernor;
             var supplied = new PyList([42], governor, null);
             var padding = 1024 * 1024 - governor.CurrentAccountedBytes - available;

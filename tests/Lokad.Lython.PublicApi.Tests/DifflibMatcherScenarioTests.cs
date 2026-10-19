@@ -12,7 +12,7 @@ public sealed class DifflibMatcherScenarioTests
     [Fact]
     public async Task ExposedViewsKeepIdentityUntilSeq2()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import difflib
             matcher = difflib.SequenceMatcher(None, "qabxcd", "abycdf", autojunk=False)
@@ -49,7 +49,7 @@ public sealed class DifflibMatcherScenarioTests
     [Fact]
     public async Task AutojunkFalseMatchesCPython()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import difflib
             parts = []
@@ -77,7 +77,7 @@ public sealed class DifflibMatcherScenarioTests
     [Fact]
     public async Task MatcherViewsStayBoundedUnderSmallBudgets()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import difflib
             matcher = difflib.SequenceMatcher(None, list(range(2000)), list(range(1000, 3000)), autojunk=False)
@@ -97,7 +97,7 @@ public sealed class DifflibMatcherScenarioTests
     [Fact]
     public async Task UniqueInputsStayGovernedWithoutPopularFastPath()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import difflib
             matcher = difflib.SequenceMatcher(None, list(range(2000)), list(range(1000, 3000)), autojunk=False)

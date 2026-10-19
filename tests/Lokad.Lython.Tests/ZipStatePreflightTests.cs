@@ -17,7 +17,7 @@ public sealed class ZipStatePreflightTests
     [Fact]
     public void FailedPartialInitializationRefundsItsCursorStorage()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var held = new PyList([BigInteger.One]);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var failure = Assert.Throws<PyNotIterableException>(() => new PyZipIterator([held, PyNone.Instance], false, Span, context));
@@ -32,7 +32,7 @@ public sealed class ZipStatePreflightTests
     [InlineData(true)]
     public async Task DeniedRowPreflightDoesNotConsumeAndStopsFurtherPulls(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var source = new CountingSource();
         var zip = new PyZipIterator([source], false, Span, context);
         // Reserve all remaining allowance: even row allocation must fail first.
@@ -64,7 +64,7 @@ public sealed class ZipStatePreflightTests
     [InlineData(true)]
     public async Task DeniedTupleStorageReturnsFreshRowAdmissionAndPreservesHeldRows(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var source = new CountingSource();
         var zip = new PyZipIterator([source], false, Span, context);
         var held = Assert.IsType<PyTuple>(asynchronous ? (await zip.TryMoveNextAsync()).Value : Pull(zip));
@@ -115,7 +115,7 @@ public sealed class ZipStatePreflightTests
     [InlineData(32)]
     public void ConstructorFundingCoversMeasuredCursorStorage(int count)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var source = new PyList([BigInteger.One]);
         var sources = Enumerable.Repeat<object>(source, count).ToArray();
         _ = new PyZipIterator(sources, false, Span, context);

@@ -150,7 +150,7 @@ public sealed class GzipFileAccountingTests
         { member[offset + 3] = 255; member[offset + 4] = 255; }
         member[50010] = 3;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { });
+            new LythonRunOptions { },regexProvider:Utf8RegexProvider.Instance);
         var raw = Raw(context, member);
         var reader = await Construct(context, raw, "rb", asynchronous);
         var value = Assert.IsType<PyBytes>(await Call(reader, "read", context, asynchronous));
@@ -169,7 +169,7 @@ public sealed class GzipFileAccountingTests
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { CancellationToken = cancellation.Token });
+            new LythonRunOptions { CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var raw = Raw(context, mode == "rb" ? Member : []);
         var wrapper = await Construct(context, raw, mode, true);
         if (mode == "rb") await Call(wrapper, "read", context, true, BigInteger.One);
@@ -193,7 +193,7 @@ public sealed class GzipFileAccountingTests
     }
 
     private static LythonRuntime.ExecutionContext Context(long? cap = null, ILythonMemoryBudget? budget = null)
-        => new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(cap) });
+        => new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
 
     [Theory]
     [InlineData(false)]

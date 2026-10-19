@@ -21,40 +21,26 @@ public sealed class RegexCompilationAccountingTests
             ?? throw new InvalidOperationException("CreatePattern returned null.");
     }
 
-    [Fact]
-    public void SuccessfulCompilationCommitsAllowanceExactly()
+    [Theory]
+    [InlineData("a(b|c)*d")]
+    [InlineData("(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)")]
+    [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
+    public void CompiledStorageAndCacheBorrowOwnerUntilCleanup(string source)
     {
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        _ = CreatePattern(PyString.FromString("a(b|c)*d"), context, span);
-        Assert.Equal(65536L + 64L, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-    }
-
-    [Fact]
-    public void GroupAndLengthTermsCommitExactly()
-    {
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        // Ten groups: 65536 + 9 x 2048, length inside the free envelope, plus one
-        // 64B cache slot (N19).
-        _ = CreatePattern(PyString.FromString(string.Concat(Enumerable.Repeat("(a)", 10))), context, span);
-        Assert.Equal(65536L + 9L * 2048L + 64L, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-    }
-
-    [Fact]
-    public void LongPatternLengthTermCommitsExactly()
-    {
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        // 100 chars, no groups: 65536 + 36 x 256, plus one 64B cache slot (N19).
-        _ = CreatePattern(PyString.FromString(new string('a', 100)), context, span);
-        Assert.Equal(65536L + 36L * 256L + 64L, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = owner }, regexProvider: Utf8RegexProvider.Instance);
+            var span = new LythonSourceSpan(0, 0, 0, 0);
+            var pattern = CreatePattern(PyString.FromString(source), context, span);
+            var retained = budget.ReservedBytes;
+            Assert.True(retained > 0);
+            Assert.Same(pattern, CreatePattern(PyString.FromString(source), context, span));
+            Assert.Equal(retained, budget.ReservedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
@@ -64,7 +50,7 @@ public sealed class RegexCompilationAccountingTests
         // 64 B slot charge fails before publication; a separate funded owner
         // caches the same key facts normally.
         var host = new MockLythonHost();
-        var funded = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var funded = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var pattern = Assert.IsType<LythonRuntime.RePatternObject>(CreatePattern(PyString.FromString("a"), funded, span));
         var cache = new RegexPatternCache();
@@ -81,10 +67,13 @@ public sealed class RegexCompilationAccountingTests
     public void FailedCompilationReleasesScratch()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner }, regexProvider: Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
+        var baseline = budget.ReservedBytes;
         Assert.ThrowsAny<Exception>(() => CreatePattern(PyString.FromString("a([invalid"), context, span));
-        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(baseline, budget.ReservedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

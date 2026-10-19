@@ -23,7 +23,7 @@ except ValueError as error:print(error.args,error.__cause__.args)
     public async Task RaiseExpressionsAwaitOrDrainBeforeRefund(string? phase)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(CallbackSource, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(CallbackSource, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -78,7 +78,7 @@ def refuse():
         var source = common + "\ntry:raise " + (cause ? "ValueError('payload') from refuse()" : "refuse()") +
             "\nexcept BaseException:print('caught raise')\nprint('after raise')";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) };
@@ -107,7 +107,7 @@ try:raise ValueError('payload') from cause()
 except ValueError as error:return error.__cause__.args[0]
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var mock = new MockLythonHost();
@@ -153,7 +153,7 @@ with open('report.json','w') as target:json.dump({'names':names,'errors':errors}
 print(len(names),len(errors))
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -176,7 +176,7 @@ print(len(names),len(errors))
     [Fact]
     public async Task RaiseExpressionKeepsManagedRecursionProtection()
     {
-        using var script = new LythonEngine().Compile("def value():return value()\nraise value()");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("def value():return value()\nraise value()");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxRecursionDepth = 16 };
         foreach (var asynchronous in new[] { false, true })

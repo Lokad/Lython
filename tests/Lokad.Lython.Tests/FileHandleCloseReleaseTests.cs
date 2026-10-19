@@ -14,7 +14,7 @@ public sealed class FileHandleCloseReleaseTests
     public void CloseReleasesWriteBufferWhileHandleStaysReferenced()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/f.txt", context);
         handle.Write(PyString.FromString(new string('x', 4096)));
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes > 64);
@@ -28,7 +28,7 @@ public sealed class FileHandleCloseReleaseTests
     public async Task CloseAsyncReleasesWriteBufferWhileHandleStaysReferenced()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/f.txt", context);
         handle.Write(PyString.FromString(new string('x', 4096)));
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes > 64);

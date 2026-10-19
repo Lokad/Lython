@@ -35,8 +35,8 @@ public sealed class BuiltinModulePolicyTests
         host.SeedFile("/json.py", "raise AssertionError('shadow executed')");
         var options = Options("importlib", "pkgutil", "os", "xml", "openpyxl", "collections");
         var result = asynchronous
-            ? await new LythonEngine().RunAsync(source, host, options)
-            : new LythonEngine().Run(source, host, options);
+            ? await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, host, options)
+            : new LythonEngine(Utf8RegexProvider.Instance).Run(source, host, options);
         Assert.False(result.Success);
         Assert.Equal("ImportError", result.Failure?.ExceptionType);
         Assert.Contains("AllowedBuiltinModules", result.Failure?.Message);
@@ -69,8 +69,8 @@ return -1
 """;
         var options = Options("sys", "importlib", "importlib.util", "pkgutil", "os");
         var result = asynchronous
-            ? await new LythonEngine().RunAsync(source, new MockLythonHost(), options)
-            : new LythonEngine().Run(source, new MockLythonHost(), options);
+            ? await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, new MockLythonHost(), options)
+            : new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(new BigInteger(7), result.ReturnValue);
     }
@@ -92,8 +92,8 @@ return path.basename('/a/b.txt')
 """;
         var options = Options("os", "os.path", "sys", "importlib");
         var result = asynchronous
-            ? await new LythonEngine().RunAsync(source, new MockLythonHost(), options)
-            : new LythonEngine().Run(source, new MockLythonHost(), options);
+            ? await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, new MockLythonHost(), options)
+            : new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("b.txt", result.ReturnValue);
     }
@@ -101,7 +101,7 @@ return path.basename('/a/b.txt')
     [Fact]
     public void EmptyPolicyKeepsIntrinsicsAndFutureDirectives()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var result = engine.Run("from __future__ import annotations\nreturn sum(range(5))", new MockLythonHost(), Options());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(10), result.ReturnValue);
@@ -120,7 +120,7 @@ return path.basename('/a/b.txt')
     public async Task InvalidGrantsAreRejectedBeforeGuestCode(string? grant)
     {
         var options = Options(grant!);
-        var script = new LythonEngine().Compile("raise AssertionError('executed')");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("raise AssertionError('executed')");
         Assert.Throws<ArgumentException>(() => script.Run(new MockLythonHost(), options));
         await Assert.ThrowsAsync<ArgumentException>(() => script.RunAsync(new MockLythonHost(), options));
     }
@@ -132,7 +132,7 @@ return path.basename('/a/b.txt')
     {
         var host = new MockLythonHost();
         if (capable) host.EnableSubprocess();
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         const string source = "import importlib\nreturn importlib.import_module('subprocess').__name__";
         Assert.Equal("ImportError", engine.Run(source, host, Options("importlib")).Failure?.ExceptionType);
         var result = await engine.RunAsync(source, host, Options("importlib", "subprocess"));
@@ -154,15 +154,15 @@ return path.basename('/a/b.txt')
             AllowedLocalModules = new HashSet<string> { "helper" },
         };
         var result = asynchronous
-            ? await new LythonEngine().RunAsync("import helper\nreturn helper.value", host, options)
-            : new LythonEngine().Run("import helper\nreturn helper.value", host, options);
+            ? await new LythonEngine(Utf8RegexProvider.Instance).RunAsync("import helper\nreturn helper.value", host, options)
+            : new LythonEngine(Utf8RegexProvider.Instance).Run("import helper\nreturn helper.value", host, options);
         Assert.Equal("ImportError", result.Failure?.ExceptionType);
     }
 
     [Fact]
     public async Task CompiledScriptAndSnapshotsStayIsolatedAcrossSuspendedRuns()
     {
-        var script = new LythonEngine().Compile("import time\ntime.sleep(1)\nimport math\nreturn math.sqrt(value)");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import time\ntime.sleep(1)\nimport math\nreturn math.sqrt(value)");
         using var cancellation = new CancellationTokenSource();
         var timings = new[] { new HeldTiming(), new HeldTiming() };
         var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "time", "math" };

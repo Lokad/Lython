@@ -10,7 +10,7 @@ public sealed class PathBytesCompatibilityTests
         string expected, string seedHex, string finalSampleHex, string? finalOutputHex)
     {
         _ = name;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var host = new DelayedLythonHost();
         host.SeedBytes("/sample.bin", Convert.FromHexString(seedHex));
@@ -33,7 +33,7 @@ public sealed class PathBytesCompatibilityTests
         var started = write ? host.PauseWriteUntilCancellation("/blob") : host.PauseReadUntilCancellation("/blob");
         var source = write ? "from pathlib import Path\nprint(Path('/blob').write_bytes(b'changed'))"
             : "from pathlib import Path\nprint(Path('/blob').read_bytes())";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         var pending = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
@@ -50,7 +50,7 @@ public sealed class PathBytesCompatibilityTests
     [Fact]
     public async Task HostWriteFailurePreservesExistingBytes()
     {
-        var script = new LythonEngine().Compile("from pathlib import Path\nprint(Path('/blob').write_bytes(b'changed'))");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("from pathlib import Path\nprint(Path('/blob').write_bytes(b'changed'))");
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -80,7 +80,7 @@ public sealed class PathBytesCompatibilityTests
         string expected, string seedHex, string finalSampleHex, string? finalOutputHex)
     {
         _ = name;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
         foreach (var asynchronous in new[] { false, true })
         {

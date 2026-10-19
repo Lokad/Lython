@@ -63,7 +63,7 @@ public sealed class LoweredDispatchBoundaryTests
              else: seen.append(99)
              return seen
             finally: seen.append(7)
-            """);
+            """,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var context = Context(new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16384) });
         var active = new PyException("ValueError", "outer", PyNone.Instance);
@@ -83,10 +83,10 @@ public sealed class LoweredDispatchBoundaryTests
 
     private static LoweredExpression Expression(string source)
     {
-        var frontend = LythonFrontend.Compile(source + "\n");
+        var frontend = LythonFrontend.Compile(source + "\n",regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         return Assert.IsType<LoweredExpressionStatement>(Assert.Single(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements)).Expression;
     }
 
-    private static LythonRuntime.ExecutionContext Context(LythonRunOptions options) => new(new MockLythonHost(), options);
+    private static LythonRuntime.ExecutionContext Context(LythonRunOptions options) => new(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
 }

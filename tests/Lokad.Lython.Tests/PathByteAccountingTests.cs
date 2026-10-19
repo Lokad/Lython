@@ -16,7 +16,7 @@ public sealed class PathByteAccountingTests
     {
         var host = new MockLythonHost();
         host.SeedBytes("/blob", new byte[123]);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         var method = Method("read_bytes");
         for (var i = 0; i < 50; i++)
         {
@@ -38,7 +38,7 @@ public sealed class PathByteAccountingTests
             using (var owner = budget.CreateScope())
             {
                 var context = new LythonRuntime.ExecutionContext(host,
-                    new LythonRunOptions { MemoryBudget = owner });
+                    new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
                 Consume(context);
                 Assert.True(budget.ReservedBytes >= 1024);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -51,7 +51,7 @@ public sealed class PathByteAccountingTests
     public void FailedWritesRefundStagingAndLeaveInputOwnedByCaller()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) },regexProvider:Utf8RegexProvider.Instance);
         var input = new PyBytes(new byte[1024], context.MemoryGovernor, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var method = Method("write_bytes");

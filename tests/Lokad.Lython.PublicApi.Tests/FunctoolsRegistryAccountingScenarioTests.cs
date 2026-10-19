@@ -14,7 +14,7 @@ public sealed class FunctoolsRegistryAccountingScenarioTests
     [Fact]
     public async Task ManyPartialsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import functools
             def f(a, b, c, d, e):
@@ -49,7 +49,7 @@ public sealed class FunctoolsRegistryAccountingScenarioTests
         }
 
         builder.Append("return 0\n");
-        var script = new LythonEngine().Compile(builder.ToString());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(builder.ToString());
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -71,7 +71,7 @@ public sealed class FunctoolsRegistryAccountingScenarioTests
         }
 
         builder.Append("return 0\n");
-        var script = new LythonEngine().Compile(builder.ToString());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(builder.ToString());
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -86,7 +86,7 @@ public sealed class FunctoolsRegistryAccountingScenarioTests
     [Fact]
     public async Task CachedPropertyPerInstanceStaysCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import functools
             class C:
@@ -116,7 +116,7 @@ public sealed class FunctoolsRegistryAccountingScenarioTests
     [Fact]
     public async Task RegistryBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import functools
             def add(a, b):

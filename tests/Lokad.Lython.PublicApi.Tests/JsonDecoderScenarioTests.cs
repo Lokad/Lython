@@ -10,7 +10,7 @@ public sealed class JsonDecoderScenarioTests
 {
     private static async Task<object?[]> RunBothModes(string script)
     {
-        var compiled = new LythonEngine().Compile(script);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(script);
         Assert.True(compiled.IsValid);
         var sync = compiled.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

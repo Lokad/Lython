@@ -13,7 +13,7 @@ public sealed class TimeModuleFunctionTests
             LocalNow = new DateTimeOffset(2024, 1, 2, 4, 4, 5, TimeSpan.FromHours(1)),
         };
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import time
 from time import timezone, altzone, daylight, tzname
@@ -49,7 +49,7 @@ return "|".join(values)
     [Fact]
     public void EpochConversionsAndFormattingUseTimeTupleSlots()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import time
 
@@ -77,7 +77,7 @@ return "|".join(values)
     [Fact]
     public void StructTimeIsTupleCompatibleWithNamedAndHiddenFields()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import time
 
@@ -115,7 +115,7 @@ return str(t) + "|" + str(checks)
     [Fact]
     public void StrptimeReusesTheDeterministicDatetimeParser()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import time
 
@@ -145,7 +145,7 @@ return "|".join([
     [Fact]
     public void InvalidTimesAndAmbientTimezoneMutationFailExplicitly()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import time
 
@@ -188,7 +188,7 @@ return "|".join(values)
     [InlineData("time.asctime((2024, 1, 2, 3, 4, 62, 0, 0, 0))\n", "ValueError", "seconds out of range")]
     public void TimeTupleFailures_ReportExactErrors(string expression, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run("import time\n" + expression, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("import time\n" + expression, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -203,11 +203,11 @@ return "|".join(values)
     public async Task TimeTupleArityErrorsSpellBareNames(string expression, string message)
     {
         var source = "import time\nreturn " + expression + "\n";
-        var sync = new LythonEngine().Run(source, new MockLythonHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
         Assert.False(sync.Success);
         Assert.Equal("TypeError", sync.Failure?.ExceptionType);
         Assert.Equal(message, sync.Failure?.Message);
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.False(asyncResult.Success);
@@ -219,7 +219,7 @@ return "|".join(values)
     public async Task MktimeNormalizesOutOfRangeFields()
     {
         const string source = "import time\nreturn str(time.mktime((2024, 13, 2, 3, 4, 5, 0, 0, 0))) + \"|\" + str(time.mktime((2024, 0, 15, 3, 4, 5, 0, 0, 0))) + \"|\" + str(time.mktime((2024, 1, 0, 3, 4, 5, 0, 0, 0))) + \"|\" + str(time.mktime((2024, 1, 2, 25, 4, 5, 0, 0, 0))) + \"|\" + str(time.mktime((2024, 1, 2, 3, 61, 5, 0, 0, 0))) + \"|\" + str(time.mktime((2024, 2, 30, 3, 4, 5, 0, 0, 0))) + \"|\" + str(time.mktime((2024, 1, -1, 3, 4, 5, 0, 0, 0)))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -232,7 +232,7 @@ return "|".join(values)
     [Fact]
     public async Task TimeTupleMembersDistinguishShapes()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import time
             class J:
                 def __index__(self):
@@ -251,7 +251,7 @@ return "|".join(values)
     [Fact]
     public void StaticContractsRecognizeTimeAndItsCallShapes()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import time
 from time import gmtime, strftime
@@ -263,7 +263,7 @@ text = strftime("%Y", parts)
 parsed = time.strptime("2024", "%Y")
 custom = time.struct_time((2024, 1, 1, 0, 0, 0, 0, 1, -1))
 """);
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import time
 time.time(1)
@@ -283,7 +283,7 @@ time.struct_time()
     [Fact]
     public void StructTimeProjectsAsItsNineElementTuple()
     {
-        var result = new LythonEngine().Run("import time\nreturn time.gmtime(0)\n", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("import time\nreturn time.gmtime(0)\n", new MockLythonHost());
 
         Assert.True(result.Success, Describe(result));
         Assert.Equal(

@@ -21,7 +21,7 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
     }
 
     private static LythonRuntime.ExecutionContext NewContext()
-        => new(new MockLythonHost(), new LythonRunOptions());
+        => new(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
 
     private static LythonSourceSpan Span() => new(0, 0, 0, 0);
 
@@ -59,7 +59,7 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
     public void InsertionDenialReleasesFreshKey()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(128) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(128) },regexProvider:Utf8RegexProvider.Instance);
         var span = Span();
         var wrapper = NewWrapper(context, 1);
         var baseline = context.MemoryGovernor.CurrentCommittedBytes;
@@ -79,7 +79,7 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
     {
         var budget = new LythonMemoryBudget(512 * 1024);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var weak = AbandonPopulatedWrapper(context);
         var retained = budget.ReservedBytes;
         Assert.True(retained > 0);

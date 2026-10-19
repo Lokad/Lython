@@ -37,7 +37,7 @@ public sealed class NativeAnyAllTests
     [MemberData(nameof(Programs))]
     public async Task NativeAndGeneralInputsPreserveEffectsAndUnwind(string label, string source, string input, int count, bool expected, string? expectedError)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -76,7 +76,7 @@ public sealed class NativeAnyAllTests
 
     private static (Context Context, List<string> Effects) Prepare(ILythonMemoryBudget owner, string input, int count)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var effects = new List<string>();
         object values;
         if (input.StartsWith("bytes", StringComparison.Ordinal))

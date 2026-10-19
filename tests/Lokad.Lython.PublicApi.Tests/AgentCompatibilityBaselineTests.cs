@@ -9,7 +9,7 @@ public sealed class AgentCompatibilityBaselineTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = []
 values.append(str(sum([])))
@@ -32,7 +32,7 @@ __lython_file.close()
     [InlineData("sum([b\"a\"])\n", "unsupported operand type(s) for +: 'int' and 'bytes'")]
     public void Sum_RejectsStringAndBytesOperands(string source, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -46,7 +46,7 @@ __lython_file.close()
     [InlineData("sum(True)\n")]
     public void Sum_StaticDiagnosticsCatchProvablyNonIterableArgumentShapes(string source)
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             source + "__lython_file = open(\"/out.txt\", \"w\")\n__lython_file.write(\"side effect\")\n__lython_file.close()\n",
             new MockLythonHost());
 
@@ -62,7 +62,7 @@ __lython_file.close()
         host.EnableSubprocess();
         host.SeedSubprocessResult(["tool", "--version"], 0, "lython\n", "ignored");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
 out = subprocess.check_output(["tool", "--version"])
@@ -85,7 +85,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
 subprocess.check_output(["tool"])
@@ -107,7 +107,7 @@ __lython_file.close()
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/input.txt", "alpha\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -138,7 +138,7 @@ with open("/repo/output.txt", "w", encoding="utf-8", newline="") as handle:
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/input.txt", "alpha\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -161,7 +161,7 @@ __lython_file.close()
     [Fact]
     public void PathReadText_StaticDiagnosticsCatchUnsupportedEncodingErrorsAndArity()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -220,7 +220,7 @@ open("/repo/input.bin", "rb+")
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/input.txt", "alpha");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             source + """
 
 __lython_file = open("/repo/created.txt", "w")

@@ -42,7 +42,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RegexBehaves()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\np = re.compile(\"ab?\")\nm = p.match(\"abc\")\nreturn [p.findall(\"a,b\")[0], m.group(0)]\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { "a", "ab" };
@@ -57,7 +57,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedMatchesDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\np = re.compile(\"ab?\")\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(p.match(\"abc\"))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);
@@ -94,7 +94,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task ModuleSplitBehaves()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nreturn re.split(\",\", \"a,b\")\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { "a", "b" };
@@ -109,7 +109,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedCompilesDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nobjs = []\ni = 0\nwhile i < 200:\n    objs.append(re.compile(\"(a)(b)\" + str(i)))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);
@@ -135,7 +135,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task SubnBehaves()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nreturn re.subn(\"a\", \"b\", \"aaa\")\n");
         Assert.True(script.IsValid);
         var expected = new object?[] { "bbb", new BigInteger(3) };
@@ -150,7 +150,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedSubnDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(re.subn(\"a\", \"b\", \"aaa\"))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);
@@ -171,7 +171,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task GroupdictBehaves()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nreturn re.match(\"(?P<first>a)(?P<second>b)\", \"ab\").groupdict()\n");
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
@@ -191,7 +191,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedGroupdictDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    m = re.match(\"(?P<first>a)(?P<second>b)\", \"ab\")\n    objs.append(m.groupdict())\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);
@@ -222,7 +222,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task PartialSubBehaves()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nreturn re.sub(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\n");
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
@@ -236,7 +236,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedPartialDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(re.sub(\"a\", \"b\", \"xaay\", 0, 0, 1, 3))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);
@@ -284,7 +284,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task SplitGovernedBehaves()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nt = \"x\" + str(7) + \"aay\"\nreturn re.split(\"a\", t, 0, 0, 1, 3)\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { "7", "" };
@@ -298,7 +298,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task SearchGovernedBehaves()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nt = \"x\" + str(7) + \"aay\"\nreturn re.search(\"a\", t, 0, 1, 3).group(0)\n");
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
@@ -311,7 +311,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedSplitGovernedDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    t = \"x\" + str(i) + \"aay\"\n    objs.append(re.split(\"a\", t, 0, 0, 1, 3))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);
@@ -327,7 +327,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedSearchGovernedDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    t = \"x\" + str(i) + \"aay\"\n    objs.append(re.search(\"a\", t, 0, 1, 3))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget / 4); // N19: shared-pattern retains fit 1MiB; match charges deny here.
@@ -347,7 +347,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
         // N19: retaining the same compilation shares one charged pattern instead
         // of one charge per call, so 200 shared retains fit easily where 200
         // distinct compilations deny above.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nobjs = []\ni = 0\nwhile i < 200:\n    objs.append(re.compile(\"(a)(b)\"))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);
@@ -373,7 +373,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
         // N19: 1000 module-level searches of one pattern compile once (~5 MB here),
         // not once per call (~159 MB before the per-execution cache). Rearranged
         // compilation identity is CPython parity: re.compile("a") is re.compile("a").
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nout = []\nfor i in range(" + Iterations(1000) + "):\n    t = \"ab\" + str(i)\n    out.append(re.search(\"a\", t, 0, 3))\nreturn [len(out), re.compile(\"a\") is re.compile(\"a\")]");
         Assert.True(script.IsValid);
         var expected = new List<object?> { new BigInteger(1000), true };
@@ -392,7 +392,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
         // N19: past the 512-entry bound the coldest patterns evict, but every
         // spelling still compiles on demand: results stay correct and the
         // surviving tail keeps its identity.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nfor i in range(600):\n    re.compile(\"p\" + str(i))\na = re.compile(\"p0\")\nb = re.compile(\"p599\")\nreturn [a.search(\"p0\") is not None, b.search(\"p599\") is not None, re.compile(\"p599\") is b]");
         Assert.True(script.IsValid);
         var expected = new List<object?> { true, true, true };
@@ -410,7 +410,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
         // N19: re.purge() drops every cached reference and releases slot charges.
         // Retained patterns keep working on their own ownership, so the next
         // same-spelling compile builds anew instead of returning the purged object.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\np1 = re.compile(\"a\")\nre.purge()\np2 = re.compile(\"a\")\nreturn [p1 is p2, p1.search(\"xa\") is not None, p2.search(\"xa\") is not None]");
         Assert.True(script.IsValid);
         var expected = new List<object?> { false, true, true };
@@ -427,7 +427,7 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
     {
         // N19: failed compilations never populate the cache: repeating an invalid
         // spelling raises PatternError every time instead of poisoning later calls.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nresults = []\nfor src in [\"(_\", \"(\"]:\n    try:\n        re.search(src, \"x\")\n        results.append(\"no-error\")\n    except Exception as e:\n        results.append(e.type)\nreturn results");
         Assert.True(script.IsValid);
         var expected = new List<object?> { "PatternError", "PatternError" };

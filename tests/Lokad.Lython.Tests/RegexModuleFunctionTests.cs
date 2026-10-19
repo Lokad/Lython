@@ -9,7 +9,7 @@ public sealed class RegexModuleFunctionTests
     public void RegexModule_EmptyMatchesPreserveAdjacentNonEmptyProgression()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 
@@ -89,7 +89,7 @@ __lython_file.close()
     [Fact]
     public void RegexModule_FindAll_ProjectsRepresentativeResults()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 return re.findall("a.", "abac")
@@ -104,7 +104,7 @@ return re.findall("a.", "abac")
     [Fact]
     public void RegexModule_CompiledPatternFindAll_ProjectsRepresentativeResults()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 return re.compile("a+").findall("caaab aa")
@@ -119,7 +119,7 @@ return re.compile("a+").findall("caaab aa")
     [Fact]
     public void RegexModule_FindAll_ProjectsSingleCaptureResults()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 return re.findall("(a)?b", "b ab b")
@@ -134,7 +134,7 @@ return re.findall("(a)?b", "b ab b")
     [Fact]
     public void RegexModule_FindAll_ProjectsTupleCaptureResults()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import re
 return re.findall("(a)|(x)", "axa")
@@ -157,7 +157,7 @@ import re
 return str({{expression}})
 """;
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         return Assert.IsType<string>(result.ReturnValue);

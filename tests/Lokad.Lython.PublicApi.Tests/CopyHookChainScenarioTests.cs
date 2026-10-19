@@ -38,7 +38,7 @@ public sealed class CopyHookChainScenarioTests
     [Fact]
     public async Task DeepHookChainFailsInterpreterStackGuard()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             ChainPrelude +
             "m = copy.deepcopy(build(600))\n" +
             "return 0\n");
@@ -57,7 +57,7 @@ public sealed class CopyHookChainScenarioTests
     [Fact]
     public async Task ShallowHookChainSucceeds()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             ChainPrelude +
             "return count(copy.deepcopy(build(100)))\n");
         Assert.True(script.IsValid);
@@ -73,7 +73,7 @@ public sealed class CopyHookChainScenarioTests
     [Fact]
     public async Task FailedHookChainCleansUp()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             ChainPrelude +
             "try:\n" +
             "    copy.deepcopy(build(600))\n" +

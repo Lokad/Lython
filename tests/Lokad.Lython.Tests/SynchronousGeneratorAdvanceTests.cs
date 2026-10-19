@@ -16,7 +16,7 @@ public sealed class SynchronousGeneratorAdvanceTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var probe = new Probe();
         context.Variables["inspect"] = probe;
         var code = GeneratorCode(" yield inspect()\n yield inspect()");
@@ -55,7 +55,7 @@ public sealed class SynchronousGeneratorAdvanceTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner,           MaxRecursionDepth = 4, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner,           MaxRecursionDepth = 4, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var source = new Source(context.MemoryGovernor);
         context.Variables["source"] = source;
         var generator = LythonRuntime.PyGenerator.Create(GeneratorCode(" for item in source:yield item"), context, new(1, 1, 1, 1));
@@ -107,7 +107,7 @@ public sealed class SynchronousGeneratorAdvanceTests
 
     private static ExecutableCodeObject GeneratorCode(string body)
     {
-        var script = LythonFrontend.Compile("def values():\n" + body).Script!;
+        var script = LythonFrontend.Compile("def values():\n" + body,regexProvider:Utf8RegexProvider.Instance).Script!;
         return Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(script)).EntryPoint.Functions).CodeObject!;
     }
 

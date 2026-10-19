@@ -71,7 +71,7 @@ public class InstanceLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedInstancesDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             YieldingIterator + "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(R())\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);
@@ -93,7 +93,7 @@ public class InstanceLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedAfterDeleteDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             YieldingIterator + "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    o = R()\n    del o.n\n    objs.append(o)\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);

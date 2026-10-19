@@ -15,7 +15,7 @@ public sealed class DecimalRendererAccountingTests
     public void TupleRendererCommitsExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var rendering = new PyRenderingContext(context);
         var tuple = new PyDecimalTuple(0, new PyTuple(new object[] { new BigInteger(1), new BigInteger(5) }), new BigInteger(-1));
         var text = tuple.RenderPython(rendering);
@@ -31,7 +31,7 @@ public sealed class DecimalRendererAccountingTests
     public void ContextRendererCommitsExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var rendering = new PyRenderingContext(context);
         var text = PyDecimalContext.Default().RenderPython(rendering);
         Assert.Same(context.MemoryGovernor, text.OwnerMemoryGovernor);

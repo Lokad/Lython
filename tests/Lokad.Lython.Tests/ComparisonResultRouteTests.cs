@@ -25,7 +25,7 @@ public sealed class ComparisonResultRouteTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var expected = PyString.FromString(final ? "retained" : "", context.MemoryGovernor, null);
         var comparison = new Comparison(expected);
         var member = final ? "__gt__" : "__lt__";
@@ -36,7 +36,7 @@ public sealed class ComparisonResultRouteTests
         context.Variables["operand"] = new PyInstance(type, context.MemoryGovernor, null);
         var tail = new Tail();
         context.Variables["tail"] = tail;
-        var frontend = LythonFrontend.Compile(final ? "return 0 < 1 < operand" : "return operand < 1 < tail()");
+        var frontend = LythonFrontend.Compile(final ? "return 0 < 1 < operand" : "return operand < 1 < tail()",regexProvider:Utf8RegexProvider.Instance);
         var script = frontend.Script.RequireNotNull();
         var syntax = Assert.IsType<ReturnStatementSyntax>(Assert.Single(script.Statements)).Expression.RequireNotNull();
         var lowered = LoweredScript.LowerStandaloneExpression(syntax);

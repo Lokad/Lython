@@ -24,7 +24,7 @@ public sealed class TextReaderAbandonmentTests
         var source = "kept = []\ndef job():\n" + string.Join('\n', lines.Select(line => " " + line)) +
             "\n return source\nfor i in range(500):\n reader = job()\n" + (retain ? " kept.append(reader)\n" : "") + " reader = None\nreturn i\n";
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(retain ? source : source.Replace("range(500)", "range(count)"), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(retain ? source : source.Replace("range(500)", "range(count)"), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var baseline = budget.ReservedBytes;
         var host = new MockLythonHost(); host.SeedFile("/input.txt", "Alpha café 😀\n");

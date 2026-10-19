@@ -29,7 +29,7 @@ public sealed class FormatProtocolBoundaryTests
     public async Task FormattingPreservesEffectsAndCleanup(string label, string expression, bool fails, bool descriptor)
     {
         var source = "global published\npublished=" + expression + "\nreturn published";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -65,7 +65,7 @@ public sealed class FormatProtocolBoundaryTests
 
     private static (Context Context, List<string> Effects) Prepare(ILythonMemoryBudget owner, bool fails, bool descriptor)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var effects = new List<string>();
         object rendered = fails ? new BigInteger(7) : PyString.FromString("rendered", context.MemoryGovernor, null);
         var call = new Format(effects, rendered);

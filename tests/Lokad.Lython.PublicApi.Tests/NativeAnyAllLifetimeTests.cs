@@ -15,7 +15,7 @@ with open('report.json','w',newline='') as target:
 print('written')
 """;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -50,7 +50,7 @@ print('written')
             + "\n  with open('second.txt','a') as target:target.write('second')\n  yield " + (operation == "any" ? "True" : "False")
             + "\n  with open('later.txt','a') as target:target.write('later')\nprint(" + operation + "(Values()))\nreturn payload";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -102,7 +102,7 @@ print('written')
     public async Task NativeBytesRemainFundedWhileAnotherExecutionUsesTheRoot(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("payload=b'\\x01'*4096\nassert any(payload)\nassert all(payload)\nreturn payload", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("payload=b'\\x01'*4096\nassert any(payload)\nassert all(payload)\nreturn payload", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using var held = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());

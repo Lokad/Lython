@@ -37,7 +37,7 @@ public sealed class CachedPropertyMetadataAccountingTests
     public void MetadataSlotsCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var descriptor = CreateDescriptor(context, span);
         Assert.True(descriptor.TrySetMember("a", PyNone.Instance));

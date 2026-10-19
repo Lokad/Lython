@@ -14,7 +14,7 @@ public sealed class DictStorageLifetimeTests
     public async Task EmptyDictionaryTurnoverDoesNotRetainDeletedKeyCharges(bool pop, bool asynchronous)
     {
         var remove = pop ? "d.pop(i + 0)" : "del d[i + 0]";
-        var script = new LythonEngine().Compile($$"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($$"""
             d = {}
             with open('/ready', 'r') as stream:
                 stream.read()
@@ -73,7 +73,7 @@ public sealed class DictStorageLifetimeTests
     {
         var budget = new LythonMemoryBudget(1048576);
         var constructor = counter ? "Counter()" : "defaultdict()";
-        using var script = new LythonEngine().Compile($$"""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($$"""
             from collections import Counter, defaultdict
             with open('/ready', 'r') as stream:
                 stream.read()
@@ -120,7 +120,7 @@ public sealed class DictStorageLifetimeTests
     private static async Task<LythonExecutionResult> RunWrapperViews(bool counter, bool asynchronous)
     {
         var constructor = counter ? "Counter()" : "defaultdict()";
-        using var script = new LythonEngine().Compile($$"""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($$"""
             from collections import Counter, defaultdict
             held = []
             with open('/ready', 'r') as stream:

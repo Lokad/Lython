@@ -13,7 +13,7 @@ public sealed class ProtectedLoopCompilationTests
                 for line in source:
                     if line.startswith('NEEDLE:'):
                         break
-            """);
+            """,regexProvider:Utf8RegexProvider.Instance);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
         Assert.Empty(code.StatementFallbacks);
         Assert.Empty(code.ExpressionFallbacks);
@@ -27,7 +27,7 @@ public sealed class ProtectedLoopCompilationTests
     [MemberData(nameof(Programs))]
     public void ProtectedLoopJumpsRemainExecutable(string name, string source)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.True(frontend.Diagnostics.All(d => d.Severity != LythonDiagnosticSeverity.Error),
             name + ": " + string.Join("; ", frontend.Diagnostics.Select(d => d.Message)));
         var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));

@@ -18,7 +18,7 @@ public sealed class ProtectedLoopControlTests
                     break
             """;
         var budget = new LythonMemoryBudget(1048576);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         var mock = asynchronous ? null : new MockLythonHost();
@@ -44,7 +44,7 @@ public sealed class ProtectedLoopControlTests
                     break
             """;
         var budget = new LythonMemoryBudget(1048576);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         var entered = host.PauseWriteUntilCancellation("/out.txt");
@@ -84,7 +84,7 @@ public sealed class ProtectedLoopControlTests
         string name, string source, string output, string cleanup, bool asynchronous)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var delayed = asynchronous ? new DelayedLythonHost() : null;

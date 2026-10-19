@@ -20,7 +20,7 @@ public sealed class ContainerShellAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedViewsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             d = {"a": 1, "b": 2}
             objs = []
             i = 0
@@ -45,7 +45,7 @@ public sealed class ContainerShellAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedDefaultDictsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             objs = []
             i = 0
@@ -68,7 +68,7 @@ public sealed class ContainerShellAccountingScenarioTests
     [Fact]
     public async Task ContainerShellsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             d = {"a": 1, "b": 2}
             dd = collections.defaultdict(list)

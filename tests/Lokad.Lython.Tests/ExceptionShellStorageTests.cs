@@ -69,7 +69,7 @@ public sealed class ExceptionShellStorageTests
         var context = Root();
         using var pressure = context.MemoryGovernor.ReserveTemporary(4096 - context.MemoryGovernor.CurrentAccountedBytes, Span);
         var manager = new CleanupManager();
-        var syntax = LythonFrontend.Compile("1 / 0").Script!;
+        var syntax = LythonFrontend.Compile("1 / 0",regexProvider:Utf8RegexProvider.Instance).Script!;
         var body = LoweredScript.Lower(syntax).Statements;
         if (asynchronous)
             await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
@@ -80,7 +80,7 @@ public sealed class ExceptionShellStorageTests
         Assert.Null(manager.Exception!.OwnerMemoryGovernor);
     }
 
-    private static LythonRuntime.ExecutionContext Root() => new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
+    private static LythonRuntime.ExecutionContext Root() => new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) },regexProvider:Utf8RegexProvider.Instance);
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference<PyException> Drop(LythonRuntime.ExecutionContext context)

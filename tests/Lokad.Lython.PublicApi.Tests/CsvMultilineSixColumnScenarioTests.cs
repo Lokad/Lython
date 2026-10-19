@@ -37,7 +37,7 @@ public sealed class CsvMultilineSixColumnScenarioTests
     [Fact]
     public async Task MultilineSixColumnRetainTrips()
     {
-        var script = new LythonEngine().Compile(MultilineSixColumnScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(MultilineSixColumnScript);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MultilineSixColumnBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -54,7 +54,7 @@ public sealed class CsvMultilineSixColumnScenarioTests
     [Fact]
     public async Task MultilineSixColumnPeakShowsNoTransientAccumulation()
     {
-        var script = new LythonEngine().Compile(MultilineSixColumnScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(MultilineSixColumnScript);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(268435456) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -71,7 +71,7 @@ public sealed class CsvMultilineSixColumnScenarioTests
     [Fact]
     public async Task SmallMultilineSixColumnParsesExactly()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             la = chr(34) + "A" * 200 + "\n"
             lb = "B" * 200 + "\n"

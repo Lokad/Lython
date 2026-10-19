@@ -11,7 +11,7 @@ public sealed class DecimalRendererAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedRendersStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             c = decimal.Context()
@@ -36,7 +36,7 @@ public sealed class DecimalRendererAccountingScenarioTests
     [Fact]
     public async Task RendererBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             checks = [repr(decimal.Decimal("1.5").as_tuple()) == "DecimalTuple(sign=0, digits=(1, 5), exponent=-1)"]

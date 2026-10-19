@@ -24,7 +24,7 @@ public sealed class FileHandleAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedWritersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             objs = []
             i = 0
             while i < 20000:
@@ -48,7 +48,7 @@ public sealed class FileHandleAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedReadersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             objs = []
             i = 0
             while i < 20000:
@@ -72,7 +72,7 @@ public sealed class FileHandleAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedAppendersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             objs = []
             i = 0
             while i < 20000:
@@ -96,7 +96,7 @@ public sealed class FileHandleAccountingScenarioTests
     [Fact]
     public async Task HandlesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             f = open("/w.txt", "w")
             f.write("hi")
             f.close()

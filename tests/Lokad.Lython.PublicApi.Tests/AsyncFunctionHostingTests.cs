@@ -27,7 +27,7 @@ public sealed class AsyncFunctionHostingTests
     public async Task DefinitionsAndYieldingProtocolsPreservePythonOrder(string name, string body, string stdout, string events)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(Prelude + body, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Prelude + body, budget);
         Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -55,7 +55,7 @@ public sealed class AsyncFunctionHostingTests
         const string wait = "def wait(value=0):\n    with open('out.txt','w') as target:\n        target.write('pending')\n    return value\n";
         var source = wait + (decorator ? "@wait\ndef f():\n    return 1" : "def f(value=wait()):\n    return value");
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/out.txt", "before");

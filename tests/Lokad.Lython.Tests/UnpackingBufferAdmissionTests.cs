@@ -16,7 +16,7 @@ public sealed class UnpackingBufferAdmissionTests
     [InlineData(true, null)]
     public async Task BoundedLeaseStopsWithoutChangingUnboundedConsumers(bool asynchronous, int? maximumItems)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var source = new CountingSequence(maximumItems is null ? 5 : 100000);
         var baseline = context.MemoryGovernor.CurrentReservedBytes;
         using (var lease = asynchronous
@@ -40,7 +40,7 @@ public sealed class UnpackingBufferAdmissionTests
     {
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         var source = new CountingSequence(5);
         using (context.MemoryGovernor.ReserveTemporary(limit - context.MemoryGovernor.CurrentAccountedBytes, Span))
         {

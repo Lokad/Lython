@@ -9,7 +9,7 @@ public sealed class DifflibSnapshotOwnershipTests
 {
     private static (LythonRuntime.ExecutionContext context, LythonSourceSpan span) NewContext()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         return (context, new LythonSourceSpan(0, 0, 0, 0));
     }
 

@@ -13,7 +13,7 @@ public sealed class MathProdAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedProductsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import math
             xs = [10 ** 100] * 200
@@ -38,7 +38,7 @@ public sealed class MathProdAccountingScenarioTests
     [Fact]
     public async Task ProdBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import math
             return [math.prod([2, 3, 4]), math.prod([], start=5)]

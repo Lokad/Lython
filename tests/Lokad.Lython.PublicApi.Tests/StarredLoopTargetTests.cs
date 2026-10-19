@@ -11,7 +11,7 @@ public sealed class StarredLoopTargetTests : LifetimeScenario
     protected override int BatchRepetitions(int iterations) => Math.Max(8, iterations);
     private static LythonCompiledScript Compile(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         return script;
     }
@@ -154,7 +154,7 @@ public sealed class StarredLoopTargetTests : LifetimeScenario
     [Fact]
     public void LiteralShortRow_RejectsAtCompileTime()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             for a, *b, c in [(1,)]:
                 pass
             """);
@@ -180,7 +180,7 @@ public sealed class StarredLoopTargetTests : LifetimeScenario
     [Fact]
     public void MultipleStars_Rejected()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             for *a, *b in [(1, 2)]:
                 pass
             """);
@@ -191,7 +191,7 @@ public sealed class StarredLoopTargetTests : LifetimeScenario
     [Fact]
     public void BareStarredTarget_Rejected()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             for *a in [(1, 2)]:
                 pass
             """);
@@ -202,7 +202,7 @@ public sealed class StarredLoopTargetTests : LifetimeScenario
     [Fact]
     public void StarWithoutName_Rejected()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             for *, b in [(1, 2)]:
                 pass
             """);
@@ -315,7 +315,7 @@ public sealed class StarredLoopTargetTests : LifetimeScenario
     private static async Task AssertAsyncFileRowRemainders(bool capExecutionMemory, int smallRows, int largeRows, long memoryLimit)
     {
         var budget = new LythonMemoryBudget(Math.Max(512 * 1024, memoryLimit + 256 * 1024));
-        using var script = new LythonEngine().Compile("with open('/r.txt') as f:\n    total = 0\n    for line in f:\n        first, *rest = line.split()\n        assert first == 'k' and rest == ['v', 'w', 'x']\n        total += 1\n    return total\n", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("with open('/r.txt') as f:\n    total = 0\n    for line in f:\n        first, *rest = line.split()\n        assert first == 'k' and rest == ['v', 'w', 'x']\n        total += 1\n    return total\n", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var batchSize = largeRows >= 100000 ? 256 : 32;

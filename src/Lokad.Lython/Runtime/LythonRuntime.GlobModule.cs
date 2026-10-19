@@ -100,9 +100,11 @@ internal sealed partial class LythonRuntime
         }
 
         var pathname = GetPath(arguments[0], "glob.escape", span);
+        using var scratch = context.MemoryGovernor.ReserveTemporary(checked(128L + 24L * pathname.Length), span);
         var builder = new StringBuilder(pathname.Length);
         foreach (var ch in pathname)
         {
+            context.CheckExecution(span);
             switch (ch)
             {
                 case '*':
@@ -155,7 +157,8 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        var translated = TranslateGlobPattern(pattern, recursive, includeHidden, separators);
+        using var scratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * pattern.Length * (separators.Length + 1L)), span);
+        var translated = TranslateGlobPattern(pattern, recursive, includeHidden, separators, context.Limits.CancellationToken);
         return PyString.FromString(translated, context.MemoryGovernor, span);
     }
 
@@ -342,7 +345,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (!FnMatchModule.MatchSimple(PyString.FromString(name), PyString.FromString(segment)))
+            if (!FnMatchModule.MatchSimple(PyString.FromString(name), PyString.FromString(segment), context.Limits.CancellationToken))
             {
                 continue;
             }
@@ -428,7 +431,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (!FnMatchModule.MatchSimple(PyString.FromString(name), PyString.FromString(segment)))
+            if (!FnMatchModule.MatchSimple(PyString.FromString(name), PyString.FromString(segment), context.Limits.CancellationToken))
             {
                 continue;
             }
@@ -534,16 +537,17 @@ internal sealed partial class LythonRuntime
                patternSegment.StartsWith(".", StringComparison.Ordinal);
     }
 
-    private static string TranslateGlobPattern(string pattern, bool recursive, bool includeHidden, string separators)
+    private static string TranslateGlobPattern(string pattern, bool recursive, bool includeHidden, string separators, CancellationToken cancellationToken)
     {
-        var segments = SplitGlobPattern(pattern, separators);
+        var segments = SplitGlobPattern(pattern, separators, cancellationToken);
         var builder = new StringBuilder();
         builder.Append('^');
         for (var i = 0; i < segments.Count; i++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (i > 0)
             {
-                AppendSeparatorRegex(builder, separators);
+                AppendSeparatorRegex(builder, separators, cancellationToken);
             }
 
             var segment = segments[i];
@@ -556,25 +560,26 @@ internal sealed partial class LythonRuntime
                 else
                 {
                     builder.Append("(?:.*");
-                    AppendSeparatorRegex(builder, separators);
+                    AppendSeparatorRegex(builder, separators, cancellationToken);
                     builder.Append(")?");
                 }
 
                 continue;
             }
 
-            AppendGlobSegmentRegex(builder, segment, includeHidden, separators);
+            AppendGlobSegmentRegex(builder, segment, includeHidden, separators, cancellationToken);
         }
 
         builder.Append('$');
         return builder.ToString();
 
-        static List<string> SplitGlobPattern(string pattern, string separators)
+        static List<string> SplitGlobPattern(string pattern, string separators, CancellationToken cancellationToken)
         {
             var segments = new List<string>();
             var start = 0;
             for (var i = 0; i < pattern.Length; i++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (separators.IndexOf(pattern[i]) >= 0)
                 {
                     segments.Add(pattern[start..i]);
@@ -587,7 +592,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static void AppendGlobSegmentRegex(StringBuilder builder, string segment, bool includeHidden, string separators)
+    private static void AppendGlobSegmentRegex(StringBuilder builder, string segment, bool includeHidden, string separators, CancellationToken cancellationToken)
     {
         if (!includeHidden && segment.Length != 0 && !segment.StartsWith(".", StringComparison.Ordinal))
         {
@@ -597,15 +602,16 @@ internal sealed partial class LythonRuntime
         var noClosingBracketRemaining = false;
         for (var i = 0; i < segment.Length; i++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var ch = segment[i];
             switch (ch)
             {
                 case '*':
-                    AppendNonSeparatorClass(builder, separators);
+                    AppendNonSeparatorClass(builder, separators, cancellationToken);
                     builder.Append('*');
                     break;
                 case '?':
-                    AppendNonSeparatorClass(builder, separators);
+                    AppendNonSeparatorClass(builder, separators, cancellationToken);
                     break;
                 case '[':
                     if (noClosingBracketRemaining)
@@ -614,7 +620,7 @@ internal sealed partial class LythonRuntime
                         break;
                     }
 
-                    i = AppendTranslatedCharacterClass(builder, segment, i, out var foundClosingBracket);
+                    i = AppendTranslatedCharacterClass(builder, segment, i, cancellationToken, out var foundClosingBracket);
                     noClosingBracketRemaining = !foundClosingBracket;
                     break;
                 default:
@@ -628,6 +634,7 @@ internal sealed partial class LythonRuntime
         StringBuilder builder,
         string segment,
         int openBracket,
+        CancellationToken cancellationToken,
         out bool foundClosingBracket)
     {
         var closeBracket = segment.IndexOf(']', openBracket + 1);
@@ -655,6 +662,7 @@ internal sealed partial class LythonRuntime
 
         for (; index < closeBracket; index++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var ch = segment[index];
             if (ch is '\\' or '[')
             {
@@ -668,7 +676,7 @@ internal sealed partial class LythonRuntime
         return closeBracket;
     }
 
-    private static void AppendSeparatorRegex(StringBuilder builder, string separators)
+    private static void AppendSeparatorRegex(StringBuilder builder, string separators, CancellationToken cancellationToken)
     {
         if (separators.Length == 1)
         {
@@ -677,21 +685,22 @@ internal sealed partial class LythonRuntime
         }
 
         builder.Append('[');
-        AppendEscapedCharacterClassChars(builder, separators);
+        AppendEscapedCharacterClassChars(builder, separators, cancellationToken);
         builder.Append(']');
     }
 
-    private static void AppendNonSeparatorClass(StringBuilder builder, string separators)
+    private static void AppendNonSeparatorClass(StringBuilder builder, string separators, CancellationToken cancellationToken)
     {
         builder.Append("[^");
-        AppendEscapedCharacterClassChars(builder, separators);
+        AppendEscapedCharacterClassChars(builder, separators, cancellationToken);
         builder.Append(']');
     }
 
-    private static void AppendEscapedCharacterClassChars(StringBuilder builder, string value)
+    private static void AppendEscapedCharacterClassChars(StringBuilder builder, string value, CancellationToken cancellationToken)
     {
         foreach (var ch in value)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (ch is '\\' or ']' or '-' or '^')
             {
                 builder.Append('\\');

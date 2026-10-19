@@ -22,7 +22,7 @@ public sealed class WorkbookMutationAccountingTests
     public void CellSlotsCommitAndReleaseExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var sheet = NewSheet(context, span);
         sheet.SetCellValue(1, 1, new BigInteger(5));
@@ -42,7 +42,7 @@ public sealed class WorkbookMutationAccountingTests
     public void UngovernedCellsStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var sheet = new LythonRuntime.OpenPyxlWorksheet("S");
         sheet.SetCellValue(1, 1, new BigInteger(5));
         _ = sheet.GetCellObject(1, 1);

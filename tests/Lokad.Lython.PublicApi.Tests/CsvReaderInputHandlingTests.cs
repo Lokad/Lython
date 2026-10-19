@@ -15,7 +15,7 @@ public sealed class CsvReaderInputHandlingTests
     [Fact]
     public async Task SourceMutationStaysLiveLikeCpython()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             src = ["a", "b"]
             r = csv.reader(src)
@@ -64,7 +64,7 @@ public sealed class CsvReaderInputHandlingTests
     {
         // Clearing the source mid-iteration exhausts the reader like CPython
         // instead of yielding detached storage.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             src4 = ["m", "n"]
             r4 = csv.reader(src4)
@@ -98,7 +98,7 @@ public sealed class CsvReaderInputHandlingTests
     {
         // A malformed record fails explicitly without poisoning later rows:
         // the partial record drops and the next pull starts clean.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             r = csv.reader(["a", "\"b\"x", "c"])
             it = iter(r)
@@ -131,7 +131,7 @@ public sealed class CsvReaderInputHandlingTests
     {
         // A non-string element fails with TypeError and the following element
         // still parses; the iterator is not left exhausted.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             def readem(source):
                 return list(csv.reader(source))
@@ -170,7 +170,7 @@ public sealed class CsvReaderInputHandlingTests
     [Fact]
     public async Task MutatedViewSourceFailsExplicitly()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             d = {"a": 1, "b": 2}
             r = csv.reader(d.keys())
@@ -202,7 +202,7 @@ public sealed class CsvReaderInputHandlingTests
     [Fact]
     public async Task StrictOptionBindsAndEnforces()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             def read_all(source):
                 return list(csv.reader(source))

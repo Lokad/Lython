@@ -18,7 +18,7 @@ public class MemberResolutionBenchmarks
 
     public MemberResolutionBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _indexMiss = BenchmarkScripts.Compile(engine, "total = 0\nfor i in range(2000):\n    total += [i].index(i)\nreturn total\n");
         _indexHit = BenchmarkScripts.Compile(engine, "x = [0]\ntotal = 0\nfor i in range(2000):\n    total += x.index(0)\nreturn total\n");
         _countMiss = BenchmarkScripts.Compile(engine, "total = 0\nfor i in range(2000):\n    total += [i, i + 1].count(i)\nreturn total\n");

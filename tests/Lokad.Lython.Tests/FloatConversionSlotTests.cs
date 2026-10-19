@@ -29,7 +29,7 @@ public sealed class FloatConversionSlotTests
 
         async ValueTask<Context> Prepare(ILythonMemoryBudget owner)
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             await Execute(preamble, context, asynchronous);
             return context;
         }
@@ -45,7 +45,7 @@ public sealed class FloatConversionSlotTests
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var cancel = new Cancel(cancellation, slot == "__float__" ? (object)7.0 : new BigInteger(7));
         context.Variables["cancel"] = cancel;
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
@@ -58,7 +58,7 @@ public sealed class FloatConversionSlotTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     private static async ValueTask<object?> Execute(ExecutableCodeObject code, Context context, bool asynchronous)
         => asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)

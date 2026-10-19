@@ -7,7 +7,7 @@ namespace Lokad.Lython.Tests;
 public sealed class DrainLeaseOwnershipTests
 {
     private static LythonRuntime.ExecutionContext NewContext()
-        => new(new MockLythonHost(), options: null);
+        => new(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
 
     private static IEnumerable<object> Items(int count)
     {

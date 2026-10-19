@@ -59,7 +59,7 @@ public class ExceptionLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedConstructionsDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(ValueError())\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);
@@ -91,7 +91,7 @@ public class ExceptionLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task CustomAttrBehaves()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "e = ValueError(1)\ne.custom = 2\nreturn [e.custom, str(e)]\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { new System.Numerics.BigInteger(2), "1" };
@@ -105,7 +105,7 @@ public class ExceptionLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedCustomAttrDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    e = ValueError(1, 2)\n    e.extra = i\n    objs.append(e)\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);

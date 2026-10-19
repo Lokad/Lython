@@ -25,7 +25,7 @@ d = "p\nq\n".splitlines()
 joined = "/".join(d)
 return [sliced, cloned, b, aliased, c, joined]
 """;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         const long budget = 1048576;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) };

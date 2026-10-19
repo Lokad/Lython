@@ -30,7 +30,7 @@ public sealed class AsyncStructuralGuardIsolationTests
     [Fact]
     public async Task DelayedListEquality_CompletesAsync()
     {
-        var script = new LythonEngine().Compile(DelayedEqualityScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(DelayedEqualityScript);
         Assert.True(script.IsValid);
         var host = SeedDelayedHost();
         var result = await script.RunAsync(host);
@@ -42,7 +42,7 @@ public sealed class AsyncStructuralGuardIsolationTests
     [Fact]
     public async Task IndependentDelayedRuns_DoNotContaminate()
     {
-        var script = new LythonEngine().Compile(DelayedEqualityScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(DelayedEqualityScript);
         Assert.True(script.IsValid);
 
         for (var i = 0; i < 3; i++)
@@ -57,7 +57,7 @@ public sealed class AsyncStructuralGuardIsolationTests
     [Fact]
     public async Task InterleavedDelayedRuns_BothSucceed()
     {
-        var script = new LythonEngine().Compile(DelayedEqualityScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(DelayedEqualityScript);
         Assert.True(script.IsValid);
         var hostA = SeedDelayedHost();
         var hostB = SeedDelayedHost();
@@ -84,13 +84,13 @@ public sealed class AsyncStructuralGuardIsolationTests
             "a.append(a)\n" +
             "b.append(b)\n" +
             "print(a == b)\n";
-        var script = new LythonEngine().Compile(cyclic);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(cyclic);
         var host = SeedDelayedHost();
         var result = await script.RunAsync(host);
         Assert.False(result.Success);
         Assert.Equal("RecursionError", result.Failure?.ExceptionType);
 
-        var healthy = new LythonEngine().Compile(DelayedEqualityScript);
+        var healthy = new LythonEngine(Utf8RegexProvider.Instance).Compile(DelayedEqualityScript);
         var ok = await healthy.RunAsync(SeedDelayedHost());
         Assert.True(ok.Success, ok.Failure?.Message);
     }
@@ -98,7 +98,7 @@ public sealed class AsyncStructuralGuardIsolationTests
     [Fact]
     public void SyncDelayedRun_FailsFastWithGuidance()
     {
-        var script = new LythonEngine().Compile(DelayedEqualityScript);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(DelayedEqualityScript);
         Assert.True(script.IsValid);
         var result = script.Run(SeedDelayedHost());
         Assert.False(result.Success);
@@ -110,7 +110,7 @@ public sealed class AsyncStructuralGuardIsolationTests
     public void PlainListEquality_MatchesSyncAndAsync()
     {
         const string plain = "a = [[1, 2], [3]]\nb = [[1, 2], [3]]\nprint(a == b)\nprint(a != b)\n";
-        var script = new LythonEngine().Compile(plain);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(plain);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -121,7 +121,7 @@ public sealed class AsyncStructuralGuardIsolationTests
     public async Task PlainListEquality_MatchesAsync()
     {
         const string plain = "a = [[1, 2], [3]]\nb = [[1, 2], [3]]\nprint(a == b)\nprint(a != b)\n";
-        var script = new LythonEngine().Compile(plain);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(plain);
         Assert.True(script.IsValid);
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);

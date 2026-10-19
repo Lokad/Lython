@@ -11,7 +11,7 @@ public sealed class StringOwnershipAdmissionTests
     public async Task GuestDeletionKeepsConservativeBatchFundingUntilCleanup(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(262144);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 held = 'x' * 16000
 try:
     candidate = 'y' * 16000
@@ -30,7 +30,7 @@ return len(candidate)
         Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
         result.Dispose();
         Assert.Equal(baseline, budget.ReservedBytes);
-        using var resumed = new LythonEngine().Run("return len('z' * 16000)", host,
+        using var resumed = new LythonEngine(Utf8RegexProvider.Instance).Run("return len('z' * 16000)", host,
             new LythonRunOptions { MemoryBudget = budget});
         Assert.True(resumed.Success, resumed.Failure?.Message);
         Assert.Equal(new BigInteger(16000), resumed.ReturnValue);
@@ -49,7 +49,7 @@ return len(candidate)
     [InlineData(true, true, true)]
     public async Task ReplacementAfterCaughtDenialKeepsRetainedAliasesFunded(bool asynchronous, bool list, bool retain)
     {
-        var script = new LythonEngine().Compile($$"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($$"""
 held = ['x' * 16000] if {{(list ? "True" : "False")}} else 'x' * 16000
 kept = held if {{(retain ? "True" : "False")}} else None
 try:
@@ -85,7 +85,7 @@ return len(candidate)
     [InlineData(true, true)]
     public async Task DeletionAfterCaughtDenialPreservesBatchAndAliasFunding(bool asynchronous, bool retain)
     {
-        var script = new LythonEngine().Compile($$"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($$"""
 held = 'x' * 16000
 kept = held if {{(retain ? "True" : "False")}} else None
 try:

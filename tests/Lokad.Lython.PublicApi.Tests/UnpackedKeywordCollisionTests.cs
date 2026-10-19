@@ -7,7 +7,7 @@ public sealed class UnpackedKeywordCollisionTests
     [Fact]
     public async Task ConstructorsRejectCollidingKeywordsButAllowSourceOverrides()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             for call in [
                 lambda: dict(x=1, **{'x': 2}),

@@ -185,7 +185,7 @@ public sealed class SharedTypeSlotConcurrencyTests
                         throw new TimeoutException("engine storm starter gate timed out.");
                     }
 
-                    var result = new LythonEngine().Run(code, new MockLythonHost());
+                    var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
                     Assert.True(result.Success, result.Failure?.Message);
                     actuals[index] = result.ReturnValue;
                 }

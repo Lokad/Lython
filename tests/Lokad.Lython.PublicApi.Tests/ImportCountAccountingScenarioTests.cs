@@ -31,7 +31,7 @@ public sealed class ImportCountAccountingScenarioTests
     public async Task RoomyManyImportsSucceed()
     {
         var host = SeededHost(out var allowed, out var source);
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var expected = new BigInteger(1);
         var sync = script.Run(host, new LythonRunOptions { AllowedLocalModules = allowed });

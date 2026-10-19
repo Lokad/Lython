@@ -20,7 +20,7 @@ public sealed class WorksheetViewAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedRowsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import openpyxl
             wb = openpyxl.Workbook()
             data = wb.active
@@ -51,7 +51,7 @@ public sealed class WorksheetViewAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedWrappersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import openpyxl
             wb = openpyxl.Workbook()
             data = wb.active
@@ -82,7 +82,7 @@ public sealed class WorksheetViewAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedIteratedKeysStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import openpyxl
             wb = openpyxl.Workbook()
             data = wb.active
@@ -113,7 +113,7 @@ public sealed class WorksheetViewAccountingScenarioTests
     [Fact]
     public async Task WorksheetViewsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import openpyxl
             wb = openpyxl.Workbook()
             data = wb.active

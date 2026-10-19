@@ -43,7 +43,7 @@ public sealed class PrimitiveStorageLifetimeTests
     private static async Task<LythonExecutionResult> Run(string body, bool asynchronous, long cap)
     {
         var source = "with open('/ready', 'r') as stream:\n    stream.read()\n" + body;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) };
         if (asynchronous)

@@ -41,7 +41,7 @@ public sealed class BuiltinByteHashTests
     public async Task BuiltinAndProtocolKeysShareHashesAndKeepRetainedStorageFunded(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(8 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(Source + "\nreturn [text, raw]", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source + "\nreturn [text, raw]", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var expectedText = string.Concat(Enumerable.Repeat("é😀\0ab", 65));

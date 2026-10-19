@@ -22,7 +22,7 @@ public sealed class JsonNumberExecutionTests
     public async Task NumericTokensFollowPython(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -55,7 +55,7 @@ public sealed class JsonNumberExecutionTests
         var source = "import json\nseen=[]\ndef read(kind,value):\n seen.append(value)\n with open(kind+'.txt','a') as output: output.write('x')\n return value\ndef integer(value):return read('int',value)\ndef floating(value):return read('float',value)\nvalue="
             + parse + "\nassert value==['-0','1.2300e+04']\nassert value[0] is seen[0] and value[1] is seen[1]\nprint('ok')";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -105,7 +105,7 @@ public sealed class JsonNumberExecutionTests
         var raw = floating ? "1." + new string('2', 256) + "e+04" : new string('9', 256);
         var source = "import json\nseen=[]\ndef hook(value):seen.append(value);return value\nvalue=json.loads(source," + (floating ? "parse_float" : "parse_int") + "=hook)\nassert value is seen[0]\nreturn value";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["source"] = raw } };
@@ -127,7 +127,7 @@ public sealed class JsonNumberExecutionTests
     public async Task NumericHostBatchesReturnAllowanceToBaseline(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var script = new LythonEngine().Compile("import json\nrows=json.loads(source)\nreturn [sum(row['amount'] for row in rows),sum(row['ratio'] for row in rows)]", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\nrows=json.loads(source)\nreturn [sum(row['amount'] for row in rows),sum(row['ratio'] for row in rows)]", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var document = "[" + string.Join(",", Enumerable.Repeat("{\"amount\":2,\"ratio\":1.25}", 64)) + "]";

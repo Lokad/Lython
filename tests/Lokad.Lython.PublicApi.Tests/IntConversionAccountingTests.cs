@@ -26,7 +26,7 @@ public class IntConversionAccountingTests : LifetimeScenario
     [Fact]
     public async Task IntFailureTextsUnchanged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             $"""
             results = []
             for bad in ["x", "  0xFF  ", "1__0"]:
@@ -64,7 +64,7 @@ public class IntConversionAccountingTests : LifetimeScenario
         var rows = Iterations(100000);
         var batchSize = BatchIterations(100000);
         var budget = new LythonMemoryBudget(Budget(8388608) + 512 * 1024);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             with open('/big.csv') as stream:
                 total = 0

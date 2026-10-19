@@ -12,7 +12,7 @@ public sealed class ControlFlowScenarioTests
         var fixture = FixtureLoader.Load(Path.Combine("Language", "ControlFlow", "BreakContinueAndWhile"));
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -30,7 +30,7 @@ public sealed class ControlFlowScenarioTests
         var fixture = FixtureLoader.Load(Path.Combine("Language", "ControlFlow", "ElifBranching"));
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -57,7 +57,7 @@ public sealed class ControlFlowScenarioTests
     [Fact]
     public async Task NestedForBreakKeepsOuterIteration()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             seen = []
             for a in [1, 2, 3]:
                 for b in [10, 20, 30]:
@@ -80,7 +80,7 @@ public sealed class ControlFlowScenarioTests
     [Fact]
     public async Task WhileBreakInsideForKeepsOuterSlot()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             seen = []
             for a in [1, 2]:
                 while True:
@@ -104,7 +104,7 @@ public sealed class ControlFlowScenarioTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 for item in [1, 2]:
@@ -144,7 +144,7 @@ __lython_file.close()
     [InlineData(9, "d")]
     public async Task ElifChain_SelectsMatchingBranch(int value, string expected)
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "x = " + value + Environment.NewLine +
             """
             if x == 1:
@@ -169,7 +169,7 @@ __lython_file.close()
     [Fact]
     public async Task ElifChain_NoMatchWithoutElse_FallsThrough()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             x = 9
             if x == 1:
                 r = "a"
@@ -189,7 +189,7 @@ __lython_file.close()
     [Fact]
     public async Task ElifChain_ShortCircuitsAfterFirstMatch()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             calls = []
             def probe(name, value):
                 calls.append(name)
@@ -217,7 +217,7 @@ __lython_file.close()
     [Fact]
     public async Task ElifChain_InlineSuites()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             x = 3
             if x == 1: r = "a"
             elif x == 2: r = "b"
@@ -237,7 +237,7 @@ __lython_file.close()
     [Fact]
     public async Task ElifChain_NestedChains()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             x = 2
             y = 3
             if x == 1:
@@ -267,7 +267,7 @@ __lython_file.close()
     [Fact]
     public void ElifChain_MalformedClauses_ReportDiagnostics()
     {
-        var missingCondition = new LythonEngine().Compile("""
+        var missingCondition = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             x = 1
             if x == 1:
                 pass
@@ -276,7 +276,7 @@ __lython_file.close()
             """);
         Assert.False(missingCondition.IsValid);
         Assert.Contains(missingCondition.Diagnostics, d => d.Code == "LA1013");
-        var missingColon = new LythonEngine().Compile("""
+        var missingColon = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             x = 1
             if x == 1:
                 pass
@@ -308,7 +308,7 @@ __lython_file.close()
     [Fact]
     public async Task ElifChain_DeepChainWithinBudget_Runs()
     {
-        var script = new LythonEngine().Compile(BuildElifChain(63, 63));
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildElifChain(63, 63));
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -321,7 +321,7 @@ __lython_file.close()
     [Fact]
     public void ElifChain_BeyondBudget_RejectsExplicitly()
     {
-        var compiled = new LythonEngine().Compile(BuildElifChain(64, 65));
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildElifChain(64, 65));
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA0003");
     }

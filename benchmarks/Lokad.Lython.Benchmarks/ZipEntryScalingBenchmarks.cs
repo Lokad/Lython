@@ -23,7 +23,7 @@ public class ZipEntryScalingBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _write = Compile(
             engine,
             "import zipfile\n"

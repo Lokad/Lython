@@ -23,7 +23,7 @@ public sealed class AnnotationOnlyLocalBoundaryTests
     [MemberData(nameof(Programs))]
     public async Task DeclarationTargetsPreserveEffectsAndUnwind(string label, string source, bool fails)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -62,7 +62,7 @@ public sealed class AnnotationOnlyLocalBoundaryTests
 
     private static (Context Context, List<string> Effects) Prepare(ILythonMemoryBudget owner)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var effects = new List<string>();
         context.Variables["note"] = new Note(effects);
         context.Variables["fail"] = new Fail(effects);

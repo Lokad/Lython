@@ -22,7 +22,7 @@ public sealed class CachedPropertyMetadataAccountingScenarioTests
         }
 
         builder.Append("return 0\n");
-        var script = new LythonEngine().Compile(builder.ToString());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(builder.ToString());
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -37,7 +37,7 @@ public sealed class CachedPropertyMetadataAccountingScenarioTests
     [Fact]
     public async Task DescriptorAttributeBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import functools
             class C:

@@ -26,7 +26,7 @@ public sealed class CsvBatchAliasLifetimeTests
         var retained = retention is "rows" or "fields";
         var count = retained ? 4000 : 16;
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile("import csv\nwith open('/rows.csv', 'r') as stream:\n reader = csv.reader(stream)\n" + body.Replace("4000", count.ToString()), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import csv\nwith open('/rows.csv', 'r') as stream:\n reader = csv.reader(stream)\n" + body.Replace("4000", count.ToString()), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var baseline = budget.ReservedBytes;
         var text = string.Concat(Enumerable.Repeat("a,b,c,d,e,f\n", count));

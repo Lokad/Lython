@@ -17,7 +17,7 @@ public sealed class ItertoolsValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedRepeatIteratorsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import itertools
             objs = []
             i = 0
@@ -42,7 +42,7 @@ public sealed class ItertoolsValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedChainIteratorsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import itertools
             src = [1]
             objs = []
@@ -66,7 +66,7 @@ public sealed class ItertoolsValueAccountingScenarioTests
     [Fact]
     public async Task ItertoolsValuesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import itertools
             a = list(itertools.islice(itertools.count(10), 3))
             b = list(itertools.repeat("x", 2))

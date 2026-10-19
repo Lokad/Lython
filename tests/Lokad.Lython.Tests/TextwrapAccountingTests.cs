@@ -129,5 +129,5 @@ public sealed class TextwrapAccountingTests
     }
 
     private static LythonRuntime.ExecutionContext Context(long cap, ILythonMemoryBudget? budget = null)
-        => new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(cap) });
+        => new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
 }

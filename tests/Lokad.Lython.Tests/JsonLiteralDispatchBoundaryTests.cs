@@ -104,7 +104,7 @@ public sealed class JsonLiteralDispatchBoundaryTests
     public async Task LiteralCheckpointsPreserveEffectsAndUnwind(bool asynchronous, bool pairs, bool padded)
     {
         var source = "import json\nreturn json.loads(source" + (pairs ? ",object_pairs_hook=hook)" : ")");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         string[] fullEffects;
         using (var owner = budget.CreateScope())
@@ -131,7 +131,7 @@ public sealed class JsonLiteralDispatchBoundaryTests
     private static (Context Context, Hook Hook) Prepare(ILythonMemoryBudget owner, bool pairs, bool padded)
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner});
+        { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var document = pairs ? "{\"café\":[true,false,null],\"z\":null}" : "true";
         if (padded) document = new string(' ', 1025) + document;
         context.Variables["source"] = PyString.FromString(document, context.MemoryGovernor, null);

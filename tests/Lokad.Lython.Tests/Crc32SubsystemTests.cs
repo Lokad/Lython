@@ -35,7 +35,7 @@ public sealed class Crc32SubsystemTests
                 data[i] = (byte)((i * 31 + 7) & 0xFF);
             }
 
-            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
             Assert.Equal(FinalizeUpdate(data), Crc32.Compute(data, context, span: null));
 
             // Incremental one-byte-at-a-time accumulation (the streaming
@@ -58,7 +58,7 @@ public sealed class Crc32SubsystemTests
         source.Cancel();
         var context = new LythonRuntime.ExecutionContext(
             new MockLythonHost(),
-            new LythonRunOptions { CancellationToken = source.Token });
+            new LythonRunOptions { CancellationToken = source.Token },regexProvider:Utf8RegexProvider.Instance);
         var failure = Assert.Throws<LythonRuntimeException>(() => Crc32.Compute(data, context, span: null));
         Assert.Equal("RuntimeError", failure.ExceptionType);
         Assert.Contains("execution canceled", failure.Message, StringComparison.Ordinal);

@@ -7,7 +7,7 @@ public sealed class FormattedStringQuoteReuseTests
     [Fact]
     public async Task ExpressionQuotesComposeWithLiteralsAndFormatFields()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             d = {'x': 3}
             print(f"{d["x"]}")
             print(f'{d['x']}' ' adjacent')
@@ -29,5 +29,5 @@ public sealed class FormattedStringQuoteReuseTests
     [InlineData("print(f\"{d[\"x\"]\")")]
     [InlineData("print(f\"{d[\"x\"]} extra)")]
     public void MalformedFieldsAreRejected(string source)
-        => Assert.False(new LythonEngine().Compile(source).IsValid);
+        => Assert.False(new LythonEngine(Utf8RegexProvider.Instance).Compile(source).IsValid);
 }

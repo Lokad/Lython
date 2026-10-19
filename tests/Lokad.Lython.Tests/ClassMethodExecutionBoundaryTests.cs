@@ -558,14 +558,14 @@ public sealed class ClassMethodExecutionBoundaryTests
         Define(int width, string body, bool asynchronous, CancellationToken cancellation = default)
     {
         var suffix = string.Concat(Enumerable.Range(0, width).Select(i => $", arg{i}"));
-        var frontend = LythonFrontend.Compile($"class C:\n    def f(self{suffix}):\n{body}\nreceiver = C()\n");
+        var frontend = LythonFrontend.Compile($"class C:\n    def f(self{suffix}):\n{body}\nreceiver = C()\n",regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             SourcePath = "/class-method.py", CancellationToken = cancellation
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         if (asynchronous) await LythonRuntime.ExecuteStatementsAsync(lowered.Statements, context);
         else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, context, default, null);
         var type = Assert.IsType<PyType>(context.Variables["C"]);

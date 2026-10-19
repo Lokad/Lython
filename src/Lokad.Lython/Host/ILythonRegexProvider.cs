@@ -1,0 +1,112 @@
+namespace Lokad.Lython;
+
+/// <summary>Supplies Python string-pattern semantics to a Lython engine.</summary>
+/// <remarks>
+/// The provider is borrowed and must outlive its compiled scripts and executions.
+/// Patterns and metadata must be immutable and safe for concurrent callers.
+/// Every operation must honor its current token while working, finish its users
+/// before returning or throwing, and admit substantial storage before allocation.
+/// Owners are borrowed: do not dispose them or introduce an independent allowance.
+/// Retained patterns use the supplied compilation/cache owner; working storage may
+/// use child scopes. Refused admission must throw <see cref="LythonRegexException"/>
+/// with <see cref="LythonRegexFailure.MemoryAdmission"/>. No retry is permitted.
+/// </remarks>
+public interface ILythonRegexProvider
+{
+    /// <summary>Validates and compiles UTF-8 pattern bytes under Python re flag values.</summary>
+    ILythonRegexPattern Compile(ReadOnlyMemory<byte> pattern, LythonRegexOptions options,
+        ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken);
+}
+
+/// <summary>Contains normalized Python flag bits and the parsing-time verbose setting.</summary>
+/// <remarks>
+/// Lython performs Python's flag-operator protocol, including implicit Unicode.
+/// Verbose is separate because a guest flag object's earlier bitwise result can
+/// differ from its final integer bits. Providers preserve the supplied bits in
+/// reported flags, applying leading inline flags as Python does.
+/// </remarks>
+public readonly record struct LythonRegexOptions(int Flags, bool Verbose);
+
+/// <summary>An immutable compiled Python pattern, without a saved caller token.</summary>
+public interface ILythonRegexPattern
+{
+    /// <summary>Gets effective Python flags, including leading inline flags and implicit Unicode.</summary>
+    int Flags { get; }
+
+    /// <summary>Gets the capture-slot count, including the whole match at slot zero.</summary>
+    int CaptureSlotCount { get; }
+
+    /// <summary>Gets immutable Python group names and their numeric slots.</summary>
+    IReadOnlyDictionary<string, int> NamedGroups { get; }
+
+    /// <summary>Prepares a borrowed UTF-8 subject for one operation.</summary>
+    /// <remarks>The caller keeps the subject funded until the prepared subject is disposed.</remarks>
+    ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, ILythonMemoryBudget memoryOwner,
+        CancellationToken cancellationToken);
+}
+
+/// <summary>Owns one operation's preparation and working storage.</summary>
+/// <remarks>
+/// Results are borrowed until the next operation or disposal. Dispose cursors
+/// before their subject. Disposal must be nonthrowing, finish cleanup synchronously and refund
+/// only storage whose users have ended; no background work may be abandoned.
+/// </remarks>
+public interface ILythonRegexSubject : IDisposable
+{
+    /// <summary>Matches once using the requested Python operation; null means no match.</summary>
+    LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken cancellationToken);
+
+    /// <summary>Begins Python finditer progression, including adjacent empty/nonempty matches.</summary>
+    ILythonRegexCursor Find(CancellationToken cancellationToken);
+
+    /// <summary>Applies Python's string-replacement template rules, including validation with no matches.</summary>
+    LythonRegexSubstitution Substitute(ReadOnlyMemory<byte> replacement, int count,
+        CancellationToken cancellationToken);
+
+    /// <summary>Splits with captured separators; null entries denote unmatched captures.</summary>
+    IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken cancellationToken);
+}
+
+/// <summary>A disposable Python finditer cursor with borrowed current-match storage.</summary>
+/// <remarks>Disposal is nonthrowing and finishes all cursor users before returning.</remarks>
+public interface ILythonRegexCursor : IDisposable
+{
+    /// <summary>Advances under the current token; null means exhaustion.</summary>
+    LythonRegexMatch? Next(CancellationToken cancellationToken);
+}
+
+/// <summary>Selects one Python re matching operation.</summary>
+public enum LythonRegexMatchMode { Search, Match, FullMatch }
+
+/// <summary>A participating capture's UTF-8 value and Unicode-scalar offsets within the prepared subject.</summary>
+public readonly record struct LythonRegexCapture(ReadOnlyMemory<byte> Value, int Start, int End, int StartByte, int EndByte);
+
+/// <summary>Contains numeric capture slots (zero included) and the last participating group.</summary>
+/// <remarks>Null slots did not participate. Values and the slot list are borrowed.</remarks>
+public sealed record LythonRegexMatch(IReadOnlyList<LythonRegexCapture?> Captures, int? LastIndex);
+
+/// <summary>A borrowed UTF-8 substitution result and its replacement count.</summary>
+public readonly record struct LythonRegexSubstitution(ReadOnlyMemory<byte> Value, int Count);
+
+/// <summary>Identifies a provider failure without relying on backend exception types.</summary>
+public enum LythonRegexFailure { Pattern, Capability, MemoryAdmission }
+
+/// <summary>Reports a Python pattern error, unavailable provider capability, or terminal admission refusal.</summary>
+public sealed class LythonRegexException : Exception
+{
+    /// <summary>Creates a provider error. Requested bytes describe the first refused storage admission.</summary>
+    public LythonRegexException(LythonRegexFailure failure, string message, int? position = null, long? requestedBytes = null)
+        : base(message)
+    {
+        Failure = failure;
+        Position = position;
+        RequestedBytes = requestedBytes;
+    }
+
+    /// <summary>Gets the failure category.</summary>
+    public LythonRegexFailure Failure { get; }
+    /// <summary>Gets an optional Unicode-scalar pattern position.</summary>
+    public int? Position { get; }
+    /// <summary>Gets the first refused estimate, when known.</summary>
+    public long? RequestedBytes { get; }
+}

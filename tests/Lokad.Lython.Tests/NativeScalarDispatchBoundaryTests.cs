@@ -17,14 +17,14 @@ public sealed class NativeScalarDispatchBoundaryTests
     public async Task MixedBooleanIntegerAdmissionRefusesBeforePublication(bool augmented)
     {
         var source = "pad()\nglobal left\n" + (augmented ? "left+=right\nreturn left" : "return left+right");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
             using (var owner = budget.CreateScope())
             {
                 var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner});
+                { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
                 object original = true;
                 context.Variables["left"] = original;
                 var right = BigInteger.One << 4096;
@@ -83,14 +83,14 @@ public sealed class NativeScalarDispatchBoundaryTests
     public async Task StringConcatenationAdmissionRefusesBeforePublication(bool augmented)
     {
         var source = "pad()\nglobal left\n" + (augmented ? "left+=right\nreturn left" : "return left+right");
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
             using (var owner = budget.CreateScope())
             {
                 var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner});
+                { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
                 var left = PyString.FromString("café" + new string('x', 1024), context.MemoryGovernor, null);
                 var right = PyString.FromString("😀" + new string('y', 1024), context.MemoryGovernor, null);
                 context.Variables["left"] = left;
@@ -114,7 +114,7 @@ public sealed class NativeScalarDispatchBoundaryTests
     public async Task ValuesErrorsPublicationAndCleanupMatchAcrossModes(
         string label, string source, object left, object right, object? expected, string? exception)
     {
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -146,7 +146,7 @@ public sealed class NativeScalarDispatchBoundaryTests
 
     private static Context Prepare(ILythonMemoryBudget owner, object left, object right)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         context.Variables["left"] = left;
         context.Variables["right"] = right;
         return context;

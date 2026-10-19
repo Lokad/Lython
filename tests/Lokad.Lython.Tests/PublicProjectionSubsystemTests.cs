@@ -9,7 +9,7 @@ public sealed class PublicProjectionSubsystemTests
     [Fact]
     public void Run_ProjectsRuntimeValuesToClrShapesAtEmbeddingBoundary()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var host = new Harness.MockLythonHost();
         var script = engine.Compile("""
 value = [1, (2, 3), {"name": "lokad", "items": [4]}]
@@ -36,7 +36,7 @@ return value
     [Fact]
     public void Run_ProjectsRuntimeNoneBackToClrNull()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var host = new Harness.MockLythonHost();
         var script = engine.Compile("""
 value = [None, {"x": None}]
@@ -102,7 +102,7 @@ return value
     [Fact]
     public void Run_ReturningInternalRuntimeObjectFailsProjectionWithoutClrLeakage()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import sys\nreturn sys\n",
             new Harness.MockLythonHost());
 

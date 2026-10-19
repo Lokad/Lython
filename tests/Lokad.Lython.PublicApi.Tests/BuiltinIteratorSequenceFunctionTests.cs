@@ -7,7 +7,7 @@ public sealed class BuiltinIteratorSequenceFunctionTests
     [Fact]
     public void NextRequiresIteratorAndGeneratorExpressionsAreOneShot()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 g = (x for x in [1, 2])
 values = [str(next(g)), str(next(g)), str(next(g, "done"))]
@@ -26,7 +26,7 @@ return "|".join(values)
     [Fact]
     public void NextOnNonIterators_NamesOperandTypes()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 try:
@@ -52,7 +52,7 @@ return "|".join(vals)
     [Fact]
     public async Task RunAsync_GeneratorExpressionsAdvanceOneItemAtATime()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 observed = []
 def observe(value):
@@ -72,7 +72,7 @@ return str(first) + "|" + str(observed)
     [Fact]
     public void RangeEnumerateAndZipUseLazyIteratorSemantics()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 r = range(3)
 e = enumerate(["a", "b"])
@@ -94,7 +94,7 @@ return "|".join(values)
     [Fact]
     public void ZipStrictMismatch_NamesArgumentsLikeCpython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 def strict_error(*seqs):
     try:
@@ -121,7 +121,7 @@ return "|".join(vals)
     [Fact]
     public void EnumerateStart_CoercesIndexLikeCpython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class J:
     def __index__(self):
@@ -148,7 +148,7 @@ return "|".join(parts)
     [Fact]
     public void SetOperatorsMatchPythonAndInPlaceDifferencePreservesIdentity()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 a = {1, 2}
 b = a
@@ -160,7 +160,7 @@ return str({1} < {1, 2}) + "|" + str({1} <= {1}) + "|" + str({1, 2} > {2}) + "|"
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("True|True|True|True|{1}", result.ReturnValue);
 
-        var invalidAddition = new LythonEngine().Run("return {1} + {2}\n", new MockLythonHost());
+        var invalidAddition = new LythonEngine(Utf8RegexProvider.Instance).Run("return {1} + {2}\n", new MockLythonHost());
         Assert.False(invalidAddition.Success);
     }
 
@@ -193,12 +193,12 @@ return str({1} < {1, 2}) + "|" + str({1} <= {1}) + "|" + str({1, 2} > {2}) + "|"
         const string expected = "['b', 'a']|[]|['x']|['b', 'a']|dictionary changed size during iteration|n|['n', 'm']|['m']";
 
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(script, host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, host.ReadText("/out.txt"));
 
         var asyncHost = new MockLythonHost();
-        var asyncResult = await new LythonEngine().RunAsync(script, asyncHost);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(script, asyncHost);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncHost.ReadText("/out.txt"));
     }
@@ -207,7 +207,7 @@ return str({1} < {1, 2}) + "|" + str({1} <= {1}) + "|" + str({1, 2} > {2}) + "|"
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = []
 
@@ -272,7 +272,7 @@ __lython_file.close()
         // StopIteration like CPython (never the house text), user-defined
         // __next__ failures propagate untouched, and StopIteration.value
         // reads args[0] or None with independent write storage, in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import shlex
             results = []
             def shapes(thunk):
@@ -406,7 +406,7 @@ __lython_file.close()
         host.SeedFile("/repo/docs/b/beta.txt", "b");
         host.SeedFile("/repo/marker.txt", "m");
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import os
 
@@ -459,7 +459,7 @@ __lython_file.close()
     [InlineData("[1, 2][slice(0, 2, 0)]\n", "ValueError", "slice step cannot be zero")]
     public void IteratorAndSequenceBuiltins_ReportExplicitFailures(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -469,7 +469,7 @@ __lython_file.close()
     [Fact]
     public void RangeAcceptsBooleansAsIntegers()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 results = [str(list(range(True))), str(list(range(False))), str(list(range(0, 5, True))), str(list(range(True, 3)))]
 try:
@@ -490,7 +490,7 @@ return "|".join(results)
         // Engine iterators expose __iter__ (identity) and __next__ (advance
         // or empty StopIteration) like CPython, uniformly across iterator
         // kinds, in both modes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             it = iter([1, 2])
             results.append(str(it.__iter__() is it))
@@ -585,7 +585,7 @@ return "|".join(results)
     {
         // Builtin containers expose __iter__ returning a fresh iterator
         // with the same values as iter(), like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def iter_arg(x):
                 return x.__iter__(1)
             results = []
@@ -662,7 +662,7 @@ return "|".join(results)
     {
         // Dict views and collection types expose __iter__ with the same
         // values as iter(), like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict, Counter, deque
             def iter_arg(x):
                 return x.__iter__(1)
@@ -735,7 +735,7 @@ return "|".join(results)
     {
         // ChainMap views expose __iter__ with the same values as iter(),
         // like CPython (single-map rows; multi-map order is separate).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import ChainMap
             def iter_arg(x):
                 return x.__iter__(1)
@@ -795,7 +795,7 @@ return "|".join(results)
     {
         // Sized builtins expose __len__ with exactly the len() value,
         // like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict, Counter, deque, ChainMap
             def len_arg(x):
                 return x.__len__(1)
@@ -879,7 +879,7 @@ return "|".join(results)
     {
         // Dict and ChainMap views expose __len__ with exactly the len()
         // value, like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import ChainMap
             def len_arg(x):
                 return x.__len__(1)
@@ -943,7 +943,7 @@ return "|".join(results)
     {
         // Sized containers expose __contains__ with exactly the in-operator
         // value, like CPython (dict_values has none, like CPython).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict, Counter, deque, ChainMap
             def contains_arg(x):
                 return x.__contains__()
@@ -1087,7 +1087,7 @@ return "|".join(results)
     {
         // Subscriptable builtins expose __getitem__ with exactly the []
         // value, like CPython (sets and views have none, like CPython).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict, Counter, deque, ChainMap
             def getitem_arg(x, i, j):
                 return x.__getitem__(i, j)
@@ -1208,7 +1208,7 @@ return "|".join(results)
     {
         // Mutable containers expose __setitem__ with exactly the []=
         // effect, like CPython (immutables have none, like CPython).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict, Counter, deque, ChainMap
             def setitem_arg(x, i):
                 return x.__setitem__(i)
@@ -1308,7 +1308,7 @@ return "|".join(results)
     {
         // Mutable containers expose __delitem__ with exactly the del []
         // effect, like CPython (immutables have none, like CPython).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import defaultdict, Counter, deque, ChainMap
             def delitem_arg(x, i, j):
                 return x.__delitem__(i, j)
@@ -1410,7 +1410,7 @@ return "|".join(results)
     {
         // Sequence types expose __add__/__mul__/__rmul__ with exactly the
         // operator values (no __radd__, like CPython).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def two_args(x, a, b):
                 return x(a, b)
             results = []
@@ -1513,7 +1513,7 @@ return "|".join(results)
         // Direct __mul__/__rmul__ calls convert the count through __index__
         // like CPython (naming the argument), while operators keep the
         // sequence-shaped text; working repeats agree on both paths.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 class Idx:
     def __index__(self):
         return 2

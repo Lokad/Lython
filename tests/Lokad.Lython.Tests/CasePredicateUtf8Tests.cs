@@ -22,7 +22,7 @@ public sealed class CasePredicateUtf8Tests
         {
             var budget = new LythonMemoryBudget(1024 * 1024);
             using var owner = budget.CreateScope();
-            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var text = method == "istitle" ? string.Concat(Enumerable.Repeat("Λλ ", 1024))
                 : new string(method == "islower" ? 'λ' : 'Λ', 2048);
             if (earlyFailure) text = (method == "islower" ? "Λ" : "λ") + text;
@@ -71,7 +71,7 @@ public sealed class CasePredicateUtf8Tests
     public async Task NativePredicateCallPreservesResultsAndCleanup(string method, bool expected, bool asynchronous)
     {
         var code = ExecutableScript.Compile(LoweredScript.Lower(
-            LythonFrontend.Compile("return value." + method + "()").Script!)).EntryPoint;
+            LythonFrontend.Compile("return value." + method + "()",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
@@ -86,7 +86,7 @@ public sealed class CasePredicateUtf8Tests
         LythonRuntime.ExecutionContext Prepare(ILythonMemoryBudget owner)
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner});
+                { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             context.Variables["value"] = PyString.FromString("Λλ", context.MemoryGovernor, Span);
             return context;
         }
@@ -105,7 +105,7 @@ public sealed class CasePredicateUtf8Tests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, CancellationToken = cancellation.Token });
+            { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var value = PyString.FromString("Λλ", context.MemoryGovernor, Span);
         Assert.True(PyMemberAccess.TryResolve(value, method, context, Span, out var member));
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(member);

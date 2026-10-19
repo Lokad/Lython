@@ -196,7 +196,7 @@ public sealed class OpenSequencePatternTests
     [Fact]
     public async Task OpenCapturesSurviveDelayedGuardsInFunctionsAndClasses()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def guard(first,rest):
              with open('/value.txt') as f:f.read()
              print(first,rest)
@@ -231,7 +231,7 @@ public sealed class OpenSequencePatternTests
     public async Task OpenSequencesFollowPython(string name, string source, string expected)
     {
         _ = name;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -249,7 +249,7 @@ public sealed class OpenSequencePatternTests
     [InlineData("(1 as a)|(2 as b),tail")]
     public void InvalidPatternsFailBeforeEffects(string pattern)
     {
-        var compiled = new LythonEngine().Compile("print('effect')\nmatch [1,2]:\n case " + pattern + ":pass");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effect')\nmatch [1,2]:\n case " + pattern + ":pass");
         Assert.False(compiled.IsValid);
     }
 }

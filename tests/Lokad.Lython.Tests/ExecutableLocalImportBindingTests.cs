@@ -21,8 +21,8 @@ public sealed class ExecutableLocalImportBindingTests
         {
             MemoryBudget = owner,
             AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "outer", "inner" }
-        });
-        var syntax = LythonFrontend.Compile("import outer").Script.RequireNotNull();
+        },regexProvider:Utf8RegexProvider.Instance);
+        var syntax = LythonFrontend.Compile("import outer",regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         async Task Run()
         {
@@ -51,9 +51,9 @@ public sealed class ExecutableLocalImportBindingTests
         const long capacity = 65536;
         var budget = new LythonMemoryBudget(capacity);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         context.MirrorLocalStores = true;
-        var syntax = LythonFrontend.Compile("scope=globals()").Script.RequireNotNull();
+        var syntax = LythonFrontend.Compile("scope=globals()",regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
         LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint, context);
         var module = new ScriptPyModule("selected", context, new(1, 1, 1, 1));
         var held = budget.ReservedBytes;
@@ -89,8 +89,8 @@ public sealed class ExecutableLocalImportBindingTests
         {
             MemoryBudget = owner,
             AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "selected" }
-        });
-        var syntax = LythonFrontend.Compile("import selected").Script.RequireNotNull();
+        },regexProvider:Utf8RegexProvider.Instance);
+        var syntax = LythonFrontend.Compile("import selected",regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);

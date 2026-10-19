@@ -28,7 +28,7 @@ public sealed class StatisticsDrainAccountingTests
     public void SizedDrainReservesExactBackingOnce()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var data = Enumerable.Range(0, 1000).Select(static i => (object)(double)i).ToList();
 
@@ -51,7 +51,7 @@ public sealed class StatisticsDrainAccountingTests
     public void LazyDrainReservesEachDoubling()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var palette = Enumerable.Range(0, 1024).Select(static i => (object)(double)i).ToArray();
         IEnumerable<object> Lazy()
@@ -91,7 +91,7 @@ public sealed class StatisticsDrainAccountingTests
     public void ObjectsDrainReservesExactBackingOnce()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var data = Enumerable.Range(0, 1000).Select(static i => (object)(double)i).ToList();
 
@@ -118,7 +118,7 @@ public sealed class StatisticsDrainAccountingTests
         // 1000 references) with no converted doubles copy alongside it. Both the
         // reservation and the release match the objects-drain accounting exactly.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var data = Enumerable.Range(0, 1000).Select(static i => (object)(double)i).ToList();
 
@@ -143,7 +143,7 @@ public sealed class StatisticsDrainAccountingTests
         // caller-lifetime scratch on a temporary reservation: bounded while
         // held, released on return, so discarded mode/multimode calls reclaim.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("StatisticsModule not found.");
@@ -165,7 +165,7 @@ public sealed class StatisticsDrainAccountingTests
         // Oversized scratch under a tiny budget denies instead of
         // over-allocating: the temporary reservation is still governed.
         // N12: GetModeCounts now takes the execution context for guest key dispatch.
-        var limited = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
+        var limited = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) },regexProvider:Utf8RegexProvider.Instance);
         var governor = limited.MemoryGovernor;
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
@@ -184,7 +184,7 @@ public sealed class StatisticsDrainAccountingTests
     {
         // Multimode over empty input allocates nothing, so it stays free even
         // under a zero budget.
-        var emptyContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var emptyContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var governor = emptyContext.MemoryGovernor;
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)

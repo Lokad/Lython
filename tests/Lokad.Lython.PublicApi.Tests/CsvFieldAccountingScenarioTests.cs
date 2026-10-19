@@ -18,7 +18,7 @@ public sealed class CsvFieldAccountingScenarioTests
     private static async Task VerifyFieldBatches(int rows)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             with open('/data.csv') as stream:
                 n = 0
@@ -57,7 +57,7 @@ public sealed class CsvFieldAccountingScenarioTests
     public async Task RetainedFieldResultsStayCorrectAcrossHostBatches()
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             with open('/data.csv') as stream:
                 kept = None
@@ -107,7 +107,7 @@ public sealed class CsvFieldAccountingScenarioTests
         // scratch while accumulating; the geometric reservation trips 4MB
         // before the growth runs uncharged, while the 3.2MB retained backing
         // alone would fit.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             line = "," * 200000
             r = csv.reader([line])
@@ -127,7 +127,7 @@ public sealed class CsvFieldAccountingScenarioTests
     [Fact]
     public async Task FundedWideRowStillParses()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             line = "," * 200000
             r = csv.reader([line])
@@ -147,7 +147,7 @@ public sealed class CsvFieldAccountingScenarioTests
     [Fact]
     public async Task SmallCsvStillParses()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             rows = csv.reader(["a,b", "c,d"])
@@ -175,7 +175,7 @@ public sealed class CsvFieldAccountingScenarioTests
         // Cancel after a known record, independently of thread-pool/timer
         // scheduling. The remaining records must never complete the scan.
         var content = string.Concat(Enumerable.Repeat("a,b,c,d\n", 512));
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             with open("/data.csv") as f:
                 n = 0

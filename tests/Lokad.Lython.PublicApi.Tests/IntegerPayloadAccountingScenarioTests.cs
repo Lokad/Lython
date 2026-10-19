@@ -13,7 +13,7 @@ public sealed class IntegerPayloadAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedShiftsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             rs = []
             i = 0
@@ -36,7 +36,7 @@ public sealed class IntegerPayloadAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedPowersStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             rs = []
             i = 0
@@ -59,7 +59,7 @@ public sealed class IntegerPayloadAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedProductsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             x = 10 ** 100
             rs = []
@@ -83,7 +83,7 @@ public sealed class IntegerPayloadAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedDifferencesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             a = 10 ** 400
             rs = []
@@ -107,7 +107,7 @@ public sealed class IntegerPayloadAccountingScenarioTests
     [Fact]
     public async Task SingleHugeShiftFailsOnPreflight()
     {
-        var script = new LythonEngine().Compile("return 1 << 10000000\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 1 << 10000000\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -122,7 +122,7 @@ public sealed class IntegerPayloadAccountingScenarioTests
     [Fact]
     public async Task SmallPowersAndShiftsStillProject()
     {
-        var script = new LythonEngine().Compile("return [(1 << 10), (2 ** 10), (3 << 0)]\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return [(1 << 10), (2 ** 10), (3 << 0)]\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { new BigInteger(1024), new BigInteger(1024), new BigInteger(3) };
         var sync = script.Run(new MockLythonHost());

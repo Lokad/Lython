@@ -26,7 +26,7 @@ return [math.factorial(0), math.factorial(1), math.factorial(20), math.comb(52, 
     math.perm(20, 3), math.isqrt(17), math.isqrt(10**30), math.lcm(12, 18), math.gcd(12, 18),
     math.prod([1, 2, 3, 4]), math.prod([], start=7), math.fsum([0.1, 0.2, 0.3])]
 """;
-        var sync = new LythonEngine().Run(code, new MockLythonHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(
             new List<object?>
@@ -47,7 +47,7 @@ import math
 return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     math.lcm(12, 18), math.prod([1, 2, 3, 4]), math.fsum([0.1, 0.2, 0.3])]
 """;
-        var result = await new LythonEngine().RunAsync(code, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?>
@@ -61,7 +61,7 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     [Fact]
     public void FactorialHundredMatchesCpython()
     {
-        var result = new LythonEngine().Run("import math\nreturn str(math.factorial(100))\n", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("import math\nreturn str(math.factorial(100))\n", new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             "93326215443944152681699238856266700490715968264381621468592963895217599993229915608941463976156518286253697920827223758251185210916864000000000000000000000000",
@@ -79,7 +79,7 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
 
     private static void AssertLargeMagnitudes(int exponent)
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             $"import math\nreturn [math.isqrt(10**{exponent}) == 10**{exponent / 2}, math.lcm(10**30, 10**30 + 1) == 10**30 * (10**30 + 1)]\n",
             new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -89,7 +89,7 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     [Fact]
     public void FactorialDeniesBeforeComputingUnderTinyMemory()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.factorial(20000)\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
@@ -104,9 +104,9 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     {
         const string code = "import math\nreturn math.factorial(20000)\n";
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
-        _ = new LythonEngine().Run(code, new MockLythonHost(), options);
+        _ = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), options);
         var before = GC.GetAllocatedBytesForCurrentThread();
-        var result = new LythonEngine().Run(code, new MockLythonHost(), options);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), options);
         var allocated = (long)GC.GetAllocatedBytesForCurrentThread() - before;
         Assert.False(result.Success);
         // Pre-fix traffic was ~300 MB of BigInteger reallocations; the denial now
@@ -119,7 +119,7 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     {
         using var cts = new CancellationTokenSource();
         cts.Cancel();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.factorial(20000)\n",
             new MockLythonHost(),
             new LythonRunOptions { CancellationToken = cts.Token });
@@ -131,7 +131,7 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     public void PermSmallIterationLargeMagnitudeDeniesUnderTinyMemory()
     {
         // Two iterations, ~200k-bit result: the iteration cap alone is no bound.
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.perm(10**30000, 2)\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
@@ -141,7 +141,7 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     [Fact]
     public void IsqrtHugeDeniesUnderTinyMemory()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.isqrt(10**100000)\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
@@ -151,7 +151,7 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     [Fact]
     public void LcmHugePairDeniesUnderTinyMemory()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.lcm(10**50000, 10**50000 + 1)\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
@@ -161,7 +161,7 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     [Fact]
     public void ProdHugeMagnitudesDenyUnderTinyMemory()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import math\nreturn math.prod([10**30000, 10**30000])\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
@@ -171,7 +171,7 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     [Fact]
     public async Task ProdDelayedAsyncInputsSuspendThroughHost()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import math
             with open("/v.txt") as f:
@@ -190,7 +190,7 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     [Fact]
     public async Task FsumDelayedAsyncInputsSuspendThroughHost()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import math
             with open("/v.txt") as f:

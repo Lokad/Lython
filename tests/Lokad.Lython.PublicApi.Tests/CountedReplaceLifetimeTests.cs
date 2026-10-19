@@ -24,7 +24,7 @@ def limit():
 print('a😀a'.replace(old(),replacement(),limit()))
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -82,7 +82,7 @@ class Text:
 print(Text().replace('a','b',1))
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -129,7 +129,7 @@ print(Text().replace('a','b',1))
             "print('ready')\ntry:result=" + (exposed ? "method('a',replacement,4096)" : "text.replace('a',replacement,4096)") +
             "\nexcept BaseException:print('caught')\nprint('after')";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(128 * 1024) };
@@ -154,7 +154,7 @@ print(Text().replace('a','b',1))
     {
         var source = "text='a'*4096\n" + (exposed ? "method=text.replace\ntext='changed'\nreturn method('a','b',4096)" : "return text.replace('a','b',4096)");
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var first = script.Run(new MockLythonHost()))
@@ -185,7 +185,7 @@ with open('input.txt') as source:
 print('written')
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -209,7 +209,7 @@ print('written')
     [Fact]
     public async Task CountProtocolKeepsManagedRecursionProtection()
     {
-        using var script = new LythonEngine().Compile("class Count:\n def __index__(self):return self.__index__()\nprint('a'.replace('a','b',Count()))");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("class Count:\n def __index__(self):return self.__index__()\nprint('a'.replace('a','b',Count()))");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxRecursionDepth = 16 };
         foreach (var asynchronous in new[] { false, true })

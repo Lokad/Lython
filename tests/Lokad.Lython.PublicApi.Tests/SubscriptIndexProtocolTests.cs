@@ -20,7 +20,7 @@ public sealed class SubscriptIndexProtocolTests
     public async Task TypeLevelHooksAndFailureOrderMatchPython(string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -43,7 +43,7 @@ public sealed class SubscriptIndexProtocolTests
     {
         var source = "class Index:\n def __index__(self):\n  with open('events.txt','a') as output: output.write('index')\n  return -1\nprint(" + target + "[Index()])";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -94,7 +94,7 @@ public sealed class SubscriptIndexProtocolTests
     public async Task SequenceReadsUseIndexProtocol(string target, string expected, bool asynchronous)
     {
         var source = "class Index:\n def __index__(self): return -1\nprint(" + target + "[Index()])";
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -107,7 +107,7 @@ public sealed class SubscriptIndexProtocolTests
     public async Task DictionaryKeysDoNotInvokeIndexProtocol(bool asynchronous)
     {
         const string source = "events=[]\nclass Key:\n def __index__(self):\n  events.append('index')\n  return 1\nkey=Key()\nvalues={key:'kept'}\nprint(values[key],events)";
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);

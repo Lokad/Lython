@@ -18,7 +18,7 @@ public class AsyncMaterializationBenchmarks
 
     public AsyncMaterializationBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _sortLarge = Compile(engine, "return sorted(range(20000), reverse=True)");
         _sumMaterialized = Compile(engine, "items = list(range(50000))\nreturn sum(items)");
         _sumGenerated = Compile(engine, "return sum(value * value for value in range(20000))");

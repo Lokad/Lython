@@ -12,7 +12,7 @@ public sealed class PopenOutputAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedPopenOutputsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import subprocess
             ps = []
@@ -45,7 +45,7 @@ public sealed class PopenOutputAccountingScenarioTests
     [Fact]
     public async Task PopenCommunicateStillProjects()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import subprocess
             p = subprocess.Popen(["tool"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)

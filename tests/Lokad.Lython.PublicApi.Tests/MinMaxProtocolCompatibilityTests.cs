@@ -29,7 +29,7 @@ public sealed class MinMaxProtocolCompatibilityTests
     public async Task ExtremaPreservePythonOrderingAndEffects(string name, bool asynchronous, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
@@ -72,7 +72,7 @@ public sealed class MinMaxProtocolCompatibilityTests
     public async Task GuestProtocolsAwaitIOAndCancellation(string operation, string stage, bool multiple, bool cancel)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(HostSource(operation, stage, multiple), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(HostSource(operation, stage, multiple), budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost(); host.SeedFile("/events.txt", "before");
@@ -117,7 +117,7 @@ public sealed class MinMaxProtocolCompatibilityTests
         var source = "try:\n" + string.Join("\n", body.Split('\n').Select(line => " " + line)) +
             "\nexcept MemoryError:print('caught')\nprint('after')";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) };

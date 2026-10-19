@@ -10,7 +10,7 @@ public sealed class BinaryFileCompatibilityTests
         string expected, string seedHex, string finalSourceHex, string? finalOutputHex)
     {
         _ = name;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var host = new DelayedLythonHost();
         host.SeedBytes("/source.bin", Convert.FromHexString(seedHex));
@@ -34,7 +34,7 @@ public sealed class BinaryFileCompatibilityTests
         var started = write ? host.PauseWriteUntilCancellation("/blob") : host.PauseReadUntilCancellation("/blob");
         var source = write ? "with open('/blob','wb') as f:\n    f.write(b'changed')\nprint('published')"
             : "with open('/blob','rb') as f:\n    print(f.read())";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         var pending = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
@@ -51,7 +51,7 @@ public sealed class BinaryFileCompatibilityTests
     [Fact]
     public async Task HostWriteFailurePreservesExistingBytes()
     {
-        var script = new LythonEngine().Compile("with open('/blob','wb') as f:\n    f.write(b'changed')\nprint('published')");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("with open('/blob','wb') as f:\n    f.write(b'changed')\nprint('published')");
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -98,7 +98,7 @@ public sealed class BinaryFileCompatibilityTests
         string expected, string seedHex, string finalSourceHex, string? finalOutputHex)
     {
         _ = name;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
         foreach (var asynchronous in new[] { false, true })
         {

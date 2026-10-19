@@ -11,7 +11,7 @@ public sealed class ArgvAccountingScenarioTests
     [Fact]
     public async Task LargeArgvPayloadStaysCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import sys
             return len(sys.argv)
@@ -34,7 +34,7 @@ public sealed class ArgvAccountingScenarioTests
     [Fact]
     public async Task SmallArgvStillProjects()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import sys
             return sys.argv[1]

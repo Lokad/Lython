@@ -17,7 +17,7 @@ public sealed class StringMethodAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedStripsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             objs = []
             i = 0
             while i < 20000:
@@ -41,7 +41,7 @@ public sealed class StringMethodAccountingScenarioTests
     [Fact]
     public async Task StringMethodsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             s = "  Hello World  "
             return [s.strip(), s.lower(), s.upper(), "a-b".replace("-", "+"), "x".center(5), "Hi {}".format("there"), "unprefixed".removeprefix("un"), "abc".removeprefix("z")]
             """);

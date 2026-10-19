@@ -19,7 +19,7 @@ public sealed class ElementTreeAccountingTests
     [Fact]
     public void MalformedGraphsRefundWithoutCollectingGuestValues()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var governor = context.MemoryGovernor;
         var initial = governor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 50; attempt++)
@@ -43,7 +43,7 @@ public sealed class ElementTreeAccountingTests
     public void ParserAndGraphDenialsRefund(long cap)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         var source = "<r>" + string.Concat(Enumerable.Repeat("<x a='value'>inside</x>tail", 50)) + "</r>";
         for (var attempt = 0; attempt < 20; attempt++)
         {
@@ -57,7 +57,7 @@ public sealed class ElementTreeAccountingTests
     [Fact]
     public void DepthAndDtdPolicyRemainControlledAndRefund()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         foreach (var source in new[]
         {
             "<!DOCTYPE r [<!ENTITY a 'expanded'>]><r>&a;</r>",
@@ -80,7 +80,7 @@ public sealed class ElementTreeAccountingTests
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { CancellationToken = cancellation.Token });
+            new LythonRunOptions { CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var error = Assert.Throws<LythonRuntimeException>(() => Parse("<r/>", context));
         Assert.Equal("execution canceled", error.Message);
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
@@ -90,7 +90,7 @@ public sealed class ElementTreeAccountingTests
     [Fact]
     public void AChildAliasDoesNotRetainItsParent()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var (parent, child) = ChildAlias(context);
         GC.Collect();
         Assert.False(parent.IsAlive);
@@ -109,7 +109,7 @@ public sealed class ElementTreeAccountingTests
     [Fact]
     public void TextAndMapAliasesKeepTheirOwnChargesAfterAllNodesDrop()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var (root, child, attributes, text) = ScalarAliases(context);
         GC.Collect();
         Assert.False(root.IsAlive);
@@ -134,7 +134,7 @@ public sealed class ElementTreeAccountingTests
     [Fact]
     public void AnEmptyAttributeAliasRetainsItsFixedWrapperCoupon()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var (root, attributes) = EmptyAttributeAlias(context);
         GC.Collect();
         Assert.False(root.IsAlive);

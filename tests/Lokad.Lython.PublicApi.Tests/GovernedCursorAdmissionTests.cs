@@ -14,7 +14,7 @@ public sealed class GovernedCursorAdmissionTests
         var budget = new LythonMemoryBudget(512 * 1024);
         using var pressureOwner = budget.CreateScope();
         using var timing = new AdmissionPressure(budget, pressureOwner);
-        using var script = new LythonEngine().Compile($$"""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($$"""
             import time
             with open('/ready') as stream:
                 stream.read()

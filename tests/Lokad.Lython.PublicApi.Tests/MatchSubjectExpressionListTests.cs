@@ -98,7 +98,7 @@ public sealed class MatchSubjectExpressionListTests
     [InlineData("1,,")]
     public async Task InvalidSubjectListsFailBeforeEffects(string subject)
     {
-        var compiled = new LythonEngine().Compile("print('effects')\nmatch " + subject + ":\n    case _: pass\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effects')\nmatch " + subject + ":\n    case _: pass\n");
         Assert.False(compiled.IsValid);
         var result = await compiled.RunAsync(new MockLythonHost());
         Assert.False(result.Success);
@@ -121,7 +121,7 @@ public sealed class MatchSubjectExpressionListTests
                 yield int(Path("/number.txt").read_text())
                 yield int(Path("/number.txt").read_text())
             """ + "\n" + (classBody ? "class C:\n" + string.Join("\n", body.Split('\n').Select(line => "    " + line)) : body);
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var immediate = new MockLythonHost();
         immediate.SeedFile("/number.txt", "2");
@@ -143,7 +143,7 @@ public sealed class MatchSubjectExpressionListTests
     {
         var body = "match *range(100000),:\n    case _: print('case')\n";
         var source = classBody ? "class C:\n" + string.Join("\n", body.Split('\n').Select(line => "    " + line)) : body;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid);
         foreach (var (options, exceptionType) in new[]
         {
@@ -162,7 +162,7 @@ public sealed class MatchSubjectExpressionListTests
 
     private static async Task AssertOutput(string source, string expected)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

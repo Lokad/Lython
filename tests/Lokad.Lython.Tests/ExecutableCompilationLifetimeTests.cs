@@ -37,7 +37,7 @@ public sealed class ExecutableCompilationLifetimeTests
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static (ExecutableScript Program, WeakReference<LoweredScript> Lowered) Compile(string source)
     {
-        var syntax = LythonFrontend.Compile(source).Script.RequireNotNull();
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script.RequireNotNull();
         var lowered = LoweredScript.Lower(syntax);
         return (ExecutableScript.Compile(lowered), new WeakReference<LoweredScript>(lowered));
     }

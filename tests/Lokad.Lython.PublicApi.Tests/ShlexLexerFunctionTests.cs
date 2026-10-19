@@ -7,7 +7,7 @@ public sealed class ShlexLexerFunctionTests
     [Fact]
     public void ConstructorAttributesTokenMethodsAndIterationMatchPython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import shlex
 
@@ -42,7 +42,7 @@ return str(attributes) + "|" + "/".join(tokens) + "|" + str(end is None) + "|" +
     [Fact]
     public void PunctuationAndMutableCharacterClassesMatchPython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import shlex
 
@@ -80,7 +80,7 @@ return "|".join([
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/commands.txt", "echo 'two words'");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 import shlex
@@ -107,7 +107,7 @@ return "/".join(plain) + "|" + "/".join(compressed)
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/nested.txt", "from-file");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import shlex
 
@@ -134,17 +134,17 @@ return "/".join(first) + "|" + lexer.infile + "|" + "/".join(second) + "|" + sec
     {
         var syncHost = new MockLythonHost();
         syncHost.SeedStandardInput("alpha 'two words'");
-        var sync = new LythonEngine().Run(
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import shlex\nreturn '/'.join(list(shlex.shlex(posix=True)))\n",
             syncHost);
 
         var asyncHost = new MockLythonHost();
         asyncHost.SeedStandardInput("beta \"three words\"");
-        var asynchronous = await new LythonEngine().RunAsync(
+        var asynchronous = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             "import shlex\nreturn '/'.join(list(shlex.shlex(posix=True)))\n",
             asyncHost);
 
-        var unavailable = new LythonEngine().Run(
+        var unavailable = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import shlex\nshlex.shlex(posix=True)\n",
             new MockLythonHost());
 
@@ -160,7 +160,7 @@ return "/".join(first) + "|" + lexer.infile + "|" + "/".join(second) + "|" + sec
     [Fact]
     public void AutomaticSourceInclusionAndUnsupportedInputsFailExplicitly()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import shlex
 
@@ -206,13 +206,13 @@ return "|".join(messages)
     [Fact]
     public void StaticContractRecognizesTheLexerConstructorShape()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import shlex
 lexer = shlex.shlex("a b", infile="cmd", posix=True, punctuation_chars=True)
 tokens = list(lexer)
 """);
-        var invalid = new LythonEngine().Compile("import shlex\nshlex.shlex(1, 2, 3, 4, 5)\n");
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile("import shlex\nshlex.shlex(1, 2, 3, 4, 5)\n");
 
         Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Message)));
         Assert.False(invalid.IsValid);

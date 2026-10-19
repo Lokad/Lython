@@ -26,7 +26,7 @@ public sealed class DateTimeValueAccountingTests
     public void ConstructedValuesCommitExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = PyDateTimeOps.CreateDateTime(Ints(2024, 1, 1), span, context);
         Assert.Equal(64L, context.MemoryGovernor.CurrentCommittedBytes);
@@ -43,7 +43,7 @@ public sealed class DateTimeValueAccountingTests
         // N27: date.fromisocalendar used to return a bare shell with no
         // construction charge, leaving retained dates unaccounted.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var value = PyDateTimeOps.DateFromIsoCalendar(
             new object[] { new BigInteger(2024), new BigInteger(1), new BigInteger(1) }, span, context);

@@ -10,7 +10,7 @@ public sealed class JsonConstantScenarioTests
     [Fact]
     public async Task NestedConstantsParseLikeCpython()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             first = json.loads('{"a": NaN, "b": [Infinity, -Infinity]}')
@@ -30,7 +30,7 @@ public sealed class JsonConstantScenarioTests
     [Fact]
     public async Task ParseConstantHookFiresForNestedLiterals()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             return json.loads('{"a": NaN}', parse_constant=lambda text: "C" + text)["a"]
@@ -54,7 +54,7 @@ public sealed class JsonConstantScenarioTests
     [InlineData("nan")]
     public async Task InvalidConstantLiteralsFailWithJsonDecodeError(string token)
     {
-        var script = new LythonEngine().Compile("import json\njson.loads('" + token + "')");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\njson.loads('" + token + "')");
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.False(sync.Success);
@@ -70,7 +70,7 @@ public sealed class JsonConstantScenarioTests
     [InlineData("[Nana]")]
     public async Task InvalidNestedConstantLiteralsFailWithJsonDecodeError(string token)
     {
-        var script = new LythonEngine().Compile("import json\njson.loads('" + token + "')");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\njson.loads('" + token + "')");
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.False(sync.Success);
@@ -84,7 +84,7 @@ public sealed class JsonConstantScenarioTests
     [Fact]
     public async Task TruncatedDocumentsReportCpythonCoordinates()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             texts = ["{", "[1,", '{"a":1', "[1", '{"a"']
@@ -112,7 +112,7 @@ public sealed class JsonConstantScenarioTests
     {
         // Literals match case-sensitive prefixes and numbers match NUMBER_RE,
         // so the remainder surfaces as trailing data at the CPython offset.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             texts = ["truefalse", "0x", "1e", "nullx", "01", "[1] [2]"]

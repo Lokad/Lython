@@ -23,7 +23,7 @@ public class RuntimeHotPathBenchmarks
 
     public RuntimeHotPathBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _textReplace = Compile(engine, "return 'alpha beta gamma delta epsilon zeta eta theta'.replace('ta', 'XX')");
         _listClone = Compile(engine, "items = list(range(32))\nreturn list(items)");
         _dictionaryClone = Compile(engine, "items = {'a': 1, 'b': 2, 'c': 3, 'd': 4}\nreturn dict(items)");
@@ -94,10 +94,10 @@ public class RuntimeHotPathBenchmarks
     public object? OpenPyxlIncrementalAppend() => Run(_openPyxlAppend);
 
     [Benchmark]
-    public bool CompileRepeatedConstantPool() => new LythonEngine().Compile(_repeatedConstantSource).IsValid;
+    public bool CompileRepeatedConstantPool() => new LythonEngine(Utf8RegexProvider.Instance).Compile(_repeatedConstantSource).IsValid;
 
     [Benchmark(Description = "Reject an invalid repeated-constant pool")]
-    public bool CompileInvalidConstantPool() => !new LythonEngine().Compile(_invalidConstantSource).IsValid;
+    public bool CompileInvalidConstantPool() => !new LythonEngine(Utf8RegexProvider.Instance).Compile(_invalidConstantSource).IsValid;
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
         => BenchmarkScripts.Compile(engine, source);

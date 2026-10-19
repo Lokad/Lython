@@ -14,7 +14,7 @@ public sealed class ReviewHardening3RegressionTests
     [Fact]
     public void PowerChainsBeyondTheNestingBudgetAreRejected()
     {
-        var compiled = new LythonEngine().Compile("x = 1" + Repeat("**1", 100) + "\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("x = 1" + Repeat("**1", 100) + "\n");
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA0003");
     }
@@ -22,7 +22,7 @@ public sealed class ReviewHardening3RegressionTests
     [Fact]
     public void AdditiveChainsBeyondTheOperandBudgetAreRejected()
     {
-        var compiled = new LythonEngine().Compile("x = " + Repeat("1+", 100) + "1\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("x = " + Repeat("1+", 100) + "1\n");
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA0003");
     }
@@ -30,7 +30,7 @@ public sealed class ReviewHardening3RegressionTests
     [Fact]
     public void MemberChainsBeyondTheOperandBudgetAreRejected()
     {
-        var compiled = new LythonEngine().Compile("a = 1\nx = a" + Repeat(".b", 100) + "\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("a = 1\nx = a" + Repeat(".b", 100) + "\n");
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA0003");
     }
@@ -38,7 +38,7 @@ public sealed class ReviewHardening3RegressionTests
     [Fact]
     public void TernaryChainsBeyondTheNestingBudgetAreRejected()
     {
-        var compiled = new LythonEngine().Compile("c = True\nx = " + Repeat("1 if c else ", 100) + "0\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("c = True\nx = " + Repeat("1 if c else ", 100) + "0\n");
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA0003");
     }
@@ -46,7 +46,7 @@ public sealed class ReviewHardening3RegressionTests
     [Fact]
     public void LambdaChainsBeyondTheNestingBudgetAreRejected()
     {
-        var compiled = new LythonEngine().Compile("f = " + Repeat("lambda: ", 100) + "1\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("f = " + Repeat("lambda: ", 100) + "1\n");
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA0003");
     }
@@ -54,7 +54,7 @@ public sealed class ReviewHardening3RegressionTests
     [Fact]
     public void CallNestingBeyondTheNestingBudgetIsRejected()
     {
-        var compiled = new LythonEngine().Compile("x = " + Repeat("f(", 100) + "1" + Repeat(")", 100) + "\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("x = " + Repeat("f(", 100) + "1" + Repeat(")", 100) + "\n");
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA0003");
     }
@@ -68,7 +68,7 @@ public sealed class ReviewHardening3RegressionTests
             lines.Add(new string((char)32, i * 4) + "if True:");
         }
         lines.Add(new string((char)32, 100 * 4) + "x = 1");
-        var compiled = new LythonEngine().Compile(string.Join("\n", lines) + "\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(string.Join("\n", lines) + "\n");
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA0003");
     }
@@ -81,7 +81,7 @@ public sealed class ReviewHardening3RegressionTests
         {
             level = "f\"{x" + level + "}\"";
         }
-        var compiled = new LythonEngine().Compile("x = 1\ny = " + level + "\n");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("x = 1\ny = " + level + "\n");
         Assert.False(compiled.IsValid);
     }
 
@@ -95,7 +95,7 @@ public sealed class ReviewHardening3RegressionTests
         }
         lines.Add(new string((char)32, 40 * 4) + "x = 1");
         lines.Add("print(x)");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "x = 1" + Repeat("**1", 40) + "\n"
             + "y = " + Repeat("1+", 40) + "1\n"
             + "f = " + Repeat("lambda: ", 10) + "1\n"
@@ -109,7 +109,7 @@ public sealed class ReviewHardening3RegressionTests
     [Fact]
     public void SortedValidatesKeyAfterIterableEffects()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 calls = []
 class C:
@@ -132,7 +132,7 @@ return [calls, error, sorted(C(), key=None)]
     [Fact]
     public async Task SortedValidatesKeyAfterIterableEffectsAsync()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 calls = []
 class C:
@@ -154,7 +154,7 @@ return calls
     public void SortedEmptyIterableWithBadKeyReturnsEmpty()
     {
         // R13: an invalid key only fails when it would actually be called.
-        var sync = new LythonEngine().Run(
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 print(sorted([], key=1))
 """,
@@ -167,7 +167,7 @@ print(sorted([], key=1))
     public async Task SortedEmptyIterableWithBadKeyReturnsEmptyAsync()
     {
         // R13: an invalid key only fails when it would actually be called.
-        var asyncResult = await new LythonEngine().RunAsync(
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 print(sorted([], key=1))
 """,

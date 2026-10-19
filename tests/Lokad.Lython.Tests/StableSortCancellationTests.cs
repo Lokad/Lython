@@ -14,7 +14,7 @@ public sealed class StableSortCancellationTests
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(16384) });
+            new LythonRunOptions { CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(16384) },regexProvider:Utf8RegexProvider.Instance);
         using (var buffer = new PyStableSort.Buffer(context.MemoryGovernor, null))
         {
             for (var i = size - 1; i >= 0; i--) buffer.Add(new PyStableSort.Entry(i, i), null);
@@ -42,7 +42,7 @@ public sealed class StableSortCancellationTests
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(16384) });
+            new LythonRunOptions { CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(16384) },regexProvider:Utf8RegexProvider.Instance);
         using (var buffer = new PyStableSort.Buffer(context.MemoryGovernor, null))
         {
             for (var i = 64; i < 128; i++) buffer.Add(new PyStableSort.Entry(i, i), null);

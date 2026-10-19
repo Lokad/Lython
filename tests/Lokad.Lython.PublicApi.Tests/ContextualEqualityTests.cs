@@ -29,7 +29,7 @@ public sealed class ContextualEqualityTests
             return [a == b, [a] == [b], [a] != [b], [a].count(b), [a].index(b),
                     (a,) == (b,), (a,).count(b), (a,).index(b)]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { true, true, false, new BigInteger(1), new BigInteger(0), true, new BigInteger(1), new BigInteger(0) },
@@ -53,7 +53,7 @@ public sealed class ContextualEqualityTests
             x.remove(b)
             return [same, counted, found, len(x)]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { true, new BigInteger(1), new BigInteger(0), new BigInteger(0) },
@@ -68,7 +68,7 @@ public sealed class ContextualEqualityTests
             n = math.inf - math.inf
             return [n == n, [n] == [n], (n,) == (n,), [n].count(n), [n].index(n)]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { false, true, true, new BigInteger(1), new BigInteger(0) },
@@ -86,7 +86,7 @@ public sealed class ContextualEqualityTests
             b = A()
             return [{"k": a} == {"k": b}, {"k": b} == {"k": a}, {"k": a} != {"k": b}]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { true, true, false }, result.ReturnValue);
     }
@@ -106,7 +106,7 @@ public sealed class ContextualEqualityTests
                     return self.v == other.v
             return [P(1) == P(1), P(Q(1)) == P(Q(2)), P(Q(1)) == P(Q(1))]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { true, false, true }, result.ReturnValue);
     }
@@ -123,7 +123,7 @@ public sealed class ContextualEqualityTests
                     return True
             return [[L()] == [R()], [R()] == [L()], [L()] == [L()], [L()] != [L()]]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { true, true, false, true },
@@ -141,7 +141,7 @@ public sealed class ContextualEqualityTests
             b = T()
             return [[a] == [b], [a] != [b], [a].count(b)]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { true, false, new BigInteger(1) },
@@ -161,7 +161,7 @@ public sealed class ContextualEqualityTests
             except ValueError:
                 return "raised"
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("raised", result.ReturnValue);
     }
@@ -176,7 +176,7 @@ public sealed class ContextualEqualityTests
             d[k1] = 7
             return [d[k2], list(d.keys())[0] is k1]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { new BigInteger(7), true }, result.ReturnValue);
     }
@@ -195,7 +195,7 @@ public sealed class ContextualEqualityTests
             except RecursionError:
                 return "recursion"
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("recursion", result.ReturnValue);
     }
@@ -219,7 +219,7 @@ public sealed class ContextualEqualityTests
             except RecursionError:
                 return "recursion"
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("recursion", result.ReturnValue);
     }
@@ -235,7 +235,7 @@ public sealed class ContextualEqualityTests
             b = A()
             return [[a] == [b], (a,) == (b,), {"k": a} == {"k": b}, [a] != [b]]
             """;
-        var result = await new LythonEngine().RunAsync(code, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { true, true, true, false },
@@ -257,7 +257,7 @@ public sealed class ContextualEqualityTests
             """;
         var host = new DelayedLythonHost();
         host.SeedFile("/a.txt", "x");
-        var result = await new LythonEngine().RunAsync(code, host);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { true, false }, result.ReturnValue);
         Assert.True(host.CompletedAsynchronously > 0);
@@ -278,7 +278,7 @@ public sealed class ContextualEqualityTests
             return [[a].count(b), [a].index(b), (a,).count(b), (a,).index(b),
                     collections.deque([a]).count(b), collections.deque([a]).index(b), len(x)]
             """;
-        var result = await new LythonEngine().RunAsync(code, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(1), new BigInteger(0), new BigInteger(1), new BigInteger(0), new BigInteger(1), new BigInteger(0), new BigInteger(0) },
@@ -300,7 +300,7 @@ public sealed class ContextualEqualityTests
             """;
         var host = new DelayedLythonHost();
         host.SeedFile("/a.txt", "x");
-        var result = await new LythonEngine().RunAsync(code, host);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { new BigInteger(1), new BigInteger(0) }, result.ReturnValue);
         Assert.True(host.CompletedAsynchronously > 0);
@@ -319,7 +319,7 @@ public sealed class ContextualEqualityTests
             b = A()
             return [a == b, {a} == {b}, a in {b}]
             """;
-        var result = new LythonEngine().Run(code, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { true, false, false }, result.ReturnValue);
     }

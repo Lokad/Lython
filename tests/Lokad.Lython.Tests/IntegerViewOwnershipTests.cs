@@ -14,7 +14,7 @@ public sealed class IntegerViewOwnershipTests
     public void ExactIntegerViewsReturnTheOwnedBox(string member)
     {
         var span = new LythonSourceSpan(8, 4, 2, 1);
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         object receiver = BigInteger.One << 4000;
         LythonRuntime.OwnFreshInteger(receiver, context.MemoryGovernor, span);
         Assert.True(LythonRuntime.IntMembers.TryGetMember(receiver, member, out var value));

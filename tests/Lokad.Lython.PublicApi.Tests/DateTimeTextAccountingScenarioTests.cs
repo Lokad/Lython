@@ -15,7 +15,7 @@ public sealed class DateTimeTextAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedRendersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             d = datetime.date(2020, 1, 2)
             objs = []
@@ -41,7 +41,7 @@ public sealed class DateTimeTextAccountingScenarioTests
     [Fact]
     public async Task DateTimeTextBehaves()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             d = datetime.date(2020, 1, 2)
             t = datetime.time(1, 2, 3, tzinfo=datetime.timezone.utc)

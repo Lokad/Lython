@@ -19,7 +19,7 @@ public sealed class AsyncStructuralAmbientTests
     public async Task StructuralAmbientNeverSpansGuestSuspension(string expression)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 import time
 from collections import Counter
 def probe():

@@ -15,7 +15,7 @@ public sealed class FailedOwnerCleanupTests
             : "import copy\nclass Bomb:\n def __deepcopy__(self, memo):\n  raise ValueError('stop')\nclass Holder:\n pass\nsource = Holder()\nsource.first = 1\nsource.second = Bomb()\n";
         var operation = kind == "ordered" ? "OrderedDict(source)" : "copy.deepcopy(source)";
         var budget = new LythonMemoryBudget(262144);
-        using var script = new LythonEngine().Compile(setup + "for i in range(16):\n try:\n  " + operation +
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(setup + "for i in range(16):\n try:\n  " + operation +
             "\n except (TypeError, ValueError):\n  pass\nreturn i + 1\n", budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var baseline = budget.ReservedBytes;

@@ -14,7 +14,7 @@ public sealed class FunctionValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedFunctionsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             fs = []
             i = 0
@@ -39,7 +39,7 @@ public sealed class FunctionValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedLambdasStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             fs = []
             i = 0
@@ -62,7 +62,7 @@ public sealed class FunctionValueAccountingScenarioTests
     [Fact]
     public async Task FunctionBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             def f(a, b=2):
                 return a + b

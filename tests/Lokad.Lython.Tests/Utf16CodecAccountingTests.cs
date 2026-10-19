@@ -20,7 +20,7 @@ public sealed class Utf16CodecAccountingTests
         {
             MemoryBudget = new LythonMemoryBudget(100000),
             CancellationToken = cancellation.Token,
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var file = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output", context,
             LythonRuntime.TextEncodingMode.Utf16, LythonRuntime.TextErrorMode.Strict,
             LythonRuntime.TextNewlineMode.PreserveUniversal);
@@ -43,7 +43,7 @@ public sealed class Utf16CodecAccountingTests
     {
         var host = new MockLythonHost();
         host.SeedBytes("/output", [1, 2, 3]);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(14000) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(14000) },regexProvider:Utf8RegexProvider.Instance);
         var file = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output", context,
             LythonRuntime.TextEncodingMode.Utf16, LythonRuntime.TextErrorMode.Strict,
             LythonRuntime.TextNewlineMode.PreserveUniversal);
@@ -62,7 +62,7 @@ public sealed class Utf16CodecAccountingTests
     [InlineData(130)]
     public void DeniedNativeDecodingRefundsUnusedAdmission(long cap)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 100; attempt++)
         {
@@ -85,7 +85,7 @@ public sealed class Utf16CodecAccountingTests
         {
             var host = new MockLythonHost();
             host.SeedBytes("/input", [0xff, 0xfe, 0x3d, 0xd8, 0x00, 0xde, 0x0d, 0x00, 0x0a, 0x00]);
-            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) });
+            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) },regexProvider:Utf8RegexProvider.Instance);
             var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState("/input", context,
                 LythonRuntime.TextEncodingMode.Utf16, (LythonRuntime.TextErrorMode)errorMode,
                 LythonRuntime.TextNewlineMode.TranslateUniversal, window);

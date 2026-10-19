@@ -20,7 +20,7 @@ public sealed class JsonStringEmissionTests
             _ => "json.dumps(payload,ensure_ascii=False)",
         };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using (var script = new LythonEngine().Compile("import json\nreturn " + expression, budget))
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\nreturn " + expression, budget))
         {
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;
@@ -70,7 +70,7 @@ public sealed class JsonStringEmissionTests
             "mapping={value:None}\nprint(json.dumps(mapping,ensure_ascii=" + (ensureAscii ? "True" : "False") + "))\n" +
             "print(encoder.encode(mapping))\nprint(''.join(encoder.iterencode(mapping)))";
         var stdout = string.Concat(Enumerable.Repeat(expected + "\n", 3)) + string.Concat(Enumerable.Repeat("{" + expected + ": null}\n", 3));
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
         foreach (var asynchronous in new[] { false, true })
         {

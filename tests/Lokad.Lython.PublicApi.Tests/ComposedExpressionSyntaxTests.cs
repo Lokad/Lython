@@ -7,7 +7,7 @@ public sealed class ComposedExpressionSyntaxTests
     [Fact]
     public async Task RepeatedFiltersComposeWithNestedLoopsAndLazyEvaluation()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             events = []
             def mark(x):
                 events.append(x)
@@ -30,7 +30,7 @@ public sealed class ComposedExpressionSyntaxTests
     [Fact]
     public async Task StarredArgumentsAfterKeywordsEvaluateBeforeThem()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             events = []
             def mark(value):
                 events.append(value)
@@ -51,5 +51,5 @@ public sealed class ComposedExpressionSyntaxTests
     [InlineData("f(a=1, 2)")]
     [InlineData("f(**{}, *[1])")]
     public void IllegalArgumentOrderingStillFails(string source)
-        => Assert.False(new LythonEngine().Compile(source).IsValid);
+        => Assert.False(new LythonEngine(Utf8RegexProvider.Instance).Compile(source).IsValid);
 }

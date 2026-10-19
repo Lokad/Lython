@@ -12,7 +12,7 @@ public sealed class SequenceFactsAfterCallbacksTests
     [InlineData("class Target:\n def __setitem__(self,key,value):items.append(value)\ntarget=Target()\nitems=[]\ntarget[:]=3\nprint(items[0])\n")]
     public async Task UserCallbackCanChangePreviouslyKnownSequenceLength(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {
@@ -24,7 +24,7 @@ public sealed class SequenceFactsAfterCallbacksTests
     [Fact]
     public void KnownScalarBuiltinCallKeepsProvenOutOfRangeDiagnostic()
     {
-        var script = new LythonEngine().Compile("items=[]\nlen('abc')\nprint(items[0])\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("items=[]\nlen('abc')\nprint(items[0])\n");
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, d => d.Code == "LA3117");
     }

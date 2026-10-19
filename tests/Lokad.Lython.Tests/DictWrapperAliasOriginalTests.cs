@@ -24,7 +24,7 @@ public sealed class DictWrapperAliasOriginalTests
     [InlineData(true, true, "items")]
     public void EscapedViewOrIteratorPreservesMappingValuesAndBatchFunding(bool counter, bool iterator, string member)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var (alias, _) = MakeAlias(context, counter, iterator, member);
         var funded = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
@@ -55,7 +55,7 @@ public sealed class DictWrapperAliasOriginalTests
     [InlineData(true, true)]
     public void DroppedAliasAndItsWrapperCycleAreCollected(bool counter, bool iterator)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var (alias, owner) = MakeDroppedAlias(context, counter, iterator);
         GC.Collect();
         GC.WaitForPendingFinalizers();

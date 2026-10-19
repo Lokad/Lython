@@ -31,7 +31,7 @@ public sealed class NestedSequenceFactDiagnosticsTests
     public async Task MutationDiscardsStaleSequenceContents(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using (var script = new LythonEngine().Compile(source, budget))
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget))
         {
             Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Code + " " + d.Message)));
             var baseline = budget.ReservedBytes;
@@ -70,7 +70,7 @@ public sealed class NestedSequenceFactDiagnosticsTests
     [MemberData(nameof(CertainErrors))]
     public void ImmutableAndFreshFactsKeepTheirDiagnostics(string name, string source, string code)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(script.IsValid, name);
         Assert.Contains(script.Diagnostics, d => d.Code == code);
     }

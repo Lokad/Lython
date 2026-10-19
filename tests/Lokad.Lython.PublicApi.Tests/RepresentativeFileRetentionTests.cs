@@ -34,7 +34,7 @@ public sealed class RepresentativeFileRetentionTests
         else if (retention == "all")
             source = "held = []\n" + source.Replace("        data = source.read()", "        data = source.read()\n        held.append(data)");
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var delayed = asynchronous ? new DelayedLythonHost() : null;

@@ -11,7 +11,7 @@ public sealed class JsonSubclassScenarioTests
 {
     private static async Task<object?[]> RunBothModes(string script)
     {
-        var compiled = new LythonEngine().Compile(script);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(script);
         Assert.True(compiled.IsValid);
         var sync = compiled.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -393,7 +393,7 @@ public sealed class JsonSubclassScenarioTests
     {
         var host = new MockLythonHost();
         host.SeedFile("/input.json", "[1, 2]");
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             class Strict(json.JSONDecoder):
@@ -428,7 +428,7 @@ public sealed class JsonSubclassScenarioTests
     {
         // Repeated construction, use and drop of subclass instances must not
         // accumulate peers or option state against the budget.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             class SetEncoder(json.JSONEncoder):

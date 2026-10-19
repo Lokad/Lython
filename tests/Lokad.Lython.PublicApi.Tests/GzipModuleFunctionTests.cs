@@ -7,7 +7,7 @@ public sealed class GzipModuleFunctionTests
     [Fact]
     public void CompressUsesDeterministicPythonCompatibleFraming()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 
@@ -38,7 +38,7 @@ return str(checks)
     [Fact]
     public void DecompressAcceptsPythonAndConcatenatedMembers()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 
@@ -60,7 +60,7 @@ return str(checks)
     [Fact]
     public void CrcProcessingHandlesMultipleBudgetChunks()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 
@@ -77,7 +77,7 @@ return gzip.decompress(compressed) == payload
     [Fact]
     public async Task AsyncExecutionHasPureGzipParity()
     {
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import gzip
 return gzip.decompress(gzip.compress(b"alpha", -1, mtime=7))
@@ -91,7 +91,7 @@ return gzip.decompress(gzip.compress(b"alpha", -1, mtime=7))
     [Fact]
     public void InvalidHeadersCrcAndTruncationRaiseCatchableBadGzipFile()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 
@@ -124,7 +124,7 @@ return "|".join(values)
     [Fact]
     public void DecompressionExpansionCountsAgainstExecutionMemory()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 gzip.decompress(b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x02\xffKL\x1c\x05\xa3`\x14\x8cT\x00\x00\xb9\x97U|\x00\x04\x00\x00")
@@ -140,7 +140,7 @@ gzip.decompress(b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x02\xffKL\x1c\x05\xa3`\x14\x8
     [Fact]
     public void CompressionArgumentsValidateLikePython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
 
@@ -172,7 +172,7 @@ return "|".join(values)
     [Fact]
     public void StaticContractsRecognizePureGzipCallShapes()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import gzip
 from gzip import compress, decompress, BadGzipFile
@@ -180,7 +180,7 @@ from gzip import compress, decompress, BadGzipFile
 payload = compress(b"abc", 6, mtime=0)
 decompress(payload)
 """);
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import gzip
 gzip.compress()

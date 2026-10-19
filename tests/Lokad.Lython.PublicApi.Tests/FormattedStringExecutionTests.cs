@@ -18,7 +18,7 @@ public sealed class FormattedStringExecutionTests
     [MemberData(nameof(Programs))]
     public async Task FieldsPreservePythonEffectsAndScopes(string source, string expected)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var asynchronous in new[] { false, true })
         {
@@ -49,7 +49,7 @@ def width():
 print(f'A{Value()!s:>{width()}}{Value():yes}B')
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -94,7 +94,7 @@ print(f'A{Value()!s:>{width()}}{Value():yes}B')
     public async Task EscapingFormattedTextRemainsFundedAcrossRuns()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("return f'{value:>8192}'", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return f'{value:>8192}'", budget);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["value"] = "é" } };
         using var first = script.Run(new MockLythonHost(), options);
@@ -113,7 +113,7 @@ print(f'A{Value()!s:>{width()}}{Value():yes}B')
     {
         const string source = "target='before'\ntry: target=f'{1:200000}'\nexcept MemoryError: print(target)";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {

@@ -44,7 +44,7 @@ public sealed class JsonSuspendingCallbackTests
     [InlineData("json.loads('{\"x\":[true,false,null]}', object_pairs_hook=read)", "v")]
     public async Task HooksAndSelectedClassesAwaitHostEffects(string expression, string expected)
     {
-        var compiled = new LythonEngine().Compile(Definitions + "\nreturn str(" + expression + ")");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(Definitions + "\nreturn str(" + expression + ")");
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         var syncHost = new MockLythonHost();
         syncHost.SeedFile("/value", "v");
@@ -62,7 +62,7 @@ public sealed class JsonSuspendingCallbackTests
     [Fact]
     public async Task FileBoundariesAwaitHooksAndPublication()
     {
-        var compiled = new LythonEngine().Compile(Definitions + """
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(Definitions + """
 
             with open('/input') as f:
                 value = json.load(f, parse_int=read)
@@ -85,7 +85,7 @@ public sealed class JsonSuspendingCallbackTests
     [InlineData("json.loads('{\"x\":[true,false,null]}', object_hook=read)")]
     public async Task SuspendedCallbacksCancelAndCompiledScriptsRemainReusable(string expression)
     {
-        var compiled = new LythonEngine().Compile(Definitions + "\nreturn str(" + expression + ")");
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(Definitions + "\nreturn str(" + expression + ")");
         var host = new DelayedLythonHost();
         host.SeedFile("/value", "v");
         var started = host.PauseReadUntilCancellation("/value");
@@ -110,7 +110,7 @@ public sealed class JsonSuspendingCallbackTests
     [Fact]
     public async Task IncrementalHookFailuresExhaustOnlyTheirIterator()
     {
-        var compiled = new LythonEngine().Compile(Definitions + """
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(Definitions + """
 
             def fail(o):
                 read(o)

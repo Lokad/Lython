@@ -13,7 +13,7 @@ public sealed class ShutilModuleFunctionTests
         host.SeedFile("/repo/src/existing.txt", "old");
         host.MkDir("/repo/out");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 import shutil
@@ -44,7 +44,7 @@ __lython_file.close()
         host.SeedFile("/repo/src/a.txt", "alpha");
         host.MkDir("/repo/out");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 import shutil
@@ -67,7 +67,7 @@ __lython_file.close()
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/src/a.txt", "alpha\nbeta");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import shutil
 from pathlib import Path
@@ -92,7 +92,7 @@ __lython_file.close()
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/a.txt", "alpha");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import shutil
 
@@ -123,7 +123,7 @@ except shutil.SameFileError as ex:
         host.SeedFile("/repo/b.txt", "beta");
         host.MkDir("/repo/out");
 
-        var result = new LythonEngine().Run(source, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, host);
 
         Assert.False(result.Success);
         Assert.Equal(exceptionType, result.Failure?.ExceptionType);
@@ -132,7 +132,7 @@ except shutil.SameFileError as ex:
     [Fact]
     public void Shutil_StaticContracts_CoverCallShapeAndPathTypes()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import shutil
 

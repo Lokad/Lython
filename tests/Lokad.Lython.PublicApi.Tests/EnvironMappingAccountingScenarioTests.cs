@@ -32,7 +32,7 @@ public sealed class EnvironMappingAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedGetsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             e = os.environ
             objs = []
@@ -58,7 +58,7 @@ public sealed class EnvironMappingAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedSubscriptsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             e = os.environ
             objs = []
@@ -85,7 +85,7 @@ public sealed class EnvironMappingAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedKeysStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             e = os.environ
             objs = []
@@ -111,7 +111,7 @@ public sealed class EnvironMappingAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedItemsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             e = os.environ
             objs = []
@@ -137,7 +137,7 @@ public sealed class EnvironMappingAccountingScenarioTests
     [Fact]
     public async Task MappingReadsBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             e = os.environ
             return [e.get("K1"), sorted(e.keys()), sorted(e.values()), e.copy().get("K2"), sorted([k for k in e])]

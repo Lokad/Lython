@@ -33,8 +33,8 @@ public sealed class RepresentativeLeaseTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions
         {
             CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(262144),
-        });
-        var frontend = LythonFrontend.Compile(source);
+        },regexProvider:Utf8RegexProvider.Instance);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var script = LoweredScript.Lower(frontend.Script!);
         LythonRuntimeException error;
@@ -81,14 +81,14 @@ public sealed class RepresentativeLeaseTests
         }
         var source = "escaped = None\ntry:\n" + string.Join('\n', original.Split('\n').Select(line => "    " + line)) +
             "\nexcept ValueError:\n    pass\nreturn source.closed\n";
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var script = LoweredScript.Lower(frontend.Script!);
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         var mock = asynchronous ? null : new MockLythonHost();
         ILythonHost host = (ILythonHost?)delayed ?? mock!;
         if (delayed is not null) delayed.SeedFile(path, input); else mock!.SeedFile(path, input);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) },regexProvider:Utf8RegexProvider.Instance);
         var flow = asynchronous ? await LythonRuntime.ExecuteStatementsAsync(script.Statements, context)
             : LythonRuntime.ExecuteStatements(script.Statements, context);
         Assert.NotNull(flow.Return);

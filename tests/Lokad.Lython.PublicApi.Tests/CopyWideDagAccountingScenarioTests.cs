@@ -23,7 +23,7 @@ public sealed class CopyWideDagAccountingScenarioTests
     [Fact]
     public async Task WideGraphStaysCharged()
     {
-        var script = new LythonEngine().Compile(BuildWideGraph);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildWideGraph);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4194304) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -38,7 +38,7 @@ public sealed class CopyWideDagAccountingScenarioTests
     [Fact]
     public async Task RoomyWideGraphRoundTrips()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import copy
             v = [[i] for i in range(20000)]

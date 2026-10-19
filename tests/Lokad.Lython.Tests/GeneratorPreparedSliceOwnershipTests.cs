@@ -115,13 +115,13 @@ public sealed class GeneratorPreparedSliceOwnershipTests
 
     private static async Task<Fixture> Define(bool asynchronous, CancellationToken cancellation = default, string source = Source)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(1024 * 1024),             SourcePath = "/generator-slice.py", CancellationToken = cancellation
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         root.Services.SetCurrentException(active);
         var tape = new Tape(root, cancellation);

@@ -29,7 +29,7 @@ public sealed class AdmissionFailureCommandTests
         var source = "print('before')\nwith open('/earlier.txt','w') as output:output.write('saved')\nif fail:\n "
             + body.Replace("\n", "\n ") + "\n with open('/later.txt','w') as output:output.write('bad')\nprint('after')\nreturn 0";
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, shape + ": " + string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new MockLythonHost();
@@ -68,7 +68,7 @@ public sealed class AdmissionFailureCommandTests
     [InlineData(true)]
     public async Task ExplicitGuestMemoryErrorStillFollowsPython(bool asynchronous)
     {
-        using var script = new LythonEngine().Compile("try:\n raise MemoryError('guest')\nexcept MemoryError as e:\n print(str(e))\nprint('after')");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("try:\n raise MemoryError('guest')\nexcept MemoryError as e:\n print(str(e))\nprint('after')");
         Assert.True(script.IsValid);
         using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -86,7 +86,7 @@ public sealed class AdmissionFailureCommandTests
     [InlineData("raise SystemExit(0)", true)]
     public async Task RefusedProjectionOwnerIsOneCleanCommandFailure(string source, bool asynchronous)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         using var refusing = new RefusingBudget();
         var options = new LythonRunOptions { ResultMemoryBudget = refusing };
         using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
@@ -101,7 +101,7 @@ public sealed class AdmissionFailureCommandTests
     [InlineData(true)]
     public async Task ProjectionRefusalCannotLeaveSystemExitZero(bool asynchronous)
     {
-        using var script = new LythonEngine().Compile("print('before')\nraise SystemExit(0)");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('before')\nraise SystemExit(0)");
         var options = new LythonRunOptions { ResultMemoryBudget = new LythonMemoryBudget(0)};
         using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
         Assert.False(result.Success);
@@ -113,10 +113,10 @@ public sealed class AdmissionFailureCommandTests
     public async Task RefusalAfterActualHostSuspensionReleasesOnlyItsOwnStorage()
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var retainedScript = new LythonEngine().Compile("return 'held' * 4000", budget);
+        using var retainedScript = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 'held' * 4000", budget);
         using var held = retainedScript.Run(new MockLythonHost());
         Assert.True(held.Success, held.Failure?.Message);
-        using var script = new LythonEngine().Compile("with open('/input.txt') as source:print(source.read())\nvalue='x'*2000000", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("with open('/input.txt') as source:print(source.read())\nvalue='x'*2000000", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -149,7 +149,7 @@ public sealed class AdmissionFailureCommandTests
     public async Task NativeCleanupDoesNotPublishBufferedWritesAfterRefusal(string prefix, bool asynchronous)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var script = new LythonEngine().Compile(prefix + "\n value='x'*2000000", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(prefix + "\n value='x'*2000000", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var immediate = new MockLythonHost();

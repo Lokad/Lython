@@ -35,7 +35,7 @@ public class DictUpdateLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedUpdateDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    d = {}\n    d.update(a=1)\n    objs.append(d)\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };

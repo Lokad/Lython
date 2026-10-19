@@ -47,7 +47,7 @@ public sealed class CheckedRangeIterationTests
         {
             MemoryBudget = new LythonMemoryBudget(128),
             CancellationToken = cancellation.Token
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         cancellation.Cancel();
         var start = BigInteger.One << 10000;
         var allocationSpan = new LythonSourceSpan(20, 5, 3, 4);
@@ -105,7 +105,7 @@ public sealed class CheckedRangeIterationTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(128)
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var start = BigInteger.One << 10000;
         var allocationSpan = new LythonSourceSpan(20, 5, 3, 4);
         var range = new PyRange(start,start + 1,BigInteger.One,            context.MemoryGovernor,allocationSpan);
@@ -123,5 +123,5 @@ public sealed class CheckedRangeIterationTests
         => new(new MockLythonHost(), new LythonRunOptions
         {
             CancellationToken = cancellation
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
 }

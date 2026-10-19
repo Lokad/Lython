@@ -21,7 +21,7 @@ public sealed class AsciiFieldConversionTests
              return value
             print(f"{C()!a:{spec()}}")
             """;
-        var compiled = new LythonEngine().Compile(imported ? "import helper" : source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(imported ? "import helper" : source);
         Assert.True(compiled.IsValid);
         var options = new LythonRunOptions
         {
@@ -54,7 +54,7 @@ public sealed class AsciiFieldConversionTests
             ? "x=[]\nfor i in range(1000):x.append(f'{chr(233)*32!a}')"
             : "for i in range(32):f'{chr(233)*32!a}'\nprint('done')";
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var compiled = new LythonEngine().Compile(source, budget);
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(compiled.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(retained ? 32768 : 524288) };
@@ -100,7 +100,7 @@ public sealed class AsciiFieldConversionTests
     public async Task CompatibleBindings(string name, string source, string expected)
     {
         _ = name;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {

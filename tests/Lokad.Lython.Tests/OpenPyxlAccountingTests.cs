@@ -64,7 +64,7 @@ public sealed class OpenPyxlAccountingTests
         using var stream = new MemoryStream(bytes, writable: false);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var session = NewLoadSession(archive, context, span);
         Assert.NotNull(InvokeGetPartBytes(session, "xl/styles.xml"));
@@ -82,7 +82,7 @@ public sealed class OpenPyxlAccountingTests
         using var stream = new MemoryStream(bytes, writable: false);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var session = NewLoadSession(archive, context, span);
         Assert.NotNull(InvokeGetPartBytes(session, "xl/styles.xml"));
@@ -101,7 +101,7 @@ public sealed class OpenPyxlAccountingTests
         using var stream = new MemoryStream(bytes, writable: false);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var session = NewLoadSession(archive, context, span);
         var payload = InvokeGetPartBytes(session, "xl/workbook.xml") ?? throw new InvalidOperationException("workbook part missing.");
@@ -195,7 +195,7 @@ public sealed class OpenPyxlAccountingTests
         using var stream = new MemoryStream(BuildArchive(("xl/sharedStrings.xml", xml)), writable: false);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var session = NewLoadSession(archive, context, span);
         var strings = Assert.IsAssignableFrom<IReadOnlyList<string>>(InvokeLoadSharedStrings(session, context, span));
@@ -217,7 +217,7 @@ public sealed class OpenPyxlAccountingTests
         using var stream = new MemoryStream(BuildArchive(("xl/worksheets/sheet1.xml", xml)), writable: false);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var session = NewLoadSession(archive, context, span);
         var document = InvokeLoadWorksheetCells(session, "xl/worksheets/sheet1.xml", NewWorksheet("Sheet1"), new List<string>(), context, span);
@@ -243,7 +243,7 @@ public sealed class OpenPyxlAccountingTests
         using var stream = new MemoryStream(BuildArchive(("p1.xml", first), ("p2.xml", second)), writable: false);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var session = NewLoadSession(archive, context, span);
         Assert.NotNull(InvokeLoadOptionalXmlDocument(session, "p1.xml"));
@@ -276,7 +276,7 @@ public sealed class OpenPyxlAccountingTests
         using var stream = new MemoryStream(BuildArchive(("xl/worksheets/_rels/sheet1.xml.rels", rels), ("xl/comments1.xml", comments)), writable: false);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var session = NewLoadSession(archive, context, span);
         InvokeLoadWorksheetComments(session, "xl/worksheets/sheet1.xml", NewWorksheet("Sheet1"), context, span);
@@ -301,7 +301,7 @@ public sealed class OpenPyxlAccountingTests
         var host = new MockLythonHost();
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { CancellationToken = cancellation.Token });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var session = NewLoadSession(archive, context, span);
         var failure = Assert.Throws<TargetInvocationException>(() =>
@@ -331,7 +331,7 @@ public sealed class OpenPyxlAccountingTests
         const string second = @"<dataValidation type=""whole"" operator=""between"" error=""E2""><formula1>100</formula1><sqref>A2</sqref></dataValidation>";
         var document = XDocument.Parse(@"<worksheet xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><dataValidations>" + first + second + "</dataValidations></worksheet>");
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         InvokeLoadWorksheetDataValidations(document, NewWorksheet("Sheet1"), context, span);
         // Two validations at 512 bytes plus 9 and 5 retained text bytes.
@@ -347,7 +347,7 @@ public sealed class OpenPyxlAccountingTests
         const string rule = @"<cfRule type=""cellIs"" operator=""greaterThan"" priority=""1""><formula>5</formula></cfRule>";
         var document = XDocument.Parse(@"<worksheet xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><conditionalFormatting sqref=""A1"">" + rule + "</conditionalFormatting></worksheet>");
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         InvokeLoadWorksheetConditionalFormatting(document, NewWorksheet("Sheet1"), context, span);
         var sourceRule = document.Descendants().First(e => e.Name.LocalName == "cfRule");
@@ -383,7 +383,7 @@ public sealed class OpenPyxlAccountingTests
         using var stream = new MemoryStream(BuildArchive(("xl/tables/table1.xml", table)), writable: false);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var session = NewLoadSession(archive, context, span);
         var document = XDocument.Parse(@"<worksheet xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><tableParts><tablePart r:id=""rId1"" xmlns:r=""http://schemas.openxmlformats.org/officeDocument/2006/relationships""/></tableParts></worksheet>");
@@ -415,7 +415,7 @@ public sealed class OpenPyxlAccountingTests
         using var stream = new MemoryStream(BuildArchive(("xl/drawings/_rels/drawing1.xml.rels", rels)), writable: false);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var session = NewLoadSession(archive, context, span);
         var document = XDocument.Parse(@"<worksheet xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><drawing r:id=""rId1"" xmlns:r=""http://schemas.openxmlformats.org/officeDocument/2006/relationships""/></worksheet>");
@@ -445,7 +445,7 @@ public sealed class OpenPyxlAccountingTests
         // R02: the model keeps protection auth strings; charge them with the entry.
         var document = XDocument.Parse(@"<worksheet xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><sheetProtection password=""secret"" algorithmName=""SHA-512"" hashValue=""AB"" saltValue=""CD""/></worksheet>");
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         InvokeLoadWorksheetProtection(document, NewWorksheet("Sheet1"), context, span);
         Assert.Equal(512L + 6L + 7L + 2L + 2L, context.MemoryGovernor.CurrentCommittedBytes);

@@ -21,7 +21,7 @@ public sealed class SliceAssignAccountingScenarioTests
     [Fact]
     public async Task SliceAssignDrainStaysCharged()
     {
-        var script = new LythonEngine().Compile(BuildSliceAssign);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildSliceAssign);
         Assert.True(script.IsValid);
         // Calibration: pre-fix peaks are exactly 480320 in both modes (content
         // only), so this fits; the drain-copy backstop (+480000) trips post-fix.
@@ -38,7 +38,7 @@ public sealed class SliceAssignAccountingScenarioTests
     [Fact]
     public async Task RoomySliceAssignSucceeds()
     {
-        var script = new LythonEngine().Compile(BuildSliceAssign);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildSliceAssign);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4194304) };
         var expected = new BigInteger(30000);
@@ -54,7 +54,7 @@ public sealed class SliceAssignAccountingScenarioTests
     [Fact]
     public async Task SliceAssignBehaviorStaysCompatible()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             lst = [1, 2, 3, 4]
             lst[1:3] = [20, 30, 40]

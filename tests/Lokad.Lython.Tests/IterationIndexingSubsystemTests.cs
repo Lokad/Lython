@@ -98,7 +98,7 @@ public sealed class IterationIndexingSubsystemTests
     [Fact]
     public void DictionaryMutationDuringIterationRaisesCatchableRuntimeError()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = {"a": 1}
 try:

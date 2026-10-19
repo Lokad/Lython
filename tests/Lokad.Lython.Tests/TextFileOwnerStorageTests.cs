@@ -18,7 +18,7 @@ public sealed class TextFileOwnerStorageTests
     public void ClosedShellsRemainBatchOwnedWhileRetainedHandlesStayUsable(string mode)
     {
         var host = new MockLythonHost(); host.SeedFile("/file", "");
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Cap) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Cap) },regexProvider:Utf8RegexProvider.Instance);
         var kept = Open(mode, context); kept.Exit();
         var dropped = Drop(mode, context);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -40,7 +40,7 @@ public sealed class TextFileOwnerStorageTests
     public async Task DeniedShellAdmissionPublishesNoWriterOrFile(string mode)
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Cap) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Cap) },regexProvider:Utf8RegexProvider.Instance);
         var retained = Handle.ForWrite("/retained", context); retained.Exit();
         var governor = context.MemoryGovernor;
         var committed = governor.CurrentCommittedBytes;
@@ -68,7 +68,7 @@ public sealed class TextFileOwnerStorageTests
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         if (delayed is not null) delayed.SeedFile("/file", expected + new string('y', 32768));
         else mock!.SeedFile("/file", expected + new string('y', 32768));
-        var context = new LythonRuntime.ExecutionContext((ILythonHost?)delayed ?? mock!, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Cap) });
+        var context = new LythonRuntime.ExecutionContext((ILythonHost?)delayed ?? mock!, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Cap) },regexProvider:Utf8RegexProvider.Instance);
         var handle = asynchronous ? await Handle.ForReadAsync("/file", context, LythonRuntime.TextEncodingMode.Utf8,
             LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal) : Open("r", context);
         var line = asynchronous ? await handle.ReadLineAsync(-1) : handle.ReadLine();
@@ -93,7 +93,7 @@ public sealed class TextFileOwnerStorageTests
     public async Task AsyncAppendRegistersItsShellBeforePublicationAndCloseIsIdempotent()
     {
         var host = new DelayedLythonHost(); host.SeedFile("/file", "before");
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Cap) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Cap) },regexProvider:Utf8RegexProvider.Instance);
         var handle = await Handle.ForAppendAsync("/file", context, LythonRuntime.TextEncodingMode.Utf8,
             LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal);
         handle.Write(PyString.FromString("after"));

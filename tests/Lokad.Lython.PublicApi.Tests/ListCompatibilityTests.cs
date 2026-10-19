@@ -7,7 +7,7 @@ public sealed class ListCompatibilityTests
     [Fact]
     public void SortingIsStableAndUsesSubquadraticComparisons()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from functools import cmp_to_key
 
@@ -36,7 +36,7 @@ return str(ordered[:3]) + "|" + str(copy) + "|" + str(rows)
     [Fact]
     public void ReverseSortIsStableAndExtendSelfSnapshotsSource()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 rows = [("a", 1), ("b", 1), ("c", 2)]
 ordered = sorted(rows, key=lambda row: row[1], reverse=True)
@@ -55,7 +55,7 @@ return "".join(row[0] for row in ordered) + "|" + str(items)
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 items = ["a", "b", "a", "c"]
 values = []
@@ -94,7 +94,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = []
 try:
@@ -127,7 +127,7 @@ __lython_file.close()
     public void SequenceIndexTypes_ReportPythonShapedTexts()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque, namedtuple
 
@@ -186,7 +186,7 @@ __lython_file.close()
     public void SequenceIndexOutOfRange_ReportPythonShapedTexts()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from collections import deque
 
@@ -253,7 +253,7 @@ __lython_file.close()
     public void BytesIndexFailures_ReportPythonShapedTexts()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 try:
@@ -295,7 +295,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 items = [0] * 3
 left = 2 * [1, 2]
@@ -319,7 +319,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 items = [0, 1, 2, 3, 4]
 items[1:3] = ["a", "b", "c"]
@@ -349,7 +349,7 @@ __lython_file.close()
     [Fact]
     public void ListSliceAssignment_RejectsMismatchedExtendedSliceLength()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 replacement = []
 replacement.append(9)
@@ -369,7 +369,7 @@ items[::2] = replacement
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 rows = [(2, "b"), (1, "a"), (2, "a")]
 values = []
@@ -392,7 +392,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 a = [3, 1, 2]
 a.insert("0", 1)
@@ -431,7 +431,7 @@ __lython_file.close()
     [Fact]
     public void RepetitionAcceptsBooleansAsCounts()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 results = [str([1, 2] * False), str([1, 2] * True), str(2 * True), str("ab" * True), str([1, 2] * 2)]
 return "|".join(results)
@@ -444,7 +444,7 @@ return "|".join(results)
     [Fact]
     public void ElementIndexingAcceptsBooleans()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 items = [10, 20, 30]
 first = items[False]
@@ -460,7 +460,7 @@ return str(first) + "|" + str(second) + "|" + str(popped) + "|" + str(items)
     [Fact]
     public void OversizedIntegersWorkLazilyButRepetitionFailsExplicitly()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 big = 10**10000
 digits = len(str(big))
@@ -482,7 +482,7 @@ return "|".join([str(digits), str(indexed), outcome])
     public async Task SequenceComparisonDundersAdvanceLikeCpython()
     {
         // list slots take lists only and tuple slots take tuple-likes (namedtuples included), computing through the shared recursive cores and declining everything else with NotImplemented on every dunder, ordering included, exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 def call2(f, a, b):
     return f(a, b)
 results = []
@@ -606,7 +606,7 @@ return results
     public async Task SequenceReversedDundersAdvanceLikeCpython()
     {
         // list, deque and range __reversed__ members build the same iterators as the reversed builtin, exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 def call1(f, a):
     return f(a)
 results = []

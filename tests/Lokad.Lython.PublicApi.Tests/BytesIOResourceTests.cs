@@ -53,14 +53,14 @@ public sealed class BytesIOResourceTests
     [InlineData("readinto")]
     public void UnsupportedBufferExportsFailAtTheKnownSurface(string name)
     {
-        var script = new LythonEngine().Compile("import io\ns=io.BytesIO()\ns." + name + "()");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import io\ns=io.BytesIO()\ns." + name + "()");
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, d => d.Message.Contains(name, StringComparison.Ordinal));
     }
 
     private static LythonCompiledScript Compile(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
         return script;
     }

@@ -75,7 +75,7 @@ public sealed class HostStaleStatScenarioTests
     [Fact]
     public async Task GrownTextReadFailsClosed()
     {
-        var script = new LythonEngine().Compile("return len(open(\"/data.txt\").read())\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(open(\"/data.txt\").read())\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var host = new StaleStatHost();
@@ -96,7 +96,7 @@ public sealed class HostStaleStatScenarioTests
     [Fact]
     public async Task GrownBinaryReadFailsClosed()
     {
-        var script = new LythonEngine().Compile("import filecmp\nreturn filecmp.cmp(\"/a.bin\", \"/b.bin\", shallow=False)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import filecmp\nreturn filecmp.cmp(\"/a.bin\", \"/b.bin\", shallow=False)\n");
         Assert.True(script.IsValid);
         var payload = new byte[1000000];
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
@@ -120,7 +120,7 @@ public sealed class HostStaleStatScenarioTests
     [Fact]
     public async Task HonestStatReadsFunded()
     {
-        var script = new LythonEngine().Compile("return len(open(\"/data.txt\").read())\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(open(\"/data.txt\").read())\n");
         Assert.True(script.IsValid);
         var expected = new BigInteger(1000);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
@@ -140,7 +140,7 @@ public sealed class HostStaleStatScenarioTests
     [Fact]
     public async Task DelayedReadsReallySuspend()
     {
-        var script = new LythonEngine().Compile("return len(open(\"/data.txt\").read())\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(open(\"/data.txt\").read())\n");
         Assert.True(script.IsValid);
         var host = new DelayedLythonHost();
         host.SeedFile("/data.txt", new string('y', 1000));

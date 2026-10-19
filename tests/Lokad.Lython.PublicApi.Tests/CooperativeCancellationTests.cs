@@ -24,7 +24,7 @@ public sealed class CooperativeCancellationTests
     [MemberData(nameof(PureLoops))]
     public async Task ActiveCancellationStopsPureLoopsWithNormalLimits(bool asynchronous, string loop)
     {
-        using var script = new LythonEngine().Compile("print('started')\n" + loop);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('started')\n" + loop);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
         using var cancellation = new CancellationTokenSource();
         var entered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);

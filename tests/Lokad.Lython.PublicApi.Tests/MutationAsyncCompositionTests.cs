@@ -25,7 +25,7 @@ public sealed class MutationAsyncCompositionTests
 
     private static async Task AssertAsyncMatchesSync(string source, object? expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(SeedSyncHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -241,7 +241,7 @@ public sealed class MutationAsyncCompositionTests
     public async Task NamedTupleInvalidFieldNamesRejectInBothModes()
     {
         const string source = "from collections import namedtuple\nwith open(\"/r.txt\") as f:\n    return namedtuple(\"T\", (l for l in f))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var sync = script.Run(SeedSyncHost());
         Assert.False(sync.Success);
@@ -264,7 +264,7 @@ public sealed class MutationAsyncCompositionTests
     [InlineData("from collections import namedtuple\nwith open(\"/r.txt\") as f:\n    return namedtuple(\"T\", (l for l in f), rename=True)\n")]
     public void SyncRunsFailFastWithRunAsyncGuidance(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var result = script.Run(SeedDelayedHost());
         Assert.False(result.Success);

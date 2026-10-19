@@ -19,7 +19,7 @@ public sealed class ZipBinaryFormatTests
     public void EmptyArchiveSerializesValidRecords()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
 with zipfile.ZipFile("/empty.zip", "w") as archive:
@@ -53,7 +53,7 @@ return 1
     private static readonly LythonSourceSpan TestSpan = new(0, 0, 0, 0);
 
     private static LythonRuntime.ExecutionContext NewContext(MockLythonHost host)
-        => new(host, new LythonRunOptions());
+        => new(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
 
     private static ZipRecordWriter.StagedEntry StoredEntry(
         string name, byte[] data, ushort method = 0, int level = -1, bool forceZip64 = false)

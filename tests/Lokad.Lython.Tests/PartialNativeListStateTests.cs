@@ -23,7 +23,7 @@ public sealed class PartialNativeListStateTests
     [InlineData(true, true, 20)]
     public async Task FailedConstructionRefundsOnlyItsPrivatePrefix(bool asynchronous, bool cleanupFailure, int count)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var alias = PyString.FromString("held");
         var held = new PyList([alias], context.MemoryGovernor);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -46,7 +46,7 @@ public sealed class PartialNativeListStateTests
     [InlineData(true)]
     public async Task DeniedPrefixGrowthRefundsOnlyUnpublishedListStorage(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var source = new AdmissionDeniedSource(context);
         var list = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["list"]);
@@ -72,14 +72,14 @@ public sealed class PartialNativeListStateTests
     [InlineData(true, 20)]
     public async Task ConstructionPreservesItsPrefixAcrossGeneratorReentry(bool asynchronous, int count)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         context.Variables.Clear();
         var probe = new PrefixProbe();
         context.Variables["probe"] = probe;
         context.Variables["list"] = context.State.BuiltinVariables["list"];
         context.Variables["range"] = context.State.BuiltinVariables["range"];
         var source = $"def values():\n    yield 'x' * 16000\n    for i in range({count - 1}):\n        yield i\n    probe()\n    yield None\nreturn list(values())\n";
-        var parsed = LythonFrontend.Compile(source);
+        var parsed = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.Empty(parsed.Diagnostics);
         var code = ExecutableScript.Compile(LoweredScript.Lower(parsed.Script!));
         var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)

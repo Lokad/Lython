@@ -12,7 +12,7 @@ public sealed class NamedTupleAccountingScenarioTests
     [Fact]
     public async Task ManyNamedtupleInstancesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from collections import namedtuple
             P = namedtuple("P", ["x", "y"])
@@ -37,7 +37,7 @@ public sealed class NamedTupleAccountingScenarioTests
     [Fact]
     public async Task NamedTupleConstructionStillProjects()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from collections import namedtuple
             P = namedtuple("P", ["x", "y"])

@@ -15,7 +15,7 @@ public sealed class StrictDeflateDifferentialTests
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
     private static LythonRuntime.ExecutionContext Ctx(MockLythonHost host)
-        => new(host, new LythonRunOptions());
+        => new(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
 
     private static byte[] Sample(int kind, int length)
     {

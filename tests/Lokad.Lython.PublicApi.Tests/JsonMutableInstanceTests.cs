@@ -7,7 +7,7 @@ public sealed class JsonMutableInstanceTests
     [Fact]
     public async Task EncoderWritesControlSubsequentOperationsAndSnapshotIterators()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import json
             e = json.JSONEncoder()
             e.ensure_ascii = False
@@ -50,7 +50,7 @@ public sealed class JsonMutableInstanceTests
     [Fact]
     public async Task DecoderAttributesRemainWritableWhileScannerCapturesConstructionOptions()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import json
             class D(json.JSONDecoder):
                 pass

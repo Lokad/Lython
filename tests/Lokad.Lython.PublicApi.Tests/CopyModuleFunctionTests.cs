@@ -7,7 +7,7 @@ public sealed class CopyModuleFunctionTests
     [Fact]
     public void CopyModule_DeepCopyReusesUnchangedTuples()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import copy
 
@@ -28,7 +28,7 @@ print(mutable_copy is mutable, mutable_copy[0] is mutable[0])
     public void CopyModule_Functions_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import copy
 
@@ -74,7 +74,7 @@ __lython_file.close()
     public void CopyModule_ExpandedSurface_HasDirectCoverage()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import copy
 from collections import namedtuple
@@ -170,7 +170,7 @@ __lython_file.close()
     [Fact]
     public void CopyModule_StaticContractsCoverExpandedSurface()
     {
-        var valid = new LythonEngine().Run(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import copy
 
@@ -187,7 +187,7 @@ copy.replace(items, obj=1)
         Assert.Equal("TypeError", valid.Failure?.ExceptionType);
         Assert.Contains("copy.replace", valid.Failure?.Message, StringComparison.Ordinal);
 
-        var invalid = new LythonEngine().Run(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import copy
 from dataclasses import dataclass, field
@@ -256,7 +256,7 @@ copy.replace(1, x=2)
         "dataclass")]
     public void CopyModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);

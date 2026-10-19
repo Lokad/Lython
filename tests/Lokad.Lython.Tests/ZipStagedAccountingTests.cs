@@ -26,11 +26,11 @@ public sealed class ZipStagedAccountingTests
         // so retaining closed handles cannot accumulate uncharged storage.
         const string script = "import zipfile\npayload = bytes(32768)\nhandles = []\nfor i in range(20):\n    z = zipfile.ZipFile(\"/a\" + str(i) + \".zip\", \"w\")\n    z.writestr(\"x\", payload)\n    z.close()\n    handles.append(z)\nwith zipfile.ZipFile(\"/a0.zip\") as archive:\n    return [len(handles), archive.read(\"x\") == payload]\n";
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
-        var sync = new LythonEngine().Run(script, new MockLythonHost(), options);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new List<object?> { new BigInteger(20), true }, Assert.IsType<List<object?>>(sync.ReturnValue));
 
-        var asyncResult = await new LythonEngine().RunAsync(script, new MockLythonHost(), options);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(script, new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(new List<object?> { new BigInteger(20), true }, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
@@ -42,7 +42,7 @@ public sealed class ZipStagedAccountingTests
         var host = new MockLythonHost();
         host.FailNextWriteBytes("/out.zip", "disk is full");
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) };
-        var result = new LythonEngine().Run(script, host, options);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(script, host, options);
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
         Assert.Contains("memory budget exceeded", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
@@ -52,7 +52,7 @@ public sealed class ZipStagedAccountingTests
     public async Task StoredReadRespectsMemoryBudget()
     {
         var seed = new MockLythonHost();
-        var built = new LythonEngine().Run("import zipfile\nwith zipfile.ZipFile(\"/t.zip\", \"w\") as archive:\n    archive.writestr(\"x\", bytes(32768), zipfile.ZIP_STORED)\nreturn 1\n", seed);
+        var built = new LythonEngine(Utf8RegexProvider.Instance).Run("import zipfile\nwith zipfile.ZipFile(\"/t.zip\", \"w\") as archive:\n    archive.writestr(\"x\", bytes(32768), zipfile.ZIP_STORED)\nreturn 1\n", seed);
         Assert.True(built.Success, built.Failure?.Message);
         var archive = seed.ReadBytes("/t.zip");
 
@@ -60,13 +60,13 @@ public sealed class ZipStagedAccountingTests
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2048) };
         var syncHost = new MockLythonHost();
         syncHost.SeedBytes("/t.zip", archive);
-        var sync = new LythonEngine().Run(script, syncHost, options);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost, options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
         var asyncHost = new MockLythonHost();
         asyncHost.SeedBytes("/t.zip", archive);
-        var asyncResult = await new LythonEngine().RunAsync(script, asyncHost, options);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(script, asyncHost, options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
@@ -75,7 +75,7 @@ public sealed class ZipStagedAccountingTests
     public async Task DeflatedReadRespectsMemoryBudget()
     {
         var seed = new MockLythonHost();
-        var built = new LythonEngine().Run("import zipfile\nwith zipfile.ZipFile(\"/t.zip\", \"w\") as archive:\n    archive.writestr(\"x\", bytes(32768), zipfile.ZIP_DEFLATED)\nreturn 1\n", seed);
+        var built = new LythonEngine(Utf8RegexProvider.Instance).Run("import zipfile\nwith zipfile.ZipFile(\"/t.zip\", \"w\") as archive:\n    archive.writestr(\"x\", bytes(32768), zipfile.ZIP_DEFLATED)\nreturn 1\n", seed);
         Assert.True(built.Success, built.Failure?.Message);
         var archive = seed.ReadBytes("/t.zip");
 
@@ -83,13 +83,13 @@ public sealed class ZipStagedAccountingTests
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2048) };
         var syncHost = new MockLythonHost();
         syncHost.SeedBytes("/t.zip", archive);
-        var sync = new LythonEngine().Run(script, syncHost, options);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost, options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
         var asyncHost = new MockLythonHost();
         asyncHost.SeedBytes("/t.zip", archive);
-        var asyncResult = await new LythonEngine().RunAsync(script, asyncHost, options);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(script, asyncHost, options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
@@ -97,7 +97,7 @@ public sealed class ZipStagedAccountingTests
     private static byte[] ManyMemberArchive(int members)
     {
         var seed = new MockLythonHost();
-        var built = new LythonEngine().Run("import zipfile\nwith zipfile.ZipFile(\"/t.zip\", \"w\") as archive:\n    for i in range(" + members + "):\n        archive.writestr(\"f\" + str(i), b\"\")\nreturn 1\n", seed);
+        var built = new LythonEngine(Utf8RegexProvider.Instance).Run("import zipfile\nwith zipfile.ZipFile(\"/t.zip\", \"w\") as archive:\n    for i in range(" + members + "):\n        archive.writestr(\"f\" + str(i), b\"\")\nreturn 1\n", seed);
         Assert.True(built.Success, built.Failure?.Message);
         return seed.ReadBytes("/t.zip");
     }
@@ -117,7 +117,7 @@ public sealed class ZipStagedAccountingTests
 
     private static LythonRuntime.ExecutionContext NewContext(MockLythonHost host)
     {
-        return new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        return new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
     }
 
     [Fact]
@@ -158,13 +158,13 @@ public sealed class ZipStagedAccountingTests
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var syncHost = new MockLythonHost();
         syncHost.SeedBytes("/t.zip", ManyMemberArchive(200));
-        var sync = new LythonEngine().Run(script, syncHost, options);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost, options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(30, Assert.IsType<List<object?>>(sync.ReturnValue).Count);
 
         var asyncHost = new DelayedLythonHost("/");
         asyncHost.SeedBytes("/t.zip", ManyMemberArchive(200));
-        var asyncResult = await new LythonEngine().RunAsync(script, asyncHost, options);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(script, asyncHost, options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(30, Assert.IsType<List<object?>>(asyncResult.ReturnValue).Count);
     }
@@ -179,13 +179,13 @@ public sealed class ZipStagedAccountingTests
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(153600) };
         var syncHost = new MockLythonHost();
         syncHost.SeedBytes("/t.zip", archive);
-        var sync = new LythonEngine().Run(script, syncHost, options);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost, options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new List<object?> { new BigInteger(10), false }, Assert.IsType<List<object?>>(sync.ReturnValue));
 
         var asyncHost = new DelayedLythonHost("/");
         asyncHost.SeedBytes("/t.zip", archive);
-        var asyncResult = await new LythonEngine().RunAsync(script, asyncHost, options);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(script, asyncHost, options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(new List<object?> { new BigInteger(10), false }, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
@@ -197,11 +197,11 @@ public sealed class ZipStagedAccountingTests
         // cannot hide 640KiB of staged storage inside a 512KiB budget.
         const string script = "import zipfile\npayload = bytes(32768)\nhandles = []\nwith zipfile.ZipFile(\"/out.zip\", \"w\", compression=zipfile.ZIP_DEFLATED) as archive:\n    for i in range(20):\n        handle = archive.open(\"x\" + str(i), \"w\")\n        handle.write(payload)\n        handle.close()\n        handles.append(handle)\nreturn len(handles)\n";
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
-        var sync = new LythonEngine().Run(script, new MockLythonHost(), options);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
-        var asyncResult = await new LythonEngine().RunAsync(script, new MockLythonHost(), options);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(script, new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
@@ -214,11 +214,11 @@ public sealed class ZipStagedAccountingTests
         // staged storage against the memory budget.
         const string script = "import zipfile\nwith zipfile.ZipFile(\"/t.zip\", \"w\") as archive:\n    for i in range(2000):\n        archive.writestr(\"f\" + str(i), b\"\")\nreturn 1\n";
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
-        var sync = new LythonEngine().Run(script, new MockLythonHost(), options);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
-        var asyncResult = await new LythonEngine().RunAsync(script, new MockLythonHost(), options);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(script, new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
@@ -233,12 +233,12 @@ public sealed class ZipStagedAccountingTests
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         var options = new LythonRunOptions { CancellationToken = cancellation.Token };
-        var sync = new LythonEngine().Run(script, new MockLythonHost(), options);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("RuntimeError", sync.Failure?.ExceptionType);
         Assert.Contains("execution canceled", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
 
-        var asyncResult = await new LythonEngine().RunAsync(script, new MockLythonHost(), options);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(script, new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
         Assert.Contains("execution canceled", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
@@ -271,7 +271,7 @@ public sealed class ZipStagedAccountingTests
         var data = new byte[200000];
         new Random(42).NextBytes(data);
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(700000) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(700000) },regexProvider:Utf8RegexProvider.Instance);
         var failure = Assert.Throws<TargetInvocationException>(() => InvokeSerializeArchive(data, context));
         Assert.Equal("LythonRuntimeException", failure.InnerException?.GetType().Name);
         Assert.Contains("memory budget exceeded", failure.InnerException?.Message ?? string.Empty, StringComparison.Ordinal);

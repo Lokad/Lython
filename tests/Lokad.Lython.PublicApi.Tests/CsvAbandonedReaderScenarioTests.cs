@@ -12,7 +12,7 @@ public sealed class CsvAbandonedReaderScenarioTests
     [Fact]
     public async Task AbandonedScansStayUsable()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             lines = ["a,b,c,d"] * 2000
             i = 0

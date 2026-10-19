@@ -7,7 +7,7 @@ public sealed class SuperDescriptorParityTests
     [Fact]
     public async Task InstanceClassAndPropertySuperKeepTheDefiningClass()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class Base:
              def method(self):return 3
              @classmethod
@@ -35,7 +35,7 @@ public sealed class SuperDescriptorParityTests
     [Fact]
     public async Task ExplicitDescriptorsKeepAnchorReceiverAndBoundType()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class Base:
              def method(self):return 3
              @classmethod

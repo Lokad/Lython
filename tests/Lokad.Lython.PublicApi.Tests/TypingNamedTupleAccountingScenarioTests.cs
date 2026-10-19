@@ -12,7 +12,7 @@ public sealed class TypingNamedTupleAccountingScenarioTests
     [Fact]
     public async Task ManyTypingNamedTupleInstancesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from typing import NamedTuple
             P = NamedTuple("P", [("x", int), ("y", int)])
@@ -37,7 +37,7 @@ public sealed class TypingNamedTupleAccountingScenarioTests
     [Fact]
     public async Task TypingNamedTupleConstructionStillProjects()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from typing import NamedTuple
             P = NamedTuple("P", [("x", int), ("y", int)])

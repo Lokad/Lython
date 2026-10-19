@@ -61,7 +61,7 @@ return "|".join([
     [Fact]
     public void OptionalValuesRefineAcrossShortCircuitAndBranchConditions()
     {
-        var compiled = new LythonEngine().Compile(CompatibilitySource);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(CompatibilitySource);
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(d => $"{d.Code}: {d.Message}")));
 
         var result = compiled.Run(new MockLythonHost());
@@ -72,7 +72,7 @@ return "|".join([
     [Fact]
     public async Task RunAsync_UsesTheSameGuardedProgram()
     {
-        var result = await new LythonEngine().RunAsync(CompatibilitySource, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(CompatibilitySource, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal("True|True|False|True|None|3|0|3|0|3|3|3", result.ReturnValue);
@@ -81,7 +81,7 @@ return "|".join([
     [Fact]
     public void NestedLogicalConditionsPropagateOnlySoundCommonFacts()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 def inspect(flag):
     value = None
@@ -108,7 +108,7 @@ while never is not None:
     [Fact]
     public void UnsafeShortCircuitOrderingsRemainDiagnosed()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 none_value = None
 bad_or = none_value is not None or none_value[0] == 1

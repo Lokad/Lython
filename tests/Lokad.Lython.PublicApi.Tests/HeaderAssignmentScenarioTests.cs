@@ -11,7 +11,7 @@ public sealed class HeaderAssignmentScenarioTests
     [InlineData("with Manager(1) as receiver()[index()]:\n    pass\nwith Manager(2) as receiver()[index()]:\n    pass\n")]
     public async Task SubscriptTargetsAwaitReceiversIndicesAndGuestSetters(string header)
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             events=[]
             def effect(label):
                 with open('data.txt') as f:
@@ -49,7 +49,7 @@ public sealed class HeaderAssignmentScenarioTests
     [Fact]
     public async Task AttributeTargetsAwaitPropertySetters()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class Box:
                 @property
                 def value(self):
@@ -74,7 +74,7 @@ public sealed class HeaderAssignmentScenarioTests
     [Fact]
     public async Task FailedWithTargetAwaitsExitBeforeHandler()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             events=[]
             class Manager:
                 def __enter__(self):
@@ -130,7 +130,7 @@ public sealed class HeaderAssignmentScenarioTests
             box=Box()
             """ + "\ntry:\n" + string.Join("\n", header.Split('\n').Select(line => "    " + line)) +
             "\nexcept MemoryError:print('denied')\nprint(len((None,)*2048))\n";
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
         // The setter's required storage alone exceeds the small budget. The
         // funded case includes overlap and a later small allocation, without

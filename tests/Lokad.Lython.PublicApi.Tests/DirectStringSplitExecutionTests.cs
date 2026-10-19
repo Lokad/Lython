@@ -47,7 +47,7 @@ public sealed class DirectStringSplitExecutionTests
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         var input = new string('x', 32768) + "," + new string('y', 32768) + ",tail";
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["text"] = input } };
-        using (var script = new LythonEngine().Compile("class Count:\n def __index__(self):return 1\nreturn text.split(',',Count())", budget))
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("class Count:\n def __index__(self):return 1\nreturn text.split(',',Count())", budget))
         {
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;
@@ -73,7 +73,7 @@ public sealed class DirectStringSplitExecutionTests
     [MemberData(nameof(Cases))]
     public async Task OrdinaryAndGeneralCallsFollowPython(string name, string source, string expected)
     {
-        using var compiled = new LythonEngine().Compile(source);
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, name + ": " + string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var asynchronous in new[] { false, true })
         {

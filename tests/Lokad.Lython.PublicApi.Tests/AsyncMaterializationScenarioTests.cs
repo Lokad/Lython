@@ -12,7 +12,7 @@ public sealed class AsyncMaterializationScenarioTests
     [Fact]
     public async Task AsyncListRejectsBeforeLargeCopy()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return list(range(10000))
             """);
@@ -27,7 +27,7 @@ public sealed class AsyncMaterializationScenarioTests
     [Fact]
     public async Task AsyncTupleRejectsBeforeLargeCopy()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return tuple(range(10000))
             """);
@@ -42,7 +42,7 @@ public sealed class AsyncMaterializationScenarioTests
     [Fact]
     public async Task AsyncSortedRejectsBeforeLargeCopy()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return sorted(range(10000), reverse=True)
             """);
@@ -57,7 +57,7 @@ public sealed class AsyncMaterializationScenarioTests
     [Fact]
     public async Task AsyncSortedGeneratorInputOrdersCorrectly()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return sorted(x * x for x in range(10))
             """);
@@ -74,7 +74,7 @@ public sealed class AsyncMaterializationScenarioTests
     [Fact]
     public async Task AsyncStarmapAppliesFunction()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import itertools
             return list(itertools.starmap(pow, [(2, 10), (3, 3)]))

@@ -15,7 +15,7 @@ public sealed class FunctionScenarioTests
             host.SeedFile(file.Key, file.Value);
         }
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);

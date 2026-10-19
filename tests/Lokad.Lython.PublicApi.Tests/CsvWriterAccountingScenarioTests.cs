@@ -12,7 +12,7 @@ public sealed class CsvWriterAccountingScenarioTests
     [Fact]
     public async Task FileBackedWriterDropsRowHistory()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             handle = open("/out.csv", "w")
@@ -42,7 +42,7 @@ public sealed class CsvWriterAccountingScenarioTests
     [Fact]
     public async Task InMemoryHistoryIsCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             writer = csv.writer()
@@ -69,7 +69,7 @@ public sealed class CsvWriterAccountingScenarioTests
         // MG21: file-backed output buffers through governed byte builders, so
         // a large buffered document trips a small budget instead of growing
         // uncharged behind the streaming writes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             handle = open("/out.csv", "w")
             writer = csv.writer(handle)
@@ -95,7 +95,7 @@ public sealed class CsvWriterAccountingScenarioTests
     [Fact]
     public async Task FundedFileBackedWriterowsStreamsFully()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             handle = open("/out.csv", "w")
             writer = csv.writer(handle)
@@ -122,7 +122,7 @@ public sealed class CsvWriterAccountingScenarioTests
     [Fact]
     public async Task QuotedFieldsRenderExactly()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             writer = csv.writer()
@@ -142,7 +142,7 @@ public sealed class CsvWriterAccountingScenarioTests
     [Fact]
     public async Task FailedHostWriteSurfacesExplicitly()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             handle = open("/out.csv", "w")
@@ -171,7 +171,7 @@ public sealed class CsvWriterAccountingScenarioTests
     {
         // MG02: a single oversized field meets its render reservation before
         // the buffer is built, instead of materializing uncharged.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             writer = csv.writer()
@@ -196,7 +196,7 @@ public sealed class CsvWriterAccountingScenarioTests
         // MG02: a conversion failure happens during row conversion, before
         // any history or output effect, so both writers stay usable and the
         // failed row leaves nothing behind.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             f = open("/out.csv", "w")
             w = csv.writer(f)
@@ -235,7 +235,7 @@ public sealed class CsvWriterAccountingScenarioTests
         // bytes. The failure persists past the explicit close, so the end-of-run
         // retry fails too and publishes nothing; clearing it lets a later run on
         // the same host write normally.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             handle = open("/out.csv", "w")
             writer = csv.writer(handle)
@@ -275,7 +275,7 @@ public sealed class CsvWriterAccountingScenarioTests
         // Cancel at a host gate after two rows have been staged. A delayed
         // timer continuation can otherwise arrive after a fast scan finishes.
         // Exercise both execution modes and preserve the publication boundary.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             handle = open("/out.csv", "w")
             writer = csv.writer(handle)
@@ -371,7 +371,7 @@ public sealed class CsvWriterAccountingScenarioTests
         // MG02: writerows is not transactional: rows streamed before a
         // mid-operation conversion failure stay streamed (file-backed) and
         // retained (in-memory) instead of rolling back.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             f = open("/out.csv", "w")
             w = csv.writer(f)
@@ -407,7 +407,7 @@ public sealed class CsvWriterAccountingScenarioTests
         // MG02: an escaping getvalue() result commits durable ownership, so
         // retaining repeated results accumulates charges and trips instead of
         // growing uncharged behind a released scratch reservation.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             w = csv.writer()
             i = 0

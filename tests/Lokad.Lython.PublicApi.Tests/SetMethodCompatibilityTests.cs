@@ -39,7 +39,7 @@ return "|".join([
     [Fact]
     public void NonMutatingSetMethods_AcceptOrdinaryIterablesAndPreserveReceiver()
     {
-        var result = new LythonEngine().Run(NonMutatingSource, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(NonMutatingSource, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(
@@ -50,7 +50,7 @@ return "|".join([
     [Fact]
     public void MutatingSetMethods_SharePythonUpdateAndPopSemantics()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 items = {1, 2, 3}
 results = []
@@ -79,7 +79,7 @@ return "|".join([
     [Fact]
     public void SetPredicatesAndIntersection_StopWhenTheAnswerIsKnown()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 intersection_items = iter([1, 9])
 subset_items = iter([1, 9])
@@ -105,7 +105,7 @@ return "|".join([
     [Fact]
     public async Task RunAsync_SetMethodsUseTheSameCompatibilitySurface()
     {
-        var result = await new LythonEngine().RunAsync(NonMutatingSource, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(NonMutatingSource, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(
@@ -151,12 +151,12 @@ except TypeError as e:
 return "|".join(vals)
 """;
 
-        var sync = new LythonEngine().Run(source, new MockLythonHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         const string expected = "['a']|['a', 'b', 'c']|['b']|['b', 'c']|['a']|['c']|['a']|['a', 'b', 'c']|['b']|[('a', 1)]|[('a', 1), ('b', 2), ('c', 3)]|[('b', 2)]|True|True|True|True|True|True|False|False|True|unsupported operand type(s) for &: 'dict_values' and 'set'|'int' object is not iterable";
         Assert.Equal(expected, sync.ReturnValue);
 
-        var asyncResult = await new LythonEngine().RunAsync(source, new MockLythonHost());
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
@@ -184,11 +184,11 @@ return "|".join(vals)
 
         const string expected = "True|False|False|True|True|False|True|True|True|True|False|False";
 
-        var sync = new LythonEngine().Run(source, new MockLythonHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
 
-        var asyncResult = await new LythonEngine().RunAsync(source, new MockLythonHost());
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
@@ -212,7 +212,7 @@ return "|".join(vals)
     [InlineData("def f(p):\n return set(p)\nf([{}])\n", "unhashable type: 'dict'")]
     public void InvalidSetMethodOperandsAndCalls_FailExplicitly(string source, string expectedFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         var message = result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message));
@@ -222,7 +222,7 @@ return "|".join(vals)
     [Fact]
     public void PopFromEmptySet_RaisesKeyError()
     {
-        var result = new LythonEngine().Run("return set().pop()\n", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return set().pop()\n", new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -280,7 +280,7 @@ return "|".join(vals)
     [Fact]
     public void SetOperatorDundersAdvanceLikeCpython()
     {
-        var result = new LythonEngine().Run(OperatorDundersSource, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(OperatorDundersSource, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(
@@ -321,7 +321,7 @@ return "|".join(vals)
     [Fact]
     public async Task RunAsync_SetOperatorDundersUseTheSameSurface()
     {
-        var result = await new LythonEngine().RunAsync(OperatorDundersSource, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(OperatorDundersSource, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(
@@ -438,7 +438,7 @@ return "|".join(vals)
     [Fact]
     public void DictViewOperatorDundersAdvanceLikeCpython()
     {
-        var result = new LythonEngine().Run(DictViewOperatorDundersSource, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(DictViewOperatorDundersSource, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(
@@ -461,7 +461,7 @@ return "|".join(vals)
     [Fact]
     public async Task RunAsync_DictViewOperatorDundersUseTheSameSurface()
     {
-        var result = await new LythonEngine().RunAsync(DictViewOperatorDundersSource, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(DictViewOperatorDundersSource, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(
@@ -484,7 +484,7 @@ return "|".join(vals)
     public async Task DictSetComparisonDundersAdvanceLikeCpython()
     {
         // dict __eq__/__ne__ take mappings only while ordering always declines, set dunders take sets only with subset semantics, and view __eq__/__ne__ take sets or views only, all through the shared cores exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 from collections import defaultdict, Counter
 def call2(f, a, b):
     return f(a, b)
@@ -627,7 +627,7 @@ return results
     public async Task DictViewSubsetDundersAdvanceLikeCpython()
     {
         // dict key/item views take sets or views only for subset ordering through the shared set core, declining everything else with NotImplemented, exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 d = {1: 2, 3: 4}
 k = d.keys()
 def call2(f, a, b):
@@ -706,7 +706,7 @@ return results
         // (declining non-iterables, unlike C dict views) and take sets or
         // views for equality and subset ordering, all through the shared
         // set core exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 from collections import ChainMap
 def call2(f, a, b):
     return f(a, b)
@@ -923,7 +923,7 @@ return results
     {
         // Dict key/item/value views build governed reverse iterators with
         // the shared size-change discipline, exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 def call1(f, a):
     return f(a)
 results = []

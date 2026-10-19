@@ -36,6 +36,14 @@ internal sealed class MemoryGovernor
     // even if guest exception handling or cleanup replaces the thrown error.
     internal LythonRuntimeException? AdmissionFailure { get; private set; }
 
+    internal LythonRuntimeException RefuseAdmission(string message, long? requestedBytes, LythonSourceSpan? span)
+    {
+        if (AdmissionFailure is { } first) return first;
+        LastDeniedReservationBytes = requestedBytes ?? 0;
+        return AdmissionFailure = RuntimeErrors.Attributed("MemoryError", message, span,
+            LythonFailureReason.SharedMemoryAllowance, observed: CurrentAccountedBytes, requested: requestedBytes);
+    }
+
     internal void ThrowIfAdmissionFailed()
     {
         if (AdmissionFailure is { } failure) throw failure;

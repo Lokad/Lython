@@ -36,7 +36,7 @@ public sealed class MethodDefinitionHostBoundaryTests
     [InlineData(true)]
     public async Task MethodDefinitionAndBodyPreserveOrderThroughActualHostReads(bool asynchronous)
     {
-        var compiled = new LythonEngine().Compile(Source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         LythonExecutionResult result;
         if (asynchronous)
@@ -68,7 +68,7 @@ public sealed class MethodDefinitionHostBoundaryTests
     [InlineData("body")]
     public async Task CancellationDuringEveryDefinitionPhaseLeavesTheScriptReusable(string pausedPhase)
     {
-        var compiled = new LythonEngine().Compile(Source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source);
         Assert.True(compiled.IsValid);
         var host = Seed(new DelayedLythonHost());
         var started = host.PauseReadUntilCancellation("/" + pausedPhase);

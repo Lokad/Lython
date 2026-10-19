@@ -44,7 +44,7 @@ public sealed class CompiledGeneratorExpressionTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var operation = Assert.Single(Compile("result=(i for i in source)").Constants.OfType<ExecutableCreateGeneratorExpression>());
         var outer = new PausedOuter();
         var generator = await LythonRuntime.PyGenerator.CreateExpressionAsync(operation.CodeObject, context,
@@ -108,7 +108,7 @@ public sealed class CompiledGeneratorExpressionTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner});
+        { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var operation = Assert.Single(Compile("result=(i for i in source)").Constants.OfType<ExecutableCreateGeneratorExpression>());
         var governor = context.MemoryGovernor;
         var fill = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
@@ -130,7 +130,7 @@ public sealed class CompiledGeneratorExpressionTests
 
     private static ExecutableCodeObject Compile(string source)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(frontend.Script);
         return ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
     }

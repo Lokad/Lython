@@ -12,7 +12,7 @@ public sealed class DecimalEngineeringAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedEngineeringStringsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             a = decimal.Decimal("1.23456789")
@@ -37,7 +37,7 @@ public sealed class DecimalEngineeringAccountingScenarioTests
     [Fact]
     public async Task EngineeringBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             checks = [decimal.Decimal("1.5").to_eng_string() == "1.5"]

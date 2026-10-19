@@ -30,7 +30,7 @@ public sealed class StringStripCallTests
     public async Task StripPreservesWhitespaceBindingIdentityAndFallback(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -50,7 +50,7 @@ public sealed class StringStripCallTests
     public async Task DynamicGetterCanSuspendBeforeInvocation()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(YieldingGetter, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(YieldingGetter, budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/events.txt", "");
@@ -68,7 +68,7 @@ public sealed class StringStripCallTests
     public async Task CancelledGetterDrainsBeforeAllowanceReturns()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(YieldingGetter, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(YieldingGetter, budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/events.txt", "before");
@@ -100,7 +100,7 @@ public sealed class StringStripCallTests
     public async Task RetainedTrimmedStorageRemainsFunded()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("text=' '*1024+'x'*4096+' '*1024\nvalue=text.strip()\ntext=None\nreturn value", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("text=' '*1024+'x'*4096+' '*1024\nvalue=text.strip()\ntext=None\nreturn value", budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {

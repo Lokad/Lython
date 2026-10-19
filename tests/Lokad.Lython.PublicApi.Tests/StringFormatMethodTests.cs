@@ -33,7 +33,7 @@ public sealed class StringFormatMethodTests
     {
         var source = "return str(" + expression + ")";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -76,7 +76,7 @@ public sealed class StringFormatMethodTests
     {
         var source = "return str(" + expression + ")";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -93,7 +93,7 @@ public sealed class StringFormatMethodTests
     [InlineData("format(b\"a\", \"5\")", "bytes")]
     public void ExoticValuesWithNonEmptySpecs_ReportUnsupportedFormat(string expression, string typeName)
     {
-        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return str(" + expression + ")", new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -157,7 +157,7 @@ public sealed class StringFormatMethodTests
     {
         var source = "from decimal import Decimal\nreturn str(" + expression + ")";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -175,7 +175,7 @@ public sealed class StringFormatMethodTests
     {
         var source = "from decimal import Decimal\nreturn str(" + expression + ")";
 
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -188,7 +188,7 @@ public sealed class StringFormatMethodTests
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from decimal import Decimal, ROUND_DOWN, ROUND_UP, getcontext
 context = getcontext()
@@ -233,7 +233,7 @@ __lython_file.close()
     [InlineData("\"{:#.0%}\".format(1.5)", "150.%")]
     public void FloatAlternateSpecs_ForceDecimalPoint(string expression, string expected)
     {
-        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return str(" + expression + ")", new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -281,7 +281,7 @@ __lython_file.close()
     [InlineData("\"{:.2}\".format(1.23456789)", "1.2")]
     public void FloatDefaultPrecisionSpecs_RenderPythonShapedOutput(string expression, string expected)
     {
-        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return str(" + expression + ")", new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -311,7 +311,7 @@ __lython_file.close()
     [InlineData("str(1e20)", "1e+20")]
     public void FloatReprCut_RendersPythonShapedOutput(string expression, string expected)
     {
-        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return str(" + expression + ")", new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -349,7 +349,7 @@ __lython_file.close()
     [InlineData("\"{:#.3g}\".format(1.5)", "1.50")]
     public void FloatAlternateGeneralSpecs_RenderPythonShapedOutput(string expression, string expected)
     {
-        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return str(" + expression + ")", new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -364,7 +364,7 @@ __lython_file.close()
     [InlineData("format(10**400, \"%\")")]
     public void OversizedIntegersForFloatCodes_RaiseOverflow(string expression)
     {
-        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return str(" + expression + ")", new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -407,7 +407,7 @@ __lython_file.close()
     [InlineData("format(10**308, \"%\")", "inf%")]
     public void FloatFormatSpecs_RenderPythonShapedOutput(string expression, string expected)
     {
-        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("return str(" + expression + ")", new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
@@ -418,7 +418,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 class Label:
     def __str__(self):
@@ -453,7 +453,7 @@ __lython_file.close()
     [Fact]
     public void FormatMethodOutput_ObservesExecutionMemoryBudget()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "return \"{:1000000}\".format(\"x\")\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) });
@@ -468,7 +468,7 @@ __lython_file.close()
     {
         // str.format and str.format_map misses carry the field name like
         // CPython, so str renders the key through repr and args holds it.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             try:
                 '{x}'.format(y=1)
@@ -497,7 +497,7 @@ __lython_file.close()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
 
-        var failure = new LythonEngine().Run("return '{x}'.format(y=1)", new MockLythonHost());
+        var failure = new LythonEngine(Utf8RegexProvider.Instance).Run("return '{x}'.format(y=1)", new MockLythonHost());
         Assert.False(failure.Success);
         Assert.NotNull(failure.Failure);
         Assert.Equal("KeyError", failure.Failure?.ExceptionType);

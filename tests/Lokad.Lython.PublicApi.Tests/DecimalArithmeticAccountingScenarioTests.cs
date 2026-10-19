@@ -11,7 +11,7 @@ public sealed class DecimalArithmeticAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedArithmeticResultsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             a = decimal.Decimal(7)
@@ -42,7 +42,7 @@ public sealed class DecimalArithmeticAccountingScenarioTests
     [Fact]
     public async Task ArithmeticBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             a = decimal.Decimal(7)

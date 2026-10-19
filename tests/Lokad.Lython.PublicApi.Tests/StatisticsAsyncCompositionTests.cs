@@ -28,7 +28,7 @@ public sealed class StatisticsAsyncCompositionTests
 
     private static async Task AssertAsyncMatchesSync(string source, object? expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(SeedSyncHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -124,7 +124,7 @@ public sealed class StatisticsAsyncCompositionTests
     [InlineData("import functools\nwith open(\"/r.txt\") as f:\n    return functools.reduce(lambda a, b: a + int(b), f, 0)\n")]
     public void SyncRunsFailFastWithRunAsyncGuidance(string source)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var result = script.Run(SeedDelayedHost());
         Assert.False(result.Success);

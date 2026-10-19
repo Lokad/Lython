@@ -10,7 +10,7 @@ public sealed class ExecutionResultStatusTests
     [InlineData("open('/missing.txt')\n")]
     public void UnsuccessfulExecutionsCarryProcessCompatibleExitCode(string source)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.Equal(1, result.ExitCode);
@@ -22,7 +22,7 @@ public sealed class ExecutionResultStatusTests
     [InlineData("open('/missing.txt')\n")]
     public async Task UnsuccessfulAsyncExecutionsCarryProcessCompatibleExitCode(string source)
     {
-        var result = await new LythonEngine().RunAsync(source, new MockLythonHost());
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.Equal(1, result.ExitCode);
@@ -31,8 +31,8 @@ public sealed class ExecutionResultStatusTests
     [Fact]
     public void SuccessfulExecutionKeepsImplicitExitDistinctFromSystemExit()
     {
-        var success = new LythonEngine().Run("return 1\n", new MockLythonHost());
-        var explicitExit = new LythonEngine().Run("import sys\nsys.exit()\n", new MockLythonHost());
+        var success = new LythonEngine(Utf8RegexProvider.Instance).Run("return 1\n", new MockLythonHost());
+        var explicitExit = new LythonEngine(Utf8RegexProvider.Instance).Run("import sys\nsys.exit()\n", new MockLythonHost());
 
         Assert.True(success.Success);
         Assert.Null(success.ExitCode);

@@ -12,7 +12,7 @@ public sealed class EnvironmentAccountingScenarioTests
     [Fact]
     public async Task LargeEnvironmentTableStaysCharged()
     {
-        var script = new LythonEngine().Compile("import os\nreturn 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import os\nreturn 0\n");
         Assert.True(script.IsValid);
         var environment = Enumerable.Range(0, 20000).ToDictionary(static i => "K" + i, static i => "v");
         var options = new LythonRunOptions
@@ -32,7 +32,7 @@ public sealed class EnvironmentAccountingScenarioTests
     [Fact]
     public async Task SmallEnvironmentStillProjects()
     {
-        var script = new LythonEngine().Compile("import os\nreturn os.getenv(\"K\")\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import os\nreturn os.getenv(\"K\")\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions
         {

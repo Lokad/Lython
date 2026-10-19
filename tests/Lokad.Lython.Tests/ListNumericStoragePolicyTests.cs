@@ -23,7 +23,7 @@ public sealed class ListNumericStoragePolicyTests
     [Fact]
     public void TrackedPayloadDoesNotChangeTheSlotPolicy()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         object value = BigInteger.One << 4000;
         LythonRuntime.OwnFreshInteger(value, context.MemoryGovernor, null);
         var backing = new PyList([], context.MemoryGovernor).CommittedStorageBytes;

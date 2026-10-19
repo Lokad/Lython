@@ -40,7 +40,7 @@ public class PartialLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedPartialDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import functools\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(functools.partial(int, base=2))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };

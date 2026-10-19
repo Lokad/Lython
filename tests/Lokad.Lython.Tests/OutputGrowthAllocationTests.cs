@@ -28,7 +28,7 @@ public sealed class OutputGrowthAllocationTests
     [Fact]
     public void HugeQuantiles_DeniesBeforeLargeAllocation()
     {
-        var script = new LythonEngine().Compile("import statistics\nreturn len(statistics.quantiles([1, 2], n=200000))\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import statistics\nreturn len(statistics.quantiles([1, 2], n=200000))\n");
         Assert.True(script.IsValid);
         _ = script.Run(new MockLythonHost(), Tiny());
         LythonExecutionResult? result = null;
@@ -45,7 +45,7 @@ public sealed class OutputGrowthAllocationTests
     [Fact]
     public void HugeNormalDistSamples_DeniesBeforeLargeAllocation()
     {
-        var script = new LythonEngine().Compile("import statistics\nreturn len(statistics.NormalDist().samples(200000))\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import statistics\nreturn len(statistics.NormalDist().samples(200000))\n");
         Assert.True(script.IsValid);
         _ = script.Run(new MockLythonHost(), Tiny());
         LythonExecutionResult? result = null;
@@ -62,7 +62,7 @@ public sealed class OutputGrowthAllocationTests
     [Fact]
     public void HugeJoin_DeniesBeforeLargeAllocation()
     {
-        var script = new LythonEngine().Compile("import shlex, itertools\nreturn len(shlex.join(itertools.repeat(\"a\" * 10000, 1000)))\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import shlex, itertools\nreturn len(shlex.join(itertools.repeat(\"a\" * 10000, 1000)))\n");
         Assert.True(script.IsValid);
         _ = script.Run(new MockLythonHost(), Tiny());
         LythonExecutionResult? result = null;

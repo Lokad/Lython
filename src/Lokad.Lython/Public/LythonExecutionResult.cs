@@ -127,7 +127,8 @@ public sealed class LythonExecutionResult : IDisposable
     /// <summary>
     /// Gets the peak accounted execution memory in bytes observed during the run.
     /// This is the high-water mark of the conservative execution governor, not a
-    /// managed-heap or process-RSS measurement; see the SPEC memory-budget section
+    /// managed-heap or process-RSS measurement. Provider child-scope charges are
+    /// included in the borrowed root balance, not this governor-only peak. See the SPEC memory-budget section
     /// for the combined peak envelope.
     /// </summary>
     public long PeakExecutionMemoryBytes { get; internal set; }

@@ -24,7 +24,7 @@ public sealed class DifflibSnapshotLifetimeTests
             m.set_seq2([3, 4, 5])
             return [old_len, len(old), len(m.b2j), (old is m.b2j)]
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -45,7 +45,7 @@ public sealed class DifflibSnapshotLifetimeTests
                 views.append(m.b2j)
             return [len(views), len(views[0])]
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var tiny = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         AssertDenied(script.Run(new MockLythonHost(), tiny));
@@ -60,7 +60,7 @@ public sealed class DifflibSnapshotLifetimeTests
                 views.append(m.b2j)
             return [len(views), len(views[0])]
             """;
-        var funded = new LythonEngine().Compile(small);
+        var funded = new LythonEngine(Utf8RegexProvider.Instance).Compile(small);
         var ok = funded.Run(new MockLythonHost());
         Assert.True(ok.Success, ok.Failure?.Message);
     }
@@ -75,7 +75,7 @@ public sealed class DifflibSnapshotLifetimeTests
             m = None
             return len(v)
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new System.Numerics.BigInteger(3), sync.ReturnValue);
@@ -94,7 +94,7 @@ public sealed class DifflibSnapshotLifetimeTests
             v[99] = [1, 2, 3]
             return [before, m.ratio(), len(v)]
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         var asyncResult = await script.RunAsync(new MockLythonHost());
@@ -111,7 +111,7 @@ public sealed class DifflibSnapshotLifetimeTests
             v.extend(range(200000))
             return len(v)
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         AssertDenied(script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536)}));
     }
 
@@ -127,7 +127,7 @@ public sealed class DifflibSnapshotLifetimeTests
                 pass
             return [list(m.b), m.ratio() == m.ratio()]
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         var asyncResult = await script.RunAsync(new MockLythonHost());

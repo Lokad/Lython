@@ -12,7 +12,7 @@ public sealed class DecimalTupleAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedTuplesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             a = decimal.Decimal("1.23456789")
@@ -37,7 +37,7 @@ public sealed class DecimalTupleAccountingScenarioTests
     [Fact]
     public async Task TupleBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import decimal
             t = decimal.Decimal("1.5").as_tuple()

@@ -22,7 +22,7 @@ public class DirectStringLowerTests
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var code = Compile("for text in [left,right]:\n result=text." + Method + "()\n record()");
         context.Variables["left"] = PyString.FromString(Uppercase ? "alpha" : "ALPHA", context.MemoryGovernor, null);
         context.Variables["right"] = PyString.FromString(Uppercase ? "iσß" : "İΣ", context.MemoryGovernor, null);
@@ -49,7 +49,7 @@ public class DirectStringLowerTests
     public async Task OrdinaryCallsPreserveResultsAndCleanup(bool asynchronous)
     {
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { },regexProvider:Utf8RegexProvider.Instance);
             context.Variables["text"] = PyString.FromString(Uppercase ? "word" : "WORD", context.MemoryGovernor, null);
             var code = Compile("return text." + Method + "()");
                 Assert.Equal(Uppercase ? "WORD" : "word", Assert.IsType<PyString>(await Execute(code, context, asynchronous)).AsString());
@@ -67,7 +67,7 @@ public class DirectStringLowerTests
                 const long lookupHeadroom = 128;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var allocationSpan = new LythonSourceSpan(0, 4, 1, 1);
         var source = new string(Uppercase ? 'a' : 'A', 256);
         var text = PyString.FromString(source, context.MemoryGovernor, allocationSpan);
@@ -104,7 +104,7 @@ public class DirectStringLowerTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var source = Uppercase ? "alpha beta" : "ALPHA BETA";
         var text = PyString.FromString(source, context.MemoryGovernor, null);
         var receiver = new Receiver(text);
@@ -145,7 +145,7 @@ public class DirectStringLowerTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     private static async ValueTask<object?> Execute(ExecutableCodeObject code, Context context, bool asynchronous)
         => asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)

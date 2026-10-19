@@ -35,7 +35,7 @@ public class BytesLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedHexDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(b\"abc\".hex())\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };
@@ -67,7 +67,7 @@ public class BytesLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedPartitionDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(b\"abc\".partition(b\"b\"))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };

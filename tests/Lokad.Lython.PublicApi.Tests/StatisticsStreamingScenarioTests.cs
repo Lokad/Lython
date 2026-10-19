@@ -15,7 +15,7 @@ public sealed class StatisticsStreamingScenarioTests
     {
         // MG15 probe: mean(range(100000)) built ~800KB of lists under a 64KiB
         // budget. A streamed count and sum fit easily and divide identically.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import statistics
             return statistics.mean(range(100000))
@@ -37,7 +37,7 @@ public sealed class StatisticsStreamingScenarioTests
         // MG15: streaming must preserve the materialized error precedence
         // (arity, then emptiness, then per-element validation) and the
         // whole-integer result accent.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import statistics
             results = []
@@ -74,7 +74,7 @@ public sealed class StatisticsStreamingScenarioTests
         // MG15: multi-pass statistics share the governed numeric drain. The
         // 100,000 doubles used to materialize free; now their backing alone
         // exceeds the budget before any pass runs.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import statistics
             return statistics.pvariance(range(100000))
@@ -95,7 +95,7 @@ public sealed class StatisticsStreamingScenarioTests
     {
         // MG15: governing the drain must preserve values and the empty /
         // non-real error contracts of the sorting paths.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import statistics
             results = []
@@ -127,7 +127,7 @@ public sealed class StatisticsStreamingScenarioTests
         // MG15: median keeps the objects list and the converted doubles list
         // alive together. Both used to materialize free; now their combined
         // backing alone exceeds the budget.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import statistics
             return statistics.median(range(100001))
@@ -148,7 +148,7 @@ public sealed class StatisticsStreamingScenarioTests
     {
         // MG15: governing the objects drain and the converted copy must
         // preserve median values and the empty / non-real error contracts.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import statistics
             results = []
@@ -182,7 +182,7 @@ public sealed class StatisticsStreamingScenarioTests
         // MG15: mode builds a frequency table plus order and result lists over
         // the drained values. All three used to materialize free; now their
         // combined backing alone exceeds the budget.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import statistics
             return statistics.mode(range(100000))
@@ -203,7 +203,7 @@ public sealed class StatisticsStreamingScenarioTests
     {
         // MG15: governing the frequency map must preserve mode values over
         // string keys as well as the empty / unhashable error contracts.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import statistics
             results = []

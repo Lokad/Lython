@@ -7,7 +7,7 @@ public sealed class BuiltinNumericTextFunctionTests
     [Fact]
     public void ScalarConstructorsMatchPythonDefaultsBasesAndFloatText()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import math
 return str(int()) + "|" + str(float()) + "|" + str(bool()) + "|" + str(int("101", 2)) + "|" + str(int("0xff", base=0)) + "|" + str(int("1_000")) + "|" + str(math.isinf(float("-inf"))) + "|" + str(math.isnan(float("nan"))) + "|" + str(float("1_000.5"))
@@ -21,7 +21,7 @@ return str(int()) + "|" + str(float()) + "|" + str(bool()) + "|" + str(int("101"
     [Fact]
     public void IntBaseAndLiteralDiagnosticsMatchPython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = []
 try:
@@ -65,7 +65,7 @@ return "|".join(values)
     [Fact]
     public void BytesConstructorAndOrdMatchPythonForms()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 try:
     bytes("é")
@@ -82,7 +82,7 @@ return str(missing_encoding) + "|" + repr(bytes(3)) + "|" + repr(bytes("é", "ut
     [Fact]
     public void MinAndMaxSupportPythonCallForms()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = []
 values.append(str(min(3, 1, 2)))
@@ -104,7 +104,7 @@ return "|".join(values)
     [Fact]
     public void NumericComparisonsAreExactAndTreatNanAsUnordered()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import math
 n = 9007199254740993
@@ -121,7 +121,7 @@ return str(n == f) + "|" + str(n > f) + "|" + str(x == x) + "|" + str(x != x) + 
     [Fact]
     public void FloatRenderingUsesPythonSpellings()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import math
 return str(1.0) + "|" + repr(-0.0) + "|" + str(1e20) + "|" + str(math.inf) + "|" + repr(-math.inf) + "|" + str(math.nan) + "|" + str([1.0, -0.0])
@@ -135,7 +135,7 @@ return str(1.0) + "|" + repr(-0.0) + "|" + str(1e20) + "|" + str(math.inf) + "|"
     [Fact]
     public void FloatingPowerHandlesPythonExceptionalCases()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 values = []
 try:
@@ -160,7 +160,7 @@ return "|".join(values)
     [Fact]
     public void DivisionAndModuloHandleOverflowAndInfinityLikePython()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import math
 values = []
@@ -185,7 +185,7 @@ return "|".join(values)
     [Fact]
     public void BooleanBitwiseOperatorsPreserveBooleanResults()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 x = True
 x &= True
@@ -200,7 +200,7 @@ return str(True & True) + "|" + str(True | False) + "|" + str(True ^ False) + "|
     [Fact]
     public void LargeIntegerBaseFormattingPreservesDigitOrder()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 value = (1 << 4096) + 15
 text = hex(value)
@@ -217,7 +217,7 @@ return str(len(text)) + "|" + text[:3] + "|" + text[-1]
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from decimal import Decimal
 
@@ -262,7 +262,7 @@ __lython_file.close()
     [Fact]
     public void RoundUsesPythonBinaryFloatSemanticsAndBoundsExtremeScaling()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from decimal import Decimal
 
@@ -287,7 +287,7 @@ return "|".join([
     [Fact]
     public void RoundReportsFloatResultsOutsideBinary64Range()
     {
-        var result = new LythonEngine().Run("round(1.7976931348623157e308, -308)\n", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("round(1.7976931348623157e308, -308)\n", new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -313,7 +313,7 @@ return "|".join([
     [InlineData("import math\nround(math.inf)\n", "OverflowError", "infinity")]
     public void NumericAndTextBuiltins_ReportExplicitFailures(string source, string exceptionType, string messageFragment)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -327,7 +327,7 @@ return "|".join([
         // reflected slot) while float slots take the whole tower; anything
         // else declines with NotImplemented on every dunder, ordering
         // included, exactly like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 from decimal import Decimal
 def call2(f, a, b):
     return f(a, b)
@@ -511,7 +511,7 @@ return results
         // int-float conversion, int-slot None-ndigits rejection and float-slot
         // None-ndigits absence), exactly like
         // CPython; float has no __index__ on either side.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 def call1(f, a):
     return f(a)
 def call2(f, a, b):

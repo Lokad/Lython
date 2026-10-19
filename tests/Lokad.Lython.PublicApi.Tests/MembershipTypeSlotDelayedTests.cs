@@ -71,7 +71,7 @@ public sealed class MembershipTypeSlotDelayedTests
 
     private static LythonCompiledScript Compile()
     {
-        var script = new LythonEngine().Compile(Source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
         return script;
     }

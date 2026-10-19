@@ -21,7 +21,7 @@ def value(name,result):
 print(text.startswith(value('prefix','é'),value('start',1),value('end',3)),text)
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -76,7 +76,7 @@ with open('report.txt','w',newline='') as target:target.write(''.join(selected))
 print('written')
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -100,7 +100,7 @@ print('written')
     [Fact]
     public async Task BoundProtocolKeepsManagedRecursionProtection()
     {
-        using var script = new LythonEngine().Compile("class Bound:\n def __index__(self):return self.__index__()\nprint('abc'.startswith('a',Bound()))");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("class Bound:\n def __index__(self):return self.__index__()\nprint('abc'.startswith('a',Bound()))");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxRecursionDepth = 16 };
         foreach (var asynchronous in new[] { false, true })

@@ -119,7 +119,7 @@ public sealed class YieldFormSyntaxTests
     [Fact]
     public async Task FieldSuspensionRetainsValuesAcrossDelayedHostEffects()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def load():
              with open('/value.txt') as f:return int(f.read())
             def generate():
@@ -148,7 +148,7 @@ public sealed class YieldFormSyntaxTests
     [Fact]
     public async Task OversizedStarredYieldValuesCleanUpBeforeEmission()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def generate():
              try:return (yield *range(1000000),)
              finally:print('cleanup')
@@ -170,7 +170,7 @@ public sealed class YieldFormSyntaxTests
     public async Task YieldFormsFollowPython(string name, string source, string expected)
     {
         _ = name;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -187,5 +187,5 @@ public sealed class YieldFormSyntaxTests
     [InlineData("from __future__ import annotations\ndef outer():\n def f(x:f\"{yield 1}\"):pass")]
     [InlineData("def f[T: f\"{yield 1}\"]():pass")]
     public void ForbiddenYieldContextsFailBeforeEffects(string source)
-        => Assert.False(new LythonEngine().Compile("print('effect')\n" + source).IsValid);
+        => Assert.False(new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effect')\n" + source).IsValid);
 }

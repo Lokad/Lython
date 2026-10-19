@@ -41,7 +41,7 @@ public sealed class FunctoolsCacheAccountingTests
     public void UnboundedEntriesAccumulateAndClearReleases()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var wrapper = NewCacheWrapper(context, null);
         for (var i = 0; i < 100; i++)
@@ -60,7 +60,7 @@ public sealed class FunctoolsCacheAccountingTests
     public void BoundedEvictionKeepsExactlyLiveEntries()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var wrapper = NewCacheWrapper(context, 8);
         for (var i = 0; i < 20; i++)

@@ -21,7 +21,7 @@ public class ZipLookupBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         var write = Compile(
             engine,
             "import zipfile\n"

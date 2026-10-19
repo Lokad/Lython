@@ -13,7 +13,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task RandomStateTagIsShared()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import random
             s1 = random.getstate()
             s2 = random.getstate()
@@ -37,7 +37,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task ExceptionModuleIsShared()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             a = ValueError.__module__
             b = ValueError.__module__
             return [a is b, a]
@@ -56,7 +56,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task ModuleExceptionModuleIsShared()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import argparse
             import copy
             import csv
@@ -105,7 +105,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task BuiltinTypeModuleIsShared()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             i1 = int.__module__
             i2 = int.__module__
             s1 = str.__module__
@@ -126,7 +126,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task BuiltinCallableNames()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import math
             import os
             import random
@@ -161,7 +161,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // open.__module__ is builtins in Lython (CPython says io, which has no
         // Lython counterpart); everything else matches CPython exactly.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             p1 = print.__name__
             p2 = print.__module__
             return [p1, p2, p2 is print.__module__,
@@ -192,7 +192,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Bound engine methods report __module__ None like CPython C methods.
         // random.Random.gauss diverges (CPython reports random since its gauss
         // is Python-implemented; Lython models it as engine code like the rest).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             import random
             import re
@@ -222,7 +222,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task UserFunctionAndBoundMethodModule()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def top():
                 pass
             def outer():
@@ -259,7 +259,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task BoundMethodSelfAndFunc()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class C:
                 @staticmethod
                 def s():
@@ -291,7 +291,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task BoundMethodQualnames()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             class C:
                 @staticmethod
@@ -323,7 +323,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task SlotMethodNames()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import functools
             from dataclasses import dataclass
             @dataclass
@@ -361,7 +361,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // __qualname__ like CPython; the __new__ builtin and the bound
         // __init_subclass__ report a None __module__ while other slot
         // wrappers leave __module__ missing.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class E:
                 pass
             return [object.__init__.__name__, object.__setattr__.__name__,
@@ -402,7 +402,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // their bound forms the method-wrapper type, and the __new__ builtin
         // plus the bound __init_subclass__ the builtin_function_or_method
         // type, like CPython (neither wrapper type is a builtin name).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class E:
                 pass
             return [type(object.__init__).__name__,
@@ -442,7 +442,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // construction: __new__ reports it as __self__ and slot wrappers
         // (bound or not) as __objclass__, like CPython. The other slot
         // surfaces stay missing.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class E:
                 pass
             e = E()
@@ -479,7 +479,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Object instance slots resolve through the run object type on any
         // receiver like CPython, so member reads, identity and no-arg calls
         // behave uniformly on builtin values, engine callables and instances.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class E:
                 pass
             e = E()
@@ -519,7 +519,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // receiver and binds type(target) like CPython, so builtin values
         // and engine callables behave like user instances; no-arg calls
         // succeed while explicit arguments still fail.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class E:
                 pass
             e = E()
@@ -557,7 +557,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // CPython, and builtin values resolve their type own slot while
         // engine callables share object.__new__. Construction through the
         // slot stays unsupported; other shapes stay missing.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             return [int.__new__.__qualname__, str.__new__.__qualname__,
                 int.__new__ is int.__new__,
                 (1).__new__ is int.__new__,
@@ -594,7 +594,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Core runtime types own their __new__ slot like CPython (bound to
         // the type object itself), and modules resolve their run type for
         // both __new__ and __class__.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             def f():
                 pass
@@ -635,7 +635,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // The type metatype carries its own __new__ slot like CPython
         // while user classes keep sharing object.__new__.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class E:
                 pass
             return [type.__new__ is object.__new__,
@@ -665,7 +665,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Datetime runtime types own their __new__ slot like CPython, on
         // the type and on values alike.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             d = datetime.timedelta(1)
             t = datetime.time(1)
@@ -703,7 +703,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Builtin exception types own or inherit their __new__ slot along
         // the builtin hierarchy like CPython; module exceptions stay
         // missing and unrelated types keep their own slots.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             return [ValueError.__new__.__qualname__,
                 ValueError.__new__ is ValueError.__new__,
@@ -738,7 +738,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Random, struct_time and tzinfo own their __new__ slot while
         // pure-Python-shaped opaques share object.__new__, like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             import random
             import statistics
@@ -777,7 +777,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Collections members route by name like CPython: deque owns its
         // slot, the dict subclasses inherit dict slot, and ChainMap shares
         // the object slot.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             d = collections.deque()
             c = collections.Counter()
@@ -817,7 +817,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // The partial factory owns its __new__ slot like CPython, on the
         // factory and on partial values alike (which also fixes their
         // class identity).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import functools
             def f(a):
                 return a
@@ -850,7 +850,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Factory members reuse existing slots like CPython: partialmethod
         // shares object.__new__ while the namedtuple factory resolves the
         // shared function slot.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import functools
             import collections
             def f():
@@ -883,7 +883,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Construction routes through the owning slot like CPython, with
         // explicit failures for owner mismatches and missing receivers.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             import collections
             import functools
@@ -927,7 +927,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Multiple except clauses match in order like CPython, with
         // per-clause binding, else/finally interplay, bare fallthrough,
         // and propagation of unmatched exceptions.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             try:
                 raise ValueError("v")
@@ -1006,7 +1006,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // A default except clause before the last one is rejected like
         // CPython instead of silently shadowing later handlers.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             try:
                 pass
             except:
@@ -1023,7 +1023,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Datetime type members expose CPython-style identity like
         // C-implemented methods, with the defining type as __self__.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             return [datetime.date.today.__name__,
                 datetime.date.today.__qualname__,
@@ -1054,7 +1054,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // A bare raise re-raises the active exception like CPython, and
         // fails explicitly outside a handler.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             try:
                 try:
@@ -1098,7 +1098,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Except-as and match-case bindings read like CPython inside their
         // own bodies when the reader sits in a function scope.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             def read_except():
                 try:
@@ -1143,7 +1143,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Raises chain the active handler exception as __context__ like
         // CPython; explicit `from` additionally suppresses the context while
         // bare raises continue the active chain instead of starting a new one.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             plain = ValueError("plain")
             results.append(plain.__context__ is None)
@@ -1248,7 +1248,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // A single KeyError argument renders through repr like CPython
         // instead of str; every other arity and type keeps str rendering.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             key = KeyError("k")
             results.append(str(key))
@@ -1290,7 +1290,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Mapping misses carry their key like CPython, so str renders the
         // key through repr and args holds it; reads, deletes, ChainMap
         // lookups, defaultdict misses, pop and percent formatting agree.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             d = {"a": 1}
             for k in ["b"]:
@@ -1367,7 +1367,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Exception instances report their run type object like CPython, so
         // type(e), e.__class__ and sys.exc_info()[0] all alias the same
         // object the class name resolves to, for builtin and module types.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import sys
             results = []
             try:
@@ -1409,7 +1409,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Division-by-zero messages name the operation and operand kind like
         // CPython across int and float division, floor division, modulo and
         // divmod, while funded divisions keep their values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             try:
                 x = 1 % 0
@@ -1476,7 +1476,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // With no traceback model, clearing with None returns the exception
         // itself like CPython, while arities and other values fail with the
         // CPython error texts; the returned exception raises normally.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             e = ValueError("x")
             results.append(e.with_traceback(None) is e)
@@ -1521,7 +1521,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // CPython: the namedtuple factory is a function, while partial,
         // partialmethod and deque members are types, each aliasing the
         // object their __class__ and __new__ owner resolve to.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import namedtuple, deque
             from functools import partial, partialmethod
             results = []
@@ -1557,7 +1557,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // assignment, getattribute resolves through the member choke with
         // receivers attached, and anything without an attribute table fails
         // with AttributeError; instances keep their terminal behavior.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import argparse
             results = []
             ns = argparse.Namespace()
@@ -1609,7 +1609,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // builtin types, exception types and type-denoting factories bind
         // themselves, the function-shaped namedtuple factory binds function,
         // and instances bind their value class.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import namedtuple, deque
             from functools import partial, partialmethod
             results = []
@@ -1646,7 +1646,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Created namedtuple types report the type builtin like CPython
         // while instances share their defining type object (own __new__
         // slots live in FunctionShapedNewSlots).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import namedtuple
             NT = namedtuple("NT", ["x"])
             v = NT("a")
@@ -1680,7 +1680,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // CPython: per-type identity shared with instances, function class,
         // qualified names, exact-owner construction, and explicit failure
         // otherwise; the module stays None like the other slot wrappers.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import namedtuple
             NT = namedtuple("NT", ["x"])
             NT2 = namedtuple("NT2", ["x"])
@@ -1728,7 +1728,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Values report their defining module like CPython where it exists;
         // path uses the model label instead of the platform concrete one,
         // and static shapes without one keep their rejection below.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             import decimal
             import random
@@ -1776,7 +1776,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // date/datetime timetuple paths return struct_time values like
         // CPython (fields, indexing, zones, class identity without needing
         // the time import); aware timetuples report unknown DST.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             import time
             results = []
@@ -1815,7 +1815,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // isocalendar results share one opaque type object like the other
         // runtime types, with fields, module and subclass binding intact.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             results = []
             ic = datetime.date(2024, 1, 2).isocalendar()
@@ -1846,7 +1846,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // The struct_time type binds itself like CPython, matching the
         // value route, which already binds the defining type object.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import time
             results = []
             results.append(time.struct_time.__init_subclass__.__self__ is time.struct_time)
@@ -1874,7 +1874,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Typing callables report their defining kind like CPython:
         // factory functions are functions, while TypeVar/NewType are
         // types; each aliases the object its class reads resolve to.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import typing
             results = []
             results.append(type(typing.NamedTuple) is type(lambda: 0))
@@ -1909,7 +1909,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Set misses carry their element like CPython, so str renders the
         // key through repr and args holds it; the pop message keeps its
         // text while gaining the argument.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             s = {1, 2}
             try:
@@ -1947,7 +1947,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Created namedtuple types report their defining module like
         // CPython: an explicit module value is stored as-is while a missing
         // or None module aliases the caller module, and instances inherit it.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             from collections import namedtuple
             NT = namedtuple("NT", ["x"])
             results = []
@@ -1981,7 +1981,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Typing aliases report their short name and defining module like
         // CPython, including subscripted and special forms.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import typing
             results = []
             results.append(typing.NamedTuple.__name__)
@@ -2011,7 +2011,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // os.environ misses carry their key like CPython, so str renders
         // the key through repr and args holds it; hits still read through.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import os
             results = []
             try:
@@ -2047,7 +2047,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // NewType results share one opaque type object with their name and
         // defining module intact, and factory callables report their own
         // short names, all like CPython.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import typing
             results = []
             U = typing.NewType("U", int)
@@ -2085,7 +2085,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Bound methods compare by receiver and function like CPython
         // across engine methods, user methods and slot wrappers, with
         // matching hashes so they round-trip as dictionary keys.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             x = [1, 2]
             results.append(x.append == x.append)
@@ -2132,7 +2132,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // descriptors like CPython: reads share one cached wrapper per
         // constructor with descriptor identity, and calls take the
         // receiver first with exact descriptor failure texts.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             x = [1]
             results.append(list.append == list.append)
@@ -2208,7 +2208,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // method-wrapper: receivers resolve to their bound member, None
         // against an explicit type returns the descriptor itself, and
         // arity, keyword and receiver failures use the wrapper texts.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             x = [1, 2]
             g = list.append.__get__
@@ -2278,7 +2278,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // str.maketrans staticmethod behave like CPython: type and instance
         // reads share bound-to-type callables with builtin identity, and
         // calls validate with the exact wrapper texts.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(dict.fromkeys(["a", "b"]) == {"a": None, "b": None})
             results.append(dict.fromkeys(["a", "b"], 0) == {"a": 0, "b": 0})
@@ -2419,7 +2419,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // dir() on builtin type constructors lists their instance members
         // plus the construction slot like CPython (other dunders stay out,
         // matching the instance lists), and every listed name resolves.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
@@ -2467,7 +2467,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // dict.pop takes an optional default and dict.update takes pair
         // sequences and keywords like CPython, with indexed sequence errors.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             d = {"a": 1}
             results.append(d.pop("a", 9))
@@ -2524,7 +2524,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // dict.popitem removes the last pair like CPython (last-enumerated,
         // matching every other enumeration-based path), with a key-carrying
         // KeyError on empty dictionaries and unbound access on the type.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             d = {"a": 1, "b": 2}
             results.append(d.popitem() == ("b", 2))
@@ -2576,7 +2576,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // defaultdict pop/update/popitem mirror the dict shapes like
         // CPython (inherited semantics, bound to the instance), with
         // key-carrying misses and the shared static surface.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             results = []
             d = collections.defaultdict(int)
@@ -2637,7 +2637,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Plain tuples serve index/count like CPython (mirroring the list
         // shapes), with unbound descriptors on the constructor, static
         // coverage, and dir() lists.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             t = (1, 2, 2)
             results.append(t.index(2))
@@ -2699,7 +2699,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Plain tuples repeat and concatenate like CPython, with the
         // usual element-preserving result shapes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append((1, 2) * 2 == (1, 2, 1, 2))
             results.append(() * 5 == ())
@@ -2732,7 +2732,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Namedtuple values concatenate and repeat like plain tuples (with
         // plain-tuple results) on both namedtuple flavors.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             import typing
             results = []
@@ -2769,7 +2769,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Namedtuple values serve the tuple index/count shapes like CPython
         // through the shared member core, on both namedtuple flavors.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             import typing
             results = []
@@ -2826,7 +2826,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Integer values (bools ride along) serve the scalar method and
         // property shapes like CPython, with unbound descriptors on the
         // constructor, static coverage, and dir() lists.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append((0).bit_length())
             results.append((-7).bit_length())
@@ -2903,7 +2903,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Float values serve the scalar method and property shapes like
         // CPython, with unbound descriptors on the constructor, static
         // coverage, and dir() lists.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append((1.5).conjugate() == 1.5)
             results.append((-2.0).conjugate() == -2.0)
@@ -2982,7 +2982,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // int.to_bytes and int.from_bytes convert like CPython across
         // orders, signs, defaults and keyword shapes, with the exact
         // argument diagnostics.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append((1024).to_bytes(2, "big") == b"\x04\x00")
             results.append((1024).to_bytes(2, "little") == b"\x00\x04")
@@ -3096,7 +3096,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // float.hex and float.fromhex round-trip exactly like CPython,
         // including subnormal edges, overflow, and the full grammar.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append((1.5).hex())
             results.append((0.0).hex())
@@ -3190,7 +3190,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // bool shares int's method surface like CPython (identical
         // wrappers from int's cache), while its own dunders, bool.from_bytes
         // conversion, and dir() stay bool-shaped.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(bool.bit_length is int.bit_length)
             results.append(bool.conjugate is int.conjugate)
@@ -3233,7 +3233,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Namedtuple types share tuple's descriptors like CPython (identical
         // objects from the run constructor cache), on both flavors.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             import typing
             results = []
@@ -3271,7 +3271,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // dir() on namedtuple values and types lists fields plus their
         // served members like CPython, and every listed name resolves.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             import typing
             results = []
@@ -3320,7 +3320,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // bytes.maketrans builds the 256-table like CPython and bytes
         // translate applies it with an optional delete set; raw bound
         // shapes compare by name and receiver with coherent hashes.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             t = bytes.maketrans(b"ab", b"cd")
             results.append(len(t))
@@ -3405,7 +3405,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // str.translate rewrites through mapping tables like CPython
         // (None deletes, integers splice as characters, misses are kept),
         // with the exact argument diagnostics.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append("abc".translate({97: 98}))
             results.append("abc".translate({97: None}))
@@ -3476,7 +3476,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // defaultdict compares and constructs by mapping content like
         // CPython (the factory never participates in either).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             results = []
             d = collections.defaultdict(int)
@@ -3517,7 +3517,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Namedtuple field reads share per-field descriptors like CPython,
         // with documentation, method-wrapper slots, and dir() coverage.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             import typing
             results = []
@@ -3586,7 +3586,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // str.translate accepts user mappings and defaultdicts through the
         // mapping protocol like CPython, with LookupError misses and exact
         // failure texts.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import collections
             results = []
             class M:
@@ -3650,7 +3650,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Ranges serve attributes plus arithmetic index/count/contains
         // like CPython, with unbound descriptors and dir() lists.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             r = range(1, 10, 2)
             results.append(r.start)
@@ -3730,7 +3730,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Ranges behave as sequences like CPython: length, reverse
         // iteration, negative-step slices and sequence equality.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(len(range(5)))
             results.append(len(range(0)))
@@ -3773,7 +3773,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // The Unicode classification members behave like CPython across
         // scripts and edge cases, with decimal tightening fixed as well.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append("abc123".isascii())
             results.append("caf\u00e9".isascii())
@@ -3840,7 +3840,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // The casefold member folds like CPython, including multi-character
         // expansions, with the usual descriptor surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append("ABC".casefold())
             results.append("Hello World".casefold())
@@ -3884,7 +3884,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // dir() lists every served str member like CPython: ljust and
         // format_map used to resolve (and call) while missing from dir().
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(hasattr("abc", "ljust"))
             results.append("ljust" in dir("abc"))
@@ -3920,7 +3920,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // bytes.hex renders lowercase hex like CPython, with right-grouped
         // separators and the usual descriptor surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b"".hex())
             results.append(b"\xff\x00\xab".hex())
@@ -4002,7 +4002,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // int.bit_count counts one-bits like CPython (bools ride along),
         // with unbound descriptors and dir() lists beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append((0).bit_count())
             results.append((7).bit_count())
@@ -4053,7 +4053,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // int and float expose their scalar data attributes as getset
         // descriptors like CPython (bool shares int's cache), with documented
         // slots, binding reads, read-only writes, and dir() lists.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(repr(int.real))
             results.append(str(float.imag))
@@ -4134,7 +4134,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // range exposes start/stop/step as member descriptors like CPython,
         // sharing the getset machinery with read-only errors and None docs.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(repr(range.start))
             results.append(type(range.start).__name__)
@@ -4196,7 +4196,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // int.from_bytes and float.fromhex bind through values like CPython
         // (bools convert through the bool flavor), with dir() lists beside.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append((5).from_bytes(b"A", "big"))
             results.append((5).from_bytes == int.from_bytes)
@@ -4233,7 +4233,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // bytes search like CPython: int or bytes needles with bounds,
         // find misses against index misses, and the descriptor surface.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b"abcab".count(98))
             results.append(b"abcab".count(b"b"))
@@ -4327,7 +4327,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // bytes affixes like CPython: bytes or tuple needles with bounds,
         // empty-range misses, and the descriptor surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b"abc".startswith(b"a"))
             results.append(b"abc".startswith((b"x", b"a")))
@@ -4404,7 +4404,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // bytes.replace rewrites like CPython, with count limits and the
         // descriptor surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b"aaa".replace(b"aa", b"x") == b"xa")
             results.append(b"aaa".replace(b"a", b"x", 1) == b"xaa")
@@ -4480,7 +4480,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // bytes classification matches CPython ASCII rules, with the usual
         // descriptor surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b"abc123".isascii())
             results.append(b"123".isdigit())
@@ -4535,7 +4535,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // bytes case maps follow CPython ASCII rules, with the usual
         // descriptor surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b"AbC xYz! 123".lower() == b"abc xyz! 123")
             results.append(b"AbC xYz! 123".upper() == b"ABC XYZ! 123")
@@ -4589,7 +4589,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // bytes strips follow CPython over ASCII whitespace or a bytes
         // strip set, with the usual descriptor surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b"  hello  ".strip() == b"hello")
             results.append(b"  hello  ".lstrip() == b"hello  ")
@@ -4662,7 +4662,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // str split keywords follow CPython names: sep and maxsplit bind,
         // keepends binds, and partition stays positional-only.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append("a,b".split(sep=",") == ["a", "b"])
             results.append("a,b,c".rsplit(sep=",", maxsplit=1) == ["a,b", "c"])
@@ -4705,7 +4705,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // bytes splits follow CPython over an explicit separator,
         // whitespace, or line boundaries, with the usual descriptor
         // surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b"a,b,,c".split(b",") == [b"a", b"b", b"", b"c"])
             results.append(b"a,b,,c".rsplit(b",", 1) == [b"a,b,", b"c"])
@@ -4784,7 +4784,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // bytes partitions follow CPython around the first or last
         // separator, with the usual descriptor surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b"a,b,c".partition(b",") == (b"a", b",", b"b,c"))
             results.append(b"a,b,c".rpartition(b",") == (b"a,b", b",", b"c"))
@@ -4859,7 +4859,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // bytes join follows CPython over any iterable of bytes, with the
         // usual descriptor surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b",".join([b"a", b"b"]) == b"a,b")
             results.append(b",".join((b"a", b"b")) == b"a,b")
@@ -4936,7 +4936,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // bytes padding follows CPython widths, fill bytes and sign-aware
         // zeros, with the usual descriptor surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b"ab".center(5) == b"  ab ")
             results.append(b"ab".ljust(5) == b"ab   ")
@@ -5047,7 +5047,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // bytes expandtabs follows CPython tab stops over octets, with
         // the usual descriptor surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b"a\tb" == b"a\tb")
             results.append(b"a\tb".expandtabs(4) == b"a   b")
@@ -5112,7 +5112,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // bytes affixes like CPython, with failure paths and the descriptor
         // surface beside the values.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             results.append(b"abc".removeprefix(b"a") == b"bc")
             results.append(b"abc".removeprefix(b"x") == b"abc")
@@ -5180,7 +5180,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Empty str affixes return the same object like CPython, with fresh
         // objects only on real matches.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             s = 'abc'
             e = ''
             return [s.removeprefix('') is s, s.removesuffix('') is s,
@@ -5209,7 +5209,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Dynamic attribute misses name the receiver type like CPython,
         // with module and type-object shapes beside the plain form.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import math
             class C:
                 pass
@@ -5462,7 +5462,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Attribute writes and deletes on builtin immutable types raise
         // the CPython TypeError instead of a missing-attribute error.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class C:
                 pass
             results = []
@@ -5528,7 +5528,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // The Ellipsis literal and the NotImplemented singleton behave
         // like CPython values with their own runtime types.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             return [... is ..., ... is Ellipsis, NotImplemented is NotImplemented,
                 (...).__class__ is type(...),
                 NotImplemented.__class__ is type(NotImplemented),
@@ -5559,7 +5559,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Control-flow exits through multi-clause handlers behave like
         // CPython on both engines (return, reraised failures with
         // finally, and loop control with else).
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             def f():
                 try:
@@ -5616,7 +5616,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Bound engine methods report their receiver like CPython,
         // including stored aliases that keep the original receiver.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import hashlib
             import re
             import sys
@@ -5658,7 +5658,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // An explicit raise cause travels with the exception like
         // CPython, from instances and classes alike, while bad causes
         // fail explicitly.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             try:
                 raise ValueError("v") from KeyError("k")
@@ -5698,7 +5698,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Raising an exception class instantiates it like CPython, while
         // non-exceptions still fail explicitly.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             try:
                 raise ValueError
@@ -5734,7 +5734,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // Notes live in the instance dict like CPython: __notes__ stays
         // missing until the first note, plain writes and deletes flow
         // through the dict, and add_note appends to the stored list.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             e = ValueError("v")
             results = []
             results.append(hasattr(e, "__notes__"))
@@ -5786,7 +5786,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Dataclass methods report the defining module; total_ordering methods
         // report functools, where CPython synthesizes them.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import functools
             from dataclasses import dataclass
             @dataclass
@@ -5818,7 +5818,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task NestedQualnames()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def o():
                 def i():
                     pass
@@ -5852,7 +5852,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task LambdaNamesAreShared()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             l = lambda: 0
             m = lambda: 1
             return [l.__name__ is l.__name__, l.__name__,
@@ -5872,7 +5872,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task BuiltinTypeBases()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             b1 = int.__bases__
             b2 = int.__bases__
             m1 = int.__mro__
@@ -5899,7 +5899,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task RuntimeTypeBases()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             import decimal
             import pathlib
@@ -5935,7 +5935,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task RemainingTypeDunders()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import decimal
             import random
             import re
@@ -5974,7 +5974,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // Partial objects expose no __name__ like CPython; their __module__
         // aliases shared functools. Doc texts are not stored anywhere.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import functools
             def f():
                 pass
@@ -6003,7 +6003,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task FunctionDocstringsAreStored()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             def f():
                 "doc"
                 pass
@@ -6035,7 +6035,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task ClassDocstringsAreStored()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class C:
                 "cdoc"
                 pass
@@ -6067,7 +6067,7 @@ public sealed class SharedFixedLabelBehaviorTests
     public async Task ExceptionInstanceClass()
     {
         // Module exceptions stay missing until their type objects are interned.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             e = ValueError("x")
             k = KeyError("k")
             return [e.__class__ is ValueError, k.__class__ is KeyError,
@@ -6090,7 +6090,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task ModuleExceptionInstanceClass()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             import zipfile
             e = csv.Error("y")
@@ -6113,7 +6113,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task ValueClassIdentities()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class C:
                 pass
             import datetime
@@ -6163,7 +6163,7 @@ public sealed class SharedFixedLabelBehaviorTests
     {
         // GeneratorExit/KeyboardInterrupt derive BaseException directly: except
         // Exception must not catch them, except BaseException must.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             try:
                 raise KeyboardInterrupt("stop")
@@ -6202,7 +6202,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task CallableClassIdentities()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             from dataclasses import dataclass
             def f():
@@ -6243,7 +6243,7 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task DescriptorClassIdentities()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import datetime
             def f():
                 pass
@@ -6276,7 +6276,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // args; like CPython single-argument construction, the message reads
         // back as the lone argument in args and repr, while bare raises keep
         // the empty tuple.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             try:
                 x = 1 / 0
@@ -6350,7 +6350,7 @@ public sealed class SharedFixedLabelBehaviorTests
         // double quote in double quotes instead of escaping; every other
         // shape keeps single quotes. Containers, conversions and exception
         // rendering all flow through the shared literal renderer.
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             results = []
             s1 = "it's"
             s2 = 'say "hi"'

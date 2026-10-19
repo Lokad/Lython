@@ -24,7 +24,7 @@ public sealed class GzipCallbackScopeLifetimeTests
     public void EscapingCallbackOwnerDropsCreationScopeAndPreservesRetainedPayload(string mode, bool close, bool retain)
     {
         var parent = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2_000_000) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2_000_000) },regexProvider:Utf8RegexProvider.Instance);
         var (owner, raw, frame, payload) = CreateOwner(parent, mode, close, retain);
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
         Assert.False(frame.TryGetTarget(out _));
@@ -76,7 +76,7 @@ public sealed class GzipCallbackScopeLifetimeTests
     [InlineData(true)]
     public void CompletedOrFailedOperationDropsItsCallerScope(bool fail)
     {
-        var parent = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var parent = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var (owner, raw, _, _) = CreateOwner(parent, "rb", false, false);
         var (frame, payload) = Operate(owner, parent, fail);
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();

@@ -22,7 +22,7 @@ public sealed class MemberStoreExecutionTests
     public async Task OrdinaryStoresMatchPython(string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -40,7 +40,7 @@ public sealed class MemberStoreExecutionTests
     public async Task EscapingMemberValueRemainsFundedAcrossExecutions()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("class Box: pass\nbox=Box()\npayload=['x'*4096]\nbox.value=payload\nreturn box.value", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("class Box: pass\nbox=Box()\npayload=['x'*4096]\nbox.value=payload\nreturn box.value", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -88,7 +88,7 @@ public sealed class MemberStoreExecutionTests
             : new[] { "/rhs.txt", "/receiver.txt", "/bind.txt", "/set.txt" };
         var labels = protocol == "property" ? new[] { "R", "C", "S" } : new[] { "R", "C", "B", "S" };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

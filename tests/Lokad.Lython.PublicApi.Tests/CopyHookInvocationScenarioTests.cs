@@ -13,7 +13,7 @@ public sealed class CopyHookInvocationScenarioTests
     [Fact]
     public async Task SelfReturningHookRunsPerOccurrence()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import copy
             calls = []
@@ -39,7 +39,7 @@ public sealed class CopyHookInvocationScenarioTests
     [Fact]
     public async Task FreshReturningHookRunsOnceAndAliases()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import copy
             calls = []

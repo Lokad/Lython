@@ -22,7 +22,7 @@ public sealed class StyleValueAccountingTests
     public void StyleValueCommitsExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = CreateFont(context, span);
         Assert.Equal(128L, context.MemoryGovernor.CurrentCommittedBytes);
@@ -33,7 +33,7 @@ public sealed class StyleValueAccountingTests
     public void ContextFreeDefaultsStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         _ = CreateFont(null, null);
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -52,7 +52,7 @@ public sealed class StyleValueAccountingTests
     public void CommentValueCommitsExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = CreateComment(context, span);
         Assert.Equal(128L, context.MemoryGovernor.CurrentCommittedBytes);
@@ -63,7 +63,7 @@ public sealed class StyleValueAccountingTests
     public void ContextFreeCommentStaysFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         _ = CreateComment(null, null);
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

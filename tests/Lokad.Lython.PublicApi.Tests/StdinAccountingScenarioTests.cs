@@ -23,7 +23,7 @@ public sealed class StdinAccountingScenarioTests
     [Fact]
     public async Task OversizedInputLineRespectsBudget()
     {
-        var script = new LythonEngine().Compile("v = input()\nreturn len(v)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("v = input()\nreturn len(v)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(SeededHost(), options);
@@ -38,7 +38,7 @@ public sealed class StdinAccountingScenarioTests
     [Fact]
     public async Task OversizedStdinReadRespectsBudget()
     {
-        var script = new LythonEngine().Compile("import sys\ndata = sys.stdin.read()\nreturn len(data)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import sys\ndata = sys.stdin.read()\nreturn len(data)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(SeededHost(), options);
@@ -53,7 +53,7 @@ public sealed class StdinAccountingScenarioTests
     [Fact]
     public async Task RoomyStdinReadsBack()
     {
-        var script = new LythonEngine().Compile("v = input()\nreturn len(v)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("v = input()\nreturn len(v)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new BigInteger(200000);

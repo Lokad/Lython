@@ -22,7 +22,7 @@ public sealed class ExpandedCallExecutionTests
     [MemberData(nameof(Programs))]
     public async Task ExpansionPreservesPythonEffectsAndScopes(string source, string expected)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         foreach (var asynchronous in new[] { false, true })
         {
@@ -59,7 +59,7 @@ class Target:
 print(Target()(*Values(),**Mapping()))
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var paths = new[] { "/iterate.txt", "/keys.txt", "/items.txt", "/call.txt" };
@@ -112,7 +112,7 @@ print(Target()(*Values(),**Mapping()))
     {
         const string source = "def sink(*args):\n with open('result.txt','w') as output: output.write('called')\nsink(*range(10000))";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
@@ -134,7 +134,7 @@ print(Target()(*Values(),**Mapping()))
     public async Task ReturnedArgumentsRemainFundedAfterTemporaryCleanup()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("def sink(*args): return args\nreturn sink(*values)", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("def sink(*args): return args\nreturn sink(*values)", budget);
         var baseline = budget.ReservedBytes;
         var seed = System.Numerics.BigInteger.One << 10000;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["values"] = new object[] { seed } } };

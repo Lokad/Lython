@@ -14,7 +14,7 @@ public sealed class DictionaryEntryEvaluationTests
             string.Join("\n", body.Split('\n').Select(line => "    " + line)) +
             "\nexcept TypeError:\n    print(events)\n";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -44,7 +44,7 @@ except TypeError:
     print('invalid-key')
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/events.txt", "before");
@@ -91,7 +91,7 @@ except TypeError:
         var source = "def fail(): raise ValueError('value')\ntarget={'old':1}\ntry:\n" +
             string.Join("\n", body.Split('\n').Select(line => "    " + line)) +
             "\nexcept ValueError:\n    print(target)";
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         foreach (var asynchronous in new[] { false, true })
         {
             using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());

@@ -63,7 +63,7 @@ public sealed class ReviewHardening8RegressionTests
         });
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3075000) };
 
-        var writable = new LythonEngine().Run(
+        var writable = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 wb = openpyxl.load_workbook("/pad.xlsx")
@@ -76,7 +76,7 @@ return len(bulk)
         Assert.Equal("MemoryError", writable.Failure?.ExceptionType);
 
         var host = SeedHost("/pad.xlsx", payload);
-        var readOnly = new LythonEngine().Run(
+        var readOnly = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import openpyxl
 wb = openpyxl.load_workbook("/pad.xlsx", read_only=True)
@@ -93,7 +93,7 @@ return len(bulk)
     public void ReadOnlyLoadStillEnforcesTransientBudgets()
     {
         var host = SeedHost("/tiny.xlsx", BuildXlsx());
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             LoadScript("/tiny.xlsx", ", read_only=True"),
             host,
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
@@ -117,12 +117,12 @@ return len(bulk)
         Assert.True(at >= 0);
         payload[at] ^= 0xFF;
 
-        var writable = new LythonEngine().Run(LoadScript("/bad.xlsx", string.Empty), SeedHost("/bad.xlsx", payload));
+        var writable = new LythonEngine(Utf8RegexProvider.Instance).Run(LoadScript("/bad.xlsx", string.Empty), SeedHost("/bad.xlsx", payload));
         Assert.False(writable.Success);
         Assert.Equal("InvalidFileException", writable.Failure?.ExceptionType);
 
         var host = SeedHost("/bad.xlsx", payload);
-        var readOnly = new LythonEngine().Run(LoadScript("/bad.xlsx", ", read_only=True"), host);
+        var readOnly = new LythonEngine(Utf8RegexProvider.Instance).Run(LoadScript("/bad.xlsx", ", read_only=True"), host);
         Assert.True(readOnly.Success, readOnly.Failure?.Message);
         Assert.Equal(new List<object?> { "S" }, Assert.IsType<List<object?>>(readOnly.ReturnValue));
     }

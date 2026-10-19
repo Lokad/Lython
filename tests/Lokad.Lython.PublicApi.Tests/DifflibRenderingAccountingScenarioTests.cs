@@ -13,7 +13,7 @@ public sealed class DifflibRenderingAccountingScenarioTests
     {
         // Aliased input lines isolate rendering growth: one shared payload
         // with per-line prepared copies and output.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import difflib
             line = "x" * 2000
@@ -36,7 +36,7 @@ public sealed class DifflibRenderingAccountingScenarioTests
     [Fact]
     public async Task RenderingBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import difflib
             h = difflib.HtmlDiff()

@@ -17,7 +17,7 @@ public sealed class OperatorValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedItemGettersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import operator
             objs = []
             i = 0
@@ -42,7 +42,7 @@ public sealed class OperatorValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedAttrGettersStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import operator
             objs = []
             i = 0
@@ -65,7 +65,7 @@ public sealed class OperatorValueAccountingScenarioTests
     [Fact]
     public async Task OperatorFactoriesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import operator
             import collections
             P = collections.namedtuple("P", ["x", "y"])

@@ -14,7 +14,7 @@ public sealed class DequeAccountingTests
     public void AppendsAccumulateAndClearReleases()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var deque = new PyDeque(null, context.MemoryGovernor, span);
         Assert.Equal(128L, context.MemoryGovernor.CurrentCommittedBytes);
@@ -34,7 +34,7 @@ public sealed class DequeAccountingTests
     public void BoundedEvictionReusesNodeCharge()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var deque = new PyDeque(8, context.MemoryGovernor, span);
         for (var i = 0; i < 20; i++)
@@ -51,7 +51,7 @@ public sealed class DequeAccountingTests
     public void PopAndRemoveReleaseNodeCharges()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var deque = new PyDeque(null, context.MemoryGovernor, span);
         for (var i = 0; i < 10; i++)

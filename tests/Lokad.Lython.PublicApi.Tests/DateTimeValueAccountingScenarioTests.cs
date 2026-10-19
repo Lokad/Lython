@@ -13,7 +13,7 @@ public sealed class DateTimeValueAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedDatetimesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import datetime
             ds = []
@@ -37,7 +37,7 @@ public sealed class DateTimeValueAccountingScenarioTests
     [Fact]
     public async Task DateTimeBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import datetime
             d = datetime.date(2024, 2, 29)

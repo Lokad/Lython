@@ -18,7 +18,7 @@ public sealed class ChunkedReadWorkingStorageTests
         using (var owner = budget.CreateScope())
         {
             var context = new LythonRuntime.ExecutionContext(host,
-                new LythonRunOptions { MemoryBudget = owner, CancellationToken = cancellation.Token });
+                new LythonRunOptions { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
             var state = Create(context, window);
             await state.PrimeAsync();
             var started = host.PauseReadUntilCancellation("/file");
@@ -55,7 +55,7 @@ public sealed class ChunkedReadWorkingStorageTests
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner });
+            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var state = Create(context, window);
             await state.PrimeAsync();
             var observed = false;
@@ -95,7 +95,7 @@ public sealed class ChunkedReadWorkingStorageTests
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner });
+            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var state = Open(context, window);
             try
             {
@@ -123,7 +123,7 @@ public sealed class ChunkedReadWorkingStorageTests
         var budget = new LythonMemoryBudget(cap);
         using (var owner = budget.CreateScope())
         {
-            var context = new LythonRuntime.ExecutionContext(host,new LythonRunOptions { MemoryBudget=owner });
+            var context = new LythonRuntime.ExecutionContext(host,new LythonRunOptions { MemoryBudget=owner },regexProvider:Utf8RegexProvider.Instance);
             var state = Open(context,window);
             Assert.True(budget.TryReserve(cap-budget.ReservedBytes-(window+2*window-1),out var pressure));
             try

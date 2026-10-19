@@ -19,7 +19,7 @@ public sealed class ZipInfoAssignAccountingScenarioTests
     [Fact]
     public async Task ManyReassignedInfosStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import zipfile
             z = zipfile.ZipInfo("a")
             t = (2021, 2, 3, 4, 5, 6)
@@ -47,7 +47,7 @@ public sealed class ZipInfoAssignAccountingScenarioTests
     [Fact]
     public async Task ZipInfoAssignBehaves()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import zipfile
             z = zipfile.ZipInfo("a")
             z.date_time = (2021, 2, 3, 4, 5, 6)

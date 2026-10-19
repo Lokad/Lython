@@ -12,7 +12,7 @@ public sealed class ZipWriterLifecycleScenarioTests
     [Fact]
     public async Task MutationsAfterCloseRaiseValueError()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")
@@ -49,7 +49,7 @@ public sealed class ZipWriterLifecycleScenarioTests
     [Fact]
     public async Task FreshAppendMissingTargetPublishesEmptyArchive()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/fresh.zip", "a")
@@ -73,7 +73,7 @@ public sealed class ZipWriterLifecycleScenarioTests
     [Fact]
     public async Task FreshAppendEmptyFilePublishesEmptyArchive()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/empty.zip", "a")
@@ -113,16 +113,16 @@ public sealed class ZipWriterLifecycleScenarioTests
                 return reread.read("a.txt")
             """;
         var syncHost = new MockLythonHost();
-        Assert.True(new LythonEngine().Run(setup, syncHost).Success);
+        Assert.True(new LythonEngine(Utf8RegexProvider.Instance).Run(setup, syncHost).Success);
         var before = syncHost.ReadBytes("/keep.zip");
-        var sync = new LythonEngine().Run(append, syncHost);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(append, syncHost);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new byte[] { 100, 97, 116, 97 }, Assert.IsType<byte[]>(sync.ReturnValue));
         Assert.Equal(before, syncHost.ReadBytes("/keep.zip"));
         var asyncHost = new MockLythonHost();
-        Assert.True(new LythonEngine().Run(setup, asyncHost).Success);
+        Assert.True(new LythonEngine(Utf8RegexProvider.Instance).Run(setup, asyncHost).Success);
         var asyncBefore = asyncHost.ReadBytes("/keep.zip");
-        var asyncResult = await new LythonEngine().RunAsync(append, asyncHost);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(append, asyncHost);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(new byte[] { 100, 97, 116, 97 }, Assert.IsType<byte[]>(asyncResult.ReturnValue));
         Assert.Equal(asyncBefore, asyncHost.ReadBytes("/keep.zip"));
@@ -146,15 +146,15 @@ public sealed class ZipWriterLifecycleScenarioTests
                 return [reread.namelist(), reread.read("b.txt")]
             """;
         var syncHost = new MockLythonHost();
-        Assert.True(new LythonEngine().Run(setup, syncHost).Success);
-        var sync = new LythonEngine().Run(append, syncHost);
+        Assert.True(new LythonEngine(Utf8RegexProvider.Instance).Run(setup, syncHost).Success);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(append, syncHost);
         Assert.True(sync.Success, sync.Failure?.Message);
         var values = Assert.IsType<List<object?>>(sync.ReturnValue);
         Assert.Equal(new List<object?> { "a.txt", "b.txt" }, Assert.IsType<List<object?>>(values[0]));
         Assert.Equal(new byte[] { 109, 111, 114, 101 }, Assert.IsType<byte[]>(values[1]));
         var asyncHost = new MockLythonHost();
-        Assert.True(new LythonEngine().Run(setup, asyncHost).Success);
-        var asyncResult = await new LythonEngine().RunAsync(append, asyncHost);
+        Assert.True(new LythonEngine(Utf8RegexProvider.Instance).Run(setup, asyncHost).Success);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(append, asyncHost);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         var asyncValues = Assert.IsType<List<object?>>(asyncResult.ReturnValue);
         Assert.Equal(new List<object?> { "a.txt", "b.txt" }, Assert.IsType<List<object?>>(asyncValues[0]));
@@ -164,7 +164,7 @@ public sealed class ZipWriterLifecycleScenarioTests
     [Fact]
     public async Task ClosedArchiveAcceptsContextEntry()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             archive = zipfile.ZipFile("/out.zip", "w")
@@ -187,7 +187,7 @@ public sealed class ZipWriterLifecycleScenarioTests
     [Fact]
     public async Task FailedCloseStaysRetriable()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import zipfile
             results = []

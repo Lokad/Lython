@@ -19,7 +19,7 @@ public sealed class HeapIntegerLiteralAccountingScenarioTests
     [Fact]
     public async Task HeapLiteralsSharedVersusOwned()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "xs = []\n" +
             "i = 0\n" +
             "while i < 40000:\n" +
@@ -43,7 +43,7 @@ public sealed class HeapIntegerLiteralAccountingScenarioTests
     [Fact]
     public async Task SmallLiteralsAppendAtScale()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "xs = []\n" +
             "i = 0\n" +
             "while i < 40000:\n" +
@@ -66,7 +66,7 @@ public sealed class HeapIntegerLiteralAccountingScenarioTests
     [Fact]
     public async Task BigLiteralValuesStillProject()
     {
-        var script = new LythonEngine().Compile("return " + Big() + "\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return " + Big() + "\n");
         Assert.True(script.IsValid);
         var expected = BigInteger.Parse(Big(), System.Globalization.CultureInfo.InvariantCulture);
         var sync = script.Run(new MockLythonHost());

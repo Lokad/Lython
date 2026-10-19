@@ -16,7 +16,7 @@ public sealed class ArgparseAccountingScenarioTests
     {
         var builder = new StringBuilder("import argparse\np = argparse.ArgumentParser(add_help=False)\n");
         builder.Append("i = 0\nwhile i < 1000:\n    p.add_argument(\"--x\")\n    i = i + 1\nreturn 0\n");
-        var script = new LythonEngine().Compile(builder.ToString());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(builder.ToString());
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -31,7 +31,7 @@ public sealed class ArgparseAccountingScenarioTests
     [Fact]
     public async Task ManyGroupsStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import argparse
             p = argparse.ArgumentParser(add_help=False)
@@ -68,7 +68,7 @@ public sealed class ArgparseAccountingScenarioTests
         }
 
         builder.Append(")\nreturn 0\n");
-        var script = new LythonEngine().Compile(builder.ToString());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(builder.ToString());
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -83,7 +83,7 @@ public sealed class ArgparseAccountingScenarioTests
     [Fact]
     public async Task ParserOptionsAndNamespaceStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import argparse
             p = argparse.ArgumentParser(add_help=False)

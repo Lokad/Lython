@@ -24,7 +24,7 @@ public sealed class GlobalsNormalizationAccountingScenarioTests
     [Fact]
     public async Task BigHostListStaysCharged()
     {
-        var script = new LythonEngine().Compile("return len(big)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(big)\n");
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is exactly 8000064 (content only), so this
         // fits; the 16B-per-item drain copy (+8000000) trips post-fix.
@@ -41,7 +41,7 @@ public sealed class GlobalsNormalizationAccountingScenarioTests
     [Fact]
     public async Task RoomyHostGlobalsSucceed()
     {
-        var script = new LythonEngine().Compile("return len(big)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(big)\n");
         Assert.True(script.IsValid);
         // N06: the 500k distinct host longs adopt one 64 B coupon each beside the
         // content and drain copy (~48 MB total), so the roomy budget moved
@@ -66,7 +66,7 @@ public sealed class GlobalsNormalizationAccountingScenarioTests
             ["nested"] = new List<object?> { new List<object?> { (object)(long)3 } },
             ["name"] = "hello",
         };
-        var script = new LythonEngine().Compile("return [tup[0], tup[1], nested[0][0], name]\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return [tup[0], tup[1], nested[0][0], name]\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { (object)(long)1, "two", (object)(long)3, "hello" };
         var sync = script.Run(new MockLythonHost(), new LythonRunOptions { Globals = globals });

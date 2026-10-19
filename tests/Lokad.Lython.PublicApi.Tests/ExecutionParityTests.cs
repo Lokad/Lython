@@ -30,8 +30,8 @@ public sealed class ExecutionParityTests
     [MemberData(nameof(PurePrograms))]
     public async Task SyncAndAsyncRuntimesAgreeForPurePrograms(string source)
     {
-        var sync = new LythonEngine().Run(source, new MockLythonHost());
-        var asyncResult = await new LythonEngine().RunAsync(source, new MockLythonHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, new MockLythonHost());
 
         AssertEquivalent(sync, asyncResult);
     }
@@ -52,8 +52,8 @@ return str(time.monotonic_ns())
         var syncHost = CreateEffectHost();
         var asyncHost = CreateEffectHost();
 
-        var sync = new LythonEngine().Run(source, syncHost);
-        var asyncResult = await new LythonEngine().RunAsync(source, asyncHost);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, syncHost);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, asyncHost);
 
         AssertEquivalent(sync, asyncResult);
         Assert.Equal(syncHost.ReadText("/output.txt"), asyncHost.ReadText("/output.txt"));
@@ -88,8 +88,8 @@ return evaluate()
         var asyncHost = new DelayedLythonHost();
         asyncHost.SeedFile("/flag.txt", "yes");
 
-        var sync = new LythonEngine().Run(source, syncHost);
-        var asyncResult = await new LythonEngine().RunAsync(source, asyncHost);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, syncHost);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, asyncHost);
 
         AssertEquivalent(sync, asyncResult);
         Assert.Equal("if|and|conditional|False|1", asyncResult.ReturnValue);
@@ -120,8 +120,8 @@ evaluate = lambda: [Box() + Box(), 1 + Box(), Box() < Box(), 1 < Box(), Box() ==
 return str(evaluate())
 """;
 
-        var sync = new LythonEngine().Run(source, new MockLythonHost());
-        var asyncResult = await new LythonEngine().RunAsync(source, new MockLythonHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, new MockLythonHost());
 
         AssertEquivalent(sync, asyncResult);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -144,8 +144,8 @@ return (lambda: Box() + Box())()
         var asyncHost = new DelayedLythonHost();
         asyncHost.SeedFile("/value.txt", "payload");
 
-        var sync = new LythonEngine().Run(source, syncHost);
-        var asyncResult = await new LythonEngine().RunAsync(source, asyncHost);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, syncHost);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, asyncHost);
 
         AssertEquivalent(sync, asyncResult);
         Assert.Equal("payload", asyncResult.ReturnValue);
@@ -172,8 +172,8 @@ return str([item.value for item in sorted(values)])
         var asyncHost = new DelayedLythonHost();
         asyncHost.SeedFile("/permission.txt", "yes");
 
-        var sync = new LythonEngine().Run(source, syncHost);
-        var asyncResult = await new LythonEngine().RunAsync(source, asyncHost);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, syncHost);
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, asyncHost);
 
         AssertEquivalent(sync, asyncResult);
         Assert.Equal("[1, 2, 3]", asyncResult.ReturnValue);
@@ -185,8 +185,8 @@ return str([item.value for item in sorted(values)])
     {
         const string source = "def fail():\n    raise ValueError('bad')\nfail()\n";
 
-        var sync = new LythonEngine().Run(source, new MockLythonHost());
-        var asyncResult = await new LythonEngine().RunAsync(source, new MockLythonHost());
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
+        var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(source, new MockLythonHost());
 
         AssertEquivalent(sync, asyncResult);
     }

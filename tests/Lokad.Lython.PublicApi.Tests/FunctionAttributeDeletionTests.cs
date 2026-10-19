@@ -21,7 +21,7 @@ public sealed class FunctionAttributeDeletionTests
     public async Task DeletionPreservesPythonMetadataBehavior(string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -41,7 +41,7 @@ public sealed class FunctionAttributeDeletionTests
     public async Task DeletedAttributeAliasesRemainFunded(bool lambda)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile((lambda ? "f=lambda:None" : "def f(): pass") +
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile((lambda ? "f=lambda:None" : "def f(): pass") +
             "\nf.tag='x'*4096\nsaved=f.tag\ndel f.tag\nreturn saved", budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })

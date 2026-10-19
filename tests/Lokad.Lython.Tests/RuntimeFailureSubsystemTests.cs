@@ -28,7 +28,7 @@ public sealed class RuntimeFailureSubsystemTests
     public void RuntimeFailureProjection_RendersKeyErrorPayloads()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
 
         var failure = RuntimeFailureProjection.ToPublicFailure(

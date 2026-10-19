@@ -30,7 +30,7 @@ public class NamedTupleLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedNamedTupleTypesDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "from collections import namedtuple\nobjs = []\ni = 0\nwhile i < " + Iterations(2000) + ":\n    objs.append(namedtuple('P', ['x', 'y']))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };
@@ -72,7 +72,7 @@ public class NamedTupleLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedNamedTupleDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(P(1, 2))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };
@@ -99,7 +99,7 @@ public class NamedTupleLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedClassNamedTupleDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import typing\nobjs = []\ni = 0\nwhile i < " + Iterations(2000) + ":\n    class P(typing.NamedTuple):\n        x: int\n        y: str\n    objs.append(P(1, 'a'))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };
@@ -115,7 +115,7 @@ public class NamedTupleLifetimeScenarioTests : LifetimeScenario
 
     private async Task AssertFails(string source, string exceptionType, string messagePart)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var sync = script.Run(new MockLythonHost(), Budgeted());
         Assert.False(sync.Success);

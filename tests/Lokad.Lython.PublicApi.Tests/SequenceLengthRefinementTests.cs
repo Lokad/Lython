@@ -7,7 +7,7 @@ public sealed class SequenceLengthRefinementTests
     [Fact]
     public void FalseLengthBranch_SuppressesImpossibleLiteralIndexDiagnostics()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 heap = []
 limit = 1
@@ -35,7 +35,7 @@ if len(values) != 0:
     [Fact]
     public void ZeroLengthBranches_ProvePositiveAndNegativeIndexesInvalid()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 direct = [value for value in range(3)]
 if len(direct) == 0:
@@ -62,7 +62,7 @@ if len(queued) == 0:
     [Fact]
     public void MutationThroughAnAlias_WidensStaleLiteralLengths()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 items = [1]
 alias = items
@@ -81,7 +81,7 @@ unknown = other_alias[5]
     [Fact]
     public void FalseChainedComparison_DoesNotDiscardAnUnknownFailurePath()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 def inspect(flag):
     items = [1, 2] if flag else [3]
@@ -96,7 +96,7 @@ def inspect(flag):
     [Fact]
     public void LiteralOutOfRangeDiagnostics_IncludeNegativeIndexes()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 [][0]
 ()[-1]
@@ -120,7 +120,7 @@ def edge(items):
 return edge([]) + "|" + edge([2, 3])
 """;
 
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, Describe(compiled));
 
         var result = compiled.Run(new MockLythonHost());

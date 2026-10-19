@@ -24,7 +24,7 @@ public sealed class HostRangedReadContextTests
 
         foreach (var window in new[] { 1, 7, 64 })
         {
-            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
             var syncAssembled = new List<byte>();
             for (long offset = 0; offset < size; offset += window)
             {
@@ -49,7 +49,7 @@ public sealed class HostRangedReadContextTests
         var payload = new byte[] { 0, 1, 2, 250, 251, 252, 253, 254, 255 };
         var host = new MockLythonHost();
         host.SeedBytes("/data.bin", payload);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
 
         var syncAssembled = new List<byte>();
         for (long offset = 0; offset < payload.Length; offset += 4)
@@ -72,7 +72,7 @@ public sealed class HostRangedReadContextTests
     public async Task RangeFailuresMatchWholeReadFailures()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
 
         var wholeSync = Assert.Throws<HostOperationException>(() => context.ReadTextUtf8("/missing.txt", null));
         var rangeSync = Assert.Throws<HostOperationException>(() => context.ReadTextUtf8Range("/missing.txt", 0, 8, null));

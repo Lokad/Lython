@@ -114,7 +114,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
     [InlineData("def f(value):\n    try:\n        return value + 3\n    finally:\n        value = 999\nreturn f(2)\n", "5")]
     public void RichOperandsAndObservableFramesKeepPythonBehavior(string source, string expected)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message ?? string.Join("|", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(expected, Convert.ToString(result.ReturnValue, CultureInfo.InvariantCulture));
     }
@@ -137,12 +137,12 @@ public sealed class SimpleFunctionExecutionBoundaryTests
 
     private static (PyExecutableFunction Function, LythonRuntime.ExecutionContext Context, ExecutableCodeObject Code) Function(string source, LythonRunOptions options)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
         var binding = Assert.Single(executable.EntryPoint.Functions);
         var code = binding.CodeObject.RequireNotNull();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
         var closure = LythonRuntime.ExecutionContext.CreateModule(context, "/callee.py", "callee");
         var function = new PyExecutableFunction("f", binding.Function.Parameters, code, closure, [], [], code.ScopeFacts);
         return (function, context, code);

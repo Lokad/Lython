@@ -19,7 +19,7 @@ public sealed class ExceptionArgumentLifetimeTests
     public async Task UnhandledArgumentsRenderAfterCleanupAndAwaitWriterPublication(string type)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(DiagnosticSource(type), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(DiagnosticSource(type), budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -43,7 +43,7 @@ public sealed class ExceptionArgumentLifetimeTests
     public async Task CancelledDiagnosticPublicationDrainsBeforeRefund()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(DiagnosticSource("ValueError"), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(DiagnosticSource("ValueError"), budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -94,7 +94,7 @@ print('constructed')
         var source = common + "\n" + (phase == "diagnostic" ? "raise error" :
             "try:unused=" + (phase == "str" ? "str(error)" : "error.message") + "\nexcept BaseException:print('caught render')\nprint('after')");
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) };
@@ -117,7 +117,7 @@ print('constructed')
     {
         const string source = "message=['é'*4096]\nerror=ValueError(message)\nreturn error.args[0]";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var first = script.Run(new MockLythonHost()))

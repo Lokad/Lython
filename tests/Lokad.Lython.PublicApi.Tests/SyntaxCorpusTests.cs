@@ -26,7 +26,7 @@ public sealed class SyntaxCorpusTests
         var rejected = item.Status is "invalid" or "unsupported";
         // A syntax failure anywhere must prevent even preceding effects.
         var source = rejected ? "print('must not execute')\n" + item.Source : item.Source;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid != rejected,
             name + ": " + string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         if (rejected)

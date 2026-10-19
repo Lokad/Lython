@@ -8,7 +8,6 @@ using System.Text.Json;
 using System.Threading;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
-using Lokad.Utf8Regex.PythonRe;
 
 namespace Lokad.Lython.Runtime;
 
@@ -35,10 +34,10 @@ internal sealed partial class LythonRuntime
         // only TryGetNonlocalTarget reads it).
         private static readonly Dictionary<string, ExecutionContext> EmptyNonlocalTargets = new(StringComparer.Ordinal);
 
-        public ExecutionContext(ILythonHost host, LythonRunOptions? options)
+        public ExecutionContext(ILythonHost host, LythonRunOptions? options, ILythonRegexProvider? regexProvider = null)
         {
             var builtinVariables = CreateBuiltinVariables();
-            Services = new ExecutionServices(new ExecutionState(host, options, builtinVariables));
+            Services = new ExecutionServices(new ExecutionState(host, options, builtinVariables, regexProvider));
             var sourcePath = options?.SourcePath is null ? null : PathOps.Normalize(options.SourcePath, host.Cwd);
             SourcePath = sourcePath;
             InitializeFrameVariables(CreateModuleVariables(sourcePath, "__main__"));

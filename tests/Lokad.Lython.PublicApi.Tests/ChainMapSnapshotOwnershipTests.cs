@@ -20,7 +20,7 @@ public sealed class ChainMapSnapshotOwnershipTests
     {
         var code = "import collections\nc = collections.ChainMap(" + ThousandKeys + ")\nits = [iter(c) for _ in range(300)]\nreturn len(its)\n";
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
-        var sync = new LythonEngine().Run(code, new MockLythonHost(), options);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), options);
         AssertError(sync, "MemoryError", "shared memory budget exceeded");
     }
 
@@ -29,7 +29,7 @@ public sealed class ChainMapSnapshotOwnershipTests
     {
         var code = "import collections\nc = collections.ChainMap(" + ThousandKeys + ")\nits = [iter(c) for _ in range(300)]\nreturn len(its)\n";
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
-        var result = await new LythonEngine().RunAsync(code, new MockLythonHost(), options);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, new MockLythonHost(), options);
         AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
@@ -38,14 +38,14 @@ public sealed class ChainMapSnapshotOwnershipTests
     {
         var code = "import collections\nc = collections.ChainMap(" + ThousandKeys + ")\nits = [iter(c.keys()) for _ in range(300)]\nreturn len(its)\n";
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
-        var result = new LythonEngine().Run(code, new MockLythonHost(), options);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), options);
         AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
     public void SimultaneousPartialsStayIndependent()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             c = collections.ChainMap({"b": 2}, {"a": 1})
@@ -64,7 +64,7 @@ public sealed class ChainMapSnapshotOwnershipTests
     [Fact]
     public void AbandonedPartialThenReuseSucceeds()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             c = collections.ChainMap({"b": 2}, {"a": 1})
@@ -81,7 +81,7 @@ public sealed class ChainMapSnapshotOwnershipTests
     [Fact]
     public void ExhaustedIteratorRaisesStopIteration()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             c = collections.ChainMap({"a": 1})
@@ -105,7 +105,7 @@ public sealed class ChainMapSnapshotOwnershipTests
         using var cts = new CancellationTokenSource();
         cts.Cancel();
         var code = "import collections\nd = " + ThousandKeys + "\nc = collections.ChainMap(d)\nreturn len(list(c))\n";
-        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { CancellationToken = cts.Token });
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), new LythonRunOptions { CancellationToken = cts.Token });
         Assert.False(result.Success);
         Assert.Contains("execution canceled", result.Failure!.Message, StringComparison.Ordinal);
     }
@@ -114,14 +114,14 @@ public sealed class ChainMapSnapshotOwnershipTests
     public void LenDeniesUnderTinyBudget()
     {
         var code = "import collections\nd = " + ThousandKeys + "\nc = collections.ChainMap(d)\nreturn [len(c), len(c.keys()), len(c.values())]\n";
-        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(10000) });
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(10000) });
         AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
     public void ScalarMembershipNeedsNoSnapshot()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import collections
             c = collections.ChainMap({"b": 2}, {"a": 1})
@@ -138,7 +138,7 @@ public sealed class ChainMapSnapshotOwnershipTests
     {
         var code = "import collections\nd = " + ThousandKeys + "\nc = collections.ChainMap(d)\nits = [enumerate(c) for _ in range(100)]\nreturn len(its)\n";
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
-        var sync = new LythonEngine().Run(code, new MockLythonHost(), options);
+        var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), options);
         AssertError(sync, "MemoryError", "shared memory budget exceeded");
     }
 
@@ -147,7 +147,7 @@ public sealed class ChainMapSnapshotOwnershipTests
     {
         var code = "import collections\nd = " + ThousandKeys + "\nc = collections.ChainMap(d)\nits = [enumerate(c) for _ in range(100)]\nreturn len(its)\n";
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
-        var result = await new LythonEngine().RunAsync(code, new MockLythonHost(), options);
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(code, new MockLythonHost(), options);
         AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 }

@@ -13,7 +13,7 @@ public sealed class ExecutableAugmentedSubscriptTests
     [InlineData("def run(items,key,value):\n (yield items)[key]+=(yield value)", true)]
     public void UpdatesRetainOperandsWithoutPreparedReads(string source, bool generator)
     {
-        var syntax = LythonFrontend.Compile(source).Script!;
+        var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
         Assert.Empty(code.ExpressionFallbacks);
@@ -25,7 +25,7 @@ public sealed class ExecutableAugmentedSubscriptTests
     [Fact]
     public void YieldingOrdinaryStoreSharesTheSubscriptStore()
     {
-        var syntax = LythonFrontend.Compile("def run(items,key,value):\n (yield items)[(yield key)]=value").Script!;
+        var syntax = LythonFrontend.Compile("def run(items,key,value):\n (yield items)[(yield key)]=value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
         Assert.Empty(code.ExpressionFallbacks);
@@ -37,10 +37,10 @@ public sealed class ExecutableAugmentedSubscriptTests
     [InlineData(true)]
     public async Task GetterRhsAndSetterUseTheChosenExecutionMode(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var checkpoint = new Checkpoint();
         context.Variables["checkpoint"] = checkpoint;
-        var syntax = LythonFrontend.Compile("class Box:\n def __getitem__(self,key): return checkpoint(key)\n def __setitem__(self,key,value): checkpoint(key,value)\nbox=Box()\nkey=[]\nbox[key]+=checkpoint()").Script!;
+        var syntax = LythonFrontend.Compile("class Box:\n def __getitem__(self,key): return checkpoint(key)\n def __setitem__(self,key,value): checkpoint(key,value)\nbox=Box()\nkey=[]\nbox[key]+=checkpoint()",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
@@ -59,10 +59,10 @@ public sealed class ExecutableAugmentedSubscriptTests
     public async Task InplaceGrowthRequiresAdmissionBeforeAliasMutation(bool asynchronous, bool deny)
     {
         const long limit = 1024 * 1024;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         using var rhs = new CapacityGate(context.MemoryGovernor, limit, deny);
         context.Variables["rhs"] = rhs;
-        var syntax = LythonFrontend.Compile("items=[[1]]\nitems[0]+=rhs([0]*1024,items)").Script!;
+        var syntax = LythonFrontend.Compile("items=[[1]]\nitems[0]+=rhs([0]*1024,items)",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         try
         {

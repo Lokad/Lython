@@ -14,7 +14,7 @@ public sealed class ClassValueAccountingScenarioTests
     public async Task ManyEmptyClassesStayCharged()
     {
         var builder = new StringBuilder("cs = []\ni = 0\nwhile i < 2000:\n    class C:\n        pass\n    cs.append(C)\n    i = i + 1\nreturn 0\n");
-        var script = new LythonEngine().Compile(builder.ToString());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(builder.ToString());
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -36,7 +36,7 @@ public sealed class ClassValueAccountingScenarioTests
         }
 
         builder.Append("    cs.append(C)\n    i = i + 1\nreturn 0\n");
-        var script = new LythonEngine().Compile(builder.ToString());
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(builder.ToString());
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         var sync = script.Run(new MockLythonHost(), options);
@@ -51,7 +51,7 @@ public sealed class ClassValueAccountingScenarioTests
     [Fact]
     public async Task ClassBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             class C:
                 x = 1

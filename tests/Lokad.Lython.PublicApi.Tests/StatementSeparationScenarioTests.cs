@@ -23,7 +23,7 @@ public sealed class StatementSeparationScenarioTests
         };
         foreach (var source in cases)
         {
-            var script = new LythonEngine().Compile(source);
+            var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
             Assert.False(script.IsValid, source);
             Assert.Contains(script.Diagnostics, d => d.Code == "LA1001");
         }
@@ -40,7 +40,7 @@ public sealed class StatementSeparationScenarioTests
         };
         foreach (var source in cases)
         {
-            var script = new LythonEngine().Compile(source);
+            var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
             Assert.False(script.IsValid, source);
             Assert.Contains(script.Diagnostics, d => d.Code == "LA1009");
         }
@@ -49,7 +49,7 @@ public sealed class StatementSeparationScenarioTests
     [Fact]
     public async Task MultiModuleImportSemicolon_RunsBothModes()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import json, re; x = 1
             return x
             """);
@@ -65,7 +65,7 @@ public sealed class StatementSeparationScenarioTests
     [Fact]
     public async Task AliasedMultiModuleImportSemicolon_RunsBothModes()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import json as j, re as r; return [j.dumps(12), len(r.findall("a", "aba"))]
             """);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
@@ -81,7 +81,7 @@ public sealed class StatementSeparationScenarioTests
     [Fact]
     public async Task MultiModuleImportSemicolon_NestedSuite_RunsBothModes()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             if True:
                 import json, re; x = 1
             return x
@@ -109,7 +109,7 @@ public sealed class StatementSeparationScenarioTests
         };
         foreach (var source in cases)
         {
-            var script = new LythonEngine().Compile(source);
+            var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
             Assert.False(script.IsValid, source);
             Assert.Contains(script.Diagnostics, d => d.Code == "LA1001");
         }
@@ -118,7 +118,7 @@ public sealed class StatementSeparationScenarioTests
     [Fact]
     public async Task ValidSeparatorsStillCompileAndRun()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import os, sys
             a = 1; b = 2

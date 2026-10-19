@@ -7,7 +7,7 @@ public sealed class ImportlibModuleFunctionTests
     [Fact]
     public void BuiltinDiscoveryAndDynamicImportStayInsideLythonModuleInventory()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import importlib
 import importlib.util
@@ -61,7 +61,7 @@ Path("/repo/discovery-side-effect.txt").write_text("executed")
 value = 42
 """);
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import importlib.util
 
@@ -93,7 +93,7 @@ return "|".join([
         host.SeedFile("/repo/pkg/__init__.py", "kind = 'package'\n");
         host.SeedFile("/repo/pkg/child.py", "value = 7\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import importlib
 import importlib.util
@@ -128,7 +128,7 @@ return "|".join([
         var host = new DelayedLythonHost("/repo");
         host.SeedFile("/repo/helper.py", "value = 42\n");
 
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import importlib
 import importlib.util
@@ -151,7 +151,7 @@ return spec.origin + "|" + str(module.value)
     [InlineData("importlib.util.spec_from_loader('x', None)", "contained discovery")]
     public void LoaderConstructionAndExecutionHelpersFailExplicitly(string expression, string messageFragment)
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             $$"""
 import importlib.util
 {{expression}}
@@ -166,7 +166,7 @@ import importlib.util
     [Fact]
     public void StaticContractsRecognizeImportlibModulesAndCallShapes()
     {
-        var valid = new LythonEngine().Compile(
+        var valid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import importlib
 import importlib.util
@@ -177,7 +177,7 @@ importlib.invalidate_caches()
 import_module("json")
 find_spec("json")
 """);
-        var invalid = new LythonEngine().Compile(
+        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import importlib
 import importlib.util
@@ -196,19 +196,19 @@ importlib.util.resolve_name("x")
     [Fact]
     public void RelativeAndMalformedNamesFailWithPythonShapedErrors()
     {
-        var missingPackage = new LythonEngine().Run(
+        var missingPackage = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import importlib
 importlib.import_module(".child")
 """,
             new MockLythonHost());
-        var beyondTop = new LythonEngine().Run(
+        var beyondTop = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import importlib.util
 importlib.util.resolve_name("...child", "pkg")
 """,
             new MockLythonHost());
-        var empty = new LythonEngine().Run(
+        var empty = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import importlib
 importlib.import_module("")

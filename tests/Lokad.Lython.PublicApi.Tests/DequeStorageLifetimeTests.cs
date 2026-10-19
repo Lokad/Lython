@@ -13,7 +13,7 @@ public sealed class DequeStorageLifetimeTests
 
     private static async Task<LythonExecutionResult> Run(string source, bool asynchronous, long budget)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) };
         LythonExecutionResult result;

@@ -21,14 +21,14 @@ public sealed class DictionaryViewAdmissionTests
         var budget = new LythonMemoryBudget(limit);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner});
+            { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var dict = new PyDict(context.MemoryGovernor); dict.SetItem(BigInteger.One, BigInteger.One);
         var previous = new object(); context.Variables["published"] = previous;
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         using (var fill = new Pad(dict, budget, limit, shared))
         {
             context.Variables["fill"] = fill;
-            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile($"global published\npublished=fill().{method}()\nreturn published").Script!)).EntryPoint;
+            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile($"global published\npublished=fill().{method}()\nreturn published",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             {
                 if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);

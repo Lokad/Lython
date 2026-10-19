@@ -9,6 +9,15 @@ namespace Lokad.Lython;
 /// <summary>Compiles and executes Python source using Lython's host-mediated runtime.</summary>
 public sealed class LythonEngine
 {
+    private readonly ILythonRegexProvider? _regexProvider;
+
+    /// <summary>Creates an engine using a borrowed Python regex provider, when supplied.</summary>
+    /// <remarks>The provider must outlive scripts and executions. No implicit regex dialect is installed.</remarks>
+    public LythonEngine(ILythonRegexProvider? regexProvider) => _regexProvider = regexProvider;
+
+    /// <summary>Creates an engine without an implicit regex provider.</summary>
+    public LythonEngine() : this(null) { }
+
     /// <summary>The maximum delimiter nesting accepted by the contained frontend.</summary>
     public const int MaxSyntaxNesting = 512;
 
@@ -25,6 +34,10 @@ public sealed class LythonEngine
     /// returns an invalid script with a compilation diagnostic.
     /// </summary>
     public LythonCompiledScript Compile(string source, ILythonMemoryBudget? memoryBudget)
+        => Compile(source, memoryBudget, default);
+
+    /// <summary>Compiles using the current token for provider work. Cancellation returns an invalid script whose run reports cancellation.</summary>
+    public LythonCompiledScript Compile(string source, ILythonMemoryBudget? memoryBudget, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(source);
         var owner = (memoryBudget ?? new LythonMemoryBudget()).CreateScope();
@@ -33,15 +46,29 @@ public sealed class LythonEngine
         var estimate = RuntimeMemoryEstimates.EstimateCompilationBytes(source.Length);
         try
         {
+            if (cancellationToken.IsCancellationRequested) return Cancelled();
             if (!owner.TryReserve(estimate, out _))
                 return Denied(new(LythonFailureReason.SharedMemoryAllowance, Requested: estimate));
-            return CompileCore(source, new MemoryGovernor(owner)).OwnMemoryScope(owner, memoryBudget);
+            return CompileCore(source, new MemoryGovernor(owner), _regexProvider, cancellationToken).OwnMemoryScope(owner, memoryBudget);
         }
         catch (LythonRuntimeException error) when (error.Attribution?.Reason == LythonFailureReason.SharedMemoryAllowance)
         {
             return Denied(error.Attribution, error.Span);
         }
+        catch (LythonRuntimeException error) when (error.Attribution?.Reason == LythonFailureReason.Cancelled)
+        {
+            return Cancelled();
+        }
         catch { owner.Dispose(); throw; }
+
+        LythonCompiledScript Cancelled()
+        {
+            IReadOnlyList<LythonDiagnostic> diagnostics = [new("LA2011", "Compilation was cancelled.", LythonDiagnosticSeverity.Error, null)];
+            return new LythonCompiledScript(source, diagnostics, false,
+                (_, options) => LythonRuntime.CancellationFailure(options),
+                (_, options) => Task.FromResult(LythonRuntime.CancellationFailure(options)))
+                .OwnMemoryScope(owner, memoryBudget);
+        }
 
         LythonCompiledScript Denied(LythonFailureAttribution? attribution = null, LythonSourceSpan? span = null)
         {
@@ -55,9 +82,9 @@ public sealed class LythonEngine
 
     }
 
-    private static LythonCompiledScript CompileCore(string source, MemoryGovernor governor)
+    private static LythonCompiledScript CompileCore(string source, MemoryGovernor governor, ILythonRegexProvider? regexProvider, CancellationToken cancellationToken)
     {
-        var frontend = LythonFrontend.Compile(source, governor);
+        var frontend = LythonFrontend.Compile(source, governor, regexProvider, cancellationToken);
         var diagnostics = frontend.Diagnostics;
         var isValid = diagnostics.All(static d => d.Severity != LythonDiagnosticSeverity.Error);
         var script = frontend.Script;
@@ -99,7 +126,9 @@ public sealed class LythonEngine
                     exitCode: 1,
                     standardOutput: string.Empty,
                     standardError: string.Empty,
-                    diagnostics: diagnostics);
+                    diagnostics: diagnostics,
+                    attribution: diagnostics.Any(d => d.Code == "LA2010")
+                        ? new(LythonFailureReason.HostCapabilityUnavailable) : new(LythonFailureReason.Compilation));
             }
 
             if (script is null)
@@ -133,7 +162,7 @@ public sealed class LythonEngine
                     return preExecutionFailure;
                 }
 
-                var runtime = new LythonRuntime();
+                var runtime = new LythonRuntime(regexProvider);
                 return runtime.Run(executableScript.RequireNotNull(), host, options);
             },
             async (host, options) =>
@@ -144,7 +173,7 @@ public sealed class LythonEngine
                     return preExecutionFailure;
                 }
 
-                var runtime = new LythonRuntime();
+                var runtime = new LythonRuntime(regexProvider);
                 return await runtime.RunAsync(executableScript.RequireNotNull(), host, options).ConfigureAwait(false);
             });
     }
@@ -174,7 +203,7 @@ public sealed class LythonEngine
         ILythonHost host,
         LythonRunOptions options)
     {
-        using var compiled = Compile(source, options.MemoryBudget);
+        using var compiled = Compile(source, options.MemoryBudget, options.CancellationToken);
         return compiled.Run(host, options);
     }
 
@@ -193,8 +222,7 @@ public sealed class LythonEngine
         ILythonHost host,
         CancellationToken cancellationToken)
     {
-        using var compiled = Compile(source, null);
-        return await compiled.RunAsync(host, cancellationToken).ConfigureAwait(false);
+        return await RunAsync(source, host, new LythonRunOptions { CancellationToken = cancellationToken }).ConfigureAwait(false);
     }
 
     /// <summary>Compiles and asynchronously runs source with initial globals.</summary>
@@ -214,8 +242,7 @@ public sealed class LythonEngine
         IReadOnlyDictionary<string, object?> globals,
         CancellationToken cancellationToken)
     {
-        using var compiled = Compile(source, null);
-        return await compiled.RunAsync(host, globals, cancellationToken).ConfigureAwait(false);
+        return await RunAsync(source, host, new LythonRunOptions { Globals = globals, CancellationToken = cancellationToken }).ConfigureAwait(false);
     }
 
     /// <summary>Compiles and asynchronously runs source with explicit execution options.</summary>
@@ -224,7 +251,7 @@ public sealed class LythonEngine
         ILythonHost host,
         LythonRunOptions options)
     {
-        using var compiled = Compile(source, options.MemoryBudget);
+        using var compiled = Compile(source, options.MemoryBudget, options.CancellationToken);
         return await compiled.RunAsync(host, options).ConfigureAwait(false);
     }
 
@@ -235,7 +262,11 @@ public sealed class LythonEngine
         LythonRunOptions options,
         CancellationToken cancellationToken)
     {
-        using var compiled = Compile(source, options.MemoryBudget);
-        return await compiled.RunAsync(host, options, cancellationToken).ConfigureAwait(false);
+        var merged = LythonCompiledScript.MergeCancellation(options, cancellationToken, out var linked);
+        using (linked)
+        {
+            using var compiled = Compile(source, merged?.MemoryBudget, merged?.CancellationToken ?? default);
+            return await compiled.RunAsync(host, merged ?? new LythonRunOptions()).ConfigureAwait(false);
+        }
     }
 }

@@ -15,7 +15,7 @@ public sealed class RenderingStackAdmissionTests
             + "value=[]\nfor index in range(depth):value=" + next + "\nreturn repr(value)";
         var expected = kind switch { "list" => "[[[]]]", "tuple" => "(([],),)", _ => "{'child': {'child': []}}" };
         var budget = new LythonMemoryBudget(8 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })

@@ -28,7 +28,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task ManyScandirEntriesStayCharged()
     {
-        var script = new LythonEngine().Compile($"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
             import os
             it = os.scandir("/d")
             n = 0
@@ -52,7 +52,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task ManyRetainedWalkIteratorsStayCharged()
     {
-        var script = new LythonEngine().Compile($"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
             import os
             objs = []
             i = 0
@@ -75,7 +75,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task DirectoryIterationBehaves()
     {
-        var script = new LythonEngine().Compile($"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
             import os
             names = sorted([e.name for e in os.scandir("/d")])
             w = [x for x in os.walk("/d")]
@@ -154,7 +154,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedScandirEntriesStayCharged()
     {
-        var script = new LythonEngine().Compile($"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
             import os
             it = os.scandir("/d")
             kept = [e for e in it]
@@ -226,7 +226,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedWalkUnpackingStaysCharged()
     {
-        var script = new LythonEngine().Compile($"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
             import os
             for d, dirs, files in os.walk("/d"):
                 kept = files
@@ -248,7 +248,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task DeniedWalkYieldRecoversWhenFunded()
     {
-        var script = new LythonEngine().Compile($"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
             import os
             n = 0
             for t in os.walk("/d"):
@@ -272,7 +272,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
     [Fact]
     public async Task DeniedScandirRecoversWhenFunded()
     {
-        var script = new LythonEngine().Compile($"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"""
             import os
             n = 0
             for e in os.scandir("/d"):

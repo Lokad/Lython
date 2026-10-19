@@ -317,14 +317,14 @@ public sealed class MethodBodyCompilationBoundaryTests
     private sealed record Fixture(Context Context, PyType Type, PyInstance Receiver, PyBoundMethod Method, Tape Tape, PyException Active);
     private static async Task<Fixture> Define(string source, bool asynchronous, CancellationToken cancellation = default)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             SourcePath = "/method-body.py", CancellationToken = cancellation
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         context.Services.SetCurrentException(active);
         var tape = new Tape(context, active, cancellation);

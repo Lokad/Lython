@@ -351,7 +351,7 @@ internal static class AbstractValueJoin
         => left == right ? left : AbstractTextFileMode.Unknown;
 
     private static bool RegexPatternSummariesEqual(AbstractRegexPatternSummary left, AbstractRegexPatternSummary right)
-        => string.Equals(left.PatternText, right.PatternText, StringComparison.Ordinal) &&
+        => string.Equals(left.PatternText, right.PatternText, StringComparison.Ordinal) && left.Flags == right.Flags &&
            left.CaptureSlotCount == right.CaptureSlotCount &&
            IntegerMapsEqual(left.NamedGroups, right.NamedGroups);
 

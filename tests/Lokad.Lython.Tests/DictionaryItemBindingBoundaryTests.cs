@@ -22,7 +22,7 @@ public sealed class DictionaryItemBindingBoundaryTests
         var args = method == "__setitem__" ? "pick(),value()" : "pick()";
         if (extra) args += ",value()";
         var source = "global published\npublished=table." + method + "(" + args + ")\nreturn published";
-        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -58,7 +58,7 @@ public sealed class DictionaryItemBindingBoundaryTests
 
     private static (Context Context, List<string> Effects, PyDict Table, PyString Key) Prepare(ILythonMemoryBudget owner)
     {
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var key = PyString.FromString("x", context.MemoryGovernor, null);
         var table = new PyDict(context.MemoryGovernor);
         table.SetItem(key, new BigInteger(7));

@@ -17,11 +17,11 @@ public sealed class ExactIntegerUnaryAdmissionTests
     public void DeniedUnaryResultPreservesThePreviousTarget(string token, bool asynchronous)
     {
         var expression = token == "abs" ? "abs(seed)" : token + "seed";
-        var syntax = LythonFrontend.Compile("global entered,target\nentered=True\ntarget=" + expression).Script!;
+        var syntax = LythonFrontend.Compile("global entered,target\nentered=True\ntarget=" + expression,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         var seed = (token == "abs" ? -BigInteger.One : BigInteger.One) << 262144;
         _ = LythonRuntime.OwnFreshInteger(seed, context.MemoryGovernor, null);
         var original = new PyList([true], context.MemoryGovernor, null);

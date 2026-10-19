@@ -9,7 +9,7 @@ public sealed class HostPathScenarioTests
     [InlineData("C:/outside.txt", "drive prefixes")]
     public void HostOperations_RejectPlatformAmbiguousContainedPaths(string path, string expectedMessage)
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "value = open(path).read()",
             new MockLythonHost("/repo"),
             new LythonRunOptions
@@ -28,7 +28,7 @@ public sealed class HostPathScenarioTests
     {
         var host = new MockLythonHost();
         host.SeedFile("/repo/value.txt", "ok");
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 from pathlib import Path
@@ -56,7 +56,7 @@ return os.fspath(PathLike()) + "|" + open(Path("/repo/value.txt")).read() + "|" 
             host.SeedFile(file.Key, file.Value);
         }
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -79,7 +79,7 @@ return os.fspath(PathLike()) + "|" + open(Path("/repo/value.txt")).read() + "|" 
             host.SeedFile(file.Key, file.Value);
         }
 
-        var result = new LythonEngine().Run(fixture.Script, host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
@@ -94,7 +94,7 @@ return os.fspath(PathLike()) + "|" + open(Path("/repo/value.txt")).read() + "|" 
     [Fact]
     public void OsMkdirWithoutExistingParent_Fails()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 os.mkdir("/missing/child")
@@ -111,7 +111,7 @@ os.mkdir("/missing/child")
     [Fact]
     public void HostExceptions_AreConvertedToStructuredRuntimeFailures()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 __lython_file = open("/out.txt", "w")
 __lython_file.write("payload")
@@ -132,7 +132,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedFile("/note.txt", "hello");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 info = os.stat("/note.txt")
@@ -150,7 +150,7 @@ __lython_file.close()
     [Fact]
     public void OsListdirMissingDirectory_Fails()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 os.listdir("/missing")
@@ -170,7 +170,7 @@ os.listdir("/missing")
         var host = new MockLythonHost();
         host.SeedFile("/dir/file.txt", "x");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 os.remove("/dir")
@@ -191,7 +191,7 @@ os.remove("/dir")
         host.SeedFile("/src.txt", "a");
         host.SeedFile("/dst.txt", "b");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import shutil
 shutil.copyfile("/src.txt", "/dst.txt")
@@ -206,7 +206,7 @@ shutil.copyfile("/src.txt", "/dst.txt")
     [Fact]
     public void ShutilMoveMissingSource_Fails()
     {
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import shutil
 shutil.move("/src.txt", "/dst.txt")
@@ -225,7 +225,7 @@ shutil.move("/src.txt", "/dst.txt")
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 __lython_file = open("/out.txt", "w")
@@ -247,7 +247,7 @@ __lython_file.close()
         host.SeedFile("/work/a.txt", "a");
         host.SeedFile("/work/nested/x.txt", "x");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 vals = []
@@ -272,7 +272,7 @@ __lython_file.close()
         var host = new MockLythonHost("/work");
         host.SeedFile("/work/src.txt", "alpha");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 import shutil
@@ -299,7 +299,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import os
 os.mkdir("/empty")
@@ -321,7 +321,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedFile("/input.txt", "alpha\nbeta\nlast");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 with open("/input.txt", "r") as handle:
     lines = handle.readlines()
@@ -346,7 +346,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedFile("/input.txt", "alpha\nbeta\ngamma");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 with open("/input.txt", "r", encoding="utf-8") as handle:
     first = handle.readline().replace("\n", "<n>")
@@ -376,7 +376,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedFile("/input.txt", string.Concat(Enumerable.Repeat("aé😀", 200)));
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 parts = []
 with open("/input.txt", "r") as reader:
@@ -399,7 +399,7 @@ return "".join(parts)
         var host = new MockLythonHost();
         host.SeedFile("/input.txt", "alpha\nbeta\ngamma");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 with open("/input.txt", "r") as handle:
     first = handle.readline().rstrip()
@@ -424,7 +424,7 @@ __lython_file.close()
         host.SeedFile("/input.txt", "é\nabc");
         host.SeedFile("/append.txt", "éx");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 with open("/input.txt", "r", encoding="utf-8") as reader:
@@ -464,7 +464,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedFile("/append.txt", "base");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
 writer = open("/output.txt", "w", encoding="utf-8")
@@ -518,7 +518,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 with open("/output.txt", "w") as handle:
     handle.writelines(["alpha\n", "beta", "\ngamma"])
@@ -542,7 +542,7 @@ __lython_file.close()
         host.SeedFile("/repo/src/content/en/a.md", "a");
         host.SeedFile("/repo/src/content/en/nested/b.md", "b");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -576,7 +576,7 @@ __lython_file.close()
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/input.txt", "alpha\r\nbeta\r\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -607,7 +607,7 @@ __lython_file.close()
             "/repo/tool.py",
             "\uFEFF# header\r\ndef render():\r\n    return \"old café\"\r\nPLACEHOLDER PLACEHOLDER\r\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -650,7 +650,7 @@ __lython_file.close()
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/tool.py", "alpha\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -674,7 +674,7 @@ if "needle" not in text:
         host.SeedFile("/repo/src/content/en/a.md", "a");
         host.SeedFile("/repo/src/content/en/nested/b.md", "b");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -700,7 +700,7 @@ __lython_file.close()
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/helper.py", "from pathlib import Path\nvalue = Path(__file__).parent.as_posix()\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import helper
 __lython_file = open("/out.txt", "w")
@@ -722,7 +722,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost("/repo/site/tools");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 from pathlib import Path
 
@@ -765,7 +765,7 @@ with open("/output.txt", "w") as handle:
         "LA3112")]
     public void FileHandleExtendedMethods_ReportStaticDiagnostics(string source, string diagnosticCode)
     {
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == diagnosticCode);

@@ -11,7 +11,7 @@ public sealed class FunctoolsCacheAccountingScenarioTests
     [Fact]
     public async Task UnboundedCacheEntriesStayCharged()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import functools
             @functools.cache
@@ -37,7 +37,7 @@ public sealed class FunctoolsCacheAccountingScenarioTests
     [Fact]
     public async Task BoundedCacheEvictsAndSurvives()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import functools
             @functools.lru_cache(maxsize=8)

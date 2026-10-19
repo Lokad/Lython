@@ -22,7 +22,7 @@ public sealed class DictFailedGrowthScenarioTests
         // catch-and-continue denial choreography lives in the white-box
         // exact-denial test (a coupon-scale denial leaves too little slack to
         // even construct its own catchable exception).
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             v = 1
             d = {i: v for i in range(3000)}

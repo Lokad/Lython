@@ -33,7 +33,7 @@ public sealed class CsvCompatibilityTests
             "if isinstance(alias,list):\n alias.append('kept')\n print(alias is row['" + restKey + "'],alias[-1])\n" +
             "return row\n";
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var stdout = expected + "\n" + (expected.Contains('[') ? "True kept\n" : "");
@@ -55,7 +55,7 @@ public sealed class CsvCompatibilityTests
     public void ModuleExceptionTypes_RetainQualifiedIdentityAndResolveAliasesInExceptClauses()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import copy
 import csv as c
@@ -80,7 +80,7 @@ __lython_file.close()
     [Fact]
     public void CsvWriter_RejectsUndocumentedDelimiterShorthand()
     {
-        var result = new LythonEngine().Run("import csv\ncsv.writer(';')", new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("import csv\ncsv.writer(';')", new MockLythonHost());
 
         Assert.False(result.Success);
         var failure = result.Failure;
@@ -93,7 +93,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 
@@ -117,7 +117,7 @@ __lython_file.close()
     public void CsvWriters_QuoteSingleEmptyFieldsAndReportExactCounts()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 
@@ -142,7 +142,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 
@@ -174,7 +174,7 @@ __lython_file.close()
         var host = new MockLythonHost();
         host.SeedFile("/input.csv", "name,note\nalpha,\"hello\nworld\"\nbeta,z\n");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 
@@ -201,7 +201,7 @@ __lython_file.close()
     public void Reader_TreatsNonBmpDelimiterAndQuoteAsSinglePythonCharacters()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 
@@ -222,7 +222,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 
@@ -251,7 +251,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 
@@ -327,7 +327,7 @@ method(rowdict=[{"name": "a"}])
         "Method 'csv.DictWriter.writerows' got an unexpected keyword argument 'rowdict'.")]
     public void WriterMembers_ReportRuntimeCallShapeErrors(string source, string message)
     {
-        var result = new LythonEngine().Run(source, new MockLythonHost());
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.Empty(result.Diagnostics);
@@ -341,7 +341,7 @@ method(rowdict=[{"name": "a"}])
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 
@@ -376,7 +376,7 @@ __lython_file.close()
     {
         var host = new MockLythonHost();
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 
@@ -398,7 +398,7 @@ __lython_file.close()
     [Fact]
     public void Csv_StaticDiagnosticsCoverExpandedSurface()
     {
-        var compiled = new LythonEngine().Compile(
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
 import csv
 

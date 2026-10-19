@@ -19,7 +19,7 @@ public sealed class LoweredMatchBodyTests
             "class Owner:\n match 1:\n  case 1:target()[index()" + (slice ? ":end()" : "") + "]=value()\n" +
             "return '|'.join(events)+':'+str(data)";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
@@ -54,7 +54,7 @@ public sealed class LoweredMatchBodyTests
                 return '|'.join(events)+';'+str(captured())+';'+text
             """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("import selected\nreturn selected.run()", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import selected\nreturn selected.run()", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var delayed = asynchronous ? new DelayedLythonHost() : null;
@@ -90,7 +90,7 @@ public sealed class LoweredMatchBodyTests
             (refusal ? "value='x'*1000000" : "while True:pass") +
             "\nexcept BaseException:print('caught')\nprint('after')";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using var cancellation = new CancellationTokenSource();

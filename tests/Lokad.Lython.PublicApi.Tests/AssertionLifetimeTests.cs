@@ -21,7 +21,7 @@ except AssertionError as error:return error.args[0]
     public async Task CancellationDrainsAssertionCallbacksBeforeRefund(string phase)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(CallbackSource, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(CallbackSource, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -60,7 +60,7 @@ except AssertionError as error:return error.args[0]
     public async Task EscapingMessageRemainsFundedAcrossSharedExecutions()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(CallbackSource, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(CallbackSource, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new MockLythonHost();
@@ -113,7 +113,7 @@ def refuse():
             _ => "class Message:\n def __str__(self):refuse();return 'payload'\ntry:assert False,Message()\nfinally:print('cleanup')",
         });
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) };
@@ -142,7 +142,7 @@ try:assert False,Message()
 finally:print('cleanup')
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -164,7 +164,7 @@ finally:print('cleanup')
     [InlineData("'payload'", "payload")]
     public async Task UnhandledNativeMessagesRemainReadable(string expression, string expected)
     {
-        using var script = new LythonEngine().Compile("assert False," + expression);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("assert False," + expression);
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -187,7 +187,7 @@ class Message:
 assert False,Message()
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -209,7 +209,7 @@ assert False,Message()
     [Fact]
     public async Task AssertionsKeepManagedRecursionProtection()
     {
-        using var script = new LythonEngine().Compile("def condition():return condition()\nassert condition()");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("def condition():return condition()\nassert condition()");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxRecursionDepth = 16 };
         foreach (var asynchronous in new[] { false, true })
@@ -230,7 +230,7 @@ assert False,Message()
         source = helper ? source.Replace("    return int(value)", "    assert value,'missing amount'\n    return int(value)")
             : source.Replace("        amount = int(row['amount'])", "        assert row['amount'],'missing amount'\n        amount = int(row['amount'])");
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })

@@ -12,7 +12,7 @@ internal static partial class StaticAbstractInterpreter
 
     public static void Analyze(StaticAnalysisContext context)
     {
-        AnalyzeStatements(context.Script.Statements, context.DiagnosticList, new AbstractState());
+        AnalyzeStatements(context.Script.Statements, context.DiagnosticList, new AbstractState(context));
     }
 
     private static void AnalyzeStatements(

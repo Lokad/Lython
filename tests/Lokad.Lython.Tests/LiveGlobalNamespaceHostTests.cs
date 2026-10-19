@@ -15,14 +15,14 @@ public sealed class LiveGlobalNamespaceHostTests
 
     private static async Task<Context> Setup(string source)
     {
-        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
+        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         await Execute(source, root);
         return root;
     }
 
     private static async Task Execute(string source, Context root)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
     }
@@ -146,7 +146,7 @@ public sealed class LiveGlobalNamespaceHostTests
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(1024 * 1024), CancellationToken = cancellation.Token
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var started = new TaskCompletionSource<Context>(TaskCreationOptions.RunContinuationsAsynchronously);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         root.Variables["pause"] = new Pause(async context =>

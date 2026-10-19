@@ -24,7 +24,7 @@ public sealed class AugmentedSliceExecutionTests
     public async Task SliceUpdatesFollowPythonOrderAndAliases(string name, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, name);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -96,7 +96,7 @@ public sealed class AugmentedSliceExecutionTests
             : "receiver()[start():stop():step()]+=rhs()\n") + "assert box.saved is payload\nprint(payload.items)";
         var paths = new[] { "/receiver.txt", "/start.txt", "/stop.txt", "/step.txt", "/get.txt", "/rhs.txt", "/iadd.txt", "/set.txt" };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -140,7 +140,7 @@ public sealed class AugmentedSliceExecutionTests
     public async Task UpdatedAliasesRemainFundedAcrossExecutions(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("values=[]\nalias=values\nvalues[:]+=['x'*4096]\nassert values is alias\nreturn alias", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("values=[]\nalias=values\nvalues[:]+=['x'*4096]\nassert values is alias\nreturn alias", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
@@ -161,7 +161,7 @@ public sealed class AugmentedSliceExecutionTests
     [InlineData("def run(obj):\n obj[:]+=(2,)\nrun((1,))", "TypeError", 2, 3)]
     public async Task FailuresKeepTargetAndCallerSpans(string source, string type, int line, int callerLine)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {

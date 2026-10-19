@@ -32,7 +32,7 @@ public sealed class GuestIndexingParityTests
                 print('caught')
             print(events)
             """;
-        var compiled = new LythonEngine().Compile(script);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(script);
         Assert.True(compiled.IsValid);
         var host = new MockLythonHost();
         host.SeedFile("/value", "v");
@@ -47,7 +47,7 @@ public sealed class GuestIndexingParityTests
     [Fact]
     public async Task ScalarNestedLookupsAgreeBetweenModes()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class C:
                 def __getitem__(self, key):
                     return key + 1

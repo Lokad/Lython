@@ -23,7 +23,7 @@ public sealed class HostIntegralInteropTests
         {
             Globals = new Dictionary<string, object?> { ["n"] = value, ["zero"] = Integer(kind, "0"), ["nested"] = nested, ["alias"] = nested },
         };
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 assert list(range(n)) == [0, 1, 2]
 assert [10, 20, 30, 40][n] == 40
 assert [10, 20, 30, 40][zero:n] == [10, 20, 30]
@@ -105,7 +105,7 @@ return [n, nested[0][0], zero]
         var value = Integer(kind, text);
         var expected = BigInteger.Parse(text, CultureInfo.InvariantCulture);
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["n"] = value } };
-        var script = new LythonEngine().Compile($$"""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($$"""
 assert n == {{text}} and hash(n) == hash({{text}})
 assert { {{text}}: 'value'}[n] == 'value'
 assert str(n) == '{{text}}'
@@ -128,7 +128,7 @@ return [n, n + 1, n - 1, -n, n * n, n == {{text}}, n < {{text}} + 1]
         {
             Globals = new Dictionary<string, object?> { ["single"] = 1.25f, ["decimal_value"] = 1.25m },
         };
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 rejected = []
 for value in [single, decimal_value]:
     try:

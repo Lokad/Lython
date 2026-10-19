@@ -39,7 +39,7 @@ public sealed class DecoratorEvaluationOrderTests
                 mark(4)
             print(events)
             """;
-        var compiled = new LythonEngine().Compile(script);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(script);
         Assert.True(compiled.IsValid);
         var host = new MockLythonHost();
         host.SeedFile("/value", "v");
@@ -54,7 +54,7 @@ public sealed class DecoratorEvaluationOrderTests
     [Fact]
     public void FailedDecoratorExpressionPreventsDefinitionEffects()
     {
-        var result = new LythonEngine().Run("""
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run("""
             def fail():
                 print('factory')
                 raise ValueError('stop')

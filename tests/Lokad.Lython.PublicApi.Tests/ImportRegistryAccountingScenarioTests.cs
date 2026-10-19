@@ -33,7 +33,7 @@ public sealed class ImportRegistryAccountingScenarioTests
     public async Task ManyRetainedImportsStayCharged()
     {
         var host = SeededHost(out var allowed, out var source);
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         // Calibration: pre-fix peak is 69000, so this fits; the 512B-per-module
         // backstop (+256000) pushes the post-fix peak past 300000.
@@ -53,7 +53,7 @@ public sealed class ImportRegistryAccountingScenarioTests
     {
         var host = SeededHost(out var allowed, out var source, count: 16);
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576), AllowedLocalModules = allowed };
@@ -78,7 +78,7 @@ public sealed class ImportRegistryAccountingScenarioTests
     {
         var host = new MockLythonHost();
         host.SeedFile("/helper.py", "value = 1\n");
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import helper
             import helper as again

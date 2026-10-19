@@ -43,7 +43,7 @@ foreach (var (payload, total) in new[] { ("[1,2,3]", "6"), ("[4,5]", "9") })
 }
 
 const string compatibilitySource = """
-    import csv; import json; import re
+    import csv; import json
     from collections import Counter, defaultdict
     def field(k, v):
         return k + v
@@ -60,12 +60,6 @@ const string compatibilitySource = """
     totals = defaultdict(Counter)
     totals['sample']['x'] += 2
     print(json.dumps(totals, sort_keys=True))
-    match = re.search(r'(?P<first>a)(?P<tail>b)?', 'a')
-    print(match[0], match['first'], match[2])
-    try:
-        match.group(10**100)
-    except IndexError:
-        print('IndexError')
     def generate():
         yield from (n for n in range(4) if n > 0 if n < 3)
     print(list(generate()))
@@ -78,27 +72,19 @@ const string compatibilitySource = """
 var compatibility = engine.Compile(compatibilitySource);
 if (!compatibility.IsValid)
     throw new Exception(string.Join("; ", compatibility.Diagnostics.Select(d => d.Message)));
-const string compatibilityOutput = "ab 3\nTrue ['a', 'b'] [['1', '2']] empty\n3\n{\"sample\": {\"x\": 2}}\na a None\nIndexError\n[1, 2]\nTrue False\nTrue False\n";
+const string compatibilityOutput = "ab 3\nTrue ['a', 'b'] [['1', '2']] empty\n3\n{\"sample\": {\"x\": 2}}\n[1, 2]\nTrue False\nTrue False\n";
 foreach (var result in new[] { compatibility.Run(new PureHost()), await compatibility.RunAsync(new PureHost()) })
     RequireOutput(result, compatibilityOutput);
 
-const string findAllSource = """
-    import re, json
-    values = re.compile('(a)(b)').findall('ab!ab')
-    print(type(values) is list, isinstance(values, list))
-    values.append(('x', 'y'))
-    print(json.dumps({'matches': values}))
-    return values
-    """;
-var findAll = engine.Compile(findAllSource);
-if (!findAll.IsValid) throw new Exception(string.Join("; ", findAll.Diagnostics.Select(d => d.Message)));
-foreach (var result in new[] { findAll.Run(new PureHost()), await findAll.RunAsync(new PureHost()) })
+// A core-only consumer must have no implicit regex dialect or backend assembly.
+using (var missing = engine.Run("import re\nreturn re.search(pattern,'x')", new PureHost(),
+    new LythonRunOptions { Globals = new Dictionary<string, object?> { ["pattern"] = "x" } }))
 {
-    RequireOutput(result, "True True\n{\"matches\": [[\"a\", \"b\"], [\"a\", \"b\"], [\"x\", \"y\"]]}\n");
-    if (result.ReturnValue is not List<object?> matches || matches.Count != 3 ||
-        matches[0] is not object?[] captures || !captures.SequenceEqual(new object?[] { "a", "b" }))
-        throw new Exception("Regex findall did not project ordinary CLR lists and capture arrays.");
+    if (missing.Success || missing.FailureAttribution?.Reason != LythonFailureReason.HostCapabilityUnavailable)
+        throw new Exception("Missing regex provider did not report a capability failure.");
 }
+if (AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name?.StartsWith("Lokad.Utf8Regex", StringComparison.Ordinal) == true))
+    throw new Exception("The core-only consumer loaded a regex backend.");
 
 const string structSource = """
     import struct,math,json,operator
@@ -566,7 +552,7 @@ using (var csvBatch = engine.Compile(csvBatchSource, sharedBudget))
         {
             var host = new MemoryHost(delayed: asynchronous);
             using var csvBatchTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3L * 1024 * 1024), CancellationToken = csvBatchTimeout.Token };
+            var options = new LythonRunOptions { MemoryBudget = sharedBudget, CancellationToken = csvBatchTimeout.Token };
             LythonExecutionResult result;
             if (asynchronous)
             {

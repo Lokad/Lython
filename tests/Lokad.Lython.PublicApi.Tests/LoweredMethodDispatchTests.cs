@@ -11,7 +11,7 @@ public sealed class LoweredMethodDispatchTests
         var source = "events=[]\nclass Case:\n def run(self):\n" +
             string.Join('\n', body.Split('\n').Select(line => "  " + line)) +
             "\n  return 'ok'\nreturn Case().run()\n";
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var asynchronous in new[] { false, true })
         {

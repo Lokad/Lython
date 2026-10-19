@@ -28,7 +28,7 @@ public sealed class ChainMapUnpackingAccountingTests
     public void UnpackingReservesTransientScratch()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var chainMap = SharedChainMap(context, span);
         var baseline = context.MemoryGovernor.CurrentAccountedBytes;
@@ -44,7 +44,7 @@ public sealed class ChainMapUnpackingAccountingTests
     public void ChainMapLengthReservesTransientScratch()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var chainMap = SharedChainMap(context, span);
         var baseline = context.MemoryGovernor.CurrentAccountedBytes;

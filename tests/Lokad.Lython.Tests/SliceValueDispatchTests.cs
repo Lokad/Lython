@@ -11,7 +11,7 @@ public sealed class SliceValueDispatchTests
 {
     private const string Source = "return mapping[stamp(1):stamp(5):stamp(2), stamp(9)]";
     private static readonly ExecutableCodeObject Code = ExecutableScript.Compile(
-        LoweredScript.Lower(LythonFrontend.Compile(Source).Script!)).EntryPoint;
+        LoweredScript.Lower(LythonFrontend.Compile(Source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     private static readonly string[] ExpectedCheckpoints =
     [
@@ -94,7 +94,7 @@ public sealed class SliceValueDispatchTests
     private static (Context, Stamp, object) Prepare(LythonMemoryBudget budget, ILythonMemoryBudget owner, bool deny)
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner});
+            { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var tape = new Stamp(budget, deny);
         var expected = PyString.FromString("found", context.MemoryGovernor);
         var mapping = new PyDict(context.MemoryGovernor, null);

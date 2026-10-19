@@ -17,7 +17,7 @@ public sealed class PkgutilAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedModuleInfosStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import pkgutil
             objs = []
             i = 0
@@ -42,7 +42,7 @@ public sealed class PkgutilAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedReplacementsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import pkgutil
             mi = pkgutil.ModuleInfo(None, "mod", False)
             objs = []
@@ -68,7 +68,7 @@ public sealed class PkgutilAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedDiscoveriesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import pkgutil
             objs = []
             i = 0
@@ -93,7 +93,7 @@ public sealed class PkgutilAccountingScenarioTests
     [Fact]
     public async Task PkgutilValuesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import pkgutil
             mi = pkgutil.ModuleInfo(None, "mod", True)
             sub = mi._replace(name="sub")

@@ -7,7 +7,7 @@ public sealed class SoftKeywordImportTests
     [Fact]
     public async Task SoftKeywordsWorkAsHostMediatedModuleAndMemberNames()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import match.case
             print(match.value, match.case.value)
             from match.case import match as case, case as type
@@ -59,7 +59,7 @@ public sealed class SoftKeywordImportTests
     public async Task CompatibleBindings(string name, string source, string expected)
     {
         _ = name;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -75,5 +75,5 @@ public sealed class SoftKeywordImportTests
     [InlineData("import if")]
     [InlineData("from math.if import x")]
     public void InvalidNamesAndScopeConflictsFailBeforeEffects(string source)
-        => Assert.False(new LythonEngine().Compile("print('effect')\n" + source).IsValid);
+        => Assert.False(new LythonEngine(Utf8RegexProvider.Instance).Compile("print('effect')\n" + source).IsValid);
 }

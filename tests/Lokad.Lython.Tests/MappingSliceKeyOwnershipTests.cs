@@ -125,11 +125,11 @@ public sealed class MappingSliceKeyOwnershipTests
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
             SourcePath = "/mapping-slice-ownership.py", MemoryBudget = new LythonMemoryBudget(1024 * 1024)
-        });
+        },regexProvider:Utf8RegexProvider.Instance);
         var source = "from collections import Counter,defaultdict,ChainMap\nmapping=" + factory + "\npayload=[]\nstep_value=2\n"
             + (initialize ? "stored_key=slice(3,5,2)\nmapping[stored_key]=payload\n" : "")
             + "def read_key():return next(iter(mapping))\ndef erase():del mapping[3:5:2]\ndef run():\n " + body + "\n";
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
         return root;

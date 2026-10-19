@@ -21,7 +21,7 @@ public sealed class HashlibAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedDigestsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import hashlib
             objs = []
             i = 0
@@ -46,7 +46,7 @@ public sealed class HashlibAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedSizedDigestsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import hashlib
             objs = []
             i = 0
@@ -71,7 +71,7 @@ public sealed class HashlibAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedNamesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import hashlib
             objs = []
             i = 0
@@ -96,7 +96,7 @@ public sealed class HashlibAccountingScenarioTests
     [Fact]
     public async Task HashlibValuesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import hashlib
             h = hashlib.md5(b"abc")
             g = hashlib.sha256()

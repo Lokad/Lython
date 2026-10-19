@@ -59,7 +59,7 @@ public class SplitLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task SplitBehaves()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "return [\"a,b,c\".split(\",\")[1], \"a,b\".partition(\",\")[2]]\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { "b", "b" };
@@ -73,7 +73,7 @@ public class SplitLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedSplitDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(\"a,b,c\".split(\",\"))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(RetentionBudget);

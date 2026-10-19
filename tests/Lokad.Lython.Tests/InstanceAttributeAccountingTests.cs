@@ -15,7 +15,7 @@ public sealed class InstanceAttributeAccountingTests
     public void AttributeSlotsCommitAndReleaseExactly()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var instance = new PyInstance(NewType(), context.MemoryGovernor, span);
         instance.SetAttribute("x", 1);
@@ -33,7 +33,7 @@ public sealed class InstanceAttributeAccountingTests
     public void UngovernedAttributesStayFree()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var instance = new PyInstance(NewType());
         instance.SetAttribute("x", 1);
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);

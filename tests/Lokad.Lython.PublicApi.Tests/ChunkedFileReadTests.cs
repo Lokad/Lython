@@ -22,7 +22,7 @@ public sealed class ChunkedFileReadTests
     [Fact]
     public async Task LineIterationMatchesExpectedLines()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             lines = []
             with open("/a.txt") as f:
@@ -48,7 +48,7 @@ public sealed class ChunkedFileReadTests
     [Fact]
     public async Task ReadlineSizesAndTellTrackTranslatedBytes()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             with open("/a.txt") as f:
                 a = f.readline()
@@ -85,7 +85,7 @@ public sealed class ChunkedFileReadTests
     [Fact]
     public async Task ReadSizesSpanWindows()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             with open("/a.txt") as f:
                 assert f.read(0) == "", "read(0)"
@@ -117,7 +117,7 @@ public sealed class ChunkedFileReadTests
         // the 16KB window edge: the character's lead byte closes the first
         // window and the carriage return waits for its line feed.
         var content = new string('a', 16383) + "\u00e9\ntail\n";
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             with open("/w.txt") as f:
                 first = f.readline()
@@ -144,7 +144,7 @@ public sealed class ChunkedFileReadTests
         Assert.Equal(new BigInteger(16385), asyncResult.ReturnValue);
 
         var crlf = new string('b', 16383) + "\r\ntail\n";
-        var crlfScript = new LythonEngine().Compile(
+        var crlfScript = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             with open("/c.txt") as f:
                 lines = [line for line in f]
@@ -169,7 +169,7 @@ public sealed class ChunkedFileReadTests
     [Fact]
     public async Task TinyFilesBehave()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             with open("/e.txt") as f:
                 assert f.read() == "", "empty read"
@@ -211,7 +211,7 @@ public sealed class ChunkedFileReadTests
     [Fact]
     public async Task Utf8SigStripsPreambleAndLatin1Decodes()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             with open("/s.txt", encoding="utf-8-sig") as f:
                 assert f.read() == "hi", repr(f.read())
@@ -244,7 +244,7 @@ public sealed class ChunkedFileReadTests
     public async Task NewlineModesSplitIdentically()
     {
         const string content = "a\r\nb\rc\nd";
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             def lines_for(newline):
                 with open("/m.txt", newline=newline) as f:
@@ -285,7 +285,7 @@ public sealed class ChunkedFileReadTests
         Buffer.BlockCopy(prefix, 0, payload, 0, prefix.Length);
         payload[prefix.Length] = 0xFF;
         Buffer.BlockCopy(suffix, 0, payload, prefix.Length + 1, suffix.Length);
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             with open("/bad.txt") as f:
                 first = f.readline()
@@ -320,7 +320,7 @@ public sealed class ChunkedFileReadTests
             content.Append(i).Append(',').Append('y', 50).Append('\n');
         }
 
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             with open("/r.csv") as f:
@@ -366,7 +366,7 @@ public sealed class ChunkedFileReadTests
     private static async Task AssertLargeScan(int rows, long memoryLimit, int prefixBytes)
     {
         var budget = new LythonMemoryBudget(Math.Max(512 * 1024, memoryLimit + 256 * 1024));
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             with open('/big.csv') as stream:
                 n = 0
@@ -415,7 +415,7 @@ public sealed class ChunkedFileReadTests
     [Fact]
     public async Task DelayedAsyncIterationStreamsLines()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             with open("/d.txt") as f:
                 lines = [line for line in f]

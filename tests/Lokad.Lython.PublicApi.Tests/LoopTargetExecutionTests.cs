@@ -28,7 +28,7 @@ public sealed class LoopTargetExecutionTests
     public async Task LoopTargetsPreserveScopedPythonBindings(string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -48,7 +48,7 @@ public sealed class LoopTargetExecutionTests
     [InlineData("def run():\n return {0:None for (yield 'target').value in [1]}")]
     public void YieldInsideComprehensionTargetRemainsRejected(string source)
     {
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
     }
@@ -60,7 +60,7 @@ public sealed class LoopTargetExecutionTests
     {
         var source = comprehension ? "def run(values):\n return [first for first,(left,right) in values]\nrun([(9,iter(range(1)))])"
             : "def run(values):\n for first,(left,right) in values: pass\nrun([(9,iter(range(1)))])";
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -84,7 +84,7 @@ public sealed class LoopTargetExecutionTests
             : "result=[]\nfor head,*rest in pairs: result.append(rest)\n") +
             "assert result[0][0] is pairs[0][1]\nreturn result";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -125,7 +125,7 @@ public sealed class LoopTargetExecutionTests
         var paths = new[] { "/rows.txt", "/receiver.txt", "/bind.txt", "/set.txt" };
         var labels = new[] { "R", "C", "B", "S" };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

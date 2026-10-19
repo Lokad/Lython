@@ -18,7 +18,7 @@ public sealed class NormalDistAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedDistributionsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import statistics
             objs = []
             i = 0
@@ -43,7 +43,7 @@ public sealed class NormalDistAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedSumsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import statistics
             d = statistics.NormalDist(0, 1)
             objs = []
@@ -69,7 +69,7 @@ public sealed class NormalDistAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedNegationsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import statistics
             d = statistics.NormalDist(0, 1)
             objs = []
@@ -95,7 +95,7 @@ public sealed class NormalDistAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedSamplesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import statistics
             data = [1, 2, 3]
             objs = []
@@ -121,7 +121,7 @@ public sealed class NormalDistAccountingScenarioTests
     [Fact]
     public async Task NormalDistValuesBehave()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import statistics
             d = statistics.NormalDist(2, 4)
             e = statistics.NormalDist.from_samples([1, 2, 3, 4])

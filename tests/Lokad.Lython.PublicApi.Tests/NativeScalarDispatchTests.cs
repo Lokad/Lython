@@ -11,7 +11,7 @@ public sealed class NativeScalarDispatchTests
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         var expression = text ? "left+right" : "(1<<4096)+True";
-        using var script = new LythonEngine().Compile($"value={expression}\nalias=value\nvalue=None\nreturn alias", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"value={expression}\nalias=value\nvalue=None\nreturn alias", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions
@@ -105,7 +105,7 @@ public sealed class NativeScalarDispatchTests
                 (method == "__index__" ? "1" : operation == "truth" ? "True" : "3.5") + "\n";
         source += "value=1.5\nvalue+=True\n" + expression;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -201,7 +201,7 @@ public sealed class NativeScalarDispatchTests
         var call = operation == "str.split" ? "'a,b,c'.split(',',Number())" : operation + "(Number())";
         var source = "import operator\nclass Number:\n def " + method + "(self):\n  with open('/events.txt','a') as output:output.write('entered')\n  try:\n   payload='x'*750000\n  finally:\n   return 7\ntry:\n print(" + call + ")\nexcept MemoryError:\n print('swallowed')";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using (var script = new LythonEngine().Compile(source, budget))
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget))
         {
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;
@@ -231,7 +231,7 @@ public sealed class NativeScalarDispatchTests
     public async Task RetainedUnaryProtocolResultKeepsItsOwner(string operation, string method)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using (var script = new LythonEngine().Compile("import operator\nclass Number:\n def " + method + "(self):return 'x'*100000\nreturn operator." + operation + "(Number())", budget))
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import operator\nclass Number:\n def " + method + "(self):return 'x'*100000\nreturn operator." + operation + "(Number())", budget))
         {
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;
@@ -257,7 +257,7 @@ public sealed class NativeScalarDispatchTests
     public async Task ScalarOperationsKeepPythonResultsAndErrors(string label, string source, string expected)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, label);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })

@@ -95,7 +95,7 @@ public sealed class ChunkedReadDifferentialTests
 
     private static async Task CheckBlobAsync(byte[] blob, string path, List<string> expected, bool sync)
     {
-        var script = new LythonEngine().Compile(Probe.Replace("PATH", "\"" + path + "\""));
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Probe.Replace("PATH", "\"" + path + "\""));
         Assert.True(script.IsValid);
         var host = new MockLythonHost();
         host.SeedRawTextUtf8(path, blob);

@@ -30,7 +30,7 @@ public sealed class ExpandedStringDiagnosticTests
     public void ProvenInvalidArgumentsKeepTheirDiagnosticAndLocation(string source, string code, string marker)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using (var script = new LythonEngine().Compile(source, budget))
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget))
         {
             Assert.False(script.IsValid);
             var start = source.LastIndexOf(marker, StringComparison.Ordinal);

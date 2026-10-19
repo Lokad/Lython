@@ -19,7 +19,7 @@ public sealed class AsciiSigmaCompatibilityTests
         // with and without adjacent cased text. Includes controls and punctuation.
         const string expected = "σσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nςσσς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nςσσς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nςσσς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nσσςς\nσσςς\nσσςς\nςσσς\nσσςς\nςσσς\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nςςσσ\nσσςς\nσσςς\nσσςς\nσσςς\nσσςς\n";
         var budget = new LythonMemoryBudget(1048576);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var compiledBaseline = budget.ReservedBytes;
         using (var result = script.Run(new MockLythonHost()))

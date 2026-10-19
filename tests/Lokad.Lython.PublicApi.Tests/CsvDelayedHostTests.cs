@@ -17,7 +17,7 @@ public sealed class CsvDelayedHostTests
     public async Task ExplicitNamesConstructionDoesNotReadInput(int quoting)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import csv\nwith open('/r.csv') as f:\n print('opened')\n r=csv.DictReader(f,fieldnames=['a'],quoting=" +
             quoting + ")\n return r.line_num", budget);
         Assert.True(script.IsValid);
@@ -46,7 +46,7 @@ public sealed class CsvDelayedHostTests
     public async Task ExplicitNamesFirstPullAwaitsAndHonorsCancellation(int quoting)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import csv\nwith open('/r.csv') as f:\n print('opened')\n r=csv.DictReader(f,fieldnames=['a'],quoting=" +
             quoting + ")\n print('made',r.line_num)\n next(r)", budget);
         Assert.True(script.IsValid);
@@ -93,7 +93,7 @@ public sealed class CsvDelayedHostTests
         var source = "import csv\nwith open('/numeric.csv') as f:\n total=0\n for row in " +
             maker + "(f,quoting=csv.QUOTE_NONNUMERIC):\n  total+=" + access + "\nreturn total\n";
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -118,7 +118,7 @@ public sealed class CsvDelayedHostTests
             "    print(iter(r) is r)\n    first = r.__next__()\n    second = next(r)\n" +
             "    print(len(" + (dictionary ? "first['a']" : "second[0]") + "), r.line_num)\n" +
             "    print(len(list(r)), next(r, 'empty'))\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         // Longer than a file-read window: DictReader construction can read its
         // header, but its direct __next__ must suspend again to finish this row.
@@ -144,7 +144,7 @@ public sealed class CsvDelayedHostTests
     [InlineData("r.__next__()")]
     public async Task NextHonorsInFlightHostCancellation(string call)
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import csv\nr = csv.reader(open('/r.csv'))\n" + call);
         Assert.True(script.IsValid);
         var host = new DelayedLythonHost();
@@ -182,7 +182,7 @@ public sealed class CsvDelayedHostTests
     [Fact]
     public async Task DelayedAsyncCsvReaderStreamsRows()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             with open("/r.csv") as f:
@@ -207,7 +207,7 @@ public sealed class CsvDelayedHostTests
     [Fact]
     public async Task DelayedAsyncDictReaderHeaderPaths()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             with open("/r.csv") as f:
@@ -236,7 +236,7 @@ public sealed class CsvDelayedHostTests
         // next() over csv readers is a separate protocol gap (readers are not
         // iterators in Lython yet); partial consumption plus list() covers the
         // shared-position contract through the async boundary instead.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             with open("/r.csv") as f:
@@ -265,7 +265,7 @@ public sealed class CsvDelayedHostTests
     [Fact]
     public void SyncCsvRunOnDelayedHostGuidesToRunAsync()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             with open("/r.csv") as f:
@@ -284,7 +284,7 @@ public sealed class CsvDelayedHostTests
     [Fact]
     public async Task DelayedAsyncMultilineQuotes()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             with open("/q.csv") as f:
@@ -307,7 +307,7 @@ public sealed class CsvDelayedHostTests
     [Fact]
     public async Task DelayedAsyncCsvWriterRoundTrips()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             with open("/w.csv", "w") as f:
@@ -338,7 +338,7 @@ public sealed class CsvDelayedHostTests
     private static async Task VerifyDelayedBatches(int rows)
     {
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             with open('/big.csv') as stream:
                 n = 0

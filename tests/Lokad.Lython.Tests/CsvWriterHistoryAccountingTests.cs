@@ -17,7 +17,7 @@ public sealed class CsvWriterHistoryAccountingTests
     public void FailedHistoryReservationRetainsNothing()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(200) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(200) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var options = new LythonRuntime.CsvOptions(
             PyStringOps.CommaLiteral,
@@ -45,7 +45,7 @@ public sealed class CsvWriterHistoryAccountingTests
         // retains its (charged) history entry like any prior write; nothing
         // extra is committed and no reserve leaks.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(300000) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(300000) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var options = new LythonRuntime.CsvOptions(
             PyStringOps.CommaLiteral,
@@ -75,7 +75,7 @@ public sealed class CsvWriterHistoryAccountingTests
         // retaining nothing new and leaking no reserve. Earlier doublings
         // (32/64/128/256 bytes) all fit this budget.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3100) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3100) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var writer = CreateWriter(context, span);
         for (var i = 0; i < 32; i++)
@@ -98,7 +98,7 @@ public sealed class CsvWriterHistoryAccountingTests
         // The same 33rd row fits when the budget also covers the 512-byte
         // backing-array overlap, locking the trip boundary above.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3300) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3300) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var writer = CreateWriter(context, span);
         for (var i = 0; i < 33; i++)
@@ -118,7 +118,7 @@ public sealed class CsvWriterHistoryAccountingTests
         // pre-format bound holds 2132, so a 2130 budget trips before the CLR
         // string is built; without the reservation nothing trips.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2130) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2130) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var row = new PyList(new object[] { BigInteger.Pow(10, 2000) });
         var failure = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.CsvWriterMembers.ToCsvRow(row, span, context, out _));
@@ -133,7 +133,7 @@ public sealed class CsvWriterHistoryAccountingTests
         // Small ints, floats, bools, strings and None convert with exact
         // retention estimates while the build transient releases.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var row = new PyList(new object[] { PyNone.Instance, PyString.FromString("ab"), new BigInteger(42), true, 1.5 });
         var cells = LythonRuntime.CsvWriterMembers.ToCsvRow(row, span, context, out var converted);
@@ -156,7 +156,7 @@ public sealed class CsvWriterHistoryAccountingTests
         // draining through a second list; per-thread allocation for 20 wide
         // rows drops accordingly (sync-only per the GC-measurement discipline).
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(30000000) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(30000000) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var fieldNames = new PyString[2000];
         for (var i = 0; i < fieldNames.Length; i++)

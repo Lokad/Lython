@@ -42,7 +42,6 @@
 
   <ItemGroup>
     <PackageReference Include="Lokad.Parsing" />
-    <PackageReference Include="Lokad.Utf8Regex.PythonRe" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
 

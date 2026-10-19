@@ -13,7 +13,7 @@ public sealed class ComparisonWorkloadTests
     public async Task SharedJobMatchesIndependentGoldenOutputWithNormalLimitsAndFreshState(string id)
     {
         var workload = Catalog.Single(c => c.Id == id);
-        var script = new LythonEngine().Compile(workload.Source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(workload.Source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
         Assert.InRange(workload.Source.Length, 1, ComparisonProtocol.MaximumFrameBytes);
         Assert.InRange(workload.ExpectedOutputUtf8Bytes, 0, ComparisonProtocol.MaximumFrameBytes);

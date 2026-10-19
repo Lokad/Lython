@@ -388,7 +388,7 @@ public sealed class ImplicitClassCellTests
     public async Task ClassCellsFollowLexicalDefinition(string name, string source, string expected)
     {
         _ = name;
-        var compiled = new LythonEngine().Compile(source);
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
         foreach (var result in new[] { compiled.Run(new MockLythonHost()), await compiled.RunAsync(new MockLythonHost()) })
         {
@@ -400,7 +400,7 @@ public sealed class ImplicitClassCellTests
     [Fact]
     public async Task EscapedClassCellSurvivesDelayedHostCalls()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             class C:
              @staticmethod
              def owner():
@@ -427,7 +427,7 @@ public sealed class ImplicitClassCellTests
     [Fact]
     public async Task RetainedClassCellsObeyExecutionMemoryLimit()
     {
-        var compiled = new LythonEngine().Compile("""
+        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             keep=[]
             for i in range(5000):
              class C:
@@ -450,7 +450,7 @@ public sealed class ImplicitClassCellTests
     public async Task ClassCellBatchesReturnFundingAfterCleanup()
     {
         var ownerBudget = new LythonMemoryBudget(1048576);
-        using var compiled = new LythonEngine().Compile("""
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             for i in range(16):
              class C:
               def owner(self): return __class__

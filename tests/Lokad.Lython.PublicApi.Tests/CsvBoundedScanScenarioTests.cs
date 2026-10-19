@@ -26,7 +26,7 @@ public class CsvBoundedScanScenarioTests
     [Fact]
     public async Task RetainedScanRowsStayCharged()
     {
-        using var script = new LythonEngine().Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import csv\nr = csv.reader('a,b,c,d,e,f\\n' for i in range(" + SmallRows + "))\nrows = list(r)\nreturn len(rows)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MemoryLimit) };
@@ -48,7 +48,7 @@ public class CsvBoundedScanScenarioTests
     public async Task RefusedScanFailsButLaterCommandsReuseTheBudget()
     {
         var budget = new LythonMemoryBudget(Math.Max(512 * 1024, MemoryLimit + 65536));
-        using var script = new LythonEngine().Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import csv\nok = False\ntry:\n    rows = list(csv.reader('a,b,c,d,e,f\\n' for i in range(" + SmallRows + ")))\nexcept MemoryError:\n    ok = True\nreturn ok\n", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
@@ -89,7 +89,7 @@ public class CsvBoundedScanScenarioTests
             var source = file
                 ? "import csv\nwith open('/r.csv') as stream:\n    total = 0\n    for row in csv.reader(stream):\n        total += 1\nreturn total\n"
                 : ScanSource(count);
-            using var script = new LythonEngine().Compile(source, budget);
+            using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;
             var syncHost = new MockLythonHost();

@@ -27,7 +27,7 @@ public sealed class BatchedTupleAllocationTests
     [Fact]
     public void EmptyBatchedHugeSize_AllocatesLittle()
     {
-        var script = new LythonEngine().Compile("import itertools\nreturn next(itertools.batched([], 2000000), None)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import itertools\nreturn next(itertools.batched([], 2000000), None)\n");
         Assert.True(script.IsValid);
         // Warmup JIT.
         _ = script.Run(new MockLythonHost(), Tiny());
@@ -44,7 +44,7 @@ public sealed class BatchedTupleAllocationTests
     [Fact]
     public void ShortBatchedHugeSize_AllocatesLittle()
     {
-        var script = new LythonEngine().Compile("import itertools\nreturn next(itertools.batched([1], 2000000))\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import itertools\nreturn next(itertools.batched([1], 2000000))\n");
         Assert.True(script.IsValid);
         _ = script.Run(new MockLythonHost(), Tiny());
         LythonExecutionResult? result = null;
@@ -60,7 +60,7 @@ public sealed class BatchedTupleAllocationTests
     [Fact]
     public void TupleRepeatHuge_DeniesBeforeLargeAllocation()
     {
-        var script = new LythonEngine().Compile("x = (0,) * 2000000\nreturn len(x)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("x = (0,) * 2000000\nreturn len(x)\n");
         Assert.True(script.IsValid);
         _ = script.Run(new MockLythonHost(), Tiny());
         LythonExecutionResult? result = null;
@@ -76,7 +76,7 @@ public sealed class BatchedTupleAllocationTests
     [Fact]
     public void BatchedExhaustedRepeatPulls_AllocateLittle()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import itertools\nit = itertools.batched([], 2000000)\nfirst = next(it, None)\nsecond = next(it, None)\nreturn [first, second]\n");
         Assert.True(script.IsValid);
         _ = script.Run(new MockLythonHost(), Tiny());
@@ -93,7 +93,7 @@ public sealed class BatchedTupleAllocationTests
     [Fact]
     public async Task BatchedHugeAsync_AllocatesLittle()
     {
-        var script = new LythonEngine().Compile("import itertools\nreturn next(itertools.batched([], 2000000), None)\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import itertools\nreturn next(itertools.batched([], 2000000), None)\n");
         Assert.True(script.IsValid);
         _ = await script.RunAsync(new MockLythonHost(), Tiny());
         GC.Collect();

@@ -11,7 +11,7 @@ public sealed class ContainerScalarStorageTests
     private static (LythonRuntime.ExecutionContext Context, LythonSourceSpan Span) Budgeted(long maxBytes)
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(maxBytes) });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(maxBytes) },regexProvider:Utf8RegexProvider.Instance);
         return (context, new LythonSourceSpan(0, 0, 0, 0));
     }
 
@@ -33,7 +33,7 @@ public sealed class ContainerScalarStorageTests
         // Removing numeric slots updates the retained storage estimate and
         // returns their allowance without changing backing capacity.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
         var items = new object[] { new BigInteger(1), new BigInteger(2) };
@@ -124,7 +124,7 @@ public sealed class ContainerScalarStorageTests
         // Sets deduplicate: re-adding a held identity (or a structural twin)
         // retains nothing new, so no second coupon commits.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
         var set = new PySet(governor, span);
@@ -143,7 +143,7 @@ public sealed class ContainerScalarStorageTests
         // Removing numeric slots updates the retained storage estimate while
         // keeping the set backing funded.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
         var before = governor.CurrentCommittedBytes;
@@ -166,7 +166,7 @@ public sealed class ContainerScalarStorageTests
         // Removal resolves the stored identity: discarding via an equal-but-
         // distinct box evicts the held box and releases exactly its coupon.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
         var set = new PySet(governor, span);
@@ -200,11 +200,11 @@ public sealed class ContainerScalarStorageTests
             return set;
         }
 
-        var measureContext = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var measureContext = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var measured = BuildSet(measureContext, span);
         var baseline = measureContext.MemoryGovernor.CurrentCommittedBytes;
         var denyContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1) });
+            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1) },regexProvider:Utf8RegexProvider.Instance);
         var denied = BuildSet(denyContext, span);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(10, denied.Count);
@@ -214,7 +214,7 @@ public sealed class ContainerScalarStorageTests
         Assert.Equal(storedBefore, denied.CommittedStorageBytes);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         var retryContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + 65536) });
+            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + 65536) },regexProvider:Utf8RegexProvider.Instance);
         var retried = BuildSet(retryContext, span);
         Assert.True(retried.Add(new BigInteger(99999)));
         Assert.Equal(11, retried.Count);
@@ -227,7 +227,7 @@ public sealed class ContainerScalarStorageTests
         // Replacing a value adopts the incoming box and releases the displaced
         // one while the original key stays put: the tracked total is unchanged.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
         var dict = new PyDict(governor, span);
@@ -245,7 +245,7 @@ public sealed class ContainerScalarStorageTests
         // Removing via a structural twin (7.0 for stored 7) evicts the held pair
         // and releases its allowance without retaining a key identity map.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
         var dict = new PyDict(governor, span);
@@ -298,7 +298,7 @@ public sealed class ContainerScalarStorageTests
         // side carries its own coupons: identical construction commits identical
         // totals, and the shared boxes stay identical across the copy.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
         var before = governor.CurrentCommittedBytes;
@@ -334,12 +334,12 @@ public sealed class ContainerScalarStorageTests
             return dict;
         }
 
-        var measureContext = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var measureContext = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var measured = BuildDict(measureContext, span);
         Assert.Equal(10, measured.Count);
         var baseline = measureContext.MemoryGovernor.CurrentCommittedBytes;
         var denyContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1) });
+            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1) },regexProvider:Utf8RegexProvider.Instance);
         var denied = BuildDict(denyContext, span);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(10, denied.Count);
@@ -349,7 +349,7 @@ public sealed class ContainerScalarStorageTests
         Assert.Equal(storedBefore, denied.CommittedStorageBytes);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         var retryContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + 65536) });
+            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + 65536) },regexProvider:Utf8RegexProvider.Instance);
         var retried = BuildDict(retryContext, span);
         retried.SetItem(new BigInteger(99999), new BigInteger(1));
         Assert.Equal(11, retried.Count);
@@ -361,7 +361,7 @@ public sealed class ContainerScalarStorageTests
         // Immutable storage uses a conservative per-slot estimate; aliases
         // retain Python identity and have no identity-accounting table.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
         var before = governor.CurrentCommittedBytes;
@@ -379,13 +379,13 @@ public sealed class ContainerScalarStorageTests
         // A denied construction coupon refunds the orphaned backing: nothing
         // stays committed and the tuple never publishes.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
         var before = governor.CurrentCommittedBytes;
         var items = new object[] { new BigInteger(1), new BigInteger(2), new BigInteger(3) };
         var budget = PyTuple.EstimateApproximateBytes(items.Length) + RuntimeMemoryEstimates.ScalarStorageBytes - 1;
-        var tight = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) });
+        var tight = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) },regexProvider:Utf8RegexProvider.Instance);
         Assert.Throws<LythonRuntimeException>(() => new PyTuple(items, tight.MemoryGovernor, span));
         Assert.Equal(0, tight.MemoryGovernor.CurrentCommittedBytes);
     }
@@ -396,7 +396,7 @@ public sealed class ContainerScalarStorageTests
         // Bounded eviction adopts the incoming box and releases the evicted one:
         // node and coupon totals both stay flat across rotation.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
         var deque = new PyDeque(2, governor, span);
@@ -420,7 +420,7 @@ public sealed class ContainerScalarStorageTests
         // exactly as before, and a funded retry succeeds. Nothing is
         // pool-tracked here, so exhaustion relief short-circuits deterministically.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         static PyDeque BuildDeque(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {
@@ -433,11 +433,11 @@ public sealed class ContainerScalarStorageTests
             return deque;
         }
 
-        var measureContext = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var measureContext = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         _ = BuildDeque(measureContext, span);
         var baseline = measureContext.MemoryGovernor.CurrentCommittedBytes;
         var denyContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1) });
+            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1) },regexProvider:Utf8RegexProvider.Instance);
         var denied = BuildDeque(denyContext, span);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(5, denied.Count);
@@ -447,7 +447,7 @@ public sealed class ContainerScalarStorageTests
         Assert.Equal(storedBefore, denied.CommittedStorageBytes);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         var retryContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + 65536) });
+            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + 65536) },regexProvider:Utf8RegexProvider.Instance);
         var retried = BuildDeque(retryContext, span);
         retried.Append(new BigInteger(999));
         Assert.Equal(6, retried.Count);
@@ -458,7 +458,7 @@ public sealed class ContainerScalarStorageTests
     {
         // Indexed writes adopt the incoming box and release the displaced one.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
         var deque = new PyDeque(null, governor, span);

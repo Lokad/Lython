@@ -44,7 +44,7 @@ public sealed class StringPredicateCallTests
     public async Task ImmediateExposedExpandedAndDynamicPredicatesFollowPython(string method, string value, bool expected)
     {
         var source = $"first=value.{method}\nsecond=value.{method}\nreturn [value.{method}(),first(),value.{method}(*[]),getattr(value,\"{method}\")(),first is second,first.__self__ is value,first.__name__,first.__qualname__,first.__module__]";
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["value"] = value } };
         foreach (var asynchronous in new[] { false, true })
@@ -71,7 +71,7 @@ public sealed class StringPredicateCallTests
     public async Task RejectedArgumentsKeepTheirEffects(string method)
     {
         var source = $"events=[]\ndef argument():\n events.append('arg')\n return 0\ndef check(value):\n try: value.{method}(argument())\n except TypeError: print(events)\n try: value.{method}(flag=argument())\n except TypeError: print(events)\ncheck('λ')";
-        using var script = new LythonEngine().Compile(source);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var asynchronous in new[] { false, true })
         {
@@ -85,7 +85,7 @@ public sealed class StringPredicateCallTests
     public async Task RetainedMethodReceiverKeepsItsFundingAcrossSequentialRuns()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("text='a'*4096\nmethod=text.isalpha\ntext='changed'\nreturn [method.__self__,method()]", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("text='a'*4096\nmethod=text.isalpha\ntext='changed'\nreturn [method.__self__,method()]", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -111,7 +111,7 @@ public sealed class StringPredicateCallTests
     {
         const string source = "class Value:\n @property\n def isalpha(self):\n  with open('bind.txt','a') as output: output.write('bind')\n  def check():\n   with open('call.txt','a') as output: output.write('call')\n   return 'custom'\n  return check\nprint(Value().isalpha())";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();

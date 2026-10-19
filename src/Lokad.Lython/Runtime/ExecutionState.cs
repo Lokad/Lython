@@ -70,9 +70,11 @@ internal sealed class ExecutionState
     public ExecutionState(
         ILythonHost host,
         LythonRunOptions? options,
-        Dictionary<string, object> builtinVariables)
+        Dictionary<string, object> builtinVariables,
+        ILythonRegexProvider? regexProvider = null)
     {
         Host = host;
+        RegexProvider = regexProvider;
         AllowedBuiltinModules = LythonRuntime.SnapshotBuiltinModuleGrants(options?.AllowedBuiltinModules);
         Limits = LythonRuntime.ExecutionLimits.FromOptions(options);
         Guards = new ExecutionGuards(this);
@@ -129,6 +131,8 @@ internal sealed class ExecutionState
     }
 
     public ILythonHost Host { get; }
+
+    internal ILythonRegexProvider? RegexProvider { get; }
 
     public LythonRuntime.ExecutionLimits Limits { get; }
 
@@ -237,6 +241,36 @@ internal sealed class ExecutionState
     // end-of-run publication; terminal admission refusal only releases storage.
     private readonly List<IExecutionFileWriter> _openFileWriters = new();
 
+    // Active provider resources only: no guest-reference inventory or tracing.
+    private LythonRuntime.PyRegexFindIterator? _regexIterators;
+
+    internal void TrackRegexIterator(LythonRuntime.PyRegexFindIterator iterator)
+    {
+        iterator.NextResource = _regexIterators;
+        _regexIterators = iterator;
+    }
+
+    internal void UntrackRegexIterator(LythonRuntime.PyRegexFindIterator iterator)
+    {
+        LythonRuntime.PyRegexFindIterator? previous = null;
+        for (var current = _regexIterators; current is not null; current = current.NextResource)
+        {
+            if (ReferenceEquals(current, iterator))
+            {
+                if (previous is null) _regexIterators = current.NextResource;
+                else previous.NextResource = current.NextResource;
+                current.NextResource = null;
+                return;
+            }
+            previous = current;
+        }
+    }
+
+    internal void CloseRegexIterators()
+    {
+        while (_regexIterators is { } iterator) iterator.Dispose();
+    }
+
     internal void TrackOpenFileWriter(IExecutionFileWriter handle)
     {
         _openFileWriters.Add(handle);
@@ -255,6 +289,7 @@ internal sealed class ExecutionState
     // cancellation and memory admission like explicit closes.
     internal void CloseOpenFileWriters(LythonRuntime.ExecutionContext context)
     {
+        CloseRegexIterators();
         while (_openFileWriters.Count > 0)
         {
             var handle = _openFileWriters[^1];
@@ -264,6 +299,7 @@ internal sealed class ExecutionState
 
     internal async ValueTask CloseOpenFileWritersAsync(LythonRuntime.ExecutionContext context)
     {
+        CloseRegexIterators();
         while (_openFileWriters.Count > 0)
         {
             var handle = _openFileWriters[^1];
@@ -273,6 +309,7 @@ internal sealed class ExecutionState
 
     internal void TryCloseOpenFileWriters(LythonRuntime.ExecutionContext context)
     {
+        CloseRegexIterators();
         while (_openFileWriters.Count > 0)
         {
             var handle = _openFileWriters[^1];
@@ -289,6 +326,7 @@ internal sealed class ExecutionState
 
     internal async ValueTask TryCloseOpenFileWritersAsync(LythonRuntime.ExecutionContext context)
     {
+        CloseRegexIterators();
         while (_openFileWriters.Count > 0)
         {
             var handle = _openFileWriters[^1];

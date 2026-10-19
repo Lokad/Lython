@@ -70,7 +70,7 @@ public sealed class TruthTypeSlotDelayedTests
 
     private static LythonCompiledScript Compile(string slot, bool conditional)
     {
-        var script = new LythonEngine().Compile(Source(slot, conditional));
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(Source(slot, conditional));
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
         return script;
     }

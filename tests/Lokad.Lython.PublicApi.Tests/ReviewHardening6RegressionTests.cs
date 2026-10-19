@@ -137,7 +137,7 @@ return wb.sheetnames
         };
         var host = new MockLythonHost();
         host.SeedWorkbook("/raw.xlsx", BuildRawArchive(parts));
-        var result = new LythonEngine().Run(LoadScript("/raw.xlsx"), host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(LoadScript("/raw.xlsx"), host);
         Assert.True(result.Success, result.Failure?.Message);
     }
 
@@ -152,7 +152,7 @@ return wb.sheetnames
             var zeros = new byte[2097152];
             s.Write(zeros, 0, zeros.Length);
         }));
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             LoadScript("/pad.xlsx"),
             host,
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
@@ -171,7 +171,7 @@ return wb.sheetnames
             var zeros = new byte[2097152];
             s.Write(zeros, 0, zeros.Length);
         }));
-        var result = await new LythonEngine().RunAsync(
+        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             LoadScript("/pad.xlsx"),
             host,
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
@@ -191,7 +191,7 @@ return wb.sheetnames
                 WriteEntry(archive, "xl/pad" + i.ToString() + ".bin", "x");
             }
         }));
-        var result = new LythonEngine().Run(LoadScript("/many.xlsx"), host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(LoadScript("/many.xlsx"), host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { "S" }, Assert.IsType<List<object?>>(result.ReturnValue));
     }
@@ -201,7 +201,7 @@ return wb.sheetnames
     {
         var host = new MockLythonHost();
         host.SeedWorkbook("/bogus", new byte[] { 0x50, 0x4B, 0x03, 0x04, 0x01 });
-        var result = new LythonEngine().Run(LoadScript("/bogus"), host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(LoadScript("/bogus"), host);
         Assert.False(result.Success);
         Assert.Equal("InvalidFileException", result.Failure?.ExceptionType);
     }
@@ -216,7 +216,7 @@ return wb.sheetnames
         }
         var host = new MockLythonHost();
         host.SeedWorkbook("/corrupt.xlsx", payload);
-        var result = new LythonEngine().Run(LoadScript("/corrupt.xlsx"), host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(LoadScript("/corrupt.xlsx"), host);
         Assert.False(result.Success);
         Assert.Equal("InvalidFileException", result.Failure?.ExceptionType);
     }
@@ -240,7 +240,7 @@ return wb.sheetnames
         Assert.True(at >= 0);
         payload[at + 3] = (byte)'5';
         host.SeedWorkbook("/bad.xlsx", payload);
-        var result = new LythonEngine().Run(LoadScript("/bad.xlsx"), host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(LoadScript("/bad.xlsx"), host);
         Assert.False(result.Success);
         Assert.Equal("InvalidFileException", result.Failure?.ExceptionType);
     }
@@ -262,7 +262,7 @@ return wb.sheetnames
         };
         var host = new MockLythonHost();
         host.SeedWorkbook("/declared.xlsx", BuildRawArchive(parts));
-        var result = new LythonEngine().Run(LoadScript("/declared.xlsx"), host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(LoadScript("/declared.xlsx"), host);
         Assert.False(result.Success);
         Assert.Equal("InvalidFileException", result.Failure?.ExceptionType);
     }
@@ -282,7 +282,7 @@ return wb.sheetnames
         };
         var host = new MockLythonHost();
         host.SeedWorkbook("/declared.xlsx", BuildRawArchive(parts));
-        var result = new LythonEngine().Run(LoadScript("/declared.xlsx"), host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(LoadScript("/declared.xlsx"), host);
         Assert.False(result.Success);
         Assert.Equal("InvalidFileException", result.Failure?.ExceptionType);
     }
@@ -293,7 +293,7 @@ return wb.sheetnames
         var sheet = SheetPrefix.Replace("<sheetData>", "<sheetData>" + string.Concat(Enumerable.Repeat("<x>", 20000)));
         var host = new MockLythonHost();
         host.SeedWorkbook("/deep.xlsx", BuildXlsx(sheet));
-        var result = new LythonEngine().Run(LoadScript("/deep.xlsx"), host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(LoadScript("/deep.xlsx"), host);
         Assert.False(result.Success);
         Assert.Equal("InvalidFileException", result.Failure?.ExceptionType);
         Assert.Contains("nesting", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
@@ -305,7 +305,7 @@ return wb.sheetnames
         var sheet = SheetPrefix.Replace("<sheetData>", "<sheetData>" + string.Concat(Enumerable.Repeat("<x>", 500)) + string.Concat(Enumerable.Repeat("</x>", 500)));
         var host = new MockLythonHost();
         host.SeedWorkbook("/medium.xlsx", BuildXlsx(sheet));
-        var result = new LythonEngine().Run(LoadScript("/medium.xlsx"), host);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(LoadScript("/medium.xlsx"), host);
         Assert.True(result.Success, result.Failure?.Message);
     }
 
@@ -321,7 +321,7 @@ for i in range(1, 3001):
 return ws.max_row
 """;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
-        var baseline = new LythonEngine().Run(setup, new MockLythonHost(), options);
+        var baseline = new LythonEngine(Utf8RegexProvider.Instance).Run(setup, new MockLythonHost(), options);
         Assert.True(baseline.Success, baseline.Failure?.Message);
 
         var withSave = """
@@ -334,7 +334,7 @@ wb.save("/out.xlsx")
 return ws.max_row
 """;
         var host = new MockLythonHost();
-        var result = new LythonEngine().Run(withSave, host, options);
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(withSave, host, options);
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);

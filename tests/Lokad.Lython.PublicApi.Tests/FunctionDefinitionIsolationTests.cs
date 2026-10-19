@@ -7,7 +7,7 @@ public sealed class FunctionDefinitionIsolationTests
     [Fact]
     public void RefusedCompilationAvoidsLargeFrontendAllocation()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         using var warm = engine.Compile("pass");
         var source = "def f(" + string.Join(',', Enumerable.Range(0, 4096).Select(i => "p" + i)) + "):\n    pass\n";
         var budget = new LythonMemoryBudget(32768);
@@ -45,7 +45,7 @@ def gen(a=[], *, n=1):
 print(list(gen()), list(gen(n=2)))
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         for (var i = 0; i < 2; i++)
@@ -67,7 +67,7 @@ print(list(gen()), list(gen(n=2)))
     {
         const string source = "import time\ndef f(a=[tag], *, b={'x': tag}): return [a, b]\ntime.sleep(1)\nprint(f())\nreturn f()";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var gates = new[] { new HeldTiming(), new HeldTiming() };

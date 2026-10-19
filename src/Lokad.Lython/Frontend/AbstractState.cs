@@ -69,8 +69,11 @@ internal sealed class AbstractState
     private bool _containerFactsInvalidated;
     private int _version;
 
-    public AbstractState()
+    internal StaticAnalysisContext? AnalysisContext { get; }
+
+    public AbstractState(StaticAnalysisContext? analysisContext = null)
     {
+        AnalysisContext = analysisContext;
         _values = new Dictionary<string, AbstractValue>(StringComparer.Ordinal);
         _sequenceLengths = new Dictionary<string, AbstractSequenceLengthBounds>(StringComparer.Ordinal);
         _abstractValueCache = new Dictionary<ExpressionSyntax, CachedAbstractValue>();
@@ -78,8 +81,10 @@ internal sealed class AbstractState
 
     private AbstractState(
         Dictionary<string, AbstractValue> values,
-        Dictionary<string, AbstractSequenceLengthBounds> sequenceLengths)
+        Dictionary<string, AbstractSequenceLengthBounds> sequenceLengths,
+        StaticAnalysisContext? analysisContext)
     {
+        AnalysisContext = analysisContext;
         _values = values;
         _sequenceLengths = sequenceLengths;
         _abstractValueCache = new Dictionary<ExpressionSyntax, CachedAbstractValue>();
@@ -282,7 +287,7 @@ internal sealed class AbstractState
     // bodies do not publish them; evaluated branches join them below.
     public AbstractState Clone() => new(
         new Dictionary<string, AbstractValue>(_values, StringComparer.Ordinal),
-        new Dictionary<string, AbstractSequenceLengthBounds>(_sequenceLengths, StringComparer.Ordinal));
+        new Dictionary<string, AbstractSequenceLengthBounds>(_sequenceLengths, StringComparer.Ordinal), AnalysisContext);
 
     public void ReplaceWith(AbstractState other)
     {
@@ -328,7 +333,7 @@ internal sealed class AbstractState
 
     public static AbstractState Merge(AbstractState left, AbstractState right)
     {
-        var merged = new AbstractState();
+        var merged = new AbstractState(left.AnalysisContext);
         merged.MergeFrom(left, right);
         return merged;
     }

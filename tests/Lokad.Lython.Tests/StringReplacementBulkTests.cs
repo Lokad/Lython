@@ -17,7 +17,7 @@ public sealed class StringReplacementBulkTests(ITestOutputHelper output)
         {
             var budget = new LythonMemoryBudget(1024 * 1024);
             using var owner = budget.CreateScope();
-            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var text = string.Concat(Enumerable.Repeat("éλ😀", 256));
             var value = PyString.FromString(text, context.MemoryGovernor, Span);
             Assert.True(PyMemberAccess.TryResolve(value, "replace", context, Span, out var member));
@@ -41,7 +41,7 @@ public sealed class StringReplacementBulkTests(ITestOutputHelper output)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var value = PyString.FromString("éλ😀", context.MemoryGovernor, Span);
         Assert.True(PyMemberAccess.TryResolve(value, "replace", context, Span, out var member));
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(member);
@@ -59,7 +59,7 @@ public sealed class StringReplacementBulkTests(ITestOutputHelper output)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var value = PyString.FromString("ab", context.MemoryGovernor, Span);
         var replacement = PyString.FromString(new string('x', 65536), context.MemoryGovernor, Span);
         Assert.True(PyMemberAccess.TryResolve(value, "replace", context, Span, out var member));
@@ -85,7 +85,7 @@ public sealed class StringReplacementBulkTests(ITestOutputHelper output)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var value = PyString.FromString(new string('a', 65536), context.MemoryGovernor, Span);
         var replacement = PyString.FromString(new string('b', 65536), context.MemoryGovernor, Span);
         Assert.True(PyMemberAccess.TryResolve(value, "replace", context, Span, out var member));

@@ -28,7 +28,7 @@ public sealed class FailureAttributionTests
         if (asynchronous && reason != LythonFailureReason.SharedMemoryAllowance)
             source = "import time\ntime.sleep(0)\n" + source;
         var options = Options(reason, limit);
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         Assert.False(result.Success);
         var attribution = Assert.IsType<LythonFailureAttribution>(result.FailureAttribution);
@@ -55,7 +55,7 @@ public sealed class FailureAttributionTests
     public async Task ProvenanceFollowsActualExceptionsAndCannotBeForged(string ending, bool lookalike)
     {
         var source = "try:\n    import json\nexcept ImportError as e:\n    " + ending;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         foreach (var asynchronous in new[] { false, true })
         {
             var result = asynchronous
@@ -73,7 +73,7 @@ public sealed class FailureAttributionTests
     public async Task MemoryDenialRetainsItsOriginalTerminalAttribution(string ending)
     {
         var source = "try:\n    x = 'x' * 1000000\nexcept MemoryError:\n    pass\n" + ending;
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         foreach (var asynchronous in new[] { false, true })
         {
@@ -89,7 +89,7 @@ public sealed class FailureAttributionTests
     [InlineData(128)]
     public async Task FailedDiagnosticProjectionPreservesOriginalAttribution(long projectionBudget)
     {
-        var script = new LythonEngine().Compile("import json");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json");
         var options = new LythonRunOptions
         {
             AllowedBuiltinModules = new HashSet<string>(),
@@ -107,7 +107,7 @@ public sealed class FailureAttributionTests
     [Fact]
     public async Task CompilationHostPreflightRuntimeCapabilityAndProjectionRejectionAreDistinct()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         foreach (var asynchronous in new[] { false, true })
         {
             async Task<LythonExecutionResult> Run(string source) => asynchronous
@@ -131,13 +131,13 @@ public sealed class FailureAttributionTests
         var timing = new HeldTiming();
         host.SetTiming(timing);
         using var cancellation = new CancellationTokenSource();
-        var call = new LythonEngine().RunAsync("import time\ntime.sleep(1)", host,
+        var call = new LythonEngine(Utf8RegexProvider.Instance).RunAsync("import time\ntime.sleep(1)", host,
             new LythonRunOptions { CancellationToken = cancellation.Token });
         try { await timing.Started.Task.WaitAsync(TimeSpan.FromSeconds(5)); }
         finally { cancellation.Cancel(); }
         var result = await call.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
-        var cancelledBeforeEntry = new LythonEngine().Run("return 1", new MockLythonHost(),
+        var cancelledBeforeEntry = new LythonEngine(Utf8RegexProvider.Instance).Run("return 1", new MockLythonHost(),
             new LythonRunOptions { CancellationToken = cancellation.Token });
         Assert.Equal(LythonFailureReason.Cancelled, cancelledBeforeEntry.FailureAttribution?.Reason);
     }
@@ -148,7 +148,7 @@ public sealed class FailureAttributionTests
     public async Task HostCallbackFailureHasTypedOrigin(bool asynchronous)
     {
         var host = new MockLythonHost { OnStandardOutputWrite = () => throw new InvalidOperationException("controlled fault") };
-        var script = new LythonEngine().Compile("print('test')");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('test')");
         var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
         Assert.False(result.Success);
         Assert.Equal(LythonFailureReason.HostOperationFailed, result.FailureAttribution?.Reason);

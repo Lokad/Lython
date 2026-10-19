@@ -55,7 +55,7 @@ public class ChainMapLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedChainMapCounterDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "from collections import ChainMap, Counter\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(ChainMap(Counter({'a': 1})))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };
@@ -76,7 +76,7 @@ public class ChainMapLifetimeScenarioTests : LifetimeScenario
     [Fact]
     public async Task RetainedChainMapCopyDenied()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "from collections import ChainMap\nm = ChainMap({'a': 1})\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(m.copy())\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };

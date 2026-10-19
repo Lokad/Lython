@@ -11,7 +11,7 @@ public sealed class EmptyGzipCompatibilityTests
     [InlineData(9)]
     public async Task EmptyPayloadsProduceCompleteMembers(int level)
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import gzip\nprint(gzip.decompress(gzip.compress(b''," + level + ",mtime=0)))\n" +
             "with gzip.open('empty.gz','wb',compresslevel=" + level + ") as file: pass\n" +
             "with gzip.open('empty.gz','rb') as file: print(file.read())\n");

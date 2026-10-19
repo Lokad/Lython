@@ -23,7 +23,7 @@ public sealed class ArgparseLiveChoicesTests
             c.append(3)
             return p.parse_args(["--x", "3"]).x
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var result = script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
@@ -40,7 +40,7 @@ public sealed class ArgparseLiveChoicesTests
             p.add_argument("--x", type=int, choices=range(200000))
             return p.parse_args(["--x", "999999"]).x
             """;
-        var script = new LythonEngine().Compile(miss);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(miss);
         Assert.True(script.IsValid);
         var result = script.Run(new MockLythonHost(), Tiny());
         Assert.False(result.Success);
@@ -58,7 +58,7 @@ public sealed class ArgparseLiveChoicesTests
             p.add_argument("--x", type=int, choices=range(5))
             return p.parse_args(["--x", "3"]).x
             """;
-        var script = new LythonEngine().Compile(hit);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(hit);
         var ok = script.Run(new MockLythonHost());
         Assert.True(ok.Success, ok.Failure?.Message);
         Assert.Equal(new System.Numerics.BigInteger(3), ok.ReturnValue);
@@ -69,7 +69,7 @@ public sealed class ArgparseLiveChoicesTests
             p.add_argument("--x", type=int, choices=[1, 2])
             return p.parse_args(["--x", "3"]).x
             """;
-        var bad = new LythonEngine().Compile(miss);
+        var bad = new LythonEngine(Utf8RegexProvider.Instance).Compile(miss);
         var denied = bad.Run(new MockLythonHost());
         Assert.False(denied.Success);
     }
@@ -83,7 +83,7 @@ public sealed class ArgparseLiveChoicesTests
             p.add_argument("--x", choices=[1, 2])
             return p.parse_args(["--x", "3"]).x
             """;
-        var script = new LythonEngine().Compile(code);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var result = script.Run(new MockLythonHost());
         Assert.False(result.Success);
     }

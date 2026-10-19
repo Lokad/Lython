@@ -15,7 +15,7 @@ public sealed class CsvDictReaderLazinessScenarioTests
     {
         // 20k aliased single-column rows share one field payload; the first
         // row breaks out before any other dictionary exists.
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             rows = ["a"] * 20000
@@ -39,7 +39,7 @@ public sealed class CsvDictReaderLazinessScenarioTests
     [Fact]
     public async Task DictReaderLazyBehaviorsStillProject()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
             r = csv.DictReader(["a,b", "1,2", "3"], restval="0")

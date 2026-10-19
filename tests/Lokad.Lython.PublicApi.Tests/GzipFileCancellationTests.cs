@@ -17,7 +17,7 @@ public sealed class GzipFileCancellationTests
             "index" => "import gzip\nclass Level:\n    def __index__(self):\n        with open('pause.txt') as file: file.read()\n        return 1\nprint('ready')\nwith gzip.GzipFile('output.gz',mode='wb',compresslevel=Level(),mtime=0) as writer: writer.write(b'payload')\n",
             _ => "import gzip\nwith gzip.GzipFile('output.gz',mode='wb',mtime=0) as writer:\n    writer.write(b'payload')\n    print('ready')\n",
         };
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var host = new DelayedLythonHost();
         host.SeedFile("/pause.txt", "1");
@@ -44,7 +44,7 @@ public sealed class GzipFileCancellationTests
         Assert.Equal(operation == "read" ? "ready\nb'a'\n" : "ready\n", retry.StandardOutput);
         if (operation != "read")
         {
-            var verify = new LythonEngine().Compile("import gzip\nwith gzip.GzipFile('output.gz') as reader: print(reader.read())\n");
+            var verify = new LythonEngine(Utf8RegexProvider.Instance).Compile("import gzip\nwith gzip.GzipFile('output.gz') as reader: print(reader.read())\n");
             var decoded = await verify.RunAsync(fresh);
             Assert.True(decoded.Success, decoded.Failure?.Message);
             Assert.Equal("b'payload'\n", decoded.StandardOutput);

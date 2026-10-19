@@ -21,7 +21,7 @@ public sealed class RepresentativeScriptTests
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
         name = ScriptKind(name);
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var inputs = new Dictionary<string, byte[]>();
         var outputs = new Dictionary<string, byte[]>();
@@ -138,7 +138,7 @@ public sealed class RepresentativeScriptTests
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
         name = ScriptKind(name);
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = budget };
@@ -205,7 +205,7 @@ public sealed class RepresentativeScriptTests
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
         name = ScriptKind(name);
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var host = new DelayedLythonHost();
         host.SeedFile("/input.csv", "kind,amount,note\nred,3,café\nblue,2,😀\n");
@@ -267,7 +267,7 @@ public sealed class RepresentativeScriptTests
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
         name = ScriptKind(name);
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         var mock = asynchronous ? null : new MockLythonHost();
@@ -329,7 +329,7 @@ public sealed class RepresentativeScriptTests
             input = string.Concat(Enumerable.Repeat("{\"kind\":\"red\",\"amount\":3}\n{\"kind\":\"blue\",\"amount\":2}\n{\"kind\":\"red\",\"amount\":-1}\n{\"kind\":\"blue\",\"amount\":5}\n\n", 1024));
             path = "/input.jsonl";
         }
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         LythonExecutionResult result;
@@ -365,7 +365,7 @@ public sealed class RepresentativeScriptTests
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
         name = ScriptKind(name);
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var host = new DelayedLythonHost();
         if (name == "file-manifest") host.SeedBytes(path, [0, 127, 128, 255]);
@@ -405,7 +405,7 @@ public sealed class RepresentativeScriptTests
         name = ScriptKind(name);
         var source = "try:\n" + string.Join('\n', original.Split('\n').Select(line => " " + line)) +
             "\nexcept ValueError:\n return source.closed\n";
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         var mock = asynchronous ? null : new MockLythonHost();

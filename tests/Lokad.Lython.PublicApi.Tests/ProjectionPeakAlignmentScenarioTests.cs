@@ -11,7 +11,7 @@ public sealed class ProjectionPeakAlignmentScenarioTests
     [Fact]
     public async Task ReturnValueOverrunKeepsPeakAtAcceptedCharges()
     {
-        var script = new LythonEngine().Compile("return \"x\" * 1000\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return \"x\" * 1000\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { ResultMemoryBudget = new LythonMemoryBudget(100)};
 
@@ -31,7 +31,7 @@ public sealed class ProjectionPeakAlignmentScenarioTests
     [Fact]
     public async Task CapturesThenOverrunKeepsCapturePeak()
     {
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             print("y" * 100)
             return "x" * 10000
@@ -58,7 +58,7 @@ public sealed class ProjectionPeakAlignmentScenarioTests
     [Fact]
     public async Task TinyBudgetStillProjectsFreeValues()
     {
-        var script = new LythonEngine().Compile("return 0\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 0\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { ResultMemoryBudget = new LythonMemoryBudget(0)};
 
@@ -78,7 +78,7 @@ public sealed class ProjectionPeakAlignmentScenarioTests
     [Fact]
     public async Task TinyBudgetDeniesFirstCharge()
     {
-        var script = new LythonEngine().Compile("return \"x\"\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return \"x\"\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { ResultMemoryBudget = new LythonMemoryBudget(0)};
 

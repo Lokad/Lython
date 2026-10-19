@@ -23,7 +23,7 @@ public sealed class ExecutionPathOwnershipParityTests
         using (var owner = budget.CreateScope())
         {
             var options = new LythonRunOptions { MemoryBudget = owner};
-            using var compiled = new LythonEngine().Compile(source);
+            using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
             Assert.True(compiled.IsValid);
             using (var syncResult = compiled.Run(new MockLythonHost(), options))
             using (var asyncResult = await compiled.RunAsync(new MockLythonHost(), options))

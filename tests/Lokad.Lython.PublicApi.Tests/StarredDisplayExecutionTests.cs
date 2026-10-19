@@ -40,7 +40,7 @@ public sealed class StarredDisplayExecutionTests
     public async Task PythonResultsAndCleanupSurviveBothDrivers(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -74,7 +74,7 @@ result={{(tuple ? "(-1,*Items(),99)" : "[-1,*Items(),99]")}}
 print(result)
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -122,7 +122,7 @@ print(result)
     {
         var source = "target=[17]\ntarget=" + (tuple ? "(1,*range(10000),2)" : "[1,*range(10000),2]") + "\nwith open('result.txt','w') as output: output.write(str(target))";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
@@ -146,7 +146,7 @@ print(result)
     public async Task EscapingDisplaysKeepTheirMagnitudeAliasesFunded(bool tuple)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(tuple ? "return (*source,source[0])" : "return [*source,source[0]]", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(tuple ? "return (*source,source[0])" : "return [*source,source[0]]", budget);
         var baseline = budget.ReservedBytes;
         var seed = BigInteger.One << 10000;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["source"] = new object[] { seed } } };

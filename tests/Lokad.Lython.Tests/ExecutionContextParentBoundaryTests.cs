@@ -111,14 +111,14 @@ public sealed class ExecutionContextParentBoundaryTests
         Assert.Same(expected.SourcePath, child.SourcePath);
     }
 
-    private static Context Root() => new(new MockLythonHost(), new LythonRunOptions { SourcePath = "/root.py" });
+    private static Context Root() => new(new MockLythonHost(), new LythonRunOptions { SourcePath = "/root.py" },regexProvider:Utf8RegexProvider.Instance);
 
     private static ClassDefinitionStatementSyntax Class(bool classCell) => Assert.IsType<ClassDefinitionStatementSyntax>(
         Assert.Single(Compile(classCell ? "class C:\n    def method(self):\n        return __class__\n" : "class C:\n    pass\n").Statements));
 
     private static ScriptSyntax Compile(string source)
     {
-        var frontend = LythonFrontend.Compile(source);
+        var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         return frontend.Script.RequireNotNull();
     }

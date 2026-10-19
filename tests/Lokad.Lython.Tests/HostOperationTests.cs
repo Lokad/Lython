@@ -39,7 +39,7 @@ public sealed class HostOperationTests
         var host = new Harness.MockLythonHost();
         host.FailListDir("/", "cannot list C:\\secret\\root with token=abc");
 
-        var result = new LythonEngine().Run(
+        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import os\nos.listdir('/')\n",
             host);
 

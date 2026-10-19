@@ -39,7 +39,7 @@ def tail():
     public async Task ProtocolsFinishBeforeFollowingTargetOrRefund(string kind, bool cancel)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(ProtocolSource(kind), budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(ProtocolSource(kind), budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -95,7 +95,7 @@ def refuse():
         var target = kind switch { "item" => "box[7]", "slice" => "box[1:3]", _ => "box.value" };
         var source = common + "\n" + definition + "\nbox=Box()\ntry:del " + target + ",box[9]\nexcept BaseException:print('caught deletion')\nprint('after')";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) };
@@ -118,7 +118,7 @@ def refuse():
     {
         const string source = "values={'drop':'é'*4096}\nkept=values['drop']\ndel values['drop']\nreturn kept";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using (var first = script.Run(new MockLythonHost()))
@@ -151,7 +151,7 @@ with open('result.json','w') as target:json.dump(configuration,target,sort_keys=
 print(configuration['name'],configuration['limit'])
 """;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -175,7 +175,7 @@ print(configuration['name'],configuration['limit'])
     [Fact]
     public async Task DeletionKeepsManagedRecursionProtection()
     {
-        using var script = new LythonEngine().Compile("class Box:\n def __delitem__(self,key):del self[key]\ndel Box()[0]");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("class Box:\n def __delitem__(self,key):del self[key]\ndel Box()[0]");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxRecursionDepth = 16 };
         foreach (var asynchronous in new[] { false, true })

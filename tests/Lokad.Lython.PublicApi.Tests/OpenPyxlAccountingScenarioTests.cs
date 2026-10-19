@@ -15,7 +15,7 @@ public sealed class OpenPyxlAccountingScenarioTests
     public async Task ManyTinyEntriesGateBeforeBclMaterialization()
     {
         var seed = new MockLythonHost();
-        var built = new LythonEngine().Run(
+        var built = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import zipfile
             with zipfile.ZipFile("/t.zip", "w") as archive:
@@ -27,7 +27,7 @@ public sealed class OpenPyxlAccountingScenarioTests
         Assert.True(built.Success, built.Failure?.Message);
         var archive = seed.ReadBytes("/t.zip");
 
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             return openpyxl.load_workbook("/t.xlsx")
@@ -53,7 +53,7 @@ public sealed class OpenPyxlAccountingScenarioTests
     public async Task SmallSheetTailCharge()
     {
         var seed = new MockLythonHost();
-        var built = new LythonEngine().Run(
+        var built = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import openpyxl
             wb = openpyxl.Workbook()
@@ -69,7 +69,7 @@ public sealed class OpenPyxlAccountingScenarioTests
         Assert.True(built.Success, built.Failure?.Message);
         var archive = seed.ReadBytes("/t.xlsx");
 
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             wb = openpyxl.load_workbook("/t.xlsx")
@@ -111,7 +111,7 @@ public sealed class OpenPyxlAccountingScenarioTests
         // R02: depth validation rides the same reader that builds the DOM, so
         // a hostile part fails during the one parse instead of a pre-scan.
         var seed = new MockLythonHost();
-        var built = new LythonEngine().Run(
+        var built = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import openpyxl
             wb = openpyxl.Workbook()
@@ -122,7 +122,7 @@ public sealed class OpenPyxlAccountingScenarioTests
         Assert.True(built.Success, built.Failure?.Message);
         var mangled = ReplacePackagePart(seed.ReadBytes("/t.xlsx"), "xl/workbook.xml", DeepDocument(1100));
 
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             return openpyxl.load_workbook("/deep.xlsx")
@@ -159,7 +159,7 @@ public sealed class OpenPyxlAccountingScenarioTests
     public async Task OptionalXmlDeclarationAttributesLoad(string declaration, bool readOnly)
     {
         var bytes = XmlDeclarationWorkbook(declaration);
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import openpyxl\n" +
             "wb = openpyxl.load_workbook('/declaration.xlsx', data_only=True, read_only=" +
             (readOnly ? "True" : "False") + ")\nprint(list(wb.active.values))");
@@ -187,7 +187,7 @@ public sealed class OpenPyxlAccountingScenarioTests
     public async Task InvalidOrProhibitedPackageXmlFailsExplicitly(string prefix)
     {
         var bytes = XmlDeclarationWorkbook(prefix);
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import openpyxl\nopenpyxl.load_workbook('/invalid.xlsx', read_only=True)");
         Assert.True(script.IsValid);
         var host = new MockLythonHost();
@@ -303,7 +303,7 @@ public sealed class OpenPyxlAccountingScenarioTests
         // R02: a cancelled load honors cancellation instead of running to
         // completion or failing with an unrelated error.
         var seed = new MockLythonHost();
-        var built = new LythonEngine().Run(
+        var built = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
             import openpyxl
             wb = openpyxl.Workbook()
@@ -313,7 +313,7 @@ public sealed class OpenPyxlAccountingScenarioTests
             seed);
         Assert.True(built.Success, built.Failure?.Message);
 
-        var script = new LythonEngine().Compile(
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import openpyxl
             return openpyxl.load_workbook("/t.xlsx")

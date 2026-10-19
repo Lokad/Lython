@@ -46,7 +46,7 @@ public sealed class OrdinaryFunctionTransportTests
         async ValueTask<(Context, PyString, Effects)> Prepare(ILythonMemoryBudget owner)
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner});
+            { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             var value = PyString.FromString("owned", context.MemoryGovernor, null);
             var tape = new Effects(value);
             context.Variables["value"] = value;
@@ -60,7 +60,7 @@ public sealed class OrdinaryFunctionTransportTests
     }
 
     private static ExecutableCodeObject Compile(string source)
-        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 
     [Theory]
     [InlineData(false, "success")]
@@ -79,7 +79,7 @@ public sealed class OrdinaryFunctionTransportTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var argument = PyString.FromString("argument", context.MemoryGovernor, null);
         var payload = PyString.FromString("payload", context.MemoryGovernor, null);
         var tap = new SuspendedDefault();

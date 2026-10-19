@@ -16,7 +16,7 @@ public class GzipFlushBenchmarks
 
     public GzipFlushBenchmarks()
     {
-        var engine = new LythonEngine();
+        var engine = new LythonEngine(Utf8RegexProvider.Instance);
         _noFlush = Compile(engine, WriteSource(100, 0));
         _tenFlushes = Compile(engine, WriteSource(100, 10));
         _hundredFlushes = Compile(engine, WriteSource(100, 100));

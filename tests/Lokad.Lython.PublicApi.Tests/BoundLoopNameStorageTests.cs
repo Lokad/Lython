@@ -20,7 +20,7 @@ public sealed class BoundLoopNameStorageTests
     [InlineData("def outer():\n def update():\n  nonlocal i\n  i = 50\n values = []\n for i in [1, 2]:\n  update()\n  values.append(i)\n return values\nreturn str(outer())", "[50, 50]")]
     public async Task NamesKeepTheirScopeAndNamespaceBehavior(string source, string expected)
     {
-        var script = new LythonEngine().Compile(source);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
         Assert.True(script.IsValid);
         foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
         {

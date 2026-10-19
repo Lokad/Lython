@@ -15,9 +15,9 @@ public sealed class GeneralBoundMethodTransportTests
     public async Task KeywordMethodsKeepEveryGuardAndBodyEffect(bool asynchronous, bool defaulted)
     {
         const string definitionSource = "class Box:\n def method(self,*,value=7):\n  stamp(self,value)\n  return value\nbox=Box()\nmethod=box.method";
-        var definition = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(definitionSource).Script!)).EntryPoint;
+        var definition = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(definitionSource,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var callSource = defaulted ? "return method()" : "return method(value=value)";
-        var call = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(callSource).Script!)).EntryPoint;
+        var call = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(callSource,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         var marker = new object();
         string[] fullEffects;
@@ -40,7 +40,7 @@ public sealed class GeneralBoundMethodTransportTests
         async ValueTask<(LythonRuntime.ExecutionContext, MethodEffects)> Prepare(ILythonMemoryBudget owner)
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner});
+            { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
             var tape = new MethodEffects(defaulted ? new BigInteger(7) : marker);
             context.Variables["value"] = marker;
             context.Variables["stamp"] = tape;
