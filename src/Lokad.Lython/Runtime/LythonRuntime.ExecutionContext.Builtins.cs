@@ -26,9 +26,11 @@ internal sealed partial class LythonRuntime
         private static readonly BuiltinCallable SharedChr = BuiltinCallable.Create("chr", Chr, ["i"]);
         private static readonly BuiltinCallable SharedOrd = BuiltinCallable.Create("ord", Ord, ["c"]);
         private static readonly BuiltinCallable SharedSorted = BuiltinCallable.Create(LythonCallableSignature.Create("sorted", ["iterable", "key", "reverse"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sorted, SortedAsync);
+        private static readonly BuiltinCallable SharedSum = BuiltinCallable.Create(LythonCallableSignature.Create("sum", ["iterable", "start"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sum, SumAsync);
 
         internal static bool IsLengthBuiltin(object value) => ReferenceEquals(value, SharedLen);
         internal static bool IsAbsoluteBuiltin(object value) => ReferenceEquals(value, SharedAbs);
+        internal static bool IsSumBuiltin(object value) => ReferenceEquals(value, SharedSum);
 
         // Python types are mutable. Every root execution context therefore needs
         // its own connected object/type graph instead of sharing a cached table.
@@ -84,7 +86,7 @@ internal sealed partial class LythonRuntime
                 ["all"] = BuiltinCallable.Create("all", All, AllAsync),
                 ["min"] = new MinMaxCallable(ExtremumOperation.Minimum),
                 ["max"] = new MinMaxCallable(ExtremumOperation.Maximum),
-                ["sum"] = BuiltinCallable.Create(LythonCallableSignature.Create("sum", ["iterable", "start"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sum, SumAsync),
+                ["sum"] = SharedSum,
                 ["abs"] = SharedAbs,
                 ["pow"] = SharedPow,
                 ["round"] = SharedRound,

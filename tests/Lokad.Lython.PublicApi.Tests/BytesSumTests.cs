@@ -18,6 +18,8 @@ public sealed class BytesSumTests
         { "class Data:\n    def __iter__(self): return iter(b'\\x01\\x02')\nprint(sum(Data()))", "3\n" },
         { "import decimal\nprint(sum(b'\\x01\\x02',0.5),sum(b'\\x01\\x02',1+2j),sum(b'\\x01\\x02',decimal.Decimal('0.5')))", "3.5 (4+2j) 3.5\n" },
         { "print(sum(b'\\x01',start=4),sum(*[b'\\x01'],**{'start':-1}))\ntry: sum(iterable=b'\\x01')\nexcept TypeError: print('positional')", "5 0\npositional\n" },
+        { "import builtins\nsaved=sum\nsum=lambda values:99\nprint(sum(b'\\x01'),saved(b'\\x01\\x02'),builtins.sum(b'\\x03'),saved(*[b'\\x04']),saved(b'\\x05',start=6))", "99 3 3 4 11\n" },
+        { "from builtins import sum as native\ndef data():\n    global native\n    native=lambda values:99\n    return b'\\x01\\x02'\nprint(native(data()),native(b''))", "3 99\n" },
     };
 
     [Theory]

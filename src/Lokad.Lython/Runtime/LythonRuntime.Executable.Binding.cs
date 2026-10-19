@@ -604,6 +604,11 @@ internal sealed partial class LythonRuntime
                     callSite.ArgumentCount == 2 ? stack[start + callSite.ArgumentOffset + 1] : PyNone.Instance,
                     callSite.CallSpan, context);
             }
+            else if (callSite.IsPositionalOnly && callSite.ArgumentCount == 1 && ExecutionContext.IsSumBuiltin(target) &&
+                stack[start + callSite.ArgumentOffset] is PyBytes sumBytes)
+            {
+                result = InvokeSingleInput(sumBytes, SumBytesOperation, callSite.CallSpan, context);
+            }
             else if (callSite.IsPositionalOnly && callSite.ArgumentCount == 1 && ExecutionContext.IsAbsoluteBuiltin(target) &&
                 stack[start + callSite.ArgumentOffset] is System.Numerics.BigInteger or double or bool)
             {

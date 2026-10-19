@@ -225,10 +225,20 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static readonly Func<PyBytes, LythonSourceSpan, ExecutionContext, object> SumBytesOperation
+        = static (bytes, span, context) => SumExactBytes(bytes, BigInteger.Zero, span, context);
+
     private static bool TrySumExactBytes(object value, object start, LythonSourceSpan span, ExecutionContext context, out object result)
     {
         result = start;
         if (value is not PyBytes bytes || !PyNumberOps.IsInteger(start)) return false;
+        result = SumExactBytes(bytes, start, span, context);
+        return true;
+    }
+
+    private static object SumExactBytes(PyBytes bytes, object start, LythonSourceSpan span, ExecutionContext context)
+    {
+        var result = start;
         var source = bytes.Bytes;
         long subtotal = 0;
         for (var i = 0; ; i++)
@@ -244,7 +254,7 @@ internal sealed partial class LythonRuntime
             _ = PyNumberOps.TryAsInteger(start, out var initial);
             result = AddExactIntegers(initial, new BigInteger(subtotal), context.MemoryGovernor, span);
         }
-        return true;
+        return result;
     }
 
     private static object ReadSumStart(object[] arguments, LythonSourceSpan span)
