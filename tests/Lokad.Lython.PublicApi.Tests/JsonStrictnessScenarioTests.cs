@@ -51,6 +51,42 @@ public sealed class JsonStrictnessScenarioTests
     }
 
     [Fact]
+    public async Task FreshDefaultReplacementsAfterHostIoStayRecursionBounded()
+    {
+        const string source = """
+            import json
+            first=True
+            def fresh(value):
+                global first
+                if first:
+                    first=False
+                    with open('/io.txt','a') as target:
+                        target.write('done')
+                return {2}
+            return json.dumps({1},default=fresh)
+            """;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var sync = new MockLythonHost(); sync.SeedFile("/io.txt", "before");
+            var delayed = new DelayedLythonHost(); delayed.SeedFile("/io.txt", "before");
+            using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(sync))
+            {
+                Assert.False(result.Success);
+                Assert.Equal("RecursionError", result.Failure?.ExceptionType);
+                Assert.Equal("beforedone", asynchronous ? delayed.ReadText("/io.txt") : sync.ReadText("/io.txt"));
+                if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public async Task JsonDumpsDefaultCallbackContracts()
     {
         var same = new LythonEngine(Utf8RegexProvider.Instance).Compile(
