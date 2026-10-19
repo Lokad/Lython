@@ -13,7 +13,7 @@ public sealed class FailureProjectionAccountingTests
     [Fact]
     public void ManyFramesOverrunWithoutPollutingPeak()
     {
-        var budget = new ProjectionBudget(4096);
+        var budget = new ProjectionBudget(new LythonMemoryBudget(4096));
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var exception = new LythonRuntimeException("ValueError", "deep", span);
         for (var i = 0; i < 500; i++)
@@ -29,7 +29,7 @@ public sealed class FailureProjectionAccountingTests
     [Fact]
     public void FewFramesFitWithExactPeak()
     {
-        var budget = new ProjectionBudget(4096);
+        var budget = new ProjectionBudget(new LythonMemoryBudget(4096));
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var exception = new LythonRuntimeException("ValueError", "abc", span);
         for (var i = 0; i < 3; i++)

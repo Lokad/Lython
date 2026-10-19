@@ -498,7 +498,9 @@ subtree and invalidates it. Disposal is idempotent and nonthrowing. Admission an
 resize through disposed owners throw `ObjectDisposedException`.
 
 Major backing capacity, copies and replacement overlap are conservatively
-charged. Internal execution/projection limits remain separate policy limits.
+charged. Projection has no independent policy cap: it reserves through the
+supplied result owner. Remaining legacy execution/storage ceilings are pending
+removal in the active shared-ownership milestone.
 Exact immutable-byte sums with builtin integer starts keep a machine subtotal
 and preflight one final exact-integer result, using existing temporary ownership
 for major magnitudes. This avoids per-byte numeric storage while preserving

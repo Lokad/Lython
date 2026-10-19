@@ -202,7 +202,6 @@ loop()
     [InlineData("stdout")]
     [InlineData("stderr")]
     [InlineData("execution-memory")]
-    [InlineData("projection-memory")]
     public void NegativeLimits_AreRejectedExplicitly(string limit)
     {
         var options = limit switch
@@ -214,7 +213,6 @@ loop()
             "stdout" => new LythonRunOptions { MaxStandardOutputBytes = -1 },
             "stderr" => new LythonRunOptions { MaxStandardErrorBytes = -1 },
             "execution-memory" => new LythonRunOptions { MaxExecutionMemoryBytes = -1 },
-            "projection-memory" => new LythonRunOptions { MaxProjectionMemoryBytes = -1 },
             _ => throw new InvalidOperationException($"unknown test limit: {limit}")
         };
 
@@ -1184,7 +1182,7 @@ value = list(itertools.zip_longest(range(12), range(12), fillvalue=None))
     }
 
     [Fact]
-    public void ProjectionBudget_FailsDistinctlyFromScriptRuntimeBudget()
+    public void SuppliedResultOwnerRejectsUnfundedProjection()
     {
         var result = new LythonEngine().Run(
             """
@@ -1194,13 +1192,13 @@ return ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", 
             new LythonRunOptions
             {
                 MaxExecutionMemoryBytes = 4096,
-                MaxProjectionMemoryBytes = 128
+                ResultMemoryBudget = new LythonMemoryBudget(128)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("ProjectionError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("projection memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded during projection", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1215,13 +1213,13 @@ return chr(128512) * 100
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxProjectionMemoryBytes = 300
+                ResultMemoryBudget = new LythonMemoryBudget(300)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("ProjectionError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("projection memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded during projection", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -1307,7 +1305,6 @@ text = str(data)
             MaxStandardOutputBytes = 17,
             MaxStandardErrorBytes = 18,
             MaxExecutionMemoryBytes = 19,
-            MaxProjectionMemoryBytes = 20,
             MemoryBudget = new LythonMemoryBudget(100),
             ResultMemoryBudget = new LythonMemoryBudget(200),
         };

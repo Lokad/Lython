@@ -4,15 +4,12 @@ internal sealed class ProjectionBudget
 {
     private readonly ILythonMemoryReservation? _ownership;
 
-    public ProjectionBudget(long? maxBytes, ILythonMemoryBudget? owner = null)
+    public ProjectionBudget(ILythonMemoryBudget? owner)
     {
-        MaxBytes = maxBytes;
         if (owner is not null && !owner.TryReserve(0, out _ownership))
             throw new ProjectionException("shared memory budget refused projection ownership")
                 { Attribution = new(LythonFailureReason.SharedMemoryAllowance, Observed: 0, Requested: 0) };
     }
-
-    public long? MaxBytes { get; }
 
     public long CurrentBytes { get; private set; }
 
@@ -29,18 +26,9 @@ internal sealed class ProjectionBudget
             return;
         }
 
-        if (MaxBytes is { } maxBytes)
+        if (CurrentBytes > long.MaxValue - bytes)
         {
-            if (bytes > maxBytes || CurrentBytes > maxBytes - bytes)
-            {
-                throw AdmissionFailure = new ProjectionException($"projection memory budget exceeded ({maxBytes})")
-                    { Attribution = new(LythonFailureReason.ProjectionMemoryLimit, maxBytes, CurrentBytes, bytes) };
-            }
-        }
-        else if (CurrentBytes > long.MaxValue - bytes)
-        {
-            throw AdmissionFailure = new ProjectionException("projection memory budget exceeded")
-                { Attribution = new(LythonFailureReason.ProjectionMemoryLimit, null, CurrentBytes, bytes) };
+            throw AdmissionFailure = new ProjectionException("projection size exceeds supported accounting capacity");
         }
 
         if (_ownership is not null && !_ownership.TryResize(checked(CurrentBytes + bytes)))

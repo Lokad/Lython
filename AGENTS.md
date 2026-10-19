@@ -57,12 +57,22 @@ APIs, raw pointers, P/Invoke, or native stack probing for performance or
 protection. Preserve managed stack admission and its validated nesting bounds.
 New runtime dependencies must be assessed against this constraint before promotion.
 Performance changes must preserve allocation preflights, live-memory protection,
-cooperative cancellation, cycle detection and bounded public projection.
+cooperative cancellation, cycle detection and admitted public projection.
 
 Execution-time control uses the host-supplied CancellationToken. Do not restore
 instruction fuel, host-call quotas, their counters/telemetry or compatibility
 stubs, or move them to another abstraction. Preserve effective cancellation
 checks and awaited cleanup independently of concrete resource protections.
+
+Use the borrowed host memory allowance for substantial storage, including
+projection, captured output, retained capacity and replacement overlap. Do not
+introduce independent execution/projection/string/collection/read/output caps or
+hidden default allowances. Keep checked representation bounds and bounded I/O
+chunks. Regex decoupling is active: the core owns a small Python-specific UTF-8
+provider contract, with one provider across frontend/runtime/imports and an
+optional backend adapter. Forward the current cancellation token through actual
+provider work; cached patterns must not retain prior caller tokens. No regex
+work/time quotas, silent dialect fallback or abandoned background matching.
 
 Memory work follows cooperative admission and explicit ownership lifetimes.
 Do not introduce general guest-heap tracing, root inventories or dormant collector

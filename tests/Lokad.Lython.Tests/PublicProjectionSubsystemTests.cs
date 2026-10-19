@@ -171,9 +171,9 @@ return value
             PyString.FromString(new string('b', 64)),
         ]);
 
-        var ex = Assert.Throws<ProjectionException>(() => PublicProjection.NormalizeValue(runtime, new ProjectionBudget(128)));
+        var ex = Assert.Throws<ProjectionException>(() => PublicProjection.NormalizeValue(runtime, new ProjectionBudget(new LythonMemoryBudget(128))));
 
-        Assert.Contains("projection memory budget exceeded", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded during projection", ex.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -184,11 +184,11 @@ return value
 
         // One astral rune decodes to a UTF-16 surrogate pair, so the CLR
         // payload needs 32 + 2 * 2 bytes; the old rune-based estimate held 34.
-        Assert.Throws<ProjectionException>(() => PublicProjection.ProjectString(text, new ProjectionBudget(34)));
-        Assert.Equal(emoji, PublicProjection.ProjectString(text, new ProjectionBudget(36)));
+        Assert.Throws<ProjectionException>(() => PublicProjection.ProjectString(text, new ProjectionBudget(new LythonMemoryBudget(34))));
+        Assert.Equal(emoji, PublicProjection.ProjectString(text, new ProjectionBudget(new LythonMemoryBudget(36))));
 
         var path = new PyPath(text);
-        Assert.Throws<ProjectionException>(() => PublicProjection.ProjectPath(path, new ProjectionBudget(34)));
-        Assert.Equal(emoji, PublicProjection.ProjectPath(path, new ProjectionBudget(36)));
+        Assert.Throws<ProjectionException>(() => PublicProjection.ProjectPath(path, new ProjectionBudget(new LythonMemoryBudget(34))));
+        Assert.Equal(emoji, PublicProjection.ProjectPath(path, new ProjectionBudget(new LythonMemoryBudget(36))));
     }
 }

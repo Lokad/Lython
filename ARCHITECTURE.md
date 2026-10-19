@@ -148,6 +148,11 @@ raw-prefix conversion. Its synchronous native path stays direct; async callbacks
 and descriptor binding are awaited. The helper retains exact integer objects,
 preserving exposed identity and existing storage owners.
 
+Public projection reserves through its existing result owner, without a separate
+memory cap. Failure frame arrays are admitted before allocation. Diagnostic
+storage refusal uses the existing minimal failure result; it does not retry
+admission with a shortened message.
+
 `ExecutionContext` owns per-run services and Python-visible state: globals,
 locals, closure resolution, exception state, module cache, decimal context,
 host handles, and limits. Values entering from public options are normalized to

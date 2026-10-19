@@ -16,7 +16,6 @@ public sealed class FailureAttributionTests
             ("print('abc')", LythonFailureReason.StandardOutputLimit, 2L),
             ("import sys\nsys.stderr.write('abc')", LythonFailureReason.StandardErrorLimit, 2L),
             ("return 1", LythonFailureReason.ExecutionMemoryLimit, 0L),
-            ("return [1, 2, 3]", LythonFailureReason.ProjectionMemoryLimit, 0L),
         };
         foreach (var (source, reason, limit) in cases)
         foreach (var asynchronous in new[] { false, true }) yield return [source, reason, limit, asynchronous];
@@ -44,7 +43,7 @@ public sealed class FailureAttributionTests
             Assert.Equal(limit, attribution.Limit);
         if (reason is LythonFailureReason.CollectionSizeLimit or LythonFailureReason.StringLengthLimit or LythonFailureReason.HostReadLimit)
             Assert.Equal(3, attribution.Observed);
-        if (reason is LythonFailureReason.ExecutionMemoryLimit or LythonFailureReason.ProjectionMemoryLimit)
+        if (reason is LythonFailureReason.ExecutionMemoryLimit)
         {
             Assert.Equal(0, attribution.Observed);
             Assert.True(attribution.Requested > 0);
@@ -101,7 +100,7 @@ public sealed class FailureAttributionTests
         var options = new LythonRunOptions
         {
             AllowedBuiltinModules = new HashSet<string>(),
-            MaxProjectionMemoryBytes = projectionBudget,
+            ResultMemoryBudget = new LythonMemoryBudget(projectionBudget),
         };
         foreach (var asynchronous in new[] { false, true })
         {
@@ -172,7 +171,6 @@ public sealed class FailureAttributionTests
         LythonFailureReason.StandardOutputLimit => new() { MaxStandardOutputBytes = limit },
         LythonFailureReason.StandardErrorLimit => new() { MaxStandardErrorBytes = limit },
         LythonFailureReason.ExecutionMemoryLimit => new() { MaxExecutionMemoryBytes = limit },
-        LythonFailureReason.ProjectionMemoryLimit => new() { MaxProjectionMemoryBytes = limit },
         _ => throw new ArgumentOutOfRangeException(nameof(reason)),
     };
 

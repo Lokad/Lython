@@ -102,11 +102,11 @@ public sealed class AdmissionFailureCommandTests
     public async Task ProjectionRefusalCannotLeaveSystemExitZero(bool asynchronous)
     {
         using var script = new LythonEngine().Compile("print('before')\nraise SystemExit(0)");
-        var options = new LythonRunOptions { MaxProjectionMemoryBytes = 0 };
+        var options = new LythonRunOptions { ResultMemoryBudget = new LythonMemoryBudget(0)};
         using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
         Assert.False(result.Success);
         Assert.NotEqual(0, result.ExitCode);
-        Assert.Equal(LythonFailureReason.ProjectionMemoryLimit, result.FailureAttribution?.Reason);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
     }
 
     [Fact]

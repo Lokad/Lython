@@ -10,7 +10,7 @@ public sealed class ProjectionBudgetTests
     [Fact]
     public void DeniedReserveLeavesCounterUnchanged()
     {
-        var budget = new ProjectionBudget(100);
+        var budget = new ProjectionBudget(new LythonMemoryBudget(100));
         budget.Reserve(60);
         Assert.Equal(60, budget.CurrentBytes);
         var failure = Assert.Throws<ProjectionException>(() => budget.Reserve(50));
@@ -22,11 +22,11 @@ public sealed class ProjectionBudgetTests
     [Fact]
     public void TinyBudgetsDenyFirstCharge()
     {
-        var zero = new ProjectionBudget(0);
+        var zero = new ProjectionBudget(new LythonMemoryBudget(0));
         Assert.Throws<ProjectionException>(() => zero.Reserve(1));
         Assert.Equal(0, zero.CurrentBytes);
 
-        var one = new ProjectionBudget(1);
+        var one = new ProjectionBudget(new LythonMemoryBudget(1));
         one.Reserve(1);
         Assert.Equal(1, one.CurrentBytes);
         Assert.Throws<ProjectionException>(() => one.Reserve(1));
@@ -36,7 +36,7 @@ public sealed class ProjectionBudgetTests
     [Fact]
     public void OversizedRequestDeniedWithoutOverflow()
     {
-        var bounded = new ProjectionBudget(100);
+        var bounded = new ProjectionBudget(new LythonMemoryBudget(100));
         Assert.Throws<ProjectionException>(() => bounded.Reserve(long.MaxValue));
         Assert.Equal(0, bounded.CurrentBytes);
 
@@ -50,7 +50,7 @@ public sealed class ProjectionBudgetTests
     [Fact]
     public void NonPositiveReservesAreNoOps()
     {
-        var budget = new ProjectionBudget(0);
+        var budget = new ProjectionBudget(new LythonMemoryBudget(0));
         budget.Reserve(0);
         budget.Reserve(-5);
         Assert.Equal(0, budget.CurrentBytes);

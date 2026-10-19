@@ -125,8 +125,7 @@ foreach (var payload in new[] { "[1,2,3]", "[4,5]" })
         MaxHostReadBytes = 0,
         MaxStandardOutputBytes = 4_096,
         MaxStandardErrorBytes = 4_096,
-        MaxExecutionMemoryBytes = 8 * 1024 * 1024,
-        MaxProjectionMemoryBytes = 1024 * 1024,
+        MemoryBudget = new LythonMemoryBudget(8 * 1024 * 1024),
     });
     Console.WriteLine(result.Success
         ? $"sum={result.ReturnValue}, usage={result.Consumption}"
@@ -373,7 +372,7 @@ The important runtime guarantees are:
 - a recursion limit plus an internal interpreter-stack guard so Python recursion cannot turn into CLR stack overflow
 - conservative in-process size controls for strings, collections, host reads, captured output, and execution-memory growth
 
-Unless `DisableDefaultLimits` is set, Lython applies practical defaults, including a 1 GiB execution-memory budget and a separate 1 GiB projection budget. Those guarantees are meant to make Lython safe to embed inside a host process, while keeping the programming model close to ordinary small Python.
+Execution and projected results admit storage through the supplied host allowance. Projection has no separate cap or default allowance. The remaining legacy resource defaults, including the execution-memory cap, are being removed as part of the shared-ownership milestone; managed stack protection and cancellation remain.
 
 Execution-time control uses the host-supplied `CancellationToken`. The host
 must arrange cancellation when a finite deadline is required; memory bounds alone
@@ -460,7 +459,7 @@ Lython is designed to fail inside the runtime rather than by escaping into unman
 - cancellation is cooperative and checked frequently enough to stop runaway pure-Python work
 - recursion depth, interpreter depth, host reads, output bytes, string lengths, and collection sizes remain bounded
 - the main script-owned allocators and large `BigInteger` growth paths are governed by an execution-memory budget, so large runtime materializations fail as ordinary `RuntimeError` results
-- host-facing projection is governed separately through an optional projection budget, and projection overflow surfaces distinctly as `ProjectionError`
+- host-facing projection reserves through its supplied result owner; refused admission surfaces as `ProjectionError` with shared-allowance attribution
 
 The model is intentionally conservative, not omniscient. Lython does not try to mirror the CLR heap perfectly, but it does aim to keep the main script-owned growth paths inside explicit runtime control.
 

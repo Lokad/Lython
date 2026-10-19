@@ -153,7 +153,7 @@ public sealed class RegexFindAllListTests
         var script = Compile("import re\nreturn re.findall('(a)(b)', 'ab')");
         foreach (var budget in new[] { 32L, 1024L })
         {
-            var options = new LythonRunOptions { MaxProjectionMemoryBytes = budget };
+            var options = new LythonRunOptions { ResultMemoryBudget = new LythonMemoryBudget(budget)};
             foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
             {
                 if (budget == 32)

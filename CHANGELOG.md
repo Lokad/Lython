@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Remove the independent public-projection memory cap, its default and `ProjectionMemoryLimit` attribution. Projection admits storage through the supplied result owner; `MaxProjectionMemoryBytes` is removed. Diagnostic messages no longer truncate to fit a private allowance. Preserve original failure attribution on diagnostic refusal and admit frame arrays before allocation. Other resource-cap and regex migration work remains in progress.
+
 - Resolve `operator.index` through the existing type-slot helper and await descriptor/callback I/O under `RunAsync`. Ignore instance shadows and attribute interception, report noncallable slots correctly, and preserve exact integer identity and funding. Remove its nested unary closure; no new public API or speedup claim.
 
 - Correct `JSONDecoder.raw_decode` index coercion using the existing type-index helper under both APIs. Await delayed index/descriptor I/O, ignore instance-slot overrides as Python does, and correct coercion/type/size error order. Preserve native indices, Unicode offsets, cancellation/refusal and cleanup. No public API change or performance claim.

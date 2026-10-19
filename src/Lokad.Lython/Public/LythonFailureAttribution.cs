@@ -31,8 +31,6 @@ public enum LythonFailureReason
     StandardErrorLimit,
     /// <summary>The conservative live execution-memory budget was exceeded.</summary>
     ExecutionMemoryLimit,
-    /// <summary>The separate public-projection memory budget was exceeded.</summary>
-    ProjectionMemoryLimit,
     /// <summary>An internal byte-buffer capacity bound was exceeded.</summary>
     ByteBufferCapacityLimit,
     /// <summary>The byte-oriented Popen input buffer exceeded its configured string allowance.</summary>

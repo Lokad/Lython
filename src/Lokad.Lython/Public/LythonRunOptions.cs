@@ -26,9 +26,6 @@ public sealed class LythonRunOptions
     /// <summary>The default approximate runtime memory budget.</summary>
     public const long DefaultMaxExecutionMemoryBytes = 1024L * 1024L * 1024L;
 
-    /// <summary>The default memory budget for projecting a return value to CLR objects.</summary>
-    public const long DefaultMaxProjectionMemoryBytes = 1024L * 1024L * 1024L;
-
     /// <summary>
     /// Gets initial global values exposed to the script. Values are copied into
     /// Lython-owned scalars and collections; unsupported CLR objects and cyclic
@@ -102,9 +99,6 @@ public sealed class LythonRunOptions
     /// <summary>Gets the approximate runtime-memory limit override.</summary>
     public LythonByteLimit? MaxExecutionMemoryBytes { get; init; }
 
-    /// <summary>Gets the CLR projection-memory limit override.</summary>
-    public LythonByteLimit? MaxProjectionMemoryBytes { get; init; }
-
     /// <summary>Gets a borrowed memory budget shared with other executions and host-mediated child work.</summary>
     /// <remarks>
     /// Null uses Lython's standalone default. The supplied budget and its ancestors
@@ -119,6 +113,7 @@ public sealed class LythonRunOptions
     /// Null uses the invocation's supplied parent budget. Specify a separate parent
     /// when a result must survive disposal of the invocation's supplied ancestors.
     /// Result ownership is established before projection; no reparenting occurs.
+    /// Projection reserves through this owner, without an independent cap.
     /// </remarks>
     public ILythonMemoryBudget? ResultMemoryBudget { get; init; }
 
@@ -155,7 +150,6 @@ public sealed class LythonRunOptions
             MaxStandardOutputBytes = MaxStandardOutputBytes,
             MaxStandardErrorBytes = MaxStandardErrorBytes,
             MaxExecutionMemoryBytes = MaxExecutionMemoryBytes,
-            MaxProjectionMemoryBytes = MaxProjectionMemoryBytes,
             MemoryBudget = MemoryBudget,
             ResultMemoryBudget = ResultMemoryBudget,
             ExecutionMemoryOwner = execution,

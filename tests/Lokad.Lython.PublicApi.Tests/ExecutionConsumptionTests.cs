@@ -46,9 +46,9 @@ public sealed class ExecutionConsumptionTests
     public async Task ProjectionFailureReportsRetainedBytesEvenWhenPublicOutputCannotFit(bool asynchronous)
     {
         var script = new LythonEngine().Compile("print('é')\nreturn [1, 2, 3]");
-        var options = new LythonRunOptions { MaxProjectionMemoryBytes = 0 };
+        var options = new LythonRunOptions { ResultMemoryBudget = new LythonMemoryBudget(0)};
         var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
-        Assert.Equal(LythonFailureReason.ProjectionMemoryLimit, result.FailureAttribution?.Reason);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
         Assert.Equal("", result.StandardOutput);
         Assert.Equal(3, result.Consumption?.StandardOutputBytes);
     }
@@ -109,7 +109,7 @@ public sealed class ExecutionConsumptionTests
                 AllowedBuiltinModules = new HashSet<string> { "json" },
                 DisableLocalModuleImports = true,                 MaxCollectionSize = 10000, MaxStringLength = 65536,
                 MaxHostReadBytes = 0, MaxStandardOutputBytes = 4096, MaxStandardErrorBytes = 4096,
-                MaxExecutionMemoryBytes = 8 * 1024 * 1024, MaxProjectionMemoryBytes = 1024 * 1024,
+                MaxExecutionMemoryBytes = 8 * 1024 * 1024, ResultMemoryBudget = new LythonMemoryBudget(1024 * 1024),
             };
             var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
             Assert.True(result.Success, result.Failure?.Message);

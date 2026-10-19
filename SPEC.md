@@ -193,10 +193,10 @@ parsing exception names or messages: compilation, unavailable host capabilities,
 host-operation failure, module policy, cancellation, program exceptions, and the
 actual resource check. The immutable value includes a configured or fixed bound
 and observed/requested quantities when available and representable as Int64.
-Units follow the reason: checkpoints, calls, nesting, collection items, Python
+Units follow the reason: nesting, collection items, Python
 string characters or bytes. Managed stack admission has no native telemetry and
 may report no numeric bound. Projection rejection (cyclic/unsupported values),
-projection depth, and projection memory exhaustion are distinct.
+projection depth, and shared-allowance refusal are distinct.
 
 Provenance follows the same caught exception through `raise e`, bare `raise`,
 argument mutation and chaining; a new guest exception has its own program-error
@@ -204,7 +204,7 @@ origin even with identical text. Refused memory admission is terminal regardless
 of guest exception handling; its first structured origin remains authoritative.
 `DeniedReservationBytes` records that first refused reservation's size, or zero
 when none occurred. Use structured attribution to identify the terminal cause.
-Diagnostic truncation or an exhausted failure-projection budget preserves the
+Refused diagnostic storage preserves the
 original attribution in the constant-size emergency result; projection failure
 that replaces an otherwise successful return reports its own projection origin.
 `SystemExit(0)` retains the existing unsuccessful runtime result with exit code0,
@@ -3724,14 +3724,15 @@ previously returned tuple aliases keep their own funding.
 
 Lython does not need to promise a perfect hard memory ceiling from inside the same managed process, but it must provide conservative in-process resource controls that make runaway allocation materially harder.
 
-#### 14.6.1 Shared Allowance and Policy Peaks
+#### 14.6.1 Shared Allowance and Accounting Peaks
 
-Execution and projection keep separate policy limits and high-water marks
+Execution and projection keep separate accounting high-water marks
 (`PeakExecutionMemoryBytes` and `PeakProjectionMemoryBytes`). They reserve against
 one supplied root, which also sees compiled programs, caches, retained results
 and overlapping/nested cooperating invocations. No whole-limit escrow or copied
-remaining balance is used. Failure projection can truncate details or return a
-constant-size emergency result while preserving the original attribution.
+remaining balance is used. Projection has no independent cap or default allowance.
+Failure projection does not retry admission or truncate a replacement message;
+its constant-size emergency result preserves the original attribution.
 
 Accounted peaks are estimates, sampled live heap measures CLR retention after
 collection, process peaks include all runtime/host/dependency state, and cumulative
