@@ -733,6 +733,12 @@ The [governed-memory CSV diagnostic](benchmarks/results/2026-10-14-governed-memo
 keeps the earlier Lython comparison separate from the primary CPython baseline.
 It establishes neither a current complete-script multiplier nor host tail latency.
 
+The [regex provider integration check](benchmarks/results/2026-10-19-regex-boundary/README.md)
+measures `0691201b` versus `ad49175d`, separately from CPython: 100 searches per
+warm invocation, 0.612–0.626 ms before versus 0.701 ms after, with 16.1% more managed
+allocation. Timing is unqualified and includes result disposal; compilation and
+startup are excluded. This records integration cost, without a speedup claim.
+
 - [Measurement methods, commands and qualification rules](benchmarks/COMPARISON.md)
 - [Experimental history, profiles and rejected optimizations](benchmarks/EXPERIMENTS.md)
 - [Historical Lython-only BenchmarkDotNet scan baselines](benchmarks/Baselines.md)

@@ -1,0 +1,14 @@
+{
+  "pid": 22824,
+  "exitCode": 0,
+  "hasExited": true,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 829,
+  "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+  "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+  "arguments": [
+    ".git/agent-notes/regex-boundary-0691201b/RegexDiagnostic/bin/Release/net10.0/RegexDiagnostic.dll",
+    "D:/code/Lython-regex-reference/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+    "0691201b"
+  ]
+}
