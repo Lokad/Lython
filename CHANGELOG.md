@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resolve `operator.index` through the existing type-slot helper and await descriptor/callback I/O under `RunAsync`. Ignore instance shadows and attribute interception, report noncallable slots correctly, and preserve exact integer identity and funding. Remove its nested unary closure; no new public API or speedup claim.
+
 - Correct `JSONDecoder.raw_decode` index coercion using the existing type-index helper under both APIs. Await delayed index/descriptor I/O, ignore instance-slot overrides as Python does, and correct coercion/type/size error order. Preserve native indices, Unicode offsets, cancellation/refusal and cleanup. No public API change or performance claim.
 
 - Remove the redundant JSON input carrier and its document/view plumbing. Parsing and error helpers retain the original governed string and derive its UTF-8 view directly, preserving prefix/error coordinates, callbacks and ownership. No public API change or measured speedup.

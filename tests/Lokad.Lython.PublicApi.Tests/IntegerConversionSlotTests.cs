@@ -26,6 +26,12 @@ public sealed class IntegerConversionSlotTests
         { "base_attribute_hook_bypassed", "class Value:\n def __getattribute__(self,name):\n  if name=='__index__': raise RuntimeError('hooked')\n  return object.__getattribute__(self,name)\n def __index__(self): return 2\nvalue=Value()\ntry:\n print(int('11', value))\nexcept Exception as error:\n print(type(error).__name__, str(error))\n", "3\n" },
         { "noncallable_base_index", "class Value: __index__=None\nvalue=Value()\ntry:\n print(int('11', value))\nexcept Exception as error:\n print(type(error).__name__, str(error))\n", "TypeError 'NoneType' object is not callable\n" },
         { "int_precedes_index_and_trunc", "events=[]\nclass Value:\n def __int__(self):\n  events.append('int')\n  return 7\n def __index__(self):\n  events.append('index')\n  return 9\n def __trunc__(self):\n  events.append('trunc')\n  return 10\nvalue=Value()\ntry:\n print((int(value), events))\nexcept Exception as error:\n print(type(error).__name__, str(error))\n", "(7, ['int'])\n" },
+        { "operator_instance_shadow", "import operator\nclass Value:\n def __index__(self): return 7\nvalue=Value()\nvalue.__index__=lambda:99\nprint(operator.index(value))", "7\n" },
+        { "operator_attribute_hook_bypassed", "import operator\nclass Value:\n def __getattribute__(self,name): raise RuntimeError('hooked')\n def __index__(self): return 7\nprint(operator.index(Value()))", "7\n" },
+        { "operator_instance_only_slot_ignored", "import operator\nclass Value: pass\nvalue=Value()\nvalue.__index__=lambda:99\ntry: print(operator.index(value))\nexcept TypeError as error: print(str(error))", "'Value' object cannot be interpreted as an integer\n" },
+        { "operator_getattr_ignored", "import operator\nclass Value:\n def __getattr__(self,name): return lambda:99\ntry: print(operator.index(Value()))\nexcept TypeError as error: print(str(error))", "'Value' object cannot be interpreted as an integer\n" },
+        { "operator_noncallable_slot", "import operator\nclass Value: __index__=None\ntry: print(operator.index(Value()))\nexcept TypeError as error: print(str(error))", "'NoneType' object is not callable\n" },
+        { "operator_guest_memory_error_catchable", "import operator\nclass Value:\n def __index__(self): raise MemoryError('guest')\ntry: print(operator.index(Value()))\nexcept MemoryError as error: print(str(error))\nprint(operator.index(True))", "guest\n1\n" },
     };
 
     [Theory]
@@ -42,10 +48,14 @@ public sealed class IntegerConversionSlotTests
         }
     }
 
-    [Fact]
-    public async Task IntegerAliasesStayFundedWhileAnotherExecutionRuns()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IntegerAliasesStayFundedWhileAnotherExecutionRuns(bool viaOperator)
     {
-        const string source = "original=1<<2048\nclass Value:\n def __int__(self): return original\nclass Indexed:\n def __index__(self): return original\nreturn [int(Value()),int(Indexed()),int(Value()) is original,int(Indexed()) is original]";
+        var source = "import operator\noriginal=1<<2048\nclass Value:\n def CONVERSION_SLOT(self): return original\nclass Indexed:\n def __index__(self): return original\nreturn [int(Value()),int(Indexed()),int(Value()) is original,int(Indexed()) is original]"
+            .Replace("CONVERSION_SLOT", viaOperator ? "__index__" : "__int__");
+        if (viaOperator) source = source.Replace("int(", "operator.index(");
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid);
@@ -66,11 +76,15 @@ public sealed class IntegerConversionSlotTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RefusedCallbackAdmissionIsTerminalAndReleasesItsOwner(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task RefusedCallbackAdmissionIsTerminalAndReleasesItsOwner(bool viaOperator, bool asynchronous)
     {
-        const string source = "class Value:\n def __int__(self):\n  print('entered')\n  return int('9'*40000)\ntry: int(Value())\nexcept MemoryError: print('recovered')\nprint('tail')";
+        var source = "import operator\nclass Value:\n def CONVERSION_SLOT(self):\n  print('entered')\n  return int('9'*40000)\ntry: CONVERT(Value())\nexcept MemoryError: print('recovered')\nprint('tail')"
+            .Replace("CONVERSION_SLOT", viaOperator ? "__index__" : "__int__")
+            .Replace("CONVERT", viaOperator ? "operator.index" : "int");
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid);

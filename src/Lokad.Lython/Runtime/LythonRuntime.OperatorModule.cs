@@ -35,7 +35,9 @@ internal sealed partial class LythonRuntime
                 "invert" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorInvert,
                     (arguments, span, context) => EvaluateUnaryOperator(UnaryOperatorSyntax.BitwiseNot, arguments[0], context, span),
                     (arguments, span, context) => EvaluateUnaryOperatorAsync(UnaryOperatorSyntax.BitwiseNot, arguments[0], context, span)),
-                "index" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIndex, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateIndex(value, context, innerSpan))),
+                "index" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIndex,
+                    (arguments, span, context) => EvaluateIndex(arguments[0], context, span),
+                    (arguments, span, context) => EvaluateIndexAsync(arguments[0], context, span)),
                 "add" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAdd, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateAdd(left, right, context, innerSpan))),
                 "sub" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorSub, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateSubtract(left, right, context, innerSpan))),
                 "mul" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorMul, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateMultiply(left, right, context, innerSpan))),
@@ -312,13 +314,24 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateIndex(object value, ExecutionContext context, LythonSourceSpan span)
     {
-        var converted = CoerceIndexProtocol(value, context, span);
-        if (!PyNumberOps.TryAsInteger(converted, out var integer))
+        var converted = value is PyInstance
+            ? CoerceTypeIndexAsync(value, context, span, false).GetAwaiter().GetResult() ?? PyNone.Instance
+            : value;
+        return NormalizeOperatorIndex(converted, context, span);
+    }
+
+    private static async ValueTask<object> EvaluateIndexAsync(object value, ExecutionContext context, LythonSourceSpan span)
+        => NormalizeOperatorIndex(await CoerceTypeIndexAsync(value, context, span, true).ConfigureAwait(false)
+            ?? PyNone.Instance, context, span);
+
+    private static object NormalizeOperatorIndex(object value, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!PyNumberOps.TryAsInteger(value, out var integer))
         {
             throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
-        return converted is BigInteger ? converted : integer;
+        return value is BigInteger ? value : integer;
     }
 
     private static object EvaluateConcat(object left, object right, ExecutionContext context, LythonSourceSpan span)

@@ -1245,6 +1245,12 @@ explicit-base `int(text, base)` conversions, including indexed legacy `__trunc__
 results. Native conversions use the synchronous conversion body. Inputs and
 results keep their existing owners until suspended work and cleanup complete.
 
+`operator.index(value)` uses the same type-level `__index__` protocol, ignoring
+instance shadows and ordinary attribute hooks. `RunAsync` awaits descriptor
+binding and callbacks. Exact integer results preserve identity and ownership;
+Boolean values normalize to integers. Invalid and noncallable slots raise
+Python-shaped errors.
+
 Short decimal text and bytes can parse directly from UTF-8 into the existing
 bounded integer tier, preserving the Python integer representation and exact
 results outside the machine range. Other supported forms keep the general

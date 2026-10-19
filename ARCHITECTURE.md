@@ -143,6 +143,11 @@ equality, inequality, membership/element equality, ordering and sorting; the
 synchronous path remains separate. The sorting
 algorithm, argument binder and ownership mechanisms remain in place.
 
+`operator.index` shares `CoerceTypeIndexAsync` with native indexing and JSON
+raw-prefix conversion. Its synchronous native path stays direct; async callbacks
+and descriptor binding are awaited. The helper retains exact integer objects,
+preserving exposed identity and existing storage owners.
+
 `ExecutionContext` owns per-run services and Python-visible state: globals,
 locals, closure resolution, exception state, module cache, decimal context,
 host handles, and limits. Values entering from public options are normalized to

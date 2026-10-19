@@ -364,7 +364,7 @@ internal sealed partial class LythonRuntime
         if (!PyNumberOps.TryAsInteger(result, out var integer))
             throw RuntimeErrors.Type("__index__ returned non-int (type " +
                 UnboundTypeMethod.PythonTypeName(result, context) + ")", span);
-        return integer;
+        return result is BigInteger ? result : integer;
     }
 
     internal static async ValueTask<(object? Start, object? End, object? Step)> CoerceSliceBoundsAsync(

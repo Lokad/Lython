@@ -20,12 +20,18 @@ public sealed class IntegerConversionAsyncTests
     [InlineData("trunc-index", null)]
     [InlineData("trunc-index", "/bind")]
     [InlineData("trunc-index", "/call")]
+    [InlineData("operator-index", null)]
+    [InlineData("operator-index", "/bind")]
+    [InlineData("operator-index", "/call")]
     public async Task DescriptorAndBodyAwaitWithFundingUntilCleanup(string route, string? pausedPath)
     {
         var slot = route == "int" ? "__int__" : route == "trunc" ? "__trunc__" : "__index__";
         var source = Source.Replace("CONVERSION_SLOT", slot).Replace("CONVERSION_VALUE", route == "base" ? "2" : "7");
+        if (route == "operator-index")
+            source = "import operator\n" + source.Replace("raise RuntimeError('ordinary lookup')", "return object.__getattribute__(self, name)");
         source += route == "trunc-index"
             ? "\nclass Value:\n def __trunc__(self): return Converted()\nprint(int(Value()))"
+            : route == "operator-index" ? "\nprint(operator.index(Converted()))"
             : route == "base" ? "\nprint(int('11', Converted()))" : "\nprint(int(Converted()))";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
