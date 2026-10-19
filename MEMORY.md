@@ -259,6 +259,14 @@ can conservatively add funding rather than transfer or refund those estimates.
 This is not retroactive preflight of helper storage already constructed under
 producer/headroom contracts. Already governed lists retain their first owner.
 
+List extension shares its ordinary known/unknown-source implementation with
+context-aware callers. The active token is checked while storing values, including
+known-size bulk inputs, and iterator cleanup finishes before return/refund. The
+reported count is admitted up front; actual growth remains admitted if enumeration
+outgrows that count. Cancellation/failure preserves the already stored prefix and
+its backing funding. One CLR array snapshot/copy is still a synchronous operation;
+checks around it do not promise interruption inside that managed copy.
+
 Array-backed list growth reserves full replacement capacity against the borrowed
 host allowance before allocation. The old backing
 remains charged until the copy finishes. Failed admission leaves its contents

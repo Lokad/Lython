@@ -84,8 +84,11 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         _items.Add(value);
     }
 
-    public void AddRange(IEnumerable<object> values)
+    public void AddRange(IEnumerable<object> values) => AddRange(values, null, null);
+
+    internal void AddRange(IEnumerable<object> values, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
+        context?.CheckExecution(span);
         if (values is PyIteration.CheckedSequence { Source: PyList or IPyListStorage or IReadOnlyCollection<object> } checkedSequence)
         {
             values = checkedSequence.Source;
@@ -95,13 +98,13 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         {
             // Snapshot the source (which may be this list) so extending appends
             // the original elements; the copy itself is budget-checked.
-            AddRange(sourceList.ToArray());
+            AddRange(sourceList.ToArray(), context, span);
             return;
         }
 
         if (values is IPyListStorage sourceStorage)
         {
-            AddRange(sourceStorage.ToArray());
+            AddRange(sourceStorage.ToArray(), context, span);
             return;
         }
 
@@ -109,67 +112,38 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         // through its sequence interfaces, so it must never reach this live count).
         if (values is IReadOnlyCollection<object> known)
         {
-            // Bounded, known-size inputs reserve exactly once up front, so the
-            // bulk append below cannot grow past the ensured capacity uncharged.
+            // Admit the reported count before mutation. A changing collection
+            // can yield more, so each store also ensures its actual capacity.
             _items = PyListStorage.EnsureCapacity(_items, checked(Count + known.Count), _memoryGovernor, _allocationSpan);
 
             foreach (var value in known)
             {
-                _items.Add(value);
+                context?.CheckExecution(span);
+                Add(value);
             }
 
+            context?.CheckExecution(span);
             return;
         }
 
         try
         {
-            // Unknown-length inputs stream incrementally: growth is charged per
-            // item, so a failing iterable keeps its partial effects and an
-            // unbounded one meets the memory budget instead of hanging.
+            // Unknown-length inputs stream incrementally, admitting actual
+            // capacity before each store. Failing iterables retain their
+            // successful prefix and its funding.
             foreach (var value in values)
             {
+                context?.CheckExecution(span);
                 Add(value);
             }
+            context?.CheckExecution(span);
         }
         catch (InvalidOperationException)
         {
             // Iteration observed our own concurrent growth (for example extending
             // with a live iterator over this list). That cannot terminate like
             // CPython does, so fail explicitly instead of leaking the CLR error.
-            throw RuntimeErrors.Runtime("list modified during extension.", _allocationSpan);
-        }
-    }
-
-    internal void AddRange(IEnumerable<object> values, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        if (values is PyIteration.CheckedSequence { Source: PyList or IPyListStorage or IReadOnlyCollection<object> } checkedSequence)
-        {
-            values = checkedSequence.Source;
-        }
-
-        if (values is IReadOnlyCollection<object> || values is PyList || values is IPyListStorage)
-        {
-            AddRange(values);
-            context.CheckExecution(span);
-            return;
-        }
-
-        try
-        {
-            var added = 0;
-            foreach (var value in values)
-            {
-                Add(value);
-                context.CheckExecution(span);
-                if ((++added & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
-            }
-        }
-        catch (InvalidOperationException)
-        {
-            throw RuntimeErrors.Runtime("list modified during extension.", span);
+            throw RuntimeErrors.Runtime("list modified during extension.", span ?? _allocationSpan);
         }
     }
 
@@ -185,16 +159,13 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
         try
         {
-            var added = 0;
+            context.CheckExecution(span);
             await foreach (var value in LythonRuntime.ToSequenceAsync(source, span, context).ConfigureAwait(false))
             {
-                Add(value);
                 context.CheckExecution(span);
-                if ((++added & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
+                Add(value);
             }
+            context.CheckExecution(span);
         }
         catch (InvalidOperationException)
         {

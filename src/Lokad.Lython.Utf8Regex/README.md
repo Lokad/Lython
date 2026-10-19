@@ -28,5 +28,9 @@ from UTF-8 ranges. The existing `.*?` progression workaround lives here, outside
 the core provider contract. Backend safety and semantic qualification are separate
 from core qualification; installing this adapter does not certify those internals.
 
-Validation results and package-consumer instructions will be recorded at the
-coherent provider delivery checkpoint. Publication remains deferred.
+Validation separates the [cooperating-provider contract controls](../../tests/Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs)
+for in-flight cancellation and funded unwind from [real-adapter capability controls](../../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterCapabilityTests.cs).
+The established [Release package gate](../../TESTING.md) restores independent
+core-only and adapter consumers. The [historical integration-cost diagnostic](../../benchmarks/results/2026-10-19-regex-boundary/README.md)
+is unqualified timing, not backend cancellation or safety certification.
+Publication and further backend qualification remain deferred.
