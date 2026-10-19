@@ -45,8 +45,8 @@ internal sealed partial class ExecutableScript
         private int _memberCacheCount;
         private readonly List<ExecutableFunctionBinding> _functions = [];
         private readonly List<ExecutableMatchCaseBinding> _matchCases = [];
-        private readonly List<ExecutableStatementFallback> _statementFallbacks = [];
-        private readonly List<ExecutableExpressionFallback> _expressionFallbacks = [];
+        private readonly List<LoweredStatement> _statementFallbacks = [];
+        private readonly List<LoweredExpression> _expressionFallbacks = [];
         private readonly Stack<LoopContext> _loops = [];
         private readonly Stack<IReadOnlySet<string>> _comprehensionNames = [];
         private int _protectedDepth;

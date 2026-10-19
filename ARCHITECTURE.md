@@ -90,7 +90,10 @@ separately detectable and forbidden during import. Function returns, including
 implicit None, keep their existing lowering and optimized calling paths.
 
 Lowered statement and expression evaluation remains necessary for class bodies,
-annotations and individual opcode fallbacks. Synchronous and async
+annotations and individual opcode fallbacks. Executable fallback tables retain
+these lowered nodes directly, without separate statement/expression carrier
+records. The existing fallback opcodes and local mirroring remain. Synchronous
+and async
 lowered `match` evaluate their already-lowered guards and case bodies; there is
 no raw-syntax statement interpreter. Pattern and expression helpers still use
 syntax where needed. Imported errors retain their source paths and propagate

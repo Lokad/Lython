@@ -21,7 +21,7 @@ internal sealed partial class LythonRuntime
                         _locals, _localCells, _context, true).ConfigureAwait(false);
                     return;
                 default:
-                    await DispatchLoweredStatementAsync(_codeObject.StatementFallbacks[instruction.StatementFallbackIndex].Statement,
+                    await DispatchLoweredStatementAsync(_codeObject.StatementFallbacks[instruction.StatementFallbackIndex],
                         _context, AsynchronousLoweredStatementExecution.Instance).ConfigureAwait(false);
                     break;
             }

@@ -34,7 +34,7 @@ public sealed class ProtectedLoopCompilationTests
         var bodies = Bodies(executable.EntryPoint).ToArray();
         foreach (var body in bodies)
             Assert.DoesNotContain(body.StatementFallbacks,
-                f => f.Statement is LoweredWithStatement or LoweredTryStatement);
+                f => f is LoweredWithStatement or LoweredTryStatement);
     }
 
     private static IEnumerable<ExecutableCodeObject> Bodies(ExecutableCodeObject code)
@@ -42,9 +42,7 @@ public sealed class ProtectedLoopCompilationTests
         yield return code;
         foreach (var function in code.Functions)
         {
-            var bodyCode = function.CodeObject ?? function.Function.GeneratorCode;
-            Assert.NotNull(bodyCode);
-            foreach (var body in Bodies(bodyCode)) yield return body;
+            foreach (var body in Bodies(function.CodeObject)) yield return body;
         }
     }
 }

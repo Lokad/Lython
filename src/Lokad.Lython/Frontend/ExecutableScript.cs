@@ -413,12 +413,6 @@ internal sealed record ExecutableMatchCaseBinding(
     MatchCaseSyntax Case,
     IReadOnlyDictionary<string, int> LocalBindingSlots);
 
-internal sealed record ExecutableStatementFallback(
-    LoweredStatement Statement);
-
-internal sealed record ExecutableExpressionFallback(
-    LoweredExpression Expression);
-
 internal enum ExecutableSimpleReturn
 {
     None,
@@ -447,8 +441,8 @@ internal sealed class ExecutableCodeObject
         int memberCacheCount,
         IReadOnlyList<ExecutableFunctionBinding> functions,
         IReadOnlyList<ExecutableMatchCaseBinding> matchCases,
-        IReadOnlyList<ExecutableStatementFallback> statementFallbacks,
-        IReadOnlyList<ExecutableExpressionFallback> expressionFallbacks,
+        IReadOnlyList<LoweredStatement> statementFallbacks,
+        IReadOnlyList<LoweredExpression> expressionFallbacks,
         bool requiresLocalVariableMirroring,
         bool isFunctionScope)
     {
@@ -510,9 +504,9 @@ internal sealed class ExecutableCodeObject
 
     public IReadOnlyList<ExecutableMatchCaseBinding> MatchCases { get; }
 
-    public IReadOnlyList<ExecutableStatementFallback> StatementFallbacks { get; }
+    public IReadOnlyList<LoweredStatement> StatementFallbacks { get; }
 
-    public IReadOnlyList<ExecutableExpressionFallback> ExpressionFallbacks { get; }
+    public IReadOnlyList<LoweredExpression> ExpressionFallbacks { get; }
 
     public bool RequiresLocalVariableMirroring { get; }
 

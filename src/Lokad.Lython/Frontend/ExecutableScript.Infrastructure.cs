@@ -453,7 +453,7 @@ internal sealed partial class ExecutableScript
             };
             if (_generator && syntax is not null && StatementSyntaxTraversal.EnumerateDirectExpressions(syntax).Any(GeneratorSyntaxFacts.ContainsYield))
                 throw new GeneratorLoweringException("Suspension in this statement is not supported.", statement.Span);
-            _statementFallbacks.Add(new ExecutableStatementFallback(statement));
+            _statementFallbacks.Add(statement);
             return _statementFallbacks.Count - 1;
         }
 
@@ -461,7 +461,7 @@ internal sealed partial class ExecutableScript
         {
             if (_generator && GeneratorSyntaxFacts.ContainsYield(expression.Syntax))
                 throw new GeneratorLoweringException("Suspension in starred displays/calls, formatted strings or comprehensions is not supported.", expression.Span);
-            _expressionFallbacks.Add(new ExecutableExpressionFallback(expression));
+            _expressionFallbacks.Add(expression);
             return _expressionFallbacks.Count - 1;
         }
 

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Keep lowered nodes directly in executable opcode-fallback tables, deleting redundant statement/expression carrier records and their construction/unwrap sites. Preserve the actual lowered evaluators, mirroring and generator checks; no syntax, public API or ownership change.
+
 - Store existing immutable call-argument forms directly in executable call sites, removing a redundant metadata record and per-argument compilation allocations. Binding, evaluation order and expanded-call behavior are unchanged; no public API or ownership change.
 
 - Reuse existing immutable import metadata in executable code, deleting a duplicate binding record and runtime syntax-node reconstruction. Synchronous slot binding, asynchronous resolution and Python import behavior remain unchanged.

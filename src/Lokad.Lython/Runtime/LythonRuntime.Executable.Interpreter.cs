@@ -257,7 +257,7 @@ internal sealed partial class LythonRuntime
 
                 case ExecutableOpCode.ExecuteFallbackStatement:
                     DispatchLoweredStatementAsync(
-                        _codeObject.StatementFallbacks[instruction.StatementFallbackIndex].Statement,
+                        _codeObject.StatementFallbacks[instruction.StatementFallbackIndex],
                         _context,
                         SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
                     SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, _context);
@@ -292,7 +292,7 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.EvaluateFallbackExpression:
-                    var fallback = EvaluateLoweredExpression(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, _context);
+                    var fallback = EvaluateLoweredExpression(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex], _context);
                     _context.ObserveValue(fallback, instruction.Span);
                     _stack.Push(fallback);
                     break;
@@ -762,7 +762,7 @@ internal sealed partial class LythonRuntime
                                      ExecutableOpCode.Dup or
                                      ExecutableOpCode.PopTop:
                                     if (instruction.OpCode == ExecutableOpCode.EvaluateFallbackExpression)
-                                        PushObserved(await EvaluateLoweredExpressionAsync(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, _context).ConfigureAwait(false), instruction.Span);
+                                        PushObserved(await EvaluateLoweredExpressionAsync(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex], _context).ConfigureAwait(false), instruction.Span);
                                     else if (instruction.OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)
                                     {
                                         if (TryLoadDirectCallReceiver(instruction)) break;
