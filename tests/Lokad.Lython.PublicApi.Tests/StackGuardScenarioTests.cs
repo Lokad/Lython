@@ -7,6 +7,8 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class StackGuardScenarioTests
 {
     [Theory]
+    [InlineData("dataclass-hash-cycle")]
+    [InlineData("dataclass-hash-depth")]
     [InlineData("function")]
     [InlineData("function-finally")]
     [InlineData("comparison")]

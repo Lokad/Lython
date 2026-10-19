@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Guard generated dataclass hashing with existing managed cycle/depth admission and field-loop cancellation checks. Cyclic hashes now raise catchable `RecursionError` instead of overflowing the CLR stack; repair/recovery and successful hashes remain supported. Add isolated post-I/O regression coverage. No native probing or new protection policy.
+
 - Reuse awaited `cmp_to_key` invocation in async equality, inequality, membership and element comparisons, removing four synchronous callback detours. Preserve ordinary results, validation, side effects, identity rules, cancellation/refusal and cleanup. No public API change or performance claim.
 
 - Await direct set-key equality and truth conversion in asynchronous ordering, including `min`/`max` over sets. Reuse stored insertion hashes for subset/superset scans, preserve mutation diagnostics and keep copied entries funded through pending callbacks, cancellation and failure. Builtin-only comparisons stay direct; conservative working overlap may reject earlier. General hashing and nested structural callback restrictions remain. No public API change or performance claim.

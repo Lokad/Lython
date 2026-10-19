@@ -194,6 +194,12 @@ refund their working storage. No thread-local ambient context spans an await.
 Builtin-only comparisons retain the HashSet path. General guest hashing and
 nested structural equality retain their synchronous restrictions.
 
+Generated dataclass hashes enter the existing managed single-value structural
+guard and check cancellation while visiting fields. Cycles and excessive depth
+unwind through that guard before CLR stack exhaustion; successful hashes retain
+their existing field combination. This native synchronous walk never spans an
+await and introduces no separate protection policy.
+
 Dynamic attributes deliberately distinguish reading from mutation:
 
 - `IPyDynamicAttributes` provides lookup.

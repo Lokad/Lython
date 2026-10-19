@@ -1412,6 +1412,12 @@ Guest hashing, nested structural equality and other hash-container operations
 retain their existing synchronous restrictions: delayed host callbacks there
 can still fail under `RunAsync`.
 
+Generated dataclass hashing participates in managed structural cycle and depth
+protection. A cyclic generated hash raises catchable `RecursionError`; deep
+acyclic hashes respect the existing managed bounds. Successful hash values and
+field exclusions are unchanged, and a repaired value can be hashed after a
+caught failure in the same execution.
+
 The `collections` module supports the common contained container helpers:
 
 - `defaultdict`, including mapping/keyword initialization and mutable `default_factory`

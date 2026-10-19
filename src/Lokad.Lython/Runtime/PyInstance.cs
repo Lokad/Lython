@@ -240,9 +240,11 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
 
     private int GetGeneratedDataclassHashCode(IReadOnlyList<DataclassFieldSpec> fields)
     {
+        using var guard = PyStructuralGuard.EnterSingle(this, PyStructuralGuard.AmbientSpan, PyStructuralGuard.AmbientContext);
         var hash = new HashCode();
         foreach (var field in fields)
         {
+            PyStructuralGuard.NoteWork();
             if (!PyDataclass.ShouldIncludeInGeneratedHash(field))
             {
                 continue;
