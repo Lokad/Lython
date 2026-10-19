@@ -101,15 +101,15 @@ public sealed class JsonSuspendingCallbackTests
             await started.WaitAsync(TimeSpan.FromSeconds(10));
             Assert.False(run.IsCompleted);
             Assert.True(budget.ReservedBytes > baseline);
+            cancellation.Cancel();
+            using var canceled = await run.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(canceled.Success);
+            Assert.Equal(LythonFailureReason.Cancelled, canceled.FailureAttribution?.Reason);
         }
         finally
         {
             cancellation.Cancel();
-        }
-        using (var canceled = await run.WaitAsync(TimeSpan.FromSeconds(10)))
-        {
-            Assert.False(canceled.Success);
-            Assert.Equal(LythonFailureReason.Cancelled, canceled.FailureAttribution?.Reason);
+            using var drained = await run.WaitAsync(TimeSpan.FromSeconds(10));
         }
         Assert.Equal(baseline, budget.ReservedBytes);
         var fresh = new DelayedLythonHost();
@@ -155,6 +155,7 @@ public sealed class JsonSuspendingCallbackTests
         {
             Assert.False(result.Success);
             Assert.Equal(refuse ? "MemoryError" : "ValueError", result.Failure?.ExceptionType);
+            if (refuse) Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.Empty(result.StandardOutput);
             Assert.Equal("done", host.ReadText("/cleanup"));
             Assert.True(host.CompletedAsynchronously > 0);
