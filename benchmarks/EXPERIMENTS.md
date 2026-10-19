@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-19 guarded list-display prototype](results/2026-10-19-list-display-rejected/README.md)
+is rejected and removed. Its protocol, ownership and complete-script checks pass,
+but one 7.833-second nested-comprehension capture shows no established benefit for
+the added receiver/stack dispatch: 0.942/0.966 ms before/after, with 4%/31% spreads.
+This is inconclusive timing, not a proven regression. Keep the simpler dispatcher;
+no revival, retiming or alternative dispatch framework follows.
+
 The [2026-10-19 native prepared-operation routing](results/2026-10-19-native-prepared-routing/README.md)
 removes async routing for six native operations without changing their bodies.
 Focused white-box, public protocol/ownership and complete-script checks pass.

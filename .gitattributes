@@ -162,3 +162,5 @@ benchmarks/results/2026-10-19-generator-definition-route/** -text whitespace=cr-
 benchmarks/results/2026-10-19-compiled-function-bodies/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-19-json-value-entry/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-19-native-prepared-routing/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-19-list-display-rejected/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-19-list-display-rejected/candidate.patch -text -whitespace

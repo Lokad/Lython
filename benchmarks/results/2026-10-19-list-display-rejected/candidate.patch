@@ -1,0 +1,34 @@
+diff --git a/ARCHITECTURE.md b/ARCHITECTURE.md
+index 8d67185d..162db1de 100644
+--- a/ARCHITECTURE.md
++++ b/ARCHITECTURE.md
+@@ -130,6 +130,9 @@ Prepared comprehension boundaries, display creation, tuple completion, call
+ accumulator creation and formatted-part joining complete through one nonasync
+ entry. Operations that can suspend retain one async handler. Each operation has
+ one implementation; scope, stack and storage cleanup remain with that operation.
++Ordinary list-display insertion also uses the native entry and the existing
++storage helper, preserving its preflights and both cancellation checks. Set
++hashing and unpacking retain their protocol paths.
+ 
+ Every executable control-flow edge must enter a block at one consistent stack
+ depth. Exceptions and return/break/continue signals remain explicit while a
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
+index 19a37c35..7800f9dd 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
+@@ -50,6 +50,15 @@ internal sealed partial class LythonRuntime
+                     };
+                     _stack.Push(collection);
+                     break;
++                case ExecutableAppendDisplay { Unpacking: false } append when
++                    append.IteratorDepth >= 0 &&
++                    _stack.Count - 2 - append.IteratorDepth is var destinationSlot &&
++                    (uint)destinationSlot < (uint)_stack.Count &&
++                    _stack[destinationSlot] is PyList list:
++                    var value = Pop(ref _stack, span);
++                    _context.CheckExecution(span);
++                    AddListDisplayValue(list, value, span, _context);
++                    break;
+                 case ExecutableFinishTuple:
+                     var expanded = (PyList)Pop(ref _stack, span);
+                     var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, _context.MemoryGovernor, span);

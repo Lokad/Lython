@@ -1,0 +1,23 @@
+{
+  "status": "Rejected",
+  "baselineRevision": "bdf777d641b23dc218359ec18a8456a24377b4ed",
+  "candidateRevision": "dbb1f019b3a5143b286b07db54af9fdb52e364fb",
+  "removalRevision": "abd98e0e3f3b7e418843349a333dbc5ae1eccda4",
+  "productionAndArchitectureMatch": "66c050d0a8919391e626b9c6a370cbd9bf534508",
+  "reason": "Additional receiver/stack dispatch complexity without a demonstrated gain; timing is inconclusive, not a proven regression.",
+  "case": "comprehensions.helper-list.large",
+  "lane": "compile-run",
+  "sharedCatalog": "../2026-10-19-native-prepared-routing/catalog.json.gz",
+  "catalogSha256": "19ad27ec4b3decae105924d704090f1ed94e84c5e422e68c9fd5f5e50bd9dd38",
+  "performanceQualified": false,
+  "timingCaptureCount": 1,
+  "focusedWhiteChecks": 46,
+  "publicProtocolLifetimeChecks": 197,
+  "representativeScriptChecks": 123,
+  "files": {
+    "baseline.json": "d9eeff2a8252c2207ad3f91a5c6e8be854b6fa89b7815d96d40f419efc15547e",
+    "candidate.patch": "ec346f2d139b3ba73da9756a3686d5d0c5e4ff47c20f9d5f33b7d103fcf95bff",
+    "micro.json": "8e619ba73d0f6f77327565af2bf2ed2dfd7fadd494e61904e77982e0b571d6b3",
+    "process.receipt.json": "9b6ad37d287b6a3b10c6047dd97899b87c8009e3242a54bb1086f31e644186d5"
+  }
+}
