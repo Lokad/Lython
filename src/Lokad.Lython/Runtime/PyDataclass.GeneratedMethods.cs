@@ -460,12 +460,12 @@ internal static partial class PyDataclass
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not PyInstance instance)
             {
                 throw new LythonRuntimeException("TypeError", $"{typeName}.__hash__() expected a bound instance.", span);
             }
 
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             return new BigInteger(instance.GetPyHashCode());
         }
     }

@@ -1416,7 +1416,9 @@ Generated dataclass hashing participates in managed structural cycle and depth
 protection. A cyclic generated hash raises catchable `RecursionError`; deep
 acyclic hashes respect the existing managed bounds. Successful hash values and
 field exclusions are unchanged, and a repaired value can be hashed after a
-caught failure in the same execution.
+caught failure in the same execution. Generated hash calls honor the execution's
+configured recursion limit; excessive native nesting can also raise `RuntimeError`
+from the existing managed stack admission policy.
 
 The `collections` module supports the common contained container helpers:
 

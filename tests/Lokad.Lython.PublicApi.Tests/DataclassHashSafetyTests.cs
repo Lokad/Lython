@@ -6,6 +6,24 @@ public sealed class DataclassHashSafetyTests
 {
     private const string Node = "from dataclasses import dataclass\n@dataclass(unsafe_hash=True)\nclass Node:\n value:object\n";
 
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task GeneratedHashUsesTheConfiguredExecutionRecursionLimit(bool asynchronous)
+    {
+        var source = Node + "node=Node(0)\nfor _ in range(64):node=Node(node)\ntry:hash(node)\nexcept RecursionError:print('configured')\nprint(hash(Node(7))==hash(Node(7)))";
+        var budget = new LythonMemoryBudget(8 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions { MaxRecursionDepth = 16 };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("configured\nTrue\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     public static IEnumerable<object[]> Cycles()
     {
         foreach (var expression in new[] { "hash(node)", "hash((node,))", "set([node])", "{node:1}" })
@@ -40,7 +58,7 @@ public sealed class DataclassHashSafetyTests
     {
         var source = "with open('/ready') as stream:stream.read()\n" + Node +
             "node=Node(0)\nfor index in range(depth):node=Node(node)\ntry:print(isinstance(" + (tuple ? "hash((node,))" : "hash(node)") +
-            ",int))\nexcept RecursionError:print('bounded')";
+            ",int))\nexcept (RecursionError,RuntimeError):print('bounded')";
         var budget = new LythonMemoryBudget(8 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid);
