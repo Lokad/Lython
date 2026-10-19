@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Threading;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Frontend;
 
@@ -11,7 +12,7 @@ internal static class MissingMemberValue
 
 internal abstract class PyModule : IPyRenderableValue
 {
-    private readonly ConcurrentDictionary<string, object> _memberCache = new(StringComparer.Ordinal);
+    private ConcurrentDictionary<string, object>? _memberCache;
     private readonly PyString _nameValue;
 
     protected PyModule(string name)
@@ -45,7 +46,9 @@ internal abstract class PyModule : IPyRenderableValue
             return true;
         }
 
-        if (_memberCache.TryGetValue(name, out value))
+        var cache = LazyInitializer.EnsureInitialized(ref _memberCache,
+            static () => new ConcurrentDictionary<string, object>(StringComparer.Ordinal));
+        if (cache.TryGetValue(name, out value))
         {
             return true;
         }
@@ -55,7 +58,7 @@ internal abstract class PyModule : IPyRenderableValue
             return false;
         }
 
-        value = _memberCache.GetOrAdd(name, value);
+        value = cache.GetOrAdd(name, value);
         return true;
     }
 

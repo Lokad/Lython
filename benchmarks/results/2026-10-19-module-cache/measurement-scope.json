@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-19T11:19:47.289434+00:00",
+  "baselineRevision": "026e8bbd18434c14f9daa4e4c52a3b3788dc0cbd",
+  "candidate": "baseline plus candidate.patch",
+  "sdk": "10.0.300-preview.0.26177.108",
+  "runtime": "10.0.13",
+  "os": "Windows10.0.26200 X64",
+  "cpu": "i7-14700KF",
+  "processorCount": 28,
+  "metric": "GC.GetAllocatedBytesForCurrentThread; cumulative managed allocation, not retained heap or an admission policy",
+  "boundary": "Direct construction/name/first-member/warm-member operations; prepared execution context, source compilation, engine startup and I/O excluded",
+  "warmupCalls": 16,
+  "samples": 8,
+  "callsPerSample": 64,
+  "status": "Allocation diagnostic only; no latency qualification or CPython timing comparison",
+  "ownerCleanup": "Each row disposes its shared owner and asserts root allowance returns to zero",
+  "scope": "Existing member-cache field only; small name value remains eager; no new cache abstraction, runtime option, owner or dependency"
+}

@@ -292,6 +292,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [module-cache construction change](benchmarks/results/2026-10-19-module-cache/README.md)
+records 1,448 B less allocation per script module or builtin module used only for
+its name. First-member publication and warm-read allocation controls are unchanged.
+This direct-operation diagnostic excludes compilation/startup/I/O and establishes
+no complete-script latency or CPython gain.
+
 The [local import consolidation](benchmarks/results/2026-10-19-executable-imports/README.md)
 records a median 880 B less allocation per small imported-helper job under both
 execution APIs, including fresh entry compilation; the no-import allocation

@@ -1,0 +1,30 @@
+[
+  {
+    "kind": "script-construction",
+    "beforeBytes": 1648.0,
+    "afterBytes": 200.0,
+    "beforeMicroseconds": 0.84453125,
+    "afterMicroseconds": 0.14453125
+  },
+  {
+    "kind": "builtin-name-only",
+    "beforeBytes": 1600.0,
+    "afterBytes": 152.0,
+    "beforeMicroseconds": 0.7585937500000001,
+    "afterMicroseconds": 0.07578125000000001
+  },
+  {
+    "kind": "builtin-first-member",
+    "beforeBytes": 1672.0,
+    "afterBytes": 1672.0,
+    "beforeMicroseconds": 1.140625,
+    "afterMicroseconds": 0.62734375
+  },
+  {
+    "kind": "builtin-warm-member",
+    "beforeBytes": 0.0,
+    "afterBytes": 0.0,
+    "beforeMicroseconds": 0.03203125,
+    "afterMicroseconds": 0.034375
+  }
+]

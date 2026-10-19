@@ -77,6 +77,9 @@ functions, even when no opcode fallback requests mirroring. Loaded script module
 use that same context for attributes and globals(); builtin definition factories
 retain stable member caching, while mutable script namespaces read current values.
 Code admission is committed before guest callbacks can expose prepared code.
+The builtin member dictionary is initialized on its first ordinary cached lookup;
+script and name-only access do not allocate that table. The name value remains
+eager and concurrent publication uses the existing dictionary.
 
 Module final blocks complete naturally; an executed top-level return remains
 separately detectable and forbidden during import. Function returns, including
