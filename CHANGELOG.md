@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Store existing immutable call-argument forms directly in executable call sites, removing a redundant metadata record and per-argument compilation allocations. Binding, evaluation order and expanded-call behavior are unchanged; no public API or ownership change.
+
 - Reuse existing immutable import metadata in executable code, deleting a duplicate binding record and runtime syntax-node reconstruction. Synchronous slot binding, asynchronous resolution and Python import behavior remain unchanged.
 
 - Initialize the existing module member cache only when an ordinary cached member is requested. Script modules and name-only builtin use avoid unused tables; callable/name identity and concurrent publication remain. No public contract or memory-ownership change; no established latency gain.

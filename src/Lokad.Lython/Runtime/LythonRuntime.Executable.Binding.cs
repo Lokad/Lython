@@ -520,7 +520,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static CallArgumentValue CreateExecutableCallArgument(ExecutableCallArgumentSpec spec, object value)
+    private static CallArgumentValue CreateExecutableCallArgument(CallArgumentForm spec, object value)
         => spec.Kind switch
         {
             CallArgumentKind.Positional => CallArgumentValue.Positional(value),

@@ -392,17 +392,9 @@ internal sealed record ExecutableExceptionRegion(
     bool ExceptionTypesAreTuple = false,
     int? CleanupId = null);
 
-internal sealed record ExecutableCallArgumentSpec(
-    CallArgumentForm Form)
-{
-    public CallArgumentKind Kind => Form.Kind;
-
-    public string KeywordName => Form.KeywordName;
-}
-
 internal sealed record ExecutableCallSite(
     int ArgumentCount,
-    IReadOnlyList<ExecutableCallArgumentSpec> Arguments,
+    IReadOnlyList<CallArgumentForm> Arguments,
     LythonSourceSpan TargetSpan,
     LythonSourceSpan CallSpan,
     bool HasReceiver = false)

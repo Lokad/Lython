@@ -1,0 +1,49 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+index 98b3e41a..8c28351b 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+@@ -370,7 +370,7 @@ internal sealed partial class ExecutableScript
+         {
+             _callSites.Add(new ExecutableCallSite(
+                 call.Arguments.Count,
+-                call.Arguments.Select(argument => new ExecutableCallArgumentSpec(argument.Form)).ToArray(),
++                call.Arguments.Select(argument => argument.Form).ToArray(),
+                 call.Target.Span,
+                 call.Span,
+                 hasReceiver));
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index 5b6d6af2..42501a51 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -392,17 +392,9 @@ internal sealed record ExecutableExceptionRegion(
+     bool ExceptionTypesAreTuple = false,
+     int? CleanupId = null);
+ 
+-internal sealed record ExecutableCallArgumentSpec(
+-    CallArgumentForm Form)
+-{
+-    public CallArgumentKind Kind => Form.Kind;
+-
+-    public string KeywordName => Form.KeywordName;
+-}
+-
+ internal sealed record ExecutableCallSite(
+     int ArgumentCount,
+-    IReadOnlyList<ExecutableCallArgumentSpec> Arguments,
++    IReadOnlyList<CallArgumentForm> Arguments,
+     LythonSourceSpan TargetSpan,
+     LythonSourceSpan CallSpan,
+     bool HasReceiver = false)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index fd9c7e83..bbc0917f 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -520,7 +520,7 @@ internal sealed partial class LythonRuntime
+         }
+     }
+ 
+-    private static CallArgumentValue CreateExecutableCallArgument(ExecutableCallArgumentSpec spec, object value)
++    private static CallArgumentValue CreateExecutableCallArgument(CallArgumentForm spec, object value)
+         => spec.Kind switch
+         {
+             CallArgumentKind.Positional => CallArgumentValue.Positional(value),

@@ -1,0 +1,8 @@
+{
+  "commit": "61002a6be430126338cfaf8d99e2292fc21ba3e1",
+  "files": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "88aae3f727d2a4da4404225316955a1f8492d73ac1941a05e843cbea90fc4d16",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "240fabbb3b75c0b7a687bb6d02467f73c69a82a5577aa731a7f4c8e407a1e7e4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "c8d84289b277213c5d2b89d19c91a8986542c2e002e83cd71dbc309955a75c95"
+  }
+}

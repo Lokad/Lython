@@ -1,0 +1,26 @@
+[
+  {
+    "kind": "positional",
+    "beforeBytes": 49536.0,
+    "afterBytes": 49448.0,
+    "savedBytes": 88.0
+  },
+  {
+    "kind": "keyword",
+    "beforeBytes": 44304.0,
+    "afterBytes": 44264.0,
+    "savedBytes": 40.0
+  },
+  {
+    "kind": "zero-argument",
+    "beforeBytes": 35496.0,
+    "afterBytes": 35496.0,
+    "savedBytes": 0.0
+  },
+  {
+    "kind": "no-call",
+    "beforeBytes": 31776.0,
+    "afterBytes": 31776.0,
+    "savedBytes": 0.0
+  }
+]

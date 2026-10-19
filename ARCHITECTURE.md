@@ -116,6 +116,10 @@ depth. Exceptions and return/break/continue signals remain explicit while a
 shared semantics should be tested through executable modules/functions and real
 lowered consumers such as class bodies and annotations, with both execution APIs.
 
+Executable call sites store the frontend's immutable `CallArgumentForm` values
+directly. The existing argument-conversion helper serves both packaged calls and
+direct operand binding; there is no per-argument metadata wrapper.
+
 `ExecutionContext` owns per-run services and Python-visible state: globals,
 locals, closure resolution, exception state, module cache, decimal context,
 host handles, and limits. Values entering from public options are normalized to

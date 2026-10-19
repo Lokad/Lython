@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-19T11:47:10.5287489+00:00",
+  "baselineRevision": "61002a6be430126338cfaf8d99e2292fc21ba3e1",
+  "candidate": "baseline plus candidate.patch",
+  "runtime": "10.0.13",
+  "sdk": "10.0.300-preview.0.26177.108",
+  "os": "Windows10.0.26200 X64",
+  "cpu": "i7-14700KF",
+  "processorCount": 28,
+  "metric": "GC.GetAllocatedBytesForCurrentThread; cumulative allocation, not retained heap/RSS or admission policy",
+  "boundary": "Compile/dispose entry in an already-running host; engine and shared root prepared outside counters. No execution, projection or I/O.",
+  "warmupCalls": 8,
+  "samples": 7,
+  "callsPerSample": 8,
+  "cleanup": "Each compilation ends its owner and verifies the shared allowance returns to zero",
+  "status": "Short nonquiet diagnostic; no execution/latency/CPython gain established; no forced GC"
+}

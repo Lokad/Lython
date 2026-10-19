@@ -292,6 +292,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [call-argument metadata cleanup](benchmarks/results/2026-10-19-call-form/README.md)
+deletes a wrapper around an existing immutable argument form. A compile-only
+diagnostic records 88 B less allocation for a four-argument call and 40 B less
+for a two-argument keyword call; zero-argument/no-call controls are unchanged.
+This establishes no execution-time, compile-latency or CPython gain.
+
 The [import metadata cleanup](benchmarks/results/2026-10-19-import-metadata/README.md)
 removes a duplicate compiler record and runtime node reconstruction. A short
 diagnostic records 56 B less allocation per compilation containing an import and

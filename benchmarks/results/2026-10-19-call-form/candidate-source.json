@@ -1,0 +1,8 @@
+{
+  "baseline": "61002a6be430126338cfaf8d99e2292fc21ba3e1",
+  "files": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "d7cfa5838752a6512efe5b68f88cd8af3e86123ba036db333f0b8866a6a27413",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "c75224cfdaeebd35c29a184f31ae6ac9751754d79488bd95966cdcb9044aa078",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "b574add4e4367d1e1c540403c84c54599c2547719cc18558e0057618d17e53fd"
+  }
+}
