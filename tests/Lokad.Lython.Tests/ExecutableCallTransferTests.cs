@@ -7,6 +7,9 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
+// Post-completion checks inspect returned argument buffers before another
+// execution can rent those thread-local arrays again.
+[Collection("AllocationSensitive")]
 public sealed class ExecutableCallTransferTests
 {
     private const BindingFlags Fields = BindingFlags.Instance | BindingFlags.NonPublic;

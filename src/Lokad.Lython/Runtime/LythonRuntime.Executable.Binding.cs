@@ -479,7 +479,7 @@ internal sealed partial class LythonRuntime
         else if (arguments.Length > 3)
         {
             // These buffers are not pooled, but the completed call helper can
-            // still hold the array while observing its result. Withdraw every
+            // still hold the array until handing off its result. Withdraw every
             // input reference at the same boundary as the small pooled arities.
             arguments.AsSpan().Fill(CallArgumentValue.Positional(PyNone.Instance));
         }
@@ -531,12 +531,10 @@ internal sealed partial class LythonRuntime
     private static void CompleteExecutableValueTransfer(
         ref ExecutableValueStack stack,
         int start,
-        object result,
-        ExecutionContext context,
-        LythonSourceSpan span)
+        object result)
     {
-        // The operation has completed: inputs are no longer live unless retained
-        // by the result. Reuse the first input slot before result admission.
+        // Operation helpers have admitted any new storage. Reuse the first
+        // input slot for the completed result and withdraw the remaining inputs.
         // No extra slot, hidden retained extent or per-opcode cleanup is needed.
         stack.RemoveTail(stack.Count - start - 1);
         stack[start] = result;
@@ -652,17 +650,17 @@ internal sealed partial class LythonRuntime
                 }
                 finally
                 {
-                    // Withdraw finished inputs before result admission.
+                    // Withdraw finished inputs when their borrow ends.
                     ReturnCallArguments(arguments);
                 }
             }
 
-            CompleteExecutableValueTransfer(ref stack, start, result, context, callSite.CallSpan);
+            CompleteExecutableValueTransfer(ref stack, start, result);
         }
         catch
         {
-            // The tail contains inputs or the denied result, depending on how
-            // far the transfer progressed. Surrounding operands stay intact.
+            // Withdraw the failed operation's inputs. Surrounding operands
+            // stay intact.
             stack.RemoveTail(stack.Count - start);
             throw;
         }

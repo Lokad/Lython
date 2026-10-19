@@ -182,7 +182,7 @@ internal sealed partial class LythonRuntime
                             }
                             finally { ReturnCallArguments(arguments); }
                         }
-                        CompleteExecutableValueTransfer(ref _stack, start, result, _context, instruction.Span);
+                        CompleteExecutableValueTransfer(ref _stack, start, result);
                     }
                     catch
                     {
@@ -230,7 +230,7 @@ internal sealed partial class LythonRuntime
                         break;
                     default: throw new InvalidOperationException("Unexpected observed value operation.");
                 }
-                CompleteExecutableValueTransfer(ref _stack, first, result, _context, instruction.Span);
+                CompleteExecutableValueTransfer(ref _stack, first, result);
             }
             catch { _stack.RemoveTail(_stack.Count - first); throw; }
         }

@@ -520,7 +520,7 @@ internal sealed partial class LythonRuntime
                     ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, _stack[first], _context, instruction.Span),
                     _ => throw new InvalidOperationException("Unexpected observed value operation."),
                 };
-                CompleteExecutableValueTransfer(ref _stack, first, result, _context, instruction.Span);
+                CompleteExecutableValueTransfer(ref _stack, first, result);
             }
             catch { _stack.RemoveTail(_stack.Count - first); throw; }
         }
