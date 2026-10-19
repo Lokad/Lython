@@ -183,6 +183,10 @@ The JSON reader passes its original governed `PyString` through token and error
 helpers, deriving byte views from that immutable document. It carries no separate
 document/view record. Lenient token rewrites preserve original error coordinates
 and document identity; suspended callbacks retain the existing execution owners.
+Raw-prefix index coercion shares the existing type-index protocol under both
+execution APIs, awaiting descriptors/callbacks only when asynchronous hosting is
+active. Native indices go directly to one integer/size validator. Binding,
+coercion, text validation and negative-index checks retain Python's error order.
 
 Protocol-aware unary, binary, comparison, and augmented-assignment dispatch is
 centralized so expression helpers, lowered, executable, and `operator`-module paths do

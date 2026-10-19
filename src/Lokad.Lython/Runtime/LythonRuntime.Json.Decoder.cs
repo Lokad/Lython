@@ -93,12 +93,25 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "JSONDecoder.raw_decode() takes from 1 to 2 arguments (" + arguments.Length + " given).", span);
             }
 
+            var index = 0L;
+            if (arguments.Length == 2)
+            {
+                var argument = arguments[1];
+                var coerced = argument is PyInstance
+                    ? await CoerceTypeIndexAsync(argument, context, span, asynchronous).ConfigureAwait(false)
+                    : argument;
+                index = NormalizeJsonRawIndex(coerced ?? PyNone.Instance, context, span);
+            }
+
             if (!PyStringOps.TryAsString(arguments[0], out var text))
             {
                 throw new LythonRuntimeException("TypeError", "first argument must be a string, not " + UnboundTypeMethod.PythonTypeName(arguments[0], context), span);
             }
 
-            var index = arguments.Length == 2 ? CoerceJsonRawIndex(arguments[1], context, span) : 0L;
+            if (index < 0)
+            {
+                throw new LythonRuntimeException("ValueError", "idx cannot be negative", span);
+            }
             context.CheckExecution(span);
             var (value, end) = asynchronous
                 ? await JsonModule.Instance.DecodeJsonRawValueAsync(text, index, Options, context, span).ConfigureAwait(false)
@@ -107,15 +120,13 @@ internal sealed partial class LythonRuntime
         }
 
         // idx follows the __index__ protocol like CPython sequence indexing:
-        // huge magnitudes overflow before the negativity check, and only
-        // in-range values convert to byte positions (past-the-end indices
-        // report themselves from the prefix reader).
-        private static long CoerceJsonRawIndex(object value, ExecutionContext context, LythonSourceSpan span)
+        // ssize_t conversion precedes text validation; negativity is checked
+        // afterwards. Past-the-end indices are reported by the prefix reader.
+        private static long NormalizeJsonRawIndex(object value, ExecutionContext context, LythonSourceSpan span)
         {
-            var coerced = CoerceIndexProtocol(value, context, span);
-            BigInteger integer = coerced switch
+            BigInteger integer = value switch
             {
-                _ when Numbers.PyNumberOps.TryAsInteger(coerced, out var integerValue) => integerValue,
+                _ when Numbers.PyNumberOps.TryAsInteger(value, out var integerValue) => integerValue,
                 _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span),
             };
 
@@ -124,13 +135,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
             }
 
-            var index = (long)integer;
-            if (index < 0)
-            {
-                throw new LythonRuntimeException("ValueError", "idx cannot be negative", span);
-            }
-
-            return index;
+            return (long)integer;
         }
     }
 

@@ -2448,6 +2448,14 @@ references, formatting and sorting follow the ordinary dictionary behavior.
 
 `json.JSONDecoder` is a reusable class: `JSONDecoder(*, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, strict=True, object_pairs_hook=None)` with `decode(s)` for a complete document (trailing data rejected) and `raw_decode(s, idx=0)` for exactly one value starting at the given string index (no leading whitespace skip, suffix untouched, absolute end index returned). `load`/`loads` accept `cls=json.JSONDecoder` as well as `cls=None`. `json.JSONEncoder` is a reusable class: `JSONEncoder(*, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, sort_keys=False, indent=None, separators=None, default=None)` with `encode(o)` sharing the `dump`/`dumps` formatting facts and `default(o)` raising `TypeError` unless a `default=` hook supplies the behavior. `dump`/`dumps` accept `cls=json.JSONEncoder` as well as `cls=None`. `iterencode(o)` incrementally traverses and emits strings without encoding the complete document first; joining the chunks equals `encode(o)` exactly. Subclasses of `json.JSONEncoder`/`json.JSONDecoder` use the ordinary class machinery: construction, `super()` delegation, `isinstance`/`issubclass` and overridden `default`/`encode`/`iterencode`/`decode`/`raw_decode` behave like CPython, with `cls=` dispatch constructing the selected class (standard options plus custom constructor keywords) and invoking its methods. An instance whose `__init__` skipped its `super().__init__()` call fails attribute access like CPython. Classes outside the JSON family passed as `cls=` still fail explicitly.
 
+`raw_decode` resolves an explicit `idx` through the type's `__index__` slot,
+including descriptor binding. Instance overrides and `__getattribute__` do not
+replace that implicit protocol. Argument binding precedes coercion; coercion and
+signed-size validation precede text-type validation, followed by the negative-
+index check and prefix parsing. `RunAsync` awaits index/descriptor callbacks that
+reach host I/O, preserving character offsets, cancellation, refused admission
+and pending input ownership. Native integer indices stay direct.
+
 Parser-produced `JSONDecodeError` values retain the original document and expose
 `msg`, `pos`, `lineno` and `colno` in Python character coordinates. Their string
 message appends `: line L column C (char P)`, and `args` contains that one formatted
@@ -2462,9 +2470,8 @@ For `load`/`loads` with `cls=None` or the exact builtin `JSONDecoder`, Lython bi
 scanner options using the same constructor validation and calls its existing parser
 directly. It does not allocate a temporary decoder, its public attribute dictionary
 or a bound decode method. Explicit decoder instances and guest subclasses retain
-construction, captured options and method overrides. Internal allocation totals and
-execution-checkpoint counts can change when this absent work disappears; Python
-results, hook order, error coordinates and resource guards remain supported.
+construction, captured options and method overrides. Python results, hook order,
+error coordinates and resource guards remain supported.
 
 JSON property names and string values use the same synchronous token decoder
 under Run and RunAsync, retaining managed frame admission, checkpoints and storage

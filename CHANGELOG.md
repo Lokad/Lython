@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Correct `JSONDecoder.raw_decode` index coercion using the existing type-index helper under both APIs. Await delayed index/descriptor I/O, ignore instance-slot overrides as Python does, and correct coercion/type/size error order. Preserve native indices, Unicode offsets, cancellation/refusal and cleanup. No public API change or performance claim.
+
 - Remove the redundant JSON input carrier and its document/view plumbing. Parsing and error helpers retain the original governed string and derive its UTF-8 view directly, preserving prefix/error coordinates, callbacks and ownership. No public API change or measured speedup.
 
 - Remove 19 redundant execution checks and obsolete checkpoint-count comments from native call and JSON forwarding helpers. Keep effective token/admission checks, managed frame entry, allocation preflights and cleanup. No replacement counter or public contract change; no performance claim.
