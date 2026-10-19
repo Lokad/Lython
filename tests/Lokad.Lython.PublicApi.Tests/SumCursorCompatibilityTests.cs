@@ -4,6 +4,33 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class SumCursorCompatibilityTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExactRangePreservesStartAliasesTypesAndLargeBounds(bool asynchronous)
+    {
+        const string source = """
+start=1<<256
+print(sum(range(0),start) is start,sum(range(0),True) is True,
+      sum(range(1),True),type(sum(range(1),True)).__name__)
+print(sum(range(5,-3,-2)),sum(range(3),start=start)-start,
+      sum(range(start,start+3),start=-start*3))
+for invalid in ('bad',b'bad'):
+ try:sum(range(0),invalid)
+ except TypeError:print('start')
+""";
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True True 1 int\n8 3 3\nstart\nstart\n", result.StandardOutput);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     public static TheoryData<bool, string, string> Programs => new()
     {
         { false, "marker=[]\nprint(sum([],marker) is marker,sum([],True) is True,sum([True,False,True]),sum([1,2],start=4))", "True True 2 7\n" },

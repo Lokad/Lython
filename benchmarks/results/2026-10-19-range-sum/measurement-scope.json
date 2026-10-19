@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-19T12:00:48.6167121+00:00",
+  "baselineRevision": "64b8aca50c7e53fba91e2702f809747c321d9e5e",
+  "candidate": "baseline plus candidate.patch",
+  "runtime": "10.0.13",
+  "sdk": "10.0.300-preview.0.26177.108",
+  "os": "Windows10.0.26200 X64",
+  "cpu": "i7-14700KF",
+  "processorCount": 28,
+  "boundary": "Reused public entry, fresh mock host and execution/result cleanup. 16 sums of range(128), or iter(range(128)) control, per job. Entry compilation and process startup excluded. Mock host completes synchronously; pending I/O covered separately.",
+  "metric": "GC.GetTotalAllocatedBytes(true), all managed threads; cumulative allocation, not live heap/RSS or admission policy",
+  "warmupCalls": 8,
+  "samples": 7,
+  "callsPerSample": 8,
+  "cleanup": "Every job disposes its result and verifies shared allowance returns to compiled baseline",
+  "status": "One short nonquiet before/after capture. Nominal elapsed only; control timings move, no qualified latency/CPython gain or host tail-latency claim. No forced GC.",
+  "tradeoff": "Existing checked sync range wrapper adds512B/job (32B/sum) in this fixture versus the prior generic async cursor path. No memory ownership policy or budget threshold guarantee changes."
+}

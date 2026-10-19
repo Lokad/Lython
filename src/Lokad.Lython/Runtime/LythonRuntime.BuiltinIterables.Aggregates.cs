@@ -128,6 +128,9 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> SumAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var total = ReadSumStart(arguments, span);
+        // Exact range items and integer addition cannot invoke guest protocols.
+        // Reuse checked synchronous iteration; other starts may suspend in __add__.
+        if (arguments[0] is PyRange && PyNumberOps.IsInteger(total)) return Sum(arguments, span, context);
         if (TrySumExactBytes(arguments[0], total, span, context, out var byteResult)) return byteResult;
         var cursor = await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false);
         await using (cursor.ConfigureAwait(false))

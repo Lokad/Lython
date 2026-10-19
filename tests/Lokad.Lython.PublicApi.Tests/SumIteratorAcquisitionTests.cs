@@ -7,6 +7,56 @@ public sealed class SumIteratorAcquisitionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task ExactRangeGuestStartStillAwaitsAdditionAndCancellation(bool cancel)
+    {
+        const string source = """
+class Total:
+ def __add__(self,value):
+  with open('sum.txt','a') as target:target.write(str(value))
+  return self
+start=Total()
+print(sum(range(2),start) is start)
+""";
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost(); host.SeedFile("/sum.txt", "before");
+        using var cancellation = new CancellationTokenSource();
+        var entered = cancel ? host.PauseWriteUntilCancellation("/sum.txt") : null;
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            if (entered is not null)
+            {
+                var first = await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5));
+                if (ReferenceEquals(first, pending))
+                {
+                    using var early = await pending;
+                    Assert.Fail(early.Failure?.Message ?? "Guest addition was skipped.");
+                }
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                cancellation.Cancel();
+            }
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal(!cancel, result.Success);
+            Assert.Equal(cancel ? "" : "True\n", result.StandardOutput);
+            Assert.Equal(cancel ? "before" : "before01", host.ReadText("/sum.txt"));
+            if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            else Assert.True(host.CompletedAsynchronously > 0);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task RefusedIteratorAcquisitionPrecedesStartRejection(bool asynchronous)
     {
         const string source = """

@@ -123,6 +123,11 @@ Executable call sites store the frontend's immutable `CallArgumentForm` values
 directly. The existing argument-conversion helper serves both packaged calls and
 direct operand binding; there is no per-argument metadata wrapper.
 
+Async `sum()` shares the existing checked synchronous loop for an exact range
+and an exact integer start. This shape cannot invoke guest protocols. Custom
+starts and other iterables retain async iteration/addition and awaited cleanup;
+allocation preflights and cancellation remain in the shared numeric/range helpers.
+
 `ExecutionContext` owns per-run services and Python-visible state: globals,
 locals, closure resolution, exception state, module cache, decimal context,
 host handles, and limits. Values entering from public options are normalized to

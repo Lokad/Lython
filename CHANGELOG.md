@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse checked synchronous `sum()` iteration during async hosting for an exact range with an exact integer start. Preserve arbitrary precision, empty-range start identity, allocation preflights and cancellation. Guest starts and other iterables retain asynchronous protocols and awaited cleanup. The short diagnostic records a small allocation increase; no qualified latency gain is established.
+
 - Keep lowered nodes directly in executable opcode-fallback tables, deleting redundant statement/expression carrier records and their construction/unwrap sites. Preserve the actual lowered evaluators, mirroring and generator checks; no syntax, public API or ownership change.
 
 - Store existing immutable call-argument forms directly in executable call sites, removing a redundant metadata record and per-argument compilation allocations. Binding, evaluation order and expanded-call behavior are unchanged; no public API or ownership change.

@@ -1,0 +1,17 @@
+{
+  "reference": "CPython3.13.2",
+  "fixtures": [
+    {
+      "name": "ExactRangePreservesStartAliasesTypesAndLargeBounds",
+      "source": "start=1<<256\nprint(sum(range(0),start) is start,sum(range(0),True) is True,\n      sum(range(1),True),type(sum(range(1),True)).__name__)\nprint(sum(range(5,-3,-2)),sum(range(3),start=start)-start,\n      sum(range(start,start+3),start=-start*3))\nfor invalid in ('bad',b'bad'):\n try:sum(range(0),invalid)\n except TypeError:print('start')",
+      "stdout": "True True 1 int\n8 3 3\nstart\nstart\n",
+      "file": null
+    },
+    {
+      "name": "ExactRangeGuestStartStillAwaitsAdditionAndCancellation",
+      "source": "class Total:\n def __add__(self,value):\n  with open('sum.txt','a') as target:target.write(str(value))\n  return self\nstart=Total()\nprint(sum(range(2),start) is start)",
+      "stdout": "True\n",
+      "file": "before01"
+    }
+  ]
+}

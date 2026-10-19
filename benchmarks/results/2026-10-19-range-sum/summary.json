@@ -1,0 +1,42 @@
+[
+  {
+    "asynchronous": false,
+    "exactRange": false,
+    "beforeMicroseconds": 395.5625,
+    "afterMicroseconds": 430.575,
+    "elapsedChangePercent": 8.85131932374781,
+    "beforeBytes": 161776.0,
+    "afterBytes": 161776.0,
+    "allocationChangeBytes": 0.0
+  },
+  {
+    "asynchronous": false,
+    "exactRange": true,
+    "beforeMicroseconds": 329.25,
+    "afterMicroseconds": 357.675,
+    "elapsedChangePercent": 8.633257403189077,
+    "beforeBytes": 158320.0,
+    "afterBytes": 158320.0,
+    "allocationChangeBytes": 0.0
+  },
+  {
+    "asynchronous": true,
+    "exactRange": false,
+    "beforeMicroseconds": 1261.9375,
+    "afterMicroseconds": 1294.4875,
+    "elapsedChangePercent": 2.57936704472288,
+    "beforeBytes": 161768.0,
+    "afterBytes": 161768.0,
+    "allocationChangeBytes": 0.0
+  },
+  {
+    "asynchronous": true,
+    "exactRange": true,
+    "beforeMicroseconds": 398.5125,
+    "afterMicroseconds": 309.325,
+    "elapsedChangePercent": -22.380101000595975,
+    "beforeBytes": 158568.0,
+    "afterBytes": 159080.0,
+    "allocationChangeBytes": 512.0
+  }
+]

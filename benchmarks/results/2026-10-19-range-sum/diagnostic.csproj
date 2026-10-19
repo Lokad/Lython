@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework></PropertyGroup>
+<ItemGroup><PackageReference Include="Lokad.Parsing"/><PackageReference Include="Lokad.Utf8Regex.PythonRe"/></ItemGroup>
+<ItemGroup><Compile Include="../../../src/Lokad.Lython/**/*.cs" Exclude="../../../src/Lokad.Lython/bin/**;../../../src/Lokad.Lython/obj/**" LinkBase="Production"/>
+<Compile Include="../../../tests/Lokad.Lython.Tests/Harness/MockLythonHost.cs" Link="MockLythonHost.cs"/>
+<EmbeddedResource Include="../../../src/Lokad.Lython/Runtime/Text/Data/html5.json" LogicalName="Lokad.Lython.html5.json"/></ItemGroup>
+</Project>

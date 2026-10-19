@@ -292,6 +292,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [shared range-sum loop](benchmarks/results/2026-10-19-range-sum/README.md)
+uses the checked synchronous loop during RunAsync for exact ranges and integer
+starts. One short capture records nominal 398.51 → 309.33 µs per 16-sum job,
+with 512 B more allocation. Control times move too; no qualified latency or
+CPython gain is established. Custom starts retain async protocols and cleanup.
+
 The [call-argument metadata cleanup](benchmarks/results/2026-10-19-call-form/README.md)
 deletes a wrapper around an existing immutable argument form. A compile-only
 diagnostic records 88 B less allocation for a four-argument call and 40 B less

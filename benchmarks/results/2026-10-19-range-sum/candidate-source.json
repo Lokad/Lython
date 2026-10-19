@@ -1,0 +1,6 @@
+{
+  "baseline": "64b8aca50c7e53fba91e2702f809747c321d9e5e",
+  "files": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs": "49c32eff21030a7dda4231e76336afb468a56094efc8def102f54ac8ed5dd771"
+  }
+}
