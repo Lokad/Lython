@@ -1,0 +1,120 @@
+{
+  "base": "265ac1ce3d77eeab482d605276d9723230d99979",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "b230b442b0709d05cd1df418ebffe2fdb2efec2660f578f36ce8439597b4bcb4"
+  },
+  "supportingSourcesUnchanged": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "99a76c17a415b87b06b76b9b255cc72b2a4f232e977b2d569ed94a5d8b2e39ab",
+    "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Query.cs": "80947a941c5c17b7856e265c707a6ab9cf2d40c3062b19906dbc20d2093bb937",
+    "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Structured.cs": "543a2b5258d4409342bedfeb4b6db00521a4ce7d9c6e7af31f72b86c11130684"
+  },
+  "focusedDistinctPassed": 831,
+  "groups": {
+    "final-white": {
+      "count": 144,
+      "process": {
+        "source": "native-field-wrapper",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "D22C1F0B14FDADFA2142D83113AEC1DDE06BFAAAF9876DA66969C0A960A49980",
+        "filter": "Category!=Stress&(FullyQualifiedName~RenderingStackAdmissionTests|FullyQualifiedName~RenderingSubsystemTests|FullyQualifiedName~StringProtocolBoundaryTests|FullyQualifiedName~FormatProtocolBoundaryTests|FullyQualifiedName~IntegerRenderingAdmissionTests|FullyQualifiedName~ExecutableStackAdmissionTests|FullyQualifiedName~FormattedStringExecutableTests|FullyQualifiedName~StringFormatPrimitiveTests|FullyQualifiedName~ExecutionOptionsScenarioTests|FullyQualifiedName~UnicodeFormatCheckpointTests)",
+        "pid": 45952,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1701,
+        "stdoutSha256": "90B537A09F5029B7A890ED8B332A1745C6EF623AC27419CD12C9D6F70F246E04",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "ee99864c646ad93ff2535d70d7e84642200c8927efc777acc2e7472f488ca595"
+    },
+    "public-format": {
+      "count": 453,
+      "process": {
+        "source": "native-field-wrapper",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "7B846A2DB1731C1EF334291B4F25BE72AFFDAAE24E8D66264075DC2B071935D5",
+        "filter": "Category!=Stress&(FullyQualifiedName~UnicodeFormatCharacterTests|FullyQualifiedName~StringProtocolTests|FullyQualifiedName~UnicodeReprCompatibilityTests|FullyQualifiedName~IntegerRenderingTests|FullyQualifiedName~FormatProtocolTests|FullyQualifiedName~SinglePartFormattedStringTests|FullyQualifiedName~BytesReprAccountingScenarioTests|FullyQualifiedName~RenderingStackAdmissionTests|FullyQualifiedName~PercentStringFormattingTests|FullyQualifiedName~StringFormatMethodTests|FullyQualifiedName~FormattedStringExecutionTests)",
+        "pid": 42296,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4910,
+        "stdoutSha256": "7D9BC6D6C5DD3328D343B89FF6132D4107ECE133B63D8C5CFDA6303A4AC1D8C6",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "a0bd097907f1037073b8509554a17e79c73e92170344b8b62396d25e75086177"
+    },
+    "public-url": {
+      "count": 82,
+      "process": {
+        "source": "native-field-wrapper",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "7B846A2DB1731C1EF334291B4F25BE72AFFDAAE24E8D66264075DC2B071935D5",
+        "filter": "Category!=Stress&(FullyQualifiedName~UrlQueryCompatibilityTests|FullyQualifiedName~UrlQueryHostTests|FullyQualifiedName~StructuredUrlCompatibilityTests|FullyQualifiedName~StructuredUrlHostTests|FullyQualifiedName~StructuredUrlProjectionTests)",
+        "pid": 30956,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4074,
+        "stdoutSha256": "DB0220D5D6C6E5B211ABED7CF571B5F85C3DC2484BCCF80DE187903031B6AFBA",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "3d0991ff52da33c50756a47ec37a720878a3fa827889dd7ec1b7d1256ac16623"
+    },
+    "owners": {
+      "count": 90,
+      "process": {
+        "source": "native-field-wrapper",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "7B846A2DB1731C1EF334291B4F25BE72AFFDAAE24E8D66264075DC2B071935D5",
+        "filter": "Category!=Stress&(FullyQualifiedName~AdmissionFailureCommandTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~GovernedHostLifetimeTests|FullyQualifiedName~GovernedAdmissionPreflightTests|FullyQualifiedName~FunctoolsCacheOwnershipTests|FullyQualifiedName~BuiltinCallbackLifetimeTests)",
+        "pid": 3224,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2858,
+        "stdoutSha256": "321687E646DABF5B56BDB9DB6E9E19A8E76650C07CC6E5EC10A286C5047B1942",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "a06bc46e334039bcf2ffe04974cea22498d8e2347c28d6d9e18be77e0fa0f25e"
+    },
+    "jobs": {
+      "count": 62,
+      "process": {
+        "source": "native-field-wrapper",
+        "production": "candidate",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "7B846A2DB1731C1EF334291B4F25BE72AFFDAAE24E8D66264075DC2B071935D5",
+        "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests.CompleteJobPublishesIndependentGoldenFiles|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+        "pid": 23000,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8223,
+        "stdoutSha256": "1574ACF2DC4B4A7BCF323C446D39C4DE361DFCBFDC591274E0822A7F1A6F6688",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "fc7d20bb5f98f77cfa390962bba28f57a95ed29c6c4e3c19bc0a3a3329b55a68"
+    }
+  },
+  "completeJobs": 58,
+  "newPermanentCases": 0,
+  "independentCPythonPrograms": 12,
+  "matchedPublicProbeRuns": 24,
+  "exactFuelRecords": 408,
+  "exactAdmissionRecords": 64,
+  "all22ControlAllocationArraysIdentical": true,
+  "nativeFaultSavingsBytes": {
+    "sync": 1808,
+    "asynchronous": 1256
+  },
+  "instanceBodyMovedVerbatim": true,
+  "elapsedMeasured": false,
+  "temporaryDiagnosticRemoved": true,
+  "originalStressScalesAssertionsTimeoutsUnchanged": true,
+  "regexPlanningOnly": true
+}

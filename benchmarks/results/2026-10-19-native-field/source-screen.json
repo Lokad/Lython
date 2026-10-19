@@ -1,0 +1,15 @@
+{
+  "base": "265ac1ce3d77eeab482d605276d9723230d99979",
+  "sourceOnly": true,
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "b1c9fc2b7a5bcaea3613f4506ffea51d58f5983728e734ab0962d0c405c581c4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "99a76c17a415b87b06b76b9b255cc72b2a4f232e977b2d569ed94a5d8b2e39ab",
+    "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Query.cs": "80947a941c5c17b7856e265c707a6ab9cf2d40c3062b19906dbc20d2093bb937",
+    "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Structured.cs": "543a2b5258d4409342bedfeb4b6db00521a4ce7d9c6e7af31f72b86c11130684"
+  },
+  "directCallSites": 7,
+  "proposal": "## Next bounded AP02 candidate: native field conversion before async machinery\n\nSource screen:FormatSuspendedFieldAsync is async even when its value is native\nand only FormatInterpolatedStringPart runs. Seven direct callers span executable\nand lowered fields plus existing urllib conversion;all immediately await/use the\nValueTask. This demonstrates unnecessary native state-machine participation,\nnot a proven heap allocation or elapsed bottleneck.\n\nProposed removal:make the outer helper a non-async ValueTask branch. Native\nvalues invoke the same synchronous formatter immediately;only PyInstance values\nenter the existing descriptor/protocol async body. Move that body,do not duplicate\nformatting,add a second dispatcher or change the supported nested-container/\nstr.format IO boundary. Keep conversion/fallback/error ordering,argument storage,\nawaited users,owners,fuel/span and G03 guards. An earlier synchronous native throw\nmust remain equivalent at every immediate-await caller/public boundary.\n\nAcceptance:one frozen short native/control pair for text/int/conversions and\ninstance/descriptor/fault cases;allocation,funding,work/output/error spans must\nmatch unless a justified difference is documented before promotion. Reuse real\nprotocol IO/cancellation,first-refusal/retained owners and58 jobs;include urllib\ncallers in focused semantics. No elapsed gain claim without measurement. Stop\nat this helper and its direct callers;if ownership transfer,new callback modes\nor a broader interpreter/dispatcher is needed,reject. No prototype/capture yet.\nThe Unicode formatter kernel and identity-removal family remain closed.\nPins:.git/agent-notes/unicode-format-d212c3fa/native-field-source-screen.json.\n\n",
+  "prototype": false,
+  "capture": false,
+  "semanticBoundary": "Keep existing async protocol handling;native branches currently run synchronously inside async helper. Existing nested-container/str.format IO restriction is preserved."
+}

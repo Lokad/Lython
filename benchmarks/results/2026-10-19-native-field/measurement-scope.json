@@ -1,0 +1,15 @@
+{
+  "base": "265ac1ce3d77eeab482d605276d9723230d99979",
+  "diagnosticSha256": "ab0ccbf60dd97fc84c2858c2600d82af56dff83a50b4e389de60052b9306fa77",
+  "tests": 26,
+  "allocationRows": 24,
+  "fuelRecords": 408,
+  "admissionRecords": 64,
+  "captureCountPerRevision": 1,
+  "warmups": 2,
+  "samples": 8,
+  "callsPerSample": 8,
+  "boundary": "Prepared warm native executable/lowered execution;no compilation,startup scheduling,projection or IO. Pure async completes on measured thread. Allocation only,no elapsed timing.",
+  "acceptance": "Work/funding/output/failure spans and472 fuel/admission records must match. Successful allocation controls must not grow;any instance/fault allocation change requires explicit review. Static source proves native branch avoids async machine;no timing or assumed heap-allocation claim. Existing real IO/cancellation,urllib callers and58 jobs qualify semantics.",
+  "stop": "One helper split into immediate native ValueTask and unchanged async instance body. No new ownership/storage/dispatcher/callback policy. Preserve G03 and existing nested-container/string-method IO boundary."
+}

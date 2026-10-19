@@ -1,0 +1,897 @@
+{
+  "programs": 12,
+  "publicRuns": 24,
+  "matchedRuns": 24,
+  "reference": "CPython3.13.2",
+  "semanticOnly": true,
+  "captures": [
+    {
+      "label": "native",
+      "source": "value='caf\u00e9 \ud83d\ude00'\nprint(f'{value}|{42}|{value!r}|{value!a}|{value:>12}')",
+      "asynchronous": false,
+      "report": {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "caf\u00e9 \ud83d\ude00|42|'caf\u00e9 \ud83d\ude00'|'caf\\xe9 \\U0001f600'|      caf\u00e9 \ud83d\ude00\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1374,
+          "PeakProjectionMemoryBytes": 162,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "caf\u00e9 \ud83d\ude00|42|'caf\u00e9 \ud83d\ude00'|'caf\\xe9 \\U0001f600'|      caf\u00e9 \ud83d\ude00\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "unicode-width",
+      "source": "value='\ud83d\ude00z'\nprint(f'{value:\ud83e\udde1>4.1s}')",
+      "asynchronous": false,
+      "report": {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "\ud83e\udde1\ud83e\udde1\ud83e\udde1\ud83d\ude00\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 352,
+          "PeakProjectionMemoryBytes": 66,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\ud83e\udde1\ud83e\udde1\ud83e\udde1\ud83d\ude00\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "format-protocol",
+      "source": "events=[]\nclass Value:\n def __format__(self,spec):events.append(spec);return 'custom'\nprint(f'{Value():>4}',events)",
+      "asynchronous": false,
+      "report": {
+        "Index": 2,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "custom ['>4']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2595,
+          "PeakProjectionMemoryBytes": 60,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "custom ['>4']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "str-repr",
+      "source": "events=[]\nclass Value:\n def __str__(self):events.append('str');return '\u00e9'\n def __repr__(self):events.append('repr');return 'r\u00e9sum\u00e9'\nprint(f'{Value()!s}|{Value()!r}',events)",
+      "asynchronous": false,
+      "report": {
+        "Index": 3,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "\u00e9|r\u00e9sum\u00e9 ['str', 'repr']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 3403,
+          "PeakProjectionMemoryBytes": 88,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\u00e9|r\u00e9sum\u00e9 ['str', 'repr']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "descriptor",
+      "source": "events=[]\nclass Descriptor:\n def __get__(self,instance,owner):\n  events.append('bind')\n  return lambda spec:'custom'\nclass Value:__format__=Descriptor()\nprint(f'{Value()}',events)",
+      "asynchronous": false,
+      "report": {
+        "Index": 4,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "custom ['bind']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 4252,
+          "PeakProjectionMemoryBytes": 64,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "custom ['bind']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "native-fault",
+      "source": "events=[]\ndef get():events.append('get');return 'x'\ntry:print(f'{get():Q}')\nexcept ValueError:print('ValueError',events)",
+      "asynchronous": false,
+      "report": {
+        "Index": 5,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "ValueError ['get']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1483,
+          "PeakProjectionMemoryBytes": 70,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "ValueError ['get']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "guest-fault",
+      "source": "events=[]\nclass Value:\n def __format__(self,spec):events.append('call');raise ValueError('format')\ntry:print(f'{Value()}')\nexcept ValueError as error:print(str(error),events)",
+      "asynchronous": false,
+      "report": {
+        "Index": 6,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "format ['call']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2677,
+          "PeakProjectionMemoryBytes": 64,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "format ['call']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "return-type",
+      "source": "class Value:\n def __format__(self,spec):return 42\ntry:print(f'{Value()}')\nexcept TypeError:print('TypeError')",
+      "asynchronous": false,
+      "report": {
+        "Index": 7,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "TypeError\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1978,
+          "PeakProjectionMemoryBytes": 52,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "TypeError\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "query-native",
+      "source": "from urllib.parse import urlencode\nprint(urlencode([('x',12),('flag',True),('none',None)]))",
+      "asynchronous": false,
+      "report": {
+        "Index": 8,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "x=12&flag=True&none=None\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 3048,
+          "PeakProjectionMemoryBytes": 82,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "x=12&flag=True&none=None\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "query-protocol",
+      "source": "from urllib.parse import urlencode\nevents=[]\nclass Value:\n def __str__(self):events.append('str');return '\u00e9/b'\nprint(urlencode({'x':Value()}),events)",
+      "asynchronous": false,
+      "report": {
+        "Index": 9,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "x=%C3%A9%2Fb ['str']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 4324,
+          "PeakProjectionMemoryBytes": 74,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "x=%C3%A9%2Fb ['str']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "structured-native",
+      "source": "from urllib.parse import urlunparse\nprint(urlunparse(('http','X','a','b','q','f')))",
+      "asynchronous": false,
+      "report": {
+        "Index": 10,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "http://X/a;b?q#f\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1888,
+          "PeakProjectionMemoryBytes": 66,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "http://X/a;b?q#f\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "generator",
+      "source": "print(list(f'{x:>3}' for x in [1,2]))",
+      "asynchronous": false,
+      "report": {
+        "Index": 11,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "['  1', '  2']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 3400,
+          "PeakProjectionMemoryBytes": 62,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "['  1', '  2']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": false
+        }
+      }
+    },
+    {
+      "label": "native",
+      "source": "value='caf\u00e9 \ud83d\ude00'\nprint(f'{value}|{42}|{value!r}|{value!a}|{value:>12}')",
+      "asynchronous": true,
+      "report": {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "caf\u00e9 \ud83d\ude00|42|'caf\u00e9 \ud83d\ude00'|'caf\\xe9 \\U0001f600'|      caf\u00e9 \ud83d\ude00\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1374,
+          "PeakProjectionMemoryBytes": 162,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "caf\u00e9 \ud83d\ude00|42|'caf\u00e9 \ud83d\ude00'|'caf\\xe9 \\U0001f600'|      caf\u00e9 \ud83d\ude00\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "unicode-width",
+      "source": "value='\ud83d\ude00z'\nprint(f'{value:\ud83e\udde1>4.1s}')",
+      "asynchronous": true,
+      "report": {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "\ud83e\udde1\ud83e\udde1\ud83e\udde1\ud83d\ude00\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 352,
+          "PeakProjectionMemoryBytes": 66,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\ud83e\udde1\ud83e\udde1\ud83e\udde1\ud83d\ude00\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "format-protocol",
+      "source": "events=[]\nclass Value:\n def __format__(self,spec):events.append(spec);return 'custom'\nprint(f'{Value():>4}',events)",
+      "asynchronous": true,
+      "report": {
+        "Index": 2,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "custom ['>4']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2595,
+          "PeakProjectionMemoryBytes": 60,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "custom ['>4']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "str-repr",
+      "source": "events=[]\nclass Value:\n def __str__(self):events.append('str');return '\u00e9'\n def __repr__(self):events.append('repr');return 'r\u00e9sum\u00e9'\nprint(f'{Value()!s}|{Value()!r}',events)",
+      "asynchronous": true,
+      "report": {
+        "Index": 3,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "\u00e9|r\u00e9sum\u00e9 ['str', 'repr']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 3403,
+          "PeakProjectionMemoryBytes": 88,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "\u00e9|r\u00e9sum\u00e9 ['str', 'repr']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "descriptor",
+      "source": "events=[]\nclass Descriptor:\n def __get__(self,instance,owner):\n  events.append('bind')\n  return lambda spec:'custom'\nclass Value:__format__=Descriptor()\nprint(f'{Value()}',events)",
+      "asynchronous": true,
+      "report": {
+        "Index": 4,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "custom ['bind']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 4252,
+          "PeakProjectionMemoryBytes": 64,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "custom ['bind']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "native-fault",
+      "source": "events=[]\ndef get():events.append('get');return 'x'\ntry:print(f'{get():Q}')\nexcept ValueError:print('ValueError',events)",
+      "asynchronous": true,
+      "report": {
+        "Index": 5,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "ValueError ['get']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1483,
+          "PeakProjectionMemoryBytes": 70,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "ValueError ['get']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "guest-fault",
+      "source": "events=[]\nclass Value:\n def __format__(self,spec):events.append('call');raise ValueError('format')\ntry:print(f'{Value()}')\nexcept ValueError as error:print(str(error),events)",
+      "asynchronous": true,
+      "report": {
+        "Index": 6,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "format ['call']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2677,
+          "PeakProjectionMemoryBytes": 64,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "format ['call']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "return-type",
+      "source": "class Value:\n def __format__(self,spec):return 42\ntry:print(f'{Value()}')\nexcept TypeError:print('TypeError')",
+      "asynchronous": true,
+      "report": {
+        "Index": 7,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "TypeError\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1978,
+          "PeakProjectionMemoryBytes": 52,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "TypeError\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "query-native",
+      "source": "from urllib.parse import urlencode\nprint(urlencode([('x',12),('flag',True),('none',None)]))",
+      "asynchronous": true,
+      "report": {
+        "Index": 8,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "x=12&flag=True&none=None\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 3048,
+          "PeakProjectionMemoryBytes": 82,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "x=12&flag=True&none=None\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "query-protocol",
+      "source": "from urllib.parse import urlencode\nevents=[]\nclass Value:\n def __str__(self):events.append('str');return '\u00e9/b'\nprint(urlencode({'x':Value()}),events)",
+      "asynchronous": true,
+      "report": {
+        "Index": 9,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "x=%C3%A9%2Fb ['str']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 4324,
+          "PeakProjectionMemoryBytes": 74,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "x=%C3%A9%2Fb ['str']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "structured-native",
+      "source": "from urllib.parse import urlunparse\nprint(urlunparse(('http','X','a','b','q','f')))",
+      "asynchronous": true,
+      "report": {
+        "Index": 10,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "http://X/a;b?q#f\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 1888,
+          "PeakProjectionMemoryBytes": 66,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "http://X/a;b?q#f\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    },
+    {
+      "label": "generator",
+      "source": "print(list(f'{x:>3}' for x in [1,2]))",
+      "asynchronous": true,
+      "report": {
+        "Index": 11,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "['  1', '  2']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 3400,
+          "PeakProjectionMemoryBytes": 62,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "['  1', '  2']\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": null,
+          "Async": true
+        }
+      }
+    }
+  ]
+}

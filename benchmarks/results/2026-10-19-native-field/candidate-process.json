@@ -1,0 +1,14 @@
+{
+  "source": "native-field-wrapper",
+  "production": "candidate",
+  "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+  "assemblySha256": "7638892DCD0273750CE565EDF6881DA4D76CD3E5CB077751CE8DFC824AA1186A",
+  "filter": "Category!=Stress&FullyQualifiedName~NativeFieldDiagnostic",
+  "pid": 50440,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 1681,
+  "stdoutSha256": "3F73627C981BB9E9823FF7DD4F25BABEACE3ADD84C622584E9346F6F2F7D1F07",
+  "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+}

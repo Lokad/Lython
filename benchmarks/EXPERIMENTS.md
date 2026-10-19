@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-19 native field conversion](results/2026-10-19-native-field/README.md)
+separates immediate native formatting from the unchanged async instance protocol
+body. One pair retains22 allocation arrays and472 exact boundaries;native faults
+save1,808/1,256B per sync/async call. All831 focused checks and58 jobs pass;12
+CPython programs match both APIs. This does not prove a successful-call speedup.
+
 The [2026-10-19 Unicode formatting delivery](results/2026-10-19-unicode-format/README.md)
 removes inert OwnJoinItem/21 calls separately from fixing Unicode character units.
 All739 focused cases and58 jobs pass;31 CPython programs match both APIs. Native

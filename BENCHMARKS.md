@@ -292,6 +292,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [native field conversion change](benchmarks/results/2026-10-19-native-field/README.md)
+at `265ac1ce` plus its one-file patch keeps native values out of the inner async
+helper. Twenty-two allocation controls and472 boundary records match;the measured
+native-fault paths save1,808B sync/1,256B async. Successful allocations are unchanged;
+no successful-call elapsed or CPython speedup is established.
+
 The [Unicode formatting correction](benchmarks/results/2026-10-19-unicode-format/README.md)
 fixes astral width,precision and fill. The preceding identity-wrapper removal has
 24 identical allocation/work/funding arrays and248 exact boundaries. Correctness

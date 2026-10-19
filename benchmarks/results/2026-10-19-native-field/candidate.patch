@@ -1,0 +1,78 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
+index bbaa6072..6c07802a 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
+@@ -173,39 +173,43 @@ internal sealed partial class LythonRuntime
+         }
+     }
+ 
+-    private static async ValueTask<PyString> FormatSuspendedFieldAsync(object value, char? conversion, string? specifier,
++    private static ValueTask<PyString> FormatSuspendedFieldAsync(object value, char? conversion, string? specifier,
++        ExecutionContext _context, LythonSourceSpan span, bool asynchronous)
++        => value is PyInstance instance
++            ? FormatInstanceFieldAsync(instance, conversion, specifier, _context, span, asynchronous)
++            : new(FormatInterpolatedStringPart(value, conversion, specifier, _context, span));
++
++    private static async ValueTask<PyString> FormatInstanceFieldAsync(PyInstance instance, char? conversion, string? specifier,
+         ExecutionContext _context, LythonSourceSpan span, bool asynchronous)
+     {
+-        if (value is PyInstance instance)
++        object value = instance;
++        var hookName = conversion is 'r' or 'a' ? "__repr__" : conversion == 's' ? "__str__" : "__format__";
++        (bool Found, object Value) hook;
++        try
+         {
+-            var hookName = conversion is 'r' or 'a' ? "__repr__" : conversion == 's' ? "__str__" : "__format__";
+-            (bool Found, object Value) hook;
+-            try
+-            {
+-                hook = instance.Type.TryLookupInMro(hookName, 0, out var raw, out _)
+-                    ? (true, asynchronous
+-                        ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, _context, span).ConfigureAwait(false)
+-                        : PyAttributeLookup.BindForInstance(instance, raw, _context, span))
+-                    : (false, PyNone.Instance);
+-            }
+-            catch (LythonRuntimeException error) when ((conversion is 'r' or 'a') && error.Attribution is null)
+-            {
+-                _context.CheckExecution(span);
+-                var fallback = instance.RenderObjectRepresentation();
+-                if (conversion == 'a') fallback = EscapeNonAsciiPyString(fallback, _context, span);
+-                return FormatInterpolatedStringPart(fallback, null, specifier, _context, span);
+-            }
+-            if (hook.Found)
+-            {
+-                var arguments = conversion is null ? new[] { CallArgumentValue.Positional(PyString.FromString(specifier ?? "", _context.MemoryGovernor, span)) } : [];
+-                var rendered = asynchronous ? await InvokeCallableTargetAsync(hook.Value, span, span, _context,
+-                    () => new ValueTask<CallArgumentValue[]>(arguments)).ConfigureAwait(false)
+-                    : InvokeCallableTarget(hook.Value, span, span, _context, () => arguments);
+-                if (rendered is not PyString text) throw RuntimeErrors.Type(hookName + " returned non-string", span);
+-                if (conversion is null) return text;
+-                value = conversion == 'a' ? EscapeNonAsciiPyString(text, _context, span) : text;
+-                conversion = null;
+-            }
++            hook = instance.Type.TryLookupInMro(hookName, 0, out var raw, out _)
++                ? (true, asynchronous
++                    ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, _context, span).ConfigureAwait(false)
++                    : PyAttributeLookup.BindForInstance(instance, raw, _context, span))
++                : (false, PyNone.Instance);
++        }
++        catch (LythonRuntimeException error) when ((conversion is 'r' or 'a') && error.Attribution is null)
++        {
++            _context.CheckExecution(span);
++            var fallback = instance.RenderObjectRepresentation();
++            if (conversion == 'a') fallback = EscapeNonAsciiPyString(fallback, _context, span);
++            return FormatInterpolatedStringPart(fallback, null, specifier, _context, span);
++        }
++        if (hook.Found)
++        {
++            var arguments = conversion is null ? new[] { CallArgumentValue.Positional(PyString.FromString(specifier ?? "", _context.MemoryGovernor, span)) } : [];
++            var rendered = asynchronous ? await InvokeCallableTargetAsync(hook.Value, span, span, _context,
++                () => new ValueTask<CallArgumentValue[]>(arguments)).ConfigureAwait(false)
++                : InvokeCallableTarget(hook.Value, span, span, _context, () => arguments);
++            if (rendered is not PyString text) throw RuntimeErrors.Type(hookName + " returned non-string", span);
++            if (conversion is null) return text;
++            value = conversion == 'a' ? EscapeNonAsciiPyString(text, _context, span) : text;
++            conversion = null;
+         }
+         return FormatInterpolatedStringPart(value, conversion, specifier, _context, span);
+     }

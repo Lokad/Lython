@@ -1,0 +1,205 @@
+{
+  "accepted": true,
+  "rows": [
+    {
+      "shape": "ascii",
+      "asynchronous": false,
+      "beforeBytes": 968.0,
+      "afterBytes": 968.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "ascii",
+      "asynchronous": true,
+      "beforeBytes": 968.0,
+      "afterBytes": 968.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "bad-instance",
+      "asynchronous": false,
+      "beforeBytes": 8040.0,
+      "afterBytes": 8040.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "bad-instance",
+      "asynchronous": true,
+      "beforeBytes": 26528.0,
+      "afterBytes": 26528.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "bad-native",
+      "asynchronous": false,
+      "beforeBytes": 5304.0,
+      "afterBytes": 3496.0,
+      "savedBytes": 1808.0,
+      "allSamplesEqual": false
+    },
+    {
+      "shape": "bad-native",
+      "asynchronous": true,
+      "beforeBytes": 8680.0,
+      "afterBytes": 7424.0,
+      "savedBytes": 1256.0,
+      "allSamplesEqual": false
+    },
+    {
+      "shape": "custom-format",
+      "asynchronous": false,
+      "beforeBytes": 1032.0,
+      "afterBytes": 1032.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "custom-format",
+      "asynchronous": true,
+      "beforeBytes": 1032.0,
+      "afterBytes": 1032.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "custom-repr",
+      "asynchronous": false,
+      "beforeBytes": 984.0,
+      "afterBytes": 984.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "custom-repr",
+      "asynchronous": true,
+      "beforeBytes": 984.0,
+      "afterBytes": 984.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "custom-str",
+      "asynchronous": false,
+      "beforeBytes": 984.0,
+      "afterBytes": 984.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "custom-str",
+      "asynchronous": true,
+      "beforeBytes": 984.0,
+      "afterBytes": 984.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "descriptor",
+      "asynchronous": false,
+      "beforeBytes": 2464.0,
+      "afterBytes": 2464.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "descriptor",
+      "asynchronous": true,
+      "beforeBytes": 2464.0,
+      "afterBytes": 2464.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "integer",
+      "asynchronous": false,
+      "beforeBytes": 456.0,
+      "afterBytes": 456.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "integer",
+      "asynchronous": true,
+      "beforeBytes": 456.0,
+      "afterBytes": 456.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "lowered",
+      "asynchronous": false,
+      "beforeBytes": 720.0,
+      "afterBytes": 720.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "lowered",
+      "asynchronous": true,
+      "beforeBytes": 720.0,
+      "afterBytes": 720.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "repr",
+      "asynchronous": false,
+      "beforeBytes": 608.0,
+      "afterBytes": 608.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "repr",
+      "asynchronous": true,
+      "beforeBytes": 608.0,
+      "afterBytes": 608.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "text",
+      "asynchronous": false,
+      "beforeBytes": 312.0,
+      "afterBytes": 312.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "text",
+      "asynchronous": true,
+      "beforeBytes": 312.0,
+      "afterBytes": 312.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "width",
+      "asynchronous": false,
+      "beforeBytes": 680.0,
+      "afterBytes": 680.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    },
+    {
+      "shape": "width",
+      "asynchronous": true,
+      "beforeBytes": 680.0,
+      "afterBytes": 680.0,
+      "savedBytes": 0.0,
+      "allSamplesEqual": true
+    }
+  ],
+  "all20SuccessfulControlArraysIdentical": true,
+  "allWorkFundingOutputFailuresIdentical": true,
+  "exactFuelRecords": 408,
+  "exactAdmissionRecords": 64,
+  "elapsedMeasured": false,
+  "captureCountPerRevision": 1,
+  "all22OtherAllocationArraysIdentical": true,
+  "nativeFaultAllocationInterpretation": "Native synchronous throw avoids inner async exception/task/state processing;measured delta includes changed CLR exception machinery. No claim that one task alone accounts for it,or that success latency improves."
+}
