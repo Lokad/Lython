@@ -292,6 +292,12 @@ their original revision, boundary and uncertainty; none describes today's HEAD.
 
 ## Improvements against earlier Lython revisions
 
+The [local import consolidation](benchmarks/results/2026-10-19-executable-imports/README.md)
+records a median 880 B less allocation per small imported-helper job under both
+execution APIs, including fresh entry compilation; the no-import allocation
+medians are unchanged. Full samples and the earlier candidate remain available. Short local
+elapsed samples are unqualified and establish no latency or CPython timing gain.
+
 The [native field conversion change](benchmarks/results/2026-10-19-native-field/README.md)
 at `265ac1ce` plus its one-file patch keeps native values out of the inner async
 helper. Twenty-two allocation controls and472 boundary records match;the measured

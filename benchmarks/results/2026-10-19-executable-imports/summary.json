@@ -1,0 +1,97 @@
+{
+  "baseline": "397c9eb0b024c6b110a4545d5aea1b768b7423b4",
+  "candidate": "baseline plus candidate.patch",
+  "baselineLibrarySha256": "EB9B6ACE07D84276416511E4ECA0D694DF010E1DDE8451237F0ADF87375BCC4E",
+  "candidateLibrarySha256": "7C7D420E0117519BED1336895F19A95D2133484C672494AC2158C0375CB16530",
+  "rows": [
+    {
+      "asynchronous": false,
+      "lane": "warm-entry-fresh-import",
+      "imported": false,
+      "iterations": 8,
+      "beforeBytes": 25296.0,
+      "beforeMs": 0.0501625,
+      "afterBytes": 25296.0,
+      "afterMs": 0.0514375,
+      "savedBytes": 0.0
+    },
+    {
+      "asynchronous": false,
+      "lane": "warm-entry-fresh-import",
+      "imported": true,
+      "iterations": 8,
+      "beforeBytes": 155928.0,
+      "beforeMs": 0.3581625,
+      "afterBytes": 155048.0,
+      "afterMs": 0.3878375,
+      "savedBytes": 880.0
+    },
+    {
+      "asynchronous": false,
+      "lane": "fresh-compile-to-result",
+      "imported": false,
+      "iterations": 8,
+      "beforeBytes": 78472.0,
+      "beforeMs": 0.1750875,
+      "afterBytes": 78472.0,
+      "afterMs": 0.17625,
+      "savedBytes": 0.0
+    },
+    {
+      "asynchronous": false,
+      "lane": "fresh-compile-to-result",
+      "imported": true,
+      "iterations": 8,
+      "beforeBytes": 205800.0,
+      "beforeMs": 0.44951250000000004,
+      "afterBytes": 204920.0,
+      "afterMs": 0.4620125,
+      "savedBytes": 880.0
+    },
+    {
+      "asynchronous": true,
+      "lane": "warm-entry-fresh-import",
+      "imported": false,
+      "iterations": 8,
+      "beforeBytes": 25544.0,
+      "beforeMs": 0.0634,
+      "afterBytes": 25544.0,
+      "afterMs": 0.0588875,
+      "savedBytes": 0.0
+    },
+    {
+      "asynchronous": true,
+      "lane": "warm-entry-fresh-import",
+      "imported": true,
+      "iterations": 8,
+      "beforeBytes": 156296.0,
+      "beforeMs": 0.3802125,
+      "afterBytes": 155416.0,
+      "afterMs": 0.3580125,
+      "savedBytes": 880.0
+    },
+    {
+      "asynchronous": true,
+      "lane": "fresh-compile-to-result",
+      "imported": false,
+      "iterations": 8,
+      "beforeBytes": 78720.0,
+      "beforeMs": 0.1747,
+      "afterBytes": 78720.0,
+      "afterMs": 0.17201249999999998,
+      "savedBytes": 0.0
+    },
+    {
+      "asynchronous": true,
+      "lane": "fresh-compile-to-result",
+      "imported": true,
+      "iterations": 8,
+      "beforeBytes": 206168.0,
+      "beforeMs": 0.477625,
+      "afterBytes": 205288.0,
+      "afterMs": 0.45899999999999996,
+      "savedBytes": 880.0
+    }
+  ],
+  "status": "Unqualified local diagnostic; no latency or CPython timing benefit established"
+}

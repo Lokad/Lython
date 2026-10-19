@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Run host-mediated local module roots on the existing executable engine, preserving grants, cache identity, source paths, cancellation/refusal and awaited cleanup. Preserve the distinction between natural module completion and an executed top-level return. Imported ordinary functions and lambdas keep executable code; class/annotation/opcode lower evaluation remains.
+- Share loaded script-module attributes with their existing global namespace, fixing helper/global/attribute updates and explicit builtin-shadowing exports. Remove copied export dictionaries and script-member cache updates. Keep conservative admission and rollback for new fields; added executable preparation can reject earlier. No established latency improvement.
+
 - Admit `itertools.batched` working capacity against the shared allowance before source pulls, keep it charged during suspension and replacement, and transfer final array ownership into the tuple. Preserve short/empty huge requests, strict errors, aliases and cleanup. Conservative refusal can occur earlier, including before probing exhaustion; no measured speedup claim.
 
 - Run synchronous lowered `match` guards and cases directly, fixing assignment evaluation order in class/import cases. Remove the raw-syntax statement interpreter, unreachable whole-program/function lowering fallback and split reservation/commit peak bookkeeping. Both public APIs use executable code; imports, class bodies, annotations and opcode fallbacks retain their lowered evaluator. Live memory balances and aggregate peaks remain. No additional public API removal or measured speedup.

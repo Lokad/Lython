@@ -114,7 +114,10 @@ internal sealed partial class ExecutableScript
             var exitBlock = generatorExpression is null ? CompileStatements(statements, entryBlock)
                 : CompileComprehensionBody(generatorExpression.Clauses, generatorExpression.ItemExpression,
                     null, generatorExpression.Span, entryBlock, yielding: true);
-            if (exitBlock is int finalBlock && !IsTerminated(finalBlock))
+            // Module completion is distinct from an executed top-level return:
+            // imports reject the latter. The interpreter already ends naturally
+            // at an unterminated final block. Functions still return Python None.
+            if (_functionParameters is not null && exitBlock is int finalBlock && !IsTerminated(finalBlock))
             {
                 AddInstruction(finalBlock, ExecutableInstruction.ReturnNone(EmptySpan));
             }

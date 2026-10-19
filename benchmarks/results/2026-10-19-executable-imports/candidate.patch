@@ -1,0 +1,243 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
+index 100f9203..169ed583 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
+@@ -114,7 +114,10 @@ internal sealed partial class ExecutableScript
+             var exitBlock = generatorExpression is null ? CompileStatements(statements, entryBlock)
+                 : CompileComprehensionBody(generatorExpression.Clauses, generatorExpression.ItemExpression,
+                     null, generatorExpression.Span, entryBlock, yielding: true);
+-            if (exitBlock is int finalBlock && !IsTerminated(finalBlock))
++            // Module completion is distinct from an executed top-level return:
++            // imports reject the latter. The interpreter already ends naturally
++            // at an unterminated final block. Functions still return Python None.
++            if (_functionParameters is not null && exitBlock is int finalBlock && !IsTerminated(finalBlock))
+             {
+                 AddInstruction(finalBlock, ExecutableInstruction.ReturnNone(EmptySpan));
+             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Imports.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Imports.cs
+index 13832012..2e7cb24d 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Imports.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Imports.cs
+@@ -1,5 +1,6 @@
+ using Lokad.Lython.Frontend;
+ using Lokad.Lython.Runtime.Text;
++using System.Runtime.ExceptionServices;
+ 
+ namespace Lokad.Lython.Runtime;
+ 
+@@ -48,22 +49,22 @@ internal sealed partial class LythonRuntime
+ 
+         using var loadingScope = EnterModuleLoading(moduleName, context, span);
+         var prepared = PrepareImportedModule(moduleName, path, ReadGovernedHostText(path, context, span).AsString(), context, span);
++        object? returned = null;
++        LythonRuntimeException? failure = null;
+         try
+         {
+-            var flow = ExecuteStatements(prepared.Statements, prepared.Context);
+-            if (flow.Return is not null)
+-            {
+-
+-                throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
+-            }
+-
+-            return CompleteImportedModule(moduleName, prepared.Context, flow.Control, context, span);
++            returned = ExecuteExecutableCodeObject(prepared.Code, prepared.Context, default, null);
+         }
+-        catch (ReturnSignal)
++        catch (LythonRuntimeException ex)
+         {
+-
+-            throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
++            ex.SetSourcePathIfMissing(path);
++            failure = ex;
+         }
++        // Like lowered block evaluation, propagate after leaving the catch.
++        // Nested imports must not accumulate active native exception handlers.
++        if (failure is not null) ExceptionDispatchInfo.Throw(failure);
++        if (returned is not null) throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
++        return CompleteImportedModule(moduleName, prepared.Context, context, span);
+     }
+ 
+     private static PyModule ResolveImportedModuleHierarchy(string moduleName, ExecutionContext context, LythonSourceSpan span)
+@@ -92,22 +93,20 @@ internal sealed partial class LythonRuntime
+ 
+         using var loadingScope = EnterModuleLoading(moduleName, context, span);
+         var prepared = PrepareImportedModule(moduleName, path, (await ReadGovernedHostTextAsync(path, context, span).ConfigureAwait(false)).AsString(), context, span);
++        object? returned = null;
++        LythonRuntimeException? failure = null;
+         try
+         {
+-            var flow = await ExecuteStatementsAsync(prepared.Statements, prepared.Context).ConfigureAwait(false);
+-            if (flow.Return is not null)
+-            {
+-
+-                throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
+-            }
+-
+-            return CompleteImportedModule(moduleName, prepared.Context, flow.Control, context, span);
++            returned = await ExecuteExecutableCodeObjectAsync(prepared.Code, prepared.Context).ConfigureAwait(false);
+         }
+-        catch (ReturnSignal)
++        catch (LythonRuntimeException ex)
+         {
+-
+-            throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
++            ex.SetSourcePathIfMissing(path);
++            failure = ex;
+         }
++        if (failure is not null) ExceptionDispatchInfo.Throw(failure);
++        if (returned is not null) throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
++        return CompleteImportedModule(moduleName, prepared.Context, context, span);
+     }
+ 
+     private static async ValueTask<PyModule> ResolveImportedModuleHierarchyAsync(
+@@ -414,39 +413,27 @@ internal sealed partial class LythonRuntime
+             throw RuntimeErrors.CannotImportModule(moduleName, message, diagnostic?.Span ?? span);
+         }
+ 
+-        var lowered = LoweredScript.Lower(frontend.Script).Statements;
++        var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
+         var moduleContext = ExecutionContext.CreateModule(context, path, moduleName);
++        // Exports and escaped functions share this module dictionary after its
++        // executable slots leave. Do not depend on incidental opcode fallbacks.
++        moduleContext.MirrorLocalStores = true;
+         InitializeModuleAnnotations(frontend.Script.Statements, moduleContext);
+         // Execution can expose code through callbacks before an import fails.
+         // Retain the coarse estimate for this batch without tracing escapes.
+         code.Commit(estimate);
+         return new PreparedImportedModule(
+-            lowered,
++            executable,
+             moduleContext);
+     }
+ 
+     private static PyModule CompleteImportedModule(
+         string moduleName,
+         ExecutionContext moduleContext,
+-        object? signal,
+         ExecutionContext context,
+         LythonSourceSpan span)
+     {
+-        if (signal is BreakSignal or ContinueSignal)
+-        {
+-            throw RuntimeErrors.TopLevelLoopControl(span);
+-        }
+-
+-        var exported = new Dictionary<string, object>(StringComparer.Ordinal);
+-        foreach (var pair in moduleContext.Variables)
+-        {
+-            if (!ExecutionState.BuiltinNames.Contains(pair.Key))
+-            {
+-                exported[pair.Key] = pair.Value;
+-            }
+-        }
+-
+-        var loaded = new ScriptPyModule(moduleName, exported, context.MemoryGovernor, span);
++        var loaded = new ScriptPyModule(moduleName, moduleContext, span);
+         ChargeImportedModule(context, span);
+         context.State.ImportedModules[moduleName] = loaded;
+         context.ObserveCollectionCount(context.State.ImportedModules.Count, span);
+@@ -467,7 +454,7 @@ internal sealed partial class LythonRuntime
+     }
+ 
+     private readonly record struct PreparedImportedModule(
+-        IReadOnlyList<LoweredStatement> Statements,
++        ExecutableCodeObject Code,
+         ExecutionContext Context);
+ 
+     private readonly struct ModuleLoadingScope : IDisposable
+diff --git a/src/Lokad.Lython/Runtime/PyModule.cs b/src/Lokad.Lython/Runtime/PyModule.cs
+index 6f42cb98..1a48c477 100644
+--- a/src/Lokad.Lython/Runtime/PyModule.cs
++++ b/src/Lokad.Lython/Runtime/PyModule.cs
+@@ -36,6 +36,9 @@ internal abstract class PyModule : IPyRenderableValue
+     /// <summary>Resolves a stable module attribute, preserving the identity of values already exposed.</summary>
+     public bool TryGetCachedMember(string name, [MaybeNullWhen(false)] out object value)
+     {
++        // Script attributes share mutable globals; read their current binding.
++        // Builtin definition factories still use the stable identity cache.
++        if (this is ScriptPyModule) return TryGetMember(name, out value);
+         if (name == "__name__")
+         {
+             value = _nameValue;
+@@ -56,9 +59,6 @@ internal abstract class PyModule : IPyRenderableValue
+         return true;
+     }
+ 
+-    /// <summary>Updates the cached identity of an attribute changed by a writable module.</summary>
+-    protected void UpdateCachedMember(string name, object value) => _memberCache[name] = value;
+-
+     /// <summary>Assigns a writable module member, returning <see langword="false"/> when assignment is unsupported.</summary>
+     public virtual bool TrySetMember(string name, object value)
+     {
+@@ -80,45 +80,47 @@ internal abstract class PyModule : IPyRenderableValue
+ 
+ internal sealed class ScriptPyModule : PyModule
+ {
+-    // Each exported entry retains one CLR dictionary slot for the run, matching
+-    // the PyDict slot rate; keys and values stay aliased to existing owners.
++    // Conservatively fund namespace entries for the run. The module and its
++    // functions share one existing context rather than copied export values.
+     private const long ExportedEntryBytes = 32;
+ 
+-    private readonly Dictionary<string, object> _members;
+-    private readonly MemoryGovernor? _governor;
+-    private readonly LythonSourceSpan? _span;
++    private readonly LythonRuntime.ExecutionContext _context;
++    private readonly LythonSourceSpan _span;
+ 
+-    public ScriptPyModule(string name, Dictionary<string, object> members, MemoryGovernor? governor, LythonSourceSpan? span)
++    public ScriptPyModule(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+         : base(name)
+     {
+-        _members = members;
+-        _governor = governor;
++        _context = context;
+         _span = span;
+-        if (governor is not null && members.Count > 0)
+-        {
+-            var charge = checked(ExportedEntryBytes * members.Count);
+-            governor.Reserve(charge, span);
+-            governor.Commit(charge);
+-        }
++        var charge = checked(ExportedEntryBytes * context.Variables.Count);
++        context.MemoryGovernor.Reserve(charge, span);
++        context.MemoryGovernor.Commit(charge);
+     }
+ 
+-    public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => _members.TryGetValue(name, out value);
++    public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
++        => _context.Variables.TryGetValue(name, out value);
+ 
+     public override IReadOnlyList<string> ExportedNames
+-        => _members.Keys.Where(static name => !name.StartsWith("_", StringComparison.Ordinal)).ToArray();
++        => _context.Variables.Keys.Where(static name => !name.StartsWith("_", StringComparison.Ordinal)).ToArray();
+ 
+-    public override IReadOnlyList<string> MemberNames => _members.Keys.ToArray();
++    public override IReadOnlyList<string> MemberNames => _context.Variables.Keys.ToArray();
+ 
+     public override bool TrySetMember(string name, object value)
+     {
+-        if (_governor is not null && !_members.ContainsKey(name))
++        var bytes = _context.Variables.ContainsKey(name) ? 0 : ExportedEntryBytes;
++        var governor = _context.MemoryGovernor;
++        governor.Reserve(bytes, _span);
++        try
+         {
+-            _governor.Reserve(ExportedEntryBytes, _span);
+-            _governor.Commit(ExportedEntryBytes);
++            // Keep globals() and active cells coherent too.
++            LythonRuntime.StoreName(name, value, _context, _span);
+         }
+-
+-        _members[name] = value;
+-        UpdateCachedMember(name, value);
++        catch
++        {
++            governor.ReleaseReserved(bytes);
++            throw;
++        }
++        governor.Commit(bytes);
+         return true;
+     }
+ }

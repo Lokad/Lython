@@ -23,6 +23,15 @@ Local-module compilation also admits a coarse estimate before parsing/lowering.
 Once prepared code can be exposed to guest callbacks, its estimate stays charged
 for the batch even if import execution fails; parsing/lowering failures return
 their unused admission. This preserves escaping code aliases without tracing them.
+Local modules now prepare executable code and use ordinary executable operand
+and function-frame admission. The loaded module retains its existing namespace
+context for the batch; attributes and globals() no longer use copied export values.
+The existing conservative module/entry charges remain, including admission before
+new attribute stores and rollback if canonical namespace admission fails. Metadata
+can remain retained until batch cleanup even when no function escapes. Added
+executable preparation/frame capacity can reject earlier; identical historical
+tiny-budget thresholds are not promised. No new ownership layer or collector is
+involved.
 Executable compilation releases its unused whole-module lowered representation
 after building executable code. Original syntax stays for annotations and host
 diagnostics, and function/fallback data stays where needed. Both execution APIs

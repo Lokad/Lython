@@ -1,0 +1,42 @@
+{
+  "version": "Python 3.13.2",
+  "boundary": "Semantic only. Explicit isolated module search path and equivalent payload; physical __file__ output normalized to host virtual path.",
+  "records": [
+    {
+      "index": 0,
+      "module": "value=3\ndef factory(seed=2):\n    def inner(n):return value+seed+n\n    return inner\nescaped=factory()\nvalue=7\ndeclared:int=1",
+      "entry": "import selected\nfrom selected import escaped\nimport selected as again\nprint(selected is again,escaped is selected.escaped,escaped(4),selected.declared,\n      selected.__name__,selected.__file__,selected.__annotations__['declared'] is int)",
+      "expected": "True True 13 1 selected /selected.py True\n",
+      "actual": "True True 13 1 selected D:\\code/Lython/.git/agent-notes/executable-imports-397c9eb0/python-confirmed-case-0\\selected.py True\n",
+      "normalizedOutput": "True True 13 1 selected /selected.py True\n",
+      "exitCode": 0
+    },
+    {
+      "index": 1,
+      "module": "events=[]\ndef echo[T](value:T)->T:return value\nclass Box:\n    def read(self,n):return echo(n)\ndef stream():\n    for i in range(3):\n        try:yield Box().read(i)\n        finally:events.append(i)\nsquares=[x*x for x in range(3)]\nlambda_value=lambda value:echo(value+1)",
+      "entry": "import selected as m\nprint(list(m.stream()),m.events,m.squares,m.lambda_value(8),\n      m.echo.__type_params__[0].__name__,\n      m.echo.__annotations__['return'] is m.echo.__type_params__[0])",
+      "expected": "[0, 1, 2] [0, 1, 2] [0, 1, 4] 9 T True\n",
+      "actual": "[0, 1, 2] [0, 1, 2] [0, 1, 4] 9 T True\n",
+      "normalizedOutput": "[0, 1, 2] [0, 1, 2] [0, 1, 4] 9 T True\n",
+      "exitCode": 0
+    },
+    {
+      "index": 2,
+      "module": "state=0\ndef read():return state\nfirst=read()\nstate=9\nsecond=read()\ndef mutate():\n    global state\n    state+=1\n    return read()",
+      "entry": "import selected as m\nprint(m.first,m.second,m.read(),m.mutate(),m.read())",
+      "expected": "0 9 9 10 10\n",
+      "actual": "0 9 9 10 10\n",
+      "normalizedOutput": "0 9 9 10 10\n",
+      "exitCode": 0
+    },
+    {
+      "index": 3,
+      "module": "events=[]\nwith open('/payload.txt') as source:\n    for line in source:\n        try:\n            if line.strip()=='skip':continue\n            events.append(line.strip())\n            if line.startswith('stop'):break\n        finally:events.append('finally')\nseen='|'.join(events)\ndef read():\n    with open('/payload.txt') as source:return source.readline().strip()",
+      "entry": "import selected\nprint(selected.seen,selected.read())",
+      "expected": "finally|keep|finally|stop|finally skip\n",
+      "actual": "finally|keep|finally|stop|finally skip\n",
+      "normalizedOutput": "finally|keep|finally|stop|finally skip\n",
+      "exitCode": 0
+    }
+  ]
+}

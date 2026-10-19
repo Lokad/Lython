@@ -1,0 +1,22 @@
+{
+  "reference": "CPython3.13.2",
+  "boundary": "Semantic only; explicit isolated module search path.",
+  "records": [
+    {
+      "name": "ModuleAttributesAndFunctionGlobalsStayInOneNamespace",
+      "module": "value=1\ndef get():return value\ndef change(n):\n global value\n value=n\ndef scope():return globals()",
+      "entry": "import selected as m\nprint(m.value,m.get())\nm.change(2)\nprint(m.value,m.get())\nm.value=3\nprint(m.value,m.get())\nscope=m.scope()\nscope['value']=4\nprint(m.value,m.get())\nm.value=5\nprint(scope['value'],m.get())",
+      "expected": "1 1\n2 2\n3 3\n4 4\n5 5\n",
+      "actual": "1 1\n2 2\n3 3\n4 4\n5 5\n",
+      "exitCode": 0
+    },
+    {
+      "name": "ExplicitModuleBindingsCanShadowBuiltins",
+      "module": "len=3\nstr=4",
+      "entry": "import selected as m\nfrom selected import len as length\nprint(m.len,m.str,length)",
+      "expected": "3 4 3\n",
+      "actual": "3 4 3\n",
+      "exitCode": 0
+    }
+  ]
+}

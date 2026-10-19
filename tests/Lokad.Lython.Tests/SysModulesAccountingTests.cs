@@ -40,7 +40,7 @@ public sealed class SysModulesAccountingTests
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
-        context.State.ImportedModules["helper"] = new ScriptPyModule("helper", new Dictionary<string, object>(), context.MemoryGovernor, null);
+        context.State.ImportedModules["helper"] = new ScriptPyModule("helper", LythonRuntime.ExecutionContext.CreateModule(context, null, "helper"), new(0, 0, 0, 0));
         var snapshot = CreateSnapshot(context);
         var key = snapshot.Keys.OfType<PyString>().Single(k => k.AsString() == "helper");
         Assert.Same(context.MemoryGovernor, key.OwnerMemoryGovernor);

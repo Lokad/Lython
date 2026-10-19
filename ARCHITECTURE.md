@@ -71,12 +71,23 @@ invariant failures surface directly rather than silently selecting another
 engine. The unused whole-module lowered representation is released after
 compilation.
 
-Lowered statement and expression evaluation remains necessary for local imports,
-class bodies, annotations and individual opcode fallbacks. Synchronous and async
+Local imports prepare and run the same executable code as public entry scripts.
+Their module context mirrors stores into its namespace for exports and escaping
+functions, even when no opcode fallback requests mirroring. Loaded script modules
+use that same context for attributes and globals(); builtin definition factories
+retain stable member caching, while mutable script namespaces read current values.
+Code admission is committed before guest callbacks can expose prepared code.
+
+Module final blocks complete naturally; an executed top-level return remains
+separately detectable and forbidden during import. Function returns, including
+implicit None, keep their existing lowering and optimized calling paths.
+
+Lowered statement and expression evaluation remains necessary for class bodies,
+annotations and individual opcode fallbacks. Synchronous and async
 lowered `match` evaluate their already-lowered guards and case bodies; there is
 no raw-syntax statement interpreter. Pattern and expression helpers still use
-syntax where needed. Import execution consolidation onto the existing executable
-path is a separate future milestone.
+syntax where needed. Imported errors retain their source paths and propagate
+after leaving active catch handlers, preserving nested-error stack safety.
 
 Lowered assignments are closed variants for names, chains, annotations,
 unpacking, subscripts, slices, members, and augmented targets. Consumers should
@@ -96,7 +107,7 @@ Every executable control-flow edge must enter a block at one consistent stack
 depth. Exceptions and return/break/continue signals remain explicit while a
 `finally` block runs, then propagate when that block completes. Changes to
 shared semantics should be tested through executable modules/functions and real
-lowered consumers such as class bodies and imports, with both execution APIs.
+lowered consumers such as class bodies and annotations, with both execution APIs.
 
 `ExecutionContext` owns per-run services and Python-visible state: globals,
 locals, closure resolution, exception state, module cache, decimal context,

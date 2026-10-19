@@ -362,8 +362,7 @@ y
             },
             instruction => Assert.Equal(ExecutableOpCode.StoreLocal, instruction.OpCode),
             instruction => Assert.Equal(ExecutableOpCode.LoadLocal, instruction.OpCode),
-            instruction => Assert.Equal(ExecutableOpCode.PopTop, instruction.OpCode),
-            instruction => Assert.Equal(ExecutableOpCode.ReturnNone, instruction.OpCode));
+            instruction => Assert.Equal(ExecutableOpCode.PopTop, instruction.OpCode));
     }
 
     [Fact]

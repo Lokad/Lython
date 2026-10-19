@@ -1,5 +1,6 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
+using System.Runtime.ExceptionServices;
 
 namespace Lokad.Lython.Runtime;
 
@@ -48,22 +49,22 @@ internal sealed partial class LythonRuntime
 
         using var loadingScope = EnterModuleLoading(moduleName, context, span);
         var prepared = PrepareImportedModule(moduleName, path, ReadGovernedHostText(path, context, span).AsString(), context, span);
+        object? returned = null;
+        LythonRuntimeException? failure = null;
         try
         {
-            var flow = ExecuteStatements(prepared.Statements, prepared.Context);
-            if (flow.Return is not null)
-            {
-
-                throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
-            }
-
-            return CompleteImportedModule(moduleName, prepared.Context, flow.Control, context, span);
+            returned = ExecuteExecutableCodeObject(prepared.Code, prepared.Context, default, null);
         }
-        catch (ReturnSignal)
+        catch (LythonRuntimeException ex)
         {
-
-            throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
+            ex.SetSourcePathIfMissing(path);
+            failure = ex;
         }
+        // Like lowered block evaluation, propagate after leaving the catch.
+        // Nested imports must not accumulate active native exception handlers.
+        if (failure is not null) ExceptionDispatchInfo.Throw(failure);
+        if (returned is not null) throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
+        return CompleteImportedModule(moduleName, prepared.Context, context, span);
     }
 
     private static PyModule ResolveImportedModuleHierarchy(string moduleName, ExecutionContext context, LythonSourceSpan span)
@@ -92,22 +93,20 @@ internal sealed partial class LythonRuntime
 
         using var loadingScope = EnterModuleLoading(moduleName, context, span);
         var prepared = PrepareImportedModule(moduleName, path, (await ReadGovernedHostTextAsync(path, context, span).ConfigureAwait(false)).AsString(), context, span);
+        object? returned = null;
+        LythonRuntimeException? failure = null;
         try
         {
-            var flow = await ExecuteStatementsAsync(prepared.Statements, prepared.Context).ConfigureAwait(false);
-            if (flow.Return is not null)
-            {
-
-                throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
-            }
-
-            return CompleteImportedModule(moduleName, prepared.Context, flow.Control, context, span);
+            returned = await ExecuteExecutableCodeObjectAsync(prepared.Code, prepared.Context).ConfigureAwait(false);
         }
-        catch (ReturnSignal)
+        catch (LythonRuntimeException ex)
         {
-
-            throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
+            ex.SetSourcePathIfMissing(path);
+            failure = ex;
         }
+        if (failure is not null) ExceptionDispatchInfo.Throw(failure);
+        if (returned is not null) throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
+        return CompleteImportedModule(moduleName, prepared.Context, context, span);
     }
 
     private static async ValueTask<PyModule> ResolveImportedModuleHierarchyAsync(
@@ -414,39 +413,27 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.CannotImportModule(moduleName, message, diagnostic?.Span ?? span);
         }
 
-        var lowered = LoweredScript.Lower(frontend.Script).Statements;
+        var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
         var moduleContext = ExecutionContext.CreateModule(context, path, moduleName);
+        // Exports and escaped functions share this module dictionary after its
+        // executable slots leave. Do not depend on incidental opcode fallbacks.
+        moduleContext.MirrorLocalStores = true;
         InitializeModuleAnnotations(frontend.Script.Statements, moduleContext);
         // Execution can expose code through callbacks before an import fails.
         // Retain the coarse estimate for this batch without tracing escapes.
         code.Commit(estimate);
         return new PreparedImportedModule(
-            lowered,
+            executable,
             moduleContext);
     }
 
     private static PyModule CompleteImportedModule(
         string moduleName,
         ExecutionContext moduleContext,
-        object? signal,
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (signal is BreakSignal or ContinueSignal)
-        {
-            throw RuntimeErrors.TopLevelLoopControl(span);
-        }
-
-        var exported = new Dictionary<string, object>(StringComparer.Ordinal);
-        foreach (var pair in moduleContext.Variables)
-        {
-            if (!ExecutionState.BuiltinNames.Contains(pair.Key))
-            {
-                exported[pair.Key] = pair.Value;
-            }
-        }
-
-        var loaded = new ScriptPyModule(moduleName, exported, context.MemoryGovernor, span);
+        var loaded = new ScriptPyModule(moduleName, moduleContext, span);
         ChargeImportedModule(context, span);
         context.State.ImportedModules[moduleName] = loaded;
         context.ObserveCollectionCount(context.State.ImportedModules.Count, span);
@@ -467,7 +454,7 @@ internal sealed partial class LythonRuntime
     }
 
     private readonly record struct PreparedImportedModule(
-        IReadOnlyList<LoweredStatement> Statements,
+        ExecutableCodeObject Code,
         ExecutionContext Context);
 
     private readonly struct ModuleLoadingScope : IDisposable

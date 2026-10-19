@@ -3416,8 +3416,12 @@ terminate an infinite non-allocating loop.
 Both execution APIs run executable code. Eligible ordinary function bodies share
 compiled code, argument slots and captured cells. Invalid loop control is rejected
 before execution; compiler invariant failures do not select a different engine.
-Lowered evaluation remains for imports, class bodies, annotations and individual
-opcode fallbacks. Defaults,
+Host-mediated local imports use the same executable engine and eligible function
+bodies. Their attributes, function globals and globals() share the module namespace;
+explicit names shadowing builtins are exported normally. Code preparation remains
+subject to existing module grants, cache identity and circular-import restrictions.
+Lowered evaluation remains for class bodies, annotations and individual opcode
+fallbacks. Defaults,
 decorators and body callbacks can suspend without replaying effects. Eligible
 annotated and generic definitions keep executable bodies with their metadata and
 type-parameter scopes; required class/generator/contextual fallbacks remain.

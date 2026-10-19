@@ -36,6 +36,9 @@ internal abstract class PyModule : IPyRenderableValue
     /// <summary>Resolves a stable module attribute, preserving the identity of values already exposed.</summary>
     public bool TryGetCachedMember(string name, [MaybeNullWhen(false)] out object value)
     {
+        // Script attributes share mutable globals; read their current binding.
+        // Builtin definition factories still use the stable identity cache.
+        if (this is ScriptPyModule) return TryGetMember(name, out value);
         if (name == "__name__")
         {
             value = _nameValue;
@@ -55,9 +58,6 @@ internal abstract class PyModule : IPyRenderableValue
         value = _memberCache.GetOrAdd(name, value);
         return true;
     }
-
-    /// <summary>Updates the cached identity of an attribute changed by a writable module.</summary>
-    protected void UpdateCachedMember(string name, object value) => _memberCache[name] = value;
 
     /// <summary>Assigns a writable module member, returning <see langword="false"/> when assignment is unsupported.</summary>
     public virtual bool TrySetMember(string name, object value)
@@ -80,45 +80,47 @@ internal abstract class PyModule : IPyRenderableValue
 
 internal sealed class ScriptPyModule : PyModule
 {
-    // Each exported entry retains one CLR dictionary slot for the run, matching
-    // the PyDict slot rate; keys and values stay aliased to existing owners.
+    // Conservatively fund namespace entries for the run. The module and its
+    // functions share one existing context rather than copied export values.
     private const long ExportedEntryBytes = 32;
 
-    private readonly Dictionary<string, object> _members;
-    private readonly MemoryGovernor? _governor;
-    private readonly LythonSourceSpan? _span;
+    private readonly LythonRuntime.ExecutionContext _context;
+    private readonly LythonSourceSpan _span;
 
-    public ScriptPyModule(string name, Dictionary<string, object> members, MemoryGovernor? governor, LythonSourceSpan? span)
+    public ScriptPyModule(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         : base(name)
     {
-        _members = members;
-        _governor = governor;
+        _context = context;
         _span = span;
-        if (governor is not null && members.Count > 0)
-        {
-            var charge = checked(ExportedEntryBytes * members.Count);
-            governor.Reserve(charge, span);
-            governor.Commit(charge);
-        }
+        var charge = checked(ExportedEntryBytes * context.Variables.Count);
+        context.MemoryGovernor.Reserve(charge, span);
+        context.MemoryGovernor.Commit(charge);
     }
 
-    public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => _members.TryGetValue(name, out value);
+    public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        => _context.Variables.TryGetValue(name, out value);
 
     public override IReadOnlyList<string> ExportedNames
-        => _members.Keys.Where(static name => !name.StartsWith("_", StringComparison.Ordinal)).ToArray();
+        => _context.Variables.Keys.Where(static name => !name.StartsWith("_", StringComparison.Ordinal)).ToArray();
 
-    public override IReadOnlyList<string> MemberNames => _members.Keys.ToArray();
+    public override IReadOnlyList<string> MemberNames => _context.Variables.Keys.ToArray();
 
     public override bool TrySetMember(string name, object value)
     {
-        if (_governor is not null && !_members.ContainsKey(name))
+        var bytes = _context.Variables.ContainsKey(name) ? 0 : ExportedEntryBytes;
+        var governor = _context.MemoryGovernor;
+        governor.Reserve(bytes, _span);
+        try
         {
-            _governor.Reserve(ExportedEntryBytes, _span);
-            _governor.Commit(ExportedEntryBytes);
+            // Keep globals() and active cells coherent too.
+            LythonRuntime.StoreName(name, value, _context, _span);
         }
-
-        _members[name] = value;
-        UpdateCachedMember(name, value);
+        catch
+        {
+            governor.ReleaseReserved(bytes);
+            throw;
+        }
+        governor.Commit(bytes);
         return true;
     }
 }
