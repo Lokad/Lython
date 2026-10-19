@@ -130,9 +130,6 @@ Prepared comprehension boundaries, display creation, tuple completion, call
 accumulator creation and formatted-part joining complete through one nonasync
 entry. Operations that can suspend retain one async handler. Each operation has
 one implementation; scope, stack and storage cleanup remain with that operation.
-Ordinary list-display insertion also uses the native entry and the existing
-storage helper, preserving its preflights and both cancellation checks. Set
-hashing and unpacking retain their protocol paths.
 
 Every executable control-flow edge must enter a block at one consistent stack
 depth. Exceptions and return/break/continue signals remain explicit while a

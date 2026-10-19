@@ -50,15 +50,6 @@ internal sealed partial class LythonRuntime
                     };
                     _stack.Push(collection);
                     break;
-                case ExecutableAppendDisplay { Unpacking: false } append when
-                    append.IteratorDepth >= 0 &&
-                    _stack.Count - 2 - append.IteratorDepth is var destinationSlot &&
-                    (uint)destinationSlot < (uint)_stack.Count &&
-                    _stack[destinationSlot] is PyList list:
-                    var value = Pop(ref _stack, span);
-                    _context.CheckExecution(span);
-                    AddListDisplayValue(list, value, span, _context);
-                    break;
                 case ExecutableFinishTuple:
                     var expanded = (PyList)Pop(ref _stack, span);
                     var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, _context.MemoryGovernor, span);
