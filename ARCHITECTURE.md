@@ -89,6 +89,15 @@ Module final blocks complete naturally; an executed top-level return remains
 separately detectable and forbidden during import. Function returns, including
 implicit None, keep their existing lowering and optimized calling paths.
 
+Ordinary executable definitions use one definition operation for functions and
+generators, including annotations and type parameters. It creates the existing
+callable representation, evaluates metadata and decorators in Python order, and
+publishes its bound slot directly. Annotated generators do not detour through
+lowered definition dispatch or resynchronize the whole namespace. Generator
+bodies retain their existing executable code and lexical namespace lifetime.
+Definitions prepared across a guest yield and definitions in lowered class
+bodies still use their existing preparation/evaluation paths.
+
 Lowered statement and expression evaluation remains necessary for class bodies,
 annotations and individual opcode fallbacks. Executable fallback tables retain
 these lowered nodes directly, without separate statement/expression carrier
@@ -313,7 +322,9 @@ Before committing a behavior change:
    where relevant.
 2. Test the public boundary when public contracts, projection, or host behavior
    changes.
-3. Run the complete solution tests with warnings treated as errors.
+3. Use focused Release regressions during development. Batch complete platform,
+   Stress and explicit Release package checks at coherent delivery boundaries,
+   following [TESTING.md](TESTING.md).
 4. Keep package/version changes in a separate, explicit release commit.
 
 ## Regex provider boundary

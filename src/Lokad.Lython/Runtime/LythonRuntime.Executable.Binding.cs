@@ -346,14 +346,6 @@ internal sealed partial class LythonRuntime
         var hasAnnotations = functionBinding.Function.ReturnAnnotation is not null ||
             functionBinding.Function.Parameters.Any(p => p.Annotation is not null);
         var needsTypeMetadata = hasAnnotations || functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context);
-        if (needsTypeMetadata && functionBinding.Function.GeneratorCode is not null)
-        {
-            if (asynchronous) await ExecuteLoweredFunctionDefinitionAsync(functionBinding.Function, context).ConfigureAwait(false);
-            else ExecuteLoweredFunctionDefinition(functionBinding.Function, context);
-            SyncExecutableLocalsFromContext(codeObject, locals, localCells, context);
-            return;
-        }
-
         context.EnterInterpreterFrame(functionBinding.Function.Span);
         try
         {
