@@ -76,7 +76,7 @@ internal static class QualificationEvidence
             || left.GetProperty("architecture").GetString() != "X64" || right.GetProperty("architecture").GetString() != "x86_64"
             || left.GetProperty("processorCount").GetInt32() != 4 || left.GetProperty("benchmarkDotNetLoaded").GetBoolean()
             || left.GetProperty("serverGc").GetBoolean() || left.GetProperty("gcLatencyMode").GetString() != "Interactive"
-            || left.GetProperty("publicLimits").GetString() != "ordinary defaults; instruction fuel unset; no forced GC"
+            || left.GetProperty("publicLimits").GetString() != "ordinary defaults; cooperative cancellation; no forced GC"
             || !left.GetProperty("clockHighResolution").GetBoolean() || !right.GetProperty("clockMonotonic").GetBoolean()
             || left.GetProperty("runtimeOverrides").EnumerateObject().Any(p => p.Value.ValueKind != JsonValueKind.Null)
             || !right.GetProperty("gcEnabled").GetBoolean() || !right.GetProperty("gilEnabled").GetBoolean()

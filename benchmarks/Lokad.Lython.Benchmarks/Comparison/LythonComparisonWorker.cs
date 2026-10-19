@@ -224,7 +224,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
             maximumFrameBytes = ComparisonProtocol.MaximumFrameBytes,
             maximumBatchIterations = ComparisonProtocol.MaximumBatchIterations,
             maximumBatchSeconds = ComparisonProtocol.MaximumBatchSeconds,
-            publicLimits = "ordinary defaults; instruction fuel unset; no forced GC",
+            publicLimits = "ordinary defaults; cooperative cancellation; no forced GC",
             ownershipBoundary = "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
             benchmarkDotNetLoaded = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "BenchmarkDotNet"),
             libraries = new[] { Identity(library), Identity(adapter), Identity(core) },
